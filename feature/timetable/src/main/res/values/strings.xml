@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="timetable_brand_name">Chronos</string>
+    <string name="timetable_header_displayed_week">第%1$d周</string>
+    <string name="timetable_edit_current">编辑当前课表</string>
+
+    <string name="timetable_empty_illustration">空课表插画</string>
+    <string name="timetable_empty_title">还没有课程表</string>
+    <string name="timetable_import_action">导入课程表</string>
+
+    <string name="timetable_manage_title">管理课程表</string>
+    <string name="timetable_create_action">新建课程表</string>
+    <string name="timetable_course_count">%1$d 门课程</string>
+
+    <string name="timetable_course_edit_title">编辑课程</string>
+    <string name="timetable_course_name_label">课程名称</string>
+    <string name="timetable_course_teacher_label">教师</string>
+    <string name="timetable_course_location_label">地点</string>
+    <string name="timetable_course_day_of_week_label">星期</string>
+    <string name="timetable_course_start_period_label">开始节次</string>
+    <string name="timetable_course_end_period_label">结束节次</string>
+    <string name="timetable_course_color_label">课程配色</string>
+    <string name="timetable_course_remark_label">备注</string>
+    <string name="timetable_course_remark_clear">清空备注</string>
+    <string name="timetable_course_detail_title">课程详情</string>
+    <string name="timetable_course_detail_back">返回</string>
+    <string name="timetable_course_detail_edit">编辑课程</string>
+    <string name="timetable_course_detail_basic_info">基本信息</string>
+    <string name="timetable_course_detail_teacher">授课教师</string>
+    <string name="timetable_course_detail_location">上课地点</string>
+    <string name="timetable_course_detail_day">上课时间</string>
+    <string name="timetable_course_detail_period">课程节次</string>
+    <string name="timetable_course_detail_period_range">第 %1$d-%2$d 节</string>
+    <string name="timetable_course_detail_weeks">教学周次</string>
+    <string name="timetable_course_detail_all_weeks">全部周次</string>
+    <string name="timetable_course_detail_remark">备注</string>
+    <string name="timetable_course_detail_expand">展开</string>
+    <string name="timetable_course_detail_collapse">收起</string>
+    <string name="timetable_name_label">课程表名称</string>
+    <string name="timetable_term_start_date_label">学期第一天</string>
+    <string name="timetable_term_start_date_placeholder">请选择日期</string>
+    <string name="timetable_start_week_label">起始周次</string>
+    <string name="timetable_end_week_label">结束周次</string>
+    <string name="timetable_show_saturday">显示周六</string>
+    <string name="timetable_show_sunday">显示周日</string>
+    <string name="timetable_show_non_current_week_courses">显示非当前周课程</string>
+    <string name="timetable_period_times_title">节次时间</string>
+    <string name="timetable_add_period">新增节次</string>
+    <string name="timetable_reset_all_settings">恢复所有设置</string>
+    <string name="timetable_period_title">第%1$d节</string>
+    <string name="timetable_period_start_label">开始</string>
+    <string name="timetable_period_end_label">结束</string>
+
+    <string name="timetable_confirm">确定</string>
+    <string name="timetable_save">保存</string>
+    <string name="timetable_cancel">取消</string>
+    <string name="timetable_delete">删除</string>
+    <string name="timetable_back">返回</string>
+    <string name="timetable_jump_to_today">回到今天</string>
+    <string name="timetable_header_gesture_description">短按回到今天，长按左右滑动切换周次</string>
+    <string name="timetable_month_suffix">月</string>
+    <string name="timetable_course_non_current_week_prefix">非本周</string>
+    <string name="timetable_stepper_decrement">-</string>
+    <string name="timetable_stepper_increment">+</string>
+
+    <string name="timetable_day_monday">周一</string>
+    <string name="timetable_day_tuesday">周二</string>
+    <string name="timetable_day_wednesday">周三</string>
+    <string name="timetable_day_thursday">周四</string>
+    <string name="timetable_day_friday">周五</string>
+    <string name="timetable_day_saturday">周六</string>
+    <string name="timetable_day_sunday">周日</string>
+    <string name="timetable_day_unknown">周？</string>
+
+    <string name="timetable_day_short_monday">一</string>
+    <string name="timetable_day_short_tuesday">二</string>
+    <string name="timetable_day_short_wednesday">三</string>
+    <string name="timetable_day_short_thursday">四</string>
+    <string name="timetable_day_short_friday">五</string>
+    <string name="timetable_day_short_saturday">六</string>
+    <string name="timetable_day_short_sunday">日</string>
+    <string name="timetable_day_short_unknown">？</string>
+</resources>

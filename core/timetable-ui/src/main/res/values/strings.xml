@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="timetable_month_suffix">月</string>
+    <string name="timetable_course_non_current_week_prefix">非本周</string>
+    <string name="timetable_day_monday">周一</string>
+    <string name="timetable_day_tuesday">周二</string>
+    <string name="timetable_day_wednesday">周三</string>
+    <string name="timetable_day_thursday">周四</string>
+    <string name="timetable_day_friday">周五</string>
+    <string name="timetable_day_saturday">周六</string>
+    <string name="timetable_day_sunday">周日</string>
+    <string name="timetable_day_unknown">周？</string>
+    <string name="timetable_day_short_monday">一</string>
+    <string name="timetable_day_short_tuesday">二</string>
+    <string name="timetable_day_short_wednesday">三</string>
+    <string name="timetable_day_short_thursday">四</string>
+    <string name="timetable_day_short_friday">五</string>
+    <string name="timetable_day_short_saturday">六</string>
+    <string name="timetable_day_short_sunday">日</string>
+    <string name="timetable_day_short_unknown">？</string>
+    <string name="timetable_conflict_courses">此时段有 %d 门课程重叠</string>
+</resources>

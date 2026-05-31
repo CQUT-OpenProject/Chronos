@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Chronos" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/brand_surface</item>
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorOnPrimary">@color/brand_on_primary</item>
+        <item name="colorPrimaryContainer">@color/brand_primary_container</item>
+    </style>
+
+    <style name="Theme.Chronos.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/launcher_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.Chronos</item>
+    </style>
+</resources>

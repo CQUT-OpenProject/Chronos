@@ -1,0 +1,54 @@
+node_modules/
+build/
+dist/
+coverage/
+.gradle/
+.idea/
+local.properties
+*.iml
+captures/
+app/build/
+.DS_Store
+*.log
+.env*
+!.env.example
+.kotlin/
+.serena/
+
+# Android / Gradle module outputs
+**/build/
+**/.cxx/
+**/generated/
+
+# Android Studio / IntelliJ
+.idea/caches/
+.idea/workspace.xml
+.idea/deploymentTargetSelector.xml
+.idea/compiler.xml
+
+# Kotlin / KSP
+*.kotlin_module
+**/kspCaches/
+
+# Signing / local secrets
+*.jks
+*.keystore
+google-services.json
+
+# Editor / IDE
+.vscode/
+
+# macOS
+.AppleDouble
+.LSOverride
+
+.signing/
+.codex/
+
+# Gradle build-logic compiled output
+build-logic/bin/
+
+# Gradle daemon JVM config (machine-local, auto-generated)
+gradle/gradle-daemon-jvm.properties
+
+AGENTS.md
