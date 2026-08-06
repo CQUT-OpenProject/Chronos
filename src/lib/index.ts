@@ -2,3 +2,6 @@
 export * from './models';
 export * from './storage';
 export * from './domain';
+export { getRepository } from './client/repository';
+export * from './timetable/timetable-screen-logic';
+export * from './timetable/timetable-grid-logic';
