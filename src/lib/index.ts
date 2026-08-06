@@ -1,1 +1,4 @@
-// place files you want to import through the `$lib` alias in this folder.
+// place models, storage, and domain APIs behind $lib.
+export * from './models';
+export * from './storage';
+export * from './domain';
