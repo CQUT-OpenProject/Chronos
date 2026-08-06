@@ -13,7 +13,8 @@
 		"lint": "vp fmt --check . && vp lint .",
 		"format": "vp fmt .",
 		"test:unit": "vp test",
-		"test": "vp test -- --run"
+		"test": "vp test -- --run",
+		"icons:png": "node --experimental-strip-types scripts/generate-icons.ts"
 	},
 	"dependencies": {
 		"dexie": "^4.0.11",
@@ -22,6 +23,7 @@
 	},
 	"devDependencies": {
 		"@inlang/paraglide-js": "^2.18.2",
+		"@resvg/resvg-js": "^2.6.2",
 		"@sveltejs/adapter-vercel": "^6.3.3",
 		"@sveltejs/kit": "^2.63.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
@@ -33,6 +35,7 @@
 		"@vitest/browser-playwright": "catalog:",
 		"eslint-plugin-svelte": "^3.19.0",
 		"globals": "^17.6.0",
+		"linkedom": "^0.18.13",
 		"playwright": "^1.60.0",
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",

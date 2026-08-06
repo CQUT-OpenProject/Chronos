@@ -2,3 +2,15 @@
 @import 'swiper/css';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@theme {
+	--color-brand: #0068b7;
+	--color-brand-hover: #00589c;
+	--color-brand-muted: #d9e8f4;
+	--color-soft-blue: #9fc1f9;
+	--color-gold: #ddba8f;
+	--color-ink: #0b1f33;
+	--color-canvas: #f7fafc;
+	--color-border: #d7e2ea;
+	--color-danger: #e60012;
+}

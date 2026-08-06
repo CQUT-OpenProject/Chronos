@@ -256,7 +256,7 @@ export default defineConfig({
 				name: 'Chronos',
 				short_name: 'Chronos',
 				description: '课程表应用',
-				theme_color: '#055088',
+				theme_color: '#0068B7',
 				background_color: '#F7FAFC',
 				display: 'standalone',
 				start_url: '/',
