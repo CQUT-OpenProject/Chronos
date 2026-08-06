@@ -24,6 +24,9 @@ importers:
       dexie:
         specifier: ^4.0.11
         version: 4.4.4
+      jsencrypt:
+        specifier: ^3.5.4
+        version: 3.5.4
       swiper:
         specifier: ^11.2.10
         version: 11.2.10
@@ -2738,6 +2741,9 @@ packages:
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
+
+  jsencrypt@3.5.4:
+    resolution: {integrity: sha512-kNjfYEMNASxrDGsmcSQh/rUTmcoRfSUkxnAz+MMywM8jtGu+fFEZ3nJjHM58zscVnwR0fYmG9sGkTDjqUdpiwA==}
 
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
@@ -6262,6 +6268,8 @@ snapshots:
   js-sha256@0.11.1: {}
 
   js-tokens@4.0.0: {}
+
+  jsencrypt@3.5.4: {}
 
   jsesc@3.1.0: {}
 
