@@ -1,0 +1,51 @@
+{
+	"name": "chronos",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vp dev",
+		"build": "vp build",
+		"preview": "vp preview",
+		"prepare": "vp config && svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "vp fmt --check . && vp lint .",
+		"format": "vp fmt .",
+		"test:unit": "vp test",
+		"test": "vp test -- --run"
+	},
+	"dependencies": {
+		"dexie": "^4.0.11"
+	},
+	"devDependencies": {
+		"@inlang/paraglide-js": "^2.18.2",
+		"@sveltejs/adapter-vercel": "^6.3.3",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@tailwindcss/forms": "^0.5.11",
+		"@tailwindcss/typography": "^0.5.19",
+		"@tailwindcss/vite": "^4.3.0",
+		"@types/node": "^24",
+		"@vite-pwa/sveltekit": "^1.1.0",
+		"@vitest/browser-playwright": "catalog:",
+		"eslint-plugin-svelte": "^3.19.0",
+		"globals": "^17.6.0",
+		"playwright": "^1.60.0",
+		"svelte": "^5.56.1",
+		"svelte-check": "^4.6.0",
+		"tailwindcss": "^4.3.0",
+		"typescript": "^6.0.3",
+		"vite": "catalog:",
+		"vitest": "catalog:",
+		"vitest-browser-svelte": "^2.1.1",
+		"vite-plus": "catalog:"
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "11.20.0",
+			"onFail": "download"
+		}
+	}
+}
