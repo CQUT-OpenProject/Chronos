@@ -22,7 +22,9 @@
 	{#each tabs as tab (tab.href)}
 		<a
 			href={resolve(tab.href)}
-			class="flex-1 py-3 text-center {isActive(tab.href) ? 'font-semibold text-blue-600' : ''}"
+			class="flex-1 py-3 text-center {isActive(tab.href)
+				? 'font-semibold text-brand dark:text-soft-blue'
+				: ''}"
 		>
 			{tab.label}
 		</a>

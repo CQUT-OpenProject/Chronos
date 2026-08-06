@@ -209,7 +209,7 @@
 					<span class="text-xs text-zinc-500">{timetableDayShortLabel(day.dayOfWeek)}</span>
 					<div
 						class="mt-1 flex size-7 items-center justify-center rounded-full text-sm {day.isToday
-							? 'bg-blue-600 text-white'
+							? 'bg-brand text-white dark:bg-soft-blue dark:text-ink'
 							: 'text-zinc-900 dark:text-zinc-100'}"
 					>
 						{dayOfMonth(day.date)}
@@ -237,15 +237,15 @@
 					>
 						<div
 							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
-								? 'bg-blue-100 dark:bg-blue-900/40'
+								? 'bg-brand-muted dark:bg-soft-blue/25'
 								: ''}"
 						>
-							<span class="text-sm font-bold {isActive ? 'text-blue-900 dark:text-blue-100' : ''}">
+							<span class="text-sm font-bold {isActive ? 'text-brand dark:text-soft-blue' : ''}">
 								{period.index}
 							</span>
 							<span
 								class="mt-1 text-[10px] leading-tight {isActive
-									? 'text-blue-800 dark:text-blue-200'
+									? 'text-brand dark:text-soft-blue'
 									: 'text-zinc-500'}"
 							>
 								{period.startTime}<br />{period.endTime}

@@ -30,7 +30,7 @@
 	<div class="flex flex-col gap-2 sm:flex-row">
 		<button
 			type="button"
-			class="rounded-lg bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
+			class="rounded-lg bg-brand px-4 py-2 text-white disabled:opacity-60 dark:bg-soft-blue dark:text-ink"
 			disabled={creating}
 			onclick={handleCreate}
 		>

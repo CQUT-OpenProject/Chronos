@@ -32,4 +32,4 @@
 	<p class="text-sm text-zinc-500">未找到课程</p>
 {/if}
 
-<a href={resolve('/')} class="mt-4 inline-block text-blue-600">返回课表</a>
+<a href={resolve('/')} class="mt-4 inline-block text-brand dark:text-soft-blue">返回课表</a>
