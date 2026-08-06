@@ -3,7 +3,7 @@
 	import { ThemeMode } from '$lib/models/app-state';
 	import type { TimetableGridModel } from '$lib/models/presentation';
 	import { timetableDayLabel } from '$lib/timetable/timetable-grid-logic';
-	import TimetableGrid from './TimetableGrid.svelte';
+	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 
 	let {
 		screen,
@@ -27,9 +27,8 @@
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
 
 	let weekSliderVisible = $state(false);
-	let sliderWeek = $state(1);
-	let pagerEl: HTMLDivElement | undefined = $state();
-	let suppressPagerSync = $state(true);
+	let dragWeek = $state<number | null>(null);
+	const sliderWeek = $derived(dragWeek ?? screenState.displayedWeek);
 
 	const weekRangeText = $derived(
 		formatWeekRange(screenState.weekGridModels.get(screenState.displayedWeek))
@@ -40,40 +39,10 @@
 			: ''
 	);
 
-	$effect(() => {
-		if (!weekSliderVisible) {
-			sliderWeek = screenState.displayedWeek;
-		}
-	});
-
-	$effect(() => {
-		const target = screenState.displayedWeek;
-		const container = pagerEl;
-		if (!container) return;
-		const pageIndex = target - startWeek;
-		const page = container.children.item(pageIndex) as HTMLElement | null;
-		if (!page) return;
-		suppressPagerSync = true;
-		page.scrollIntoView({ behavior: 'auto', inline: 'start', block: 'nearest' });
-		queueMicrotask(() => {
-			suppressPagerSync = false;
-		});
-	});
-
-	function onPagerScroll() {
-		if (suppressPagerSync || !pagerEl) return;
-		const pageWidth = pagerEl.clientWidth;
-		if (pageWidth <= 0) return;
-		const page = Math.round(pagerEl.scrollLeft / pageWidth);
-		const settledWeek = startWeek + page;
-		if (settledWeek !== screenState.displayedWeek) {
-			screen.setDisplayedWeek(settledWeek);
-		}
-	}
-
 	function onHeaderTap() {
 		if (weekSliderVisible) {
 			weekSliderVisible = false;
+			dragWeek = null;
 			return;
 		}
 		screen.jumpToCurrentWeek();
@@ -81,13 +50,13 @@
 
 	function onHeaderLongPress() {
 		if (startWeek >= endWeek) return;
-		sliderWeek = screenState.displayedWeek;
+		dragWeek = screenState.displayedWeek;
 		weekSliderVisible = true;
 	}
 
 	function onSliderInput(event: Event) {
 		const value = Number((event.currentTarget as HTMLInputElement).value);
-		sliderWeek = value;
+		dragWeek = value;
 		screen.setDisplayedWeek(value);
 	}
 
@@ -150,6 +119,7 @@
 						oninput={onSliderInput}
 						onchange={() => {
 							weekSliderVisible = false;
+							dragWeek = null;
 						}}
 						class="w-full"
 					/>
@@ -180,30 +150,16 @@
 			></div>
 		{/if}
 
-		<div
-			bind:this={pagerEl}
-			class="relative flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
-			onscroll={onPagerScroll}
-		>
-			{#each weeks as week (week)}
-				{@const gridModel = screenState.weekGridModels.get(week)}
-				{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
-				<section class="h-full w-full shrink-0 snap-start">
-					{#if gridModel}
-						<TimetableGrid
-							displayedWeek={week}
-							isCurrentWeek={week === screenState.academicWeek}
-							{gridModel}
-							courseDisplayModels={courseModels}
-							{hasWallpaper}
-							{isDark}
-							bottomContentPadding="0px"
-							onCourseClick={(course) => onCourseClick(course.id)}
-							onCourseLongClick={(course) => onCourseLongClick(course.id)}
-						/>
-					{/if}
-				</section>
-			{/each}
-		</div>
+		{#key screenState.appState.currentTimetable?.id}
+			<TimetableWeekSwiper
+				{screen}
+				{weeks}
+				{startWeek}
+				{hasWallpaper}
+				{isDark}
+				{onCourseClick}
+				{onCourseLongClick}
+			/>
+		{/key}
 	</div>
 </div>

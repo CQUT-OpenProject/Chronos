@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"dexie": "^4.0.11",
+		"swiper": "^11.2.10",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
