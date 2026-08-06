@@ -1,11 +1,18 @@
+import type { TransferServices } from '$lib/client/transfer-services';
+import type { CredentialServices } from '$lib/client/credential-services';
+import { createTransferServices } from '$lib/client/transfer-services';
+import { createCredentialServices } from '$lib/client/credential-services';
+import type { SavedCredentialState } from '$lib/models/auth';
 import type { Timetable } from '$lib/models/timetable';
 import { TimetableImportSource } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
-import { createTransferServices, type TransferServices } from '$lib/client/transfer-services';
 import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
+import { createPrfCredential, getPrfOutput } from '$lib/client/webauthn/prf-coordinator';
+import { base64ToBytes } from '$lib/client/webauthn/binary';
+import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 
-export type TransferImportSource = 'JSON' | 'HTML';
+export type TransferImportSource = 'ONLINE' | 'JSON' | 'HTML';
 
 const PREVIEW_KEY = 'chronos:import-preview';
 const PREVIEW_SOURCE_KEY = 'chronos:import-preview-source';
@@ -16,21 +23,50 @@ export interface TransferPreviewState {
 	importMode: ImportMode;
 	htmlImportTermStartDate: string | null;
 	selectedSource: TransferImportSource;
+	account: string;
+	password: string;
+	saveCredentials: boolean;
+	savedCredentialState: SavedCredentialState;
 	errorMessage: string | null;
 	statusMessage: string | null;
 }
 
-export function createTransferState(services: TransferServices = createTransferServices()) {
-	let selectedSource = $state<TransferImportSource>('JSON');
+interface UnlockPreparePayload {
+	salt: string;
+	credentialId: string;
+}
+
+export function createTransferState(
+	services: TransferServices = createTransferServices(),
+	credentialServices: CredentialServices = createCredentialServices()
+) {
+	let selectedSource = $state<TransferImportSource>('ONLINE');
 	let preview = $state<Timetable | null>(null);
 	let previewSource = $state<TransferImportSource | null>(null);
 	let importMode = $state<ImportMode>(ImportMode.AS_NEW);
 	let htmlImportTermStartDate = $state<string | null>(null);
+	let account = $state('');
+	let password = $state('');
+	let saveCredentials = $state(false);
+	let savedCredentialState = $state<SavedCredentialState>({
+		account: null,
+		hasSavedCredential: false,
+		protectionAvailable: false
+	});
 	let errorMessage = $state<string | null>(null);
 	let statusMessage = $state<string | null>(null);
 
 	const academicCalendarService = new AcademicCalendarService();
 	const timeProvider = new SystemTimeProvider();
+
+	$effect(() => {
+		return credentialServices.observeSavedCredential.subscribe((state) => {
+			savedCredentialState = state;
+			if (state.account && account.trim() === '') {
+				account = state.account;
+			}
+		});
+	});
 
 	function clearMessages() {
 		errorMessage = null;
@@ -43,6 +79,26 @@ export function createTransferState(services: TransferServices = createTransferS
 		previewSource = null;
 		htmlImportTermStartDate = null;
 		clearMessages();
+	}
+
+	function setAccount(value: string) {
+		account = value;
+		if (previewSource === 'ONLINE') {
+			preview = null;
+			previewSource = null;
+		}
+	}
+
+	function setPassword(value: string) {
+		password = value;
+		if (previewSource === 'ONLINE') {
+			preview = null;
+			previewSource = null;
+		}
+	}
+
+	function setSaveCredentials(value: boolean) {
+		saveCredentials = value;
 	}
 
 	function setImportMode(mode: ImportMode) {
@@ -93,6 +149,133 @@ export function createTransferState(services: TransferServices = createTransferS
 		preview = result.value;
 		previewSource = 'HTML';
 		htmlImportTermStartDate = null;
+		return true;
+	}
+
+	async function saveCredentialsIfNeeded(trimmedAccount: string, currentPassword: string) {
+		if (!saveCredentials) return;
+
+		if (savedCredentialState.protectionAvailable) {
+			const prepareResult = await credentialServices.prepareSave.invoke();
+			if (!prepareResult.ok) {
+				statusMessage = prepareResult.error.message;
+				return;
+			}
+
+			try {
+				const created = await createPrfCredential(base64ToBytes(prepareResult.value));
+				const saveResult = await credentialServices.saveCredential.invoke(
+					trimmedAccount,
+					currentPassword,
+					JSON.stringify({
+						prf: created.prfOutput,
+						credentialId: created.credentialId
+					})
+				);
+				if (!saveResult.ok) {
+					statusMessage = saveResult.error.message;
+				}
+			} catch (error) {
+				const message = error instanceof Error ? error.message : '已取消设备验证';
+				statusMessage =
+					message === 'WebAuthn verification was cancelled' ||
+					message === 'WebAuthn registration was cancelled'
+						? '已获取预览，未保存凭据'
+						: message;
+			}
+			return;
+		}
+
+		if (!isAccountOnlyFallbackAvailable()) {
+			statusMessage = '当前设备不支持保存帐号密码';
+			return;
+		}
+
+		const saveResult = await credentialServices.saveCredential.invoke(trimmedAccount, '', '');
+		if (!saveResult.ok) {
+			statusMessage = saveResult.error.message;
+		}
+	}
+
+	async function previewOnline() {
+		clearMessages();
+		const trimmedAccount = account.trim();
+		if (!trimmedAccount || !password.trim()) {
+			errorMessage = '请输入账号和密码';
+			return false;
+		}
+
+		const result = await services.previewOnline.invoke({
+			account: trimmedAccount,
+			password
+		});
+		if (!result.ok) {
+			errorMessage = result.error.message;
+			return false;
+		}
+
+		preview = result.value;
+		previewSource = 'ONLINE';
+		htmlImportTermStartDate = null;
+		await saveCredentialsIfNeeded(trimmedAccount, password);
+		return true;
+	}
+
+	async function previewWithSavedCredential() {
+		clearMessages();
+		if (!savedCredentialState.hasSavedCredential) {
+			errorMessage = '当前没有可用的已保存凭据';
+			return false;
+		}
+
+		const prepareResult = await credentialServices.prepareUnlock.invoke();
+		if (!prepareResult.ok) {
+			errorMessage = prepareResult.error.message;
+			return false;
+		}
+
+		try {
+			const payload = JSON.parse(prepareResult.value) as UnlockPreparePayload;
+			const prfOutput = await getPrfOutput(payload.salt, payload.credentialId);
+			const unlockResult = await credentialServices.unlockCredential.invoke(
+				JSON.stringify({ prf: prfOutput })
+			);
+			if (!unlockResult.ok) {
+				errorMessage = unlockResult.error.message;
+				return false;
+			}
+
+			const previewResult = await services.previewOnline.invoke(unlockResult.value);
+			if (!previewResult.ok) {
+				errorMessage = previewResult.error.message;
+				return false;
+			}
+
+			preview = previewResult.value;
+			previewSource = 'ONLINE';
+			htmlImportTermStartDate = null;
+			account = unlockResult.value.account;
+			password = unlockResult.value.password;
+			return true;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : '设备验证失败';
+			errorMessage = message === 'WebAuthn verification was cancelled' ? '已取消设备验证' : message;
+			return false;
+		}
+	}
+
+	async function clearSavedCredential() {
+		clearMessages();
+		const result = await credentialServices.clearCredential.invoke();
+		if (!result.ok) {
+			errorMessage = result.error.message;
+			return false;
+		}
+		saveCredentials = false;
+		if (previewSource === 'ONLINE') {
+			clearPreview();
+		}
+		statusMessage = '已清除已保存凭据';
 		return true;
 	}
 
@@ -193,6 +376,10 @@ export function createTransferState(services: TransferServices = createTransferS
 		previewSource,
 		importMode,
 		htmlImportTermStartDate,
+		account,
+		password,
+		saveCredentials,
+		savedCredentialState,
 		errorMessage,
 		statusMessage
 	} satisfies TransferPreviewState);
@@ -202,11 +389,17 @@ export function createTransferState(services: TransferServices = createTransferS
 			return state;
 		},
 		setSelectedSource,
+		setAccount,
+		setPassword,
+		setSaveCredentials,
 		setImportMode,
 		setHtmlImportTermStartDate,
 		clearPreview,
 		previewFromClipboard,
 		previewFromHtmlFile,
+		previewOnline,
+		previewWithSavedCredential,
+		clearSavedCredential,
 		persistPreview,
 		loadPersistedPreview,
 		clearPersistedPreview,
@@ -219,4 +412,31 @@ export type TransferStateController = ReturnType<typeof createTransferState>;
 
 export function isHtmlImportSource(preview: Timetable | null): boolean {
 	return preview?.importMetadata.source === TimetableImportSource.FILE_HTML;
+}
+
+export function previewSourceLabel(source: TransferImportSource | null): string {
+	switch (source) {
+		case 'ONLINE':
+			return '教务处';
+		case 'JSON':
+			return '分享 JSON';
+		case 'HTML':
+			return 'HTML 文件';
+		default:
+			return '未知来源';
+	}
+}
+
+export function canSaveCredentials(state: SavedCredentialState): boolean {
+	return state.protectionAvailable || isAccountOnlyFallbackAvailable();
+}
+
+export function saveCredentialsLabel(state: SavedCredentialState): string {
+	if (state.protectionAvailable) {
+		return '保存帐号密码';
+	}
+	if (isAccountOnlyFallbackAvailable()) {
+		return '保存账号（密码需每次输入）';
+	}
+	return '当前设备不支持保存帐号密码';
 }

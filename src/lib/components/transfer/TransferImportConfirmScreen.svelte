@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { ImportMode } from '$lib/domain/import-mode';
 	import { TimetableImportSource } from '$lib/models/timetable';
-	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
+	import {
+		previewSourceLabel,
+		type TransferStateController
+	} from '$lib/transfer/transfer-state.svelte';
 
 	let {
 		transfer,
@@ -41,7 +44,9 @@
 
 		<section class="rounded-xl border border-zinc-200 p-4">
 			<h2 class="text-lg font-semibold">{preview.name}</h2>
-			<p class="mt-1 text-sm text-zinc-500">{preview.courses.length} 门课程</p>
+			<p class="mt-1 text-sm text-zinc-500">
+				{preview.courses.length} 门课程 · 来源：{previewSourceLabel(transferState.previewSource)}
+			</p>
 		</section>
 
 		<section class="space-y-2">
