@@ -16,7 +16,8 @@
 		"test": "vp test -- --run"
 	},
 	"dependencies": {
-		"dexie": "^4.0.11"
+		"dexie": "^4.0.11",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@inlang/paraglide-js": "^2.18.2",
@@ -37,9 +38,9 @@
 		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.3",
 		"vite": "catalog:",
+		"vite-plus": "catalog:",
 		"vitest": "catalog:",
-		"vitest-browser-svelte": "^2.1.1",
-		"vite-plus": "catalog:"
+		"vitest-browser-svelte": "^2.1.1"
 	},
 	"devEngines": {
 		"packageManager": {
