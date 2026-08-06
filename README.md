@@ -1,42 +1,35 @@
-# sv
+<div align="center">
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+![Preview Dark](.github/assets/dark.png)
 
-## Creating a project
+# _Chronos_
 
-If you're seeing this, you've probably already done this step. Congrats!
+基于渐进式 Web 的课程表应用，深度适配本校课表
 
-```sh
-# create a new project
-npx sv create my-app
-```
+![Ask DeepWiki](https://deepwiki.com/badge.svg)
 
-To recreate this project with the same configuration:
+</div>
 
-```sh
-# recreate this project
-npx sv@0.17.0 create --template minimal --types ts --add eslint prettier vitest="usages:unit,component" ai-tools="ide:cursor+tools:mcp,svelte-code-writer,svelte-core-bestpractices,svelte-file-editor+mcpSetup:local" paraglide="languageTags:en, zh-cn+demo:yes" better-auth="demo:password" tailwindcss="plugins:typography,forms" sveltekit-adapter="adapter:vercel" drizzle="database:sqlite+sqlite:libsql" --no-install ./
-```
+## 主要功能
 
-## Developing
+## 部署指南
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+> [!IMPORTANT]
+> **Chronos** 深度适配 Vercel，强烈推荐使用 Vercel 部署
 
-```sh
-npm run dev
+### 环境变量配置
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+### 使用 Vercel 部署
 
-## Building
+## 数据收集
 
-To create a production version of your app:
+## 切换到旧版
 
-```sh
-npm run build
-```
+**Chronos-Android** 位于 `legacy` 分支，目前已停止维护。
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+> [!NOTE]
+> **一些有趣的事实**
+>
+> 1. Chronos **[ˈkrəʊ.nɒs]** 的名字来源于希腊神话中的时间之神
+> 2. Chronos 最初的使命是代替广告满天飞的 WakeUp 课程表
+> 3. Chronos-Android v1.0.0 由 GPT-5.4 编写，从空白文件夹到完整可发布版本仅用时 87 分钟
