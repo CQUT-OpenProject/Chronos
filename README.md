@@ -12,6 +12,13 @@
 
 ## 主要功能
 
+## 安装 Chronos
+
+## WHY PWA?
+
+1. 解决 iOS 端应用分发的问题
+2. Android coder 每天只做两件事：等 Studio 编译，看 Gradel 报错
+
 ## 部署指南
 
 > [!IMPORTANT]
@@ -30,6 +37,6 @@
 > [!NOTE]
 > **一些有趣的事实**
 >
-> 1. Chronos **[ˈkrəʊ.nɒs]** 的名字来源于希腊神话中的时间之神
-> 2. Chronos 最初的使命是代替广告满天飞的 WakeUp 课程表
-> 3. Chronos-Android v1.0.0 由 GPT-5.4 编写，从空白文件夹到完整可发布版本仅用时 87 分钟
+> - Chronos **[ˈkrəʊ.nɒs]** 的名字来源于希腊神话中的时间之神
+> - Chronos 最初的使命是代替广告满天飞的 WakeUp 课程表
+> - Chronos-Android v1.0.0 由 GPT-5.4 编写，从空白文件夹到完整可发布版本仅用时 87 分钟
