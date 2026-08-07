@@ -1,13 +1,16 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
 	import type { Course } from '$lib/models/course';
 	import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
+	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
+	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
 	import {
 		buildSlotGroups,
 		blendColors,
 		computeDelayUntilNextCurrentTimeRefreshMillis,
 		currentTimeMinutes,
 		findCurrentPeriodIndex,
-		formatLocationText,
+		locationDisplayLines,
 		parseColor,
 		parsePeriodRanges,
 		timetableDayShortLabel
@@ -15,6 +18,8 @@
 
 	const DARK_SURFACE = '#17171a';
 	const ON_SURFACE_DARK = '#f4f4f5';
+	const BADGE_LABEL = '非本周';
+	const FIT_MIN_FONT_PX = 6;
 
 	interface Props {
 		displayedWeek: number;
@@ -110,15 +115,85 @@
 
 	function crowdingTextClass(overlapCount = 1): string {
 		const crowding = visibleDayCount * overlapCount;
+		// Both weekend days on (7 columns): one step smaller than the 6-day scale.
+		if (visibleDayCount >= 7) {
+			if (crowding >= 11) return 'text-[10px]';
+			return 'text-xs';
+		}
 		if (crowding >= 11) return 'text-xs';
 		if (crowding >= 7) return 'text-sm';
 		return 'text-[15px]';
 	}
 
 	function placeholderTextClass(): string {
-		if (visibleDayCount === 7) return 'text-xs';
+		if (visibleDayCount === 7) return 'text-[10px]';
 		if (visibleDayCount === 6) return 'text-sm';
 		return 'text-[15px]';
+	}
+
+	function detailFontPx(overlapCount = 1): number {
+		const crowded = visibleDayCount * overlapCount >= 11;
+		if (visibleDayCount >= 7) return crowded ? 9 : 10;
+		return crowded ? 10 : 12;
+	}
+
+	function badgeFontPx(overlapCount = 1): number {
+		const crowded = visibleDayCount * overlapCount >= 11;
+		if (visibleDayCount >= 7) return crowded ? 8 : 9;
+		return detailFontPx(overlapCount);
+	}
+
+	/**
+	 * Pass a getter so `{@attach fitWidthFont(() => …)}` does not re-create the
+	 * attachment when params change — inner `$effect` applies updates instead.
+	 */
+	function fitWidthFont(
+		getParams: () => { lines: string[]; maxFontPx: number; fromParent?: boolean }
+	): Attachment {
+		return (node) => {
+			const apply = () => {
+				const { lines, maxFontPx, fromParent = false } = getParams();
+				const contents = lines.filter((line) => line.length > 0);
+				const box = fromParent ? (node.parentElement ?? node) : node;
+				let available = box.clientWidth;
+				if (fromParent) {
+					const style = getComputedStyle(node);
+					available -=
+						(Number.parseFloat(style.paddingLeft) || 0) +
+						(Number.parseFloat(style.paddingRight) || 0);
+					available = Math.max(0, available);
+				}
+				if (available <= 0 || contents.length === 0) return;
+
+				const measurerForSize = createSizedCanvasMeasurer(node);
+				const fontPx = fitFontSizePx(
+					available,
+					(size) => {
+						const measure = measurerForSize(size);
+						return Math.max(...contents.map((line) => measure(line)));
+					},
+					maxFontPx,
+					FIT_MIN_FONT_PX
+				);
+				node.style.fontSize = `${fontPx}px`;
+			};
+
+			let observed: Element | null = null;
+			const observer = new ResizeObserver(apply);
+
+			$effect(() => {
+				const { fromParent = false } = getParams();
+				const target = fromParent ? (node.parentElement ?? node) : node;
+				if (observed !== target) {
+					observer.disconnect();
+					observer.observe(target);
+					observed = target;
+				}
+				apply();
+			});
+
+			return () => observer.disconnect();
+		};
 	}
 
 	function courseColors(course: Course): { background: string; text: string } {
@@ -272,7 +347,7 @@
 						{@const course = displayModel.course}
 						{@const courseSpan = course.endPeriod - course.startPeriod + 1}
 						<div
-							class="absolute box-border py-[3px]"
+							class="absolute box-border overflow-hidden py-[3px]"
 							style:top="calc((var(--row-height) * {course.startPeriod - 1}))"
 							style:left="{columnLeft}%"
 							style:width="{columnFraction}%"
@@ -304,7 +379,7 @@
 							{@const course = displayModel.course}
 							{@const courseSpan = course.endPeriod - course.startPeriod + 1}
 							<div
-								class="absolute box-border py-[3px]"
+								class="absolute box-border overflow-hidden py-[3px]"
 								style:top="calc((var(--row-height) * {course.startPeriod - 1}))"
 								style:left="{columnLeft + perCourseWidth * index}%"
 								style:width="{perCourseWidth}%"
@@ -323,13 +398,15 @@
 {#snippet courseCard(displayModel: TimetableCourseDisplayModel, overlapCount: number)}
 	{@const course = displayModel.course}
 	{@const colors = courseColors(course)}
-	{@const locationText = formatLocationText(course.location)}
+	{@const locationLines = locationDisplayLines(course.location)}
 	{@const textClass = crowdingTextClass(overlapCount)}
-	{@const detailClass = visibleDayCount * overlapCount >= 11 ? 'text-[10px]' : 'text-xs'}
+	{@const detailPx = detailFontPx(overlapCount)}
+	{@const badgePx = badgeFontPx(overlapCount)}
+	{@const teacher = course.teacher.trim()}
 	{@const handlers = courseCardHandlers(course)}
 	<button
 		type="button"
-		class="flex h-full w-full flex-col rounded-2xl border p-2 text-left shadow-md {displayModel.isInDisplayedWeek
+		class="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left shadow-md {displayModel.isInDisplayedWeek
 			? ''
 			: 'opacity-45'}"
 		style:background-color={colors.background}
@@ -342,26 +419,46 @@
 		onclick={handlers.onclick}
 	>
 		{#if !displayModel.isInDisplayedWeek}
-			<span
-				class="mb-0.5 inline-block rounded px-1.5 py-0.5 {detailClass}"
-				style:background-color="color-mix(in srgb, {colors.text} 12%, transparent)"
-				style:color="color-mix(in srgb, {colors.text} 80%, transparent)"
-			>
-				非本周
+			<span class="mb-0.5 flex w-full shrink-0 justify-center">
+				<span
+					class="max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap"
+					style:background-color="color-mix(in srgb, {colors.text} 12%, transparent)"
+					style:color="color-mix(in srgb, {colors.text} 80%, transparent)"
+					style:font-size="{badgePx}px"
+					{@attach fitWidthFont(() => ({
+						lines: [BADGE_LABEL],
+						maxFontPx: badgePx,
+						fromParent: true
+					}))}
+				>
+					{BADGE_LABEL}
+				</span>
 			</span>
 		{/if}
-		<span class="font-medium {textClass}" style:color={colors.text}>{course.name}</span>
-		<span
-			class="mt-1.5 {detailClass}"
-			style:color="color-mix(in srgb, {colors.text} 80%, transparent)"
-		>
-			{locationText}
-		</span>
-		<span
-			class="mt-auto {detailClass}"
-			style:color="color-mix(in srgb, {colors.text} 80%, transparent)"
-		>
-			{course.teacher}
-		</span>
+		<MiddleTruncateText
+			text={course.name}
+			class="min-h-0 flex-1 leading-tight font-medium {textClass}"
+			style="color: {colors.text}"
+		/>
+		{#if locationLines.length > 0}
+			<div
+				class="mt-1.5 h-[3lh] shrink-0 leading-tight"
+				style="color: color-mix(in srgb, {colors.text} 80%, transparent); font-size: {detailPx}px"
+				{@attach fitWidthFont(() => ({ lines: locationLines, maxFontPx: detailPx }))}
+			>
+				{#each locationLines as line, index (index)}
+					<div class="overflow-hidden whitespace-nowrap">{line}</div>
+				{/each}
+			</div>
+		{/if}
+		{#if teacher}
+			<div
+				class="mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap"
+				style="color: color-mix(in srgb, {colors.text} 80%, transparent); font-size: {detailPx}px"
+				{@attach fitWidthFont(() => ({ lines: [teacher], maxFontPx: detailPx }))}
+			>
+				{teacher}
+			</div>
+		{/if}
 	</button>
 {/snippet}

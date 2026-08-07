@@ -3,6 +3,8 @@ import {
 	buildSlotGroups,
 	computeDelayUntilNextCurrentTimeRefreshMillis,
 	findCurrentPeriodIndex,
+	locationDisplayLines,
+	parseLocationParts,
 	parsePeriodRanges
 } from './timetable-grid-logic';
 
@@ -39,6 +41,30 @@ describe('timetable-grid-logic', () => {
 		expect(groups).toHaveLength(2);
 		expect(groups[0]?.courses.map((entry) => entry.course.id)).toEqual(['a', 'b']);
 		expect(groups[1]?.courses.map((entry) => entry.course.id)).toEqual(['c']);
+	});
+
+	it('parseLocationParts splits campus, building, and room', () => {
+		expect(parseLocationParts('两江校区 弘远楼A0213')).toEqual({
+			campus: '两江校区',
+			building: '弘远楼',
+			room: 'A0213'
+		});
+		expect(parseLocationParts('弘远楼B0216')).toEqual({
+			campus: '',
+			building: '弘远楼',
+			room: 'B0216'
+		});
+		expect(parseLocationParts('第一教学楼 A101')).toEqual({
+			campus: '',
+			building: '第一教学楼',
+			room: 'A101'
+		});
+		expect(parseLocationParts('B201')).toEqual({
+			campus: '',
+			building: '',
+			room: 'B201'
+		});
+		expect(locationDisplayLines('两江校区 弘远楼A0213')).toEqual(['两江校区', '弘远楼', 'A0213']);
 	});
 });
 

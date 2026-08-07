@@ -105,8 +105,45 @@ export function buildSlotGroups(
 		.flatMap(([, dayCourses]) => buildDaySlotGroups(dayCourses));
 }
 
-export function formatLocationText(location: string): string {
-	return location.trim().split(/\s+/).filter(Boolean).join('\n');
+export interface LocationParts {
+	campus: string;
+	building: string;
+	room: string;
+}
+
+/** Split a location into campus / building / room for capsule display. */
+export function parseLocationParts(location: string): LocationParts {
+	const tokens = location.trim().split(/\s+/).filter(Boolean);
+	const campusTokens: string[] = [];
+	const otherTokens: string[] = [];
+	for (const token of tokens) {
+		if (token.endsWith('校区')) campusTokens.push(token);
+		else otherTokens.push(token);
+	}
+
+	const campus = campusTokens.join('');
+	const remainder = otherTokens.join('');
+	if (!remainder) {
+		return { campus, building: '', room: '' };
+	}
+
+	// Building name + room code glued or spaced (e.g. 弘远楼A0213, 第一教学楼A101).
+	const match = remainder.match(/^(.*?)([A-Za-z]+[0-9][A-Za-z0-9]*|[0-9]+[A-Za-z0-9]*)$/);
+	if (!match) {
+		return { campus, building: remainder, room: '' };
+	}
+
+	return {
+		campus,
+		building: match[1] ?? '',
+		room: match[2] ?? ''
+	};
+}
+
+/** Non-empty capsule lines: campus, building, room (in that order). */
+export function locationDisplayLines(location: string): string[] {
+	const { campus, building, room } = parseLocationParts(location);
+	return [campus, building, room].filter((part) => part.length > 0);
 }
 
 export function blendColors(background: string, surface: string, ratio: number): string {
