@@ -27,7 +27,7 @@
 	--color-outline: #d7e2ea;
 	--color-outline-variant: #c5d4e0;
 	--color-success: #15803d;
-	--spacing-tabbar: 3.75rem;
+	--spacing-tabbar: 5rem;
 }
 
 @layer base {
@@ -66,5 +66,32 @@
 		--color-outline: #45454b;
 		--color-outline-variant: #34343a;
 		--color-success: #4ade80;
+	}
+}
+
+@layer components {
+	.tab-bar-wrapper {
+		position: fixed;
+		inset-inline: 0;
+		bottom: 0;
+		z-index: 50;
+		transform: translateY(0);
+		opacity: 1;
+		visibility: visible;
+		transition:
+			transform 190ms linear,
+			opacity 190ms linear,
+			visibility 0ms linear 0ms;
+	}
+
+	.tab-bar-wrapper--hidden {
+		transform: translateY(50%);
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transition:
+			transform 190ms linear,
+			opacity 190ms linear,
+			visibility 0ms linear 190ms;
 	}
 }
