@@ -1,14 +1,12 @@
 <script lang="ts">
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import { Add, CheckCircleFill, Delete } from '$lib/icons';
-	import { Button, Dialog, ListItem, TextFieldOutlined } from 'm3-svelte';
+	import { AddFill, CheckCircleFill, DeleteFill } from '$lib/icons';
+	import { Button, Dialog, TextFieldOutlined } from 'm3-svelte';
 
 	let {
-		shell,
-		onBack
+		shell
 	}: {
 		shell: AppShellController;
-		onBack: () => void;
 	} = $props();
 
 	const appState = $derived(shell.state.appState);
@@ -71,7 +69,7 @@
 							openDeleteDialog(timetable.id);
 						}}
 					>
-						<Delete class="text-danger" />
+						<DeleteFill class="text-danger" />
 					</Button>
 				{/if}
 			</button>
@@ -79,9 +77,7 @@
 	</div>
 
 	{#if creating}
-		<div
-			class="create-panel flex flex-col gap-3 rounded-[28px] border border-outline-variant bg-surface p-4"
-		>
+		<div class="flex flex-col gap-3 rounded-[28px] border border-outline-variant bg-surface p-4">
 			<TextFieldOutlined label="课表名称" bind:value={newName} placeholder="例如：2026 春季" />
 			<div class="m3-actions-inline justify-end">
 				<Button
@@ -97,13 +93,13 @@
 			</div>
 		</div>
 	{:else}
-		<Button variant="outlined" iconType="left" onclick={() => (creating = true)}>
-			<Add />
-			新建课表
-		</Button>
+		<div class="m3-actions">
+			<Button variant="outlined" iconType="left" onclick={() => (creating = true)}>
+				<AddFill />
+				新建课表
+			</Button>
+		</div>
 	{/if}
-
-	<Button variant="text" onclick={onBack}>返回我的</Button>
 </div>
 
 <Dialog bind:open={deleteDialogOpen} headline="删除课表？">

@@ -6,13 +6,12 @@
 	import { CalculateAcademicWeekUseCase } from '$lib/domain/usecases/calculate-academic-week';
 	import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 	import { Button } from 'm3-svelte';
+	import { LayersClearFill, PhotoLibraryFill } from '$lib/icons';
 
 	let {
-		shell,
-		onBack
+		shell
 	}: {
 		shell: AppShellController;
-		onBack: () => void;
 	} = $props();
 
 	const buildVisibleTimetableGrid = new BuildVisibleTimetableGridUseCase();
@@ -78,12 +77,12 @@
 
 	{#if shell.state.hasWallpaper && timetable && gridModel}
 		<div
-			class="preview relative min-h-[420px] overflow-hidden rounded-xl border border-outline dark:border-outline-variant"
+			class="relative min-h-[420px] overflow-hidden rounded-xl border border-outline dark:border-outline-variant"
 			style:background-image={appState.wallpaperUri ? `url('${appState.wallpaperUri}')` : undefined}
 			style:background-size="cover"
 			style:background-position="center"
 		>
-			<div data-wallpaper-grid class="absolute inset-0">
+			<div class="absolute inset-0">
 				<TimetableGrid
 					displayedWeek={academicWeek}
 					isCurrentWeek={true}
@@ -99,14 +98,16 @@
 		<p class="m3-body-medium text-on-surface-variant">选择壁纸后，可在此预览课表叠加效果。</p>
 	{/if}
 
-	<div class="m3-actions-inline">
+	<div class="m3-actions">
 		{#if shell.state.hasWallpaper}
-			<Button variant="outlined" onclick={clearWallpaper}>清除壁纸</Button>
+			<Button variant="outlined" iconType="left" onclick={clearWallpaper}>
+				<LayersClearFill />
+				清除壁纸
+			</Button>
 		{/if}
-		<Button variant="outlined" onclick={onPickWallpaper}>
+		<Button variant="outlined" iconType="left" onclick={onPickWallpaper}>
+			<PhotoLibraryFill />
 			{shell.state.hasWallpaper ? '重新选择' : '选择壁纸'}
 		</Button>
 	</div>
-
-	<Button variant="text" onclick={onBack}>返回</Button>
 </div>
