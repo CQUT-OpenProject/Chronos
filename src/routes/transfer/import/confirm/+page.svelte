@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { getRepository } from '$lib/client/repository';
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
+	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
 	import TransferImportConfirmScreen from '$lib/components/transfer/TransferImportConfirmScreen.svelte';
 
 	const transfer = createTransferState();
@@ -27,8 +28,7 @@
 </script>
 
 {#if ready}
-	<TransferImportConfirmScreen {transfer} {currentTimetableName} onConfirm={handleConfirmed} />
-	<p class="px-4 pb-4">
-		<a href={resolve('/transfer/import')} class="text-sm text-blue-600">返回</a>
-	</p>
+	<SecondaryPageShell title="确认导入" backHref="/transfer/import">
+		<TransferImportConfirmScreen {transfer} {currentTimetableName} onConfirm={handleConfirmed} />
+	</SecondaryPageShell>
 {/if}
