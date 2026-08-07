@@ -1,5 +1,6 @@
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
+import { functionsMixins } from 'vite-plugin-functions-mixins';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 import { playwright } from 'vite-plus/test/browser-playwright';
 import adapter from '@sveltejs/adapter-vercel';
@@ -7,6 +8,9 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 
 export default defineConfig({
+	define: {
+		__BUILD_TIME__: JSON.stringify(new Date().toISOString())
+	},
 	staged: {
 		'*': 'vp check --fix'
 	},
@@ -241,6 +245,7 @@ export default defineConfig({
 		]
 	},
 	plugins: lazyPlugins(() => [
+		functionsMixins(),
 		tailwindcss(),
 		sveltekit({
 			compilerOptions: {
@@ -284,7 +289,7 @@ export default defineConfig({
 					}
 				]
 			},
-			devOptions: { enabled: true, type: 'module' }
+			devOptions: { enabled: true, type: 'module', suppressWarnings: true }
 		}),
 		paraglideVitePlugin({
 			project: './project.inlang',
