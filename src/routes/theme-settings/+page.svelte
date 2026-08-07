@@ -6,7 +6,7 @@
 	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
-	import { AutoMode, DarkMode, LightMode } from '$lib/icons';
+	import { AutoModeFill, DarkModeFill, LightModeFill } from '$lib/icons';
 
 	const shell = getContext<AppShellController>('appShell');
 	const themeMode = $derived(shell.state.appState.themeMode);
@@ -16,21 +16,21 @@
 			mode: ThemeMode.LIGHT,
 			label: '亮色主题',
 			description: '始终使用浅色界面',
-			Icon: LightMode,
+			Icon: LightModeFill,
 			iconTone: 'primary' as const
 		},
 		{
 			mode: ThemeMode.DARK,
 			label: '暗色主题',
 			description: '始终使用深色界面',
-			Icon: DarkMode,
+			Icon: DarkModeFill,
 			iconTone: 'primary' as const
 		},
 		{
 			mode: ThemeMode.SYSTEM,
 			label: '跟随系统',
 			description: '根据系统外观自动切换',
-			Icon: AutoMode,
+			Icon: AutoModeFill,
 			iconTone: 'primary' as const
 		}
 	] as const;

@@ -3,7 +3,7 @@
 	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
-	import { Description, FolderZip } from '$lib/icons';
+	import { DescriptionFill, FolderZipFill } from '$lib/icons';
 </script>
 
 <SecondaryPageShell title="开源许可" backHref="/about">
@@ -11,13 +11,13 @@
 		<MineRow
 			title="本项目许可证"
 			href={resolve('/open-source-licenses/project')}
-			icon={Description}
+			icon={DescriptionFill}
 			iconTone="tertiary"
 		/>
 		<MineRow
 			title="第三方依赖许可证"
 			href={resolve('/open-source-licenses/third-party')}
-			icon={FolderZip}
+			icon={FolderZipFill}
 			iconTone="tertiary"
 		/>
 	</MineSection>
