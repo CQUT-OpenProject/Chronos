@@ -18,6 +18,11 @@ const buildTimetableCourseDisplayModels = new BuildTimetableCourseDisplayModelsU
 const calculateAcademicWeek = new CalculateAcademicWeekUseCase();
 const timeProvider = new SystemTimeProvider();
 
+let displayedWeekMemory = 1;
+let displayedWeekTimetableIdMemory: string | null = null;
+
+let sharedTimetableScreen: TimetableScreenController | null = null;
+
 export interface TimetableScreenState {
 	appState: AppState;
 	hasLoadedAppState: boolean;
@@ -29,12 +34,21 @@ export interface TimetableScreenState {
 	weekCourseDisplayModels: Map<number, TimetableCourseDisplayModel[]>;
 }
 
+export function getTimetableScreen(): TimetableScreenController {
+	sharedTimetableScreen ??= createTimetableScreen();
+	return sharedTimetableScreen;
+}
+
+export function destroyTimetableScreen() {
+	sharedTimetableScreen?.destroy();
+	sharedTimetableScreen = null;
+}
+
 export function createTimetableScreen() {
 	let appState = $state<AppState>(emptyAppState());
 	let hasLoadedAppState = $state(false);
 	let today = $state(timeProvider.today());
-	let displayedWeek = $state(1);
-	let displayedWeekTimetableId = $state<string | null>(null);
+	let revision = $state(0);
 	let weekGridModels = new SvelteMap<number, TimetableGridModel>();
 	let weekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
 
@@ -46,18 +60,22 @@ export function createTimetableScreen() {
 	let unsubscribe: (() => void) | null = null;
 	let todayTimer: ReturnType<typeof setTimeout> | null = null;
 
+	function notify() {
+		revision += 1;
+	}
+
 	function recompute() {
 		const timetable = appState.currentTimetable;
 		const academicWeek = calculateAcademicWeek.invoke(today, timetable?.academicConfig);
 		const resolvedWeek = resolveDisplayedWeek(
 			timetable,
-			displayedWeek,
-			displayedWeekTimetableId,
+			displayedWeekMemory,
+			displayedWeekTimetableIdMemory,
 			academicWeek
 		);
 
-		if (resolvedWeek !== displayedWeek) {
-			displayedWeek = resolvedWeek;
+		if (resolvedWeek !== displayedWeekMemory) {
+			displayedWeekMemory = resolvedWeek;
 		}
 
 		const canReuseCache =
@@ -66,7 +84,7 @@ export function createTimetableScreen() {
 		const nextWeekGridModels = buildWeekGridModels(
 			timetable,
 			today,
-			displayedWeek,
+			displayedWeekMemory,
 			canReuseCache ? cachedWeekGridModels : new SvelteMap(),
 			(todayValue, week, currentTimetable) =>
 				buildVisibleTimetableGrid.invoke(todayValue, week, currentTimetable)
@@ -75,7 +93,7 @@ export function createTimetableScreen() {
 		const nextWeekCourseDisplayModels = buildWeekCourseDisplayModels(
 			timetable,
 			today,
-			displayedWeek,
+			displayedWeekMemory,
 			nextWeekGridModels,
 			canReuseCache ? cachedWeekCourseDisplayModels : new SvelteMap(),
 			(currentTimetable, visibleDayOfWeeks, week, todayValue) =>
@@ -101,6 +119,7 @@ export function createTimetableScreen() {
 		todayTimer = setTimeout(() => {
 			today = timeProvider.today();
 			recompute();
+			notify();
 			scheduleTodayRefresh();
 		}, delay);
 	}
@@ -113,9 +132,15 @@ export function createTimetableScreen() {
 			appState = nextState;
 			hasLoadedAppState = true;
 			recompute();
+			notify();
 		});
 
 		scheduleTodayRefresh();
+	}
+
+	function refresh() {
+		recompute();
+		notify();
 	}
 
 	function destroy() {
@@ -128,46 +153,59 @@ export function createTimetableScreen() {
 	function setDisplayedWeek(week: number) {
 		const timetable = appState.currentTimetable;
 		if (!timetable) return;
-		displayedWeek = Math.min(
+		displayedWeekMemory = Math.min(
 			Math.max(week, timetable.academicConfig.startWeek),
 			timetable.academicConfig.endWeek
 		);
-		displayedWeekTimetableId = timetable.id;
+		displayedWeekTimetableIdMemory = timetable.id;
 		recompute();
+		notify();
 	}
 
 	function jumpToCurrentWeek() {
 		const timetable = appState.currentTimetable;
 		if (!timetable) return;
 		const academicWeek = calculateAcademicWeek.invoke(today, timetable.academicConfig);
-		displayedWeek = Math.min(
+		displayedWeekMemory = Math.min(
 			Math.max(academicWeek, timetable.academicConfig.startWeek),
 			timetable.academicConfig.endWeek
 		);
-		displayedWeekTimetableId = timetable.id;
+		displayedWeekTimetableIdMemory = timetable.id;
 		recompute();
+		notify();
 	}
 
-	const academicWeek = $derived(
-		calculateAcademicWeek.invoke(today, appState.currentTimetable?.academicConfig)
-	);
+	const state = $derived.by(() => {
+		void revision;
+		const academicWeek = calculateAcademicWeek.invoke(
+			today,
+			appState.currentTimetable?.academicConfig
+		);
+		const displayedWeek = resolveDisplayedWeek(
+			appState.currentTimetable,
+			displayedWeekMemory,
+			displayedWeekTimetableIdMemory,
+			academicWeek
+		);
 
-	const state = $derived({
-		appState,
-		hasLoadedAppState,
-		today,
-		academicWeek,
-		displayedWeek,
-		displayedWeekTimetableId,
-		weekGridModels,
-		weekCourseDisplayModels
-	} satisfies TimetableScreenState);
+		return {
+			appState,
+			hasLoadedAppState,
+			today,
+			academicWeek,
+			displayedWeek,
+			displayedWeekTimetableId: displayedWeekTimetableIdMemory,
+			weekGridModels,
+			weekCourseDisplayModels
+		} satisfies TimetableScreenState;
+	});
 
 	return {
 		get state() {
 			return state;
 		},
 		init,
+		refresh,
 		destroy,
 		setDisplayedWeek,
 		jumpToCurrentWeek

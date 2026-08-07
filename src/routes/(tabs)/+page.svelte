@@ -2,15 +2,15 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { createTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
+	import { getContext } from 'svelte';
+	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableScreen from '$lib/components/timetable/TimetableScreen.svelte';
 	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
 
-	const screen = createTimetableScreen();
+	const screen = getContext<TimetableScreenController>('timetableScreen');
 
 	onMount(() => {
-		screen.init();
-		return () => screen.destroy();
+		screen.refresh();
 	});
 
 	function navigateToCourseDetail(courseId: string) {

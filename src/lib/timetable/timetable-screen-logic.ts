@@ -8,6 +8,10 @@ export function calculateWeekSliderSteps(startWeek: number, endWeek: number): nu
 	return Math.max(0, endWeek - startWeek - 1);
 }
 
+export function clampDisplayedWeek(week: number, startWeek: number, endWeek: number): number {
+	return Math.min(Math.max(week, startWeek), endWeek);
+}
+
 export function resolveDisplayedWeek(
 	timetable: Timetable | null,
 	displayedWeek: number,
@@ -15,9 +19,16 @@ export function resolveDisplayedWeek(
 	academicWeek: number
 ): number {
 	if (!timetable) return 1;
-	if (displayedWeekTimetableId !== timetable.id) return academicWeek;
-	return Math.min(
-		Math.max(displayedWeek, timetable.academicConfig.startWeek),
+	if (displayedWeekTimetableId !== timetable.id) {
+		return clampDisplayedWeek(
+			academicWeek,
+			timetable.academicConfig.startWeek,
+			timetable.academicConfig.endWeek
+		);
+	}
+	return clampDisplayedWeek(
+		displayedWeek,
+		timetable.academicConfig.startWeek,
 		timetable.academicConfig.endWeek
 	);
 }

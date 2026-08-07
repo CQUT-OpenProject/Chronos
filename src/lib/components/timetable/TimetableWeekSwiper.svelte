@@ -27,31 +27,35 @@
 	const screenState = $derived(screen.state);
 
 	let swiperEl = $state<SwiperContainer | undefined>();
-	let suppressSync = $state(false);
+	let suppressPagerWeekSync = $state(true);
 
-	function onSlideChange() {
-		if (suppressSync || !swiperEl?.swiper) return;
+	function onSlideSettled() {
+		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
 		const week = startWeek + swiperEl.swiper.activeIndex;
-		if (week !== screenState.displayedWeek) {
+		if (week !== screen.state.displayedWeek) {
 			screen.setDisplayedWeek(week);
 		}
 	}
 
 	function syncSwiperToDisplayedWeek(week: number, start: number) {
 		const swiper = swiperEl?.swiper;
-		if (!swiper || suppressSync) return;
-		const targetIndex = week - start;
+		if (!swiper || suppressPagerWeekSync) return;
+
+		const targetIndex = Math.max(0, Math.min(week - start, weeks.length - 1));
 		if (swiper.activeIndex === targetIndex) return;
-		suppressSync = true;
-		swiper.slideTo(targetIndex, 300);
-		queueMicrotask(() => {
-			suppressSync = false;
-		});
+
+		suppressPagerWeekSync = true;
+		swiper.slideTo(targetIndex, 0);
+		suppressPagerWeekSync = false;
 	}
 
 	$effect(() => {
 		const el = swiperEl;
+		const initialWeek = screenState.displayedWeek;
+		const initialStartWeek = startWeek;
 		if (!el) return;
+
+		suppressPagerWeekSync = true;
 
 		Object.assign(el, {
 			slidesPerView: 1,
@@ -62,14 +66,18 @@
 			longSwipesRatio: 0.3,
 			followFinger: true,
 			touchReleaseOnEdges: true,
-			initialSlide: Math.max(0, screenState.displayedWeek - startWeek)
+			initialSlide: Math.max(0, initialWeek - initialStartWeek)
 		});
 
 		el.initialize();
-		el.addEventListener('swiperslidechange', onSlideChange);
+
+		const swiper = el.swiper;
+		swiper?.on('slideChangeTransitionEnd', onSlideSettled);
+
+		suppressPagerWeekSync = false;
 
 		return () => {
-			el.removeEventListener('swiperslidechange', onSlideChange);
+			swiper?.off('slideChangeTransitionEnd', onSlideSettled);
 			el.swiper?.destroy(true, true);
 		};
 	});

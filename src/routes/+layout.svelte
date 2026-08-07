@@ -3,6 +3,7 @@
 	import { beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
+	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
 	import ServiceWorkerUpdatePrompt from '$lib/components/pwa/ServiceWorkerUpdatePrompt.svelte';
 	import { initWebVitals } from '$lib/client/web-vitals';
@@ -50,12 +51,14 @@
 	let { children } = $props();
 
 	const shell = createAppShell();
+	const timetableScreen = getTimetableScreen();
 	setContext('appShell', shell);
+	setContext('timetableScreen', timetableScreen);
 
 	onMount(() => {
 		shell.init();
+		timetableScreen.init();
 		initWebVitals();
-		return () => shell.destroy();
 	});
 
 	$effect(() => {

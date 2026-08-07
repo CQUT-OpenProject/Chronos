@@ -25,6 +25,11 @@ describe('timetable-screen-logic', () => {
 		expect(resolveDisplayedWeek(timetable, 12, 'another-timetable', 6)).toBe(6);
 	});
 
+	it('resolveDisplayedWeek keeps displayed week for the current timetable', () => {
+		const timetable = sampleTimetable([]);
+		expect(resolveDisplayedWeek(timetable, 12, timetable.id, 6)).toBe(12);
+	});
+
 	it('buildWeekGridModels keeps only displayed week and adjacent pages', () => {
 		const requestedWeeks: number[] = [];
 		const existingWeekSix = sampleGridModel('existing-6');
