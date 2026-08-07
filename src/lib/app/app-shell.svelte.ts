@@ -1,0 +1,84 @@
+import { ThemeMode, type AppState, emptyAppState } from '$lib/models/app-state';
+import { createAppServices, type AppServices } from '$lib/client/app-services';
+
+function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
+	if (themeMode === ThemeMode.DARK) return true;
+	if (themeMode === ThemeMode.LIGHT) return false;
+	return systemPrefersDark;
+}
+
+export function createAppShell(injectedServices: AppServices | null = null) {
+	let appState = $state<AppState>(emptyAppState());
+	let initialized = $state(false);
+	let systemPrefersDark = $state(false);
+	let unsubscribe: (() => void) | null = null;
+	let mediaQueryCleanup: (() => void) | null = null;
+	let services: AppServices | null = injectedServices;
+
+	function getServices() {
+		services ??= createAppServices();
+		return services;
+	}
+
+	const isDark = $derived(resolveDark(appState.themeMode, systemPrefersDark));
+	const hasWallpaper = $derived(Boolean(appState.wallpaperUri));
+
+	function init() {
+		if (unsubscribe) return;
+
+		if (typeof window !== 'undefined') {
+			const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+			systemPrefersDark = mediaQuery.matches;
+			const onChange = (event: MediaQueryListEvent) => {
+				systemPrefersDark = event.matches;
+			};
+			mediaQuery.addEventListener('change', onChange);
+			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
+		}
+
+		unsubscribe = getServices().observeAppState.subscribe((state) => {
+			appState = state;
+			initialized = true;
+		});
+	}
+
+	function destroy() {
+		unsubscribe?.();
+		unsubscribe = null;
+		mediaQueryCleanup?.();
+		mediaQueryCleanup = null;
+	}
+
+	async function setThemeMode(mode: ThemeMode) {
+		await getServices().setThemeMode.invoke(mode);
+	}
+
+	async function setWallpaper(uri: string | null) {
+		await getServices().setWallpaper.invoke(uri);
+	}
+
+	async function setDynamicColorEnabled(enabled: boolean) {
+		await getServices().setDynamicColorEnabled.invoke(enabled);
+	}
+
+	return {
+		get state() {
+			return {
+				appState,
+				initialized,
+				isDark,
+				hasWallpaper
+			};
+		},
+		init,
+		destroy,
+		setThemeMode,
+		setWallpaper,
+		setDynamicColorEnabled,
+		get services() {
+			return getServices();
+		}
+	};
+}
+
+export type AppShellController = ReturnType<typeof createAppShell>;
