@@ -71,7 +71,6 @@
 		<CourseEditorForm
 			bind:draft
 			maxPeriods={timetable?.academicConfig.periodTimes.length ?? 10}
-			onSave={save}
 			onDelete={draft.id ? deleteCourse : undefined}
 		/>
 	{:else}

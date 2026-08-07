@@ -13,12 +13,10 @@
 	let {
 		draft = $bindable(),
 		maxPeriods = 10,
-		onSave,
 		onDelete
 	}: {
 		draft: CourseDraft;
 		maxPeriods?: number;
-		onSave: () => void | Promise<void>;
 		onDelete?: () => void | Promise<void>;
 	} = $props();
 
