@@ -4,8 +4,8 @@
 	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
-	import { Code, Gavel, Info, OpenInNew } from '$lib/icons';
-	import favicon from '$lib/assets/favicon.svg';
+	import { CodeFill, GavelFill, InfoFill, OpenInNewFill, ScheduleFill } from '$lib/icons';
+	import chronosIcon from '$lib/assets/chronos-icon.svg';
 
 	function formatBuildTime(value: string) {
 		if (!value) return '-';
@@ -16,7 +16,7 @@
 <SecondaryPageShell title="关于" backHref="/mine">
 	<div class="m3-stack">
 		<div class="hero">
-			<img src={favicon} alt="Chronos" class="logo" />
+			<img src={chronosIcon} alt="Chronos" class="logo" />
 			<p class="m3-headline-small font-semibold">Chronos</p>
 			<p class="m3-body-medium text-on-surface-variant">{PROJECT_INTRO}</p>
 		</div>
@@ -26,13 +26,13 @@
 				title="当前版本"
 				supporting={APP_VERSION}
 				href={resolve('/about/version-release')}
-				icon={Info}
+				icon={InfoFill}
 				iconTone="primary"
 			/>
 			<MineRow
 				title="构建时间"
 				supporting={formatBuildTime(BUILD_TIME)}
-				icon={Info}
+				icon={ScheduleFill}
 				iconTone="secondary"
 			/>
 		</MineSection>
@@ -41,17 +41,17 @@
 			<MineRow
 				title="开源许可"
 				href={resolve('/open-source-licenses')}
-				icon={Gavel}
+				icon={GavelFill}
 				iconTone="tertiary"
 			/>
 			<a href={SOURCE_CODE_URL} target="_blank" rel="noreferrer" class="m3-mine-row">
 				<span class="m3-leading-icon tone-neutral">
-					<Code />
+					<CodeFill />
 				</span>
 				<div class="m3-mine-row-content">
 					<span class="m3-body-large m3-mine-row-title">项目源代码</span>
 				</div>
-				<OpenInNew class="m3-mine-row-arrow" />
+				<OpenInNewFill class="m3-mine-row-arrow" />
 			</a>
 		</MineSection>
 	</div>
@@ -68,8 +68,9 @@
 	}
 
 	.logo {
-		width: 5.75rem;
-		height: 5.75rem;
-		border-radius: 9999px;
+		width: 4.5rem;
+		height: 4.5rem;
+		border-radius: 1.125rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 	}
 </style>

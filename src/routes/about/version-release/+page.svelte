@@ -48,9 +48,6 @@
 			<div class="prose prose-sm max-w-none dark:prose-invert">
 				{@html htmlBody || '<p>此 Release 没有正文内容。</p>'}
 			</div>
-			{#if errorMessage}
-				<p class="m3-body-medium text-danger">{errorMessage}</p>
-			{/if}
 		</div>
 	{:else}
 		<p class="m3-body-medium text-danger">{errorMessage ?? '未获取到当前版本的 Release 信息'}</p>
