@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { ImportMode } from '$lib/domain/import-mode';
-	import { TimetableImportSource } from '$lib/models/timetable';
 	import {
 		previewSourceLabel,
 		type TransferStateController
 	} from '$lib/transfer/transfer-state.svelte';
-	import { Button, ListItem, RadioAnim1 } from 'm3-svelte';
-	import MineSection from '$lib/components/mine/MineSection.svelte';
+	import { Button, RadioAnim1 } from 'm3-svelte';
 
 	let {
 		transfer,
@@ -20,10 +18,7 @@
 
 	const transferState = $derived(transfer.state);
 	const preview = $derived(transferState.preview);
-	const requiresTermStartDate = $derived(
-		transferState.previewSource === 'HTML' ||
-			preview?.importMetadata.source === TimetableImportSource.FILE_HTML
-	);
+	const requiresTermStartDate = $derived(transferState.previewSource === 'HTML');
 	let loading = $state(false);
 
 	async function handleConfirm() {
@@ -93,7 +88,6 @@
 						type="radio"
 						name="import-mode"
 						checked={transferState.importMode === ImportMode.AS_NEW}
-						onchange={() => transfer.setImportMode(ImportMode.AS_NEW)}
 					/>
 				</RadioAnim1>
 				<span class="m3-body-large text-on-surface">作为新课程表导入</span>
@@ -112,7 +106,6 @@
 						type="radio"
 						name="import-mode"
 						checked={transferState.importMode === ImportMode.OVERWRITE_CURRENT}
-						onchange={() => transfer.setImportMode(ImportMode.OVERWRITE_CURRENT)}
 					/>
 				</RadioAnim1>
 				<span class="m3-body-large text-on-surface">
@@ -122,13 +115,11 @@
 		</div>
 
 		{#if requiresTermStartDate}
-			<div
-				class="date-panel flex flex-col gap-2 rounded-[20px] border border-outline-variant bg-surface p-4"
-			>
+			<div class="flex flex-col gap-2 rounded-[20px] border border-outline-variant bg-surface p-4">
 				<h3 class="m3-title-medium">学期起始日期</h3>
 				<input
 					type="date"
-					class="date-input m3-body-large"
+					class="m3-body-large rounded-md border border-outline bg-surface px-3 py-2.5 text-on-surface"
 					value={transferState.htmlImportTermStartDate ?? ''}
 					oninput={(event) =>
 						transfer.setHtmlImportTermStartDate((event.currentTarget as HTMLInputElement).value)}
@@ -142,6 +133,7 @@
 		<Button
 			variant="filled"
 			disabled={loading || (requiresTermStartDate && !transferState.htmlImportTermStartDate)}
+			class="w-full"
 			onclick={handleConfirm}
 		>
 			{loading
@@ -156,29 +148,3 @@
 		{/if}
 	</div>
 {/if}
-
-<style>
-	p,
-	h3 {
-		margin: 0;
-	}
-
-	.preview-card,
-	.date-panel {
-		padding: 1rem;
-	}
-
-	.date-panel {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.date-input {
-		border: 1px solid var(--m3c-outline);
-		border-radius: var(--m3-shape-small);
-		padding: 0.625rem 0.75rem;
-		background: var(--m3c-surface);
-		color: var(--m3c-on-surface);
-	}
-</style>

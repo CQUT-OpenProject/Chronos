@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import { Button } from 'm3-svelte';
-	import { IosShare } from '$lib/icons';
+	import { IosShareFill } from '$lib/icons';
 
 	let {
 		transfer,
@@ -29,10 +29,17 @@
 		将“{currentTimetableName ?? '未命名'}”复制为链接。
 	</p>
 
-	<Button variant="outlined" disabled={loading || !currentTimetableName} onclick={handleExport}>
-		<IosShare class="mr-2 size-5" />
-		{loading ? '导出中…' : '复制课表链接'}
-	</Button>
+	<div class="m3-actions">
+		<Button
+			variant="outlined"
+			iconType="left"
+			disabled={loading || !currentTimetableName}
+			onclick={handleExport}
+		>
+			<IosShareFill />
+			{loading ? '导出中…' : '复制课表链接'}
+		</Button>
+	</div>
 
 	{#if transferState.statusMessage}
 		<p class="m3-body-medium text-success">{transferState.statusMessage}</p>
@@ -41,13 +48,3 @@
 		<p class="m3-body-medium text-danger">{transferState.errorMessage}</p>
 	{/if}
 </div>
-
-<style>
-	p {
-		margin: 0;
-	}
-
-	p + p {
-		margin-top: 0.25rem;
-	}
-</style>

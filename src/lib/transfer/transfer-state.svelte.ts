@@ -4,7 +4,6 @@ import { createTransferServices } from '$lib/client/transfer-services';
 import { createCredentialServices } from '$lib/client/credential-services';
 import type { SavedCredentialState } from '$lib/models/auth';
 import type { Timetable } from '$lib/models/timetable';
-import { TimetableImportSource } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
 import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
@@ -116,6 +115,7 @@ export function createTransferState(
 		preview = null;
 		previewSource = null;
 		htmlImportTermStartDate = null;
+		clearPersistedPreview();
 		clearMessages();
 	}
 
@@ -409,10 +409,6 @@ export function createTransferState(
 }
 
 export type TransferStateController = ReturnType<typeof createTransferState>;
-
-export function isHtmlImportSource(preview: Timetable | null): boolean {
-	return preview?.importMetadata.source === TimetableImportSource.FILE_HTML;
-}
 
 export function previewSourceLabel(source: TransferImportSource | null): string {
 	switch (source) {

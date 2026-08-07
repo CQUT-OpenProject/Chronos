@@ -107,7 +107,7 @@
 
 	{#if transferState.selectedSource === 'ONLINE'}
 		<Card variant="outlined">
-			<div class="panel">
+			<div class="flex flex-col gap-3">
 				<h2 class="m3-title-medium">从教务处获取</h2>
 				<TextFieldOutlined
 					label="账号"
@@ -121,7 +121,7 @@
 					value={transferState.password}
 					oninput={(event) => transfer.setPassword((event.currentTarget as HTMLInputElement).value)}
 				/>
-				<label class="checkbox-row m3-body-medium">
+				<label class="m3-body-medium flex items-center gap-2 text-on-surface-variant">
 					<Checkbox>
 						<input
 							type="checkbox"
@@ -133,11 +133,11 @@
 					</Checkbox>
 					<span>{saveCheckboxLabel}</span>
 				</label>
-				<Button disabled={loading} onclick={handleOnlinePreview}>
+				<Button disabled={loading} class="w-full" onclick={handleOnlinePreview}>
 					{loading ? '获取中…' : '从此账号导入课表'}
 				</Button>
 				{#if transferState.savedCredentialState.hasSavedCredential}
-					<div class="saved-panel">
+					<div class="flex flex-col gap-3 border-t border-outline-variant pt-1">
 						<p class="m3-title-small">
 							已保存账号：{transferState.savedCredentialState.account ?? '未知'}
 						</p>
@@ -149,7 +149,12 @@
 							</p>
 						{/if}
 						{#if transferState.savedCredentialState.protectionAvailable}
-							<Button variant="outlined" disabled={loading} onclick={handleSavedCredentialPreview}>
+							<Button
+								variant="outlined"
+								disabled={loading}
+								class="w-full"
+								onclick={handleSavedCredentialPreview}
+							>
 								{loading ? '获取中…' : '验证并预览'}
 							</Button>
 						{/if}
@@ -162,19 +167,19 @@
 		</Card>
 	{:else if transferState.selectedSource === 'JSON'}
 		<Card variant="outlined">
-			<div class="panel">
+			<div class="flex flex-col gap-3">
 				<h2 class="m3-title-medium">从分享内容获取</h2>
 				<p class="m3-body-small text-on-surface-variant">
 					复制 Android 或其他设备导出的课表 JSON 后点击下方按钮。
 				</p>
-				<Button disabled={loading} onclick={handleClipboardPreview}>
+				<Button disabled={loading} class="w-full" onclick={handleClipboardPreview}>
 					{loading ? '读取中…' : '从剪贴板导入课表'}
 				</Button>
 			</div>
 		</Card>
 	{:else}
 		<Card variant="outlined">
-			<div class="panel">
+			<div class="flex flex-col gap-3">
 				<h2 class="m3-title-medium">从文件导入课表</h2>
 				<p class="m3-body-small text-on-surface-variant">选择教务系统导出的 HTML 课表文件。</p>
 				<input
@@ -184,7 +189,12 @@
 					class="hidden"
 					onchange={handleFileChange}
 				/>
-				<Button variant="outlined" disabled={loading} onclick={() => fileInput?.click()}>
+				<Button
+					variant="outlined"
+					disabled={loading}
+					class="w-full"
+					onclick={() => fileInput?.click()}
+				>
 					{loading ? '解析中…' : '选择 HTML 文件'}
 				</Button>
 			</div>
@@ -208,29 +218,3 @@
 		<p class="m3-body-medium text-danger">{transferState.errorMessage}</p>
 	{/if}
 </div>
-
-<style>
-	.panel,
-	.saved-panel {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.saved-panel {
-		padding-top: 0.25rem;
-		border-top: 1px solid var(--m3c-outline-variant);
-	}
-
-	.checkbox-row {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		color: var(--m3c-on-surface-variant);
-	}
-
-	h2,
-	p {
-		margin: 0;
-	}
-</style>
