@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
@@ -8,6 +9,13 @@
 	import { setContext } from 'svelte';
 	import type { Pathname } from '$app/types';
 	import { page } from '$app/state';
+	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
+	import {
+		getNavigationDirection,
+		type NavigationDirection
+	} from '$lib/navigation/navigation-direction';
+	import { isSecondaryRoute, isTabBarVisible } from '$lib/navigation/routes';
+	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import 'm3-svelte/etc/layer';
 	import '$lib/m3/m3.css';
@@ -17,6 +25,27 @@
 	import { pwaInfo } from 'virtual:pwa-info';
 
 	const webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
+	let tabBarSuppressed = $state(isSecondaryRoute(page.url.pathname));
+	const tabBarVisible = $derived(isTabBarVisible(page.url.pathname) && !tabBarSuppressed);
+
+	let navDirection = $state<NavigationDirection>('none');
+
+	beforeNavigate(({ from, to, type }) => {
+		const fromPath = from?.url.pathname;
+		const toPath = to?.url.pathname;
+
+		if (type === 'popstate') {
+			navDirection = 'back';
+		} else if (!toPath) {
+			return;
+		} else {
+			navDirection = getNavigationDirection(fromPath, toPath);
+		}
+
+		if (toPath) {
+			tabBarSuppressed = isSecondaryRoute(toPath);
+		}
+	});
 
 	let { children } = $props();
 
@@ -43,8 +72,22 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-dvh bg-canvas text-ink">
-	{@render children()}
+{#key page.url.pathname}
+	<div
+		class="min-h-dvh bg-canvas text-ink"
+		in:secondaryPageTransition={{ direction: navDirection, phase: 'in' }}
+		out:secondaryPageTransition={{ direction: navDirection, phase: 'out' }}
+	>
+		{@render children()}
+	</div>
+{/key}
+
+<div
+	class="tab-bar-wrapper"
+	class:tab-bar-wrapper--hidden={!tabBarVisible}
+	aria-hidden={!tabBarVisible}
+>
+	<BottomTabBar />
 </div>
 
 <InstallPrompt />
