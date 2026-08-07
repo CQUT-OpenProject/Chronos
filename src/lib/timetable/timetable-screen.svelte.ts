@@ -5,7 +5,6 @@ import { getRepository } from '$lib/client/repository';
 import { BuildVisibleTimetableGridUseCase } from '$lib/domain/usecases/build-visible-timetable-grid';
 import { BuildTimetableCourseDisplayModelsUseCase } from '$lib/domain/usecases/build-timetable-course-display-models';
 import { CalculateAcademicWeekUseCase } from '$lib/domain/usecases/calculate-academic-week';
-import { CreateTimetableUseCase } from '$lib/domain/usecases/create-timetable';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import {
 	buildWeekCourseDisplayModels,
@@ -149,11 +148,6 @@ export function createTimetableScreen() {
 		recompute();
 	}
 
-	async function createTimetable() {
-		const useCase = new CreateTimetableUseCase(getRepository(), undefined, timeProvider);
-		await useCase.invoke('未命名课表');
-	}
-
 	const academicWeek = $derived(
 		calculateAcademicWeek.invoke(today, appState.currentTimetable?.academicConfig)
 	);
@@ -176,8 +170,7 @@ export function createTimetableScreen() {
 		init,
 		destroy,
 		setDisplayedWeek,
-		jumpToCurrentWeek,
-		createTimetable
+		jumpToCurrentWeek
 	};
 }
 

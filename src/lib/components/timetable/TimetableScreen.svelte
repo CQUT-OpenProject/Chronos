@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
-	import { ThemeMode } from '$lib/models/app-state';
 	import type { TimetableGridModel } from '$lib/models/presentation';
 	import { timetableDayLabel } from '$lib/timetable/timetable-grid-logic';
+	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { getContext } from 'svelte';
+	import { EditNote } from '$lib/icons';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 
 	let {
@@ -18,12 +20,13 @@
 	} = $props();
 
 	const screenState = $derived(screen.state);
+	const shell = getContext<AppShellController>('appShell');
 	const timetable = $derived(screenState.appState.currentTimetable);
 	const startWeek = $derived(timetable?.academicConfig.startWeek ?? 1);
 	const endWeek = $derived(timetable?.academicConfig.endWeek ?? 1);
 	const weekCount = $derived(Math.max(1, endWeek - startWeek + 1));
 	const weeks = $derived(Array.from({ length: weekCount }, (_, index) => startWeek + index));
-	const isDark = $derived(resolveDark(screenState.appState.themeMode));
+	const isDark = $derived(shell.state.isDark);
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
 
 	let weekSliderVisible = $state(false);
@@ -83,19 +86,11 @@
 		const jsDay = date.getDay();
 		return jsDay === 0 ? 7 : jsDay;
 	}
-
-	function resolveDark(themeMode: ThemeMode) {
-		if (themeMode === ThemeMode.DARK) return true;
-		if (themeMode === ThemeMode.LIGHT) return false;
-		return (
-			typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-		);
-	}
 </script>
 
-<div class="flex h-[calc(100dvh-4rem)] flex-col {isDark ? 'dark' : ''}">
+<div class="flex h-[calc(100dvh-var(--spacing-tabbar)-var(--tabbar-safe))] flex-col">
 	<header
-		class="shrink-0 border-b border-zinc-200/80 bg-white/60 px-3 py-2 backdrop-blur-sm dark:border-zinc-700/80 dark:bg-zinc-900/60"
+		class="shrink-0 border-b border-zinc-200/80 bg-white/60 px-3 py-2 backdrop-blur-sm dark:border-zinc-700/80 dark:bg-zinc-900/78"
 	>
 		<div class="flex items-center gap-2">
 			<div
@@ -125,18 +120,22 @@
 					/>
 					<p class="text-sm font-semibold">第 {sliderWeek} 周</p>
 				{:else}
-					<p class="truncate text-lg font-bold">{weekRangeText}</p>
-					<p class="text-xs text-zinc-500 dark:text-zinc-400">
+					<p class="truncate text-xl leading-7 font-bold">{weekRangeText}</p>
+					<p class="text-sm text-on-surface-variant">
 						第 {screenState.displayedWeek} 周{headerTodayLabel ? ` ${headerTodayLabel}` : ''}
 					</p>
 				{/if}
 			</div>
 			<button
 				type="button"
-				class="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-600"
-				onclick={onEditTimetableDetails}
+				class="flex items-center justify-center rounded-full p-1.5 text-on-surface-variant hover:bg-surface-variant"
+				aria-label="编辑课表"
+				onclick={() => {
+					navigator.vibrate?.(10);
+					onEditTimetableDetails();
+				}}
 			>
-				编辑
+				<EditNote class="size-[22px]" />
 			</button>
 		</div>
 	</header>

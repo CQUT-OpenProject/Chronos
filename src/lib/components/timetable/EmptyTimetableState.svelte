@@ -1,47 +1,22 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { Button } from 'm3-svelte';
+	import favicon from '$lib/assets/favicon.svg';
 
-	let {
-		onCreateTimetable,
-		onImport
-	}: {
-		onCreateTimetable: () => void | Promise<void>;
-		onImport: () => void;
-	} = $props();
-
-	let creating = $state(false);
-
-	async function handleCreate() {
-		if (creating) return;
-		creating = true;
-		try {
-			await onCreateTimetable();
-		} finally {
-			creating = false;
-		}
-	}
+	let { onImport }: { onImport: () => void } = $props();
 </script>
 
 <div
-	class="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-4 px-6 text-center"
+	class="flex min-h-[calc(100dvh-var(--spacing-tabbar)-var(--tabbar-safe))] flex-col items-center justify-center gap-3 px-6 py-8 text-center"
 >
-	<h2 class="text-xl font-semibold">还没有课表</h2>
-	<p class="text-sm text-zinc-500">创建一个新课表，或从文件 / 在线导入。</p>
-	<div class="flex flex-col gap-2 sm:flex-row">
-		<button
-			type="button"
-			class="rounded-lg bg-brand px-4 py-2 text-white disabled:opacity-60 dark:bg-soft-blue dark:text-ink"
-			disabled={creating}
-			onclick={handleCreate}
-		>
-			{creating ? '创建中…' : '创建课表'}
-		</button>
-		<a
-			href={resolve('/transfer/import')}
-			class="rounded-lg border border-zinc-300 px-4 py-2"
-			onclick={onImport}
-		>
-			导入课表
-		</a>
+	<img src={favicon} alt="" class="h-[220px] w-[220px]" aria-hidden="true" />
+
+	<p class="m3-label-large text-brand dark:text-soft-blue">Chronos</p>
+	<h2 class="m3-headline-medium font-bold text-on-surface">还没有课程表</h2>
+
+	<div class="mt-4">
+		<Button variant="outlined" href={resolve('/transfer/import')} onclick={onImport}>
+			导入课程表
+		</Button>
 	</div>
 </div>

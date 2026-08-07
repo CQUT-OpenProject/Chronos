@@ -23,10 +23,7 @@
 </script>
 
 {#if screen.state.hasLoadedAppState && !screen.state.appState.currentTimetable}
-	<EmptyTimetableState
-		onCreateTimetable={() => screen.createTimetable()}
-		onImport={() => goto(resolve('/transfer/import'))}
-	/>
+	<EmptyTimetableState onImport={() => goto(resolve('/transfer/import'))} />
 {:else if screen.state.hasLoadedAppState}
 	<TimetableScreen
 		{screen}

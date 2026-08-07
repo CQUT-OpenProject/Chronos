@@ -13,8 +13,8 @@
 		timetableDayShortLabel
 	} from '$lib/timetable/timetable-grid-logic';
 
-	const DARK_SURFACE = '#18181b';
-	const ON_SURFACE_DARK = '#fafafa';
+	const DARK_SURFACE = '#17171a';
+	const ON_SURFACE_DARK = '#f4f4f5';
 
 	interface Props {
 		displayedWeek: number;
@@ -60,7 +60,7 @@
 
 	const shellBgClass = $derived(hasWallpaper ? '' : isDark ? 'bg-zinc-900' : 'bg-white');
 
-	const overlayBgClass = $derived(hasWallpaper ? (isDark ? 'bg-zinc-900/70' : 'bg-white/55') : '');
+	const overlayBgClass = $derived(hasWallpaper ? (isDark ? 'bg-zinc-900/72' : 'bg-white/54') : '');
 
 	const gridBgClass = $derived(
 		hasWallpaper ? (isDark ? 'bg-zinc-900/62' : 'bg-white/38') : isDark ? 'bg-zinc-900' : 'bg-white'
@@ -112,13 +112,13 @@
 		const crowding = visibleDayCount * overlapCount;
 		if (crowding >= 11) return 'text-xs';
 		if (crowding >= 7) return 'text-sm';
-		return 'text-base';
+		return 'text-[15px]';
 	}
 
 	function placeholderTextClass(): string {
 		if (visibleDayCount === 7) return 'text-xs';
 		if (visibleDayCount === 6) return 'text-sm';
-		return 'text-base';
+		return 'text-[15px]';
 	}
 
 	function courseColors(course: Course): { background: string; text: string } {
@@ -194,7 +194,7 @@
 
 <div
 	class="flex h-full flex-col {shellBgClass}"
-	style="--row-height: 6rem; --sidebar-width: 3.5rem"
+	style="--row-height: 5.5rem; --sidebar-width: 3.25rem"
 >
 	<div class="flex shrink-0 items-center py-2 {overlayBgClass}">
 		<div
@@ -208,7 +208,7 @@
 				<div class="flex min-w-0 flex-1 flex-col items-center">
 					<span class="text-xs text-zinc-500">{timetableDayShortLabel(day.dayOfWeek)}</span>
 					<div
-						class="mt-1 flex size-7 items-center justify-center rounded-full text-sm {day.isToday
+						class="mt-1 flex size-[26px] items-center justify-center rounded-full text-sm {day.isToday
 							? 'bg-brand text-white dark:bg-soft-blue dark:text-ink'
 							: 'text-zinc-900 dark:text-zinc-100'}"
 					>
@@ -329,7 +329,7 @@
 	{@const handlers = courseCardHandlers(course)}
 	<button
 		type="button"
-		class="flex h-full w-full flex-col rounded-xl border p-2 text-left shadow-sm {displayModel.isInDisplayedWeek
+		class="flex h-full w-full flex-col rounded-2xl border p-2 text-left shadow-md {displayModel.isInDisplayedWeek
 			? ''
 			: 'opacity-45'}"
 		style:background-color={colors.background}
