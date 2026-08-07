@@ -1,30 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
-	<defs>
-		<filter
-			id="card-shadow"
-			x="-35%"
-			y="-25%"
-			width="170%"
-			height="170%"
-			color-interpolation-filters="sRGB"
-		>
-			<feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0B1F33" flood-opacity="0.08" />
-		</filter>
-		<filter
-			id="badge-shadow"
-			x="-50%"
-			y="-50%"
-			width="200%"
-			height="200%"
-			color-interpolation-filters="sRGB"
-		>
-			<feDropShadow dx="0" dy="1.5" stdDeviation="3" flood-color="#0B1F33" flood-opacity="0.08" />
-		</filter>
-	</defs>
-
-	<rect width="108" height="108" fill="#F7FAFC" />
-
-	<g filter="url(#card-shadow)">
+	<g transform="translate(54 54) scale(1.38) translate(-54 -54)">
 		<path
 			fill="#FFFFFF"
 			stroke="#D7E2EA"
@@ -42,13 +17,11 @@
 		<!-- 3×2 course grid -->
 		<rect x="33" y="53" width="6.5" height="6.5" rx="1.5" fill="#0068B7" opacity="0.82" />
 		<rect x="42" y="53" width="6.5" height="6.5" rx="1.5" fill="#0068B7" opacity="0.28" />
+		<rect x="42" y="62" width="6.5" height="6.5" rx="1.5" fill="#0068B7" opacity="0.82" />
 		<rect x="51" y="53" width="6.5" height="6.5" rx="1.5" fill="#0068B7" opacity="0.82" />
 		<rect x="33" y="62" width="6.5" height="6.5" rx="1.5" fill="#0068B7" opacity="0.28" />
-		<rect x="42" y="62" width="6.5" height="6.5" rx="1.5" fill="#0068B7" opacity="0.82" />
 		<rect x="51" y="62" width="6.5" height="6.5" rx="1.5" fill="#0068B7" opacity="0.55" />
-	</g>
 
-	<g filter="url(#badge-shadow)">
 		<circle cx="70" cy="68" r="10.5" fill="#FFFFFF" />
 		<circle cx="70" cy="68" r="9" fill="#DDBA8F" />
 		<path
