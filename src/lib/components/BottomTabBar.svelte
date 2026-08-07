@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { getContext } from 'svelte';
+	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { CalendarMonth, CalendarMonthFill, Person, PersonFill } from '$lib/icons';
+
+	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
 
 	const tabs = [
 		{ href: '/', label: '课表', Icon: CalendarMonth, IconFill: CalendarMonthFill },
@@ -26,6 +30,14 @@
 	function vibrate() {
 		navigator.vibrate?.(10);
 	}
+
+	function onTimetableTabClick(event: MouseEvent) {
+		vibrate();
+		timetableScreen.jumpToCurrentWeek();
+		if (page.url.pathname === '/') {
+			event.preventDefault();
+		}
+	}
 </script>
 
 <nav
@@ -36,7 +48,7 @@
 		<a
 			href={resolve(tab.href)}
 			class="flex flex-1 cursor-pointer flex-col items-center justify-center gap-1 py-1"
-			onclick={vibrate}
+			onclick={tab.href === '/' ? onTimetableTabClick : vibrate}
 		>
 			<span
 				class="flex h-8 w-16 items-center justify-center rounded-full {active
