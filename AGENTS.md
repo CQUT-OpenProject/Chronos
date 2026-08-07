@@ -64,3 +64,5 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 | 构建 (`build`)    | 📦    |
 | CI (`ci`)         | 💚    |
 | 回滚 (`revert`)   | ⏪    |
+
+提交信息中不必再添加 `feat:` 等冗余描述
