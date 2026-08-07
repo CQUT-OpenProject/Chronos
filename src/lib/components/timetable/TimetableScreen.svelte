@@ -5,6 +5,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
+	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 
 	let {
@@ -89,12 +90,10 @@
 </script>
 
 <div class="flex h-[calc(100dvh-var(--spacing-tabbar)-var(--tabbar-safe))] flex-col">
-	<header
-		class="shrink-0 border-b border-zinc-200/80 bg-white/60 px-3 py-2 backdrop-blur-sm dark:border-zinc-700/80 dark:bg-zinc-900/78"
-	>
-		<div class="flex items-center gap-2">
+	<TopAppBar class="shrink-0">
+		{#snippet titleSnippet()}
 			<div
-				class="min-w-0 flex-1"
+				class="min-w-0 flex-1 cursor-pointer select-none"
 				role="button"
 				tabindex="0"
 				onclick={onHeaderTap}
@@ -126,6 +125,8 @@
 					</p>
 				{/if}
 			</div>
+		{/snippet}
+		{#snippet actions()}
 			<button
 				type="button"
 				class="flex items-center justify-center rounded-full p-1.5 text-on-surface-variant hover:bg-surface-variant"
@@ -137,8 +138,8 @@
 			>
 				<EditNote class="size-[22px]" />
 			</button>
-		</div>
-	</header>
+		{/snippet}
+	</TopAppBar>
 
 	<div class="relative min-h-0 flex-1">
 		{#if hasWallpaper && screenState.appState.wallpaperUri}

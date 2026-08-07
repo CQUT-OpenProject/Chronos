@@ -3,7 +3,7 @@
 	import { Button } from 'm3-svelte';
 	import favicon from '$lib/assets/favicon.svg';
 
-	let { onImport }: { onImport: () => void } = $props();
+	let { onImport }: { onImport?: () => void } = $props();
 </script>
 
 <div
