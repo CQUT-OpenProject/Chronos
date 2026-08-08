@@ -8,16 +8,12 @@
 
 	let {
 		screen,
-		weeks,
-		startWeek,
 		hasWallpaper,
 		isDark,
 		onCourseClick,
 		onCourseLongClick
 	}: {
 		screen: TimetableScreenController;
-		weeks: number[];
-		startWeek: number;
 		hasWallpaper: boolean;
 		isDark: boolean;
 		onCourseClick: (courseId: string) => void;
@@ -31,28 +27,25 @@
 
 	function onSlideSettled() {
 		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
-		const week = startWeek + swiperEl.swiper.activeIndex;
-		if (week !== screen.state.displayedWeek) {
-			screen.setDisplayedWeek(week);
+		const slideIndex = swiperEl.swiper.activeIndex;
+		if (slideIndex !== screen.state.slideIndex) {
+			screen.settlePagerAtSlide(slideIndex);
 		}
 	}
 
-	function syncSwiperToDisplayedWeek(week: number, start: number) {
+	function syncSwiperToSlideIndex(slideIndex: number) {
 		const swiper = swiperEl?.swiper;
 		if (!swiper || suppressPagerWeekSync) return;
-
-		const targetIndex = Math.max(0, Math.min(week - start, weeks.length - 1));
-		if (swiper.activeIndex === targetIndex) return;
+		if (swiper.activeIndex === slideIndex) return;
 
 		suppressPagerWeekSync = true;
-		swiper.slideTo(targetIndex, 0);
+		swiper.slideTo(slideIndex, 0);
 		suppressPagerWeekSync = false;
 	}
 
 	$effect(() => {
 		const el = swiperEl;
-		const initialWeek = screenState.displayedWeek;
-		const initialStartWeek = startWeek;
+		const initialSlideIndex = screenState.slideIndex;
 		if (!el) return;
 
 		suppressPagerWeekSync = true;
@@ -66,7 +59,7 @@
 			longSwipesRatio: 0.3,
 			followFinger: true,
 			touchReleaseOnEdges: true,
-			initialSlide: Math.max(0, initialWeek - initialStartWeek)
+			initialSlide: initialSlideIndex
 		});
 
 		el.initialize();
@@ -83,14 +76,12 @@
 	});
 
 	$effect(() => {
-		const week = screenState.displayedWeek;
-		const start = startWeek;
-		syncSwiperToDisplayedWeek(week, start);
+		syncSwiperToSlideIndex(screenState.slideIndex);
 	});
 </script>
 
 <swiper-container bind:this={swiperEl} init={false} class="timetable-week-swiper">
-	{#each weeks as week (week)}
+	{#each screenState.weeks as week (week)}
 		{@const gridModel = screenState.weekGridModels.get(week)}
 		{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
 		<swiper-slide class="timetable-week-slide">

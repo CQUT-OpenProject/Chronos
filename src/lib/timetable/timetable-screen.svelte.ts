@@ -9,9 +9,16 @@ import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import {
 	buildWeekCourseDisplayModels,
 	buildWeekGridModels,
-	computeDelayUntilNextMidnightMillis,
-	resolveDisplayedWeek
+	computeDelayUntilNextMidnightMillis
 } from './timetable-screen-logic';
+import {
+	academicBounds,
+	buildWeekList,
+	clampDisplayedWeek,
+	resolveDisplayedWeek,
+	slideIndexFromWeek,
+	weekFromSlideIndex
+} from './week-navigation';
 
 const buildVisibleTimetableGrid = new BuildVisibleTimetableGridUseCase();
 const buildTimetableCourseDisplayModels = new BuildTimetableCourseDisplayModelsUseCase();
@@ -30,6 +37,10 @@ export interface TimetableScreenState {
 	academicWeek: number;
 	displayedWeek: number;
 	displayedWeekTimetableId: string | null;
+	startWeek: number;
+	endWeek: number;
+	weeks: number[];
+	slideIndex: number;
 	weekGridModels: Map<number, TimetableGridModel>;
 	weekCourseDisplayModels: Map<number, TimetableCourseDisplayModel[]>;
 }
@@ -153,10 +164,8 @@ export function createTimetableScreen() {
 	function setDisplayedWeek(week: number) {
 		const timetable = appState.currentTimetable;
 		if (!timetable) return;
-		displayedWeekMemory = Math.min(
-			Math.max(week, timetable.academicConfig.startWeek),
-			timetable.academicConfig.endWeek
-		);
+		const { startWeek, endWeek } = academicBounds(timetable);
+		displayedWeekMemory = clampDisplayedWeek(week, startWeek, endWeek);
 		displayedWeekTimetableIdMemory = timetable.id;
 		recompute();
 		notify();
@@ -166,27 +175,33 @@ export function createTimetableScreen() {
 		const timetable = appState.currentTimetable;
 		if (!timetable) return;
 		const academicWeek = calculateAcademicWeek.invoke(today, timetable.academicConfig);
-		displayedWeekMemory = Math.min(
-			Math.max(academicWeek, timetable.academicConfig.startWeek),
-			timetable.academicConfig.endWeek
-		);
+		const { startWeek, endWeek } = academicBounds(timetable);
+		displayedWeekMemory = clampDisplayedWeek(academicWeek, startWeek, endWeek);
 		displayedWeekTimetableIdMemory = timetable.id;
 		recompute();
 		notify();
 	}
 
+	function settlePagerAtSlide(slideIndex: number) {
+		const timetable = appState.currentTimetable;
+		if (!timetable) return;
+		const { startWeek } = academicBounds(timetable);
+		setDisplayedWeek(weekFromSlideIndex(startWeek, slideIndex));
+	}
+
 	const state = $derived.by(() => {
 		void revision;
-		const academicWeek = calculateAcademicWeek.invoke(
-			today,
-			appState.currentTimetable?.academicConfig
-		);
+		const timetable = appState.currentTimetable;
+		const academicWeek = calculateAcademicWeek.invoke(today, timetable?.academicConfig);
 		const displayedWeek = resolveDisplayedWeek(
-			appState.currentTimetable,
+			timetable,
 			displayedWeekMemory,
 			displayedWeekTimetableIdMemory,
 			academicWeek
 		);
+		const { startWeek, endWeek } = academicBounds(timetable);
+		const weeks = buildWeekList(startWeek, endWeek);
+		const slideIndex = slideIndexFromWeek(startWeek, displayedWeek, weeks.length);
 
 		return {
 			appState,
@@ -195,6 +210,10 @@ export function createTimetableScreen() {
 			academicWeek,
 			displayedWeek,
 			displayedWeekTimetableId: displayedWeekTimetableIdMemory,
+			startWeek,
+			endWeek,
+			weeks,
+			slideIndex,
 			weekGridModels,
 			weekCourseDisplayModels
 		} satisfies TimetableScreenState;
@@ -208,7 +227,8 @@ export function createTimetableScreen() {
 		refresh,
 		destroy,
 		setDisplayedWeek,
-		jumpToCurrentWeek
+		jumpToCurrentWeek,
+		settlePagerAtSlide
 	};
 }
 

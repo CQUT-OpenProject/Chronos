@@ -2,34 +2,9 @@ import { describe, expect, it } from 'vite-plus/test';
 import { TimetableImportSource } from '$lib/models/timetable';
 import { createTimetable } from '$lib/models/timetable';
 import type { TimetableGridModel } from '$lib/models/presentation';
-import {
-	buildWeekGridModels,
-	calculateWeekSliderSteps,
-	computeDelayUntilNextMidnightMillis,
-	resolveDisplayedWeek
-} from './timetable-screen-logic';
+import { buildWeekGridModels, computeDelayUntilNextMidnightMillis } from './timetable-screen-logic';
 
 describe('timetable-screen-logic', () => {
-	it('calculateWeekSliderSteps returns zero when only one selectable week remains', () => {
-		expect(calculateWeekSliderSteps(1, 1)).toBe(0);
-		expect(calculateWeekSliderSteps(4, 5)).toBe(0);
-	});
-
-	it('calculateWeekSliderSteps matches discrete selectable weeks', () => {
-		expect(calculateWeekSliderSteps(1, 20)).toBe(18);
-		expect(calculateWeekSliderSteps(8, 12)).toBe(3);
-	});
-
-	it('resolveDisplayedWeek resets to academic week when timetable changes', () => {
-		const timetable = sampleTimetable([]);
-		expect(resolveDisplayedWeek(timetable, 12, 'another-timetable', 6)).toBe(6);
-	});
-
-	it('resolveDisplayedWeek keeps displayed week for the current timetable', () => {
-		const timetable = sampleTimetable([]);
-		expect(resolveDisplayedWeek(timetable, 12, timetable.id, 6)).toBe(12);
-	});
-
 	it('buildWeekGridModels keeps only displayed week and adjacent pages', () => {
 		const requestedWeeks: number[] = [];
 		const existingWeekSix = sampleGridModel('existing-6');
@@ -81,11 +56,11 @@ function sampleTimetable(courses: ReturnType<typeof createTimetable>['courses'])
 	});
 }
 
-function sampleGridModel(label: string): TimetableGridModel {
+function sampleGridModel(monthLabel: string): TimetableGridModel {
 	return {
-		monthLabel: label,
-		visibleDays: [{ dayOfWeek: 1, date: '2026-04-20', isToday: false }],
-		periods: [{ index: 1, startTime: '08:00', endTime: '08:45' }],
-		displayedPeriodCount: 1
+		monthLabel,
+		visibleDays: [],
+		periods: [],
+		displayedPeriodCount: 0
 	};
 }

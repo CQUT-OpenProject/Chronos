@@ -4,35 +4,6 @@ import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/model
 export const WEEK_GRID_CACHE_RADIUS = 1;
 export const MIN_DELAY_MILLIS = 1_000;
 
-export function calculateWeekSliderSteps(startWeek: number, endWeek: number): number {
-	return Math.max(0, endWeek - startWeek - 1);
-}
-
-export function clampDisplayedWeek(week: number, startWeek: number, endWeek: number): number {
-	return Math.min(Math.max(week, startWeek), endWeek);
-}
-
-export function resolveDisplayedWeek(
-	timetable: Timetable | null,
-	displayedWeek: number,
-	displayedWeekTimetableId: string | null | undefined,
-	academicWeek: number
-): number {
-	if (!timetable) return 1;
-	if (displayedWeekTimetableId !== timetable.id) {
-		return clampDisplayedWeek(
-			academicWeek,
-			timetable.academicConfig.startWeek,
-			timetable.academicConfig.endWeek
-		);
-	}
-	return clampDisplayedWeek(
-		displayedWeek,
-		timetable.academicConfig.startWeek,
-		timetable.academicConfig.endWeek
-	);
-}
-
 export function buildWeekGridModels(
 	timetable: Timetable | null,
 	today: string,

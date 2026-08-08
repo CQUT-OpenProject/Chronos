@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import type { TimetableGridModel } from '$lib/models/presentation';
-	import { timetableDayLabel } from '$lib/timetable/timetable-grid-logic';
+	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
@@ -22,11 +22,8 @@
 
 	const screenState = $derived(screen.state);
 	const shell = getContext<AppShellController>('appShell');
-	const timetable = $derived(screenState.appState.currentTimetable);
-	const startWeek = $derived(timetable?.academicConfig.startWeek ?? 1);
-	const endWeek = $derived(timetable?.academicConfig.endWeek ?? 1);
-	const weekCount = $derived(Math.max(1, endWeek - startWeek + 1));
-	const weeks = $derived(Array.from({ length: weekCount }, (_, index) => startWeek + index));
+	const startWeek = $derived(screenState.startWeek);
+	const endWeek = $derived(screenState.endWeek);
 	const isDark = $derived(shell.state.isDark);
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
 
@@ -151,15 +148,7 @@
 		{/if}
 
 		{#key screenState.appState.currentTimetable?.id}
-			<TimetableWeekSwiper
-				{screen}
-				{weeks}
-				{startWeek}
-				{hasWallpaper}
-				{isDark}
-				{onCourseClick}
-				{onCourseLongClick}
-			/>
+			<TimetableWeekSwiper {screen} {hasWallpaper} {isDark} {onCourseClick} {onCourseLongClick} />
 		{/key}
 	</div>
 </div>
