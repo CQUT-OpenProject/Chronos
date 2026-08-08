@@ -413,7 +413,7 @@ export type TransferStateController = ReturnType<typeof createTransferState>;
 export function previewSourceLabel(source: TransferImportSource | null): string {
 	switch (source) {
 		case 'ONLINE':
-			return '教务处';
+			return '知行理工';
 		case 'JSON':
 			return '分享 JSON';
 		case 'HTML':
