@@ -15,6 +15,11 @@
 		parsePeriodRanges,
 		timetableDayShortLabel
 	} from '$lib/timetable/timetable-grid-logic';
+	import {
+		resolveCapsuleTypeScale,
+		resolveLocationBlockMetrics,
+		shouldShowLocationCampus
+	} from '$lib/timetable/capsule-type-scale';
 
 	const DARK_SURFACE = '#17171a';
 	const ON_SURFACE_DARK = '#f4f4f5';
@@ -47,6 +52,7 @@
 
 	let scrollContainer = $state<HTMLDivElement | undefined>();
 	let bodyViewportHeight = $state(0);
+	let gridBodyWidth = $state(0);
 	let centeredFor = $state<string | null>(null);
 	let expandedSlots = $state(new Set<string>());
 	let now = $state(new Date());
@@ -58,6 +64,7 @@
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const slotGroups = $derived(buildSlotGroups(courseDisplayModels));
 	const columnFraction = $derived(visibleDayCount > 0 ? 100 / visibleDayCount : 0);
+	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
 
 	const currentPeriodIndex = $derived(
 		isCurrentWeek ? findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now)) : null
@@ -111,36 +118,6 @@
 
 	function dayOfMonth(date: string): string {
 		return date.slice(8, 10);
-	}
-
-	function crowdingTextClass(overlapCount = 1): string {
-		const crowding = visibleDayCount * overlapCount;
-		// Both weekend days on (7 columns): one step smaller than the 6-day scale.
-		if (visibleDayCount >= 7) {
-			if (crowding >= 11) return 'text-[10px]';
-			return 'text-xs';
-		}
-		if (crowding >= 11) return 'text-xs';
-		if (crowding >= 7) return 'text-sm';
-		return 'text-[15px]';
-	}
-
-	function placeholderTextClass(): string {
-		if (visibleDayCount === 7) return 'text-[10px]';
-		if (visibleDayCount === 6) return 'text-sm';
-		return 'text-[15px]';
-	}
-
-	function detailFontPx(overlapCount = 1): number {
-		const crowded = visibleDayCount * overlapCount >= 11;
-		if (visibleDayCount >= 7) return crowded ? 9 : 10;
-		return crowded ? 10 : 12;
-	}
-
-	function badgeFontPx(overlapCount = 1): number {
-		const crowded = visibleDayCount * overlapCount >= 11;
-		if (visibleDayCount >= 7) return crowded ? 8 : 9;
-		return detailFontPx(overlapCount);
 	}
 
 	/**
@@ -265,6 +242,16 @@
 			}
 		};
 	}
+
+	const gridBodyWidthAttach: Attachment = (node) => {
+		const update = () => {
+			gridBodyWidth = node.clientWidth;
+		};
+		update();
+		const observer = new ResizeObserver(update);
+		observer.observe(node);
+		return () => observer.disconnect();
+	};
 </script>
 
 <div
@@ -331,6 +318,7 @@
 			</aside>
 
 			<div
+				{@attach gridBodyWidthAttach}
 				class="relative min-w-0 flex-1 {gridBgClass}"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
@@ -356,6 +344,7 @@
 							{@render courseCard(displayModel, 1)}
 						</div>
 					{:else if !isExpanded}
+						{@const placeholderScale = resolveCapsuleTypeScale(columnWidthPx, 1)}
 						<div
 							class="absolute box-border py-[3px]"
 							style:top="calc((var(--row-height) * {group.startPeriod - 1}))"
@@ -368,7 +357,10 @@
 								class="flex h-full w-full items-center justify-center rounded-xl border border-zinc-300/50 bg-zinc-100 p-2 text-center shadow-sm dark:border-zinc-600/50 dark:bg-zinc-800/60"
 								onclick={() => expandSlot(key)}
 							>
-								<span class="text-zinc-600 dark:text-zinc-300 {placeholderTextClass()}">
+								<span
+									class="text-zinc-600 dark:text-zinc-300"
+									style:font-size="{placeholderScale.placeholderPx}px"
+								>
 									此时段有 {count} 门课程重叠
 								</span>
 							</button>
@@ -398,10 +390,16 @@
 {#snippet courseCard(displayModel: TimetableCourseDisplayModel, overlapCount: number)}
 	{@const course = displayModel.course}
 	{@const colors = courseColors(course)}
-	{@const locationLines = locationDisplayLines(course.location)}
-	{@const textClass = crowdingTextClass(overlapCount)}
-	{@const detailPx = detailFontPx(overlapCount)}
-	{@const badgePx = badgeFontPx(overlapCount)}
+	{@const showCampus = shouldShowLocationCampus(columnWidthPx, overlapCount)}
+	{@const locationLines = locationDisplayLines(course.location, {
+		includeCampus: showCampus
+	})}
+	{@const scale = resolveCapsuleTypeScale(columnWidthPx, overlapCount)}
+	{@const locationMetrics = resolveLocationBlockMetrics(
+		scale.detailPx,
+		showCampus,
+		locationLines.length
+	)}
 	{@const teacher = course.teacher.trim()}
 	{@const handlers = courseCardHandlers(course)}
 	<button
@@ -424,10 +422,10 @@
 					class="max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap"
 					style:background-color="color-mix(in srgb, {colors.text} 12%, transparent)"
 					style:color="color-mix(in srgb, {colors.text} 80%, transparent)"
-					style:font-size="{badgePx}px"
+					style:font-size="{scale.badgePx}px"
 					{@attach fitWidthFont(() => ({
 						lines: [BADGE_LABEL],
-						maxFontPx: badgePx,
+						maxFontPx: scale.badgePx,
 						fromParent: true
 					}))}
 				>
@@ -437,14 +435,17 @@
 		{/if}
 		<MiddleTruncateText
 			text={course.name}
-			class="min-h-0 flex-1 leading-tight font-medium {textClass}"
-			style="color: {colors.text}"
+			class="min-h-0 flex-1 leading-tight font-medium"
+			style="color: {colors.text}; font-size: {scale.titlePx}px"
 		/>
 		{#if locationLines.length > 0}
 			<div
-				class="mt-1.5 h-[3lh] shrink-0 leading-tight"
-				style="color: color-mix(in srgb, {colors.text} 80%, transparent); font-size: {detailPx}px"
-				{@attach fitWidthFont(() => ({ lines: locationLines, maxFontPx: detailPx }))}
+				class="mt-1.5 shrink-0 overflow-hidden leading-tight"
+				style="color: color-mix(in srgb, {colors.text} 80%, transparent); font-size: {locationMetrics.fontPx}px; height: {locationMetrics.heightPx}px"
+				{@attach fitWidthFont(() => ({
+					lines: locationLines,
+					maxFontPx: locationMetrics.fontPx
+				}))}
 			>
 				{#each locationLines as line, index (index)}
 					<div class="overflow-hidden whitespace-nowrap">{line}</div>
@@ -454,8 +455,8 @@
 		{#if teacher}
 			<div
 				class="mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap"
-				style="color: color-mix(in srgb, {colors.text} 80%, transparent); font-size: {detailPx}px"
-				{@attach fitWidthFont(() => ({ lines: [teacher], maxFontPx: detailPx }))}
+				style="color: color-mix(in srgb, {colors.text} 80%, transparent); font-size: {scale.detailPx}px"
+				{@attach fitWidthFont(() => ({ lines: [teacher], maxFontPx: scale.detailPx }))}
 			>
 				{teacher}
 			</div>
