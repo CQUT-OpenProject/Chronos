@@ -10,7 +10,7 @@ describe('GetGithubReleaseByTagUseCase', () => {
 			success({
 				tagName: 'v1.0.0',
 				name: 'Chronos 1.0.0',
-				publishedAt: '2026-03-21T00:00:00Z',
+				publishedAt: '2026-03-21',
 				body: 'Release notes',
 				htmlUrl: 'https://github.com/CQUT-OpenProject/Chronos/releases/tag/v1.0.0'
 			})

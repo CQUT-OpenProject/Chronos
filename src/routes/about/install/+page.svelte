@@ -53,48 +53,48 @@
 			/>
 			<div>
 				<h1 class="m3-headline-small font-bold text-on-surface">Chronos</h1>
-				<p class="m3-body-medium text-on-surface-variant">无缝的课表体验 · 随时随地</p>
+				<p class="m3-body-medium text-xs text-on-surface-variant">无缝的课表体验 · 随时随地</p>
 			</div>
 		</div>
 
 		<!-- Highlights Card -->
 		<Card variant="outlined">
-			<ul class="flex flex-col gap-4 text-sm text-on-surface-variant">
-				<li class="flex items-start gap-3.5">
+			<ul class="flex flex-col gap-4 text-on-surface-variant">
+				<li class="flex items-center gap-3.5">
 					<div
 						class="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
 					>
 						<RocketLaunchFill class="h-5 w-5" />
 					</div>
-					<div class="flex-1">
-						<p class="font-semibold text-on-surface">一键直达课表</p>
-						<p class="mt-0.5 text-xs text-on-surface-variant/80">
+					<div class="flex min-w-0 flex-1 flex-col justify-center">
+						<p class="m3-body-large font-normal text-on-surface">一键直达课表</p>
+						<p class="m3-body-medium text-xs text-on-surface-variant">
 							无需输入网址，直接在桌面或 Dock 栏快捷启动。
 						</p>
 					</div>
 				</li>
-				<li class="flex items-start gap-3.5">
+				<li class="flex items-center gap-3.5">
 					<div
 						class="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
 					>
 						<WifiOffFill class="h-5 w-5" />
 					</div>
-					<div class="flex-1">
-						<p class="font-semibold text-on-surface">完全离线可用</p>
-						<p class="mt-0.5 text-xs text-on-surface-variant/80">
+					<div class="flex min-w-0 flex-1 flex-col justify-center">
+						<p class="m3-body-large font-normal text-on-surface">完全离线可用</p>
+						<p class="m3-body-medium text-xs text-on-surface-variant">
 							自动本地缓存，断网无网状态下仍可查课表。
 						</p>
 					</div>
 				</li>
-				<li class="flex items-start gap-3.5">
+				<li class="flex items-center gap-3.5">
 					<div
 						class="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
 					>
 						<FullscreenFill class="h-5 w-5" />
 					</div>
-					<div class="flex-1">
-						<p class="font-semibold text-on-surface">沉浸全屏窗口</p>
-						<p class="mt-0.5 text-xs text-on-surface-variant/80">
+					<div class="flex min-w-0 flex-1 flex-col justify-center">
+						<p class="m3-body-large font-normal text-on-surface">沉浸全屏窗口</p>
+						<p class="m3-body-medium text-xs text-on-surface-variant">
 							移除浏览器地址栏与边框，体验媲美原生 App。
 						</p>
 					</div>
@@ -109,7 +109,7 @@
 					<CheckCircleFill class="h-5 w-5" />
 					<span>已成功安装 Chronos</span>
 				</p>
-				<p class="m3-body-small mt-1 text-on-surface-variant">
+				<p class="m3-body-medium text-xs text-on-surface-variant">
 					你目前正在独立应用模式下运行，享受完整 PWA 体验。
 				</p>
 			</Card>
@@ -117,27 +117,33 @@
 			<!-- macOS Safari Guidance Card -->
 			<Card variant="outlined">
 				<h3 class="m3-title-small mb-3 font-bold text-on-surface">macOS Safari 安装指引：</h3>
-				<ol class="flex flex-col gap-3 text-xs leading-relaxed text-on-surface-variant">
+				<ol class="flex flex-col gap-3 text-on-surface-variant">
 					<li class="flex items-start gap-2.5">
 						<span
 							class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
 							>1</span
 						>
-						<span>在屏幕顶部点击 Safari 菜单栏的 <strong>“文件” (File)</strong></span>
+						<span class="m3-body-medium text-xs"
+							>在屏幕顶部点击 Safari 菜单栏的 <strong>“文件” (File)</strong></span
+						>
 					</li>
 					<li class="flex items-start gap-2.5">
 						<span
 							class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
 							>2</span
 						>
-						<span>选择 <strong>“添加到 Dock...” (Add to Dock...)</strong></span>
+						<span class="m3-body-medium text-xs"
+							>选择 <strong>“添加到 Dock...” (Add to Dock...)</strong></span
+						>
 					</li>
 					<li class="flex items-start gap-2.5">
 						<span
 							class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
 							>3</span
 						>
-						<span>点击 <strong>“添加”</strong> 确认即可从程序坞或启动台快捷打开</span>
+						<span class="m3-body-medium text-xs"
+							>点击 <strong>“添加”</strong> 确认即可从程序坞或启动台快捷打开</span
+						>
 					</li>
 				</ol>
 			</Card>
@@ -145,13 +151,13 @@
 			<!-- iOS / iPadOS Safari Guidance Card -->
 			<Card variant="outlined">
 				<h3 class="m3-title-small mb-3 font-bold text-on-surface">iOS / iPadOS 安装指引：</h3>
-				<ol class="flex flex-col gap-3 text-xs leading-relaxed text-on-surface-variant">
+				<ol class="flex flex-col gap-3 text-on-surface-variant">
 					<li class="flex items-start gap-2.5">
 						<span
 							class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
 							>1</span
 						>
-						<span>
+						<span class="m3-body-medium text-xs">
 							点击 Safari 底部的 <strong>
 								分享图标 <IosShareFill class="text-primary inline h-3.5 w-3.5" />
 							</strong>
@@ -162,14 +168,16 @@
 							class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
 							>2</span
 						>
-						<span>在列表中滑动选择 <strong>“添加到主屏幕”</strong></span>
+						<span class="m3-body-medium text-xs"
+							>在列表中滑动选择 <strong>“添加到主屏幕”</strong></span
+						>
 					</li>
 					<li class="flex items-start gap-2.5">
 						<span
 							class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
 							>3</span
 						>
-						<span>点击右上角 <strong>“添加”</strong> 确认</span>
+						<span class="m3-body-medium text-xs">点击右上角 <strong>“添加”</strong> 确认</span>
 					</li>
 				</ol>
 			</Card>
@@ -182,11 +190,9 @@
 						<span>安装 Chronos 到设备</span>
 					</Button>
 
-					<div
-						class="rounded-xl bg-surface-container-high/60 p-3.5 text-xs text-on-surface-variant"
-					>
-						<p class="font-semibold text-on-surface">提示：</p>
-						<p class="mt-1 leading-relaxed">
+					<div class="rounded-xl bg-surface-container-high/60 p-3.5 text-on-surface-variant">
+						<p class="m3-body-large font-normal text-on-surface">提示：</p>
+						<p class="m3-body-medium text-xs">
 							{#if pwaInstallController.canPrompt}
 								点击按钮即可唤起系统原生 PWA 安装对话框。
 							{:else}

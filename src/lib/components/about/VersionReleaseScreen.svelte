@@ -25,11 +25,6 @@
 	const htmlBody = $derived(
 		release?.body ? (marked.parse(release.body, { async: false }) as string) : ''
 	);
-
-	function formatDate(value: string) {
-		if (!value) return '-';
-		return value.replace('T', ' ').replace('Z', '');
-	}
 </script>
 
 {#if loading}
@@ -41,7 +36,7 @@
 		<h2 class="m3-title-large font-bold">{release.name || release.tagName}</h2>
 		<p class="m3-body-medium text-on-surface-variant">Tag：{release.tagName}</p>
 		<p class="m3-body-medium text-on-surface-variant">
-			发布时间：{formatDate(release.publishedAt)}
+			发布时间：{release.publishedAt || '-'}
 		</p>
 		<div class="prose prose-sm max-w-none dark:prose-invert">
 			{@html htmlBody || '<p>此 Release 没有正文内容。</p>'}
