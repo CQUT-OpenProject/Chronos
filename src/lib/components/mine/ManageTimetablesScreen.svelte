@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import { AddFill, CheckCircleFill, DeleteFill } from '$lib/icons';
+	import { CheckCircleFill, DeleteFill } from '$lib/icons';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 
@@ -11,18 +11,8 @@
 	} = $props();
 
 	const appState = $derived(shell.state.appState);
-	let creating = $state(false);
-	let newName = $state('');
 	let pendingDeleteId = $state<string | null>(null);
 	let deleteDialogOpen = $state(false);
-
-	async function handleCreate() {
-		const name = newName.trim();
-		if (!name) return;
-		await shell.services.createTimetable.invoke(name);
-		creating = false;
-		newName = '';
-	}
 
 	async function handleSwitch(id: string) {
 		await shell.services.switchTimetable.invoke(id);
@@ -82,42 +72,6 @@
 			</button>
 		{/each}
 	</div>
-
-	{#if creating}
-		<div class="flex flex-col gap-3 rounded-[28px] border border-outline-variant bg-surface p-4">
-			<div class="flex flex-col gap-1">
-				<label for="new-timetable-name" class="text-xs font-medium text-on-surface-variant"
-					>课表名称</label
-				>
-				<input
-					id="new-timetable-name"
-					type="text"
-					bind:value={newName}
-					placeholder="例如：2026 春季"
-					class="w-full rounded-lg border border-outline bg-surface px-3.5 py-2 text-sm text-on-surface outline-none focus:border-brand"
-				/>
-			</div>
-			<div class="flex items-center justify-end gap-2 pt-1">
-				<Button
-					variant="text"
-					onclick={() => {
-						creating = false;
-						newName = '';
-					}}
-				>
-					取消
-				</Button>
-				<Button disabled={!newName.trim()} onclick={handleCreate}>保存</Button>
-			</div>
-		</div>
-	{:else}
-		<div class="flex w-full pt-2">
-			<Button variant="filled" class="w-full" onclick={() => (creating = true)}>
-				<AddFill class="size-5" />
-				新建课表
-			</Button>
-		</div>
-	{/if}
 </div>
 
 <Dialog bind:open={deleteDialogOpen} title="删除课表？" description="删除后无法恢复。">

@@ -49,7 +49,7 @@
 					href: resolve('/manage-timetables'),
 					icon: ListAltFill,
 					iconTone: 'primary',
-					keywords: ['课表', '管理', '切换', '编辑', '新建', '课程']
+					keywords: ['课表', '管理', '切换', '编辑', '课程']
 				}
 			]
 		},
