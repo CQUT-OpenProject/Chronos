@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
+	cutBoundaryIndices,
 	fitFontSizePx,
 	fitsMultiline,
 	toGraphemes,
 	truncateMiddle,
+	truncateMiddleByFit,
 	truncateMiddleMultiline
 } from './middle-truncate';
 
@@ -33,7 +35,7 @@ describe('middle-truncate', () => {
 		expect(result.startsWith('A')).toBe(true);
 		expect(result.endsWith('J')).toBe(true);
 		expect(unitMeasure(result)).toBeLessThanOrEqual(70);
-		// Retained 6 → prefix 3 + suffix 3 → ABC…HIJ
+		// Retained 6 → prefix 3 + suffix 3 → ABC…HIJ (no CJK snap on Latin token)
 		expect(result).toBe('ABC…HIJ');
 	});
 
@@ -68,5 +70,22 @@ describe('middle-truncate', () => {
 		expect(fitted).toBeLessThanOrEqual(8);
 		expect(measureAt(fitted)).toBeLessThanOrEqual(24);
 		expect(fitFontSizePx(10, measureAt, 12, 6)).toBe(6);
+	});
+
+	it('punctuation creates snap cut boundaries', () => {
+		const title = '毛泽东思想：概论';
+		const graphemes = toGraphemes(title);
+		const boundaries = cutBoundaryIndices(title, graphemes);
+		const colonAt = graphemes.findIndex((g) => g === '：');
+		expect(colonAt).toBeGreaterThan(0);
+		expect(boundaries).toContain(colonAt);
+		expect(boundaries).toContain(colonAt + 1);
+	});
+
+	it('truncateMiddleByFit binary-searches against a fits predicate', () => {
+		const text = 'ABCDEFGHIJKL';
+		// Capacity: 7 grapheme-units including ellipsis → retain 6 → ABC…JKL
+		const result = truncateMiddleByFit(text, (candidate) => unitMeasure(candidate) <= 70);
+		expect(result).toBe('ABC…JKL');
 	});
 });
