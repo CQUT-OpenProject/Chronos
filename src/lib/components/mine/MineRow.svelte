@@ -10,6 +10,7 @@
 		title,
 		href,
 		onclick,
+		label,
 		icon: Icon,
 		iconTone = 'neutral',
 		supporting = '',
@@ -19,6 +20,7 @@
 		title: string;
 		href?: string;
 		onclick?: () => void;
+		label?: boolean;
 		icon?: Component<{ class?: string }>;
 		iconTone?: MineIconTone;
 		supporting?: string;
@@ -31,7 +33,8 @@
 
 <ListItem
 	{href}
-	onclick={href ? undefined : onclick}
+	label={label ? true : undefined}
+	onclick={href || label ? undefined : onclick}
 	headline={title}
 	supporting={supporting || undefined}
 	{...props}

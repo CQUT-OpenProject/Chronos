@@ -94,7 +94,7 @@
 		</div>
 	{:else}
 		<div class="m3-actions">
-			<Button variant="outlined" iconType="left" onclick={() => (creating = true)}>
+			<Button variant="filled" iconType="left" onclick={() => (creating = true)}>
 				<AddFill />
 				新建课表
 			</Button>

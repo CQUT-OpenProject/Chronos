@@ -31,7 +31,7 @@
 
 	<div class="m3-actions">
 		<Button
-			variant="outlined"
+			variant="filled"
 			iconType="left"
 			disabled={loading || !currentTimetableName}
 			onclick={handleExport}

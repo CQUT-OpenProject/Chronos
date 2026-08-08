@@ -39,7 +39,7 @@
 			</Button>
 		{/snippet}
 	</TopAppBar>
-	<main class="p-4">
+	<main class="mx-auto w-full max-w-lg p-4">
 		{@render children?.()}
 	</main>
 </div>

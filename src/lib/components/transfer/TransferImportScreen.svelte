@@ -71,7 +71,7 @@
 	}
 </script>
 
-<div class="mx-auto flex w-full max-w-md flex-col gap-5 py-1">
+<div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
 	<p class="m3-body-medium text-on-surface-variant">
 		支持知行理工在线导入、分享 JSON 与教务 HTML 文件。
 	</p>

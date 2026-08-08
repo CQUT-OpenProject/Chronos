@@ -41,7 +41,7 @@
 </script>
 
 <SecondaryPageShell title="安装 Chronos" backHref="/mine">
-	<div class="m3-stack mx-auto max-w-md gap-6 py-2">
+	<div class="m3-stack mx-auto max-w-lg gap-6 py-2">
 		<!-- Hero Section -->
 		<div class="flex flex-col items-center gap-3 pt-2 text-center">
 			<img
@@ -184,7 +184,7 @@
 					</div>
 
 					<div
-						class="bg-surface-container-high/60 rounded-xl p-3.5 text-xs text-on-surface-variant"
+						class="rounded-xl bg-surface-container-high/60 p-3.5 text-xs text-on-surface-variant"
 					>
 						<p class="font-semibold text-on-surface">提示：</p>
 						<p class="mt-1 leading-relaxed">

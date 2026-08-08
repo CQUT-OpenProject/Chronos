@@ -105,7 +105,7 @@
 				清除壁纸
 			</Button>
 		{/if}
-		<Button variant="outlined" iconType="left" onclick={onPickWallpaper}>
+		<Button variant="filled" iconType="left" onclick={onPickWallpaper}>
 			<PhotoLibraryFill />
 			{shell.state.hasWallpaper ? '重新选择' : '选择壁纸'}
 		</Button>
