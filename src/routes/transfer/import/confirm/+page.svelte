@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { getRepository } from '$lib/client/repository';
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
-	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
+	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TransferImportConfirmScreen from '$lib/components/transfer/TransferImportConfirmScreen.svelte';
 
 	const transfer = createTransferState();

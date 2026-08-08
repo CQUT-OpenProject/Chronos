@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
+	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import ManageTimetablesScreen from '$lib/components/mine/ManageTimetablesScreen.svelte';
 
 	const shell = getContext<AppShellController>('appShell');

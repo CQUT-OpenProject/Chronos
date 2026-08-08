@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
+	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 
 	let licenseText = $state('加载中…');
 

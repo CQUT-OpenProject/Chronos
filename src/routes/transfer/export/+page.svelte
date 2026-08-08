@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { getRepository } from '$lib/client/repository';
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
-	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
+	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TransferExportScreen from '$lib/components/transfer/TransferExportScreen.svelte';
 
 	const transfer = createTransferState();

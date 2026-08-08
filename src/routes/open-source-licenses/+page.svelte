@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import SecondaryPageShell from '$lib/components/mine/SecondaryPageShell.svelte';
+	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import { DescriptionFill, FolderZipFill } from '$lib/icons';
