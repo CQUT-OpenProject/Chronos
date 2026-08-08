@@ -7,15 +7,42 @@ import {
 	isBefore,
 	parseIsoDate,
 	previousOrSameMonday,
-	safeParseIsoDate,
 	weeksBetween
 } from '../date';
 
 export class AcademicCalendarService {
 	normalizeTermStartDate(raw: string, referenceDate: string): string {
 		const fallback = parseIsoDate(currentWeekMonday(referenceDate));
-		const parsed = safeParseIsoDate(raw, fallback);
-		return formatIsoDate(previousOrSameMonday(parsed));
+		if (!raw || !raw.trim()) {
+			return formatIsoDate(previousOrSameMonday(fallback));
+		}
+		try {
+			const isoParsed = parseIsoDate(raw);
+			return formatIsoDate(previousOrSameMonday(isoParsed));
+		} catch {
+			const termParsed = this.inferTermStartDateFromTermName(raw);
+			if (termParsed) {
+				return formatIsoDate(previousOrSameMonday(termParsed));
+			}
+			return formatIsoDate(previousOrSameMonday(fallback));
+		}
+	}
+
+	private inferTermStartDateFromTermName(termName: string): Date | null {
+		const match = /(20\d{2})\D+(20\d{2})[^\d]*([12])/.exec(termName);
+		if (!match) return null;
+		const year1 = Number.parseInt(match[1] ?? '', 10);
+		const year2 = Number.parseInt(match[2] ?? '', 10);
+		const term = Number.parseInt(match[3] ?? '', 10);
+		if (Number.isNaN(year1) || Number.isNaN(year2) || Number.isNaN(term)) return null;
+
+		if (term === 1) {
+			return new Date(Date.UTC(year1, 8, 1, 12));
+		}
+		if (term === 2) {
+			return new Date(Date.UTC(year2, 2, 1, 12));
+		}
+		return null;
 	}
 
 	calculateAcademicWeek(today: string, academicConfig?: AcademicConfig | null): number {

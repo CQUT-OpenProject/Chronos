@@ -41,7 +41,7 @@ describe('EducationalTimetableHtmlParser', () => {
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.value?.name).toBe('陈炜堂的课表');
-		expect(result.value?.academicConfig.termStartDate).toBe('2026-03-02');
+		expect(result.value?.academicConfig.termStartDate).toBe('2026-02-23');
 		expect(result.value?.viewPrefs.showSaturday).toBe(true);
 		expect(result.value?.viewPrefs.showSunday).toBe(false);
 		expect(result.value?.courses[0]?.name).toBe('编译原理');
@@ -52,5 +52,37 @@ describe('EducationalTimetableHtmlParser', () => {
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.value).toBeNull();
+	});
+
+	it('parse handles discrete weeks and infers term start date for Autumn term', () => {
+		const result = parser.parse(`
+			<table class="timetable1">
+			  <tbody>
+			    <tr>
+			      <td colspan="9">
+			        <div class="timetable_title">
+			          <h6 class="pull-left">2026-2027学年第1学期</h6>
+			        </div>
+			      </td>
+			    </tr>
+			    <tr>
+			      <td class="td_wrap" id="1-1" rowspan="2">
+			        <div class="timetable_con">
+			          <div class="title">高等数学★</div>
+			          <p><span title="教师">教师</span> 张老师</p>
+			          <p><span title="教师">教师</span> 李老师</p>
+			          <p><span title="节/周">节/周</span> 3,5,7,9-11周（单）</p>
+			        </div>
+			      </td>
+			    </tr>
+			  </tbody>
+			</table>
+		`);
+
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.value?.academicConfig.termStartDate).toBe('2026-08-31');
+		expect(result.value?.courses[0]?.teacher).toBe('张老师, 李老师');
+		expect(result.value?.courses[0]?.weeks).toEqual([3, 5, 7, 9, 11]);
 	});
 });

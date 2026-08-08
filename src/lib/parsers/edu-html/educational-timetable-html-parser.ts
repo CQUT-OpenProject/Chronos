@@ -13,7 +13,6 @@ import {
 import { parseHtmlDocument } from './dom';
 
 const WHITESPACE_REGEX = /\s+/g;
-const WEEK_TOKEN = /\d+(?:-\d+)?周(?:\((?:单|双)\))?/g;
 
 type WeekParity = 'ALL' | 'ODD' | 'EVEN';
 
@@ -33,7 +32,10 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 	}
 
 	private parseDocument(document: Document): AppResult<Timetable | null> {
-		const table = document.querySelector('#kbgrid_table_0');
+		const table =
+			document.querySelector('#kbgrid_table_0') ??
+			document.querySelector('table.timetable1') ??
+			document.querySelector('table[id*="kbgrid"]');
 		if (!table) return success(null);
 
 		const titleContainer = table.querySelector('.timetable_title');
@@ -61,7 +63,7 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 			updatedAt: now,
 			academicConfig: {
 				termStartDate: this.academicCalendarService.normalizeTermStartDate(
-					'',
+					term,
 					this.timeProvider.today()
 				),
 				startWeek: 1,
@@ -94,11 +96,20 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 
 				const metadata = new Map<string, string>();
 				for (const paragraph of block.querySelectorAll('p')) {
-					const key = normalizeWhitespace(
-						paragraph.querySelector('[title]')?.getAttribute('title') ?? ''
-					);
+					const titleSpan = paragraph.querySelector('[title]');
+					const key = normalizeWhitespace(titleSpan?.getAttribute('title') ?? '');
 					if (!key) continue;
-					metadata.set(key, normalizeWhitespace(paragraph.textContent ?? ''));
+
+					const val = normalizeWhitespace(
+						[...paragraph.childNodes]
+							.filter((node) => node !== titleSpan)
+							.map((node) => node.textContent ?? '')
+							.join('')
+					);
+					if (!val) continue;
+
+					const existing = metadata.get(key);
+					metadata.set(key, existing ? `${existing}, ${val}` : val);
 				}
 
 				const normalizedName = normalizedCourseName(rawTitle);
@@ -123,28 +134,35 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 
 function parseWeeks(raw: string): number[] {
 	const weeks = new Set<number>();
-	for (const match of raw.replace(WHITESPACE_REGEX, '').matchAll(WEEK_TOKEN)) {
-		const token = match[0] ?? '';
-		const parity: WeekParity = token.includes('(单)')
+	const normalized = raw
+		.replace(/（/g, '(')
+		.replace(/）/g, ')')
+		.replace(/~/g, '-')
+		.replace(/第/g, '');
+
+	const BLOCK_REGEX = /([\d,\-\s]+)周(?:\((?:单|双)\))?/g;
+	for (const match of normalized.matchAll(BLOCK_REGEX)) {
+		const rangeStr = match[1] ?? '';
+		const fullMatch = match[0] ?? '';
+		const parity: WeekParity = fullMatch.includes('(单)')
 			? 'ODD'
-			: token.includes('(双)')
+			: fullMatch.includes('(双)')
 				? 'EVEN'
 				: 'ALL';
-		const normalized = token.replace(/周/g, '').replace('(单)', '').replace('(双)', '');
-		const separatorIndex = normalized.indexOf('-');
-		const start = Number.parseInt(
-			separatorIndex >= 0 ? normalized.slice(0, separatorIndex) : normalized,
-			10
-		);
-		const end = Number.parseInt(
-			separatorIndex >= 0 ? normalized.slice(separatorIndex + 1) : normalized,
-			10
-		);
-		if (Number.isNaN(start)) continue;
-		const last = Number.isNaN(end) ? start : end;
-		for (let week = start; week <= last; week += 1) {
-			if (parity === 'ALL' || (parity === 'ODD' ? week % 2 === 1 : week % 2 === 0)) {
-				weeks.add(week);
+
+		const parts = rangeStr.split(',');
+		for (const part of parts) {
+			const trimmed = part.trim();
+			if (!trimmed) continue;
+			const sep = trimmed.indexOf('-');
+			const start = Number.parseInt(sep >= 0 ? trimmed.slice(0, sep) : trimmed, 10);
+			const end = Number.parseInt(sep >= 0 ? trimmed.slice(sep + 1) : trimmed, 10);
+			if (Number.isNaN(start)) continue;
+			const last = Number.isNaN(end) ? start : end;
+			for (let w = Math.min(start, last); w <= Math.max(start, last); w += 1) {
+				if (parity === 'ALL' || (parity === 'ODD' ? w % 2 === 1 : w % 2 === 0)) {
+					weeks.add(w);
+				}
 			}
 		}
 	}
