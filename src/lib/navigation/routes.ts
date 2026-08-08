@@ -23,7 +23,3 @@ const secondaryRouteSet = new Set<string>(SECONDARY_ROUTES);
 export function isSecondaryRoute(pathname: string): boolean {
 	return secondaryRouteSet.has(pathname);
 }
-
-export function isTabBarVisible(pathname: string): boolean {
-	return !isSecondaryRoute(pathname);
-}
