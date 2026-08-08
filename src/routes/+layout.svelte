@@ -15,7 +15,6 @@
 		getNavigationDirection,
 		type NavigationDirection
 	} from '$lib/navigation/navigation-direction';
-	import { isSecondaryRoute, isTabBarVisible } from '$lib/navigation/routes';
 	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import '$lib/m3/m3.css';
@@ -25,8 +24,6 @@
 	import { pwaInfo } from 'virtual:pwa-info';
 
 	const webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
-	let tabBarSuppressed = $state(isSecondaryRoute(page.url.pathname));
-	const tabBarVisible = $derived(isTabBarVisible(page.url.pathname) && !tabBarSuppressed);
 
 	let navDirection = $state<NavigationDirection>('none');
 
@@ -40,10 +37,6 @@
 			return;
 		} else {
 			navDirection = getNavigationDirection(fromPath, toPath);
-		}
-
-		if (toPath) {
-			tabBarSuppressed = isSecondaryRoute(toPath);
 		}
 	});
 
@@ -74,22 +67,18 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{#key page.url.pathname}
-	<div
-		class="min-h-dvh bg-canvas text-ink"
-		in:secondaryPageTransition={{ direction: navDirection, phase: 'in' }}
-		out:secondaryPageTransition={{ direction: navDirection, phase: 'out' }}
-	>
-		{@render children()}
-	</div>
-{/key}
-
 <div
-	class="tab-bar-wrapper"
-	class:tab-bar-wrapper--hidden={!tabBarVisible}
-	aria-hidden={!tabBarVisible}
+	class="relative grid min-h-dvh w-full grid-cols-1 grid-rows-1 overflow-x-clip bg-canvas text-ink"
 >
-	<BottomTabBar />
+	{#key page.url.pathname}
+		<div
+			class="col-start-1 row-start-1 min-h-dvh w-full bg-canvas text-ink"
+			in:secondaryPageTransition={{ direction: navDirection, phase: 'in' }}
+			out:secondaryPageTransition={{ direction: navDirection, phase: 'out' }}
+		>
+			{@render children()}
+		</div>
+	{/key}
 </div>
 
 <InstallPrompt />

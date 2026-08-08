@@ -1,9 +1,7 @@
-import { linear } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
 import type { NavigationDirection } from './navigation-direction';
 
-export const SECONDARY_PAGE_ENTER_MS = 190;
-export const SECONDARY_PAGE_EXIT_MS = 150;
+export const SECONDARY_PAGE_DURATION_MS = 300;
 
 type SecondaryPageTransitionParams = {
 	direction?: NavigationDirection;
@@ -16,6 +14,29 @@ function prefersReducedMotion(): boolean {
 	);
 }
 
+/**
+ * MD3 规范三次贝塞尔缓动函数生成器
+ */
+function cubicBezier(x1: number, y1: number, x2: number, y2: number) {
+	return function (t: number): number {
+		if (t <= 0) return 0;
+		if (t >= 1) return 1;
+		let u = t;
+		for (let i = 0; i < 5; i++) {
+			const currentX = 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u;
+			const currentDx =
+				3 * (1 - u) * (1 - u) * x1 + 6 * (1 - u) * u * (x2 - x1) + 3 * u * u * (1 - x2);
+			if (Math.abs(currentDx) < 1e-6) break;
+			u = u - (currentX - t) / currentDx;
+		}
+		return 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u;
+	};
+}
+
+// MD3 Emphasized 缓动曲线
+export const md3EmphasizedDecelerate = cubicBezier(0.05, 0.7, 0.1, 1.0);
+export const md3EmphasizedAccelerate = cubicBezier(0.3, 0.0, 0.8, 0.15);
+
 export function secondaryPageTransition(
 	node: Element,
 	{ direction = 'none', phase = 'in' }: SecondaryPageTransitionParams = {}
@@ -25,28 +46,36 @@ export function secondaryPageTransition(
 	}
 
 	const width = node.getBoundingClientRect().width;
-	const peek = width * 0.3;
-	const duration =
-		phase === 'in'
-			? SECONDARY_PAGE_ENTER_MS
-			: direction === 'forward'
-				? SECONDARY_PAGE_EXIT_MS
-				: SECONDARY_PAGE_ENTER_MS;
+	const duration = SECONDARY_PAGE_DURATION_MS;
+	const easing = phase === 'in' ? md3EmphasizedDecelerate : md3EmphasizedAccelerate;
+	// 上层页面：forward 进入或 back 退出时滑入/滑出
+	const topPage = direction === 'forward' ? phase === 'in' : phase === 'out';
 
 	return {
 		duration: prefersReducedMotion() ? 1 : duration,
-		easing: linear,
+		easing,
 		css: (t) => {
-			const x =
-				direction === 'forward'
-					? phase === 'in'
-						? (1 - t) * width
-						: -(1 - t) * peek
-					: phase === 'in'
-						? -(1 - t) * peek
-						: (1 - t) * width;
-
-			return `transform: translateX(${x}px); opacity: ${t}`;
+			if (topPage) {
+				const x = (1 - t) * width;
+				const radius = (1 - t) * 24;
+				const shadowAlpha = 0.15 * t;
+				return `
+					z-index: 20;
+					transform: translateX(${x}px);
+					border-radius: ${radius}px;
+					box-shadow: -8px 0 24px rgba(0, 0, 0, ${shadowAlpha});
+					opacity: 1;
+				`;
+			}
+			// 底层页面视差收缩/还原
+			const x = -(1 - t) * width * 0.25;
+			const scale = 0.93 + t * 0.07;
+			const opacity = 0.85 + t * 0.15;
+			return `
+				z-index: 10;
+				transform: translateX(${x}px) scale(${scale});
+				opacity: ${opacity};
+			`;
 		}
 	};
 }

@@ -7,7 +7,7 @@
 </script>
 
 {#if open}
-	<div class="pointer-events-none fixed inset-x-4 bottom-20 z-50 flex justify-center">
+	<div class="pointer-events-none fixed inset-x-4 bottom-20 z-[70] flex justify-center">
 		<div
 			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-sm text-inverse-on-surface shadow-lg transition-all duration-200"
 		>

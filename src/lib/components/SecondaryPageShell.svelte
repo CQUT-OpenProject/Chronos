@@ -21,8 +21,8 @@
 	}
 </script>
 
-<div class="min-h-dvh bg-canvas">
-	<TopAppBar {title} {actions}>
+<div class="relative z-[60] flex h-dvh flex-col overflow-hidden bg-canvas">
+	<TopAppBar {title} {actions} class="shrink-0">
 		{#snippet leading()}
 			<a
 				href={resolve(backHref)}
@@ -34,7 +34,7 @@
 			</a>
 		{/snippet}
 	</TopAppBar>
-	<main class="mx-auto w-full max-w-lg p-4">
+	<main class="mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto p-4">
 		{@render children?.()}
 	</main>
 </div>
