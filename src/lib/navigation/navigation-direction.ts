@@ -2,8 +2,31 @@ import { isSecondaryRoute } from './routes';
 
 export type NavigationDirection = 'forward' | 'back' | 'none';
 
+let navigationStack: string[] = [];
+
 function pathDepth(pathname: string): number {
 	return pathname.split('/').filter(Boolean).length;
+}
+
+export function initNavigationStack(pathname: string): void {
+	navigationStack = [pathname];
+}
+
+export function resetNavigationStack(): void {
+	navigationStack = [];
+}
+
+function trimStackTo(pathname: string): void {
+	const index = navigationStack.lastIndexOf(pathname);
+	if (index !== -1) {
+		navigationStack = navigationStack.slice(0, index + 1);
+	}
+}
+
+function pushToStack(pathname: string): void {
+	if (navigationStack[navigationStack.length - 1] !== pathname) {
+		navigationStack.push(pathname);
+	}
 }
 
 export function getNavigationDirection(from: string | undefined, to: string): NavigationDirection {
@@ -38,4 +61,46 @@ export function getNavigationDirection(from: string | undefined, to: string): Na
 	}
 
 	return 'forward';
+}
+
+export function resolveNavigationDirection(
+	from: string | undefined,
+	to: string,
+	navigationType: 'link' | 'popstate' | 'goto' | 'leave' | 'form'
+): NavigationDirection {
+	if (navigationType === 'popstate') {
+		trimStackTo(to);
+		return 'back';
+	}
+
+	if (!to) {
+		return 'none';
+	}
+
+	if (navigationStack.length === 0 && from) {
+		navigationStack = [from];
+	}
+
+	const stackIndex = navigationStack.lastIndexOf(to);
+	const isStackBack = stackIndex !== -1 && stackIndex < navigationStack.length - 1;
+
+	let direction: NavigationDirection;
+	if (isStackBack) {
+		direction = 'back';
+		trimStackTo(to);
+	} else {
+		direction = getNavigationDirection(from, to);
+
+		if (direction === 'none') {
+			navigationStack = [to];
+		} else if (direction === 'back') {
+			trimStackTo(to);
+		} else if (from && from !== to) {
+			pushToStack(to);
+		} else if (!from) {
+			navigationStack = [to];
+		}
+	}
+
+	return direction;
 }

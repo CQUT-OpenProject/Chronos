@@ -12,7 +12,8 @@
 	import { page } from '$app/state';
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import {
-		getNavigationDirection,
+		initNavigationStack,
+		resolveNavigationDirection,
 		type NavigationDirection
 	} from '$lib/navigation/navigation-direction';
 	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
@@ -31,13 +32,11 @@
 		const fromPath = from?.url.pathname;
 		const toPath = to?.url.pathname;
 
-		if (type === 'popstate') {
-			navDirection = 'back';
-		} else if (!toPath) {
+		if (!toPath) {
 			return;
-		} else {
-			navDirection = getNavigationDirection(fromPath, toPath);
 		}
+
+		navDirection = resolveNavigationDirection(fromPath, toPath, type);
 	});
 
 	let { children } = $props();
@@ -48,6 +47,7 @@
 	setContext('timetableScreen', timetableScreen);
 
 	onMount(() => {
+		initNavigationStack(page.url.pathname);
 		shell.init();
 		timetableScreen.init();
 		initWebVitals();

@@ -1,5 +1,10 @@
-import { describe, expect, it } from 'vite-plus/test';
-import { getNavigationDirection } from './navigation-direction';
+import { describe, expect, it, beforeEach } from 'vite-plus/test';
+import {
+	getNavigationDirection,
+	initNavigationStack,
+	resetNavigationStack,
+	resolveNavigationDirection
+} from './navigation-direction';
 
 describe('getNavigationDirection', () => {
 	it('returns none for tab switches', () => {
@@ -31,5 +36,27 @@ describe('getNavigationDirection', () => {
 
 	it('returns forward for lateral secondary navigation at same depth', () => {
 		expect(getNavigationDirection('/about', '/theme-settings')).toBe('forward');
+	});
+});
+
+describe('resolveNavigationDirection', () => {
+	beforeEach(() => {
+		resetNavigationStack();
+	});
+
+	it('returns back when returning to a parent page at the same path depth', () => {
+		initNavigationStack('/mine');
+		expect(resolveNavigationDirection('/mine', '/about', 'link')).toBe('forward');
+		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'link')).toBe('forward');
+		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'link')).toBe('back');
+	});
+
+	it('returns back when leaving a third-level license page', () => {
+		initNavigationStack('/about');
+		resolveNavigationDirection('/about', '/open-source-licenses', 'link');
+		resolveNavigationDirection('/open-source-licenses', '/open-source-licenses/project', 'link');
+		expect(
+			resolveNavigationDirection('/open-source-licenses/project', '/open-source-licenses', 'link')
+		).toBe('back');
 	});
 });
