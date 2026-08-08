@@ -4,26 +4,15 @@
 	import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
+	import { placeCapsules, type PlacedCourseCapsule } from '$lib/timetable/capsule-layout';
+	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
 	import {
-		buildSlotGroups,
-		blendColors,
 		computeDelayUntilNextCurrentTimeRefreshMillis,
 		currentTimeMinutes,
 		findCurrentPeriodIndex,
-		locationDisplayLines,
-		parseColor,
-		parsePeriodRanges,
-		timetableDayShortLabel
-	} from '$lib/timetable/timetable-grid-logic';
-	import {
-		resolveCapsuleTypeScale,
-		resolveLocationBlockMetrics,
-		shouldShowLocationCampus
-	} from '$lib/timetable/capsule-type-scale';
+		parsePeriodRanges
+	} from '$lib/timetable/period-clock';
 
-	const DARK_SURFACE = '#17171a';
-	const ON_SURFACE_DARK = '#f4f4f5';
-	const BADGE_LABEL = '非本周';
 	const FIT_MIN_FONT_PX = 6;
 
 	interface Props {
@@ -58,13 +47,18 @@
 	let now = $state(new Date());
 
 	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
-	const visibleDayIndexMap = $derived(
-		new Map(gridModel.visibleDays.map((day, index) => [day.dayOfWeek, index]))
-	);
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
-	const slotGroups = $derived(buildSlotGroups(courseDisplayModels));
-	const columnFraction = $derived(visibleDayCount > 0 ? 100 / visibleDayCount : 0);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
+
+	const placements = $derived(
+		placeCapsules({
+			courseDisplayModels,
+			visibleDays: gridModel.visibleDays,
+			columnWidthPx,
+			expandedSlotKeys: expandedSlots,
+			isDark
+		})
+	);
 
 	const currentPeriodIndex = $derived(
 		findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
@@ -109,10 +103,6 @@
 		schedule();
 		return () => clearTimeout(timeoutId);
 	});
-
-	function slotKey(day: number, start: number, end: number): string {
-		return `${day}-${start}-${end}`;
-	}
 
 	function dayOfMonth(date: string): string {
 		return date.slice(8, 10);
@@ -168,20 +158,6 @@
 			});
 
 			return () => observer.disconnect();
-		};
-	}
-
-	function courseColors(course: Course): { background: string; text: string } {
-		const rawBackground = parseColor(course.color);
-		if (isDark) {
-			return {
-				background: blendColors(rawBackground, DARK_SURFACE, 0.58),
-				text: blendColors(ON_SURFACE_DARK, rawBackground, 0.18)
-			};
-		}
-		return {
-			background: rawBackground,
-			text: parseColor(course.textColor)
 		};
 	}
 
@@ -320,89 +296,49 @@
 				class="relative min-w-0 flex-1 {gridBgClass}"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
-				{#each slotGroups as group (slotKey(group.dayOfWeek, group.startPeriod, group.endPeriod))}
-					{@const key = slotKey(group.dayOfWeek, group.startPeriod, group.endPeriod)}
-					{@const count = group.courses.length}
-					{@const columnIndex = visibleDayIndexMap.get(group.dayOfWeek) ?? 0}
-					{@const columnLeft = columnIndex * columnFraction}
-					{@const slotSpan = group.endPeriod - group.startPeriod + 1}
-					{@const isExpanded = expandedSlots.has(key)}
-
-					{#if count === 1}
-						{@const displayModel = group.courses[0]!}
-						{@const course = displayModel.course}
-						{@const courseSpan = course.endPeriod - course.startPeriod + 1}
-						<div
-							class="absolute box-border overflow-hidden py-[3px]"
-							style:top="calc((var(--row-height) * {course.startPeriod - 1}))"
-							style:left="{columnLeft}%"
-							style:width="{columnFraction}%"
-							style:height="calc(var(--row-height) * {courseSpan})"
-						>
-							{@render courseCard(displayModel, 1)}
-						</div>
-					{:else if !isExpanded}
-						{@const placeholderScale = resolveCapsuleTypeScale(columnWidthPx, 1)}
-						<div
-							class="absolute box-border py-[3px]"
-							style:top="calc((var(--row-height) * {group.startPeriod - 1}))"
-							style:left="{columnLeft}%"
-							style:width="{columnFraction}%"
-							style:height="calc(var(--row-height) * {slotSpan})"
-						>
+				{#each placements as item (item.key)}
+					{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
+					<div
+						class="absolute box-border overflow-hidden py-[3px]"
+						style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
+						style:left="{item.geometry.leftPercent}%"
+						style:width="{item.geometry.widthPercent}%"
+						style:height="calc(var(--row-height) * {span})"
+					>
+						{#if item.kind === 'overlap-placeholder'}
 							<button
 								type="button"
 								class="flex h-full w-full items-center justify-center rounded-xl border border-zinc-300/50 bg-zinc-100 p-2 text-center shadow-sm dark:border-zinc-600/50 dark:bg-zinc-800/60"
-								onclick={() => expandSlot(key)}
+								onclick={() => expandSlot(item.key)}
 							>
 								<span
 									class="text-zinc-600 dark:text-zinc-300"
-									style:font-size="{placeholderScale.placeholderPx}px"
+									style:font-size="{item.placeholderPx}px"
 								>
-									此时段有 {count} 门课程重叠
+									此时段有 {item.count} 门课程重叠
 								</span>
 							</button>
-						</div>
-					{:else}
-						{@const perCourseWidth = columnFraction / count}
-						{#each group.courses as displayModel, index (displayModel.course.id)}
-							{@const course = displayModel.course}
-							{@const courseSpan = course.endPeriod - course.startPeriod + 1}
-							<div
-								class="absolute box-border overflow-hidden py-[3px]"
-								style:top="calc((var(--row-height) * {course.startPeriod - 1}))"
-								style:left="{columnLeft + perCourseWidth * index}%"
-								style:width="{perCourseWidth}%"
-								style:height="calc(var(--row-height) * {courseSpan})"
-							>
-								{@render courseCard(displayModel, count)}
-							</div>
-						{/each}
-					{/if}
+						{:else}
+							{@render courseCard(item)}
+						{/if}
+					</div>
 				{/each}
 			</div>
 		</div>
 	</div>
 </div>
 
-{#snippet courseCard(displayModel: TimetableCourseDisplayModel, overlapCount: number)}
-	{@const course = displayModel.course}
-	{@const colors = courseColors(course)}
-	{@const showCampus = shouldShowLocationCampus(columnWidthPx, overlapCount)}
-	{@const locationLines = locationDisplayLines(course.location, {
-		includeCampus: showCampus
-	})}
-	{@const scale = resolveCapsuleTypeScale(columnWidthPx, overlapCount)}
-	{@const locationMetrics = resolveLocationBlockMetrics(
-		scale.detailPx,
-		showCampus,
-		locationLines.length
-	)}
-	{@const teacher = course.teacher.trim()}
-	{@const handlers = courseCardHandlers(course)}
+{#snippet courseCard(placed: PlacedCourseCapsule)}
+	{@const colors = placed.colors}
+	{@const scale = placed.scale}
+	{@const locationLines = placed.locationLines}
+	{@const locationMetrics = placed.locationMetrics}
+	{@const teacher = placed.teacher}
+	{@const handlers = courseCardHandlers(placed.course)}
 	<button
 		type="button"
-		class="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left shadow-md {displayModel.isInDisplayedWeek
+		class="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left shadow-md {placed
+			.displayModel.isInDisplayedWeek
 			? ''
 			: 'opacity-45'}"
 		style:background-color={colors.background}
@@ -414,7 +350,7 @@
 		onpointercancel={handlers.onpointercancel}
 		onclick={handlers.onclick}
 	>
-		{#if !displayModel.isInDisplayedWeek}
+		{#if placed.badgeLabel}
 			<span class="mb-0.5 flex w-full shrink-0 justify-center">
 				<span
 					class="max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap"
@@ -422,17 +358,17 @@
 					style:color="color-mix(in srgb, {colors.text} 80%, transparent)"
 					style:font-size="{scale.badgePx}px"
 					{@attach fitWidthFont(() => ({
-						lines: [BADGE_LABEL],
+						lines: [placed.badgeLabel!],
 						maxFontPx: scale.badgePx,
 						fromParent: true
 					}))}
 				>
-					{BADGE_LABEL}
+					{placed.badgeLabel}
 				</span>
 			</span>
 		{/if}
 		<MiddleTruncateText
-			text={course.name}
+			text={placed.course.name}
 			class="min-h-0 flex-1 leading-tight font-medium"
 			style="color: {colors.text}; font-size: {scale.titlePx}px"
 		/>
