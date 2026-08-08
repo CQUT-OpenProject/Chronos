@@ -19,22 +19,19 @@
 		class?: string;
 	} = $props();
 
-	let arrayValue = $derived([value]);
-
-	function handleValueChange(vals: number[]) {
-		if (vals.length > 0) {
-			value = vals[0];
-			onValueChange?.(vals[0]);
-		}
+	function handleValueChange(vals: number) {
+		value = vals;
+		onValueChange?.(vals);
 	}
 
-	function handleValueCommit(vals: number[]) {
-		if (vals.length > 0) onValueCommit?.(vals[0]);
+	function handleValueCommit(vals: number) {
+		onValueCommit?.(vals);
 	}
 </script>
 
 <Slider.Root
-	value={arrayValue}
+	type="single"
+	{value}
 	onValueChange={handleValueChange}
 	onValueCommit={handleValueCommit}
 	{min}
@@ -46,6 +43,7 @@
 		<Slider.Range class="absolute h-full bg-brand" />
 	</span>
 	<Slider.Thumb
+		index={0}
 		class="block size-5 rounded-full bg-brand shadow-md transition-transform outline-none hover:scale-110 focus-visible:ring-2 focus-visible:ring-brand active:scale-125"
 	/>
 </Slider.Root>
