@@ -6,6 +6,7 @@
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
+	import { Slider } from 'm3-svelte';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 
 	let {
@@ -28,8 +29,7 @@
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
 
 	let weekSliderVisible = $state(false);
-	let dragWeek = $state<number | null>(null);
-	const sliderWeek = $derived(dragWeek ?? screenState.displayedWeek);
+	let dragWeek = $state(0);
 
 	const weekRangeText = $derived(
 		formatWeekRange(screenState.weekGridModels.get(screenState.displayedWeek))
@@ -43,7 +43,6 @@
 	function onHeaderTap() {
 		if (weekSliderVisible) {
 			weekSliderVisible = false;
-			dragWeek = null;
 			return;
 		}
 		screen.jumpToCurrentWeek();
@@ -90,7 +89,7 @@
 	<TopAppBar class="shrink-0">
 		{#snippet titleSnippet()}
 			<div
-				class="min-w-0 flex-1 cursor-pointer select-none"
+				class="flex min-h-16 min-w-0 flex-1 cursor-pointer flex-col justify-center select-none"
 				role="button"
 				tabindex="0"
 				onclick={onHeaderTap}
@@ -101,20 +100,20 @@
 				}}
 			>
 				{#if weekSliderVisible && startWeek < endWeek}
-					<input
-						type="range"
+					<Slider
+						value={dragWeek}
 						min={startWeek}
 						max={endWeek}
 						step={1}
-						value={sliderWeek}
+						stops
+						size="xs"
+						showValue={false}
 						oninput={onSliderInput}
 						onchange={() => {
 							weekSliderVisible = false;
-							dragWeek = null;
 						}}
-						class="w-full"
 					/>
-					<p class="text-sm font-semibold">第 {sliderWeek} 周</p>
+					<p class="text-sm font-semibold">第 {dragWeek} 周</p>
 				{:else}
 					<p class="truncate text-xl leading-7 font-bold">{weekRangeText}</p>
 					<p class="text-sm text-on-surface-variant">
