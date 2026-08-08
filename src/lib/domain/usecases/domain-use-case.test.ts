@@ -42,14 +42,12 @@ class FakeAppBackend {
 	currentTimetableId: string | null = null;
 	wallpaperUri: string | null = null;
 	themeMode = ThemeMode.SYSTEM;
-	useDynamicColor = false;
 	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
 		wallpaperUri: null,
 		currentTimetable: null,
-		themeMode: ThemeMode.SYSTEM,
-		useDynamicColor: false
+		themeMode: ThemeMode.SYSTEM
 	};
 
 	syncState() {
@@ -67,8 +65,7 @@ class FakeAppBackend {
 			currentTimetableId: this.currentTimetableId,
 			wallpaperUri: this.wallpaperUri,
 			currentTimetable: current,
-			themeMode: this.themeMode,
-			useDynamicColor: this.useDynamicColor
+			themeMode: this.themeMode
 		};
 	}
 }
@@ -162,11 +159,6 @@ class FakePreferencesRepository implements PreferencesRepository {
 
 	async setThemeMode(mode: ThemeMode): Promise<void> {
 		this.backend.themeMode = mode;
-		this.backend.syncState();
-	}
-
-	async setUseDynamicColor(enabled: boolean): Promise<void> {
-		this.backend.useDynamicColor = enabled;
 		this.backend.syncState();
 	}
 }

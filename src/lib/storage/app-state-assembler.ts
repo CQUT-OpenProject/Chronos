@@ -25,8 +25,7 @@ export function assembleAppState(
 		currentTimetableId,
 		wallpaperUri: preferences.wallpaperUri,
 		currentTimetable: currentTimetable ? copyForStateBoundary(currentTimetable) : null,
-		themeMode: preferences.themeMode,
-		useDynamicColor: preferences.useDynamicColor
+		themeMode: preferences.themeMode
 	};
 }
 

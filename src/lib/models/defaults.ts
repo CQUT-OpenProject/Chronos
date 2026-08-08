@@ -1,3 +1,4 @@
+import { formatIsoDate, parseIsoDate, previousOrSameMonday } from '$lib/domain/date';
 import type { PeriodTime } from './timetable';
 
 export function defaultPeriodTimes(): PeriodTime[] {
@@ -16,21 +17,5 @@ export function defaultPeriodTimes(): PeriodTime[] {
 }
 
 export function currentWeekMonday(referenceDate: string): string {
-	const date = parseIsoDate(referenceDate);
-	const day = date.getUTCDay();
-	const diff = day === 0 ? -6 : 1 - day;
-	date.setUTCDate(date.getUTCDate() + diff);
-	return formatIsoDate(date);
-}
-
-function parseIsoDate(value: string): Date {
-	const [year, month, day] = value.split('-').map(Number);
-	return new Date(Date.UTC(year, month - 1, day, 12));
-}
-
-function formatIsoDate(date: Date): string {
-	const year = date.getUTCFullYear();
-	const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-	const day = String(date.getUTCDate()).padStart(2, '0');
-	return `${year}-${month}-${day}`;
+	return formatIsoDate(previousOrSameMonday(parseIsoDate(referenceDate)));
 }

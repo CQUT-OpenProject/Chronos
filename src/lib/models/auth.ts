@@ -8,18 +8,3 @@ export interface SavedCredentialState {
 	hasSavedCredential: boolean;
 	protectionAvailable: boolean;
 }
-
-export interface GithubRelease {
-	tagName: string;
-	name: string;
-	publishedAt: string;
-	body: string;
-	htmlUrl: string;
-}
-
-export interface GithubContributor {
-	login: string;
-	avatarUrl: string;
-	htmlUrl: string;
-	contributions: number;
-}

@@ -37,7 +37,6 @@ export interface AppState {
 	wallpaperUri: string | null;
 	currentTimetable: Timetable | null;
 	themeMode: ThemeMode;
-	useDynamicColor: boolean;
 }
 
 export function emptyAppState(): AppState {
@@ -46,7 +45,6 @@ export function emptyAppState(): AppState {
 		currentTimetableId: null,
 		wallpaperUri: null,
 		currentTimetable: null,
-		themeMode: ThemeMode.SYSTEM,
-		useDynamicColor: false
+		themeMode: ThemeMode.SYSTEM
 	};
 }

@@ -93,9 +93,6 @@ export function createPreferencesRepository(
 		},
 		async setThemeMode(mode) {
 			settings.setThemeMode(mode);
-		},
-		async setUseDynamicColor(enabled: boolean) {
-			settings.setUseDynamicColor(enabled);
 		}
 	};
 }

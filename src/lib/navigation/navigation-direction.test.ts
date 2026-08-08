@@ -1,9 +1,11 @@
 import { describe, expect, it, beforeEach } from 'vite-plus/test';
 import {
 	getNavigationDirection,
+	getTransitionDirection,
 	initNavigationStack,
 	resetNavigationStack,
-	resolveNavigationDirection
+	resolveNavigationDirection,
+	updateTransitionDirection
 } from './navigation-direction';
 
 describe('getNavigationDirection', () => {
@@ -60,5 +62,24 @@ describe('resolveNavigationDirection', () => {
 		expect(
 			resolveNavigationDirection('/open-source-licenses/project', '/open-source-licenses', 'link')
 		).toBe('back');
+	});
+});
+
+describe('updateTransitionDirection', () => {
+	beforeEach(() => {
+		resetNavigationStack();
+	});
+
+	it('stores direction for transition to read at invocation time', () => {
+		initNavigationStack('/mine');
+		updateTransitionDirection('/mine', '/about', 'link');
+		expect(getTransitionDirection()).toBe('forward');
+	});
+
+	it('stores back when leaving secondary routes', () => {
+		initNavigationStack('/mine');
+		updateTransitionDirection('/mine', '/about', 'link');
+		updateTransitionDirection('/about', '/mine', 'link');
+		expect(getTransitionDirection()).toBe('back');
 	});
 });

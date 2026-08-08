@@ -5,5 +5,4 @@ export interface PreferencesRepository {
 	setCurrentTimetableId(id: string | null): Promise<void>;
 	setWallpaper(uri: string | null): Promise<void>;
 	setThemeMode(mode: ThemeMode): Promise<void>;
-	setUseDynamicColor(enabled: boolean): Promise<void>;
 }

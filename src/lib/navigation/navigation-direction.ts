@@ -3,6 +3,25 @@ import { isSecondaryRoute } from './routes';
 export type NavigationDirection = 'forward' | 'back' | 'none';
 
 let navigationStack: string[] = [];
+let currentTransitionDirection: NavigationDirection = 'none';
+
+export function getTransitionDirection(): NavigationDirection {
+	return currentTransitionDirection;
+}
+
+export function updateTransitionDirection(
+	from: string | undefined,
+	to: string,
+	navigationType: 'link' | 'popstate' | 'goto' | 'leave' | 'form'
+): NavigationDirection {
+	if (!to) {
+		currentTransitionDirection = 'none';
+		return currentTransitionDirection;
+	}
+
+	currentTransitionDirection = resolveNavigationDirection(from, to, navigationType);
+	return currentTransitionDirection;
+}
 
 function pathDepth(pathname: string): number {
 	return pathname.split('/').filter(Boolean).length;

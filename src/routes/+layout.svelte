@@ -10,12 +10,11 @@
 	import { setContext } from 'svelte';
 	import type { Pathname } from '$app/types';
 	import { page } from '$app/state';
-	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import {
 		initNavigationStack,
-		resolveNavigationDirection,
-		type NavigationDirection
+		updateTransitionDirection
 	} from '$lib/navigation/navigation-direction';
+	import { isSecondaryRoute } from '$lib/navigation/routes';
 	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import '$lib/m3/m3.css';
@@ -26,17 +25,16 @@
 
 	const webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
 
-	let navDirection = $state<NavigationDirection>('none');
+	const TAB_PAGE_KEY = '__tabs__';
+	const pageTransitionKey = $derived(
+		isSecondaryRoute(page.url.pathname) ? page.url.pathname : TAB_PAGE_KEY
+	);
 
 	beforeNavigate(({ from, to, type }) => {
 		const fromPath = from?.url.pathname;
 		const toPath = to?.url.pathname;
-
-		if (!toPath) {
-			return;
-		}
-
-		navDirection = resolveNavigationDirection(fromPath, toPath, type);
+		if (!toPath) return;
+		updateTransitionDirection(fromPath, toPath, type);
 	});
 
 	let { children } = $props();
@@ -70,11 +68,11 @@
 <div
 	class="relative grid min-h-dvh w-full grid-cols-1 grid-rows-1 overflow-x-clip bg-canvas text-ink"
 >
-	{#key page.url.pathname}
+	{#key pageTransitionKey}
 		<div
 			class="col-start-1 row-start-1 min-h-dvh w-full bg-canvas text-ink"
-			in:secondaryPageTransition={{ direction: navDirection, phase: 'in' }}
-			out:secondaryPageTransition={{ direction: navDirection, phase: 'out' }}
+			in:secondaryPageTransition={{ phase: 'in' }}
+			out:secondaryPageTransition={{ phase: 'out' }}
 		>
 			{@render children()}
 		</div>

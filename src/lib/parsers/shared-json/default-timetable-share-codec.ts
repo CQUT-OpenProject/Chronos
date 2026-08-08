@@ -23,16 +23,9 @@ import {
 } from '$lib/domain/date';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
+import { coursePalette, normalizedCourseName } from '$lib/parsers/course-palette';
 
 const ACADEMIC_YEAR_PATTERN = /(20\d{2})\D+(20\d{2})/;
-const COURSE_PALETTE: [string, string][] = [
-	['#EADDFF', '#21005D'],
-	['#FFDBC9', '#311100'],
-	['#C4EED0', '#072711'],
-	['#F9DEDC', '#410E0B'],
-	['#D3E3FD', '#041E49'],
-	['#FFD8E4', '#31111D']
-];
 
 interface ImportWeekDayInfo {
 	dayOfWeek: number;
@@ -368,7 +361,7 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 	}
 
 	private toCourseOrNull(event: OnlineScheduleEvent, index: number): Course | null {
-		const normalizedName = this.normalizedCourseName(event.eventName);
+		const normalizedName = normalizedCourseName(event.eventName);
 		const dayOfWeek = this.toImportDayOfWeek(event.weekDay);
 		const startPeriod = Number.parseInt(event.sessionStart.trim(), 10);
 		if (!dayOfWeek || Number.isNaN(startPeriod) || !normalizedName) return null;
@@ -381,7 +374,7 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 					.filter((week) => !Number.isNaN(week))
 			)
 		].sort((left, right) => left - right);
-		const [background, foreground] = this.coursePalette(normalizedName);
+		const [background, foreground] = coursePalette(normalizedName);
 		const sessionMax = event.sessionList
 			.map((session) => Number.parseInt(session.trim(), 10))
 			.filter((session) => !Number.isNaN(session))
@@ -440,25 +433,5 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 		return (Object.values(TimetableImportSource) as string[]).includes(normalized)
 			? (normalized as TimetableImportSource)
 			: null;
-	}
-
-	private coursePalette(name: string): [string, string] {
-		const index = this.kotlinStringHashCode(name) % COURSE_PALETTE.length;
-		return COURSE_PALETTE[Math.abs(index)] ?? COURSE_PALETTE[0]!;
-	}
-
-	private kotlinStringHashCode(value: string): number {
-		let hash = 0;
-		for (let index = 0; index < value.length; index += 1) {
-			hash = (hash * 31 + value.charCodeAt(index)) | 0;
-		}
-		return hash;
-	}
-
-	private normalizedCourseName(value: string): string {
-		return value
-			.replace(/^【调】/, '')
-			.replace(/[★☆〇■◆]$/u, '')
-			.trim();
 	}
 }

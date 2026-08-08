@@ -1,14 +1,3 @@
-@function --m3-density(--size) {
-	result: calc(var(--size) + (var(--density, 0) * 0.25rem));
-}
-
-.m3-headline-large {
-	font-family: var(--m3-font);
-	font-size: 2rem;
-	line-height: 1.25;
-	font-weight: 400;
-}
-
 .m3-headline-medium {
 	font-family: var(--m3-font);
 	font-size: 1.75rem;
@@ -20,13 +9,6 @@
 	font-family: var(--m3-font);
 	font-size: 1.5rem;
 	line-height: 1.333;
-	font-weight: 400;
-}
-
-.m3-title-large {
-	font-family: var(--m3-font);
-	font-size: 1.375rem;
-	line-height: 1.273;
 	font-weight: 400;
 }
 
@@ -48,20 +30,6 @@
 	font-family: var(--m3-font);
 	font-size: 0.875rem;
 	line-height: 1.429;
-	font-weight: 500;
-}
-
-.m3-label-medium {
-	font-family: var(--m3-font);
-	font-size: 0.75rem;
-	line-height: 1.333;
-	font-weight: 500;
-}
-
-.m3-label-small {
-	font-family: var(--m3-font);
-	font-size: 0.688rem;
-	line-height: 1.455;
 	font-weight: 500;
 }
 
@@ -144,7 +112,6 @@
 }
 
 /* Ensure list item active/pressed state overlays have smooth rounded corners matching card section */
-.m3-section-surface .m3-container,
 .m3-section-surface a,
 .m3-section-surface label,
 .m3-section-surface button {
@@ -152,8 +119,6 @@
 	overflow: hidden !important;
 }
 
-.m3-section-surface .m3-container::before,
-.m3-section-surface .m3-container::after,
 .m3-section-surface a::before,
 .m3-section-surface a::after,
 .m3-section-surface label::before,
@@ -161,13 +126,6 @@
 .m3-section-surface button::before,
 .m3-section-surface button::after {
 	border-radius: inherit !important;
-}
-
-/* Smaller font size for list item supporting subtitle text */
-.m3-container .supporting {
-	font-size: 0.75rem !important;
-	line-height: 1.35 !important;
-	opacity: 0.85;
 }
 
 /* MD3 36px icon container chip */
@@ -266,22 +224,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
-}
-
-.m3-actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-}
-
-.m3-actions > .m3-container {
-	flex: 1 1 auto;
-}
-
-.m3-actions-inline {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
 }
 
 /* Bridge MD3 surface tokens to Chronos palette for list / page chrome */

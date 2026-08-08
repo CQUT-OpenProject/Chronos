@@ -1,6 +1,4 @@
 <script lang="ts">
-	import chronosIcon from '$lib/assets/chronos-icon.svg';
-
 	let {
 		title,
 		subtitle = ''
@@ -12,7 +10,7 @@
 
 <div class="flex flex-col items-center gap-3 py-4 text-center">
 	<img
-		src={chronosIcon}
+		src="/chronos-icon.svg"
 		alt="Chronos"
 		class="h-20 w-20 rounded-2xl shadow-md ring-1 ring-black/5 dark:ring-white/10"
 	/>

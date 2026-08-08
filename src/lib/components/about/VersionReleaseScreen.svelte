@@ -1,74 +1,58 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { marked } from 'marked';
-	import type { GithubRelease } from '$lib/models/auth';
-	import { createGithubServices } from '$lib/client/github-services';
 	import { formatPublishedDate } from '$lib/content/releases/release-display';
+	import {
+		createReleaseDetailState,
+		type ReleaseDetailStateController
+	} from '$lib/content/releases/catalog-state.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import AppHero from '$lib/components/AppHero.svelte';
+	import HighlightRow from '$lib/components/ui/HighlightRow.svelte';
+	import HighlightRowList from '$lib/components/ui/HighlightRowList.svelte';
 	import { CalendarMonthFill, DescriptionFill, InfoFill } from '$lib/icons';
 
-	let { tag }: { tag: string } = $props();
+	let {
+		tag,
+		detailState = createReleaseDetailState(() => tag)
+	}: {
+		tag: string;
+		detailState?: ReleaseDetailStateController;
+	} = $props();
 
-	const githubServices = createGithubServices();
-
-	let loading = $state(true);
-	let release = $state<GithubRelease | null>(null);
-	let errorMessage = $state<string | null>(null);
-
-	onMount(async () => {
-		const result = await githubServices.getReleaseByTag.invoke(tag);
-		loading = false;
-		if (result.ok) {
-			release = result.value;
-		} else {
-			errorMessage = result.error.message;
-		}
+	onMount(() => {
+		void detailState.load();
 	});
 
 	const htmlBody = $derived(
-		release?.body ? (marked.parse(release.body, { async: false }) as string) : ''
+		detailState.state.release?.body
+			? (marked.parse(detailState.state.release.body, { async: false }) as string)
+			: ''
 	);
 </script>
 
-{#if loading}
+{#if detailState.state.loading}
 	<div class="flex min-h-[300px] items-center justify-center py-12">
 		<LoadingIndicator />
 	</div>
-{:else if release}
+{:else if detailState.state.release}
 	<div class="m3-stack gap-5 py-2">
-		<AppHero title={release.name || release.tagName} />
+		<AppHero title={detailState.state.release.name || detailState.state.release.tagName} />
 
-		<Card variant="outlined">
-			<ul class="flex flex-col gap-4 text-on-surface-variant">
-				<li class="flex items-center gap-3.5">
-					<div
-						class="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-					>
-						<DescriptionFill class="h-5 w-5" />
-					</div>
-					<div class="flex min-w-0 flex-1 flex-col justify-center">
-						<p class="m3-body-large font-normal text-on-surface">版本标签</p>
-						<p class="m3-body-medium text-xs text-on-surface-variant">{release.tagName}</p>
-					</div>
-				</li>
-				<li class="flex items-center gap-3.5">
-					<div
-						class="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-					>
-						<CalendarMonthFill class="h-5 w-5" />
-					</div>
-					<div class="flex min-w-0 flex-1 flex-col justify-center">
-						<p class="m3-body-large font-normal text-on-surface">发布日期</p>
-						<p class="m3-body-medium text-xs text-on-surface-variant">
-							{formatPublishedDate(release.publishedAt)}
-						</p>
-					</div>
-				</li>
-			</ul>
-		</Card>
+		<HighlightRowList>
+			<HighlightRow
+				icon={DescriptionFill}
+				title="版本标签"
+				subtitle={detailState.state.release.tagName}
+			/>
+			<HighlightRow
+				icon={CalendarMonthFill}
+				title="发布日期"
+				subtitle={formatPublishedDate(detailState.state.release.publishedAt)}
+			/>
+		</HighlightRowList>
 
 		<MineSection title="更新日志" accentColor="primary">
 			<div class="release-prose prose prose-sm max-w-none px-2 dark:prose-invert">
@@ -80,7 +64,7 @@
 	<Card variant="filled" class="flex flex-col items-center gap-3 py-8 text-center">
 		<InfoFill class="h-8 w-8 text-on-surface-variant" />
 		<p class="m3-body-medium text-danger">
-			{errorMessage ?? '未获取到当前版本的 Release 信息'}
+			{detailState.state.errorMessage ?? '未获取到当前版本的 Release 信息'}
 		</p>
 	</Card>
 {/if}

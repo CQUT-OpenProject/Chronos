@@ -4,14 +4,12 @@ export interface UserPreferenceState {
 	currentTimetableId: string | null;
 	wallpaperUri: string | null;
 	themeMode: ThemeMode;
-	useDynamicColor: boolean;
 }
 
 const KEYS = {
 	currentTimetableId: 'current_timetable_id',
 	wallpaperUri: 'wallpaper_uri',
-	themeMode: 'theme_mode',
-	useDynamicColor: 'use_dynamic_color'
+	themeMode: 'theme_mode'
 } as const;
 
 const STORAGE_PREFIX = 'chronos_preferences:';
@@ -34,16 +32,14 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 			return {
 				currentTimetableId: null,
 				wallpaperUri: null,
-				themeMode: ThemeMode.SYSTEM,
-				useDynamicColor: false
+				themeMode: ThemeMode.SYSTEM
 			};
 		}
 
 		return {
 			currentTimetableId: target.getItem(storageKey(KEYS.currentTimetableId)),
 			wallpaperUri: target.getItem(storageKey(KEYS.wallpaperUri)),
-			themeMode: themeModeFromStorage(target.getItem(storageKey(KEYS.themeMode))),
-			useDynamicColor: target.getItem(storageKey(KEYS.useDynamicColor)) === 'true'
+			themeMode: themeModeFromStorage(target.getItem(storageKey(KEYS.themeMode)))
 		};
 	}
 
@@ -86,15 +82,8 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 		},
 		setThemeMode(mode: ThemeMode) {
 			setString(KEYS.themeMode, themeModeToStorage(mode));
-		},
-		setUseDynamicColor(enabled: boolean) {
-			if (!storage) return;
-			storage.setItem(storageKey(KEYS.useDynamicColor), String(enabled));
-			notify();
 		}
 	};
 }
 
 export type SettingsRepo = ReturnType<typeof createSettingsRepo>;
-
-export const settingsRepo = createSettingsRepo();

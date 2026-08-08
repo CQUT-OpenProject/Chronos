@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { createLocalReleaseRepository } from './local-release-repository';
+import { createLocalReleaseCatalog } from './local-catalog';
 
-describe('LocalReleaseRepository', () => {
+describe('LocalReleaseCatalog', () => {
 	it('returns the local release matching the tag', async () => {
-		const repository = createLocalReleaseRepository();
+		const catalog = createLocalReleaseCatalog();
 
-		const result = await repository.fetchReleaseByTag('UE-DND', 'Chronos', 'v0.1.0');
+		const result = await catalog.getRelease('v0.1.0');
 
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
@@ -17,9 +17,9 @@ describe('LocalReleaseRepository', () => {
 	});
 
 	it('fails when the tag has no local release file', async () => {
-		const repository = createLocalReleaseRepository();
+		const catalog = createLocalReleaseCatalog();
 
-		const result = await repository.fetchReleaseByTag('UE-DND', 'Chronos', 'v9.9.9');
+		const result = await catalog.getRelease('v9.9.9');
 
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
@@ -27,9 +27,9 @@ describe('LocalReleaseRepository', () => {
 	});
 
 	it('returns all local releases sorted by publishedAt descending', async () => {
-		const repository = createLocalReleaseRepository();
+		const catalog = createLocalReleaseCatalog();
 
-		const result = await repository.fetchAllReleases();
+		const result = await catalog.listReleases();
 
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;

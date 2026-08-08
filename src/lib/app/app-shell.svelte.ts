@@ -7,13 +7,13 @@ function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean 
 	return systemPrefersDark;
 }
 
-export function createAppShell(injectedServices: AppServices | null = null) {
+export function createAppShell() {
 	let appState = $state<AppState>(emptyAppState());
 	let initialized = $state(false);
 	let systemPrefersDark = $state(false);
 	let unsubscribe: (() => void) | null = null;
 	let mediaQueryCleanup: (() => void) | null = null;
-	let services: AppServices | null = injectedServices;
+	let services: AppServices | null = null;
 
 	function getServices() {
 		services ??= createAppServices();
@@ -57,10 +57,6 @@ export function createAppShell(injectedServices: AppServices | null = null) {
 		await getServices().setWallpaper.invoke(uri);
 	}
 
-	async function setDynamicColorEnabled(enabled: boolean) {
-		await getServices().setDynamicColorEnabled.invoke(enabled);
-	}
-
 	return {
 		get state() {
 			return {
@@ -74,7 +70,6 @@ export function createAppShell(injectedServices: AppServices | null = null) {
 		destroy,
 		setThemeMode,
 		setWallpaper,
-		setDynamicColorEnabled,
 		get services() {
 			return getServices();
 		}

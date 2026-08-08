@@ -1,10 +1,9 @@
 import type { TransitionConfig } from 'svelte/transition';
-import type { NavigationDirection } from './navigation-direction';
+import { getTransitionDirection } from './navigation-direction';
 
 export const SECONDARY_PAGE_DURATION_MS = 300;
 
 type SecondaryPageTransitionParams = {
-	direction?: NavigationDirection;
 	phase?: 'in' | 'out';
 };
 
@@ -39,8 +38,9 @@ export const md3EmphasizedAccelerate = cubicBezier(0.3, 0.0, 0.8, 0.15);
 
 export function secondaryPageTransition(
 	node: Element,
-	{ direction = 'none', phase = 'in' }: SecondaryPageTransitionParams = {}
+	{ phase = 'in' }: SecondaryPageTransitionParams = {}
 ): TransitionConfig {
+	const direction = getTransitionDirection();
 	if (direction === 'none') {
 		return { duration: 0 };
 	}

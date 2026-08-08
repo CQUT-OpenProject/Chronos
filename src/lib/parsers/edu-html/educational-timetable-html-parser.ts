@@ -5,16 +5,13 @@ import { AcademicCalendarService } from '$lib/domain/services/academic-calendar'
 import { SystemTimeProvider, type TimeProvider } from '$lib/domain/services/time-provider';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
+import {
+	coursePalette,
+	kotlinStringHashCode,
+	normalizedCourseName
+} from '$lib/parsers/course-palette';
 import { parseHtmlDocument } from './dom';
 
-const COURSE_PALETTE: [string, string][] = [
-	['#EADDFF', '#21005D'],
-	['#FFDBC9', '#311100'],
-	['#C4EED0', '#072711'],
-	['#F9DEDC', '#410E0B'],
-	['#D3E3FD', '#041E49'],
-	['#FFD8E4', '#31111D']
-];
 const WHITESPACE_REGEX = /\s+/g;
 const WEEK_TOKEN = /\d+(?:-\d+)?周(?:\((?:单|双)\))?/g;
 
@@ -154,12 +151,6 @@ function parseWeeks(raw: string): number[] {
 	return [...weeks].sort((left, right) => left - right);
 }
 
-function coursePalette(name: string): [string, string] {
-	const hash = kotlinStringHashCode(name);
-	const index = Math.abs(hash % COURSE_PALETTE.length);
-	return COURSE_PALETTE[index] ?? COURSE_PALETTE[0]!;
-}
-
 function buildParsedCourseId(
 	dayOfWeek: number,
 	startPeriod: number,
@@ -168,18 +159,6 @@ function buildParsedCourseId(
 	rawTitle: string
 ): string {
 	return `${dayOfWeek}-${startPeriod}-${endPeriod}-${blockIndex}-${kotlinStringHashCode(rawTitle)}`;
-}
-
-function normalizedCourseName(value: string): string {
-	return value
-		.replace(/^【调】/, '')
-		.replace(/★$/, '')
-		.replace(/☆$/, '')
-		.replace(/〇$/, '')
-		.replace(/■$/, '')
-		.replace(/◆$/, '')
-		.trim()
-		.replace(WHITESPACE_REGEX, ' ');
 }
 
 function normalizeWhitespace(value: string): string {
@@ -192,12 +171,4 @@ function extractOwnText(element: Element | null | undefined): string {
 		.filter((node) => node.nodeType === 3)
 		.map((node) => node.textContent ?? '')
 		.join('');
-}
-
-function kotlinStringHashCode(value: string): number {
-	let hash = 0;
-	for (let index = 0; index < value.length; index += 1) {
-		hash = (hash * 31 + value.charCodeAt(index)) | 0;
-	}
-	return hash;
 }
