@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { registerSW } from 'virtual:pwa-register';
-	import { Snackbar, snackbar } from 'm3-svelte';
+	import Snackbar from '$lib/components/ui/Snackbar.svelte';
+	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 	let updateServiceWorker = $state<(() => Promise<void>) | null>(null);
 
@@ -9,21 +10,15 @@
 		updateServiceWorker = registerSW({
 			immediate: true,
 			onNeedRefresh() {
-				snackbar(
-					'新版本可用，点击刷新即可更新',
-					{
-						刷新: () => {
-							void updateServiceWorker?.();
-						}
-					},
-					true,
-					-1
-				);
+				snackbar('新版本可用，点击刷新即可更新', {
+					label: '刷新',
+					onClick: () => {
+						void updateServiceWorker?.();
+					}
+				});
 			}
 		});
 	});
 </script>
 
-<div style="--m3v-bottom-offset: calc(var(--spacing-tabbar) + var(--tabbar-safe) - 0.5rem)">
-	<Snackbar closeTitle="关闭" />
-</div>
+<Snackbar />

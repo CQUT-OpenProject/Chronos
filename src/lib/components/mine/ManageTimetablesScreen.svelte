@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { AddFill, CheckCircleFill, DeleteFill } from '$lib/icons';
-	import { Button, Dialog, TextFieldOutlined } from 'm3-svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Dialog from '$lib/components/ui/Dialog.svelte';
 
 	let {
 		shell
@@ -40,7 +41,7 @@
 	}
 </script>
 
-<div class="m3-stack">
+<div class="flex flex-col gap-5">
 	<div class="flex flex-col gap-3">
 		{#each appState.timetables as timetable (timetable.id)}
 			{@const isActive = appState.currentTimetableId === timetable.id}
@@ -58,19 +59,17 @@
 				{#if isActive}
 					<CheckCircleFill class="size-6 flex-shrink-0 text-brand dark:text-soft-blue" />
 				{:else}
-					<Button
-						variant="text"
-						size="s"
-						iconType="full"
-						square
+					<button
+						type="button"
 						aria-label="删除课表"
 						onclick={(event) => {
 							event.stopPropagation();
 							openDeleteDialog(timetable.id);
 						}}
+						class="flex size-10 items-center justify-center rounded-full text-danger transition-colors hover:bg-surface-variant/50"
 					>
-						<DeleteFill class="text-danger" />
-					</Button>
+						<DeleteFill class="size-5" />
+					</button>
 				{/if}
 			</button>
 		{/each}
@@ -78,8 +77,19 @@
 
 	{#if creating}
 		<div class="flex flex-col gap-3 rounded-[28px] border border-outline-variant bg-surface p-4">
-			<TextFieldOutlined label="课表名称" bind:value={newName} placeholder="例如：2026 春季" />
-			<div class="m3-actions-inline justify-end">
+			<div class="flex flex-col gap-1">
+				<label for="new-timetable-name" class="text-xs font-medium text-on-surface-variant"
+					>课表名称</label
+				>
+				<input
+					id="new-timetable-name"
+					type="text"
+					bind:value={newName}
+					placeholder="例如：2026 春季"
+					class="w-full rounded-lg border border-outline bg-surface px-3.5 py-2 text-sm text-on-surface outline-none focus:border-brand"
+				/>
+			</div>
+			<div class="flex items-center justify-end gap-2 pt-1">
 				<Button
 					variant="text"
 					onclick={() => {
@@ -93,18 +103,17 @@
 			</div>
 		</div>
 	{:else}
-		<div class="m3-actions">
-			<Button variant="filled" iconType="left" onclick={() => (creating = true)}>
-				<AddFill />
+		<div class="flex w-full pt-2">
+			<Button variant="filled" class="w-full" onclick={() => (creating = true)}>
+				<AddFill class="size-5" />
 				新建课表
 			</Button>
 		</div>
 	{/if}
 </div>
 
-<Dialog bind:open={deleteDialogOpen} headline="删除课表？">
-	<p class="m3-body-medium text-on-surface-variant">删除后无法恢复。</p>
-	{#snippet buttons()}
+<Dialog bind:open={deleteDialogOpen} title="删除课表？" description="删除后无法恢复。">
+	{#snippet footer()}
 		<Button variant="text" onclick={() => (deleteDialogOpen = false)}>取消</Button>
 		<Button variant="filled" onclick={confirmDelete}>删除</Button>
 	{/snippet}

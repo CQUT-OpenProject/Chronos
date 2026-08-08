@@ -1,6 +1,3 @@
-@import 'm3-svelte/etc/styles.css';
-@import 'm3-svelte/etc/recommended-styles.css';
-
 @function --m3-density(--size) {
 	result: calc(var(--size) + (var(--density, 0) * 0.25rem));
 }
@@ -149,6 +146,7 @@
 /* Ensure list item active/pressed state overlays have smooth rounded corners matching card section */
 .m3-section-surface .m3-container,
 .m3-section-surface a,
+.m3-section-surface label,
 .m3-section-surface button {
 	border-radius: 1.125rem !important;
 	overflow: hidden !important;
@@ -158,6 +156,8 @@
 .m3-section-surface .m3-container::after,
 .m3-section-surface a::before,
 .m3-section-surface a::after,
+.m3-section-surface label::before,
+.m3-section-surface label::after,
 .m3-section-surface button::before,
 .m3-section-surface button::after {
 	border-radius: inherit !important;
@@ -284,66 +284,6 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.5rem;
-}
-
-/* Ensure m3-svelte button heights comply with MD3 spec across the app */
-.m3-container.xs {
-	height: calc(2rem + var(--density, 0) * 0.25rem);
-	min-height: 2rem;
-}
-
-.m3-container.s {
-	height: calc(2.75rem + var(--density, 0) * 0.25rem);
-	min-height: 2.75rem;
-	padding: 0 1.25rem;
-}
-
-.m3-container.m {
-	height: calc(3.25rem + var(--density, 0) * 0.25rem);
-	min-height: 3.25rem;
-	padding: 0 1.5rem;
-}
-
-.m3-container.l {
-	height: calc(4rem + var(--density, 0) * 0.25rem);
-	min-height: 4rem;
-	padding: 0 2rem;
-}
-
-/* Fix m3-svelte ListItem heights for consistent, spacious MD3 list rows */
-.m3-container.lines-1,
-.m3-container.lines-2,
-.m3-container.lines-3 {
-	min-height: 4rem;
-	padding: 0.625rem 1rem;
-	align-items: center;
-}
-
-.m3-container.lines-1 {
-	height: calc(4rem + var(--density, 0) * 0.25rem);
-}
-
-.m3-container.lines-2 {
-	height: calc(4.5rem + var(--density, 0) * 0.25rem);
-}
-
-.m3-container.lines-3 {
-	height: calc(5.25rem + var(--density, 0) * 0.25rem);
-}
-
-/* Fix m3-svelte TextField & TextFieldOutlined height and label positioning */
-.m3-container:has(> input) {
-	height: calc(3.5rem + var(--density, 0) * 0.25rem);
-	min-height: 3.5rem;
-	width: 100%;
-}
-
-/* Ensure m3-svelte Card takes full container width */
-div.m3-container.elevated,
-div.m3-container.filled,
-div.m3-container.outlined {
-	width: 100%;
-	box-sizing: border-box;
 }
 
 /* Bridge MD3 surface tokens to Chronos palette for list / page chrome */

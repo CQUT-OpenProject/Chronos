@@ -6,7 +6,7 @@
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
-	import { Slider } from 'm3-svelte';
+	import Slider from '$lib/components/ui/Slider.svelte';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 
 	let {
@@ -54,10 +54,8 @@
 		weekSliderVisible = true;
 	}
 
-	function onSliderInput(event: Event) {
-		const value = Number((event.currentTarget as HTMLInputElement).value);
-		dragWeek = value;
-		screen.setDisplayedWeek(value);
+	function onSliderCommit() {
+		weekSliderVisible = false;
 	}
 
 	function formatWeekRange(gridModel: TimetableGridModel | undefined) {
@@ -101,17 +99,12 @@
 			>
 				{#if weekSliderVisible && startWeek < endWeek}
 					<Slider
-						value={dragWeek}
+						bind:value={dragWeek}
 						min={startWeek}
 						max={endWeek}
 						step={1}
-						stops
-						size="xs"
-						showValue={false}
-						oninput={onSliderInput}
-						onchange={() => {
-							weekSliderVisible = false;
-						}}
+						onValueChange={(week) => screen.setDisplayedWeek(week)}
+						onValueCommit={onSliderCommit}
 					/>
 					<p class="text-sm font-semibold">第 {dragWeek} 周</p>
 				{:else}

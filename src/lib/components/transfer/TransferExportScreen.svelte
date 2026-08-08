@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
-	import { Button } from 'm3-svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { IosShareFill } from '$lib/icons';
 
 	let {
@@ -24,19 +24,19 @@
 	}
 </script>
 
-<div class="m3-stack">
+<div class="flex flex-col gap-6">
 	<p class="m3-body-medium text-on-surface-variant">
 		将“{currentTimetableName ?? '未命名'}”复制为链接。
 	</p>
 
-	<div class="m3-actions">
+	<div class="flex w-full">
 		<Button
 			variant="filled"
-			iconType="left"
+			class="w-full"
 			disabled={loading || !currentTimetableName}
 			onclick={handleExport}
 		>
-			<IosShareFill />
+			<IosShareFill class="size-5" />
 			{loading ? '导出中…' : '复制课表链接'}
 		</Button>
 	</div>

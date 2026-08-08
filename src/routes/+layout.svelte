@@ -18,7 +18,6 @@
 	import { isSecondaryRoute, isTabBarVisible } from '$lib/navigation/routes';
 	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
-	import 'm3-svelte/etc/layer';
 	import '$lib/m3/m3.css';
 	import { chronosM3Theme } from '$lib/m3/theme';
 	import './layout.css';

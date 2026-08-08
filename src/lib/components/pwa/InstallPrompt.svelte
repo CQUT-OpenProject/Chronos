@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Button, Dialog } from 'm3-svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { IosShareFill } from '$lib/icons';
 
@@ -10,19 +11,20 @@
 </script>
 
 <!-- Android / Desktop Install Dialog -->
-<Dialog bind:open={pwaInstallController.installDialogOpen} headline="安装 Chronos">
-	<p class="m3-body-medium text-on-surface-variant">
-		将 Chronos 添加到主屏幕后，可以快捷打开应用。
-	</p>
-	{#snippet buttons()}
+<Dialog
+	bind:open={pwaInstallController.installDialogOpen}
+	title="安装 Chronos"
+	description="将 Chronos 添加到主屏幕后，可以快捷打开应用。"
+>
+	{#snippet footer()}
 		<Button variant="text" onclick={() => pwaInstallController.dismiss()}>稍后</Button>
 		<Button variant="filled" onclick={() => pwaInstallController.install()}>安装</Button>
 	{/snippet}
 </Dialog>
 
 <!-- iOS Safari Guide Dialog -->
-<Dialog bind:open={pwaInstallController.iosGuideOpen} headline="安装 Chronos">
-	<div class="m3-stack text-left text-sm leading-relaxed text-on-surface-variant">
+<Dialog bind:open={pwaInstallController.iosGuideOpen} title="安装 Chronos">
+	<div class="flex flex-col gap-3 text-left text-sm leading-relaxed text-on-surface-variant">
 		<p class="m3-body-medium">将 Chronos 添加到主屏幕后，可以快捷打开应用。</p>
 		<ol class="flex flex-col gap-2 pt-1">
 			<li class="flex items-start gap-2">
@@ -47,7 +49,7 @@
 			</li>
 		</ol>
 	</div>
-	{#snippet buttons()}
+	{#snippet footer()}
 		<Button variant="filled" onclick={() => pwaInstallController.dismiss()}>知道了</Button>
 	{/snippet}
 </Dialog>

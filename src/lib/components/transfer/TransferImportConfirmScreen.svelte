@@ -4,7 +4,8 @@
 		previewSourceLabel,
 		type TransferStateController
 	} from '$lib/transfer/transfer-state.svelte';
-	import { Button, RadioAnim1 } from 'm3-svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Radio from '$lib/components/ui/Radio.svelte';
 
 	let {
 		transfer,
@@ -33,7 +34,7 @@
 </script>
 
 {#if preview}
-	<div class="m3-stack">
+	<div class="flex flex-col gap-5">
 		<p class="m3-body-medium text-on-surface-variant">课表已准备好，请选择导入方式：</p>
 
 		<!-- PreviewSummaryCard matching Android -->
@@ -83,13 +84,11 @@
 					: 'border-outline-variant hover:bg-surface-variant/30'}"
 				onclick={() => transfer.setImportMode(ImportMode.AS_NEW)}
 			>
-				<RadioAnim1>
-					<input
-						type="radio"
-						name="import-mode"
-						checked={transferState.importMode === ImportMode.AS_NEW}
-					/>
-				</RadioAnim1>
+				<Radio
+					name="import-mode"
+					checked={transferState.importMode === ImportMode.AS_NEW}
+					onchange={() => transfer.setImportMode(ImportMode.AS_NEW)}
+				/>
 				<span class="m3-body-large text-on-surface">作为新课程表导入</span>
 			</button>
 
@@ -101,13 +100,11 @@
 					: 'border-outline-variant hover:bg-surface-variant/30'}"
 				onclick={() => transfer.setImportMode(ImportMode.OVERWRITE_CURRENT)}
 			>
-				<RadioAnim1>
-					<input
-						type="radio"
-						name="import-mode"
-						checked={transferState.importMode === ImportMode.OVERWRITE_CURRENT}
-					/>
-				</RadioAnim1>
+				<Radio
+					name="import-mode"
+					checked={transferState.importMode === ImportMode.OVERWRITE_CURRENT}
+					onchange={() => transfer.setImportMode(ImportMode.OVERWRITE_CURRENT)}
+				/>
 				<span class="m3-body-large text-on-surface">
 					覆盖当前课程表{currentTimetableName ? `（${currentTimetableName}）` : ''}
 				</span>

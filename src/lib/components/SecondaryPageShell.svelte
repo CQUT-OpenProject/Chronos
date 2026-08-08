@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Pathname } from '$app/types';
 	import { resolve } from '$app/paths';
-	import { Button } from 'm3-svelte';
 	import { ArrowBack } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 
@@ -25,18 +24,14 @@
 <div class="min-h-dvh bg-canvas">
 	<TopAppBar {title} {actions}>
 		{#snippet leading()}
-			<Button
-				variant="text"
-				size="s"
-				iconType="full"
-				square
+			<a
 				href={resolve(backHref)}
 				aria-label="返回"
 				onclick={vibrate}
-				class="!text-on-surface"
+				class="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-variant/50 active:bg-surface-variant/80"
 			>
-				<ArrowBack class="text-on-surface" />
-			</Button>
+				<ArrowBack class="size-6 text-on-surface" />
+			</a>
 		{/snippet}
 	</TopAppBar>
 	<main class="mx-auto w-full max-w-lg p-4">

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
-	import { LoadingIndicator } from 'm3-svelte';
+	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
 	let loading = $state(true);
 	let licenseText = $state('');

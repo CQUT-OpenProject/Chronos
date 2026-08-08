@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import { canSaveCredentials, saveCredentialsLabel } from '$lib/transfer/transfer-state.svelte';
-	import { Button, Card, Checkbox, TextFieldOutlined } from 'm3-svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 
 	let {
 		transfer,
@@ -132,36 +134,52 @@
 					</div>
 
 					<div class="flex flex-col gap-3.5 pt-1">
-						<TextFieldOutlined
-							label="账号"
-							inputmode="numeric"
-							value={transferState.account}
-							oninput={(event) =>
-								transfer.setAccount((event.currentTarget as HTMLInputElement).value)}
-						/>
-						<TextFieldOutlined
-							label="密码"
-							type="password"
-							value={transferState.password}
-							oninput={(event) =>
-								transfer.setPassword((event.currentTarget as HTMLInputElement).value)}
-						/>
-						<label class="m3-body-medium flex items-center gap-2 pt-1 text-on-surface-variant">
-							<Checkbox>
-								<input
-									type="checkbox"
-									checked={transferState.saveCredentials}
-									disabled={!saveCheckboxEnabled}
-									onchange={(event) =>
-										transfer.setSaveCredentials((event.currentTarget as HTMLInputElement).checked)}
-								/>
-							</Checkbox>
+						<div class="flex flex-col gap-1">
+							<label for="import-account" class="text-xs font-medium text-on-surface-variant"
+								>账号</label
+							>
+							<input
+								id="import-account"
+								type="text"
+								inputmode="numeric"
+								value={transferState.account}
+								oninput={(event) =>
+									transfer.setAccount((event.currentTarget as HTMLInputElement).value)}
+								class="w-full rounded-lg border border-outline bg-surface px-3.5 py-2 text-sm text-on-surface outline-none focus:border-brand"
+							/>
+						</div>
+						<div class="flex flex-col gap-1">
+							<label for="import-password" class="text-xs font-medium text-on-surface-variant"
+								>密码</label
+							>
+							<input
+								id="import-password"
+								type="password"
+								value={transferState.password}
+								oninput={(event) =>
+									transfer.setPassword((event.currentTarget as HTMLInputElement).value)}
+								class="w-full rounded-lg border border-outline bg-surface px-3.5 py-2 text-sm text-on-surface outline-none focus:border-brand"
+							/>
+						</div>
+						<label
+							class="m3-body-medium flex cursor-pointer items-center gap-2 pt-1 text-on-surface-variant"
+						>
+							<Checkbox
+								checked={transferState.saveCredentials}
+								disabled={!saveCheckboxEnabled}
+								onCheckedChange={(checked) => transfer.setSaveCredentials(checked)}
+							/>
 							<span>{saveCheckboxLabel}</span>
 						</label>
 					</div>
 
-					<div class="m3-actions pt-1">
-						<Button variant="filled" disabled={loading} onclick={handleOnlinePreview}>
+					<div class="flex w-full pt-1">
+						<Button
+							variant="filled"
+							class="w-full"
+							disabled={loading}
+							onclick={handleOnlinePreview}
+						>
 							{loading ? '获取中…' : '从此账号导入课表'}
 						</Button>
 					</div>
@@ -179,9 +197,10 @@
 								</p>
 							{/if}
 							{#if transferState.savedCredentialState.protectionAvailable}
-								<div class="m3-actions">
+								<div class="flex w-full">
 									<Button
 										variant="outlined"
+										class="w-full"
 										disabled={loading}
 										onclick={handleSavedCredentialPreview}
 									>
@@ -189,8 +208,13 @@
 									</Button>
 								</div>
 							{/if}
-							<div class="m3-actions">
-								<Button variant="text" disabled={loading} onclick={handleClearSavedCredential}>
+							<div class="flex w-full">
+								<Button
+									variant="text"
+									class="w-full"
+									disabled={loading}
+									onclick={handleClearSavedCredential}
+								>
 									清除已保存凭据
 								</Button>
 							</div>
@@ -208,8 +232,13 @@
 							复制 Android 或其他设备导出的课表 JSON 后点击下方按钮。
 						</p>
 					</div>
-					<div class="m3-actions pt-1">
-						<Button variant="filled" disabled={loading} onclick={handleClipboardPreview}>
+					<div class="flex w-full pt-1">
+						<Button
+							variant="filled"
+							class="w-full"
+							disabled={loading}
+							onclick={handleClipboardPreview}
+						>
 							{loading ? '读取中…' : '从剪贴板导入课表'}
 						</Button>
 					</div>
@@ -232,8 +261,13 @@
 						class="hidden"
 						onchange={handleFileChange}
 					/>
-					<div class="m3-actions pt-1">
-						<Button variant="outlined" disabled={loading} onclick={() => fileInput?.click()}>
+					<div class="flex w-full pt-1">
+						<Button
+							variant="outlined"
+							class="w-full"
+							disabled={loading}
+							onclick={() => fileInput?.click()}
+						>
 							{loading ? '解析中…' : '选择 HTML 文件'}
 						</Button>
 					</div>
@@ -249,7 +283,7 @@
 					<p class="m3-body-medium font-medium">
 						当前预览：{transferState.preview.name}（{transferState.preview.courses.length} 门课程）
 					</p>
-					<Button variant="text" size="s" onclick={() => transfer.clearPreview()}>清除</Button>
+					<Button variant="text" onclick={() => transfer.clearPreview()}>清除</Button>
 				</div>
 			</Card>
 		</div>

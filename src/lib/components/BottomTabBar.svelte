@@ -4,7 +4,6 @@
 	import { getContext } from 'svelte';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { CalendarMonth, CalendarMonthFill, Person, PersonFill } from '$lib/icons';
-	import { NavCMLX } from 'm3-svelte';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
 
@@ -33,18 +32,18 @@
 </script>
 
 <div
-	class="flex h-[calc(var(--spacing-tabbar)+var(--tabbar-safe))] flex-col items-center justify-center border-t border-outline-variant/40 bg-surface-container px-4 pb-[var(--tabbar-safe)]"
+	class="flex h-[calc(var(--spacing-tabbar)+var(--tabbar-safe))] w-full flex-col items-center justify-center border-t border-outline-variant/40 bg-surface-container px-4 pb-[var(--tabbar-safe)]"
 >
-	<NavCMLX variant="compact">
+	<nav class="flex w-full max-w-md items-center justify-around">
 		{#each tabs as tab (tab.href)}
 			{@const active = isActive(tab.href)}
 			<a
 				href={resolve(tab.href)}
-				class="m3-layer flex h-16 min-w-24 flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-on-surface-variant"
+				class="flex h-16 min-w-24 flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-on-surface-variant transition-colors hover:text-on-surface"
 				onclick={tab.href === '/' ? onTimetableTabClick : vibrate}
 			>
 				<span
-					class="flex h-8 w-14 items-center justify-center rounded-full {active
+					class="flex h-8 w-14 items-center justify-center rounded-full transition-colors {active
 						? 'bg-secondary-container text-on-secondary-container'
 						: ''}"
 				>
@@ -61,5 +60,5 @@
 				</span>
 			</a>
 		{/each}
-	</NavCMLX>
+	</nav>
 </div>

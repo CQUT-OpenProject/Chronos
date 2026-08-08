@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Card, LoadingIndicator } from 'm3-svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
 	interface ThirdPartyLicense {
 		name: string;

@@ -31,6 +31,9 @@
 	--color-on-surface-variant: #475569;
 	--color-outline: #cbd5e1;
 	--color-outline-variant: #e2e8f0;
+	--color-inverse-surface: #1e293b;
+	--color-inverse-on-surface: #f8fafc;
+	--color-inverse-primary: #9fc1f9;
 	--color-success: #15803d;
 	--spacing-tabbar: 5rem;
 }
@@ -87,6 +90,9 @@
 		--color-on-surface-variant: #94a3b8;
 		--color-outline: #334155;
 		--color-outline-variant: #1e293b;
+		--color-inverse-surface: #e2e8f0;
+		--color-inverse-on-surface: #0f172a;
+		--color-inverse-primary: #0068b7;
 		--color-success: #4ade80;
 	}
 }

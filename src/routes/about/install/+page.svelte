@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
-	import { Button, Card, snackbar } from 'm3-svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import {
 		AddHomeFill,
@@ -19,14 +21,14 @@
 
 	async function handleInstallAction() {
 		if (pwaInstallController.isStandalone) {
-			snackbar('当前已成功安装为桌面应用', {}, true, 3000);
+			snackbar('当前已成功安装为桌面应用');
 			return;
 		}
 
 		if (pwaInstallController.canPrompt) {
 			const success = await pwaInstallController.install();
 			if (success) {
-				snackbar('正在启动安装程序...', {}, true, 3000);
+				snackbar('正在启动安装程序...');
 			}
 			return;
 		}
@@ -36,12 +38,12 @@
 			return;
 		}
 
-		snackbar('请点击地址栏右侧的安装图标 ⊕ 或菜单中的“安装 Chronos”', {}, true, 5000);
+		snackbar('请点击地址栏右侧的安装图标 ⊕ 或菜单中的“安装 Chronos”');
 	}
 </script>
 
 <SecondaryPageShell title="安装 Chronos" backHref="/mine">
-	<div class="m3-stack mx-auto max-w-lg gap-6 py-2">
+	<div class="mx-auto flex max-w-lg flex-col gap-6 py-2">
 		<!-- Hero Section -->
 		<div class="flex flex-col items-center gap-3 pt-2 text-center">
 			<img
@@ -56,8 +58,7 @@
 		</div>
 
 		<!-- Highlights Card -->
-		<Card variant="outlined" class="!p-5">
-			<h2 class="m3-title-small mb-4 font-bold text-on-surface">PWA 特性</h2>
+		<Card variant="outlined">
 			<ul class="flex flex-col gap-4 text-sm text-on-surface-variant">
 				<li class="flex items-start gap-3.5">
 					<div
@@ -66,7 +67,7 @@
 						<RocketLaunchFill class="h-5 w-5" />
 					</div>
 					<div class="flex-1">
-						<p class="font-semibold text-on-surface">一键直达桌面</p>
+						<p class="font-semibold text-on-surface">一键直达课表</p>
 						<p class="mt-0.5 text-xs text-on-surface-variant/80">
 							无需输入网址，直接在桌面或 Dock 栏快捷启动。
 						</p>
@@ -103,7 +104,7 @@
 
 		<!-- Action / Guide Area -->
 		{#if pwaInstallController.isStandalone}
-			<Card variant="filled" class="!p-5 text-center">
+			<Card variant="filled" class="text-center">
 				<p class="m3-title-small text-primary flex items-center justify-center gap-2 font-bold">
 					<CheckCircleFill class="h-5 w-5" />
 					<span>已成功安装 Chronos</span>
@@ -114,7 +115,7 @@
 			</Card>
 		{:else if pwaInstallController.isMacSafari}
 			<!-- macOS Safari Guidance Card -->
-			<Card variant="outlined" class="!p-5">
+			<Card variant="outlined">
 				<h3 class="m3-title-small mb-3 font-bold text-on-surface">macOS Safari 安装指引：</h3>
 				<ol class="flex flex-col gap-3 text-xs leading-relaxed text-on-surface-variant">
 					<li class="flex items-start gap-2.5">
@@ -142,7 +143,7 @@
 			</Card>
 		{:else if pwaInstallController.isIOS}
 			<!-- iOS / iPadOS Safari Guidance Card -->
-			<Card variant="outlined" class="!p-5">
+			<Card variant="outlined">
 				<h3 class="m3-title-small mb-3 font-bold text-on-surface">iOS / iPadOS 安装指引：</h3>
 				<ol class="flex flex-col gap-3 text-xs leading-relaxed text-on-surface-variant">
 					<li class="flex items-start gap-2.5">
@@ -174,14 +175,12 @@
 			</Card>
 		{:else}
 			<!-- Chrome / Chromium Action Button & Clean Hint Card -->
-			<Card variant="outlined" class="!p-5">
+			<Card variant="outlined">
 				<div class="flex flex-col gap-4">
-					<div class="m3-actions">
-						<Button variant="filled" size="m" iconType="left" onclick={handleInstallAction}>
-							<AddHomeFill />
-							<span>安装 Chronos 到设备</span>
-						</Button>
-					</div>
+					<Button variant="filled" class="w-full" onclick={handleInstallAction}>
+						<AddHomeFill class="size-5" />
+						<span>安装 Chronos 到设备</span>
+					</Button>
 
 					<div
 						class="rounded-xl bg-surface-container-high/60 p-3.5 text-xs text-on-surface-variant"

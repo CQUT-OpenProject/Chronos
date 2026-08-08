@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Component, Snippet } from 'svelte';
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
-	import { ListItem } from 'm3-svelte';
 	import { ChevronRight } from '$lib/icons';
 
 	export type MineIconTone = 'primary' | 'secondary' | 'tertiary' | 'neutral';
@@ -19,7 +18,7 @@
 	}: {
 		title: string;
 		href?: string;
-		onclick?: () => void;
+		onclick?: (event: MouseEvent) => void;
 		label?: boolean;
 		icon?: Component<{ class?: string }>;
 		iconTone?: MineIconTone;
@@ -31,26 +30,49 @@
 	const trailingContent = trailing;
 </script>
 
-<ListItem
-	{href}
-	label={label ? true : undefined}
-	onclick={href || label ? undefined : onclick}
-	headline={title}
-	supporting={supporting || undefined}
-	{...props}
->
-	{#snippet leading()}
-		{#if Icon}
-			<span class="m3-leading-icon tone-{iconTone}">
-				<Icon />
-			</span>
+{#snippet rowContent()}
+	{#if Icon}
+		<span class="m3-leading-icon tone-{iconTone}">
+			<Icon />
+		</span>
+	{/if}
+	<div class="flex flex-1 flex-col justify-center text-left">
+		<span class="m3-body-large font-normal text-on-surface">{title}</span>
+		{#if supporting}
+			<span class="m3-body-medium text-xs text-on-surface-variant">{supporting}</span>
 		{/if}
-	{/snippet}
-	{#snippet trailing()}
-		{#if trailingContent}
-			{@render trailingContent()}
-		{:else}
-			<ChevronRight class="text-on-surface-variant" style="width:1.125rem;height:1.125rem" />
-		{/if}
-	{/snippet}
-</ListItem>
+	</div>
+	{#if trailingContent}
+		{@render trailingContent()}
+	{:else}
+		<ChevronRight class="size-4.5 shrink-0 text-on-surface-variant" />
+	{/if}
+{/snippet}
+
+{#if href}
+	<a
+		{href}
+		{onclick}
+		{...props}
+		class="flex min-h-14 w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-surface-variant/40 active:bg-surface-variant/60"
+	>
+		{@render rowContent()}
+	</a>
+{:else if label}
+	<label
+		{onclick}
+		{...props}
+		class="flex min-h-14 w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-surface-variant/40 active:bg-surface-variant/60"
+	>
+		{@render rowContent()}
+	</label>
+{:else}
+	<button
+		type="button"
+		{onclick}
+		{...props}
+		class="flex min-h-14 w-full cursor-pointer items-center gap-4 rounded-2xl border-none bg-transparent px-4 py-3 text-left transition-colors hover:bg-surface-variant/40 active:bg-surface-variant/60"
+	>
+		{@render rowContent()}
+	</button>
+{/if}

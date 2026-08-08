@@ -5,7 +5,7 @@
 	import { BuildTimetableCourseDisplayModelsUseCase } from '$lib/domain/usecases/build-timetable-course-display-models';
 	import { CalculateAcademicWeekUseCase } from '$lib/domain/usecases/calculate-academic-week';
 	import { SystemTimeProvider } from '$lib/domain/services/time-provider';
-	import { Button } from 'm3-svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { LayersClearFill, PhotoLibraryFill } from '$lib/icons';
 
 	let {
@@ -66,7 +66,7 @@
 	}
 </script>
 
-<div class="m3-stack">
+<div class="flex flex-col gap-6">
 	<input
 		bind:this={fileInput}
 		type="file"
@@ -95,18 +95,20 @@
 			</div>
 		</div>
 	{:else}
-		<p class="m3-body-medium text-on-surface-variant">选择壁纸后，可在此预览课表叠加效果。</p>
+		<p class="m3-body-medium py-4 text-center text-on-surface-variant">
+			选择壁纸后，可在此预览课表叠加效果。
+		</p>
 	{/if}
 
-	<div class="m3-actions">
+	<div class="flex w-full items-center justify-center gap-3">
 		{#if shell.state.hasWallpaper}
-			<Button variant="outlined" iconType="left" onclick={clearWallpaper}>
-				<LayersClearFill />
+			<Button variant="outlined" class="w-full flex-1" onclick={clearWallpaper}>
+				<LayersClearFill class="size-5" />
 				清除壁纸
 			</Button>
 		{/if}
-		<Button variant="filled" iconType="left" onclick={onPickWallpaper}>
-			<PhotoLibraryFill />
+		<Button variant="filled" class="w-full flex-1" onclick={onPickWallpaper}>
+			<PhotoLibraryFill class="size-5" />
 			{shell.state.hasWallpaper ? '重新选择' : '选择壁纸'}
 		</Button>
 	</div>

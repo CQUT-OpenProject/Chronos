@@ -4,7 +4,7 @@
 	import type { GithubRelease } from '$lib/models/auth';
 	import { APP_VERSION } from '$lib/config/app-meta';
 	import { createGithubServices } from '$lib/client/github-services';
-	import { LoadingIndicator } from 'm3-svelte';
+	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
 	const githubServices = createGithubServices();
 
