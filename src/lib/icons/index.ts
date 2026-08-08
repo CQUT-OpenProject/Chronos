@@ -34,3 +34,5 @@ export { AddHome, AddHomeFill } from '@material-symbols-svg/svelte/icons/add-hom
 export { RocketLaunch, RocketLaunchFill } from '@material-symbols-svg/svelte/icons/rocket-launch';
 export { WifiOff, WifiOffFill } from '@material-symbols-svg/svelte/icons/wifi-off';
 export { Fullscreen, FullscreenFill } from '@material-symbols-svg/svelte/icons/fullscreen';
+export { Search, SearchFill } from '@material-symbols-svg/svelte/icons/search';
+export { Close, CloseFill } from '@material-symbols-svg/svelte/icons/close';
