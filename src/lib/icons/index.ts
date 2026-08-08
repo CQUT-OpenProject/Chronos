@@ -30,3 +30,7 @@ export { FolderZip, FolderZipFill } from '@material-symbols-svg/svelte/icons/fol
 export { LayersClear, LayersClearFill } from '@material-symbols-svg/svelte/icons/layers-clear';
 export { PhotoLibrary, PhotoLibraryFill } from '@material-symbols-svg/svelte/icons/photo-library';
 export { Schedule, ScheduleFill } from '@material-symbols-svg/svelte/icons/schedule';
+export { AddHome, AddHomeFill } from '@material-symbols-svg/svelte/icons/add-home';
+export { RocketLaunch, RocketLaunchFill } from '@material-symbols-svg/svelte/icons/rocket-launch';
+export { WifiOff, WifiOffFill } from '@material-symbols-svg/svelte/icons/wifi-off';
+export { Fullscreen, FullscreenFill } from '@material-symbols-svg/svelte/icons/fullscreen';

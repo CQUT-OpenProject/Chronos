@@ -11,6 +11,7 @@ export const SECONDARY_ROUTES = [
 	'/theme-settings',
 	'/wallpaper',
 	'/about',
+	'/about/install',
 	'/about/version-release',
 	'/open-source-licenses',
 	'/open-source-licenses/project',

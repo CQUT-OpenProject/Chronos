@@ -3,7 +3,9 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
+	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import {
+		AddHomeFill,
 		DownloadFill,
 		InfoFill,
 		IosShareFill,
@@ -58,7 +60,16 @@
 		/>
 	</MineSection>
 
-	<MineSection title="关于与反馈" accentColor="tertiary">
+	<MineSection title="应用与支持" accentColor="primary">
+		<MineRow
+			title="安装 Chronos"
+			supporting={pwaInstallController.isStandalone
+				? '已安装为桌面应用'
+				: '添加到主屏幕，快捷打开应用'}
+			href={resolve('/about/install')}
+			icon={AddHomeFill}
+			iconTone="primary"
+		/>
 		<MineRow title="关于 Chronos" href={resolve('/about')} icon={InfoFill} iconTone="tertiary" />
 	</MineSection>
 </div>

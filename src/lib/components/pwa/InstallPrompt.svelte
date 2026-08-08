@@ -1,74 +1,53 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
-	const SNOOZE_KEY = 'chronos:pwa-install-snooze';
-	const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
-
-	let deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
-	let visible = $state(false);
+	import { Button, Dialog } from 'm3-svelte';
+	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
+	import { IosShareFill } from '$lib/icons';
 
 	onMount(() => {
-		if (isStandalone()) return;
-
-		const snoozedUntil = Number(localStorage.getItem(SNOOZE_KEY) ?? '0');
-		if (Date.now() < snoozedUntil) return;
-
-		const onBeforeInstall = (event: Event) => {
-			event.preventDefault();
-			deferredPrompt = event as BeforeInstallPromptEvent;
-			visible = true;
-		};
-
-		window.addEventListener('beforeinstallprompt', onBeforeInstall);
-		return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+		return pwaInstallController.init();
 	});
-
-	function isStandalone() {
-		return (
-			window.matchMedia('(display-mode: standalone)').matches ||
-			// @ts-expect-error iOS Safari
-			window.navigator.standalone === true
-		);
-	}
-
-	async function install() {
-		if (!deferredPrompt) return;
-		await deferredPrompt.prompt();
-		const choice = await deferredPrompt.userChoice;
-		if (choice.outcome === 'accepted') {
-			visible = false;
-			deferredPrompt = null;
-		}
-	}
-
-	function dismiss() {
-		localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_MS));
-		visible = false;
-		deferredPrompt = null;
-	}
 </script>
 
-{#if visible}
-	<div
-		class="fixed inset-x-4 bottom-20 z-50 rounded-xl border border-border bg-white p-4 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
-	>
-		<p class="text-sm font-medium">安装 Chronos</p>
-		<p class="mt-1 text-sm text-zinc-500">添加到主屏幕，离线查看课表。</p>
-		<div class="mt-3 flex gap-2">
-			<button
-				type="button"
-				class="rounded-lg bg-brand px-3 py-2 text-sm text-white"
-				onclick={install}
-			>
-				安装
-			</button>
-			<button
-				type="button"
-				class="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600"
-				onclick={dismiss}
-			>
-				稍后
-			</button>
-		</div>
+<!-- Android / Desktop Install Dialog -->
+<Dialog bind:open={pwaInstallController.installDialogOpen} headline="安装 Chronos">
+	<p class="m3-body-medium text-on-surface-variant">
+		将 Chronos 添加到主屏幕后，可以快捷打开应用。
+	</p>
+	{#snippet buttons()}
+		<Button variant="text" onclick={() => pwaInstallController.dismiss()}>稍后</Button>
+		<Button variant="filled" onclick={() => pwaInstallController.install()}>安装</Button>
+	{/snippet}
+</Dialog>
+
+<!-- iOS Safari Guide Dialog -->
+<Dialog bind:open={pwaInstallController.iosGuideOpen} headline="安装 Chronos">
+	<div class="m3-stack text-left text-sm leading-relaxed text-on-surface-variant">
+		<p class="m3-body-medium">将 Chronos 添加到主屏幕后，可以快捷打开应用。</p>
+		<ol class="flex flex-col gap-2 pt-1">
+			<li class="flex items-start gap-2">
+				<span
+					class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+					>1</span
+				>
+				<span>
+					点击 Safari 浏览器底部的 <strong class="inline-flex items-center gap-1 text-on-surface">
+						分享图标 <IosShareFill class="text-primary inline h-4 w-4" />
+					</strong>
+				</span>
+			</li>
+			<li class="flex items-start gap-2">
+				<span
+					class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+					>2</span
+				>
+				<span>
+					选择 <strong class="text-on-surface">“添加到主屏幕”</strong>
+				</span>
+			</li>
+		</ol>
 	</div>
-{/if}
+	{#snippet buttons()}
+		<Button variant="filled" onclick={() => pwaInstallController.dismiss()}>知道了</Button>
+	{/snippet}
+</Dialog>
