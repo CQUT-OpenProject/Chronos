@@ -59,17 +59,25 @@
 				{#if isActive}
 					<CheckCircleFill class="size-6 flex-shrink-0 text-brand dark:text-soft-blue" />
 				{:else}
-					<button
-						type="button"
+					<span
+						role="button"
+						tabindex="0"
 						aria-label="删除课表"
 						onclick={(event) => {
 							event.stopPropagation();
 							openDeleteDialog(timetable.id);
 						}}
-						class="flex size-10 items-center justify-center rounded-full text-danger transition-colors hover:bg-surface-variant/50"
+						onkeydown={(event) => {
+							if (event.key === 'Enter' || event.key === ' ') {
+								event.preventDefault();
+								event.stopPropagation();
+								openDeleteDialog(timetable.id);
+							}
+						}}
+						class="flex size-10 cursor-pointer items-center justify-center rounded-full text-danger transition-colors hover:bg-surface-variant/50 focus-visible:ring-2 focus-visible:ring-brand"
 					>
 						<DeleteFill class="size-5" />
-					</button>
+					</span>
 				{/if}
 			</button>
 		{/each}
