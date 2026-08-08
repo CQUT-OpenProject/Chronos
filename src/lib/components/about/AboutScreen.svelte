@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { APP_VERSION, BUILD_TIME, PROJECT_INTRO, SOURCE_CODE_URL } from '$lib/config/app-meta';
+	import {
+		APP_VERSION,
+		BUILD_TIME,
+		COPYRIGHT_HOLDER,
+		formatCopyrightYearRange,
+		PROJECT_INTRO,
+		PROJECT_LICENSE,
+		SOURCE_CODE_URL
+	} from '$lib/config/app-meta';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import { CodeFill, GavelFill, InfoFill, OpenInNewFill, ScheduleFill } from '$lib/icons';
@@ -55,6 +63,16 @@
 			{/snippet}
 		</MineRow>
 	</MineSection>
+
+	<footer class="copyright">
+		<p class="m3-body-small text-on-surface-variant">
+			© {formatCopyrightYearRange()}
+			{COPYRIGHT_HOLDER} ·
+			<a href={resolve('/open-source-licenses/project')} class="license-link">
+				{PROJECT_LICENSE}
+			</a>
+		</p>
+	</footer>
 </div>
 
 <style>
@@ -72,5 +90,20 @@
 		height: 4.5rem;
 		border-radius: 1.125rem;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	}
+
+	.copyright {
+		padding-top: 1.5rem;
+		text-align: center;
+	}
+
+	.license-link {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 0.125rem;
+	}
+
+	.license-link:hover {
+		opacity: 0.8;
 	}
 </style>
