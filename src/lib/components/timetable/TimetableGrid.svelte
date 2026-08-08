@@ -114,7 +114,7 @@
 	 */
 	function fitWidthFont(
 		getParams: () => { lines: string[]; maxFontPx: number; fromParent?: boolean }
-	): Attachment {
+	): Attachment<HTMLElement> {
 		return (node) => {
 			const apply = () => {
 				const { lines, maxFontPx, fromParent = false } = getParams();

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Component, Snippet } from 'svelte';
-	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
+	import type { HTMLAnchorAttributes, HTMLButtonAttributes, HTMLAttributes } from 'svelte/elements';
 	import { ChevronRight } from '$lib/icons';
 
 	export type MineIconTone = 'primary' | 'secondary' | 'tertiary' | 'neutral';
@@ -25,9 +25,10 @@
 		supporting?: string;
 		trailing?: Snippet;
 	} & HTMLAnchorAttributes &
-		HTMLButtonAttributes = $props();
+		HTMLButtonAttributes &
+		HTMLAttributes<HTMLLabelElement> = $props();
 
-	const trailingContent = trailing;
+	const trailingContent = $derived(trailing);
 </script>
 
 {#snippet rowContent()}

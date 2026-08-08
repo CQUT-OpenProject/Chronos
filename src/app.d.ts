@@ -1,9 +1,30 @@
 /// <reference types="vite/client" />
-/// <reference types="vite-plugin-pwa/info" />
 
 interface BeforeInstallPromptEvent extends Event {
 	prompt(): Promise<void>;
 	userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
+
+declare module 'virtual:pwa-info' {
+	export interface PwaInfo {
+		pwaInDevEnvironment: boolean;
+		webManifest: {
+			href: string;
+			useCredentials: boolean;
+			linkTag: string;
+		};
+		registerSW?: {
+			inline: boolean;
+			mode: 'inline' | 'script' | 'script-defer';
+			inlinePath: string;
+			registerPath: string;
+			scope: string;
+			type: 'classic' | 'module';
+			scriptTag?: string;
+		};
+	}
+
+	export const pwaInfo: PwaInfo | undefined;
 }
 
 declare module 'virtual:pwa-register' {

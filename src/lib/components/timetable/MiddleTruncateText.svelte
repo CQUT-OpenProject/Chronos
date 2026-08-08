@@ -11,7 +11,7 @@
 	let { text, class: className = '', style }: Props = $props();
 
 	// Stable identity: ResizeObserver stays mounted; $effect re-applies when `text` changes.
-	const truncateAttach: Attachment = (node) => {
+	const truncateAttach: Attachment<HTMLElement> = (node) => {
 		const apply = () => {
 			const content = text;
 			if (node.clientWidth <= 0 || node.clientHeight <= 0) {
