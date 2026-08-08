@@ -1,10 +1,10 @@
 import { GetGithubReleaseByTagUseCase } from '$lib/domain/usecases/get-github-release-by-tag';
 import { GetGithubContributorsUseCase } from '$lib/domain/usecases/get-github-contributors';
-import { createRemoteGithubReleaseRepository } from './github/remote-github-release-repository';
+import { createLocalReleaseRepository } from './github/local-release-repository';
 import { createRemoteGithubContributorRepository } from './github/remote-github-contributor-repository';
 
 export function createGithubServices(
-	releaseRepository = createRemoteGithubReleaseRepository(),
+	releaseRepository = createLocalReleaseRepository(),
 	contributorRepository = createRemoteGithubContributorRepository()
 ) {
 	return {
