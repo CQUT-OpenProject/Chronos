@@ -141,9 +141,14 @@ export function parseLocationParts(location: string): LocationParts {
 }
 
 /** Non-empty capsule lines: campus, building, room (in that order). */
-export function locationDisplayLines(location: string): string[] {
+export function locationDisplayLines(
+	location: string,
+	options?: { includeCampus?: boolean }
+): string[] {
 	const { campus, building, room } = parseLocationParts(location);
-	return [campus, building, room].filter((part) => part.length > 0);
+	const includeCampus = options?.includeCampus !== false;
+	const parts = includeCampus ? [campus, building, room] : [building, room];
+	return parts.filter((part) => part.length > 0);
 }
 
 export function blendColors(background: string, surface: string, ratio: number): string {

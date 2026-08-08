@@ -65,6 +65,10 @@ describe('timetable-grid-logic', () => {
 			room: 'B201'
 		});
 		expect(locationDisplayLines('两江校区 弘远楼A0213')).toEqual(['两江校区', '弘远楼', 'A0213']);
+		expect(locationDisplayLines('两江校区 弘远楼A0213', { includeCampus: false })).toEqual([
+			'弘远楼',
+			'A0213'
+		]);
 	});
 });
 
