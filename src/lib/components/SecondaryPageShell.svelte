@@ -8,11 +8,13 @@
 		title,
 		backHref,
 		actions,
+		flush = false,
 		children
 	}: {
 		title: string;
 		backHref: Pathname;
 		actions?: import('svelte').Snippet;
+		flush?: boolean;
 		children?: import('svelte').Snippet;
 	} = $props();
 
@@ -34,7 +36,11 @@
 			</a>
 		{/snippet}
 	</TopAppBar>
-	<main class="mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto p-4">
+	<main
+		class="mx-auto min-h-0 w-full max-w-lg flex-1 {flush
+			? 'flex flex-col overflow-hidden p-0'
+			: 'overflow-y-auto p-4'}"
+	>
 		{@render children?.()}
 	</main>
 </div>

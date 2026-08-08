@@ -243,7 +243,6 @@
 			<div
 				class="absolute inset-0 bg-cover bg-center"
 				style:background-image="url('{screenState.appState.wallpaperUri}')"
-				style:opacity={isDark ? 0.72 : 0.88}
 			></div>
 		{/if}
 

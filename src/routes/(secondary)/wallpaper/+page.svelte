@@ -7,6 +7,6 @@
 	const shell = getContext<AppShellController>('appShell');
 </script>
 
-<SecondaryPageShell title="课表壁纸" backHref="/mine">
+<SecondaryPageShell title="课表壁纸" backHref="/mine" flush>
 	<WallpaperScreen {shell} />
 </SecondaryPageShell>

@@ -66,7 +66,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-6">
+<div class="flex h-full min-h-0 flex-1 flex-col">
 	<input
 		bind:this={fileInput}
 		type="file"
@@ -77,7 +77,7 @@
 
 	{#if shell.state.hasWallpaper && timetable && gridModel}
 		<div
-			class="relative min-h-[420px] overflow-hidden rounded-xl border border-outline dark:border-outline-variant"
+			class="relative min-h-0 flex-1 overflow-hidden"
 			style:background-image={appState.wallpaperUri ? `url('${appState.wallpaperUri}')` : undefined}
 			style:background-size="cover"
 			style:background-position="center"
@@ -95,12 +95,14 @@
 			</div>
 		</div>
 	{:else}
-		<p class="m3-body-medium py-4 text-center text-on-surface-variant">
+		<p class="m3-body-medium flex-1 py-4 text-center text-on-surface-variant">
 			选择壁纸后，可在此预览课表叠加效果。
 		</p>
 	{/if}
 
-	<div class="flex w-full items-center justify-center gap-3">
+	<div
+		class="flex h-[calc(var(--spacing-tabbar)+var(--tabbar-safe))] shrink-0 items-center gap-3 border-t border-outline-variant/40 bg-surface-container px-4 pb-[var(--tabbar-safe)]"
+	>
 		{#if shell.state.hasWallpaper}
 			<Button variant="outlined" class="w-full flex-1" onclick={clearWallpaper}>
 				<LayersClearFill class="size-5" />
