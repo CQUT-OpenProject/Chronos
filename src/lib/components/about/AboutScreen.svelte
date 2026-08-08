@@ -11,8 +11,8 @@
 	} from '$lib/config/app-meta';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
+	import AppHero from '$lib/components/AppHero.svelte';
 	import { CodeFill, GavelFill, InfoFill, OpenInNewFill, ScheduleFill } from '$lib/icons';
-	import chronosIcon from '$lib/assets/chronos-icon.svg';
 
 	function formatBuildTime(value: string) {
 		if (!value) return '-';
@@ -21,11 +21,7 @@
 </script>
 
 <div class="m3-stack">
-	<div class="hero">
-		<img src={chronosIcon} alt="Chronos" class="logo" />
-		<p class="m3-headline-small font-semibold">Chronos</p>
-		<p class="m3-body-medium text-on-surface-variant">{PROJECT_INTRO}</p>
-	</div>
+	<AppHero title="Chronos" subtitle={PROJECT_INTRO} />
 
 	<MineSection title="版本信息" accentColor="primary">
 		<MineRow
@@ -38,6 +34,7 @@
 		<MineRow
 			title="构建时间"
 			supporting={formatBuildTime(BUILD_TIME)}
+			href={resolve('/about/releases')}
 			icon={ScheduleFill}
 			iconTone="secondary"
 		/>
@@ -76,22 +73,6 @@
 </div>
 
 <style>
-	.hero {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 1rem 0;
-		text-align: center;
-	}
-
-	.logo {
-		width: 4.5rem;
-		height: 4.5rem;
-		border-radius: 1.125rem;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-	}
-
 	.copyright {
 		padding-top: 1.5rem;
 		text-align: center;

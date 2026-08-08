@@ -24,6 +24,8 @@ describe('getNavigationDirection', () => {
 
 	it('returns forward when going deeper in secondary routes', () => {
 		expect(getNavigationDirection('/about', '/about/version-release')).toBe('forward');
+		expect(getNavigationDirection('/about', '/about/releases')).toBe('forward');
+		expect(getNavigationDirection('/about/releases', '/about/releases/v0.1.0')).toBe('forward');
 		expect(getNavigationDirection('/transfer/import', '/transfer/import/confirm')).toBe('forward');
 	});
 

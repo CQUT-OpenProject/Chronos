@@ -12,7 +12,7 @@ describe('LocalReleaseRepository', () => {
 		expect(result.value.tagName).toBe('v0.1.0');
 		expect(result.value.name).toBe('Chronos 0.1.0');
 		expect(result.value.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}/);
-		expect(result.value.body).toContain('## 更新内容');
+		expect(result.value.body).toContain('首个公开预览版本');
 		expect(result.value.body.startsWith('---')).toBe(false);
 	});
 
@@ -24,5 +24,21 @@ describe('LocalReleaseRepository', () => {
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
 		expect(result.error.message).toContain('v9.9.9');
+	});
+
+	it('returns all local releases sorted by publishedAt descending', async () => {
+		const repository = createLocalReleaseRepository();
+
+		const result = await repository.fetchAllReleases();
+
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.value.length).toBeGreaterThan(0);
+		expect(result.value[0].tagName).toBe('v0.1.0');
+		for (let i = 1; i < result.value.length; i++) {
+			expect(
+				result.value[i - 1].publishedAt.localeCompare(result.value[i].publishedAt)
+			).toBeGreaterThanOrEqual(0);
+		}
 	});
 });

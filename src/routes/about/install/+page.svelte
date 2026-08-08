@@ -13,7 +13,7 @@
 		RocketLaunchFill,
 		WifiOffFill
 	} from '$lib/icons';
-	import chronosIcon from '$lib/assets/chronos-icon.svg';
+	import AppHero from '$lib/components/AppHero.svelte';
 
 	onMount(() => {
 		pwaInstallController.checkEnvironment();
@@ -44,18 +44,7 @@
 
 <SecondaryPageShell title="安装 Chronos" backHref="/mine">
 	<div class="mx-auto flex max-w-lg flex-col gap-6 py-2">
-		<!-- Hero Section -->
-		<div class="flex flex-col items-center gap-3 pt-2 text-center">
-			<img
-				src={chronosIcon}
-				alt="Chronos Logo"
-				class="h-20 w-20 rounded-2xl shadow-md ring-1 ring-black/5 dark:ring-white/10"
-			/>
-			<div>
-				<h1 class="m3-headline-small font-bold text-on-surface">Chronos</h1>
-				<p class="m3-body-medium text-xs text-on-surface-variant">无缝的课表体验 · 随时随地</p>
-			</div>
-		</div>
+		<AppHero title="Chronos" subtitle="无缝的课表体验 · 随时随地" />
 
 		<!-- Highlights Card -->
 		<Card variant="outlined">

@@ -18,6 +18,12 @@ export function createLocalReleaseRepository(): GithubReleaseRepository {
 				return failure(AppError.dataFormat(`未找到 ${tag} 的本地发布记录`));
 			}
 			return success(release);
+		},
+		async fetchAllReleases() {
+			const list = Object.values(releases).sort((a, b) =>
+				b.publishedAt.localeCompare(a.publishedAt)
+			);
+			return success(list);
 		}
 	};
 }

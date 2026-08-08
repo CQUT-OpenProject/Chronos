@@ -51,4 +51,11 @@ class FakeGithubReleaseRepository implements GithubReleaseRepository {
 		this.lastTag = tag;
 		return this.result;
 	}
+
+	async fetchAllReleases() {
+		if (this.result.ok) {
+			return success([this.result.value]);
+		}
+		return this.result;
+	}
 }

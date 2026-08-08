@@ -13,6 +13,7 @@ export const SECONDARY_ROUTES = [
 	'/about',
 	'/about/install',
 	'/about/version-release',
+	'/about/releases',
 	'/open-source-licenses',
 	'/open-source-licenses/project',
 	'/open-source-licenses/third-party'
@@ -21,5 +22,6 @@ export const SECONDARY_ROUTES = [
 const secondaryRouteSet = new Set<string>(SECONDARY_ROUTES);
 
 export function isSecondaryRoute(pathname: string): boolean {
-	return secondaryRouteSet.has(pathname);
+	if (secondaryRouteSet.has(pathname)) return true;
+	return pathname.startsWith('/about/releases/');
 }

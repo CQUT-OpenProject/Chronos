@@ -1,0 +1,25 @@
+<script lang="ts">
+	import chronosIcon from '$lib/assets/chronos-icon.svg';
+
+	let {
+		title,
+		subtitle = ''
+	}: {
+		title: string;
+		subtitle?: string;
+	} = $props();
+</script>
+
+<div class="flex flex-col items-center gap-3 py-4 text-center">
+	<img
+		src={chronosIcon}
+		alt="Chronos"
+		class="h-20 w-20 rounded-2xl shadow-md ring-1 ring-black/5 dark:ring-white/10"
+	/>
+	<div class="flex flex-col items-center gap-1">
+		<h1 class="m3-headline-small font-semibold text-on-surface">{title}</h1>
+		{#if subtitle}
+			<p class="m3-body-medium text-xs text-on-surface-variant">{subtitle}</p>
+		{/if}
+	</div>
+</div>

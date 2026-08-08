@@ -11,4 +11,8 @@ describe('navigation routes', () => {
 	it('does not treat unknown routes as secondary', () => {
 		expect(isSecondaryRoute('/unknown')).toBe(false);
 	});
+
+	it('treats dynamic release detail routes as secondary', () => {
+		expect(isSecondaryRoute('/about/releases/v0.1.0')).toBe(true);
+	});
 });
