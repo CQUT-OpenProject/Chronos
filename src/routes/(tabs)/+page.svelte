@@ -6,6 +6,7 @@
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableScreen from '$lib/components/timetable/TimetableScreen.svelte';
 	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
+	import { LoadingIndicator } from 'm3-svelte';
 
 	const screen = getContext<TimetableScreenController>('timetableScreen');
 
@@ -32,5 +33,7 @@
 		onCourseLongClick={navigateToCourseEditor}
 	/>
 {:else}
-	<p class="p-4 text-center text-sm text-zinc-500">加载中…</p>
+	<div class="flex min-h-[60vh] items-center justify-center p-4">
+		<LoadingIndicator />
+	</div>
 {/if}

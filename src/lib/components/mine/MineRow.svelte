@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Component, Snippet } from 'svelte';
+	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
+	import { ListItem } from 'm3-svelte';
 	import { ChevronRight } from '$lib/icons';
 
 	export type MineIconTone = 'primary' | 'secondary' | 'tertiary' | 'neutral';
@@ -11,7 +13,8 @@
 		icon: Icon,
 		iconTone = 'neutral',
 		supporting = '',
-		trailing
+		trailing,
+		...props
 	}: {
 		title: string;
 		href?: string;
@@ -20,45 +23,31 @@
 		iconTone?: MineIconTone;
 		supporting?: string;
 		trailing?: Snippet;
-	} = $props();
+	} & HTMLAnchorAttributes &
+		HTMLButtonAttributes = $props();
+
+	const trailingContent = trailing;
 </script>
 
-{#if href}
-	<a {href} class="m3-mine-row" {onclick}>
+<ListItem
+	{href}
+	onclick={href ? undefined : onclick}
+	headline={title}
+	supporting={supporting || undefined}
+	{...props}
+>
+	{#snippet leading()}
 		{#if Icon}
 			<span class="m3-leading-icon tone-{iconTone}">
 				<Icon />
 			</span>
 		{/if}
-		<div class="m3-mine-row-content">
-			<span class="m3-body-large m3-mine-row-title">{title}</span>
-			{#if supporting}
-				<span class="m3-body-small m3-mine-row-supporting">{supporting}</span>
-			{/if}
-		</div>
-		{#if trailing}
-			{@render trailing()}
+	{/snippet}
+	{#snippet trailing()}
+		{#if trailingContent}
+			{@render trailingContent()}
 		{:else}
-			<ChevronRight class="m3-mine-row-arrow" />
+			<ChevronRight class="text-on-surface-variant" style="width:1.125rem;height:1.125rem" />
 		{/if}
-	</a>
-{:else}
-	<button type="button" class="m3-mine-row" {onclick}>
-		{#if Icon}
-			<span class="m3-leading-icon tone-{iconTone}">
-				<Icon />
-			</span>
-		{/if}
-		<div class="m3-mine-row-content">
-			<span class="m3-body-large m3-mine-row-title">{title}</span>
-			{#if supporting}
-				<span class="m3-body-small m3-mine-row-supporting">{supporting}</span>
-			{/if}
-		</div>
-		{#if trailing}
-			{@render trailing()}
-		{:else if onclick}
-			<ChevronRight class="m3-mine-row-arrow" />
-		{/if}
-	</button>
-{/if}
+	{/snippet}
+</ListItem>

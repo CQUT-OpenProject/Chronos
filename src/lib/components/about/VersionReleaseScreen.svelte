@@ -4,7 +4,7 @@
 	import type { GithubRelease } from '$lib/models/auth';
 	import { APP_VERSION } from '$lib/config/app-meta';
 	import { createGithubServices } from '$lib/client/github-services';
-	import { CircularProgress } from 'm3-svelte';
+	import { LoadingIndicator } from 'm3-svelte';
 
 	const githubServices = createGithubServices();
 
@@ -34,7 +34,7 @@
 
 {#if loading}
 	<div class="flex min-h-[300px] items-center justify-center py-12">
-		<CircularProgress />
+		<LoadingIndicator />
 	</div>
 {:else if release}
 	<div class="m3-stack">

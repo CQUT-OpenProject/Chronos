@@ -42,15 +42,18 @@
 			icon={GavelFill}
 			iconTone="tertiary"
 		/>
-		<a href={SOURCE_CODE_URL} target="_blank" rel="noreferrer" class="m3-mine-row">
-			<span class="m3-leading-icon tone-neutral">
-				<CodeFill />
-			</span>
-			<div class="m3-mine-row-content">
-				<span class="m3-body-large m3-mine-row-title">项目源代码</span>
-			</div>
-			<OpenInNewFill class="m3-mine-row-arrow" />
-		</a>
+		<MineRow
+			title="项目源代码"
+			href={SOURCE_CODE_URL}
+			target="_blank"
+			rel="noreferrer"
+			icon={CodeFill}
+			iconTone="neutral"
+		>
+			{#snippet trailing()}
+				<OpenInNewFill class="text-on-surface-variant" style="width:1.125rem;height:1.125rem" />
+			{/snippet}
+		</MineRow>
 	</MineSection>
 </div>
 
