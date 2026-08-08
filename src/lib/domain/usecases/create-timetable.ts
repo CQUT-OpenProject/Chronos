@@ -1,11 +1,13 @@
 import { academicConfigSchema, createTimetable } from '$lib/models/timetable';
 import { AcademicCalendarService } from '../services/academic-calendar';
+import type { PreferencesRepository } from '../interfaces/preferences-repository';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
 import { SystemTimeProvider, type TimeProvider } from '../services/time-provider';
 
 export class CreateTimetableUseCase {
 	constructor(
 		private readonly repository: TimetableRepository,
+		private readonly preferences: PreferencesRepository,
 		private readonly academicCalendarService = new AcademicCalendarService(),
 		private readonly timeProvider: TimeProvider = new SystemTimeProvider()
 	) {}
@@ -27,6 +29,6 @@ export class CreateTimetableUseCase {
 		});
 
 		await this.repository.saveTimetable(timetable);
-		await this.repository.setCurrentTimetableId(timetable.id);
+		await this.preferences.setCurrentTimetableId(timetable.id);
 	}
 }

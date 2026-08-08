@@ -1,10 +1,10 @@
 import { ThemeMode } from '$lib/models/app-state';
-import type { TimetableRepository } from '../interfaces/timetable-repository';
+import type { PreferencesRepository } from '../interfaces/preferences-repository';
 
 export class SetThemeModeUseCase {
-	constructor(private readonly repository: TimetableRepository) {}
+	constructor(private readonly preferences: PreferencesRepository) {}
 
 	async invoke(mode: ThemeMode): Promise<void> {
-		await this.repository.setThemeMode(mode);
+		await this.preferences.setThemeMode(mode);
 	}
 }

@@ -1,6 +1,7 @@
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '../import-mode';
 import type { EducationalTimetableHtmlParser } from '../interfaces/educational-timetable-html-parser';
+import type { PreferencesRepository } from '../interfaces/preferences-repository';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
 import type { TimetableShareCodec } from '../interfaces/timetable-share-codec';
 import { AppError } from '../result/app-error';
@@ -14,6 +15,7 @@ export interface ImportTimetableResult {
 export class ImportTimetableUseCase {
 	constructor(
 		private readonly repository: TimetableRepository,
+		private readonly preferences: PreferencesRepository,
 		private readonly educationalTimetableHtmlParser: EducationalTimetableHtmlParser,
 		private readonly timetableShareCodec: TimetableShareCodec
 	) {}
@@ -42,7 +44,7 @@ export class ImportTimetableUseCase {
 				courses: assignCourseIds(imported, newTimetableId)
 			};
 			await this.repository.saveTimetable(newTimetable);
-			await this.repository.setCurrentTimetableId(newTimetable.id);
+			await this.preferences.setCurrentTimetableId(newTimetable.id);
 			return success({ timetableId: newTimetable.id, mode });
 		}
 

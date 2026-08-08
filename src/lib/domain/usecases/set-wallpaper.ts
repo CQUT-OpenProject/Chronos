@@ -1,9 +1,9 @@
-import type { TimetableRepository } from '../interfaces/timetable-repository';
+import type { PreferencesRepository } from '../interfaces/preferences-repository';
 
 export class SetWallpaperUseCase {
-	constructor(private readonly repository: TimetableRepository) {}
+	constructor(private readonly preferences: PreferencesRepository) {}
 
 	async invoke(uri: string | null): Promise<void> {
-		await this.repository.setWallpaper(uri);
+		await this.preferences.setWallpaper(uri);
 	}
 }

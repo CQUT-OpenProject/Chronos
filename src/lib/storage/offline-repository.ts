@@ -1,7 +1,7 @@
 import type { AppState } from '$lib/models/app-state';
 import type { Course } from '$lib/models/course';
-import { ThemeMode } from '$lib/models/app-state';
 import type { Timetable } from '$lib/models/timetable';
+import type { PreferencesRepository } from '$lib/domain/interfaces/preferences-repository';
 import type { TimetableRepository } from '$lib/domain/interfaces/timetable-repository';
 import { assembleAppState, resolveCurrentTimetableId } from './app-state-assembler';
 import { createSettingsRepo, type SettingsRepo } from './settings-repo';
@@ -76,26 +76,26 @@ export function createOfflineTimetableRepository(
 		async deleteTimetable(id: string) {
 			await timetableLocal.deleteTimetable(id);
 			await notify();
-		},
+		}
+	};
+}
 
+/** Preference writes share the same SettingsRepo so AppState listeners still refresh. */
+export function createPreferencesRepository(
+	settings: SettingsRepo = createSettingsRepo()
+): PreferencesRepository {
+	return {
 		async setCurrentTimetableId(id: string | null) {
 			settings.setCurrentTimetableId(id);
-			await notify();
 		},
-
 		async setWallpaper(uri: string | null) {
 			settings.setWallpaperUri(uri);
-			await notify();
 		},
-
-		async setThemeMode(mode: ThemeMode) {
+		async setThemeMode(mode) {
 			settings.setThemeMode(mode);
-			await notify();
 		},
-
 		async setUseDynamicColor(enabled: boolean) {
 			settings.setUseDynamicColor(enabled);
-			await notify();
 		}
 	};
 }

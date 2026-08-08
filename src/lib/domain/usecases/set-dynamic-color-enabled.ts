@@ -1,9 +1,9 @@
-import type { TimetableRepository } from '../interfaces/timetable-repository';
+import type { PreferencesRepository } from '../interfaces/preferences-repository';
 
 export class SetDynamicColorEnabledUseCase {
-	constructor(private readonly repository: TimetableRepository) {}
+	constructor(private readonly preferences: PreferencesRepository) {}
 
 	async invoke(enabled: boolean): Promise<void> {
-		await this.repository.setUseDynamicColor(enabled);
+		await this.preferences.setUseDynamicColor(enabled);
 	}
 }

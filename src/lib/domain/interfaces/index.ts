@@ -1,6 +1,7 @@
 export * from './educational-timetable-html-parser';
 export * from './github-contributor-repository';
 export * from './github-release-repository';
+export * from './preferences-repository';
 export * from './remote-timetable-source';
 export * from './secure-credential-store';
 export * from './timetable-repository';

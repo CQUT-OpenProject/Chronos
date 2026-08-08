@@ -8,6 +8,7 @@ import {
 } from '$lib/models/online-schedule';
 import type { Timetable } from '$lib/models/timetable';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
+import type { PreferencesRepository } from '../interfaces/preferences-repository';
 import type { EducationalTimetableHtmlParser } from '../interfaces/educational-timetable-html-parser';
 import type { TimetableShareCodec } from '../interfaces/timetable-share-codec';
 import type { RemoteTimetableSource } from '../interfaces/remote-timetable-source';
@@ -36,13 +37,13 @@ class FixedTimeProvider implements TimeProvider {
 	}
 }
 
-class FakeTimetableRepository implements TimetableRepository {
-	private timetables = new Map<string, Timetable>();
-	private currentTimetableId: string | null = null;
-	private wallpaperUri: string | null = null;
-	private themeMode = ThemeMode.SYSTEM;
-	private useDynamicColor = false;
-	private state: AppState = {
+class FakeAppBackend {
+	timetables = new Map<string, Timetable>();
+	currentTimetableId: string | null = null;
+	wallpaperUri: string | null = null;
+	themeMode = ThemeMode.SYSTEM;
+	useDynamicColor = false;
+	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
 		wallpaperUri: null,
@@ -51,8 +52,36 @@ class FakeTimetableRepository implements TimetableRepository {
 		useDynamicColor: false
 	};
 
+	syncState() {
+		const current = this.currentTimetableId
+			? (this.timetables.get(this.currentTimetableId) ?? null)
+			: null;
+		this.state = {
+			timetables: [...this.timetables.values()].map((timetable) => ({
+				id: timetable.id,
+				name: timetable.name,
+				courseCount: timetable.courses.length,
+				createdAt: timetable.createdAt,
+				updatedAt: timetable.updatedAt
+			})),
+			currentTimetableId: this.currentTimetableId,
+			wallpaperUri: this.wallpaperUri,
+			currentTimetable: current,
+			themeMode: this.themeMode,
+			useDynamicColor: this.useDynamicColor
+		};
+	}
+}
+
+class FakeTimetableRepository implements TimetableRepository {
+	constructor(readonly backend = new FakeAppBackend()) {}
+
+	get preferences(): PreferencesRepository {
+		return new FakePreferencesRepository(this.backend);
+	}
+
 	subscribeAppState(listener: (state: AppState) => void): () => void {
-		listener(this.state);
+		listener(this.backend.state);
 		return () => undefined;
 	}
 
@@ -67,24 +96,24 @@ class FakeTimetableRepository implements TimetableRepository {
 				showNonCurrentWeekCourses: true
 			}
 		});
-		this.timetables.set(timetable.id, timetable);
-		this.currentTimetableId = timetable.id;
-		this.syncState();
+		this.backend.timetables.set(timetable.id, timetable);
+		this.backend.currentTimetableId = timetable.id;
+		this.backend.syncState();
 		return timetable;
 	}
 
 	async getAppStateSnapshot(): Promise<AppState> {
-		return this.state;
+		return this.backend.state;
 	}
 
 	async getTimetable(id: string): Promise<Timetable | null> {
-		return this.timetables.get(id) ?? null;
+		return this.backend.timetables.get(id) ?? null;
 	}
 
 	async saveTimetable(timetable: Timetable): Promise<void> {
-		this.timetables.set(timetable.id, timetable);
-		if (!this.currentTimetableId) this.currentTimetableId = timetable.id;
-		this.syncState();
+		this.backend.timetables.set(timetable.id, timetable);
+		if (!this.backend.currentTimetableId) this.backend.currentTimetableId = timetable.id;
+		this.backend.syncState();
 	}
 
 	async saveCourse(): Promise<void> {}
@@ -92,26 +121,6 @@ class FakeTimetableRepository implements TimetableRepository {
 	async deleteCourse(): Promise<void> {}
 
 	async deleteTimetable(): Promise<void> {}
-
-	async setCurrentTimetableId(id: string | null): Promise<void> {
-		this.currentTimetableId = id;
-		this.syncState();
-	}
-
-	async setWallpaper(uri: string | null): Promise<void> {
-		this.wallpaperUri = uri;
-		this.syncState();
-	}
-
-	async setThemeMode(mode: ThemeMode): Promise<void> {
-		this.themeMode = mode;
-		this.syncState();
-	}
-
-	async setUseDynamicColor(enabled: boolean): Promise<void> {
-		this.useDynamicColor = enabled;
-		this.syncState();
-	}
 
 	sampleImportedTimetable(overrides: Partial<Timetable> = {}): Timetable {
 		return createTimetable({
@@ -136,25 +145,29 @@ class FakeTimetableRepository implements TimetableRepository {
 			...overrides
 		});
 	}
+}
 
-	private syncState() {
-		const current = this.currentTimetableId
-			? (this.timetables.get(this.currentTimetableId) ?? null)
-			: null;
-		this.state = {
-			timetables: [...this.timetables.values()].map((timetable) => ({
-				id: timetable.id,
-				name: timetable.name,
-				courseCount: timetable.courses.length,
-				createdAt: timetable.createdAt,
-				updatedAt: timetable.updatedAt
-			})),
-			currentTimetableId: this.currentTimetableId,
-			wallpaperUri: this.wallpaperUri,
-			currentTimetable: current,
-			themeMode: this.themeMode,
-			useDynamicColor: this.useDynamicColor
-		};
+class FakePreferencesRepository implements PreferencesRepository {
+	constructor(private readonly backend: FakeAppBackend) {}
+
+	async setCurrentTimetableId(id: string | null): Promise<void> {
+		this.backend.currentTimetableId = id;
+		this.backend.syncState();
+	}
+
+	async setWallpaper(uri: string | null): Promise<void> {
+		this.backend.wallpaperUri = uri;
+		this.backend.syncState();
+	}
+
+	async setThemeMode(mode: ThemeMode): Promise<void> {
+		this.backend.themeMode = mode;
+		this.backend.syncState();
+	}
+
+	async setUseDynamicColor(enabled: boolean): Promise<void> {
+		this.backend.useDynamicColor = enabled;
+		this.backend.syncState();
 	}
 }
 
@@ -290,6 +303,7 @@ describe('domain use cases', () => {
 		const repo = new FakeTimetableRepository();
 		const useCase = new CreateTimetableUseCase(
 			repo,
+			repo.preferences,
 			academicCalendarService,
 			new FixedTimeProvider()
 		);
@@ -323,6 +337,7 @@ describe('domain use cases', () => {
 		});
 		const useCase = new ImportTimetableUseCase(
 			repo,
+			repo.preferences,
 			new FakeHtmlParser(null),
 			new FakeTimetableShareCodec(imported)
 		);
@@ -352,6 +367,7 @@ describe('domain use cases', () => {
 		});
 		const useCase = new ImportTimetableUseCase(
 			repo,
+			repo.preferences,
 			new FakeHtmlParser(imported),
 			new FakeTimetableShareCodec(imported)
 		);
