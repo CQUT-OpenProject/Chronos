@@ -67,7 +67,7 @@
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
 
 	const currentPeriodIndex = $derived(
-		isCurrentWeek ? findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now)) : null
+		findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
 	);
 
 	const shellBgClass = $derived(hasWallpaper ? '' : isDark ? 'bg-zinc-900' : 'bg-white');
@@ -96,8 +96,6 @@
 	});
 
 	$effect(() => {
-		if (!isCurrentWeek) return;
-
 		let timeoutId: ReturnType<typeof setTimeout>;
 
 		const schedule = () => {
