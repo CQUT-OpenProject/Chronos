@@ -33,7 +33,7 @@
 </script>
 
 <div
-	class="bg-surface-container flex h-[calc(var(--spacing-tabbar)+var(--tabbar-safe))] flex-col items-center justify-center border-t border-outline-variant/40 px-4 pb-[var(--tabbar-safe)]"
+	class="flex h-[calc(var(--spacing-tabbar)+var(--tabbar-safe))] flex-col items-center justify-center border-t border-outline-variant/40 bg-surface-container px-4 pb-[var(--tabbar-safe)]"
 >
 	<NavCMLX variant="compact">
 		{#each tabs as tab (tab.href)}

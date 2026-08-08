@@ -17,6 +17,11 @@
 	--color-danger: #e60012;
 	--color-surface: #ffffff;
 	--color-surface-variant: #e2e8f0;
+	--color-surface-container-lowest: #ffffff;
+	--color-surface-container-low: #f8fafc;
+	--color-surface-container: #ffffff;
+	--color-surface-container-high: #f1f5f9;
+	--color-surface-container-highest: #e2e8f0;
 	--color-primary-container: #d9e8f4;
 	--color-secondary-container: #e3e7f5;
 	--color-on-secondary-container: #3c4d82;
@@ -34,6 +39,18 @@
 	html {
 		font-size: 15px;
 		line-height: 1.47;
+	}
+
+	@media (min-width: 768px) {
+		html {
+			font-size: 16px;
+		}
+	}
+
+	@media (min-width: 1366px) {
+		html {
+			font-size: 17px;
+		}
 	}
 
 	:root {
@@ -56,6 +73,11 @@
 		--color-border: #2e3038;
 		--color-surface: #1e2026;
 		--color-surface-variant: #282a33;
+		--color-surface-container-lowest: #0f1013;
+		--color-surface-container-low: #18191e;
+		--color-surface-container: #1e2026;
+		--color-surface-container-high: #24262e;
+		--color-surface-container-highest: #2b2d37;
 		--color-primary-container: #1e3a5f;
 		--color-secondary-container: #2c385c;
 		--color-on-secondary-container: #c7d0ee;
