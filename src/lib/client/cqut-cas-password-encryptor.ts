@@ -1,6 +1,6 @@
 import JSEncrypt from 'jsencrypt';
 
-const CHUNK_SIZE = 29;
+const CHUNK_SIZE = 30;
 
 const PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDACwPDxYycdCiNeblZa9LjvDzb

@@ -1,5 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { fetchCqutSchedule } from '$lib/server/cqut-online/fetch-schedule';
+import { checkPreviewRateLimit } from '$lib/server/cqut-online/preview-rate-limit';
 
 interface PreviewRequestBody {
 	account?: string;
@@ -8,7 +9,23 @@ interface PreviewRequestBody {
 	yearTerm?: string | null;
 }
 
-export const POST: RequestHandler = async ({ request }) => {
+/** Vercel Pro allows up to 60s; Hobby plans may still enforce a lower platform limit. */
+export const config = {
+	maxDuration: 60
+};
+
+export const POST: RequestHandler = async ({ request, getClientAddress }) => {
+	const rateLimit = checkPreviewRateLimit(getClientAddress());
+	if (!rateLimit.allowed) {
+		return json(
+			{ ok: false, error: { kind: 'Validation', message: '请求过于频繁，请稍后再试' } },
+			{
+				status: 429,
+				headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) }
+			}
+		);
+	}
+
 	let body: PreviewRequestBody;
 	try {
 		body = (await request.json()) as PreviewRequestBody;

@@ -3,14 +3,16 @@ import { failure, success, type AppResult } from '$lib/domain/result/app-result'
 import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
 import { onlineSchedulePayloadSchema } from '$lib/models/online-schedule-schema';
 import { mergeWeekPayloads, resolveWeeksToFetch } from '$lib/parsers/cqut-online/cqut-week-merge';
+import { loginCas } from './cas-auth';
+import {
+	JSON_MEDIA_TYPE,
+	TOTAL_FETCH_TIMEOUT_MS,
+	WEEK_EVENTS_URL,
+	WEEK_FETCH_CONCURRENCY
+} from './config';
+import { mapWithConcurrency } from './concurrency';
 import { CookieJar } from './cookie-jar';
-
-const CAS_LOGIN_URL = 'https://uis.cqut.edu.cn/center-auth-server/sso/doLogin';
-const CAS_TICKET_URL =
-	'https://uis.cqut.edu.cn/center-auth-server/YF8A4013/cas/login?service=https://timetable-cfc.cqut.edu.cn/api/auth/casLogin';
-const WEEK_EVENTS_URL = 'https://timetable-cfc.cqut.edu.cn/api/courseSchedule/listWeekEvents';
-const SESSION_COOKIE_HOSTS = ['uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'];
-const JSON_MEDIA_TYPE = 'application/json; charset=utf-8';
+import { request } from './http-client';
 
 export interface FetchCqutScheduleInput {
 	account: string;
@@ -23,14 +25,24 @@ export async function fetchCqutSchedule(
 	input: FetchCqutScheduleInput
 ): Promise<AppResult<OnlineSchedulePayload>> {
 	const jar = new CookieJar();
-	const loginResult = await login(jar, input.account, input.encryptedPassword);
-	if (!loginResult.ok) return loginResult;
-	return fetchTimetable(jar, input);
+	const signal = AbortSignal.timeout(TOTAL_FETCH_TIMEOUT_MS);
+
+	try {
+		const loginResult = await loginCas(jar, input.account, input.encryptedPassword, signal);
+		if (!loginResult.ok) return loginResult;
+		return await fetchTimetable(jar, input, signal);
+	} catch (error) {
+		if (isAbortError(error)) {
+			return failure(AppError.network('在线课表请求超时，请稍后重试'));
+		}
+		throw error;
+	}
 }
 
 async function fetchTimetable(
 	jar: CookieJar,
-	input: FetchCqutScheduleInput
+	input: FetchCqutScheduleInput,
+	signal: AbortSignal
 ): Promise<AppResult<OnlineSchedulePayload>> {
 	const initialPayload = await fetchWeekEvents(
 		jar,
@@ -38,7 +50,8 @@ async function fetchTimetable(
 		input.weekNum,
 		input.yearTerm,
 		input.encryptedPassword,
-		true
+		true,
+		signal
 	);
 	if (!initialPayload.ok) return initialPayload;
 
@@ -48,22 +61,30 @@ async function fetchTimetable(
 	}
 
 	const targetYearTerm = input.yearTerm?.trim() || initialPayload.value.yearTerm.trim() || null;
-	const payloads: OnlineSchedulePayload[] = [initialPayload.value];
-
-	for (const targetWeek of weeksToFetch) {
+	const remainingWeeks = weeksToFetch.filter((targetWeek) => {
 		const isInitialWeek =
 			targetWeek === initialPayload.value.weekNum &&
 			(targetYearTerm ?? '') === initialPayload.value.yearTerm;
-		if (isInitialWeek) continue;
+		return !isInitialWeek;
+	});
 
-		const result = await fetchWeekEvents(
-			jar,
-			input.account,
-			targetWeek,
-			targetYearTerm,
-			input.encryptedPassword,
-			true
-		);
+	const weekResults = await mapWithConcurrency(
+		remainingWeeks,
+		WEEK_FETCH_CONCURRENCY,
+		async (targetWeek) =>
+			fetchWeekEvents(
+				jar,
+				input.account,
+				targetWeek,
+				targetYearTerm,
+				input.encryptedPassword,
+				true,
+				signal
+			)
+	);
+
+	const payloads: OnlineSchedulePayload[] = [initialPayload.value];
+	for (const result of weekResults) {
 		if (!result.ok) return result;
 		payloads.push(result.value);
 	}
@@ -77,7 +98,8 @@ async function fetchWeekEvents(
 	weekNum: string | null | undefined,
 	yearTerm: string | null | undefined,
 	encryptedPassword: string,
-	allowReloginRetry: boolean
+	allowReloginRetry: boolean,
+	signal: AbortSignal
 ): Promise<AppResult<OnlineSchedulePayload>> {
 	const body = buildJsonObject({
 		userID: account,
@@ -85,11 +107,16 @@ async function fetchWeekEvents(
 		yearTerm: yearTerm?.trim() || null
 	});
 
-	const response = await request(jar, WEEK_EVENTS_URL, {
-		method: 'POST',
-		headers: { 'Content-Type': JSON_MEDIA_TYPE },
-		body
-	});
+	const response = await request(
+		jar,
+		WEEK_EVENTS_URL,
+		{
+			method: 'POST',
+			headers: { 'Content-Type': JSON_MEDIA_TYPE },
+			body
+		},
+		{ signal }
+	);
 	if (!response.ok) {
 		return failure(AppError.network(`在线课表请求失败：HTTP ${response.status}`));
 	}
@@ -102,9 +129,9 @@ async function fetchWeekEvents(
 		if (!allowReloginRetry) {
 			return failure(AppError.auth(authErrorMessage(jsonObject.value)));
 		}
-		const loginResult = await login(jar, account, encryptedPassword);
+		const loginResult = await loginCas(jar, account, encryptedPassword, signal);
 		if (!loginResult.ok) return loginResult;
-		return fetchWeekEvents(jar, account, weekNum, yearTerm, encryptedPassword, false);
+		return fetchWeekEvents(jar, account, weekNum, yearTerm, encryptedPassword, false, signal);
 	}
 
 	try {
@@ -112,60 +139,6 @@ async function fetchWeekEvents(
 	} catch {
 		return failure(AppError.dataFormat('在线课表响应格式错误'));
 	}
-}
-
-async function login(
-	jar: CookieJar,
-	account: string,
-	encryptedPassword: string
-): Promise<AppResult<void>> {
-	const loginBody = buildJsonObject({
-		name: account,
-		pwd: encryptedPassword,
-		verifyCode: null,
-		universityId: '100005',
-		loginType: 'login'
-	});
-
-	const loginResponse = await request(jar, CAS_LOGIN_URL, {
-		method: 'POST',
-		headers: { 'Content-Type': JSON_MEDIA_TYPE },
-		body: loginBody
-	});
-	if (!loginResponse.ok) {
-		return failure(AppError.network(`统一身份认证登录失败：HTTP ${loginResponse.status}`));
-	}
-
-	const loginJson = parsePayloadObject(await loginResponse.text());
-	if (!loginJson.ok) return loginJson;
-
-	const code = stringValue(loginJson.value.code);
-	const message = stringValue(loginJson.value.msg);
-	if (code !== '200') {
-		return failure(AppError.auth(message?.trim() || '统一身份认证登录失败'));
-	}
-
-	const ticketResponse = await request(jar, CAS_TICKET_URL, { method: 'GET' });
-	if (!ticketResponse.ok) {
-		return failure(AppError.network(`课表系统登录失败：HTTP ${ticketResponse.status}`));
-	}
-
-	if (!jar.hasSessionCookies(SESSION_COOKIE_HOSTS)) {
-		return failure(AppError.auth('登录失败，请重新输入账号或密码'));
-	}
-
-	return success(undefined);
-}
-
-async function request(jar: CookieJar, url: string, init: RequestInit): Promise<Response> {
-	const headers = new Headers(init.headers);
-	const cookieHeader = jar.cookieHeader(url);
-	if (cookieHeader) {
-		headers.set('cookie', cookieHeader);
-	}
-	const response = await fetch(url, { ...init, headers });
-	jar.storeFrom(response, url);
-	return response;
 }
 
 function buildJsonObject(entries: Record<string, string | null>): string {
@@ -194,10 +167,10 @@ function looksLikeAuthError(jsonObject: Record<string, unknown>): boolean {
 }
 
 function authErrorMessage(jsonObject: Record<string, unknown>): string {
-	const message = stringValue(jsonObject.msg);
+	const message = typeof jsonObject.msg === 'string' ? jsonObject.msg : null;
 	return message?.trim() || '登录失败，请重新输入密码';
 }
 
-function stringValue(value: unknown): string | null {
-	return typeof value === 'string' ? value : null;
+function isAbortError(error: unknown): boolean {
+	return error instanceof DOMException && error.name === 'AbortError';
 }

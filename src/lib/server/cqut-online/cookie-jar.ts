@@ -1,8 +1,13 @@
+import { TIMETABLE_HOST, TIMETABLE_SESSION_COOKIE } from './config';
+
 export class CookieJar {
 	private readonly cookies = new Map<string, Map<string, string>>();
 
-	storeFrom(response: Response, requestUrl: string): void {
-		const host = new URL(requestUrl).hostname;
+	storeFrom(response: Response, requestUrl?: string): void {
+		const resolvedUrl = response.url || requestUrl;
+		if (!resolvedUrl) return;
+
+		const host = new URL(resolvedUrl).hostname;
 		const setCookieHeaders = this.readSetCookieHeaders(response);
 		if (setCookieHeaders.length === 0) return;
 
@@ -26,8 +31,12 @@ export class CookieJar {
 		return [...hostCookies.entries()].map(([name, value]) => `${name}=${value}`).join('; ');
 	}
 
-	hasSessionCookies(hosts: string[]): boolean {
-		return hosts.some((host) => (this.cookies.get(host)?.size ?? 0) > 0);
+	hasCookie(host: string, name: string): boolean {
+		return this.cookies.get(host)?.has(name) ?? false;
+	}
+
+	hasTimetableSession(): boolean {
+		return this.hasCookie(TIMETABLE_HOST, TIMETABLE_SESSION_COOKIE);
 	}
 
 	private readSetCookieHeaders(response: Response): string[] {

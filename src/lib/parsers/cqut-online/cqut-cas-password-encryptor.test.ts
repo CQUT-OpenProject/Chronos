@@ -12,4 +12,21 @@ describe('encryptCasPassword', () => {
 		expect(encrypted.length).toBeGreaterThan(0);
 		expect(encrypted.includes('%') || encrypted.includes('%5B')).toBe(true);
 	});
+
+	it('splits long passwords into 30-char encrypted chunks', () => {
+		const singleChunk = JSON.parse(
+			decodeURIComponent(encryptCasPassword('a'.repeat(30)))
+		) as string[];
+		expect(singleChunk).toHaveLength(1);
+
+		const twoChunks = JSON.parse(
+			decodeURIComponent(encryptCasPassword('a'.repeat(60)))
+		) as string[];
+		expect(twoChunks).toHaveLength(2);
+
+		const threeChunks = JSON.parse(
+			decodeURIComponent(encryptCasPassword('a'.repeat(61)))
+		) as string[];
+		expect(threeChunks).toHaveLength(3);
+	});
 });
