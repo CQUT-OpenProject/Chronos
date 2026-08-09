@@ -19,6 +19,8 @@ export { CheckCircleFill } from '@material-symbols-svg/svelte/icons/check-circle
 export { Edit } from '@material-symbols-svg/svelte/icons/edit';
 export { CodeFill } from '@material-symbols-svg/svelte/icons/code';
 export { GavelFill } from '@material-symbols-svg/svelte/icons/gavel';
+export { ArticleFill } from '@material-symbols-svg/svelte/icons/article';
+export { ShieldFill } from '@material-symbols-svg/svelte/icons/shield';
 export { OpenInNewFill } from '@material-symbols-svg/svelte/icons/open-in-new';
 export { DescriptionFill } from '@material-symbols-svg/svelte/icons/description';
 export { FolderZipFill } from '@material-symbols-svg/svelte/icons/folder-zip';

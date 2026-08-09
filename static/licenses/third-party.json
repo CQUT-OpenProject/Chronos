@@ -10,5 +10,9 @@
 	{ "name": "tailwindcss", "license": "MIT" },
 	{ "name": "marked", "license": "MIT" },
 	{ "name": "web-vitals", "license": "Apache-2.0" },
-	{ "name": "workbox-window", "license": "MIT" }
+	{ "name": "workbox-window", "license": "MIT" },
+	{ "name": "@ktibow/material-color-utilities-nightly", "license": "Apache-2.0" },
+	{ "name": "@material-symbols-svg/svelte", "license": "Apache-2.0" },
+	{ "name": "bits-ui", "license": "MIT" },
+	{ "name": "vite-plugin-functions-mixins", "license": "MIT" }
 ]

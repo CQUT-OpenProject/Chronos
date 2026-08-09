@@ -25,7 +25,9 @@
 		InfoFill,
 		LayersClearFill,
 		OpenInNewFill,
-		ScheduleFill
+		ArticleFill,
+		ScheduleFill,
+		ShieldFill
 	} from '$lib/icons';
 
 	let { shell }: { shell: AppShellController } = $props();
@@ -109,7 +111,19 @@
 		/>
 	</MineSection>
 
-	<MineSection title="项目信息">
+	<MineSection title="软件信息">
+		<MineRow
+			title="服务协议"
+			href={resolve('/legal/terms')}
+			icon={ArticleFill}
+			iconTone="tertiary"
+		/>
+		<MineRow
+			title="隐私政策"
+			href={resolve('/legal/privacy')}
+			icon={ShieldFill}
+			iconTone="tertiary"
+		/>
 		<MineRow
 			title="开源许可"
 			href={resolve('/open-source-licenses')}

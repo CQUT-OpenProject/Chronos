@@ -5,5 +5,6 @@ export const secondaryRouteRoots = [
 	'/theme-settings',
 	'/wallpaper',
 	'/about',
+	'/legal',
 	'/open-source-licenses'
 ] as const;
