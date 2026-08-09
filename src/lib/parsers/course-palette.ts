@@ -1,4 +1,6 @@
-const COURSE_PALETTE: [string, string][] = [
+export type CoursePaletteEntry = { background: string; foreground: string };
+
+export const COURSE_PALETTE: [string, string][] = [
 	['#EADDFF', '#21005D'],
 	['#FFDBC9', '#311100'],
 	['#C4EED0', '#072711'],
@@ -6,6 +8,10 @@ const COURSE_PALETTE: [string, string][] = [
 	['#D3E3FD', '#041E49'],
 	['#FFD8E4', '#31111D']
 ];
+
+export const COURSE_PALETTE_ENTRIES: CoursePaletteEntry[] = COURSE_PALETTE.map(
+	([background, foreground]) => ({ background, foreground })
+);
 
 const WHITESPACE_REGEX = /\s+/g;
 

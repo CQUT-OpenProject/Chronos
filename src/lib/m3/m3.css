@@ -248,6 +248,10 @@
 		--m3c-inverse-surface: #1e293b;
 		--m3c-inverse-on-surface: #f8fafc;
 		--m3c-inverse-primary: var(--color-soft-blue);
+		--m3c-error: var(--color-error);
+		--m3c-on-error: var(--color-on-error);
+		--m3c-error-container: var(--color-error-container);
+		--m3c-on-error-container: var(--color-on-error-container);
 		--m3-snackbar-shape: 1.25rem;
 	}
 

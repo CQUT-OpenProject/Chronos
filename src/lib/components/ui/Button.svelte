@@ -11,7 +11,7 @@
 		class: className = '',
 		...props
 	}: {
-		variant?: 'filled' | 'outlined' | 'text' | 'tonal';
+		variant?: 'filled' | 'outlined' | 'text' | 'tonal' | 'danger';
 		disabled?: boolean;
 		href?: string;
 		onclick?: (event: MouseEvent) => void;
@@ -25,7 +25,9 @@
 		outlined: 'border border-outline text-brand hover:bg-brand/10 active:bg-brand/20',
 		text: 'text-brand hover:bg-brand/10 active:bg-brand/20',
 		tonal:
-			'bg-secondary-container text-on-secondary-container hover:bg-secondary-container/80 active:opacity-90'
+			'bg-secondary-container text-on-secondary-container hover:bg-secondary-container/80 active:opacity-90',
+		danger:
+			'bg-error-container text-on-error-container hover:opacity-90 active:opacity-90 focus-visible:ring-error'
 	};
 </script>
 
