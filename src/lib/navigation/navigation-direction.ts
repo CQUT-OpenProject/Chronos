@@ -9,17 +9,22 @@ export function getTransitionDirection(): NavigationDirection {
 	return currentTransitionDirection;
 }
 
+export function getNavigationStack(): readonly string[] {
+	return navigationStack;
+}
+
 export function updateTransitionDirection(
 	from: string | undefined,
 	to: string,
-	navigationType: 'link' | 'popstate' | 'goto' | 'leave' | 'form'
+	navigationType: 'link' | 'popstate' | 'goto' | 'leave' | 'form',
+	historyDelta?: number
 ): NavigationDirection {
 	if (!to) {
 		currentTransitionDirection = 'none';
 		return currentTransitionDirection;
 	}
 
-	currentTransitionDirection = resolveNavigationDirection(from, to, navigationType);
+	currentTransitionDirection = resolveNavigationDirection(from, to, navigationType, historyDelta);
 	return currentTransitionDirection;
 }
 
@@ -46,6 +51,26 @@ function pushToStack(pathname: string): void {
 	if (navigationStack[navigationStack.length - 1] !== pathname) {
 		navigationStack.push(pathname);
 	}
+}
+
+function applyStackForDirection(direction: NavigationDirection, to: string): void {
+	if (direction === 'none') {
+		navigationStack = [to];
+		return;
+	}
+
+	if (direction === 'back') {
+		if (navigationStack.lastIndexOf(to) !== -1) {
+			trimStackTo(to);
+		} else if (navigationStack.length > 0) {
+			navigationStack = [...navigationStack.slice(0, -1), to];
+		} else {
+			navigationStack = [to];
+		}
+		return;
+	}
+
+	pushToStack(to);
 }
 
 export function getNavigationDirection(from: string | undefined, to: string): NavigationDirection {
@@ -85,10 +110,16 @@ export function getNavigationDirection(from: string | undefined, to: string): Na
 export function resolveNavigationDirection(
 	from: string | undefined,
 	to: string,
-	navigationType: 'link' | 'popstate' | 'goto' | 'leave' | 'form'
+	navigationType: 'link' | 'popstate' | 'goto' | 'leave' | 'form',
+	historyDelta?: number
 ): NavigationDirection {
 	if (navigationType === 'popstate') {
-		trimStackTo(to);
+		if (historyDelta != null && historyDelta > 0) {
+			pushToStack(to);
+			return 'forward';
+		}
+
+		applyStackForDirection('back', to);
 		return 'back';
 	}
 
@@ -103,22 +134,21 @@ export function resolveNavigationDirection(
 	const stackIndex = navigationStack.lastIndexOf(to);
 	const isStackBack = stackIndex !== -1 && stackIndex < navigationStack.length - 1;
 
-	let direction: NavigationDirection;
 	if (isStackBack) {
-		direction = 'back';
 		trimStackTo(to);
-	} else {
-		direction = getNavigationDirection(from, to);
+		return 'back';
+	}
 
-		if (direction === 'none') {
-			navigationStack = [to];
-		} else if (direction === 'back') {
-			trimStackTo(to);
-		} else if (from && from !== to) {
-			pushToStack(to);
-		} else if (!from) {
-			navigationStack = [to];
-		}
+	const direction = getNavigationDirection(from, to);
+
+	if (direction === 'none') {
+		applyStackForDirection('none', to);
+	} else if (direction === 'back') {
+		applyStackForDirection('back', to);
+	} else if (from && from !== to) {
+		applyStackForDirection('forward', to);
+	} else if (!from) {
+		navigationStack = [to];
 	}
 
 	return direction;

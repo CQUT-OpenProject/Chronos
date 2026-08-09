@@ -13,7 +13,8 @@
 	import { page } from '$app/state';
 	import {
 		initNavigationStack,
-		updateTransitionDirection
+		updateTransitionDirection,
+		type NavigationDirection
 	} from '$lib/navigation/navigation-direction';
 	import { isSecondaryRoute } from '$lib/navigation/routes';
 	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
@@ -31,11 +32,13 @@
 		isSecondaryRoute(page.url.pathname) ? page.url.pathname : TAB_PAGE_KEY
 	);
 
-	beforeNavigate(({ from, to, type }) => {
+	let transitionDirection = $state<NavigationDirection>('none');
+
+	beforeNavigate(({ from, to, type, delta }) => {
 		const fromPath = from?.url.pathname;
 		const toPath = to?.url.pathname;
 		if (!toPath) return;
-		updateTransitionDirection(fromPath, toPath, type);
+		transitionDirection = updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
 	});
 
 	let { children } = $props();
@@ -72,8 +75,8 @@
 	{#key pageTransitionKey}
 		<div
 			class="col-start-1 row-start-1 min-h-dvh w-full bg-canvas text-ink"
-			in:secondaryPageTransition={{ phase: 'in' }}
-			out:secondaryPageTransition={{ phase: 'out' }}
+			in:secondaryPageTransition={{ phase: 'in', direction: transitionDirection }}
+			out:secondaryPageTransition={{ phase: 'out', direction: transitionDirection }}
 		>
 			{@render children()}
 		</div>

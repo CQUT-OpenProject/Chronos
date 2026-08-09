@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vite-plus/test';
 import {
 	getNavigationDirection,
+	getNavigationStack,
 	getTransitionDirection,
 	initNavigationStack,
 	resetNavigationStack,
@@ -63,6 +64,36 @@ describe('resolveNavigationDirection', () => {
 			resolveNavigationDirection('/open-source-licenses/project', '/open-source-licenses', 'link')
 		).toBe('back');
 	});
+
+	it('returns forward on popstate when browser goes forward', () => {
+		initNavigationStack('/mine');
+		resolveNavigationDirection('/mine', '/about', 'link');
+		resolveNavigationDirection('/about', '/open-source-licenses', 'link');
+		resolveNavigationDirection('/open-source-licenses', '/about', 'popstate', -1);
+
+		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'popstate', 1)).toBe(
+			'forward'
+		);
+		expect(getNavigationStack()).toEqual(['/mine', '/about', '/open-source-licenses']);
+	});
+
+	it('returns back on popstate when browser goes back', () => {
+		initNavigationStack('/mine');
+		resolveNavigationDirection('/mine', '/about', 'link');
+		resolveNavigationDirection('/about', '/open-source-licenses', 'link');
+
+		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'popstate', -1)).toBe(
+			'back'
+		);
+		expect(getNavigationStack()).toEqual(['/mine', '/about']);
+	});
+
+	it('repairs stack when backing to a page not in history from a deep link', () => {
+		initNavigationStack('/legal/privacy');
+
+		expect(resolveNavigationDirection('/legal/privacy', '/about', 'link')).toBe('back');
+		expect(getNavigationStack()).toEqual(['/about']);
+	});
 });
 
 describe('updateTransitionDirection', () => {
@@ -81,5 +112,15 @@ describe('updateTransitionDirection', () => {
 		updateTransitionDirection('/mine', '/about', 'link');
 		updateTransitionDirection('/about', '/mine', 'link');
 		expect(getTransitionDirection()).toBe('back');
+	});
+
+	it('stores forward on popstate when delta is positive', () => {
+		initNavigationStack('/mine');
+		updateTransitionDirection('/mine', '/about', 'link');
+		updateTransitionDirection('/about', '/open-source-licenses', 'link');
+		updateTransitionDirection('/open-source-licenses', '/about', 'popstate', -1);
+
+		updateTransitionDirection('/about', '/open-source-licenses', 'popstate', 1);
+		expect(getTransitionDirection()).toBe('forward');
 	});
 });

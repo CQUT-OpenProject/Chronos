@@ -1,10 +1,11 @@
 import type { TransitionConfig } from 'svelte/transition';
-import { getTransitionDirection } from './navigation-direction';
+import { getTransitionDirection, type NavigationDirection } from './navigation-direction';
 
 export const SECONDARY_PAGE_DURATION_MS = 300;
 
 type SecondaryPageTransitionParams = {
 	phase?: 'in' | 'out';
+	direction?: NavigationDirection;
 };
 
 function prefersReducedMotion(): boolean {
@@ -38,9 +39,9 @@ export const md3EmphasizedAccelerate = cubicBezier(0.3, 0.0, 0.8, 0.15);
 
 export function secondaryPageTransition(
 	node: Element,
-	{ phase = 'in' }: SecondaryPageTransitionParams = {}
+	{ phase = 'in', direction: directionParam }: SecondaryPageTransitionParams = {}
 ): TransitionConfig {
-	const direction = getTransitionDirection();
+	const direction = directionParam ?? getTransitionDirection();
 	if (direction === 'none') {
 		return { duration: 0 };
 	}
