@@ -31,9 +31,7 @@
 	}
 </script>
 
-<div
-	class="flex h-[calc(var(--spacing-tabbar)+var(--tabbar-safe))] w-full flex-col items-center justify-center border-t border-outline-variant/40 bg-surface-container px-4 pb-[var(--tabbar-safe)]"
->
+<div class="bottom-bar w-full flex-col justify-center">
 	<nav class="flex w-full max-w-md items-center justify-around">
 		{#each tabs as tab (tab.href)}
 			{@const active = isActive(tab.href)}

@@ -189,7 +189,7 @@
 	onpointercancel={onWindowPointerCancel}
 />
 
-<div class="flex h-[calc(100dvh-var(--spacing-tabbar)-var(--tabbar-safe))] flex-col">
+<div class="flex h-[calc(100dvh-var(--bottom-bar-height))] flex-col">
 	<TopAppBar class="shrink-0">
 		{#snippet titleSnippet()}
 			<div

@@ -5,7 +5,7 @@
 </script>
 
 <div class="flex min-h-dvh flex-col">
-	<div class="flex-1 pb-[calc(var(--spacing-tabbar)+var(--tabbar-safe))]">
+	<div class="flex-1 pb-[var(--bottom-bar-height)]">
 		{@render children()}
 	</div>
 	<div class="tab-bar-wrapper">

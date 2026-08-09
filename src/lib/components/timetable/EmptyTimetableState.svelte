@@ -6,7 +6,7 @@
 </script>
 
 <div
-	class="flex min-h-[calc(100dvh-var(--spacing-tabbar)-var(--tabbar-safe))] flex-col items-center justify-center gap-3 px-6 py-8 text-center"
+	class="flex min-h-[calc(100dvh-var(--bottom-bar-height))] flex-col items-center justify-center gap-3 px-6 py-8 text-center"
 >
 	<img src={favicon} alt="" class="h-[220px] w-[220px]" aria-hidden="true" />
 

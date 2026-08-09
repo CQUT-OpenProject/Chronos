@@ -13,6 +13,10 @@
 	--color-canvas: #f0f4f8;
 	--color-border: #d4e0eb;
 	--color-danger: #e60012;
+	--color-error: light-dark(#a83836, #fa746f);
+	--color-on-error: light-dark(#fff7f6, #490006);
+	--color-error-container: light-dark(#fa746f, #871f21);
+	--color-on-error-container: light-dark(#6e0a12, #ff9993);
 	--color-surface: #ffffff;
 	--color-surface-variant: #e2e8f0;
 	--color-surface-container: #ffffff;
@@ -53,6 +57,7 @@
 
 	:root {
 		--tabbar-safe: env(safe-area-inset-bottom);
+		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
 		--wallpaper-tint-sidebar: rgb(255 255 255 / 0.54);
 		--wallpaper-tint-grid: rgb(255 255 255 / 0.38);
 	}
@@ -102,5 +107,9 @@
 		inset-inline: 0;
 		bottom: 0;
 		z-index: 15;
+	}
+
+	.bottom-bar {
+		@apply flex h-[var(--bottom-bar-height)] shrink-0 items-center border-t border-outline-variant/40 bg-surface-container px-4 pb-[var(--tabbar-safe)];
 	}
 }
