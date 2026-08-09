@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
+	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { dismissSnackbar, snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import { estimateAppDataBytes, formatAppDataSize } from '$lib/storage/clear-app-data';
 	import {
 		APP_VERSION,
 		BUILD_TIME,
@@ -14,9 +19,33 @@
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import AppHero from '$lib/components/AppHero.svelte';
-	import { CodeFill, GavelFill, InfoFill, OpenInNewFill, ScheduleFill } from '$lib/icons';
+	import {
+		CodeFill,
+		GavelFill,
+		InfoFill,
+		LayersClearFill,
+		OpenInNewFill,
+		ScheduleFill
+	} from '$lib/icons';
+
+	let { shell }: { shell: AppShellController } = $props();
 
 	let clickCount = $state(0);
+	let clearDialogOpen = $state(false);
+	let clearing = $state(false);
+	let dataUsageBytes = $state<number | null>(null);
+
+	const dataUsageSupporting = $derived(
+		dataUsageBytes === null ? '正在计算占用…' : `当前占用 ${formatAppDataSize(dataUsageBytes)}`
+	);
+
+	async function refreshDataUsage() {
+		dataUsageBytes = await estimateAppDataBytes();
+	}
+
+	onMount(() => {
+		void refreshDataUsage();
+	});
 
 	function formatBuildTime(value: string) {
 		if (!value) return '-';
@@ -32,6 +61,20 @@
 		} else if (clickCount >= 5) {
 			const remaining = 10 - clickCount;
 			snackbar(`再按 ${remaining} 次进入开发者页面`, undefined, 1500);
+		}
+	}
+
+	async function confirmClear() {
+		clearing = true;
+		try {
+			await shell.clearAllData();
+			clearDialogOpen = false;
+			await refreshDataUsage();
+			snackbar('已清除所有数据');
+		} catch {
+			snackbar('清除失败，请重试');
+		} finally {
+			clearing = false;
 		}
 	}
 </script>
@@ -56,7 +99,17 @@
 		/>
 	</MineSection>
 
-	<MineSection title="项目与反馈">
+	<MineSection title="存储占用情况">
+		<MineRow
+			title="清除所有数据"
+			supporting={dataUsageSupporting}
+			icon={LayersClearFill}
+			iconTone="neutral"
+			onclick={() => (clearDialogOpen = true)}
+		/>
+	</MineSection>
+
+	<MineSection title="项目信息">
 		<MineRow
 			title="开源许可"
 			href={resolve('/open-source-licenses')}
@@ -64,7 +117,7 @@
 			iconTone="tertiary"
 		/>
 		<MineRow
-			title="项目源代码"
+			title="源代码"
 			href={SOURCE_CODE_URL}
 			target="_blank"
 			rel="noreferrer"
@@ -87,6 +140,19 @@
 		</p>
 	</footer>
 </div>
+
+<Dialog
+	bind:open={clearDialogOpen}
+	title="清除所有数据？"
+	description="将删除本设备上的所有课表、课程、壁纸、主题偏好与已保存的教务凭据。此操作不可恢复。"
+>
+	{#snippet footer()}
+		<Button variant="text" onclick={() => (clearDialogOpen = false)} disabled={clearing}
+			>取消</Button
+		>
+		<Button variant="danger" disabled={clearing} onclick={confirmClear}>清除</Button>
+	{/snippet}
+</Dialog>
 
 <style>
 	.copyright {

@@ -1,5 +1,6 @@
 import { ThemeMode, type AppState, emptyAppState } from '$lib/models/app-state';
 import { createAppServices, type AppServices } from '$lib/client/app-services';
+import { clearAllAppData } from '$lib/client/repository';
 
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
 	if (themeMode === ThemeMode.DARK) return true;
@@ -57,6 +58,10 @@ export function createAppShell() {
 		await getServices().preferences.setWallpaper(wallpaper);
 	}
 
+	async function clearAllData() {
+		await clearAllAppData();
+	}
+
 	return {
 		get state() {
 			return {
@@ -70,6 +75,7 @@ export function createAppShell() {
 		destroy,
 		setThemeMode,
 		setWallpaper,
+		clearAllData,
 		get services() {
 			return getServices();
 		}
