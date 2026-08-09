@@ -1,5 +1,5 @@
 import { defaultPeriodTimes } from '$lib/models/defaults';
-import type { PeriodTime } from '$lib/models/timetable';
+import type { PeriodTime, TimetableImportMetadata } from '$lib/models/timetable';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import { AcademicCalendarService } from '../services/academic-calendar';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
@@ -19,6 +19,19 @@ export class SaveTimetableDetailsUseCase {
 		const safeStartWeek = Math.max(draft.academicConfig.startWeek, 1);
 		const normalizedPeriods = normalizePeriods(draft.academicConfig.periodTimes);
 
+		const importMetadata: TimetableImportMetadata = {
+			source: draft.importMetadata.source,
+			campusName: draft.importMetadata.campusName,
+			campusPeriodTimes: draft.importMetadata.campusPeriodTimes
+				? (Object.fromEntries(
+						Object.entries(draft.importMetadata.campusPeriodTimes).map(([campus, periods]) => [
+							campus,
+							periods.map((period) => ({ ...period }))
+						])
+					) as TimetableImportMetadata['campusPeriodTimes'])
+				: undefined
+		};
+
 		await this.repository.saveTimetable({
 			...timetable,
 			name: draft.name.trim() || '未命名课表',
@@ -32,9 +45,7 @@ export class SaveTimetableDetailsUseCase {
 				endWeek: Math.max(draft.academicConfig.endWeek, safeStartWeek),
 				periodTimes: normalizedPeriods
 			},
-			importMetadata: {
-				source: draft.importMetadata.source
-			},
+			importMetadata,
 			viewPrefs: {
 				showSaturday: draft.viewPrefs.showSaturday,
 				showSunday: draft.viewPrefs.showSunday,

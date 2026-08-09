@@ -1,6 +1,7 @@
 import { currentWeekMonday } from '$lib/models/defaults';
 import type { Course } from '$lib/models/course';
 import type {
+	OnlineScheduleCampusContext,
 	OnlineScheduleEvent,
 	OnlineSchedulePayload,
 	OnlineScheduleWeekDay
@@ -9,7 +10,11 @@ import {
 	encodeOnlineSchedulePayload,
 	parseOnlineSchedulePayload
 } from '$lib/models/online-schedule-schema';
-import { TimetableImportSource, type Timetable } from '$lib/models/timetable';
+import {
+	TimetableImportSource,
+	type Timetable,
+	type TimetableImportMetadata
+} from '$lib/models/timetable';
 import type { TimetableShareCodec } from '$lib/domain/interfaces/timetable-share-codec';
 import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
 import { SystemTimeProvider, type TimeProvider } from '$lib/domain/services/time-provider';
@@ -55,7 +60,10 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 		}
 	}
 
-	toTimetable(payload: OnlineSchedulePayload): AppResult<Timetable> {
+	toTimetable(
+		payload: OnlineSchedulePayload,
+		campusContext?: OnlineScheduleCampusContext
+	): AppResult<Timetable> {
 		const courses = payload.eventList
 			.map((event, index) => this.toCourseOrNull(event, index))
 			.filter((course): course is Course => course != null);
@@ -76,6 +84,23 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 			)
 		);
 
+		const importSource =
+			this.toTimetableImportSource(payload.importSource) ?? TimetableImportSource.SHARED_JSON;
+		const campusName = campusContext?.campusName;
+		const campusPeriodTimes: TimetableImportMetadata['campusPeriodTimes'] | undefined =
+			campusContext?.campusPeriodTimes
+				? (Object.fromEntries(
+						Object.entries(campusContext.campusPeriodTimes).map(([campus, periods]) => [
+							campus,
+							periods.map((period) => ({ ...period }))
+						])
+					) as TimetableImportMetadata['campusPeriodTimes'])
+				: undefined;
+		const periodTimes =
+			campusName && campusPeriodTimes
+				? (campusPeriodTimes[campusName] ?? []).map((period) => ({ ...period }))
+				: [];
+
 		return success({
 			id: 'online-import',
 			name: payload.yearTerm.trim() || '在线课表',
@@ -91,11 +116,12 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 				termStartDate: this.resolveImportedTermStartDate(payload, today),
 				startWeek: 1,
 				endWeek: maxWeek,
-				periodTimes: []
+				periodTimes
 			},
 			importMetadata: {
-				source:
-					this.toTimetableImportSource(payload.importSource) ?? TimetableImportSource.SHARED_JSON
+				source: importSource,
+				campusName,
+				campusPeriodTimes
 			},
 			viewPrefs: {
 				showSaturday: courses.some((course) => course.dayOfWeek === 6),

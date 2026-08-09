@@ -8,6 +8,8 @@ export const CAS_SERVICE_URL = `${TIMETABLE_BASE_URL}/api/auth/casLogin`;
 export const CAS_LOGIN_URL = `${UIS_BASE_URL}/center-auth-server/sso/doLogin`;
 export const CAS_TICKET_URL = `${UIS_BASE_URL}/center-auth-server/${CAS_APPLICATION_CODE}/cas/login`;
 export const WEEK_EVENTS_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/listWeekEvents`;
+export const GET_USER_INFO_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/getUserInfo`;
+export const GET_CAMPUS_TIME_INFO_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/getCampusTimeInfo`;
 
 export const UNIVERSITY_ID = '100005';
 export const JSON_MEDIA_TYPE = 'application/json; charset=utf-8';

@@ -86,7 +86,17 @@ export function copyForStateBoundary(timetable: Timetable): Timetable {
 			...timetable.academicConfig,
 			periodTimes: timetable.academicConfig.periodTimes.map((period) => ({ ...period }))
 		},
-		importMetadata: { ...timetable.importMetadata },
+		importMetadata: {
+			...timetable.importMetadata,
+			campusPeriodTimes: timetable.importMetadata.campusPeriodTimes
+				? (Object.fromEntries(
+						Object.entries(timetable.importMetadata.campusPeriodTimes).map(([campus, periods]) => [
+							campus,
+							periods.map((period) => ({ ...period }))
+						])
+					) as import('$lib/models/timetable').TimetableImportMetadata['campusPeriodTimes'])
+				: undefined
+		},
 		viewPrefs: { ...timetable.viewPrefs }
 	};
 }

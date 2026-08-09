@@ -4,6 +4,7 @@ import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
 import { ThemeMode, type AppState } from '$lib/models/app-state';
 import {
 	emptyOnlineSchedulePayload,
+	type OnlineScheduleFetchResult,
 	type OnlineSchedulePayload
 } from '$lib/models/online-schedule';
 import type { Timetable } from '$lib/models/timetable';
@@ -186,14 +187,16 @@ class FakeTimetableShareCodec implements TimetableShareCodec {
 		return success('{}');
 	}
 
-	toTimetable(): AppResult<Timetable> {
+	toTimetable(_payload: OnlineSchedulePayload): AppResult<Timetable> {
 		return success(this.timetable);
 	}
 }
 
 class FakeRemoteTimetableSource implements RemoteTimetableSource {
-	async fetchSchedule(_authSnapshot: AuthSnapshot): Promise<AppResult<OnlineSchedulePayload>> {
-		return success({ ...emptyOnlineSchedulePayload(), yearTerm: '2025-2026-2' });
+	async fetchSchedule(_authSnapshot: AuthSnapshot): Promise<AppResult<OnlineScheduleFetchResult>> {
+		return success({
+			schedule: { ...emptyOnlineSchedulePayload(), yearTerm: '2025-2026-2' }
+		});
 	}
 }
 
@@ -289,6 +292,43 @@ describe('domain use cases', () => {
 		expect(saved?.viewPrefs.showNonCurrentWeekCourses).toBe(true);
 		expect(saved?.academicConfig.periodTimes).toHaveLength(2);
 		expect(saved?.academicConfig.periodTimes[0]?.startTime).toBe('08:00');
+	});
+
+	it('saveTimetableDetails persists online campus metadata', async () => {
+		const repo = new FakeTimetableRepository();
+		const timetable = repo.seedCurrent();
+		const useCase = new SaveTimetableDetailsUseCase(
+			repo,
+			academicCalendarService,
+			new FixedTimeProvider()
+		);
+
+		await useCase.invoke(timetable.id, {
+			name: '知行课表',
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [{ index: 1, startTime: '08:30', endTime: '09:15' }]
+			},
+			importMetadata: {
+				source: TimetableImportSource.ONLINE_EDU,
+				campusName: '两江校区',
+				campusPeriodTimes: {
+					两江校区: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
+					花溪校区: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
+				}
+			},
+			viewPrefs: {
+				showSaturday: true,
+				showSunday: true,
+				showNonCurrentWeekCourses: false
+			}
+		});
+
+		const saved = await repo.getTimetable(timetable.id);
+		expect(saved?.importMetadata.campusName).toBe('两江校区');
+		expect(saved?.importMetadata.campusPeriodTimes?.花溪校区?.[0]?.startTime).toBe('08:00');
 	});
 
 	it('createTimetable uses time provider for defaults', async () => {

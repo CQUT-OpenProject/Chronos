@@ -1,4 +1,4 @@
-import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
+import type { OnlineScheduleFetchResult } from '$lib/models/online-schedule';
 import type { AuthSnapshot } from '$lib/models/auth';
 import type { AppResult } from '../result/app-result';
 
@@ -7,5 +7,5 @@ export interface RemoteTimetableSource {
 		authSnapshot: AuthSnapshot,
 		weekNum?: string | null,
 		yearTerm?: string | null
-	): Promise<AppResult<OnlineSchedulePayload>>;
+	): Promise<AppResult<OnlineScheduleFetchResult>>;
 }

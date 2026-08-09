@@ -1,8 +1,11 @@
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
+import type { CqutCampusName } from '$lib/models/cqut-campus';
 import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
+import type { PeriodTime } from '$lib/models/timetable';
 import { onlineSchedulePayloadSchema } from '$lib/models/online-schedule-schema';
 import { mergeWeekPayloads, resolveWeeksToFetch } from '$lib/parsers/cqut-online/cqut-week-merge';
+import { fetchCampusTimesForImport } from './fetch-campus-time';
 import { loginCas } from './cas-auth';
 import {
 	JSON_MEDIA_TYPE,
@@ -21,16 +24,33 @@ export interface FetchCqutScheduleInput {
 	yearTerm?: string | null;
 }
 
+export interface FetchCqutScheduleResult {
+	payload: OnlineSchedulePayload;
+	campusName: CqutCampusName;
+	campusPeriodTimes: Record<CqutCampusName, PeriodTime[]>;
+}
+
 export async function fetchCqutSchedule(
 	input: FetchCqutScheduleInput
-): Promise<AppResult<OnlineSchedulePayload>> {
+): Promise<AppResult<FetchCqutScheduleResult>> {
 	const jar = new CookieJar();
 	const signal = AbortSignal.timeout(TOTAL_FETCH_TIMEOUT_MS);
 
 	try {
 		const loginResult = await loginCas(jar, input.account, input.encryptedPassword, signal);
 		if (!loginResult.ok) return loginResult;
-		return await fetchTimetable(jar, input, signal);
+
+		const campusTimesResult = await fetchCampusTimesForImport(jar, signal);
+		if (!campusTimesResult.ok) return campusTimesResult;
+
+		const timetableResult = await fetchTimetable(jar, input, signal);
+		if (!timetableResult.ok) return timetableResult;
+
+		return success({
+			payload: timetableResult.value,
+			campusName: campusTimesResult.value.campusName,
+			campusPeriodTimes: campusTimesResult.value.campusPeriodTimes
+		});
 	} catch (error) {
 		if (isAbortError(error)) {
 			return failure(AppError.network('在线课表请求超时，请稍后重试'));

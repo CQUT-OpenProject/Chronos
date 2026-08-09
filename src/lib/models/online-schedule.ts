@@ -1,3 +1,16 @@
+import type { CqutCampusName } from './cqut-campus';
+import type { PeriodTime } from './timetable';
+
+export interface OnlineScheduleCampusContext {
+	campusName: CqutCampusName;
+	campusPeriodTimes: Record<CqutCampusName, PeriodTime[]>;
+}
+
+export interface OnlineScheduleFetchResult {
+	schedule: OnlineSchedulePayload;
+	campus?: OnlineScheduleCampusContext;
+}
+
 export interface OnlineScheduleWeekDay {
 	weekDay: string;
 	weekDate: string;

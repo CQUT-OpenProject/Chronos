@@ -1,5 +1,7 @@
 import type { AuthSnapshot } from '$lib/models/auth';
+import type { CqutCampusName } from '$lib/models/cqut-campus';
 import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
+import type { PeriodTime } from '$lib/models/timetable';
 import type { RemoteTimetableSource } from '$lib/domain/interfaces/remote-timetable-source';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
@@ -10,7 +12,11 @@ import {
 
 interface PreviewApiResponse {
 	ok: true;
-	payload: OnlineSchedulePayload;
+	payload: {
+		payload: OnlineSchedulePayload;
+		campusName: CqutCampusName;
+		campusPeriodTimes: Record<CqutCampusName, PeriodTime[]>;
+	};
 }
 
 interface PreviewApiErrorResponse {
@@ -30,7 +36,7 @@ export class ApiRemoteTimetableSource implements RemoteTimetableSource {
 		authSnapshot: AuthSnapshot,
 		weekNum?: string | null,
 		yearTerm?: string | null
-	): Promise<AppResult<OnlineSchedulePayload>> {
+	): Promise<AppResult<import('$lib/models/online-schedule').OnlineScheduleFetchResult>> {
 		const account = authSnapshot.account.trim();
 		const password = authSnapshot.password;
 		if (!account || !password.trim()) {
@@ -71,7 +77,13 @@ export class ApiRemoteTimetableSource implements RemoteTimetableSource {
 			return failure(mapApiError(body.error));
 		}
 
-		return success(body.payload);
+		return success({
+			schedule: body.payload.payload,
+			campus: {
+				campusName: body.payload.campusName,
+				campusPeriodTimes: body.payload.campusPeriodTimes
+			}
+		});
 	}
 }
 

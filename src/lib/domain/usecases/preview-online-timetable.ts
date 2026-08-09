@@ -13,13 +13,16 @@ export class PreviewOnlineTimetableUseCase {
 	async invoke(
 		authSnapshot: AuthSnapshot
 	): Promise<AppResult<import('$lib/models/timetable').Timetable>> {
-		const payload = await this.remoteTimetableSource.fetchSchedule(authSnapshot);
-		const timetable = await flatMap(payload, (value) =>
-			this.timetableShareCodec.toTimetable(value)
+		const fetchResult = await this.remoteTimetableSource.fetchSchedule(authSnapshot);
+		const timetable = await flatMap(fetchResult, (value) =>
+			this.timetableShareCodec.toTimetable(value.schedule, value.campus)
 		);
 		return map(timetable, (value) => ({
 			...value,
-			importMetadata: { source: TimetableImportSource.ONLINE_EDU }
+			importMetadata: {
+				...value.importMetadata,
+				source: TimetableImportSource.ONLINE_EDU
+			}
 		}));
 	}
 }

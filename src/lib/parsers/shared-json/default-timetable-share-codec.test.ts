@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
+import { emptyOnlineSchedulePayload } from '$lib/models/online-schedule';
 import { TimetableImportSource } from '$lib/models/timetable';
 import { createTimetable } from '$lib/models/timetable';
 import { DefaultTimetableShareCodec } from './default-timetable-share-codec';
@@ -66,6 +67,49 @@ describe('DefaultTimetableShareCodec', () => {
 			eventList: []
 		});
 		expect(result.ok).toBe(false);
+	});
+
+	it('online import applies campus period times from fetch context', () => {
+		const payload = {
+			...emptyOnlineSchedulePayload(),
+			yearTerm: '2025-2026-2',
+			importSource: TimetableImportSource.ONLINE_EDU,
+			weekList: ['1'],
+			eventList: [
+				{
+					weekNum: '1',
+					weekDay: '一',
+					weekList: ['1'],
+					weekCover: '',
+					sessionList: ['1'],
+					sessionStart: '1',
+					sessionLast: '1',
+					eventName: '编译原理',
+					address: 'B201',
+					memberName: '张老师',
+					remark: '',
+					duplicateGroupType: '',
+					duplicateGroup: 0,
+					eventType: 'course',
+					eventID: '1'
+				}
+			]
+		};
+
+		const imported = codec.toTimetable(payload, {
+			campusName: '花溪校区',
+			campusPeriodTimes: {
+				两江校区: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
+				花溪校区: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
+			}
+		});
+		expect(imported.ok).toBe(true);
+		if (!imported.ok) return;
+
+		expect(imported.value.importMetadata.campusName).toBe('花溪校区');
+		expect(imported.value.academicConfig.periodTimes).toEqual([
+			{ index: 1, startTime: '08:00', endTime: '08:45' }
+		]);
 	});
 });
 
