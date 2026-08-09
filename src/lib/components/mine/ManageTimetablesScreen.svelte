@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import { CheckCircleFill, DeleteFill } from '$lib/icons';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import Radio from '$lib/components/ui/Radio.svelte';
 
 	let {
 		shell
@@ -11,7 +11,10 @@
 	} = $props();
 
 	const appState = $derived(shell.state.appState);
-	let pendingDeleteId = $state<string | null>(null);
+	const selectedTimetable = $derived(
+		appState.timetables.find((timetable) => timetable.id === appState.currentTimetableId) ?? null
+	);
+
 	let deleteDialogOpen = $state(false);
 
 	async function handleSwitch(id: string) {
@@ -19,62 +22,59 @@
 	}
 
 	async function confirmDelete() {
-		if (!pendingDeleteId) return;
-		await shell.services.deleteTimetable.invoke(pendingDeleteId);
-		pendingDeleteId = null;
+		if (!appState.currentTimetableId) return;
+		await shell.services.deleteTimetable.invoke(appState.currentTimetableId);
 		deleteDialogOpen = false;
-	}
-
-	function openDeleteDialog(id: string) {
-		pendingDeleteId = id;
-		deleteDialogOpen = true;
 	}
 </script>
 
-<div class="flex flex-col gap-5">
-	<div class="flex flex-col gap-3">
-		{#each appState.timetables as timetable (timetable.id)}
-			{@const isActive = appState.currentTimetableId === timetable.id}
-			<button
-				type="button"
-				class="flex w-full cursor-pointer items-center justify-between rounded-[28px] border p-[18px_16px] text-left transition-colors {isActive
-					? 'border-brand bg-primary-container/40 dark:border-soft-blue'
-					: 'border-outline-variant bg-surface hover:bg-surface-variant/40'}"
-				onclick={() => handleSwitch(timetable.id)}
-			>
-				<div class="flex flex-1 flex-col gap-1">
-					<span class="font-medium text-on-surface">{timetable.name}</span>
-					<span class="text-xs text-on-surface-variant">{timetable.courseCount} 门课程</span>
-				</div>
-				{#if isActive}
-					<CheckCircleFill class="size-6 flex-shrink-0 text-brand dark:text-soft-blue" />
-				{:else}
-					<span
-						role="button"
-						tabindex="0"
-						aria-label="删除课表"
-						onclick={(event) => {
-							event.stopPropagation();
-							openDeleteDialog(timetable.id);
-						}}
-						onkeydown={(event) => {
-							if (event.key === 'Enter' || event.key === ' ') {
-								event.preventDefault();
-								event.stopPropagation();
-								openDeleteDialog(timetable.id);
-							}
-						}}
-						class="flex size-10 cursor-pointer items-center justify-center rounded-full text-danger transition-colors hover:bg-surface-variant/50 focus-visible:ring-2 focus-visible:ring-brand"
+<div class="flex h-full min-h-0 flex-1 flex-col">
+	<div class="flex-1 overflow-y-auto p-4">
+		<div class="flex flex-col gap-3">
+			<h3 class="m3-title-medium px-1 font-semibold text-on-surface">我的课表</h3>
+
+			<div class="flex flex-col gap-2.5">
+				{#each appState.timetables as timetable (timetable.id)}
+					{@const isActive = appState.currentTimetableId === timetable.id}
+					<button
+						type="button"
+						class="flex min-h-[56px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {isActive
+							? 'border-brand bg-primary-container/30 shadow-xs dark:border-soft-blue'
+							: 'border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
+						onclick={() => handleSwitch(timetable.id)}
 					>
-						<DeleteFill class="size-5" />
-					</span>
-				{/if}
-			</button>
-		{/each}
+						<Radio name="current-timetable" checked={isActive} />
+						<div class="flex flex-col justify-center">
+							<span class="m3-body-large font-medium text-on-surface">{timetable.name}</span>
+							<span class="m3-body-small mt-0.5 text-on-surface-variant"
+								>{timetable.courseCount} 门课程</span
+							>
+						</div>
+					</button>
+				{/each}
+			</div>
+		</div>
+	</div>
+
+	<div class="bottom-bar">
+		<Button
+			variant="danger"
+			class="w-full"
+			disabled={appState.timetables.length <= 1}
+			onclick={() => (deleteDialogOpen = true)}
+		>
+			删除课表
+		</Button>
 	</div>
 </div>
 
-<Dialog bind:open={deleteDialogOpen} title="删除课表？" description="删除后无法恢复。">
+<Dialog
+	bind:open={deleteDialogOpen}
+	title="删除课表？"
+	description={selectedTimetable
+		? `确定删除「${selectedTimetable.name}」吗？删除后无法恢复。`
+		: '删除后无法恢复。'}
+>
 	{#snippet footer()}
 		<Button variant="text" onclick={() => (deleteDialogOpen = false)}>取消</Button>
 		<Button variant="filled" onclick={confirmDelete}>删除</Button>

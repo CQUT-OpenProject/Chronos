@@ -1,40 +1,20 @@
 <script lang="ts">
 	import type { CourseDraft } from '$lib/models/drafts';
-
-	const COURSE_COLORS: Array<{ background: string; foreground: string }> = [
-		{ background: '#EADDFF', foreground: '#21005D' },
-		{ background: '#FFDBC9', foreground: '#311100' },
-		{ background: '#C4EED0', foreground: '#072711' },
-		{ background: '#F9DEDC', foreground: '#410E0B' },
-		{ background: '#D3E3FD', foreground: '#041E49' },
-		{ background: '#FFD8E4', foreground: '#31111D' }
-	];
+	import { COURSE_PALETTE_ENTRIES } from '$lib/parsers/course-palette';
+	import ColorSwatchPicker from '$lib/components/ui/ColorSwatchPicker.svelte';
+	import StepperField from '$lib/components/ui/StepperField.svelte';
+	import TextField from '$lib/components/ui/TextField.svelte';
 
 	let {
 		draft = $bindable(),
-		maxPeriods = 10,
-		onDelete
+		maxPeriods = 10
 	}: {
 		draft: CourseDraft;
 		maxPeriods?: number;
-		onDelete?: () => void | Promise<void>;
 	} = $props();
 
-	function clamp(value: number, min: number, max: number) {
-		return Math.min(Math.max(value, min), max);
-	}
-
-	function stepValue(field: 'dayOfWeek' | 'startPeriod' | 'endPeriod', delta: number) {
-		if (field === 'dayOfWeek') {
-			draft.dayOfWeek = clamp(draft.dayOfWeek + delta, 1, 7);
-			return;
-		}
-		if (field === 'startPeriod') {
-			draft.startPeriod = clamp(draft.startPeriod + delta, 1, maxPeriods);
-			draft.endPeriod = Math.max(draft.endPeriod, draft.startPeriod);
-			return;
-		}
-		draft.endPeriod = clamp(draft.endPeriod + delta, draft.startPeriod, maxPeriods);
+	function handleStartPeriodChange(value: number) {
+		draft.endPeriod = Math.max(draft.endPeriod, value);
 	}
 
 	function selectColor(background: string, foreground: string) {
@@ -44,95 +24,31 @@
 </script>
 
 <div class="space-y-3">
-	<label class="block space-y-1">
-		<span class="text-sm text-on-surface-variant">课程名称</span>
-		<input
-			class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant dark:bg-surface-variant"
-			bind:value={draft.name}
-		/>
-	</label>
+	<TextField label="课程名称" bind:value={draft.name} />
+	<TextField label="教师" bind:value={draft.teacher} />
+	<TextField label="地点" bind:value={draft.location} />
+	<TextField label="备注" multiline rows={3} bind:value={draft.remark} />
 
-	<label class="block space-y-1">
-		<span class="text-sm text-on-surface-variant">教师</span>
-		<input
-			class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant dark:bg-surface-variant"
-			bind:value={draft.teacher}
-		/>
-	</label>
+	<StepperField label="星期" bind:value={draft.dayOfWeek} min={1} max={7} />
 
-	<label class="block space-y-1">
-		<span class="text-sm text-on-surface-variant">地点</span>
-		<input
-			class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant dark:bg-surface-variant"
-			bind:value={draft.location}
-		/>
-	</label>
+	<StepperField
+		label="开始节次"
+		bind:value={draft.startPeriod}
+		min={1}
+		max={maxPeriods}
+		onchange={handleStartPeriodChange}
+	/>
 
-	<label class="block space-y-1">
-		<span class="text-sm text-on-surface-variant">备注</span>
-		<textarea
-			class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant dark:bg-surface-variant"
-			rows="3"
-			bind:value={draft.remark}></textarea>
-	</label>
+	<StepperField
+		label="结束节次"
+		bind:value={draft.endPeriod}
+		min={draft.startPeriod}
+		max={maxPeriods}
+	/>
 
-	<div
-		class="flex items-center justify-between rounded-lg border border-outline px-3 py-2 dark:border-outline-variant"
-	>
-		<span class="text-sm">星期</span>
-		<div class="flex items-center gap-2">
-			<button type="button" class="px-2" onclick={() => stepValue('dayOfWeek', -1)}>-</button>
-			<span>{draft.dayOfWeek}</span>
-			<button type="button" class="px-2" onclick={() => stepValue('dayOfWeek', 1)}>+</button>
-		</div>
-	</div>
-
-	<div
-		class="flex items-center justify-between rounded-lg border border-outline px-3 py-2 dark:border-outline-variant"
-	>
-		<span class="text-sm">开始节次</span>
-		<div class="flex items-center gap-2">
-			<button type="button" class="px-2" onclick={() => stepValue('startPeriod', -1)}>-</button>
-			<span>{draft.startPeriod}</span>
-			<button type="button" class="px-2" onclick={() => stepValue('startPeriod', 1)}>+</button>
-		</div>
-	</div>
-
-	<div
-		class="flex items-center justify-between rounded-lg border border-outline px-3 py-2 dark:border-outline-variant"
-	>
-		<span class="text-sm">结束节次</span>
-		<div class="flex items-center gap-2">
-			<button type="button" class="px-2" onclick={() => stepValue('endPeriod', -1)}>-</button>
-			<span>{draft.endPeriod}</span>
-			<button type="button" class="px-2" onclick={() => stepValue('endPeriod', 1)}>+</button>
-		</div>
-	</div>
-
-	<div class="space-y-2">
-		<span class="text-sm text-on-surface-variant">课程颜色</span>
-		<div class="flex flex-wrap gap-2">
-			{#each COURSE_COLORS as color (color.background)}
-				<button
-					type="button"
-					class="h-[34px] w-[34px] rounded-[32px] border-2 {draft.color === color.background
-						? 'border-brand dark:border-soft-blue'
-						: 'border-transparent'}"
-					style:background-color={color.background}
-					aria-label="选择课程颜色"
-					onclick={() => selectColor(color.background, color.foreground)}
-				></button>
-			{/each}
-		</div>
-	</div>
-
-	{#if onDelete}
-		<button
-			type="button"
-			class="w-full rounded-lg border border-danger px-3 py-2 text-sm text-danger"
-			onclick={() => onDelete()}
-		>
-			删除课程
-		</button>
-	{/if}
+	<ColorSwatchPicker
+		colors={COURSE_PALETTE_ENTRIES}
+		selectedBackground={draft.color}
+		onSelect={selectColor}
+	/>
 </div>

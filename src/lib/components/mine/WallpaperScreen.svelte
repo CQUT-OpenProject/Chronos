@@ -100,9 +100,7 @@
 		</p>
 	{/if}
 
-	<div
-		class="flex h-[calc(var(--spacing-tabbar)+var(--tabbar-safe))] shrink-0 items-center gap-3 border-t border-outline-variant/40 bg-surface-container px-4 pb-[var(--tabbar-safe)]"
-	>
+	<div class="bottom-bar gap-3">
 		{#if shell.state.hasWallpaper}
 			<Button variant="outlined" class="w-full flex-1" onclick={clearWallpaper}>
 				<LayersClearFill class="size-5" />
