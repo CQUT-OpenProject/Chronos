@@ -45,7 +45,7 @@ export class ApiRemoteTimetableSource implements RemoteTimetableSource {
 
 		let encryptedPassword: string;
 		try {
-			encryptedPassword = this.passwordEncryptor.encrypt(password);
+			encryptedPassword = await this.passwordEncryptor.encrypt(password);
 		} catch {
 			return failure(AppError.security('密码加密失败'));
 		}
