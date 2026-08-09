@@ -2,13 +2,11 @@ import { ThemeMode, themeModeFromStorage, themeModeToStorage } from '$lib/models
 
 export interface UserPreferenceState {
 	currentTimetableId: string | null;
-	wallpaperUri: string | null;
 	themeMode: ThemeMode;
 }
 
 const KEYS = {
 	currentTimetableId: 'current_timetable_id',
-	wallpaperUri: 'wallpaper_uri',
 	themeMode: 'theme_mode'
 } as const;
 
@@ -31,14 +29,12 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 		if (!target) {
 			return {
 				currentTimetableId: null,
-				wallpaperUri: null,
 				themeMode: ThemeMode.SYSTEM
 			};
 		}
 
 		return {
 			currentTimetableId: target.getItem(storageKey(KEYS.currentTimetableId)),
-			wallpaperUri: target.getItem(storageKey(KEYS.wallpaperUri)),
 			themeMode: themeModeFromStorage(target.getItem(storageKey(KEYS.themeMode)))
 		};
 	}
@@ -74,11 +70,11 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 	return {
 		subscribe,
 		getSnapshot,
+		reloadFromStorage() {
+			notify();
+		},
 		setCurrentTimetableId(id: string | null) {
 			setString(KEYS.currentTimetableId, id);
-		},
-		setWallpaperUri(uri: string | null) {
-			setString(KEYS.wallpaperUri, uri);
 		},
 		setThemeMode(mode: ThemeMode) {
 			setString(KEYS.themeMode, themeModeToStorage(mode));

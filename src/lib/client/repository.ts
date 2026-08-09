@@ -28,6 +28,7 @@ export function getPreferencesRepository(): PreferencesRepository {
 	if (!browser) {
 		throw new Error('getPreferencesRepository() is only available in the browser');
 	}
+	getRepository();
 	preferencesRepository ??= createPreferencesRepository(getSharedSettings());
 	return preferencesRepository;
 }

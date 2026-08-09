@@ -53,8 +53,8 @@ export function createAppShell() {
 		await getServices().preferences.setThemeMode(mode);
 	}
 
-	async function setWallpaper(uri: string | null) {
-		await getServices().preferences.setWallpaper(uri);
+	async function setWallpaper(wallpaper: Blob | null) {
+		await getServices().preferences.setWallpaper(wallpaper);
 	}
 
 	return {

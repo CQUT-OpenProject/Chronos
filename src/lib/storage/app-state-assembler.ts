@@ -18,12 +18,13 @@ export function assembleAppState(
 	timetables: TimetableSummary[],
 	preferences: UserPreferenceState,
 	currentTimetableId: string | null,
-	currentTimetable: Timetable | null
+	currentTimetable: Timetable | null,
+	wallpaperUri: string | null
 ): AppState {
 	return {
 		timetables: [...timetables],
 		currentTimetableId,
-		wallpaperUri: preferences.wallpaperUri,
+		wallpaperUri,
 		currentTimetable: currentTimetable ? copyForStateBoundary(currentTimetable) : null,
 		themeMode: preferences.themeMode
 	};

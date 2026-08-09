@@ -7,6 +7,7 @@
 	} from '$lib/timetable/timetable-preview';
 	import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { LayersClearFill, PhotoLibraryFill } from '$lib/icons';
 
 	let {
@@ -37,22 +38,24 @@
 		const input = event.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
-		const uri = await readFileAsDataUrl(file);
-		await shell.setWallpaper(uri);
-		input.value = '';
+		try {
+			await shell.setWallpaper(file);
+		} catch (error) {
+			snackbar(resolveWallpaperImportError(error));
+		} finally {
+			input.value = '';
+		}
+	}
+
+	function resolveWallpaperImportError(error: unknown): string {
+		if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+			return '此图片过大，无法导入';
+		}
+		return '壁纸导入失败，请重试';
 	}
 
 	async function clearWallpaper() {
 		await shell.setWallpaper(null);
-	}
-
-	function readFileAsDataUrl(file: File): Promise<string> {
-		return new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = () => resolve(reader.result as string);
-			reader.onerror = () => reject(reader.error);
-			reader.readAsDataURL(file);
-		});
 	}
 </script>
 

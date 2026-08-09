@@ -152,8 +152,8 @@ class FakePreferencesRepository implements PreferencesRepository {
 		this.backend.syncState();
 	}
 
-	async setWallpaper(uri: string | null): Promise<void> {
-		this.backend.wallpaperUri = uri;
+	async setWallpaper(wallpaper: Blob | null): Promise<void> {
+		this.backend.wallpaperUri = wallpaper ? 'blob:wallpaper' : null;
 		this.backend.syncState();
 	}
 

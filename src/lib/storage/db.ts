@@ -23,15 +23,27 @@ export interface CourseRow {
 	remark: string;
 }
 
+export interface WallpaperRow {
+	id: string;
+	blob: Blob;
+	updatedAt: number;
+}
+
 export class ChronosDB extends Dexie {
 	timetables!: Table<TimetableRow, string>;
 	courses!: Table<CourseRow, string>;
+	wallpapers!: Table<WallpaperRow, string>;
 
 	constructor(name = 'chronos') {
 		super(name);
 		this.version(1).stores({
 			timetables: 'id, updatedAt',
 			courses: 'id, timetableId, [timetableId+dayOfWeek]'
+		});
+		this.version(2).stores({
+			timetables: 'id, updatedAt',
+			courses: 'id, timetableId, [timetableId+dayOfWeek]',
+			wallpapers: 'id'
 		});
 	}
 }

@@ -6,7 +6,34 @@ import type { TimetableRepository } from '$lib/domain/interfaces/timetable-repos
 import { assembleAppState, resolveCurrentTimetableId } from './app-state-assembler';
 import { createSettingsRepo, type SettingsRepo } from './settings-repo';
 import * as timetableLocal from './timetable-local';
+import * as wallpaperLocal from './wallpaper-local';
 import { db } from './db';
+
+let wallpaperDisplayUrl: string | null = null;
+let refreshAppState: (() => Promise<void>) | null = null;
+
+export function invalidateWallpaperDisplayUrl() {
+	if (wallpaperDisplayUrl) {
+		URL.revokeObjectURL(wallpaperDisplayUrl);
+		wallpaperDisplayUrl = null;
+	}
+}
+
+export async function refreshRegisteredAppState(): Promise<void> {
+	await refreshAppState?.();
+}
+
+async function resolveWallpaperDisplayUrl(): Promise<string | null> {
+	const blob = await wallpaperLocal.getWallpaperBlob();
+	if (!blob) {
+		invalidateWallpaperDisplayUrl();
+		return null;
+	}
+	if (!wallpaperDisplayUrl) {
+		wallpaperDisplayUrl = URL.createObjectURL(blob);
+	}
+	return wallpaperDisplayUrl;
+}
 
 export function createOfflineTimetableRepository(
 	settings: SettingsRepo = createSettingsRepo()
@@ -21,7 +48,14 @@ export function createOfflineTimetableRepository(
 		const currentTimetable = currentTimetableId
 			? await timetableLocal.getTimetable(currentTimetableId)
 			: null;
-		return assembleAppState(timetables, preferences, currentTimetableId, currentTimetable);
+		const wallpaperUri = await resolveWallpaperDisplayUrl();
+		return assembleAppState(
+			timetables,
+			preferences,
+			currentTimetableId,
+			currentTimetable,
+			wallpaperUri
+		);
 	}
 
 	async function notify() {
@@ -30,6 +64,8 @@ export function createOfflineTimetableRepository(
 			listener(cachedState);
 		}
 	}
+
+	refreshAppState = notify;
 
 	settings.subscribe(() => {
 		void notify();
@@ -88,8 +124,14 @@ export function createPreferencesRepository(
 		async setCurrentTimetableId(id: string | null) {
 			settings.setCurrentTimetableId(id);
 		},
-		async setWallpaper(uri: string | null) {
-			settings.setWallpaperUri(uri);
+		async setWallpaper(wallpaper: Blob | null) {
+			invalidateWallpaperDisplayUrl();
+			if (wallpaper) {
+				await wallpaperLocal.saveWallpaper(wallpaper);
+			} else {
+				await wallpaperLocal.deleteWallpaper();
+			}
+			await refreshAppState?.();
 		},
 		async setThemeMode(mode) {
 			settings.setThemeMode(mode);
