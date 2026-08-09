@@ -12,12 +12,17 @@ export const snackbarStore = $state<{
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
-export function snackbar(message: string, action?: SnackbarAction) {
+export function snackbar(message: string, action?: SnackbarAction, duration = 4000) {
 	if (timer) clearTimeout(timer);
 	snackbarStore.message = message;
 	snackbarStore.action = action ?? null;
 	snackbarStore.open = true;
 	timer = setTimeout(() => {
 		snackbarStore.open = false;
-	}, 4000);
+	}, duration);
+}
+
+export function dismissSnackbar() {
+	if (timer) clearTimeout(timer);
+	snackbarStore.open = false;
 }
