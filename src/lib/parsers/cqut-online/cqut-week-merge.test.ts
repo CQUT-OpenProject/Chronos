@@ -178,4 +178,38 @@ describe('mergeWeekPayloads', () => {
 
 		expect(merged.eventList).toHaveLength(1);
 	});
+
+	it('unions week lists for the same class across weekly fetches', () => {
+		const weekThree = basePayload(
+			'3',
+			['1', '2', '3', '4'],
+			[],
+			[
+				courseEvent({
+					weekNum: '3',
+					weekDay: '1',
+					weekList: ['3'],
+					eventName: '马克思主义基本原理'
+				})
+			]
+		);
+		const weekFour = basePayload(
+			'4',
+			['1', '2', '3', '4'],
+			[],
+			[
+				courseEvent({
+					weekNum: '4',
+					weekDay: '1',
+					weekList: ['4'],
+					eventName: '马克思主义基本原理'
+				})
+			]
+		);
+
+		const merged = mergeWeekPayloads(weekThree, [weekThree, weekFour]);
+
+		expect(merged.eventList).toHaveLength(1);
+		expect(merged.eventList[0]?.weekList).toEqual(['3', '4']);
+	});
 });

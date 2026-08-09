@@ -23,7 +23,6 @@ export function resolveWeeksToFetch(
 
 interface OnlineScheduleEventKey {
 	weekDay: string;
-	weekList: string[];
 	sessionList: string[];
 	sessionStart: string;
 	sessionLast: string;
@@ -57,7 +56,6 @@ function normalizeEvent(event: OnlineScheduleEvent): OnlineScheduleEvent {
 function eventKey(event: OnlineScheduleEvent): OnlineScheduleEventKey {
 	return {
 		weekDay: event.weekDay,
-		weekList: event.weekList,
 		sessionList: event.sessionList,
 		sessionStart: event.sessionStart,
 		sessionLast: event.sessionLast,
@@ -66,6 +64,12 @@ function eventKey(event: OnlineScheduleEvent): OnlineScheduleEventKey {
 		memberName: event.memberName,
 		eventType: event.eventType
 	};
+}
+
+function mergeWeekLists(left: string[], right: string[]): string[] {
+	return [...new Set([...left, ...right])].sort(
+		(a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
+	);
 }
 
 function eventKeyToString(key: OnlineScheduleEventKey): string {
@@ -82,9 +86,15 @@ export function mergeWeekPayloads(
 		for (const event of payload.eventList) {
 			const normalizedEvent = normalizeEvent(event);
 			const key = eventKeyToString(eventKey(normalizedEvent));
-			if (!mergedEvents.has(key)) {
+			const existing = mergedEvents.get(key);
+			if (!existing) {
 				mergedEvents.set(key, normalizedEvent);
+				continue;
 			}
+			mergedEvents.set(key, {
+				...existing,
+				weekList: mergeWeekLists(existing.weekList, normalizedEvent.weekList)
+			});
 		}
 	}
 
