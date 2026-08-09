@@ -1,13 +1,13 @@
 import type { Timetable } from '$lib/models/timetable';
 import type { EducationalTimetableHtmlParser } from '../interfaces/educational-timetable-html-parser';
-import type { TimetableShareCodec } from '../interfaces/timetable-share-codec';
+import type { TimetableShareLinkCodec } from '../interfaces/timetable-share-link-codec';
 import { AppError } from '../result/app-error';
 import { failure, flatMapSync, success, type AppResult } from '../result/app-result';
 
 export class PreviewImportedTimetableUseCase {
 	constructor(
 		private readonly educationalTimetableHtmlParser: EducationalTimetableHtmlParser,
-		private readonly timetableShareCodec: TimetableShareCodec
+		private readonly shareLinkCodec: TimetableShareLinkCodec
 	) {}
 
 	previewHtml(contentBytes: Uint8Array): AppResult<Timetable> {
@@ -21,11 +21,12 @@ export class PreviewImportedTimetableUseCase {
 	}
 
 	invoke(content: string): AppResult<Timetable> {
+		const shareResult = this.shareLinkCodec.decodeFromText(content);
+		if (shareResult !== null) return shareResult;
+
 		return flatMapSync(this.educationalTimetableHtmlParser.parse(content), (timetable) => {
 			if (timetable) return success(timetable);
-			return flatMapSync(this.timetableShareCodec.decode(content), (payload) =>
-				this.timetableShareCodec.toTimetable(payload)
-			);
+			return failure(AppError.validation('无法识别分享内容，请检查剪贴板中的课表链接'));
 		});
 	}
 }

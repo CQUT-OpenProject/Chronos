@@ -10,7 +10,6 @@ import {
 import type { Timetable } from '$lib/models/timetable';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
 import type { PreferencesRepository } from '../interfaces/preferences-repository';
-import type { EducationalTimetableHtmlParser } from '../interfaces/educational-timetable-html-parser';
 import type { TimetableShareCodec } from '../interfaces/timetable-share-codec';
 import type { RemoteTimetableSource } from '../interfaces/remote-timetable-source';
 import type { AuthSnapshot } from '$lib/models/auth';
@@ -161,18 +160,6 @@ class FakePreferencesRepository implements PreferencesRepository {
 	async setThemeMode(mode: ThemeMode): Promise<void> {
 		this.backend.themeMode = mode;
 		this.backend.syncState();
-	}
-}
-
-class FakeHtmlParser implements EducationalTimetableHtmlParser {
-	constructor(private readonly timetable: Timetable | null) {}
-
-	parse(): AppResult<Timetable | null> {
-		return success(this.timetable);
-	}
-
-	parseBytes(): AppResult<Timetable | null> {
-		return success(this.timetable);
 	}
 }
 
@@ -367,14 +354,9 @@ describe('domain use cases', () => {
 				showNonCurrentWeekCourses: false
 			}
 		});
-		const useCase = new ImportTimetableUseCase(
-			repo,
-			repo.preferences,
-			new FakeHtmlParser(null),
-			new FakeTimetableShareCodec(imported)
-		);
+		const useCase = new ImportTimetableUseCase(repo, repo.preferences);
 
-		await useCase.invoke('ignored', ImportMode.OVERWRITE_CURRENT);
+		await useCase.import(imported, ImportMode.OVERWRITE_CURRENT);
 
 		const current = (await repo.getAppStateSnapshot()).currentTimetable;
 		expect(current?.id).toBe(existing.id);
@@ -397,14 +379,9 @@ describe('domain use cases', () => {
 			},
 			importMetadata: { source: TimetableImportSource.ONLINE_EDU }
 		});
-		const useCase = new ImportTimetableUseCase(
-			repo,
-			repo.preferences,
-			new FakeHtmlParser(imported),
-			new FakeTimetableShareCodec(imported)
-		);
+		const useCase = new ImportTimetableUseCase(repo, repo.preferences);
 
-		await useCase.invoke('html', ImportMode.AS_NEW);
+		await useCase.import(imported, ImportMode.AS_NEW);
 
 		const current = (await repo.getAppStateSnapshot()).currentTimetable;
 		expect(current).not.toBeNull();

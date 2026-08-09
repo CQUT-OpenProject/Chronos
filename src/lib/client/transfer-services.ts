@@ -1,6 +1,7 @@
 import { getPreferencesRepository, getRepository } from './repository';
 import { ApiRemoteTimetableSource } from './api-remote-timetable-source';
 import { DefaultTimetableShareCodec } from '$lib/parsers/shared-json/default-timetable-share-codec';
+import { ChronosTimetableShareLinkCodec } from '$lib/parsers/share-link/chronos-timetable-share-link-codec';
 import { EducationalTimetableHtmlParser } from '$lib/parsers/edu-html/educational-timetable-html-parser';
 import { PreviewImportedTimetableUseCase } from '$lib/domain/usecases/preview-imported-timetable';
 import { PreviewOnlineTimetableUseCase } from '$lib/domain/usecases/preview-online-timetable';
@@ -13,15 +14,16 @@ export function createTransferServices(
 	repository: TimetableRepository = getRepository(),
 	preferences: PreferencesRepository = getPreferencesRepository()
 ) {
-	const codec = new DefaultTimetableShareCodec();
+	const onlineCodec = new DefaultTimetableShareCodec();
+	const shareLinkCodec = new ChronosTimetableShareLinkCodec();
 	const htmlParser = new EducationalTimetableHtmlParser();
 	const remoteSource = new ApiRemoteTimetableSource();
 
 	return {
-		previewImported: new PreviewImportedTimetableUseCase(htmlParser, codec),
-		previewOnline: new PreviewOnlineTimetableUseCase(remoteSource, codec),
-		importTimetable: new ImportTimetableUseCase(repository, preferences, htmlParser, codec),
-		exportCurrent: new ExportCurrentTimetableUseCase(repository, codec)
+		previewImported: new PreviewImportedTimetableUseCase(htmlParser, shareLinkCodec),
+		previewOnline: new PreviewOnlineTimetableUseCase(remoteSource, onlineCodec),
+		importTimetable: new ImportTimetableUseCase(repository, preferences),
+		exportCurrent: new ExportCurrentTimetableUseCase(repository, shareLinkCodec)
 	};
 }
 

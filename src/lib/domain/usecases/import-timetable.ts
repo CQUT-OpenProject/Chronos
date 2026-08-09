@@ -1,11 +1,10 @@
 import type { Timetable } from '$lib/models/timetable';
+import { normalizeTimetableName } from '$lib/models/timetable';
 import { ImportMode } from '../import-mode';
-import type { EducationalTimetableHtmlParser } from '../interfaces/educational-timetable-html-parser';
 import type { PreferencesRepository } from '../interfaces/preferences-repository';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
-import type { TimetableShareCodec } from '../interfaces/timetable-share-codec';
 import { AppError } from '../result/app-error';
-import { failure, flatMapSync, success, type AppResult } from '../result/app-result';
+import { failure, success, type AppResult } from '../result/app-result';
 
 export interface ImportTimetableResult {
 	timetableId: string;
@@ -15,22 +14,8 @@ export interface ImportTimetableResult {
 export class ImportTimetableUseCase {
 	constructor(
 		private readonly repository: TimetableRepository,
-		private readonly preferences: PreferencesRepository,
-		private readonly educationalTimetableHtmlParser: EducationalTimetableHtmlParser,
-		private readonly timetableShareCodec: TimetableShareCodec
+		private readonly preferences: PreferencesRepository
 	) {}
-
-	async invoke(content: string, mode: ImportMode): Promise<AppResult<ImportTimetableResult>> {
-		const parsed = flatMapSync(this.educationalTimetableHtmlParser.parse(content), (imported) => {
-			if (imported) return success(imported);
-			return flatMapSync(this.timetableShareCodec.decode(content), (payload) =>
-				this.timetableShareCodec.toTimetable(payload)
-			);
-		});
-
-		if (!parsed.ok) return parsed;
-		return this.import(parsed.value, mode);
-	}
 
 	async import(imported: Timetable, mode: ImportMode): Promise<AppResult<ImportTimetableResult>> {
 		if (mode === ImportMode.AS_NEW) {
@@ -39,6 +24,7 @@ export class ImportTimetableUseCase {
 			const newTimetable: Timetable = {
 				...imported,
 				id: newTimetableId,
+				name: normalizeTimetableName(imported.name),
 				createdAt: now,
 				updatedAt: now,
 				courses: assignCourseIds(imported, newTimetableId)
