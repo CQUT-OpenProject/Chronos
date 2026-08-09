@@ -2,12 +2,12 @@
 
 # _Chronos_
 
+<img src=".github/assets/light.png" alt="Preview Light" height="500" />
+<img src=".github/assets/dark.png" alt="Preview Dark" height="500" />
+
 基于渐进式 Web 的课程表应用，深度适配本校课表
 
 ![Ask DeepWiki](https://deepwiki.com/badge.svg)
-
-<img src=".github/assets/light.png" alt="Preview Light" height="450" />
-<img src=".github/assets/dark.png" alt="Preview Dark" height="450" />
 
 </div>
 
