@@ -11,6 +11,7 @@
 	import { setContext } from 'svelte';
 	import type { Pathname } from '$app/types';
 	import { page } from '$app/state';
+	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import {
 		initNavigationStack,
 		updateTransitionDirection,
@@ -81,6 +82,10 @@
 			{@render children()}
 		</div>
 	{/key}
+</div>
+
+<div class="tab-bar-wrapper" aria-hidden={isSecondaryRoute(page.url.pathname)}>
+	<BottomTabBar />
 </div>
 
 <InstallPrompt />
