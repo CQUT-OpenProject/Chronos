@@ -4,6 +4,7 @@ import { success } from '$lib/domain/result/app-result';
 import { createSessionPreviewPersistence } from './preview-persistence';
 import { createTransferImportCoordinator } from './transfer-import-coordinator';
 import type { TransferServices } from './transfer-services';
+import { formatShareClipboardText } from '$lib/parsers/share-link/chronos-share-link-codec';
 import type { SecureCredentialStore } from '$lib/domain/interfaces/secure-credential-store';
 
 describe('createTransferImportCoordinator', () => {
@@ -28,14 +29,14 @@ describe('createTransferImportCoordinator', () => {
 		const timetable = { name: 'Test Timetable' } as never;
 		coordinator.persistPreview({
 			preview: timetable,
-			previewSource: 'JSON',
+			previewSource: 'SHARE_LINK',
 			importMode: ImportMode.AS_NEW,
 			htmlImportTermStartDate: null
 		});
 
 		expect(coordinator.loadPersistedPreview()).toEqual({
 			preview: timetable,
-			previewSource: 'JSON',
+			previewSource: 'SHARE_LINK',
 			importMode: ImportMode.AS_NEW,
 			htmlImportTermStartDate: null
 		});
@@ -44,8 +45,8 @@ describe('createTransferImportCoordinator', () => {
 		expect(coordinator.loadPersistedPreview()).toBeNull();
 	});
 
-	it('reads clipboard and previews JSON text', async () => {
-		const invoke = vi.fn().mockReturnValue(success({ name: 'From JSON' }));
+	it('reads clipboard and previews share link text', async () => {
+		const invoke = vi.fn().mockReturnValue(success({ name: 'From Share Link' }));
 		const mockStorage: Record<string, string> = {};
 
 		const coordinator = createTransferImportCoordinator({
@@ -63,7 +64,7 @@ describe('createTransferImportCoordinator', () => {
 				}
 			}),
 			clipboard: {
-				readText: async () => '  {"name":"From JSON"}  ',
+				readText: async () => '  https://chronos.test/s#1.abc  ',
 				writeText: async () => {}
 			}
 		});
@@ -71,9 +72,30 @@ describe('createTransferImportCoordinator', () => {
 		const result = await coordinator.previewFromClipboard();
 		expect(result).toEqual({
 			ok: true,
-			preview: { name: 'From JSON' },
-			source: 'JSON'
+			preview: { name: 'From Share Link' },
+			source: 'SHARE_LINK'
 		});
-		expect(invoke).toHaveBeenCalledWith('{"name":"From JSON"}');
+		expect(invoke).toHaveBeenCalledWith('https://chronos.test/s#1.abc');
+	});
+
+	it('exports share link to clipboard', async () => {
+		const writeText = vi.fn().mockResolvedValue(undefined);
+		const clipboardText = formatShareClipboardText('知行理工', 'https://chronos.test/s#1.abc');
+		const coordinator = createTransferImportCoordinator({
+			services: {
+				exportCurrent: {
+					invoke: vi.fn().mockResolvedValue(success(clipboardText))
+				}
+			} as unknown as TransferServices,
+			secureCredentialStore: {} as SecureCredentialStore,
+			clipboard: {
+				readText: async () => '',
+				writeText
+			}
+		});
+
+		const result = await coordinator.exportToClipboard();
+		expect(result).toEqual({ ok: true, statusMessage: '已复制课表链接' });
+		expect(writeText).toHaveBeenCalledWith(clipboardText);
 	});
 });

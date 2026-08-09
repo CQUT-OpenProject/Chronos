@@ -63,11 +63,11 @@
 				},
 				{
 					id: 'export',
-					title: '分享课程表（导出）',
+					title: '分享课程表',
 					href: resolve('/transfer/export'),
 					icon: IosShareFill,
 					iconTone: 'tertiary',
-					keywords: ['导出', '分享', '备份', '数据', 'JSON', '二维码']
+					keywords: ['导出', '分享', '备份', '数据', '链接', '二维码']
 				}
 			]
 		},

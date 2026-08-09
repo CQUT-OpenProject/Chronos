@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { sanitizeOnlineCredentialAtStartup } from '$lib/client/webauthn-secure-credential-store';
@@ -9,10 +8,8 @@
 
 	const transfer = createTransferState();
 
-	onMount(() => {
-		sanitizeOnlineCredentialAtStartup();
-		transfer.clearPersistedPreview();
-	});
+	sanitizeOnlineCredentialAtStartup();
+	transfer.clearPersistedPreview();
 
 	function continueToConfirm() {
 		transfer.persistPreview();

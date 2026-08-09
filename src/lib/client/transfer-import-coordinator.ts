@@ -75,7 +75,7 @@ export function createTransferImportCoordinator({
 		if (!result.ok) {
 			return { ok: false, errorMessage: result.error.message };
 		}
-		return { ok: true, preview: result.value, source: 'JSON' };
+		return { ok: true, preview: result.value, source: 'SHARE_LINK' };
 	}
 
 	async function previewFromClipboard(): Promise<PreviewOutcome> {
@@ -280,7 +280,7 @@ export function createTransferImportCoordinator({
 		}
 		try {
 			await clipboard.writeText(result.value);
-			return { ok: true, statusMessage: '已复制到剪贴板' };
+			return { ok: true, statusMessage: '已复制课表链接' };
 		} catch {
 			return { ok: false, errorMessage: '无法写入剪贴板，请检查浏览器权限' };
 		}

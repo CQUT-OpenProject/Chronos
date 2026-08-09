@@ -37,10 +37,11 @@ describe('createTransferState', () => {
 		const controller = createTransferState(mockTransferServices, mockCredentialServices);
 
 		mockStorage['chronos:import-preview'] = JSON.stringify({ name: 'Test' });
-		mockStorage['chronos:import-preview-source'] = 'JSON';
+		mockStorage['chronos:import-preview-source'] = 'SHARE_LINK';
 
 		controller.loadPersistedPreview();
 		expect(controller.state.preview).toEqual({ name: 'Test' });
+		expect(controller.state.previewSource).toBe('SHARE_LINK');
 
 		controller.clearPreview();
 		expect(controller.state.preview).toBeNull();
@@ -64,7 +65,7 @@ describe('createTransferState', () => {
 		const controller = createTransferState(mockTransferServices, mockCredentialServices);
 
 		mockStorage['chronos:import-preview'] = JSON.stringify({ name: 'Test' });
-		mockStorage['chronos:import-preview-source'] = 'JSON';
+		mockStorage['chronos:import-preview-source'] = 'SHARE_LINK';
 
 		controller.clearPersistedPreview();
 		expect(mockStorage['chronos:import-preview']).toBeUndefined();

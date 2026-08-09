@@ -4,6 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 	let {
 		transfer,
@@ -21,14 +22,21 @@
 	const saveCheckboxLabel = $derived(saveCredentialsLabel(transferState.savedCredentialState));
 
 	// Tab sources index calculation for sliding pill indicator animation
-	const sources = ['ONLINE', 'JSON', 'HTML'] as const;
+	const sources = ['ONLINE', 'SHARE_LINK', 'HTML'] as const;
 	const selectedIndex = $derived(sources.indexOf(transferState.selectedSource));
+
+	function notifyTransferMessages() {
+		const { statusMessage, errorMessage } = transfer.state;
+		if (errorMessage) snackbar(errorMessage);
+		else if (statusMessage) snackbar(statusMessage);
+	}
 
 	async function handleClipboardPreview() {
 		loading = true;
 		try {
 			const ok = await transfer.previewFromClipboard();
 			if (ok) onContinue();
+			else notifyTransferMessages();
 		} finally {
 			loading = false;
 		}
@@ -39,6 +47,7 @@
 		try {
 			const ok = await transfer.previewOnline();
 			if (ok) onContinue();
+			else notifyTransferMessages();
 		} finally {
 			loading = false;
 		}
@@ -49,6 +58,7 @@
 		try {
 			const ok = await transfer.previewWithSavedCredential();
 			if (ok) onContinue();
+			else notifyTransferMessages();
 		} finally {
 			loading = false;
 		}
@@ -56,6 +66,7 @@
 
 	async function handleClearSavedCredential() {
 		await transfer.clearSavedCredential();
+		notifyTransferMessages();
 	}
 
 	async function handleFileChange(event: Event) {
@@ -66,6 +77,7 @@
 		try {
 			const ok = await transfer.previewFromHtmlFile(file);
 			if (ok) onContinue();
+			else notifyTransferMessages();
 		} finally {
 			loading = false;
 			input.value = '';
@@ -75,7 +87,7 @@
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
 	<p class="m3-body-medium text-on-surface-variant">
-		支持知行理工在线导入、分享 JSON 与教务 HTML 文件。
+		支持知行理工在线导入、分享链接与教务系统导出的 HTML 文件。
 	</p>
 
 	<!-- Animated Segmented Tab Switcher with List-Matching bg-surface Background Color -->
@@ -101,12 +113,12 @@
 		<button
 			type="button"
 			class="relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center text-sm font-semibold transition-colors duration-200 {transferState.selectedSource ===
-			'JSON'
+			'SHARE_LINK'
 				? 'text-on-secondary-container'
 				: 'text-on-surface-variant hover:text-on-surface'}"
-			onclick={() => transfer.setSelectedSource('JSON')}
+			onclick={() => transfer.setSelectedSource('SHARE_LINK')}
 		>
-			分享 JSON
+			分享链接
 		</button>
 		<button
 			type="button"
@@ -222,14 +234,14 @@
 					{/if}
 				</div>
 			</Card>
-		{:else if transferState.selectedSource === 'JSON'}
-			<!-- Tab 2: 分享 JSON -->
+		{:else if transferState.selectedSource === 'SHARE_LINK'}
+			<!-- Tab 2: 分享链接 -->
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					<div>
-						<h2 class="m3-title-medium font-bold text-on-surface">从分享内容获取</h2>
+						<h2 class="m3-title-medium font-bold text-on-surface">从分享链接导入</h2>
 						<p class="m3-body-small mt-0.5 text-on-surface-variant">
-							复制 Android 或其他设备导出的课表 JSON 后点击下方按钮。
+							复制课表分享链接后点击下方按钮
 						</p>
 					</div>
 					<div class="flex w-full pt-1">
@@ -275,12 +287,4 @@
 			</Card>
 		{/if}
 	</div>
-
-	{#if transferState.statusMessage}
-		<p class="m3-body-medium text-success">{transferState.statusMessage}</p>
-	{/if}
-
-	{#if transferState.errorMessage}
-		<p class="m3-body-medium text-danger">{transferState.errorMessage}</p>
-	{/if}
 </div>

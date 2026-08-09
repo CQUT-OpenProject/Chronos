@@ -1,7 +1,7 @@
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
 
-export type TransferImportSource = 'ONLINE' | 'JSON' | 'HTML';
+export type TransferImportSource = 'ONLINE' | 'SHARE_LINK' | 'HTML';
 
 const PREVIEW_KEY = 'chronos:import-preview';
 const PREVIEW_SOURCE_KEY = 'chronos:import-preview-source';

@@ -32,6 +32,7 @@
 	const pageTransitionKey = $derived(
 		isSecondaryRoute(page.url.pathname) ? page.url.pathname : TAB_PAGE_KEY
 	);
+	const showTabBar = $derived(!isSecondaryRoute(page.url.pathname));
 
 	let transitionDirection = $state<NavigationDirection>('none');
 
@@ -84,9 +85,11 @@
 	{/key}
 </div>
 
-<div class="tab-bar-wrapper" aria-hidden={isSecondaryRoute(page.url.pathname)}>
-	<BottomTabBar />
-</div>
+{#if showTabBar}
+	<div class="tab-bar-wrapper">
+		<BottomTabBar />
+	</div>
+{/if}
 
 <InstallPrompt />
 <ServiceWorkerUpdatePrompt />

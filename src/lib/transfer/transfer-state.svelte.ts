@@ -296,8 +296,8 @@ export function previewSourceLabel(source: TransferImportSource | null): string 
 	switch (source) {
 		case 'ONLINE':
 			return '知行理工';
-		case 'JSON':
-			return '分享 JSON';
+		case 'SHARE_LINK':
+			return '分享链接';
 		case 'HTML':
 			return 'HTML 文件';
 		default:

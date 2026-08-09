@@ -7,6 +7,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { CalendarMonthFill, InfoFill, DownloadFill } from '$lib/icons';
 
 	let {
@@ -28,7 +29,13 @@
 		loading = true;
 		try {
 			const ok = await transfer.confirmImport();
-			if (ok) onConfirm();
+			if (ok) {
+				snackbar('导入成功');
+				onConfirm();
+				return;
+			}
+			const message = transfer.state.errorMessage;
+			if (message) snackbar(message);
 		} finally {
 			loading = false;
 		}
@@ -173,9 +180,5 @@
 				{/if}
 			</Button>
 		</div>
-
-		{#if transferState.errorMessage}
-			<p class="m3-body-medium px-1 font-medium text-danger">{transferState.errorMessage}</p>
-		{/if}
 	</div>
 {/if}
