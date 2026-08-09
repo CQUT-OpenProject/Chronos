@@ -18,7 +18,6 @@
 	} from '$lib/icons';
 
 	let { shell }: { shell: AppShellController } = $props();
-	const hasWallpaper = $derived(shell.state.hasWallpaper);
 
 	let searchQuery = $state('');
 
@@ -85,7 +84,7 @@
 				},
 				{
 					id: 'wallpaper',
-					title: hasWallpaper ? '壁纸设置' : '设置课表壁纸',
+					title: '设置课表壁纸',
 					href: resolve('/wallpaper'),
 					icon: WallpaperFill,
 					iconTone: 'primary',
