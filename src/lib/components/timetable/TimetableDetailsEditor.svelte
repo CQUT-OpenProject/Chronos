@@ -1,34 +1,46 @@
 <script lang="ts">
-	import type { TimetableSettingsDraft } from '$lib/models/drafts';
-	import { currentWeekMonday, defaultPeriodTimes } from '$lib/models/defaults';
+	import type { TimetableDetailsController } from '$lib/timetable/timetable-details.svelte';
+	import { defaultPeriodTimes } from '$lib/models/defaults';
 	import {
 		removePeriodAt,
 		reindexPeriodTimes,
-		replacePeriodAt,
 		shouldShowAcademicWeekRangeSettings,
 		shouldShowNonCurrentWeekCourseSetting,
 		shouldShowTermStartDateSetting
 	} from '$lib/timetable/timetable-mappers';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import StepperField from '$lib/components/ui/StepperField.svelte';
+	import Switch from '$lib/components/ui/Switch.svelte';
+	import TextField from '$lib/components/ui/TextField.svelte';
+	import MineRow from '$lib/components/mine/MineRow.svelte';
+	import MineSection from '$lib/components/mine/MineSection.svelte';
+	import { DeleteFill } from '$lib/icons';
 
 	let {
-		draft = $bindable(),
-		onSave
+		editor
 	}: {
-		draft: TimetableSettingsDraft;
-		onSave: () => void | Promise<void>;
+		editor: TimetableDetailsController;
 	} = $props();
 
-	const showTermStart = $derived(shouldShowTermStartDateSetting(draft.importMetadata.source));
-	const showWeekRange = $derived(shouldShowAcademicWeekRangeSettings(draft.importMetadata.source));
+	const draft = $derived(editor.draft);
+
+	const showTermStart = $derived(
+		draft ? shouldShowTermStartDateSetting(draft.importMetadata.source) : false
+	);
+	const showWeekRange = $derived(
+		draft ? shouldShowAcademicWeekRangeSettings(draft.importMetadata.source) : false
+	);
 	const showNonCurrentWeek = $derived(
-		shouldShowNonCurrentWeekCourseSetting(draft.importMetadata.source)
+		draft ? shouldShowNonCurrentWeekCourseSetting(draft.importMetadata.source) : false
 	);
 
 	function addPeriod() {
+		if (!draft) return;
 		const defaults = defaultPeriodTimes();
 		const nextIndex = draft.academicConfig.periodTimes.length + 1;
 		const template = defaults[nextIndex - 1] ?? defaults.at(-1)!;
-		draft.academicConfig.periodTimes = [
+		editor.draft!.academicConfig.periodTimes = [
 			...draft.academicConfig.periodTimes,
 			{
 				index: nextIndex,
@@ -39,139 +51,78 @@
 	}
 
 	function removePeriod(index: number) {
-		draft.academicConfig.periodTimes = reindexPeriodTimes(
+		if (!draft) return;
+		editor.draft!.academicConfig.periodTimes = reindexPeriodTimes(
 			removePeriodAt(draft.academicConfig.periodTimes, index)
 		);
 	}
-
-	function updatePeriod(index: number, field: 'startTime' | 'endTime', value: string) {
-		const current = draft.academicConfig.periodTimes[index];
-		draft.academicConfig.periodTimes = replacePeriodAt(draft.academicConfig.periodTimes, index, {
-			...current,
-			[field]: value
-		});
-	}
-
-	function resetToDefaultSettings() {
-		const today = new Date().toISOString().slice(0, 10);
-		draft.academicConfig = {
-			...draft.academicConfig,
-			termStartDate: currentWeekMonday(today),
-			periodTimes: defaultPeriodTimes().map((period) => ({ ...period }))
-		};
-		draft.viewPrefs = {
-			showSaturday: true,
-			showSunday: true,
-			showNonCurrentWeekCourses: true
-		};
-	}
 </script>
 
-<div class="space-y-4">
-	<label class="block space-y-1">
-		<span class="text-sm text-on-surface-variant">课表名称</span>
-		<input
-			class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant dark:bg-surface-variant"
-			bind:value={draft.name}
-		/>
-	</label>
+{#if draft}
+	<div class="space-y-4">
+		<TextField label="课表名称" bind:value={editor.draft.name} />
 
-	{#if showTermStart}
-		<label class="block space-y-1">
-			<span class="text-sm text-on-surface-variant">学期起始日（周一）</span>
-			<input
+		<MineSection title="显示选项">
+			<MineRow label title="显示周六">
+				{#snippet trailing()}
+					<Switch bind:checked={editor.draft.viewPrefs.showSaturday} />
+				{/snippet}
+			</MineRow>
+			<MineRow label title="显示周日">
+				{#snippet trailing()}
+					<Switch bind:checked={editor.draft.viewPrefs.showSunday} />
+				{/snippet}
+			</MineRow>
+			{#if showNonCurrentWeek}
+				<MineRow label title="显示非本周课程">
+					{#snippet trailing()}
+						<Switch bind:checked={editor.draft.viewPrefs.showNonCurrentWeekCourses} />
+					{/snippet}
+				</MineRow>
+			{/if}
+		</MineSection>
+
+		{#if showTermStart}
+			<TextField
+				label="学期起始日（周一）"
 				type="date"
-				class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant dark:bg-surface-variant"
-				bind:value={draft.academicConfig.termStartDate}
+				bind:value={editor.draft.academicConfig.termStartDate}
 			/>
-		</label>
-	{/if}
-
-	{#if showWeekRange}
-		<div class="grid grid-cols-2 gap-3">
-			<label class="block space-y-1">
-				<span class="text-sm text-on-surface-variant">开始周</span>
-				<input
-					type="number"
-					min="1"
-					class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant dark:bg-surface-variant"
-					bind:value={draft.academicConfig.startWeek}
-				/>
-			</label>
-			<label class="block space-y-1">
-				<span class="text-sm text-on-surface-variant">结束周</span>
-				<input
-					type="number"
-					min="1"
-					class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant dark:bg-surface-variant"
-					bind:value={draft.academicConfig.endWeek}
-				/>
-			</label>
-		</div>
-	{/if}
-
-	<div class="space-y-2">
-		<div class="flex items-center justify-between">
-			<span class="text-sm font-medium">节次时间</span>
-			<button type="button" class="text-sm text-brand dark:text-soft-blue" onclick={addPeriod}>
-				添加节次
-			</button>
-		</div>
-		{#each draft.academicConfig.periodTimes as period, index (period.index)}
-			<div
-				class="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-2 rounded-[18px] border border-outline px-2 py-1 dark:border-outline-variant"
-			>
-				<span class="text-sm text-on-surface-variant">第 {period.index} 节</span>
-				<input
-					class="rounded-lg border border-outline px-2 py-1 text-sm dark:border-outline-variant dark:bg-surface-variant"
-					value={period.startTime}
-					oninput={(event) =>
-						updatePeriod(index, 'startTime', (event.currentTarget as HTMLInputElement).value)}
-				/>
-				<input
-					class="rounded-lg border border-outline px-2 py-1 text-sm dark:border-outline-variant dark:bg-surface-variant"
-					value={period.endTime}
-					oninput={(event) =>
-						updatePeriod(index, 'endTime', (event.currentTarget as HTMLInputElement).value)}
-				/>
-				<button type="button" class="text-sm text-danger" onclick={() => removePeriod(index)}>
-					删
-				</button>
-			</div>
-		{/each}
-	</div>
-
-	<div class="space-y-2">
-		<label class="flex items-center gap-2 text-sm">
-			<input type="checkbox" bind:checked={draft.viewPrefs.showSaturday} />
-			显示周六
-		</label>
-		<label class="flex items-center gap-2 text-sm">
-			<input type="checkbox" bind:checked={draft.viewPrefs.showSunday} />
-			显示周日
-		</label>
-		{#if showNonCurrentWeek}
-			<label class="flex items-center gap-2 text-sm">
-				<input type="checkbox" bind:checked={draft.viewPrefs.showNonCurrentWeekCourses} />
-				显示非本周课程
-			</label>
 		{/if}
+
+		{#if showWeekRange}
+			<StepperField label="开始周" bind:value={editor.draft.academicConfig.startWeek} min={1} />
+			<StepperField
+				label="结束周"
+				bind:value={editor.draft.academicConfig.endWeek}
+				min={editor.draft.academicConfig.startWeek}
+			/>
+		{/if}
+
+		<div class="flex flex-col gap-2.5">
+			<div class="flex items-center justify-between px-1">
+				<h3 class="m3-title-medium">节次时间</h3>
+				<Button variant="text" class="px-2" onclick={addPeriod}>添加节次</Button>
+			</div>
+			{#each editor.draft.academicConfig.periodTimes as period, index (period.index)}
+				<Card variant="outlined" class="!p-3">
+					<div class="mb-2 flex items-center justify-between">
+						<span class="m3-body-medium text-on-surface-variant">第 {period.index} 节</span>
+						<button
+							type="button"
+							class="flex size-8 shrink-0 items-center justify-center rounded-full text-error transition-colors hover:bg-error/10 active:bg-error/20"
+							aria-label={`删除第 ${period.index} 节`}
+							onclick={() => removePeriod(index)}
+						>
+							<DeleteFill class="size-5" />
+						</button>
+					</div>
+					<div class="grid grid-cols-2 gap-2">
+						<TextField label="开始" type="time" bind:value={period.startTime} />
+						<TextField label="结束" type="time" bind:value={period.endTime} />
+					</div>
+				</Card>
+			{/each}
+		</div>
 	</div>
-
-	<button
-		type="button"
-		class="w-full rounded-lg border border-outline px-3 py-2 text-sm dark:border-outline-variant"
-		onclick={resetToDefaultSettings}
-	>
-		恢复所有设置
-	</button>
-
-	<button
-		type="button"
-		class="w-full rounded-lg bg-brand px-3 py-2 text-sm text-white disabled:opacity-50"
-		disabled={!draft.name.trim()}
-		onclick={() => onSave()}
-	>
-		保存
-	</button>
-</div>
+{/if}

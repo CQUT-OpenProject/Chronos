@@ -1,35 +1,26 @@
 <script lang="ts">
-	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import type { TimetableSettingsDraft } from '$lib/models/drafts';
+	import type { TimetableDetailsController } from '$lib/timetable/timetable-details.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import TimetableDetailsEditor from '$lib/components/timetable/TimetableDetailsEditor.svelte';
-	import { toSettingsDraft } from '$lib/timetable/timetable-mappers';
 
 	let {
-		shell,
-		onDone
+		editor
 	}: {
-		shell: AppShellController;
-		onDone: () => void;
+		editor: TimetableDetailsController;
 	} = $props();
-
-	const timetable = $derived(shell.state.appState.currentTimetable);
-	let draft = $state<TimetableSettingsDraft | null>(null);
-
-	$effect(() => {
-		if (timetable) {
-			draft = toSettingsDraft(timetable);
-		}
-	});
-
-	async function save() {
-		if (!timetable || !draft) return;
-		await shell.services.saveTimetableDetails.invoke(timetable.id, draft);
-		onDone();
-	}
 </script>
 
-{#if draft}
-	<TimetableDetailsEditor bind:draft onSave={save} />
+{#if editor.draft}
+	{#snippet resetFooter()}
+		<Button variant="outlined" class="w-full" onclick={editor.resetToDefaultSettings}>
+			恢复所有设置
+		</Button>
+	{/snippet}
+
+	<FormScreenLayout footer={resetFooter}>
+		<TimetableDetailsEditor {editor} />
+	</FormScreenLayout>
 {:else}
-	<p class="text-sm text-zinc-500">未找到当前课表</p>
+	<p class="p-4 text-sm text-on-surface-variant">未找到当前课表</p>
 {/if}

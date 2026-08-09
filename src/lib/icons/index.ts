@@ -31,3 +31,4 @@ export { WifiOffFill } from '@material-symbols-svg/svelte/icons/wifi-off';
 export { FullscreenFill } from '@material-symbols-svg/svelte/icons/fullscreen';
 export { Search } from '@material-symbols-svg/svelte/icons/search';
 export { Close } from '@material-symbols-svg/svelte/icons/close';
+export { DeleteFill } from '@material-symbols-svg/svelte/icons/delete';
