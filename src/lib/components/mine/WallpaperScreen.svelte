@@ -88,8 +88,10 @@
 			</div>
 		</div>
 	{:else}
-		<p class="m3-body-medium flex-1 py-4 text-center text-on-surface-variant">
-			选择壁纸后，可在此预览课表叠加效果。
+		<p
+			class="m3-body-medium flex flex-1 items-center justify-center p-4 text-center text-on-surface-variant"
+		>
+			选择壁纸后，可在此预览应用效果
 		</p>
 	{/if}
 
