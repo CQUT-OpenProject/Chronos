@@ -1,5 +1,5 @@
 import type { Course } from '$lib/models/course';
-import type { Timetable } from '$lib/models/timetable';
+import { normalizeTimetableName, type Timetable } from '$lib/models/timetable';
 import type { TimetableSummary } from '$lib/models/app-state';
 import type { CourseRow, TimetableRow } from './db';
 import { encodeTimetableConfig, decodeTimetableConfig } from './timetable-config-codec';
@@ -43,7 +43,7 @@ export function courseFromRow(row: CourseRow): Course {
 export function timetableToRow(timetable: Timetable): TimetableRow {
 	return {
 		id: timetable.id,
-		name: timetable.name,
+		name: normalizeTimetableName(timetable.name),
 		createdAt: timetable.createdAt,
 		updatedAt: timetable.updatedAt,
 		configJson: encodeTimetableConfig(
@@ -58,7 +58,7 @@ export function timetableFromRow(row: TimetableRow, courses: CourseRow[]): Timet
 	const config = decodeTimetableConfig(row.configJson, row.id);
 	return {
 		id: row.id,
-		name: row.name,
+		name: normalizeTimetableName(row.name),
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt,
 		courses: courses.map(courseFromRow),
@@ -71,7 +71,7 @@ export function timetableFromRow(row: TimetableRow, courses: CourseRow[]): Timet
 export function summaryFromRow(row: TimetableRow, courseCount: number): TimetableSummary {
 	return {
 		id: row.id,
-		name: row.name,
+		name: normalizeTimetableName(row.name),
 		courseCount,
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt
@@ -81,6 +81,7 @@ export function summaryFromRow(row: TimetableRow, courseCount: number): Timetabl
 export function copyForStateBoundary(timetable: Timetable): Timetable {
 	return {
 		...timetable,
+		name: normalizeTimetableName(timetable.name),
 		courses: timetable.courses.map((course) => ({ ...course, weeks: [...course.weeks] })),
 		academicConfig: {
 			...timetable.academicConfig,

@@ -1,4 +1,8 @@
-import { academicConfigSchema, createTimetable } from '$lib/models/timetable';
+import {
+	academicConfigSchema,
+	createTimetable,
+	normalizeTimetableName
+} from '$lib/models/timetable';
 import { AcademicCalendarService } from '../services/academic-calendar';
 import type { PreferencesRepository } from '../interfaces/preferences-repository';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
@@ -16,7 +20,7 @@ export class CreateTimetableUseCase {
 		const now = this.timeProvider.currentTimeMillis();
 		const timetable = createTimetable({
 			id: crypto.randomUUID(),
-			name: name.trim() || '未命名课表',
+			name: normalizeTimetableName(name),
 			courses: [],
 			createdAt: now,
 			updatedAt: now,

@@ -1,5 +1,9 @@
 import type { Course } from '$lib/models/course';
-import { TimetableImportSource, type Timetable } from '$lib/models/timetable';
+import {
+	TimetableImportSource,
+	normalizeTimetableName,
+	type Timetable
+} from '$lib/models/timetable';
 import type { EducationalTimetableHtmlParser as EducationalTimetableHtmlParserInterface } from '$lib/domain/interfaces/educational-timetable-html-parser';
 import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
 import { SystemTimeProvider, type TimeProvider } from '$lib/domain/services/time-provider';
@@ -57,7 +61,7 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 
 		return success({
 			id: crypto.randomUUID(),
-			name: studentName ? `${studentName}的课表` : term || '导入课表',
+			name: normalizeTimetableName(studentName ? `${studentName}的课表` : term),
 			courses,
 			createdAt: now,
 			updatedAt: now,

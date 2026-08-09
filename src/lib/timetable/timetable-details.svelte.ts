@@ -22,7 +22,7 @@ export class TimetableDetailsEditor {
 	) {}
 
 	get canSave() {
-		return Boolean(this.draft?.name.trim());
+		return Boolean(this.draft);
 	}
 
 	get selectedCampus(): CqutCampusName | null {

@@ -66,14 +66,25 @@ export interface Timetable {
 	viewPrefs: TimetableViewPrefs;
 }
 
+export const DEFAULT_TIMETABLE_NAME = '未命名课表';
+
+export function normalizeTimetableName(name: string): string {
+	const trimmed = name.trim();
+	return trimmed.length > 0 ? trimmed : DEFAULT_TIMETABLE_NAME;
+}
+
 export function createTimetable(
 	partial: Omit<Timetable, 'academicConfig' | 'importMetadata' | 'viewPrefs'> &
 		Partial<Pick<Timetable, 'academicConfig' | 'importMetadata' | 'viewPrefs'>>
 ): Timetable {
-	return {
+	const timetable = {
 		academicConfig: academicConfigSchema.parse({}),
 		importMetadata: timetableImportMetadataSchema.parse({}),
 		viewPrefs: timetableViewPrefsSchema.parse({}),
 		...partial
+	};
+	return {
+		...timetable,
+		name: normalizeTimetableName(timetable.name)
 	};
 }

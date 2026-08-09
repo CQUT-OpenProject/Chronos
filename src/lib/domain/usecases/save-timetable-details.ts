@@ -1,5 +1,6 @@
 import { defaultPeriodTimes } from '$lib/models/defaults';
 import type { PeriodTime, TimetableImportMetadata } from '$lib/models/timetable';
+import { normalizeTimetableName } from '$lib/models/timetable';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import { AcademicCalendarService } from '../services/academic-calendar';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
@@ -34,7 +35,7 @@ export class SaveTimetableDetailsUseCase {
 
 		await this.repository.saveTimetable({
 			...timetable,
-			name: draft.name.trim() || '未命名课表',
+			name: normalizeTimetableName(draft.name),
 			updatedAt: this.timeProvider.currentTimeMillis(),
 			academicConfig: {
 				termStartDate: this.academicCalendarService.normalizeTermStartDate(
