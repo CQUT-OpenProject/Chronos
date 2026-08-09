@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { registerSW } from 'virtual:pwa-register';
-	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 	let updateServiceWorker = $state<(() => Promise<void>) | null>(null);
@@ -20,5 +19,3 @@
 		});
 	});
 </script>
-
-<Snackbar />

@@ -6,6 +6,7 @@
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
 	import ServiceWorkerUpdatePrompt from '$lib/components/pwa/ServiceWorkerUpdatePrompt.svelte';
+	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { initWebVitals } from '$lib/client/web-vitals';
 	import { setContext } from 'svelte';
 	import type { Pathname } from '$app/types';
@@ -47,7 +48,7 @@
 	onMount(() => {
 		initNavigationStack(page.url.pathname);
 		shell.init();
-		timetableScreen.init();
+		timetableScreen.init(shell);
 		initWebVitals();
 	});
 
@@ -81,6 +82,7 @@
 
 <InstallPrompt />
 <ServiceWorkerUpdatePrompt />
+<Snackbar />
 
 <div style="display:none">
 	{#each locales as locale (locale)}
