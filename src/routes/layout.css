@@ -56,6 +56,7 @@
 	}
 
 	:root {
+		--topbar-safe: env(safe-area-inset-top, 0px);
 		--tabbar-safe: env(safe-area-inset-bottom);
 		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
 		--wallpaper-tint-sidebar: rgb(255 255 255 / 0.54);
@@ -111,5 +112,10 @@
 
 	.bottom-bar {
 		@apply flex h-[var(--bottom-bar-height)] shrink-0 items-center border-t border-outline-variant/40 bg-surface-container px-4 pb-[var(--tabbar-safe)];
+	}
+
+	.m3-top-app-bar {
+		min-height: calc(3.5rem + var(--topbar-safe));
+		padding-top: calc(0.5rem + var(--topbar-safe));
 	}
 }
