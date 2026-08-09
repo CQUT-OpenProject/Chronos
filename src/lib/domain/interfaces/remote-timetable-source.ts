@@ -1,6 +1,6 @@
 import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
 import type { AuthSnapshot } from '$lib/models/auth';
-import type { AppResult } from '../result';
+import type { AppResult } from '../result/app-result';
 
 export interface RemoteTimetableSource {
 	fetchSchedule(

@@ -1,4 +1,4 @@
-import { emptyAppState, type AppState, type TimetableSummary } from '$lib/models/app-state';
+import { type AppState, type TimetableSummary } from '$lib/models/app-state';
 import type { Timetable } from '$lib/models/timetable';
 import { copyForStateBoundary } from './mappers';
 import type { UserPreferenceState } from './settings-repo';
@@ -27,8 +27,4 @@ export function assembleAppState(
 		currentTimetable: currentTimetable ? copyForStateBoundary(currentTimetable) : null,
 		themeMode: preferences.themeMode
 	};
-}
-
-export function emptyAssembledAppState(): AppState {
-	return emptyAppState();
 }

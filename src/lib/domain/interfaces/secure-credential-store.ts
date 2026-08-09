@@ -1,5 +1,5 @@
 import type { SavedCredentialState } from '$lib/models/auth';
-import type { AppResult } from '../result';
+import type { AppResult } from '../result/app-result';
 
 export interface SecureCredentialStore {
 	subscribeSavedCredentialState(listener: (state: SavedCredentialState) => void): () => void;

@@ -1,6 +1,6 @@
 export type CoursePaletteEntry = { background: string; foreground: string };
 
-export const COURSE_PALETTE: [string, string][] = [
+const COURSE_PALETTE: [string, string][] = [
 	['#EADDFF', '#21005D'],
 	['#FFDBC9', '#311100'],
 	['#C4EED0', '#072711'],

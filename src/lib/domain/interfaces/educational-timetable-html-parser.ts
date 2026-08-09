@@ -1,5 +1,5 @@
 import type { Timetable } from '$lib/models/timetable';
-import type { AppResult } from '../result';
+import type { AppResult } from '../result/app-result';
 
 export interface EducationalTimetableHtmlParser {
 	parse(content: string): AppResult<Timetable | null>;

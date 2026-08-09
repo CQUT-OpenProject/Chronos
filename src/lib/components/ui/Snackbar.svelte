@@ -1,27 +1,23 @@
 <script lang="ts">
 	import { snackbarStore } from './snackbar-state.svelte';
-
-	let message = $derived(snackbarStore.message);
-	let open = $derived(snackbarStore.open);
-	let action = $derived(snackbarStore.action);
 </script>
 
-{#if open}
+{#if snackbarStore.open}
 	<div class="pointer-events-none fixed inset-x-4 bottom-20 z-[70] flex justify-center">
 		<div
 			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-sm text-inverse-on-surface shadow-lg transition-all duration-200"
 		>
-			<span class="flex-1 font-normal">{message}</span>
-			{#if action}
+			<span class="flex-1 font-normal">{snackbarStore.message}</span>
+			{#if snackbarStore.action}
 				<button
 					type="button"
 					onclick={() => {
 						snackbarStore.open = false;
-						action.onClick();
+						snackbarStore.action?.onClick();
 					}}
 					class="shrink-0 text-xs font-semibold text-inverse-primary hover:underline"
 				>
-					{action.label}
+					{snackbarStore.action.label}
 				</button>
 			{/if}
 			<button
