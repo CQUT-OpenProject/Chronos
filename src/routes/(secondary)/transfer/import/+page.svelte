@@ -11,7 +11,7 @@
 
 	onMount(() => {
 		sanitizeOnlineCredentialAtStartup();
-		transfer.loadPersistedPreview();
+		transfer.clearPersistedPreview();
 	});
 
 	function continueToConfirm() {

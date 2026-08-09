@@ -276,19 +276,6 @@
 		{/if}
 	</div>
 
-	{#if transferState.preview}
-		<div class="w-full">
-			<Card variant="filled">
-				<div class="flex items-center justify-between p-1">
-					<p class="m3-body-medium font-medium">
-						当前预览：{transferState.preview.name}（{transferState.preview.courses.length} 门课程）
-					</p>
-					<Button variant="text" onclick={() => transfer.clearPreview()}>清除</Button>
-				</div>
-			</Card>
-		</div>
-	{/if}
-
 	{#if transferState.statusMessage}
 		<p class="m3-body-medium text-success">{transferState.statusMessage}</p>
 	{/if}
