@@ -2,19 +2,16 @@ import type { TransferServices } from '$lib/client/transfer-services';
 import type { CredentialServices } from '$lib/client/credential-services';
 import { createTransferServices } from '$lib/client/transfer-services';
 import { createCredentialServices } from '$lib/client/credential-services';
+import { createTransferImportCoordinator } from '$lib/client/transfer-import-coordinator';
+import type { TransferImportSource } from '$lib/client/preview-persistence';
 import type { SavedCredentialState } from '$lib/models/auth';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
 import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
-import { createPrfCredential, getPrfOutput } from '$lib/client/webauthn/prf-coordinator';
-import { base64ToBytes } from '$lib/client/webauthn/binary';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 
-export type TransferImportSource = 'ONLINE' | 'JSON' | 'HTML';
-
-const PREVIEW_KEY = 'chronos:import-preview';
-const PREVIEW_SOURCE_KEY = 'chronos:import-preview-source';
+export type { TransferImportSource };
 
 export interface TransferPreviewState {
 	preview: Timetable | null;
@@ -28,11 +25,6 @@ export interface TransferPreviewState {
 	savedCredentialState: SavedCredentialState;
 	errorMessage: string | null;
 	statusMessage: string | null;
-}
-
-interface UnlockPreparePayload {
-	salt: string;
-	credentialId: string;
 }
 
 export function createTransferState(
@@ -58,8 +50,13 @@ export function createTransferState(
 	const academicCalendarService = new AcademicCalendarService();
 	const timeProvider = new SystemTimeProvider();
 
+	const coordinator = createTransferImportCoordinator({
+		services,
+		secureCredentialStore: credentialServices.secureCredentialStore
+	});
+
 	$effect(() => {
-		return credentialServices.observeSavedCredential.subscribe((state) => {
+		return credentialServices.secureCredentialStore.subscribeSavedCredentialState((state) => {
 			savedCredentialState = state;
 			if (state.account && account.trim() === '') {
 				account = state.account;
@@ -115,204 +112,109 @@ export function createTransferState(
 		preview = null;
 		previewSource = null;
 		htmlImportTermStartDate = null;
-		clearPersistedPreview();
+		coordinator.clearPersistedPreview();
 		clearMessages();
 	}
 
 	async function previewFromClipboard() {
 		clearMessages();
-		try {
-			const content = await navigator.clipboard.readText();
-			const result = services.previewImported.invoke(content.trim());
-			if (!result.ok) {
-				errorMessage = result.error.message;
-				return false;
-			}
-			preview = result.value;
-			previewSource = 'JSON';
-			htmlImportTermStartDate = null;
-			return true;
-		} catch {
-			errorMessage = '无法读取剪贴板，请检查浏览器权限';
-			return false;
-		}
-	}
-
-	async function previewFromHtmlFile(file: File) {
-		clearMessages();
-		const bytes = new Uint8Array(await file.arrayBuffer());
-		const result = services.previewImported.previewHtml(bytes);
+		const result = await coordinator.previewFromClipboard();
 		if (!result.ok) {
-			errorMessage = result.error.message;
+			errorMessage = result.errorMessage;
 			return false;
 		}
-		preview = result.value;
-		previewSource = 'HTML';
+		preview = result.preview;
+		previewSource = result.source;
 		htmlImportTermStartDate = null;
 		return true;
 	}
 
-	async function saveCredentialsIfNeeded(trimmedAccount: string, currentPassword: string) {
-		if (!saveCredentials) return;
-
-		if (savedCredentialState.protectionAvailable) {
-			const prepareResult = await credentialServices.prepareSave.invoke();
-			if (!prepareResult.ok) {
-				statusMessage = prepareResult.error.message;
-				return;
-			}
-
-			try {
-				const created = await createPrfCredential(base64ToBytes(prepareResult.value));
-				const saveResult = await credentialServices.saveCredential.invoke(
-					trimmedAccount,
-					currentPassword,
-					JSON.stringify({
-						prf: created.prfOutput,
-						credentialId: created.credentialId
-					})
-				);
-				if (!saveResult.ok) {
-					statusMessage = saveResult.error.message;
-				}
-			} catch (error) {
-				const message = error instanceof Error ? error.message : '已取消设备验证';
-				statusMessage =
-					message === 'WebAuthn verification was cancelled' ||
-					message === 'WebAuthn registration was cancelled'
-						? '已获取预览，未保存凭据'
-						: message;
-			}
-			return;
+	async function previewFromHtmlFile(file: File) {
+		clearMessages();
+		const result = await coordinator.previewFromHtmlFile(file);
+		if (!result.ok) {
+			errorMessage = result.errorMessage;
+			return false;
 		}
-
-		if (!isAccountOnlyFallbackAvailable()) {
-			statusMessage = '当前设备不支持保存帐号密码';
-			return;
-		}
-
-		const saveResult = await credentialServices.saveCredential.invoke(trimmedAccount, '', '');
-		if (!saveResult.ok) {
-			statusMessage = saveResult.error.message;
-		}
+		preview = result.preview;
+		previewSource = result.source;
+		htmlImportTermStartDate = null;
+		return true;
 	}
 
 	async function previewOnline() {
 		clearMessages();
-		const trimmedAccount = account.trim();
-		if (!trimmedAccount || !password.trim()) {
-			errorMessage = '请输入账号和密码';
-			return false;
-		}
-
-		const result = await services.previewOnline.invoke({
-			account: trimmedAccount,
-			password
-		});
+		const result = await coordinator.previewOnline(
+			account,
+			password,
+			saveCredentials,
+			savedCredentialState
+		);
 		if (!result.ok) {
-			errorMessage = result.error.message;
+			errorMessage = result.errorMessage;
 			return false;
 		}
-
-		preview = result.value;
-		previewSource = 'ONLINE';
+		preview = result.preview;
+		previewSource = result.source;
 		htmlImportTermStartDate = null;
-		await saveCredentialsIfNeeded(trimmedAccount, password);
+		if (result.statusMessage) {
+			statusMessage = result.statusMessage;
+		}
 		return true;
 	}
 
 	async function previewWithSavedCredential() {
 		clearMessages();
-		if (!savedCredentialState.hasSavedCredential) {
-			errorMessage = '当前没有可用的已保存凭据';
+		const result = await coordinator.previewWithSavedCredential(savedCredentialState);
+		if (!result.ok) {
+			errorMessage = result.errorMessage;
 			return false;
 		}
-
-		const prepareResult = await credentialServices.prepareUnlock.invoke();
-		if (!prepareResult.ok) {
-			errorMessage = prepareResult.error.message;
-			return false;
-		}
-
-		try {
-			const payload = JSON.parse(prepareResult.value) as UnlockPreparePayload;
-			const prfOutput = await getPrfOutput(payload.salt, payload.credentialId);
-			const unlockResult = await credentialServices.unlockCredential.invoke(
-				JSON.stringify({ prf: prfOutput })
-			);
-			if (!unlockResult.ok) {
-				errorMessage = unlockResult.error.message;
-				return false;
-			}
-
-			const previewResult = await services.previewOnline.invoke(unlockResult.value);
-			if (!previewResult.ok) {
-				errorMessage = previewResult.error.message;
-				return false;
-			}
-
-			preview = previewResult.value;
-			previewSource = 'ONLINE';
-			htmlImportTermStartDate = null;
-			account = unlockResult.value.account;
-			password = unlockResult.value.password;
-			return true;
-		} catch (error) {
-			const message = error instanceof Error ? error.message : '设备验证失败';
-			errorMessage = message === 'WebAuthn verification was cancelled' ? '已取消设备验证' : message;
-			return false;
-		}
+		preview = result.preview;
+		previewSource = result.source;
+		htmlImportTermStartDate = null;
+		if (result.account) account = result.account;
+		if (result.password) password = result.password;
+		return true;
 	}
 
 	async function clearSavedCredential() {
 		clearMessages();
-		const result = await credentialServices.clearCredential.invoke();
+		const result = await coordinator.clearSavedCredential();
 		if (!result.ok) {
-			errorMessage = result.error.message;
+			errorMessage = result.errorMessage;
 			return false;
 		}
 		saveCredentials = false;
 		if (previewSource === 'ONLINE') {
 			clearPreview();
 		}
-		statusMessage = '已清除已保存凭据';
+		statusMessage = result.statusMessage;
 		return true;
 	}
 
 	function persistPreview() {
 		if (!preview || !previewSource) return false;
-		sessionStorage.setItem(PREVIEW_KEY, JSON.stringify(preview));
-		sessionStorage.setItem(PREVIEW_SOURCE_KEY, previewSource);
-		sessionStorage.setItem('chronos:import-mode', importMode);
-		if (htmlImportTermStartDate) {
-			sessionStorage.setItem('chronos:html-term-start', htmlImportTermStartDate);
-		} else {
-			sessionStorage.removeItem('chronos:html-term-start');
-		}
-		return true;
+		return coordinator.persistPreview({
+			preview,
+			previewSource,
+			importMode,
+			htmlImportTermStartDate
+		});
 	}
 
 	function loadPersistedPreview(): boolean {
-		const raw = sessionStorage.getItem(PREVIEW_KEY);
-		const source = sessionStorage.getItem(PREVIEW_SOURCE_KEY) as TransferImportSource | null;
-		if (!raw || !source) return false;
-		try {
-			preview = JSON.parse(raw) as Timetable;
-			previewSource = source;
-			importMode =
-				(sessionStorage.getItem('chronos:import-mode') as ImportMode | null) ?? ImportMode.AS_NEW;
-			htmlImportTermStartDate = sessionStorage.getItem('chronos:html-term-start');
-			return true;
-		} catch {
-			return false;
-		}
+		const snapshot = coordinator.loadPersistedPreview();
+		if (!snapshot) return false;
+		preview = snapshot.preview;
+		previewSource = snapshot.previewSource;
+		importMode = snapshot.importMode;
+		htmlImportTermStartDate = snapshot.htmlImportTermStartDate;
+		return true;
 	}
 
 	function clearPersistedPreview() {
-		sessionStorage.removeItem(PREVIEW_KEY);
-		sessionStorage.removeItem(PREVIEW_SOURCE_KEY);
-		sessionStorage.removeItem('chronos:import-mode');
-		sessionStorage.removeItem('chronos:html-term-start');
+		coordinator.clearPersistedPreview();
 	}
 
 	async function confirmImport() {
@@ -322,24 +224,14 @@ export function createTransferState(
 			return false;
 		}
 
-		let finalPreview = preview;
-		if (previewSource === 'HTML') {
-			if (!htmlImportTermStartDate) {
-				errorMessage = '请选择学期起始日期';
-				return false;
-			}
-			finalPreview = {
-				...preview,
-				academicConfig: {
-					...preview.academicConfig,
-					termStartDate: htmlImportTermStartDate
-				}
-			};
-		}
-
-		const result = await services.importTimetable.import(finalPreview, importMode);
+		const result = await coordinator.confirmImport(
+			preview,
+			previewSource,
+			importMode,
+			htmlImportTermStartDate
+		);
 		if (!result.ok) {
-			errorMessage = result.error.message;
+			errorMessage = result.errorMessage;
 			return false;
 		}
 
@@ -351,23 +243,13 @@ export function createTransferState(
 
 	async function exportToClipboard() {
 		clearMessages();
-		const result = await services.exportCurrent.invoke();
+		const result = await coordinator.exportToClipboard();
 		if (!result.ok) {
-			errorMessage = result.error.message;
+			errorMessage = result.errorMessage;
 			return false;
 		}
-		if (!result.value) {
-			errorMessage = '当前没有可导出的课表';
-			return false;
-		}
-		try {
-			await navigator.clipboard.writeText(result.value);
-			statusMessage = '已复制到剪贴板';
-			return true;
-		} catch {
-			errorMessage = '无法写入剪贴板，请检查浏览器权限';
-			return false;
-		}
+		statusMessage = result.statusMessage;
+		return true;
 	}
 
 	const state = $derived({

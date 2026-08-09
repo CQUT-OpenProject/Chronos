@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach, vi } from 'vite-plus/test';
 import { createTransferState } from './transfer-state.svelte';
 import type { TransferServices } from '$lib/client/transfer-services';
 import type { CredentialServices } from '$lib/client/credential-services';
+import type { SecureCredentialStore } from '$lib/domain/interfaces/secure-credential-store';
 
 describe('createTransferState', () => {
 	let mockStorage: Record<string, string> = {};
@@ -28,15 +29,9 @@ describe('createTransferState', () => {
 		} satisfies TransferServices;
 
 		const mockCredentialServices = {
-			secureCredentialStore: {} as unknown as CredentialServices['secureCredentialStore'],
-			observeSavedCredential: {
-				subscribe: () => ({ unsubscribe: () => {} })
-			} as unknown as CredentialServices['observeSavedCredential'],
-			prepareSave: {} as unknown as CredentialServices['prepareSave'],
-			saveCredential: {} as unknown as CredentialServices['saveCredential'],
-			prepareUnlock: {} as unknown as CredentialServices['prepareUnlock'],
-			unlockCredential: {} as unknown as CredentialServices['unlockCredential'],
-			clearCredential: {} as unknown as CredentialServices['clearCredential']
+			secureCredentialStore: {
+				subscribeSavedCredentialState: () => () => {}
+			} as unknown as SecureCredentialStore
 		} satisfies CredentialServices;
 
 		const controller = createTransferState(mockTransferServices, mockCredentialServices);
