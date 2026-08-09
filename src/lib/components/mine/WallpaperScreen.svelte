@@ -6,6 +6,7 @@
 		invokeCalculateAcademicWeek
 	} from '$lib/timetable/timetable-preview';
 	import { SystemTimeProvider } from '$lib/domain/services/time-provider';
+	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { LayersClearFill, PhotoLibraryFill } from '$lib/icons';
@@ -19,6 +20,8 @@
 	const timeProvider = new SystemTimeProvider();
 
 	const appState = $derived(shell.state.appState);
+	const hasWallpaper = $derived(shell.state.hasWallpaper);
+	const isDark = $derived(shell.state.isDark);
 	const timetable = $derived(appState.currentTimetable);
 	const today = $derived(timeProvider.today());
 	const academicWeek = $derived(invokeCalculateAcademicWeek(today, timetable?.academicConfig));
@@ -68,7 +71,7 @@
 		onchange={onFileChange}
 	/>
 
-	{#if shell.state.hasWallpaper && timetable && gridModel}
+	{#if hasWallpaper && timetable && gridModel}
 		<div
 			class="relative min-h-0 flex-1 overflow-hidden"
 			style:background-image={appState.wallpaperUri ? `url('${appState.wallpaperUri}')` : undefined}
@@ -82,7 +85,7 @@
 					{gridModel}
 					{courseDisplayModels}
 					hasWallpaper={true}
-					isDark={shell.state.isDark}
+					{isDark}
 					bottomContentPadding="0px"
 				/>
 			</div>
@@ -95,16 +98,18 @@
 		</p>
 	{/if}
 
-	<div class="bottom-bar gap-3">
-		{#if shell.state.hasWallpaper}
-			<Button variant="outlined" class="w-full flex-1" onclick={clearWallpaper}>
-				<LayersClearFill class="size-5" />
-				清除壁纸
+	<ActionBottomBar>
+		<div class="flex w-full gap-3">
+			{#if hasWallpaper}
+				<Button variant="outlined" class="w-full flex-1" onclick={clearWallpaper}>
+					<LayersClearFill class="size-5" />
+					清除壁纸
+				</Button>
+			{/if}
+			<Button variant="filled" class="w-full flex-1" onclick={onPickWallpaper}>
+				<PhotoLibraryFill class="size-5" />
+				{hasWallpaper ? '重新选择' : '选择壁纸'}
 			</Button>
-		{/if}
-		<Button variant="filled" class="w-full flex-1" onclick={onPickWallpaper}>
-			<PhotoLibraryFill class="size-5" />
-			{shell.state.hasWallpaper ? '重新选择' : '选择壁纸'}
-		</Button>
-	</div>
+		</div>
+	</ActionBottomBar>
 </div>

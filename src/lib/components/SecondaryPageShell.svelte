@@ -37,9 +37,9 @@
 		{/snippet}
 	</TopAppBar>
 	<main
-		class="mx-auto min-h-0 w-full max-w-lg flex-1 {flush
-			? 'flex flex-col overflow-hidden p-0'
-			: 'overflow-y-auto p-4'}"
+		class="min-h-0 w-full flex-1 {flush
+			? 'flex flex-col overflow-hidden'
+			: 'mx-auto max-w-lg overflow-y-auto p-4'}"
 	>
 		{@render children?.()}
 	</main>
