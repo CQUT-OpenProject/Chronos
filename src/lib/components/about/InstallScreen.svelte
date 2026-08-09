@@ -17,12 +17,17 @@
 	import HighlightRowList from '$lib/components/ui/HighlightRowList.svelte';
 
 	onMount(() => {
-		pwaInstallController.checkEnvironment();
+		void pwaInstallController.init();
 	});
 
 	async function handleInstallAction() {
 		if (pwaInstallController.isStandalone) {
 			snackbar('当前已成功安装为桌面应用');
+			return;
+		}
+
+		if (pwaInstallController.isInstalledLocally) {
+			pwaInstallController.openInApp();
 			return;
 		}
 
@@ -69,11 +74,27 @@
 		<Card variant="filled" class="text-center">
 			<p class="m3-title-small text-primary flex items-center justify-center gap-2 font-bold">
 				<CheckCircleFill class="h-5 w-5" />
-				<span>已成功安装 Chronos</span>
+				<span>Chronos 已安装</span>
 			</p>
 			<p class="m3-body-medium text-xs text-on-surface-variant">
-				你目前正在独立应用模式下运行，享受完整 PWA 体验。
+				你目前正在独立应用模式下运行，享受完整 PWA 体验
 			</p>
+		</Card>
+	{:else if pwaInstallController.isInstalledLocally}
+		<Card variant="outlined">
+			<div class="flex flex-col gap-4">
+				<p class="m3-title-small text-primary flex items-center justify-center gap-2 font-bold">
+					<CheckCircleFill class="h-5 w-5" />
+					<span>Chronos 已安装</span>
+				</p>
+				<p class="m3-body-medium text-center text-xs text-on-surface-variant">
+					检测到您已安装 Chronos，建议在独立应用窗口中打开
+				</p>
+				<Button variant="filled" class="w-full" onclick={() => pwaInstallController.openInApp()}>
+					<RocketLaunchFill class="size-5" />
+					<span>在应用中打开</span>
+				</Button>
+			</div>
 		</Card>
 	{:else if pwaInstallController.isMacSafari}
 		<!-- macOS Safari Guidance Card -->
@@ -155,13 +176,8 @@
 				<div class="rounded-xl bg-surface-container-high/60 p-3.5 text-on-surface-variant">
 					<p class="m3-body-large font-normal text-on-surface">提示：</p>
 					<p class="m3-body-medium text-xs">
-						{#if pwaInstallController.canPrompt}
-							点击按钮即可唤起系统原生 PWA 安装对话框。
-						{:else}
-							若点击按钮未弹出安装窗口，亦可点击 <strong class="text-on-surface"
-								>地址栏右侧的安装图标 ⊕</strong
-							>，或在菜单中选择 <strong class="text-on-surface">“安装 Chronos”</strong>。
-						{/if}
+						若点击按钮未弹出安装窗口，亦可点击地址栏右侧的安装图标 ⊕，或在菜单中选择「安装
+						Chronos」。
 					</p>
 				</div>
 			</div>

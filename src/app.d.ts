@@ -5,6 +5,10 @@ interface BeforeInstallPromptEvent extends Event {
 	userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 }
 
+interface Window {
+	__chronosInstallPrompt?: BeforeInstallPromptEvent | null;
+}
+
 declare module 'virtual:pwa-info' {
 	export interface PwaInfo {
 		pwaInDevEnvironment: boolean;

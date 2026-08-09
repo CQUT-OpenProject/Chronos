@@ -8,6 +8,13 @@
 		<meta name="theme-color" content="#0068B7" />
 
 		<meta name="text-scale" content="scale" />
+		<script>
+			window.__chronosInstallPrompt = null;
+			window.addEventListener('beforeinstallprompt', function (event) {
+				event.preventDefault();
+				window.__chronosInstallPrompt = event;
+			});
+		</script>
 		%sveltekit.head%
 	</head>
 

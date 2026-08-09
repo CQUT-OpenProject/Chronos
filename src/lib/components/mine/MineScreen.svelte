@@ -100,7 +100,9 @@
 					title: '安装 Chronos',
 					supporting: pwaInstallController.isStandalone
 						? '已安装为桌面应用'
-						: '添加到主屏幕，快捷打开应用',
+						: pwaInstallController.isInstalledLocally
+							? '已安装，可在应用中打开'
+							: '添加到主屏幕，快捷打开应用',
 					href: resolve('/about/install'),
 					icon: AddHomeFill,
 					iconTone: 'primary',

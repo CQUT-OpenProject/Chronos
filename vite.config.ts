@@ -265,6 +265,10 @@ export default defineConfig({
 				background_color: '#F7FAFC',
 				display: 'standalone',
 				start_url: '/',
+				id: '/',
+				launch_handler: {
+					client_mode: 'focus-existing'
+				},
 				icons: [
 					{ src: '/pwa-192.png', sizes: '192x192', type: 'image/png' },
 					{

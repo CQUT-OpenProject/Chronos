@@ -1,14 +1,33 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { IosShareFill } from '$lib/icons';
 
 	onMount(() => {
-		return pwaInstallController.init();
+		void pwaInstallController.init();
 	});
+
+	function goToInstallPage() {
+		pwaInstallController.dismiss();
+		void goto(resolve('/about/install'));
+	}
 </script>
+
+<!-- Already installed: open in standalone app -->
+<Dialog
+	bind:open={pwaInstallController.openInAppDialogOpen}
+	title="Chronos 已安装"
+	description="检测到您已安装 Chronos，建议在独立应用窗口中打开以获得完整体验。"
+>
+	{#snippet footer()}
+		<Button variant="text" onclick={() => pwaInstallController.dismiss()}>继续在浏览器</Button>
+		<Button variant="filled" onclick={() => pwaInstallController.openInApp()}>在应用中打开</Button>
+	{/snippet}
+</Dialog>
 
 <!-- Android / Desktop Install Dialog -->
 <Dialog
@@ -18,7 +37,7 @@
 >
 	{#snippet footer()}
 		<Button variant="text" onclick={() => pwaInstallController.dismiss()}>稍后</Button>
-		<Button variant="filled" onclick={() => pwaInstallController.install()}>安装</Button>
+		<Button variant="filled" onclick={goToInstallPage}>安装</Button>
 	{/snippet}
 </Dialog>
 
@@ -50,6 +69,6 @@
 		</ol>
 	</div>
 	{#snippet footer()}
-		<Button variant="filled" onclick={() => pwaInstallController.dismiss()}>知道了</Button>
+		<Button variant="filled" onclick={goToInstallPage}>查看安装指引</Button>
 	{/snippet}
 </Dialog>

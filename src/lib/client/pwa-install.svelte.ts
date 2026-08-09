@@ -1,20 +1,36 @@
-const SNOOZE_KEY = 'chronos:pwa-install-snooze';
-const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+
+const INSTALLED_KEY = 'chronos:pwa-installed';
+const OPEN_IN_APP_HINT = '如未自动跳转，请从程序坞、启动台或开始菜单手动打开 Chronos。';
 
 export class PWAInstallController {
 	deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
 	installDialogOpen = $state(false);
+	openInAppDialogOpen = $state(false);
 	iosGuideOpen = $state(false);
 	isStandalone = $state(false);
+	isInstalledLocally = $state(false);
 	isIOS = $state(false);
 	isMacSafari = $state(false);
 
 	canPrompt = $derived(this.deferredPrompt !== null);
 
+	private installListenerAttached = false;
+	private dialogScheduled = false;
+
 	constructor() {
 		if (typeof window !== 'undefined') {
 			this.checkEnvironment();
+			this.restoreDeferredPrompt();
+			this.attachInstallListener();
 		}
+	}
+
+	private restoreDeferredPrompt() {
+		const stored = window.__chronosInstallPrompt;
+		if (!stored) return;
+
+		this.deferredPrompt = stored;
 	}
 
 	checkEnvironment() {
@@ -24,6 +40,11 @@ export class PWAInstallController {
 			window.matchMedia('(display-mode: standalone)').matches ||
 			// @ts-expect-error iOS Safari
 			window.navigator.standalone === true;
+
+		if (this.isStandalone) {
+			localStorage.setItem(INSTALLED_KEY, '1');
+			this.isInstalledLocally = true;
+		}
 
 		const ua = window.navigator.userAgent;
 		const navData = window.navigator as unknown as {
@@ -57,28 +78,85 @@ export class PWAInstallController {
 		this.isMacSafari = isMac && isSafari;
 	}
 
-	init() {
+	private attachInstallListener() {
+		if (this.installListenerAttached) return;
+		this.installListenerAttached = true;
+
+		const onBeforeInstall = (event: Event) => {
+			event.preventDefault();
+			const prompt = event as BeforeInstallPromptEvent;
+			window.__chronosInstallPrompt = prompt;
+			this.deferredPrompt = prompt;
+			this.tryScheduleInstallDialog();
+		};
+
+		window.addEventListener('beforeinstallprompt', onBeforeInstall);
+		window.addEventListener('appinstalled', () => {
+			localStorage.setItem(INSTALLED_KEY, '1');
+			this.isInstalledLocally = true;
+		});
+	}
+
+	private async detectInstalledLocally() {
+		if (this.isStandalone) return;
+
+		if (localStorage.getItem(INSTALLED_KEY) === '1') {
+			this.isInstalledLocally = true;
+			return;
+		}
+
+		try {
+			const getInstalled = (
+				navigator as Navigator & { getInstalledRelatedApps?: () => Promise<unknown[]> }
+			).getInstalledRelatedApps;
+			if (!getInstalled) return;
+
+			const apps = await getInstalled.call(navigator);
+			if (apps.length > 0) {
+				this.isInstalledLocally = true;
+				localStorage.setItem(INSTALLED_KEY, '1');
+			}
+		} catch {
+			// API unavailable or denied
+		}
+	}
+
+	private scheduleDialog() {
+		if (this.dialogScheduled || this.isStandalone) return;
+		this.dialogScheduled = true;
+
+		setTimeout(() => {
+			if (this.isStandalone) return;
+
+			if (this.isInstalledLocally) {
+				this.openInAppDialogOpen = true;
+			} else if (this.isIOS) {
+				this.iosGuideOpen = true;
+			} else {
+				this.installDialogOpen = true;
+			}
+		}, 3000);
+	}
+
+	private tryScheduleInstallDialog() {
+		if (this.isInstalledLocally) return;
+		this.scheduleDialog();
+	}
+
+	async init() {
 		if (typeof window === 'undefined') return;
 
 		this.checkEnvironment();
 		if (this.isStandalone) return;
 
-		const onBeforeInstall = (event: Event) => {
-			event.preventDefault();
-			this.deferredPrompt = event as BeforeInstallPromptEvent;
+		await this.detectInstalledLocally();
 
-			const snoozedUntil = Number(localStorage.getItem(SNOOZE_KEY) ?? '0');
-			if (Date.now() >= snoozedUntil) {
-				setTimeout(() => {
-					if (!this.isStandalone && this.deferredPrompt) {
-						this.installDialogOpen = true;
-					}
-				}, 3000);
-			}
-		};
+		if (this.isInstalledLocally) {
+			this.scheduleDialog();
+			return;
+		}
 
-		window.addEventListener('beforeinstallprompt', onBeforeInstall);
-		return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+		this.tryScheduleInstallDialog();
 	}
 
 	async install(): Promise<boolean> {
@@ -89,14 +167,24 @@ export class PWAInstallController {
 		if (choice.outcome === 'accepted') {
 			this.installDialogOpen = false;
 			this.deferredPrompt = null;
+			window.__chronosInstallPrompt = null;
+			localStorage.setItem(INSTALLED_KEY, '1');
+			this.isInstalledLocally = true;
 			return true;
 		}
 		return false;
 	}
 
+	openInApp() {
+		this.openInAppDialogOpen = false;
+		const target = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+		window.open(target, '_blank', 'noopener,noreferrer');
+		snackbar(OPEN_IN_APP_HINT);
+	}
+
 	dismiss() {
-		localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_MS));
 		this.installDialogOpen = false;
+		this.openInAppDialogOpen = false;
 		this.iosGuideOpen = false;
 	}
 }
