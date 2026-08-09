@@ -224,20 +224,19 @@
 		expandedSlots = new Set([...expandedSlots, key]);
 	}
 
-	function bodyScrollAction(node: HTMLDivElement) {
-		scrollContainer = node;
-		bodyViewportHeight = node.clientHeight;
+	const bodyScrollAttach: Attachment = (node) => {
+		const element = node as HTMLDivElement;
+		scrollContainer = element;
+		bodyViewportHeight = element.clientHeight;
 		const observer = new ResizeObserver(() => {
-			bodyViewportHeight = node.clientHeight;
+			bodyViewportHeight = element.clientHeight;
 		});
-		observer.observe(node);
-		return {
-			destroy() {
-				observer.disconnect();
-				if (scrollContainer === node) scrollContainer = undefined;
-			}
+		observer.observe(element);
+		return () => {
+			observer.disconnect();
+			if (scrollContainer === element) scrollContainer = undefined;
 		};
-	}
+	};
 
 	const gridBodyWidthAttach: Attachment = (node) => {
 		const update = () => {
@@ -290,7 +289,7 @@
 		</div>
 
 		<div
-			use:bodyScrollAction
+			{@attach bodyScrollAttach}
 			class="min-h-0 flex-1 overflow-y-auto"
 			style:padding-bottom={bottomContentPadding}
 		>
