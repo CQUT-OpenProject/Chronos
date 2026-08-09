@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Radio from '$lib/components/ui/Radio.svelte';
+	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 
 	let {
 		shell
@@ -18,7 +19,7 @@
 	let deleteDialogOpen = $state(false);
 
 	async function handleSwitch(id: string) {
-		await shell.services.switchTimetable.invoke(id);
+		await shell.services.preferences.setCurrentTimetableId(id);
 	}
 
 	async function confirmDelete() {
@@ -28,45 +29,43 @@
 	}
 </script>
 
-<div class="flex h-full min-h-0 flex-1 flex-col">
-	<div class="flex-1 overflow-y-auto p-4">
-		<div class="flex flex-col gap-3">
-			<h3 class="m3-title-medium px-1 font-semibold text-on-surface">我的课表</h3>
+{#snippet deleteFooter()}
+	<Button
+		variant="danger"
+		class="w-full"
+		disabled={appState.timetables.length <= 1}
+		onclick={() => (deleteDialogOpen = true)}
+	>
+		删除课表
+	</Button>
+{/snippet}
 
-			<div class="flex flex-col gap-2.5">
-				{#each appState.timetables as timetable (timetable.id)}
-					{@const isActive = appState.currentTimetableId === timetable.id}
-					<button
-						type="button"
-						class="flex min-h-[56px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {isActive
-							? 'border-brand bg-primary-container/30 shadow-xs dark:border-soft-blue'
-							: 'border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
-						onclick={() => handleSwitch(timetable.id)}
-					>
-						<Radio name="current-timetable" checked={isActive} />
-						<div class="flex flex-col justify-center">
-							<span class="m3-body-large font-medium text-on-surface">{timetable.name}</span>
-							<span class="m3-body-small mt-0.5 text-on-surface-variant"
-								>{timetable.courseCount} 门课程</span
-							>
-						</div>
-					</button>
-				{/each}
-			</div>
+<FormScreenLayout footer={deleteFooter}>
+	<div class="flex flex-col gap-3">
+		<h3 class="m3-title-medium px-1 font-semibold text-on-surface">我的课表</h3>
+
+		<div class="flex flex-col gap-2.5">
+			{#each appState.timetables as timetable (timetable.id)}
+				{@const isActive = appState.currentTimetableId === timetable.id}
+				<button
+					type="button"
+					class="flex min-h-[56px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {isActive
+						? 'border-brand bg-primary-container/30 shadow-xs dark:border-soft-blue'
+						: 'border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
+					onclick={() => handleSwitch(timetable.id)}
+				>
+					<Radio name="current-timetable" checked={isActive} />
+					<div class="flex flex-col justify-center">
+						<span class="m3-body-large font-medium text-on-surface">{timetable.name}</span>
+						<span class="m3-body-small mt-0.5 text-on-surface-variant"
+							>{timetable.courseCount} 门课程</span
+						>
+					</div>
+				</button>
+			{/each}
 		</div>
 	</div>
-
-	<div class="bottom-bar">
-		<Button
-			variant="danger"
-			class="w-full"
-			disabled={appState.timetables.length <= 1}
-			onclick={() => (deleteDialogOpen = true)}
-		>
-			删除课表
-		</Button>
-	</div>
-</div>
+</FormScreenLayout>
 
 <Dialog
 	bind:open={deleteDialogOpen}

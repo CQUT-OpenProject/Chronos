@@ -3,7 +3,10 @@ import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
 import type { RemoteTimetableSource } from '$lib/domain/interfaces/remote-timetable-source';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import { encryptCasPassword } from './cqut-cas-password-encryptor';
+import {
+	createCqutCasPasswordEncryptor,
+	type CasPasswordEncryptor
+} from './cas-password-encryptor';
 
 interface PreviewApiResponse {
 	ok: true;
@@ -19,6 +22,10 @@ interface PreviewApiErrorResponse {
 }
 
 export class ApiRemoteTimetableSource implements RemoteTimetableSource {
+	constructor(
+		private readonly passwordEncryptor: CasPasswordEncryptor = createCqutCasPasswordEncryptor()
+	) {}
+
 	async fetchSchedule(
 		authSnapshot: AuthSnapshot,
 		weekNum?: string | null,
@@ -32,7 +39,7 @@ export class ApiRemoteTimetableSource implements RemoteTimetableSource {
 
 		let encryptedPassword: string;
 		try {
-			encryptedPassword = encryptCasPassword(password);
+			encryptedPassword = this.passwordEncryptor.encrypt(password);
 		} catch {
 			return failure(AppError.security('密码加密失败'));
 		}

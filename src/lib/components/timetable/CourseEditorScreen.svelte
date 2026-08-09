@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import CourseEditorForm from '$lib/components/timetable/CourseEditorForm.svelte';
+	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 
 	let { editor }: { editor: CourseEditorController } = $props();
 
@@ -15,22 +16,18 @@
 </script>
 
 {#if editor.draft}
-	<div class="flex h-full min-h-0 flex-1 flex-col">
-		<div class="flex-1 overflow-y-auto p-4">
-			<CourseEditorForm
-				draft={editor.draft}
-				maxPeriods={editor.timetable?.academicConfig.periodTimes.length ?? 10}
-			/>
-		</div>
+	{#snippet deleteFooter()}
+		<Button variant="danger" class="w-full" onclick={() => (deleteDialogOpen = true)}>
+			删除课程
+		</Button>
+	{/snippet}
 
-		{#if editor.draft.id}
-			<div class="bottom-bar">
-				<Button variant="danger" class="w-full" onclick={() => (deleteDialogOpen = true)}>
-					删除课程
-				</Button>
-			</div>
-		{/if}
-	</div>
+	<FormScreenLayout footer={editor.draft.id ? deleteFooter : undefined}>
+		<CourseEditorForm
+			draft={editor.draft}
+			maxPeriods={editor.timetable?.academicConfig.periodTimes.length ?? 10}
+		/>
+	</FormScreenLayout>
 
 	{#if editor.draft.id}
 		<Dialog bind:open={deleteDialogOpen} title="删除课程？" description="删除后无法恢复。">
