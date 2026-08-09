@@ -11,6 +11,6 @@ export class ExportCurrentTimetableUseCase {
 	async invoke(): Promise<AppResult<string | null>> {
 		const timetable = (await this.repository.getAppStateSnapshot()).currentTimetable;
 		if (!timetable) return success(null);
-		return this.shareLinkCodec.encodeClipboardText(timetable);
+		return await this.shareLinkCodec.encodeClipboardText(timetable);
 	}
 }

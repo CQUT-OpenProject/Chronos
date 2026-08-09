@@ -18,7 +18,7 @@
 		const timetable = snapshot.currentTimetable;
 		currentTimetableName = timetable?.name ?? null;
 		longLinkWarning = timetable
-			? shareLinkCodec.estimatePayloadLength(timetable) > SHARE_LINK_WARNING_LENGTH
+			? (await shareLinkCodec.estimatePayloadLength(timetable)) > SHARE_LINK_WARNING_LENGTH
 			: false;
 	});
 </script>

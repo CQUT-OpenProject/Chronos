@@ -46,7 +46,7 @@ describe('createTransferImportCoordinator', () => {
 	});
 
 	it('reads clipboard and previews share link text', async () => {
-		const invoke = vi.fn().mockReturnValue(success({ name: 'From Share Link' }));
+		const invoke = vi.fn().mockResolvedValue(success({ name: 'From Share Link' }));
 		const mockStorage: Record<string, string> = {};
 
 		const coordinator = createTransferImportCoordinator({

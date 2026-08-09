@@ -1,5 +1,4 @@
-import { deflateSync, inflateSync } from 'fflate';
-import { describe, expect, it } from 'vite-plus/test';
+import { beforeAll, describe, expect, it } from 'vite-plus/test';
 import type { Course } from '$lib/models/course';
 import { TimetableImportSource, createTimetable } from '$lib/models/timetable';
 import { bitmaskToWeeks, weeksToBitmask } from './week-bitmask';
@@ -16,6 +15,11 @@ import {
 	formatShareClipboardText,
 	SHARE_LINK_CORRUPTED_MESSAGE
 } from './chronos-share-link-codec';
+import {
+	brotliCompressShare,
+	brotliDecompressShare,
+	ensureShareLinkBrotliReady
+} from './share-link-brotli';
 
 describe('week-bitmask', () => {
 	it('round-trips contiguous and sparse weeks', () => {
@@ -147,25 +151,29 @@ describe('chronos-share-binary', () => {
 });
 
 describe('chronos-share-link-codec', () => {
-	it('round-trips share payload and link', () => {
+	beforeAll(async () => {
+		await ensureShareLinkBrotliReady();
+	});
+
+	it('round-trips share payload and link', async () => {
 		const timetable = sampleTimetable();
-		const payload = encodeSharePayload(timetable);
+		const payload = await encodeSharePayload(timetable);
 		expect(payload.startsWith('1.')).toBe(true);
 
-		const decoded = decodeSharePayload(payload);
+		const decoded = await decodeSharePayload(payload);
 		expect(decoded.ok).toBe(true);
 		if (!decoded.ok) return;
 		expect(decoded.value.courses[0]?.name).toBe('编译原理');
 
-		const link = encodeShareLink(timetable, 'https://chronos.test');
+		const link = await encodeShareLink(timetable, 'https://chronos.test');
 		expect(link).toBe(`https://chronos.test/s#${payload}`);
 	});
 
-	it('rejects invalid versions and truncated payloads', () => {
-		expect(decodeSharePayload('2.abcd').ok).toBe(false);
-		expect(decodeSharePayload('1!!!').ok).toBe(false);
+	it('rejects invalid versions and truncated payloads', async () => {
+		expect((await decodeSharePayload('2.abcd')).ok).toBe(false);
+		expect((await decodeSharePayload('1!!!')).ok).toBe(false);
 
-		const payload = encodeSharePayload(sampleTimetable());
+		const payload = await encodeSharePayload(sampleTimetable());
 		const mutations = [
 			payload.slice(0, -1),
 			payload.slice(0, -3),
@@ -176,17 +184,17 @@ describe('chronos-share-link-codec', () => {
 		];
 
 		for (const mutated of mutations) {
-			expect(decodeSharePayload(mutated).ok).toBe(false);
+			expect((await decodeSharePayload(mutated)).ok).toBe(false);
 		}
 	});
 
-	it('rejects checksum mismatches with a clear message', () => {
-		const payload = encodeSharePayload(sampleTimetable());
+	it('rejects checksum mismatches with a clear message', async () => {
+		const payload = await encodeSharePayload(sampleTimetable());
 		const compressed = base64UrlToTestBytes(payload.slice(2));
-		const inflated = inflateSync(compressed);
+		const inflated = brotliDecompressShare(compressed);
 		inflated[inflated.length - 1]! ^= 0x01;
-		const tampered = `1.${bytesToTestBase64Url(deflateSync(inflated, { level: 9 }))}`;
-		const decoded = decodeSharePayload(tampered);
+		const tampered = `1.${bytesToTestBase64Url(brotliCompressShare(inflated))}`;
+		const decoded = await decodeSharePayload(tampered);
 
 		expect(decoded.ok).toBe(false);
 		if (decoded.ok) return;
@@ -229,14 +237,14 @@ describe('chronos-share-link-codec', () => {
 		expect(formatShareClipboardText('', link)).toContain('「未命名课表」');
 	});
 
-	it('keeps 15-course payload under 475 characters', () => {
+	it('keeps 15-course payload under 475 characters', async () => {
 		const timetable = createLargeTimetable(15);
-		const payload = encodeSharePayload(timetable);
-		expect(payload.length).toBeLessThan(475);
-		expect(estimateShareLinkLength(timetable)).toBe(payload.length);
+		const payload = await encodeSharePayload(timetable);
+		expect(payload.length).toBeLessThan(410);
+		expect(await estimateShareLinkLength(timetable)).toBe(payload.length);
 	});
 
-	it('round-trips CQUT sparse week patterns from production import', () => {
+	it('round-trips CQUT sparse week patterns from production import', async () => {
 		const timetable = createTimetable({
 			id: 'cqut-sparse',
 			name: '知行理工',
@@ -274,7 +282,7 @@ describe('chronos-share-link-codec', () => {
 			importMetadata: { source: TimetableImportSource.SHARED_JSON }
 		});
 
-		const decoded = decodeSharePayload(encodeSharePayload(timetable));
+		const decoded = await decodeSharePayload(await encodeSharePayload(timetable));
 		expect(decoded.ok).toBe(true);
 		if (!decoded.ok) return;
 		expect(decoded.value.courses).toHaveLength(3);
@@ -287,11 +295,11 @@ describe('chronos-share-link-codec', () => {
 		expect(byName['形势与政策5']?.teacher).toBe('董璇');
 	});
 
-	it('keeps 25-course CQUT payload under 670 characters', () => {
+	it('keeps 25-course CQUT payload under 670 characters', async () => {
 		const timetable = createCqutLargeTimetable();
-		const payload = encodeSharePayload(timetable);
-		expect(payload.length).toBeLessThan(675);
-		const decoded = decodeSharePayload(payload);
+		const payload = await encodeSharePayload(timetable);
+		expect(payload.length).toBeLessThan(590);
+		const decoded = await decodeSharePayload(payload);
 		expect(decoded.ok).toBe(true);
 		if (!decoded.ok) return;
 		expect(decoded.value.courses).toHaveLength(25);

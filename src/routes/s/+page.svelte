@@ -16,30 +16,32 @@
 	onMount(() => {
 		if (!browser) return;
 
-		const payload = extractSharePayloadFromLocation(window.location);
+		void (async () => {
+			const payload = extractSharePayloadFromLocation(window.location);
 
-		if (!payload) {
-			status = 'error';
-			snackbar('链接中未找到课表数据');
-			return;
-		}
+			if (!payload) {
+				status = 'error';
+				snackbar('链接中未找到课表数据');
+				return;
+			}
 
-		const result = decodeSharePayload(payload);
-		if (!result.ok) {
-			status = 'error';
-			snackbar(result.error.message);
-			return;
-		}
+			const result = await decodeSharePayload(payload);
+			if (!result.ok) {
+				status = 'error';
+				snackbar(result.error.message);
+				return;
+			}
 
-		createSessionPreviewPersistence().save({
-			preview: result.value,
-			previewSource: 'SHARE_LINK',
-			importMode: ImportMode.AS_NEW,
-			htmlImportTermStartDate: null
-		});
+			createSessionPreviewPersistence().save({
+				preview: result.value,
+				previewSource: 'SHARE_LINK',
+				importMode: ImportMode.AS_NEW,
+				htmlImportTermStartDate: null
+			});
 
-		window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
-		goto(resolve('/transfer/import/confirm'));
+			window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
+			goto(resolve('/transfer/import/confirm'));
+		})();
 	});
 </script>
 

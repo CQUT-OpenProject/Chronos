@@ -1,4 +1,3 @@
-import { deflateSync, inflateSync } from 'fflate';
 import type { Timetable } from '$lib/models/timetable';
 import { normalizeTimetableName } from '$lib/models/timetable';
 import { AppError } from '$lib/domain/result/app-error';
@@ -9,6 +8,11 @@ import {
 	ShareBinaryDecodeError
 } from './chronos-share-binary';
 import { appendCrc32, verifyAndStripCrc32 } from './crc32';
+import {
+	brotliCompressShare,
+	brotliDecompressShare,
+	ensureShareLinkBrotliReady
+} from './share-link-brotli';
 
 export const SHARE_LINK_VERSION = 1;
 export const SHARE_LINK_PREFIX = `${SHARE_LINK_VERSION}.`;
@@ -32,13 +36,15 @@ function base64UrlToBytes(value: string): Uint8Array {
 	return bytes;
 }
 
-export function encodeSharePayload(timetable: Timetable): string {
+export async function encodeSharePayload(timetable: Timetable): Promise<string> {
+	await ensureShareLinkBrotliReady();
 	const binary = appendCrc32(encodeTimetableToBinary(timetable));
-	const compressed = deflateSync(binary, { level: 9 });
+	const compressed = brotliCompressShare(binary);
 	return `${SHARE_LINK_PREFIX}${bytesToBase64Url(compressed)}`;
 }
 
-export function decodeSharePayload(payload: string): AppResult<Timetable> {
+export async function decodeSharePayload(payload: string): Promise<AppResult<Timetable>> {
+	await ensureShareLinkBrotliReady();
 	const normalized = payload.trim();
 	if (!normalized.startsWith(SHARE_LINK_PREFIX)) {
 		return failure(AppError.dataFormat('不支持的分享链接格式'));
@@ -47,7 +53,7 @@ export function decodeSharePayload(payload: string): AppResult<Timetable> {
 	try {
 		const encoded = normalized.slice(SHARE_LINK_PREFIX.length);
 		const compressed = base64UrlToBytes(encoded);
-		const binary = verifyAndStripCrc32(inflateSync(compressed));
+		const binary = verifyAndStripCrc32(brotliDecompressShare(compressed));
 		return success(decodeBinaryToTimetable(binary));
 	} catch (error) {
 		const message =
@@ -62,8 +68,8 @@ export function decodeSharePayload(payload: string): AppResult<Timetable> {
 	}
 }
 
-export function encodeShareLink(timetable: Timetable, origin = ''): string {
-	const payload = encodeSharePayload(timetable);
+export async function encodeShareLink(timetable: Timetable, origin = ''): Promise<string> {
+	const payload = await encodeSharePayload(timetable);
 	const base = origin || (typeof window !== 'undefined' ? window.location.origin : '');
 	return `${base}/s#${payload}`;
 }
@@ -73,8 +79,8 @@ export function formatShareClipboardText(timetableName: string, link: string): s
 	return `我分享了一张课表：「${name}」\n复制这段文本后，打开 Chronos，选择从【分享链接】方式导入\n${link}`;
 }
 
-export function estimateShareLinkLength(timetable: Timetable): number {
-	return encodeSharePayload(timetable).length;
+export async function estimateShareLinkLength(timetable: Timetable): Promise<number> {
+	return (await encodeSharePayload(timetable)).length;
 }
 
 function normalizeSharePayload(candidate: string): string | null {

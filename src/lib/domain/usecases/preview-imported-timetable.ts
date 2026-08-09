@@ -20,8 +20,8 @@ export class PreviewImportedTimetableUseCase {
 		);
 	}
 
-	invoke(content: string): AppResult<Timetable> {
-		const shareResult = this.shareLinkCodec.decodeFromText(content);
+	async invoke(content: string): Promise<AppResult<Timetable>> {
+		const shareResult = await this.shareLinkCodec.decodeFromText(content);
 		if (shareResult !== null) return shareResult;
 
 		return flatMapSync(this.educationalTimetableHtmlParser.parse(content), (timetable) => {

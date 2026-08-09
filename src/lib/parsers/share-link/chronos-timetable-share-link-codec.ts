@@ -11,22 +11,22 @@ import {
 } from './chronos-share-link-codec';
 
 export class ChronosTimetableShareLinkCodec implements TimetableShareLinkCodec {
-	decodeFromText(content: string): AppResult<Timetable> | null {
+	async decodeFromText(content: string): Promise<AppResult<Timetable> | null> {
 		const payload = extractSharePayloadFromText(content);
 		if (!payload) return null;
 		return decodeSharePayload(payload);
 	}
 
-	encodeClipboardText(timetable: Timetable, origin?: string): AppResult<string> {
+	async encodeClipboardText(timetable: Timetable, origin?: string): Promise<AppResult<string>> {
 		try {
-			const link = encodeShareLink(timetable, origin);
+			const link = await encodeShareLink(timetable, origin);
 			return success(formatShareClipboardText(timetable.name, link));
 		} catch {
 			return failure(AppError.dataFormat('课表导出失败'));
 		}
 	}
 
-	estimatePayloadLength(timetable: Timetable): number {
+	estimatePayloadLength(timetable: Timetable): Promise<number> {
 		return estimateShareLinkLength(timetable);
 	}
 }

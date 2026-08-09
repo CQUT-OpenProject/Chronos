@@ -8,6 +8,7 @@
 	import ServiceWorkerUpdatePrompt from '$lib/components/pwa/ServiceWorkerUpdatePrompt.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { initWebVitals } from '$lib/client/web-vitals';
+	import { ensureShareLinkBrotliReady } from '$lib/parsers/share-link/share-link-brotli';
 	import { setContext } from 'svelte';
 	import type { Pathname } from '$app/types';
 	import { page } from '$app/state';
@@ -55,6 +56,7 @@
 		shell.init();
 		timetableScreen.init(shell);
 		initWebVitals();
+		void ensureShareLinkBrotliReady();
 	});
 
 	$effect(() => {

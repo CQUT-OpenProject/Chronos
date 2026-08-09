@@ -3,7 +3,7 @@ import type { AppResult } from '../result/app-result';
 
 export interface TimetableShareLinkCodec {
 	/** Returns null when content is not a share link; otherwise decode result. */
-	decodeFromText(content: string): AppResult<Timetable> | null;
-	encodeClipboardText(timetable: Timetable, origin?: string): AppResult<string>;
-	estimatePayloadLength(timetable: Timetable): number;
+	decodeFromText(content: string): Promise<AppResult<Timetable> | null>;
+	encodeClipboardText(timetable: Timetable, origin?: string): Promise<AppResult<string>>;
+	estimatePayloadLength(timetable: Timetable): Promise<number>;
 }

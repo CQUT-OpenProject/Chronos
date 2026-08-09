@@ -71,7 +71,7 @@ export function createTransferImportCoordinator({
 	clipboard = createNavigatorClipboardGateway()
 }: TransferImportCoordinatorDeps) {
 	async function previewFromText(content: string): Promise<PreviewOutcome> {
-		const result = services.previewImported.invoke(content.trim());
+		const result = await services.previewImported.invoke(content.trim());
 		if (!result.ok) {
 			return { ok: false, errorMessage: result.error.message };
 		}
