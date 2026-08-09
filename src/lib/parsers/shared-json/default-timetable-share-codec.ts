@@ -12,6 +12,7 @@ import {
 } from '$lib/models/online-schedule-schema';
 import {
 	TimetableImportSource,
+	normalizeTimetableName,
 	type Timetable,
 	type TimetableImportMetadata
 } from '$lib/models/timetable';
@@ -29,6 +30,7 @@ import {
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
 import { coursePalette, normalizedCourseName } from '$lib/parsers/course-palette';
+import { consolidateCourses, sanitizeEventFields } from '$lib/parsers/import-course-utils';
 
 const ACADEMIC_YEAR_PATTERN = /(20\d{2})\D+(20\d{2})/;
 
@@ -48,7 +50,7 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 		try {
 			return success(parseOnlineSchedulePayload(json));
 		} catch {
-			return failure(AppError.dataFormat('在线课表 JSON 解析失败'));
+			return failure(AppError.dataFormat('分享链接解析失败'));
 		}
 	}
 
@@ -64,12 +66,15 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 		payload: OnlineSchedulePayload,
 		campusContext?: OnlineScheduleCampusContext
 	): AppResult<Timetable> {
-		const courses = payload.eventList
-			.map((event, index) => this.toCourseOrNull(event, index))
-			.filter((course): course is Course => course != null);
+		const yearTerm = payload.yearTerm.trim();
+		const courses = consolidateCourses(
+			payload.eventList
+				.map((event, index) => this.toCourseOrNull(event, index, yearTerm))
+				.filter((course): course is Course => course != null)
+		);
 
 		if (courses.length === 0) {
-			return failure(AppError.validation('JSON 中未找到可导入的课程数据'));
+			return failure(AppError.validation('分享链接中未找到可导入的课程数据'));
 		}
 
 		const now = this.timeProvider.currentTimeMillis();
@@ -103,7 +108,7 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 
 		return success({
 			id: 'online-import',
-			name: payload.yearTerm.trim() || '在线课表',
+			name: normalizeTimetableName(payload.yearTerm),
 			courses: [...courses].sort(
 				(left, right) =>
 					left.dayOfWeek - right.dayOfWeek ||
@@ -386,22 +391,27 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 		return { month, day };
 	}
 
-	private toCourseOrNull(event: OnlineScheduleEvent, index: number): Course | null {
-		const normalizedName = normalizedCourseName(event.eventName);
-		const dayOfWeek = this.toImportDayOfWeek(event.weekDay);
-		const startPeriod = Number.parseInt(event.sessionStart.trim(), 10);
+	private toCourseOrNull(
+		event: OnlineScheduleEvent,
+		index: number,
+		yearTerm: string
+	): Course | null {
+		const sanitized = sanitizeEventFields(event, yearTerm);
+		const normalizedName = normalizedCourseName(sanitized.eventName);
+		const dayOfWeek = this.toImportDayOfWeek(sanitized.weekDay);
+		const startPeriod = Number.parseInt(sanitized.sessionStart.trim(), 10);
 		if (!dayOfWeek || Number.isNaN(startPeriod) || !normalizedName) return null;
 
-		const duration = Number.parseInt(event.sessionLast.trim(), 10);
+		const duration = Number.parseInt(sanitized.sessionLast.trim(), 10);
 		const weeks = [
 			...new Set(
-				event.weekList
+				sanitized.weekList
 					.map((week) => Number.parseInt(week, 10))
 					.filter((week) => !Number.isNaN(week))
 			)
 		].sort((left, right) => left - right);
 		const [background, foreground] = coursePalette(normalizedName);
-		const sessionMax = event.sessionList
+		const sessionMax = sanitized.sessionList
 			.map((session) => Number.parseInt(session.trim(), 10))
 			.filter((session) => !Number.isNaN(session))
 			.reduce((max, session) => Math.max(max, session), Number.NEGATIVE_INFINITY);
@@ -412,17 +422,17 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 				: startPeriod;
 
 		return {
-			id: event.eventID.trim() || `online-course-${index + 1}`,
+			id: sanitized.eventID.trim() || `online-course-${index + 1}`,
 			name: normalizedName,
-			teacher: event.memberName.trim(),
-			location: event.address.trim(),
+			teacher: sanitized.memberName.trim(),
+			location: sanitized.address.trim(),
 			dayOfWeek,
 			startPeriod,
 			endPeriod: Math.max(startPeriod, endPeriod),
 			color: background,
 			textColor: foreground,
 			weeks,
-			remark: event.remark.trim()
+			remark: sanitized.remark.trim()
 		};
 	}
 
