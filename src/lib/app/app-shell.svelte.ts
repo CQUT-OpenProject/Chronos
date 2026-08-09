@@ -36,7 +36,7 @@ export function createAppShell() {
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
 
-		unsubscribe = getServices().observeAppState.subscribe((state) => {
+		unsubscribe = getServices().repository.subscribeAppState((state) => {
 			appState = state;
 			initialized = true;
 		});
@@ -50,11 +50,11 @@ export function createAppShell() {
 	}
 
 	async function setThemeMode(mode: ThemeMode) {
-		await getServices().setThemeMode.invoke(mode);
+		await getServices().preferences.setThemeMode(mode);
 	}
 
 	async function setWallpaper(uri: string | null) {
-		await getServices().setWallpaper.invoke(uri);
+		await getServices().preferences.setWallpaper(uri);
 	}
 
 	return {
