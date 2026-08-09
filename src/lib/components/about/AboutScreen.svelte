@@ -39,7 +39,7 @@
 <div class="m3-stack">
 	<AppHero title="Chronos" subtitle={PROJECT_INTRO} />
 
-	<MineSection title="版本信息" accentColor="primary">
+	<MineSection title="版本信息">
 		<MineRow
 			title="当前版本"
 			supporting={APP_VERSION}
@@ -56,7 +56,7 @@
 		/>
 	</MineSection>
 
-	<MineSection title="项目与反馈" accentColor="tertiary">
+	<MineSection title="项目与反馈">
 		<MineRow
 			title="开源许可"
 			href={resolve('/open-source-licenses')}

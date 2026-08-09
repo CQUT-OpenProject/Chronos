@@ -34,14 +34,12 @@
 
 	type SettingSection = {
 		title: string;
-		accentColor: MineIconTone;
 		items: SettingItem[];
 	};
 
 	const sections = $derived<SettingSection[]>([
 		{
 			title: '课表管理',
-			accentColor: 'primary',
 			items: [
 				{
 					id: 'manage-timetables',
@@ -55,7 +53,6 @@
 		},
 		{
 			title: '数据与分享',
-			accentColor: 'tertiary',
 			items: [
 				{
 					id: 'import',
@@ -77,7 +74,6 @@
 		},
 		{
 			title: '个性化',
-			accentColor: 'secondary',
 			items: [
 				{
 					id: 'theme',
@@ -99,7 +95,6 @@
 		},
 		{
 			title: '应用与支持',
-			accentColor: 'primary',
 			items: [
 				{
 					id: 'install',
@@ -146,7 +141,7 @@
 	});
 </script>
 
-<div class="m3-page mx-auto flex w-full max-w-lg flex-col gap-5 p-4 pt-3 pb-7">
+<div class="mx-auto flex w-full max-w-lg flex-col gap-5 p-4 pt-3 pb-7 text-on-surface">
 	<div class="flex flex-col gap-3">
 		<h1 class="m3-page-title m3-headline-medium font-medium">我的</h1>
 
@@ -174,7 +169,7 @@
 	</div>
 
 	{#each filteredSections as section (section.title)}
-		<MineSection title={section.title} accentColor={section.accentColor}>
+		<MineSection title={section.title}>
 			{#each section.items as item (item.id)}
 				<MineRow
 					title={item.title}

@@ -38,7 +38,7 @@
 		<LoadingIndicator />
 	</div>
 {:else if detailState.state.release}
-	<div class="m3-stack gap-5 py-2">
+	<div class="flex flex-col gap-5 py-2">
 		<AppHero title={detailState.state.release.name || detailState.state.release.tagName} />
 
 		<HighlightRowList>
@@ -54,7 +54,7 @@
 			/>
 		</HighlightRowList>
 
-		<MineSection title="更新日志" accentColor="primary">
+		<MineSection title="更新日志">
 			<div class="release-prose prose prose-sm max-w-none px-2 dark:prose-invert">
 				{@html htmlBody || '<p>此 Release 没有正文内容。</p>'}
 			</div>
@@ -72,7 +72,6 @@
 <style>
 	.release-prose :global(h2) {
 		margin: 0 0 0.75rem;
-		font-family: var(--m3-font);
 		font-size: 1rem;
 		line-height: 1.5;
 		font-weight: 500;

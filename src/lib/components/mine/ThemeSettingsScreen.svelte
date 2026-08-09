@@ -38,7 +38,7 @@
 	}
 </script>
 
-<MineSection title="主题模式" accentColor="primary">
+<MineSection title="主题模式">
 	{#each options as option (option.mode)}
 		{@const selected = themeMode === option.mode}
 		<MineRow

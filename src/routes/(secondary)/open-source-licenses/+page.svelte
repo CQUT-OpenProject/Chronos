@@ -7,7 +7,7 @@
 </script>
 
 <SecondaryPageShell title="开源许可" backHref="/about">
-	<MineSection title="许可证" accentColor="tertiary">
+	<MineSection title="许可证">
 		<MineRow
 			title="本项目许可证"
 			href={resolve('/open-source-licenses/project')}

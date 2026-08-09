@@ -45,7 +45,6 @@
 <style>
 	.developer-prose :global(h2) {
 		margin: 1.5rem 0 0.75rem;
-		font-family: var(--m3-font);
 		font-size: 1.125rem;
 		line-height: 1.5;
 		font-weight: 600;

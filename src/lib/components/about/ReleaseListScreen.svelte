@@ -30,7 +30,7 @@
 		<LoadingIndicator />
 	</div>
 {:else if listState.state.releases.length > 0}
-	<MineSection title="全部版本" accentColor="primary">
+	<MineSection title="全部版本">
 		{#each listState.state.releases as release (release.tagName)}
 			<MineRow
 				title={release.name || release.tagName}
