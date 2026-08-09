@@ -3,6 +3,7 @@
 	import type { TimetableGridModel } from '$lib/models/presentation';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
@@ -28,17 +29,17 @@
 	const isDark = $derived(shell.state.isDark);
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
 
-	let weekSliderVisible = $state(false);
-	let dragWeek = $state(0);
-	let headerContainerEl = $state<HTMLElement | null>(null);
+	const weekGesture = createWeekSliderGesture({
+		getStartWeek: () => startWeek,
+		getEndWeek: () => endWeek,
+		getDisplayedWeek: () => screenState.displayedWeek,
+		onWeekChange: (week) => screen.setDisplayedWeek(week),
+		onJumpToCurrentWeek: () => screen.jumpToCurrentWeek()
+	});
 
-	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
-	let activePointerId: number | null = null;
-	let startX = 0;
-	let startY = 0;
-	let isPressDragging = false;
-
-	const displayedWeekNumber = $derived(weekSliderVisible ? dragWeek : screenState.displayedWeek);
+	const displayedWeekNumber = $derived(
+		weekGesture.weekSliderVisible ? weekGesture.dragWeek : screenState.displayedWeek
+	);
 	const weekRangeText = $derived(
 		formatWeekRange(screenState.weekGridModels.get(screenState.displayedWeek))
 	);
@@ -47,116 +48,6 @@
 			? timetableDayLabel(dayOfWeekFromIso(screenState.today))
 			: ''
 	);
-
-	function onHeaderTap() {
-		if (weekSliderVisible) {
-			weekSliderVisible = false;
-			return;
-		}
-		screen.jumpToCurrentWeek();
-	}
-
-	function onPointerDown(e: PointerEvent) {
-		if (e.button !== 0 || startWeek >= endWeek) return;
-		activePointerId = e.pointerId;
-		startX = e.clientX;
-		startY = e.clientY;
-		isPressDragging = false;
-
-		const target = e.currentTarget as HTMLElement | null;
-		if (target?.setPointerCapture) {
-			try {
-				target.setPointerCapture(e.pointerId);
-			} catch {
-				// Ignore
-			}
-		}
-
-		if (longPressTimer) clearTimeout(longPressTimer);
-		longPressTimer = setTimeout(() => {
-			navigator.vibrate?.(10);
-			dragWeek = screenState.displayedWeek;
-			weekSliderVisible = true;
-			isPressDragging = true;
-			longPressTimer = null;
-		}, 350);
-	}
-
-	function releaseCapture(pointerId: number) {
-		if (headerContainerEl && headerContainerEl.hasPointerCapture(pointerId)) {
-			try {
-				headerContainerEl.releasePointerCapture(pointerId);
-			} catch {
-				// Ignore
-			}
-		}
-	}
-
-	function onWindowPointerMove(e: PointerEvent) {
-		if (activePointerId !== e.pointerId) return;
-
-		if (!isPressDragging) {
-			const dx = Math.abs(e.clientX - startX);
-			const dy = Math.abs(e.clientY - startY);
-			if (dx > 8 || dy > 8) {
-				if (longPressTimer) {
-					clearTimeout(longPressTimer);
-					longPressTimer = null;
-				}
-				releaseCapture(e.pointerId);
-			}
-			return;
-		}
-
-		e.preventDefault();
-		updateWeekFromClientX(e.clientX);
-	}
-
-	function onWindowPointerUp(e: PointerEvent) {
-		if (activePointerId !== e.pointerId) return;
-		releaseCapture(e.pointerId);
-		activePointerId = null;
-
-		if (longPressTimer) {
-			clearTimeout(longPressTimer);
-			longPressTimer = null;
-			onHeaderTap();
-		} else if (isPressDragging) {
-			isPressDragging = false;
-			weekSliderVisible = false;
-		}
-	}
-
-	function onWindowPointerCancel(e: PointerEvent) {
-		if (activePointerId !== e.pointerId) return;
-		releaseCapture(e.pointerId);
-		activePointerId = null;
-		if (longPressTimer) {
-			clearTimeout(longPressTimer);
-			longPressTimer = null;
-		}
-		if (isPressDragging) {
-			isPressDragging = false;
-			weekSliderVisible = false;
-		}
-	}
-
-	function updateWeekFromClientX(clientX: number) {
-		if (!headerContainerEl) return;
-		const rect = headerContainerEl.getBoundingClientRect();
-		if (rect.width <= 0) return;
-		const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-		const calculatedWeek = Math.round(startWeek + pct * (endWeek - startWeek));
-		const clampedWeek = Math.max(startWeek, Math.min(endWeek, calculatedWeek));
-		if (dragWeek !== clampedWeek) {
-			dragWeek = clampedWeek;
-			screen.setDisplayedWeek(clampedWeek);
-		}
-	}
-
-	function onSliderCommit() {
-		weekSliderVisible = false;
-	}
 
 	function formatWeekRange(gridModel: TimetableGridModel | undefined) {
 		const days = gridModel?.visibleDays ?? [];
@@ -184,33 +75,33 @@
 </script>
 
 <svelte:window
-	onpointermove={onWindowPointerMove}
-	onpointerup={onWindowPointerUp}
-	onpointercancel={onWindowPointerCancel}
+	onpointermove={weekGesture.onWindowPointerMove}
+	onpointerup={weekGesture.onWindowPointerUp}
+	onpointercancel={weekGesture.onWindowPointerCancel}
 />
 
 <div class="flex h-[calc(100dvh-var(--bottom-bar-height))] flex-col">
 	<TopAppBar class="shrink-0">
 		{#snippet titleSnippet()}
 			<div
-				bind:this={headerContainerEl}
+				bind:this={weekGesture.headerContainerEl}
 				class="flex min-h-16 min-w-0 flex-1 cursor-pointer touch-none flex-col justify-center select-none"
 				role="button"
 				tabindex="0"
-				onpointerdown={onPointerDown}
-				onkeydown={(event) => event.key === 'Enter' && onHeaderTap()}
+				onpointerdown={weekGesture.onPointerDown}
+				onkeydown={(event) => event.key === 'Enter' && weekGesture.onHeaderTap()}
 				oncontextmenu={(event) => event.preventDefault()}
 			>
 				<div class="flex h-7 items-center">
-					{#if weekSliderVisible && startWeek < endWeek}
+					{#if weekGesture.weekSliderVisible && startWeek < endWeek}
 						<Slider
-							bind:value={dragWeek}
+							bind:value={weekGesture.dragWeek}
 							min={startWeek}
 							max={endWeek}
 							step={1}
 							stops
 							onValueChange={(week) => screen.setDisplayedWeek(week)}
-							onValueCommit={onSliderCommit}
+							onValueCommit={weekGesture.onSliderCommit}
 						/>
 					{:else}
 						<p class="truncate text-xl leading-none font-bold">{weekRangeText}</p>
