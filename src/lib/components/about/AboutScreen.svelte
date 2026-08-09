@@ -27,14 +27,13 @@
 		<MineRow
 			title="当前版本"
 			supporting={APP_VERSION}
-			href={resolve('/about/version-release')}
+			href={resolve('/about/releases')}
 			icon={InfoFill}
 			iconTone="primary"
 		/>
 		<MineRow
 			title="构建时间"
 			supporting={formatBuildTime(BUILD_TIME)}
-			href={resolve('/about/releases')}
 			icon={ScheduleFill}
 			iconTone="secondary"
 		/>
