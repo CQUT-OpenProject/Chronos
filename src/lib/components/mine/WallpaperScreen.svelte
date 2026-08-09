@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import TimetableGrid from '$lib/components/timetable/TimetableGrid.svelte';
-	import { BuildVisibleTimetableGridUseCase } from '$lib/domain/usecases/build-visible-timetable-grid';
-	import { BuildTimetableCourseDisplayModelsUseCase } from '$lib/domain/usecases/build-timetable-course-display-models';
-	import { CalculateAcademicWeekUseCase } from '$lib/domain/usecases/calculate-academic-week';
+	import {
+		buildTimetableWeekPreview,
+		invokeCalculateAcademicWeek
+	} from '$lib/timetable/timetable-preview';
 	import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { LayersClearFill, PhotoLibraryFill } from '$lib/icons';
@@ -14,28 +15,17 @@
 		shell: AppShellController;
 	} = $props();
 
-	const buildVisibleTimetableGrid = new BuildVisibleTimetableGridUseCase();
-	const buildTimetableCourseDisplayModels = new BuildTimetableCourseDisplayModelsUseCase();
-	const calculateAcademicWeek = new CalculateAcademicWeekUseCase();
 	const timeProvider = new SystemTimeProvider();
 
 	const appState = $derived(shell.state.appState);
 	const timetable = $derived(appState.currentTimetable);
 	const today = $derived(timeProvider.today());
-	const academicWeek = $derived(calculateAcademicWeek.invoke(today, timetable?.academicConfig));
-	const gridModel = $derived(
-		timetable ? buildVisibleTimetableGrid.invoke(today, academicWeek, timetable) : null
+	const academicWeek = $derived(invokeCalculateAcademicWeek(today, timetable?.academicConfig));
+	const preview = $derived(
+		timetable ? buildTimetableWeekPreview(timetable, today, academicWeek) : null
 	);
-	const courseDisplayModels = $derived(
-		timetable && gridModel
-			? buildTimetableCourseDisplayModels.invoke(
-					timetable,
-					new Set(gridModel.visibleDays.map((day) => day.dayOfWeek)),
-					academicWeek,
-					today
-				)
-			: []
-	);
+	const gridModel = $derived(preview?.gridModel ?? null);
+	const courseDisplayModels = $derived(preview?.courseDisplayModels ?? []);
 
 	let fileInput: HTMLInputElement | undefined = $state();
 

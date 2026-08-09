@@ -2,6 +2,7 @@ import type { Course } from '$lib/models/course';
 import type { Timetable } from '$lib/models/timetable';
 import type { TimetableCourseDisplayModel } from '$lib/models/presentation';
 import { AcademicCalendarService } from '../services/academic-calendar';
+import { courseSlotKey } from '$lib/timetable/slot-key';
 
 export class BuildTimetableCourseDisplayModelsUseCase {
 	constructor(private readonly academicCalendarService = new AcademicCalendarService()) {}
@@ -27,7 +28,7 @@ export class BuildTimetableCourseDisplayModelsUseCase {
 			return currentEntries;
 		}
 
-		const occupiedSlots = new Set(currentEntries.map((entry) => slotKey(entry.course)));
+		const occupiedSlots = new Set(currentEntries.map((entry) => courseSlotKey(entry.course)));
 		const futureCandidatesBySlot = new Map<string, FutureCourseCandidate>();
 
 		for (const { course, originalIndex } of visibleCourses) {
@@ -38,7 +39,7 @@ export class BuildTimetableCourseDisplayModelsUseCase {
 				.sort((a, b) => a - b)[0];
 			if (nextWeek == null) continue;
 
-			const key = slotKey(course);
+			const key = courseSlotKey(course);
 			if (occupiedSlots.has(key)) continue;
 
 			const candidate: FutureCourseCandidate = {
@@ -78,11 +79,6 @@ interface FutureCourseCandidate {
 	nextOccurrenceDate: string;
 	originalIndex: number;
 }
-
-function slotKey(course: Course): string {
-	return `${course.dayOfWeek}:${course.startPeriod}:${course.endPeriod}`;
-}
-
 function isBetterFutureCandidate(
 	left: FutureCourseCandidate,
 	right: FutureCourseCandidate

@@ -1,5 +1,6 @@
 import type { Course } from '$lib/models/course';
 import type { TimetableCourseDisplayModel } from '$lib/models/presentation';
+import { periodSlotKey } from './slot-key';
 
 const DARK_SURFACE = '#17171a';
 const ON_SURFACE_DARK = '#f4f4f5';
@@ -115,7 +116,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 	const items: PlacedItem[] = [];
 
 	for (const group of buildSlotGroups(courseDisplayModels)) {
-		const key = slotKey(group.dayOfWeek, group.startPeriod, group.endPeriod);
+		const key = periodSlotKey(group.dayOfWeek, group.startPeriod, group.endPeriod);
 		const count = group.courses.length;
 		const columnIndex = visibleDayIndexMap.get(group.dayOfWeek) ?? 0;
 		const columnLeft = columnIndex * columnFraction;
@@ -213,11 +214,6 @@ function placeCourseCapsule(options: {
 		overlapCount
 	};
 }
-
-export function slotKey(day: number, start: number, end: number): string {
-	return `${day}-${start}-${end}`;
-}
-
 export function shouldShowLocationCampus(columnWidthPx: number, overlapCount = 1): boolean {
 	const overlap = Math.max(1, overlapCount);
 	const effective = Math.max(0, columnWidthPx) / overlap;

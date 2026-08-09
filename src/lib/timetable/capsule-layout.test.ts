@@ -6,9 +6,9 @@ import {
 	placeCapsules,
 	resolveCapsuleTypeScale,
 	resolveLocationBlockMetrics,
-	shouldShowLocationCampus,
-	slotKey
+	shouldShowLocationCampus
 } from './capsule-layout';
+import { periodSlotKey } from './slot-key';
 
 describe('resolveCapsuleTypeScale', () => {
 	it('uses the wide-column tier at effective >= 110', () => {
@@ -140,7 +140,7 @@ describe('placeCapsules', () => {
 
 	it('emits an overlap placeholder until the slot is expanded', () => {
 		const models = [courseModel('a', 1, 1, 2), courseModel('b', 1, 2, 3)];
-		const key = slotKey(1, 1, 3);
+		const key = periodSlotKey(1, 1, 3);
 
 		const collapsed = placeCapsules({
 			courseDisplayModels: models,
