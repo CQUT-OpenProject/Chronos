@@ -54,7 +54,7 @@
 			/>
 		</HighlightRowList>
 
-		<MineSection title="更新日志">
+		<MineSection title="更新内容">
 			<div class="release-prose prose prose-sm max-w-none px-2 dark:prose-invert">
 				{@html htmlBody || '<p>此 Release 没有正文内容。</p>'}
 			</div>

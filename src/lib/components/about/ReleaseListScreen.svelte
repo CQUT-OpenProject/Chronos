@@ -11,7 +11,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
-	import { DescriptionFill, InfoFill } from '$lib/icons';
+	import { InfoFill } from '$lib/icons';
 
 	let { listState = createReleaseListState() }: { listState?: ReleaseListStateController } =
 		$props();
@@ -36,8 +36,6 @@
 				title={release.name || release.tagName}
 				supporting={formatPublishedDate(release.publishedAt)}
 				href={resolve(releaseHref(release.tagName))}
-				icon={DescriptionFill}
-				iconTone="primary"
 			/>
 		{/each}
 	</MineSection>
