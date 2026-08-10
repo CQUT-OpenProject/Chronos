@@ -5,7 +5,6 @@
 	import { createAppShell } from '$lib/app/app-shell.svelte';
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
-	import ServiceWorkerUpdatePrompt from '$lib/components/pwa/ServiceWorkerUpdatePrompt.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { initWebVitals } from '$lib/client/web-vitals';
 	import { ensureShareLinkBrotliReady } from '$lib/parsers/share-link/share-link-brotli';
@@ -94,7 +93,6 @@
 {/if}
 
 <InstallPrompt />
-<ServiceWorkerUpdatePrompt />
 <Snackbar />
 
 <div style="display:none">

@@ -34,6 +34,7 @@
 	--color-inverse-on-surface: #f8fafc;
 	--color-inverse-primary: #9fc1f9;
 	--color-success: #15803d;
+	--color-warning: light-dark(#b45309, #fbbf24);
 	--spacing-tabbar: 5rem;
 }
 

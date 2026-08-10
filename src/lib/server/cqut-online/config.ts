@@ -2,11 +2,6 @@ export const UIS_BASE_URL = 'https://uis.cqut.edu.cn';
 export const CAS_APPLICATION_CODE = 'YF8A4013';
 export const TIMETABLE_BASE_URL = 'https://timetable-cfc.cqut.edu.cn';
 export const TIMETABLE_HOST = new URL(TIMETABLE_BASE_URL).hostname;
-export const UIS_HOST = new URL(UIS_BASE_URL).hostname;
-
-export const CAS_SERVICE_URL = `${TIMETABLE_BASE_URL}/api/auth/casLogin`;
-export const CAS_LOGIN_URL = `${UIS_BASE_URL}/center-auth-server/sso/doLogin`;
-export const CAS_TICKET_URL = `${UIS_BASE_URL}/center-auth-server/${CAS_APPLICATION_CODE}/cas/login`;
 export const WEEK_EVENTS_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/listWeekEvents`;
 export const GET_USER_INFO_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/getUserInfo`;
 export const GET_CAMPUS_TIME_INFO_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/getCampusTimeInfo`;

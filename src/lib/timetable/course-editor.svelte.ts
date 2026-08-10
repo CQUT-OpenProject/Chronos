@@ -23,20 +23,25 @@ export function createCourseEditor(
 	onDone: () => void
 ) {
 	let draft = $state<CourseDraft | null>(null);
+	let syncedCourseKey = $state<string | null>(null);
 
 	const timetable = $derived(shell.state.appState.currentTimetable);
 	const canSave = $derived(Boolean(draft?.name.trim()));
 
-	$effect(() => {
+	function syncFromRoute() {
 		const courseId = getCourseId();
+		const key = courseId ?? '__new__';
+		if (syncedCourseKey === key) return;
+		syncedCourseKey = key;
 		if (!courseId) {
 			draft = emptyDraft();
 			return;
 		}
-		const snapshot = shell.state.appState.currentTimetable;
-		const course = snapshot?.courses.find((entry) => entry.id === courseId);
+		const course = shell.state.appState.currentTimetable?.courses.find(
+			(entry) => entry.id === courseId
+		);
 		draft = course ? courseToDraft(course) : null;
-	});
+	}
 
 	async function save() {
 		if (!timetable || !draft) return;
@@ -61,7 +66,8 @@ export function createCourseEditor(
 			return canSave;
 		},
 		save,
-		deleteCourse
+		deleteCourse,
+		syncFromRoute
 	};
 }
 

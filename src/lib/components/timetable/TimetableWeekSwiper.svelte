@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { register } from 'swiper/element/bundle';
 	import type { SwiperContainer } from 'swiper/element/bundle';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
@@ -45,8 +46,9 @@
 
 	$effect(() => {
 		const el = swiperEl;
-		const initialSlideIndex = screenState.slideIndex;
 		if (!el) return;
+
+		const initialSlideIndex = untrack(() => screenState.slideIndex);
 
 		suppressPagerWeekSync = true;
 

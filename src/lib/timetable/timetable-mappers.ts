@@ -124,14 +124,6 @@ export function shouldShowAcademicWeekRangeSettings(importSource: TimetableImpor
 	return importSource !== TimetableImportSource.ONLINE_EDU;
 }
 
-export function replacePeriodAt(
-	periodTimes: PeriodTimeDraft[],
-	index: number,
-	item: PeriodTimeDraft
-): PeriodTimeDraft[] {
-	return periodTimes.map((current, currentIndex) => (currentIndex === index ? item : current));
-}
-
 export function removePeriodAt(periodTimes: PeriodTimeDraft[], index: number): PeriodTimeDraft[] {
 	return periodTimes.filter((_, currentIndex) => currentIndex !== index);
 }

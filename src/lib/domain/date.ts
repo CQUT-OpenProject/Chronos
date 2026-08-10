@@ -15,6 +15,11 @@ export function formatIsoDate(date: Date): string {
 	return `${year}-${month}-${day}`;
 }
 
+export function formatSlashDate(iso: string): string {
+	const [year, month, day] = iso.split('-');
+	return `${year}/${Number(month)}/${Number(day)}`;
+}
+
 export function previousOrSameMonday(date: Date): Date {
 	const result = new Date(date.getTime());
 	const day = result.getUTCDay();

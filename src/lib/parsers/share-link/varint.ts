@@ -11,15 +11,6 @@ export function writeVarint(value: number, target: number[]): void {
 	} while (remaining > 0);
 }
 
-export function varintByteLength(value: number): number {
-	if (value < 0) return 0;
-	if (value < 0x80) return 1;
-	if (value < 0x4000) return 2;
-	if (value < 0x200000) return 3;
-	if (value < 0x10000000) return 4;
-	return 5;
-}
-
 export class VarintReader {
 	private offset = 0;
 

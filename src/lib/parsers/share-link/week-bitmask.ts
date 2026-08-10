@@ -25,17 +25,3 @@ export function bitmaskToWeeks(mask: number): number[] {
 	}
 	return weeks;
 }
-
-export function writeWeekBitmask(mask: number, target: number[]): void {
-	target.push(mask & 0xff, (mask >>> 8) & 0xff, (mask >>> 16) & 0xff, (mask >>> 24) & 0xff);
-}
-
-export function readWeekBitmask(bytes: Uint8Array, offset: number): number {
-	return (
-		(bytes[offset]! |
-			(bytes[offset + 1]! << 8) |
-			(bytes[offset + 2]! << 16) |
-			(bytes[offset + 3]! << 24)) >>>
-		0
-	);
-}

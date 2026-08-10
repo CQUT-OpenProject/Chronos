@@ -30,11 +30,3 @@ export function flatMapSync<T, R>(
 	if (!result.ok) return result;
 	return transform(result.value);
 }
-
-export function fold<T, R>(
-	result: AppResult<T>,
-	onSuccess: (value: T) => R,
-	onFailure: (error: AppError) => R
-): R {
-	return result.ok ? onSuccess(result.value) : onFailure(result.error);
-}

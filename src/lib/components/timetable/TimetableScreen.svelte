@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatSlashDate } from '$lib/domain/date';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import type { TimetableGridModel } from '$lib/models/presentation';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
@@ -53,18 +54,13 @@
 		const days = gridModel?.visibleDays ?? [];
 		const first = days[0]?.date;
 		const last = days.at(-1)?.date;
-		if (!first || !last) return formatIsoDate(screenState.today);
+		if (!first || !last) return formatSlashDate(screenState.today);
 		return `${formatShortDate(first)} - ${formatShortDate(last)}`;
 	}
 
 	function formatShortDate(iso: string) {
 		const [, month, day] = iso.split('-');
 		return `${Number(month)}/${Number(day)}`;
-	}
-
-	function formatIsoDate(iso: string) {
-		const [year, month, day] = iso.split('-');
-		return `${year}/${Number(month)}/${Number(day)}`;
 	}
 
 	function dayOfWeekFromIso(iso: string) {

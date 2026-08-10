@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const courseSchema = z.object({
+const courseSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	teacher: z.string(),

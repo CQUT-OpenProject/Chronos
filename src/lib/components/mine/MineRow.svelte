@@ -27,8 +27,6 @@
 	} & HTMLAnchorAttributes &
 		HTMLButtonAttributes &
 		HTMLAttributes<HTMLLabelElement> = $props();
-
-	const trailingContent = $derived(trailing);
 </script>
 
 {#snippet rowContent()}
@@ -43,8 +41,8 @@
 			<span class="m3-body-medium line-clamp-1 text-xs text-on-surface-variant">{supporting}</span>
 		{/if}
 	</div>
-	{#if trailingContent}
-		{@render trailingContent()}
+	{#if trailing}
+		{@render trailing()}
 	{:else}
 		<ChevronRight class="size-4.5 shrink-0 text-on-surface-variant" />
 	{/if}

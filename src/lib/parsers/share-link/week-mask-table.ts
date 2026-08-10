@@ -3,7 +3,7 @@ import { bitmaskToWeeks, weeksToBitmask } from './week-bitmask';
 export const WEEK_MASK_RANGE_FLAG = 0x80;
 const MAX_MASK_ENTRIES = 255;
 
-export function encodeWeekMaskEntry(weeks: number[]): number[] {
+function encodeWeekMaskEntry(weeks: number[]): number[] {
 	if (weeks.length === 0) return [];
 
 	const sorted = [...weeks].sort((left, right) => left - right);
@@ -19,7 +19,7 @@ export function encodeWeekMaskEntry(weeks: number[]): number[] {
 	return [mask & 0xff, (mask >>> 8) & 0xff, (mask >>> 16) & 0xff, (mask >>> 24) & 0xff];
 }
 
-export function decodeWeekMaskEntry(entry: number[]): number[] {
+function decodeWeekMaskEntry(entry: number[]): number[] {
 	if (entry.length === 0) return [];
 
 	if (entry.length === 2 && (entry[0]! & WEEK_MASK_RANGE_FLAG) !== 0) {

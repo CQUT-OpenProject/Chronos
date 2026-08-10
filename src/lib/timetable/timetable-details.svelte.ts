@@ -2,7 +2,7 @@ import type { AppShellController } from '$lib/app/app-shell.svelte';
 import { DEFAULT_CQUT_CAMPUS_ID, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import { currentWeekMonday, defaultPeriodTimes } from '$lib/models/defaults';
-import { TimetableImportSource } from '$lib/models/timetable';
+import { TimetableImportSource, type Timetable } from '$lib/models/timetable';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import {
 	applyCampusPeriodTimes,
@@ -15,11 +15,26 @@ const timeProvider = new SystemTimeProvider();
 export class TimetableDetailsEditor {
 	draft = $state<TimetableSettingsDraft | null>(null);
 	missingCampusMessage = $state<string | null>(null);
+	private loadedTimetableId = $state<string | null>(null);
 
 	constructor(
 		private shell: AppShellController,
 		private onDone: () => void
 	) {}
+
+	loadFromTimetable(timetable: Timetable | null) {
+		if (!timetable) {
+			this.draft = null;
+			this.missingCampusMessage = null;
+			this.loadedTimetableId = null;
+			return;
+		}
+		if (this.loadedTimetableId === timetable.id) return;
+		this.loadedTimetableId = timetable.id;
+		this.draft = toSettingsDraft(timetable);
+		ensureOnlineCampusMetadata(this.draft);
+		this.missingCampusMessage = null;
+	}
 
 	get canSave() {
 		return Boolean(this.draft);
@@ -76,26 +91,7 @@ export function createTimetableDetailsEditor(
 	shell: AppShellController,
 	onDone: () => void
 ): TimetableDetailsEditor {
-	const editor = new TimetableDetailsEditor(shell, onDone);
-	let loadedTimetableId = $state<string | null>(null);
-
-	const timetable = $derived(shell.state.appState.currentTimetable);
-
-	$effect(() => {
-		if (!timetable) {
-			editor.draft = null;
-			editor.missingCampusMessage = null;
-			loadedTimetableId = null;
-			return;
-		}
-		if (loadedTimetableId === timetable.id) return;
-		loadedTimetableId = timetable.id;
-		editor.draft = toSettingsDraft(timetable);
-		ensureOnlineCampusMetadata(editor.draft);
-		editor.missingCampusMessage = null;
-	});
-
-	return editor;
+	return new TimetableDetailsEditor(shell, onDone);
 }
 
 export type TimetableDetailsController = TimetableDetailsEditor;

@@ -4,7 +4,7 @@ import { TimetableImportSource, createTimetable } from '$lib/models/timetable';
 import { bitmaskToWeeks, weeksToBitmask } from './week-bitmask';
 import { decodeBinaryToTimetable, encodeTimetableToBinary } from './chronos-share-binary';
 import { parseLocation } from './location-codec';
-import { decodeWeekMaskEntry, encodeWeekMaskEntry } from './week-mask-table';
+import { WeekMaskTable } from './week-mask-table';
 import {
 	decodeSharePayload,
 	encodeShareLink,
@@ -47,18 +47,20 @@ describe('location-codec', () => {
 
 describe('week-mask-table', () => {
 	it('encodes contiguous ranges and sparse bitmasks', () => {
-		const range = encodeWeekMaskEntry([6, 7, 8, 9, 10, 11]);
-		expect(range).toEqual([0x80 | 6, 11]);
-		expect(decodeWeekMaskEntry(range)).toEqual([6, 7, 8, 9, 10, 11]);
+		const table = new WeekMaskTable();
+		const rangeIndex = table.intern([6, 7, 8, 9, 10, 11]);
+		expect(table.entries[rangeIndex]).toEqual([0x80 | 6, 11]);
+		expect(table.decode(rangeIndex)).toEqual([6, 7, 8, 9, 10, 11]);
 
-		const sparse = encodeWeekMaskEntry([1, 3, 5]);
-		expect(decodeWeekMaskEntry(sparse)).toEqual([1, 3, 5]);
+		const sparseIndex = table.intern([1, 3, 5]);
+		expect(table.decode(sparseIndex)).toEqual([1, 3, 5]);
 	});
 
 	it('escapes bitmasks that collide with range encoding', () => {
-		const escaped = encodeWeekMaskEntry([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17]);
-		expect(escaped).toHaveLength(4);
-		expect(decodeWeekMaskEntry(escaped)).toEqual([
+		const table = new WeekMaskTable();
+		const escapedIndex = table.intern([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17]);
+		expect(table.entries[escapedIndex]).toHaveLength(4);
+		expect(table.decode(escapedIndex)).toEqual([
 			2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17
 		]);
 	});

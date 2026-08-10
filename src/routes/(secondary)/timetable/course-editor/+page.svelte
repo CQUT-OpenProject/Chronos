@@ -16,6 +16,11 @@
 		() => courseId,
 		() => goto(resolve('/'))
 	);
+
+	$effect(() => {
+		void courseId;
+		editor.syncFromRoute();
+	});
 </script>
 
 <SecondaryPageShell title="编辑课程" backHref="/" flush>
