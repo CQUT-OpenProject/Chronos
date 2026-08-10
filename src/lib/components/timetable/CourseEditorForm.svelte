@@ -23,7 +23,7 @@
 	}
 </script>
 
-<div class="space-y-3">
+<div class="space-y-4">
 	<TextField label="课程名称" bind:value={draft.name} />
 	<TextField label="教师" bind:value={draft.teacher} />
 	<TextField label="地点" bind:value={draft.location} />

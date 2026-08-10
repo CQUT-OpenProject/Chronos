@@ -26,7 +26,16 @@
 	const fallbackId = `text-field-${Math.random().toString(36).slice(2, 9)}`;
 	const fieldId = $derived(id ?? fallbackId);
 
-	const inputClass = 'm3-field-input';
+	let focused = $state(false);
+	const labelFloated = $derived(focused || value.length > 0);
+
+	function handleFocus() {
+		focused = true;
+	}
+
+	function handleBlur() {
+		focused = false;
+	}
 
 	function handleInput(event: Event) {
 		const target = event.currentTarget as HTMLInputElement | HTMLTextAreaElement;
@@ -35,12 +44,31 @@
 	}
 </script>
 
-<label class={['block space-y-1', className]} for={fieldId}>
-	<span class="m3-field-label">{label}</span>
+<div
+	class={['m3-outlined-field', multiline && 'm3-outlined-field--multiline', className]}
+	data-floated={labelFloated || undefined}
+>
+	<label class="m3-outlined-field-label" for={fieldId}>{label}</label>
 	{#if multiline}
-		<textarea id={fieldId} class={inputClass} {rows} bind:value oninput={handleInput} {...props}
-		></textarea>
+		<textarea
+			id={fieldId}
+			class="m3-outlined-field-input"
+			{rows}
+			bind:value
+			onfocus={handleFocus}
+			onblur={handleBlur}
+			oninput={handleInput}
+			{...props}></textarea>
 	{:else}
-		<input id={fieldId} class={inputClass} {type} bind:value oninput={handleInput} {...props} />
+		<input
+			id={fieldId}
+			class="m3-outlined-field-input"
+			{type}
+			bind:value
+			onfocus={handleFocus}
+			onblur={handleBlur}
+			oninput={handleInput}
+			{...props}
+		/>
 	{/if}
-</label>
+</div>

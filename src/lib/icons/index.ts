@@ -15,6 +15,7 @@ export { InfoFill } from '@material-symbols-svg/svelte/icons/info';
 export { LightModeFill } from '@material-symbols-svg/svelte/icons/light-mode';
 export { DarkModeFill } from '@material-symbols-svg/svelte/icons/dark-mode';
 export { LightModeAutoFill as AutoModeFill } from '@material-symbols-svg/svelte/icons/light-mode-auto';
+export { Check } from '@material-symbols-svg/svelte/icons/check';
 export { CheckCircleFill } from '@material-symbols-svg/svelte/icons/check-circle';
 export { Edit } from '@material-symbols-svg/svelte/icons/edit';
 export { CodeFill } from '@material-symbols-svg/svelte/icons/code';
