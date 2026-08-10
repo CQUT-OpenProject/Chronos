@@ -129,12 +129,13 @@
 						</p>
 					</div>
 
-					<FormCard>
+					<FormCard variant="plain">
 						<TextField
 							id="import-account"
 							label="账号"
 							type="text"
 							inputmode="numeric"
+							autocomplete="username"
 							value={transferState.account}
 							onValueChange={(value) => transfer.setAccount(value)}
 						/>
@@ -142,6 +143,7 @@
 							id="import-password"
 							label="密码"
 							type="password"
+							autocomplete="current-password"
 							value={transferState.password}
 							onValueChange={(value) => transfer.setPassword(value)}
 						/>

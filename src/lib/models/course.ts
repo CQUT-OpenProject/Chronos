@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const COURSE_REMARK_MAX_LENGTH = 200;
+
 const courseSchema = z.object({
 	id: z.string(),
 	name: z.string(),
@@ -11,7 +13,7 @@ const courseSchema = z.object({
 	color: z.string(),
 	textColor: z.string().default('#21005D'),
 	weeks: z.array(z.number().int()).default([]),
-	remark: z.string().default('')
+	remark: z.string().max(COURSE_REMARK_MAX_LENGTH).default('')
 });
 
 export type Course = z.infer<typeof courseSchema>;

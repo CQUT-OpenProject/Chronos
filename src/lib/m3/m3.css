@@ -98,11 +98,6 @@
 	flex-direction: column;
 	gap: 0.25rem;
 	padding: 0.75rem 1rem;
-	transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.m3-form-field:focus-within {
-	background-color: color-mix(in srgb, var(--color-surface-variant) 20%, transparent);
 }
 
 .m3-form-field-input {
@@ -116,11 +111,74 @@
 	color: var(--color-on-surface);
 	outline: none;
 	appearance: none;
+	box-shadow: none;
+	--tw-ring-shadow: 0 0 #0000;
+	--tw-ring-offset-shadow: 0 0 #0000;
+}
+
+.m3-form-field-input:focus,
+.m3-form-field-input:focus-visible {
+	outline: none;
+	box-shadow: none;
+	--tw-ring-shadow: 0 0 #0000;
+	--tw-ring-offset-shadow: 0 0 #0000;
+}
+
+.m3-form-field-input::placeholder {
+	color: color-mix(in srgb, var(--color-on-surface-variant) 60%, transparent);
+}
+
+.m3-form-field > .m3-form-field-input,
+.m3-form-field .m3-date-field-input,
+.m3-form-field .m3-time-field-input {
+	border-bottom: 1px solid color-mix(in srgb, var(--color-on-surface-variant) 35%, transparent);
+	padding-bottom: 0.25rem;
+	transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.m3-form-field:focus-within > .m3-form-field-input,
+.m3-form-field:focus-within .m3-date-field-input,
+.m3-form-field:focus-within .m3-time-field-input {
+	border-bottom-color: var(--color-brand);
+}
+
+.m3-form-field-input-row {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	min-width: 0;
+}
+
+.m3-form-field-input-row .m3-form-field-input {
+	min-width: 0;
+	flex: 1;
+	border: none;
+	border-bottom: 1px solid color-mix(in srgb, var(--color-on-surface-variant) 35%, transparent);
+	border-radius: 0;
+	padding-bottom: 0.25rem;
+	transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.m3-form-field:focus-within .m3-form-field-input-row .m3-form-field-input {
+	border-bottom-color: var(--color-brand);
 }
 
 .m3-form-field--multiline .m3-form-field-input {
 	min-height: 4.5rem;
-	resize: vertical;
+	resize: none;
+}
+
+.m3-form-field-counter {
+	align-self: flex-end;
+	font-size: 0.75rem;
+	line-height: 1.33;
+	font-weight: 400;
+	color: var(--color-on-surface-variant);
+}
+
+.m3-form-field-counter--limit {
+	color: var(--color-error);
+	font-weight: 500;
 }
 
 .m3-form-field--embedded {
@@ -163,6 +221,44 @@
 
 .m3-date-field-trigger:active:not(:disabled) {
 	background-color: color-mix(in srgb, var(--color-on-surface) 10%, transparent);
+}
+
+.m3-time-field-input {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	min-width: 0;
+}
+
+.m3-time-field-segments {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.125rem;
+}
+
+.m3-time-field-segment {
+	border-radius: 0.25rem;
+	padding: 0.125rem 0.25rem;
+	color: var(--color-on-surface);
+	transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.m3-time-field-segment--literal {
+	padding-inline: 0.125rem;
+	color: var(--color-on-surface-variant);
+}
+
+.m3-time-field-segment:not(.m3-time-field-segment--literal):hover {
+	background-color: color-mix(in srgb, var(--color-on-surface) 5%, transparent);
+}
+
+.m3-time-field-segment:not(.m3-time-field-segment--literal):focus {
+	background-color: color-mix(in srgb, var(--color-on-surface) 8%, transparent);
+	outline: none;
+}
+
+.m3-time-field-segment[aria-valuetext='Empty'] {
+	color: color-mix(in srgb, var(--color-on-surface-variant) 60%, transparent);
 }
 
 .m3-date-field-trigger:disabled {

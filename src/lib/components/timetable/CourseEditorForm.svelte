@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { CourseDraft } from '$lib/models/drafts';
+	import { COURSE_REMARK_MAX_LENGTH } from '$lib/models/course';
 	import { COURSE_PALETTE_ENTRIES } from '$lib/parsers/course-palette';
 	import ColorSwatchPicker from '$lib/components/ui/ColorSwatchPicker.svelte';
 	import FormCard from '$lib/components/ui/FormCard.svelte';
@@ -27,9 +28,22 @@
 <div class="space-y-4">
 	<FormCard>
 		<TextField label="课程名称" bind:value={draft.name} />
-		<TextField label="教师" bind:value={draft.teacher} />
-		<TextField label="地点" bind:value={draft.location} />
-		<TextField label="备注" multiline rows={3} bind:value={draft.remark} />
+		<TextField label="教师" placeholder="选填" autocomplete="name" bind:value={draft.teacher} />
+		<TextField
+			label="地点"
+			placeholder="选填"
+			autocomplete="address-line1"
+			bind:value={draft.location}
+		/>
+		<TextField
+			label="备注"
+			multiline
+			rows={3}
+			placeholder="选填"
+			autocomplete="off"
+			maxlength={COURSE_REMARK_MAX_LENGTH}
+			bind:value={draft.remark}
+		/>
 	</FormCard>
 
 	<FormCard>

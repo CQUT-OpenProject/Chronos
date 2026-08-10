@@ -1,4 +1,4 @@
-import { createCourse } from '$lib/models/course';
+import { COURSE_REMARK_MAX_LENGTH, createCourse } from '$lib/models/course';
 import type { CourseDraft } from '$lib/models/drafts';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
 
@@ -19,7 +19,7 @@ export class SaveCourseUseCase {
 				color: draft.color,
 				textColor: draft.textColor,
 				weeks: draft.weeks,
-				remark: draft.remark.trim()
+				remark: draft.remark.trim().slice(0, COURSE_REMARK_MAX_LENGTH)
 			})
 		);
 	}

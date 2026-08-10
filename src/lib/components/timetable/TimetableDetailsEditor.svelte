@@ -15,6 +15,7 @@
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import OnlineCampusPeriodSection from '$lib/components/timetable/OnlineCampusPeriodSection.svelte';
 	import DateField from '$lib/components/ui/DateField.svelte';
+	import TimeField from '$lib/components/ui/TimeField.svelte';
 	import StepperField from '$lib/components/ui/StepperField.svelte';
 	import Switch from '$lib/components/ui/Switch.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
@@ -75,7 +76,7 @@
 {#if draft}
 	<div class="space-y-4">
 		<FormCard>
-			<TextField label="课表名称" bind:value={editor.draft.name} />
+			<TextField label="课表名称" autocomplete="name" bind:value={editor.draft.name} />
 			{#if showTermStart}
 				<DateField
 					label="学期起始日（周一）"
@@ -148,8 +149,8 @@
 							</IconButton>
 						</div>
 						<div class="grid grid-cols-2">
-							<TextField label="开始" type="time" bind:value={period.startTime} />
-							<TextField label="结束" type="time" bind:value={period.endTime} />
+							<TimeField label="开始" bind:value={period.startTime} />
+							<TimeField label="结束" bind:value={period.endTime} />
 						</div>
 					</FormCard>
 				{/each}
