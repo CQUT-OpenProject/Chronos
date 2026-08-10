@@ -5,6 +5,7 @@ export {
 export { Person, PersonFill } from '@material-symbols-svg/svelte/icons/person';
 export { ArrowBack } from '@material-symbols-svg/svelte/icons/arrow-back';
 export { EditNote } from '@material-symbols-svg/svelte/icons/edit-note';
+export { ChevronLeft } from '@material-symbols-svg/svelte/icons/chevron-left';
 export { ChevronRight } from '@material-symbols-svg/svelte/icons/chevron-right';
 export { ListAltFill } from '@material-symbols-svg/svelte/icons/list-alt';
 export { DownloadFill } from '@material-symbols-svg/svelte/icons/download';

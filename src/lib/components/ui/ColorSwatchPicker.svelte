@@ -22,7 +22,7 @@
 
 <div class={['space-y-2', className]}>
 	<span id={labelId} class="m3-field-label">{label}</span>
-	<Card variant="outlined" class="!rounded !p-3">
+	<Card variant="outlined" class="!p-3">
 		<div
 			class="flex flex-wrap items-center justify-center gap-1"
 			role="radiogroup"

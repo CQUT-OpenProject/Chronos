@@ -11,9 +11,10 @@
 		shouldUseOnlineCampusPeriodTimes
 	} from '$lib/timetable/timetable-mappers';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import FormCard from '$lib/components/ui/FormCard.svelte';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import OnlineCampusPeriodSection from '$lib/components/timetable/OnlineCampusPeriodSection.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
 	import StepperField from '$lib/components/ui/StepperField.svelte';
 	import Switch from '$lib/components/ui/Switch.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
@@ -73,7 +74,15 @@
 
 {#if draft}
 	<div class="space-y-4">
-		<TextField label="课表名称" bind:value={editor.draft.name} />
+		<FormCard>
+			<TextField label="课表名称" bind:value={editor.draft.name} />
+			{#if showTermStart}
+				<DateField
+					label="学期起始日（周一）"
+					bind:value={editor.draft.academicConfig.termStartDate}
+				/>
+			{/if}
+		</FormCard>
 
 		<MineSection title="显示选项">
 			<MineRow label title="显示周六">
@@ -95,21 +104,21 @@
 			{/if}
 		</MineSection>
 
-		{#if showTermStart}
-			<TextField
-				label="学期起始日（周一）"
-				type="date"
-				bind:value={editor.draft.academicConfig.termStartDate}
-			/>
-		{/if}
-
 		{#if showWeekRange}
-			<StepperField label="开始周" bind:value={editor.draft.academicConfig.startWeek} min={1} />
-			<StepperField
-				label="结束周"
-				bind:value={editor.draft.academicConfig.endWeek}
-				min={editor.draft.academicConfig.startWeek}
-			/>
+			<FormCard>
+				<StepperField
+					label="开始周"
+					bind:value={editor.draft.academicConfig.startWeek}
+					min={1}
+					embedded
+				/>
+				<StepperField
+					label="结束周"
+					bind:value={editor.draft.academicConfig.endWeek}
+					min={editor.draft.academicConfig.startWeek}
+					embedded
+				/>
+			</FormCard>
 		{/if}
 
 		{#if useOnlineCampusPeriods && selectedCampus}
@@ -125,8 +134,8 @@
 					<Button variant="text" class="px-2" onclick={addPeriod}>添加节次</Button>
 				</div>
 				{#each editor.draft.academicConfig.periodTimes as period, index (period.index)}
-					<Card variant="outlined" class="!p-3">
-						<div class="mb-2 flex items-center justify-between">
+					<FormCard>
+						<div class="flex items-center justify-between px-4 py-2">
 							<span class="m3-body-medium text-on-surface-variant">第 {period.index} 节</span>
 							<IconButton
 								variant="danger"
@@ -138,11 +147,11 @@
 								<DeleteFill class="size-5" />
 							</IconButton>
 						</div>
-						<div class="grid grid-cols-2 gap-2">
+						<div class="grid grid-cols-2">
 							<TextField label="开始" type="time" bind:value={period.startTime} />
 							<TextField label="结束" type="time" bind:value={period.endTime} />
 						</div>
-					</Card>
+					</FormCard>
 				{/each}
 			</div>
 		{/if}

@@ -220,6 +220,9 @@ importers:
 
   .:
     dependencies:
+      '@internationalized/date':
+        specifier: ^3.12.3
+        version: 3.12.3
       '@ktibow/material-color-utilities-nightly':
         specifier: ^0.4.1772748028000
         version: 0.4.1772748028000

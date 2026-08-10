@@ -2,6 +2,7 @@
 	import type { CourseDraft } from '$lib/models/drafts';
 	import { COURSE_PALETTE_ENTRIES } from '$lib/parsers/course-palette';
 	import ColorSwatchPicker from '$lib/components/ui/ColorSwatchPicker.svelte';
+	import FormCard from '$lib/components/ui/FormCard.svelte';
 	import StepperField from '$lib/components/ui/StepperField.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 
@@ -24,27 +25,31 @@
 </script>
 
 <div class="space-y-4">
-	<TextField label="课程名称" bind:value={draft.name} />
-	<TextField label="教师" bind:value={draft.teacher} />
-	<TextField label="地点" bind:value={draft.location} />
-	<TextField label="备注" multiline rows={3} bind:value={draft.remark} />
+	<FormCard>
+		<TextField label="课程名称" bind:value={draft.name} />
+		<TextField label="教师" bind:value={draft.teacher} />
+		<TextField label="地点" bind:value={draft.location} />
+		<TextField label="备注" multiline rows={3} bind:value={draft.remark} />
+	</FormCard>
 
-	<StepperField label="星期" bind:value={draft.dayOfWeek} min={1} max={7} />
-
-	<StepperField
-		label="开始节次"
-		bind:value={draft.startPeriod}
-		min={1}
-		max={maxPeriods}
-		onchange={handleStartPeriodChange}
-	/>
-
-	<StepperField
-		label="结束节次"
-		bind:value={draft.endPeriod}
-		min={draft.startPeriod}
-		max={maxPeriods}
-	/>
+	<FormCard>
+		<StepperField label="星期" bind:value={draft.dayOfWeek} min={1} max={7} embedded />
+		<StepperField
+			label="开始节次"
+			bind:value={draft.startPeriod}
+			min={1}
+			max={maxPeriods}
+			embedded
+			onchange={handleStartPeriodChange}
+		/>
+		<StepperField
+			label="结束节次"
+			bind:value={draft.endPeriod}
+			min={draft.startPeriod}
+			max={maxPeriods}
+			embedded
+		/>
+	</FormCard>
 
 	<ColorSwatchPicker
 		colors={COURSE_PALETTE_ENTRIES}

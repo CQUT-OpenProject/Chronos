@@ -6,6 +6,7 @@
 		value = $bindable(0),
 		min = 0,
 		max = 100,
+		embedded = false,
 		onchange,
 		class: className = ''
 	}: {
@@ -13,6 +14,7 @@
 		value?: number;
 		min?: number;
 		max?: number;
+		embedded?: boolean;
 		onchange?: (value: number) => void;
 		class?: string;
 	} = $props();
@@ -30,11 +32,13 @@
 
 <div
 	class={[
-		'flex items-center justify-between rounded-lg border border-outline px-3 py-2 dark:border-outline-variant',
+		embedded
+			? 'm3-form-field m3-form-field--embedded'
+			: 'flex items-center justify-between rounded-lg border border-outline px-3 py-2 dark:border-outline-variant',
 		className
 	]}
 >
-	<span class="m3-body-medium">{label}</span>
+	<span class={embedded ? 'm3-field-label' : 'm3-body-medium'}>{label}</span>
 	<div class="flex items-center gap-2">
 		<Button
 			variant="text"
