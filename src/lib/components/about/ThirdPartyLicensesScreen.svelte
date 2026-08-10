@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { networkStatus } from '$lib/client/network-status.svelte';
+	import { resolveFetchErrorMessage } from '$lib/client/fetch-error-message';
 	import Card from '$lib/components/ui/Card.svelte';
+	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
 	interface ThirdPartyLicense {
@@ -8,21 +11,52 @@
 		license: string;
 	}
 
-	let licenses = $state<ThirdPartyLicense[]>([]);
-	let loading = $state(true);
+	type LoadState = 'loading' | 'ready' | 'error' | 'empty';
 
-	onMount(async () => {
-		const response = await fetch('/licenses/third-party.json');
-		loading = false;
-		if (!response.ok) return;
-		licenses = (await response.json()) as ThirdPartyLicense[];
+	let licenses = $state<ThirdPartyLicense[]>([]);
+	let loadState = $state<LoadState>('loading');
+	let errorMessage = $state('');
+
+	async function loadLicenses() {
+		loadState = 'loading';
+		errorMessage = '';
+
+		try {
+			const response = await fetch('/licenses/third-party.json');
+			if (!response.ok) {
+				errorMessage = resolveFetchErrorMessage(
+					!networkStatus.isOnline,
+					'无法加载第三方许可证列表'
+				);
+				loadState = 'error';
+				return;
+			}
+
+			licenses = (await response.json()) as ThirdPartyLicense[];
+			loadState = licenses.length > 0 ? 'ready' : 'empty';
+		} catch {
+			errorMessage = resolveFetchErrorMessage(!networkStatus.isOnline, '无法加载第三方许可证列表');
+			loadState = 'error';
+		}
+	}
+
+	onMount(() => {
+		void loadLicenses();
 	});
 </script>
 
-{#if loading}
+{#if loadState === 'loading'}
 	<div class="flex items-center justify-center py-12">
 		<LoadingIndicator />
 	</div>
+{:else if loadState === 'error'}
+	<FetchErrorState
+		offline={!networkStatus.isOnline}
+		description={errorMessage}
+		onRetry={loadLicenses}
+	/>
+{:else if loadState === 'empty'}
+	<FetchErrorState title="暂无许可证记录" description="未找到第三方依赖许可证数据。" />
 {:else}
 	<ul class="license-list">
 		{#each licenses as entry (entry.name)}

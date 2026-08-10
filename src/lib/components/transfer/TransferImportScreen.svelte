@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TransferImportSource } from '$lib/client/preview-persistence';
+	import { networkStatus } from '$lib/client/network-status.svelte';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import { canSaveCredentials, saveCredentialsLabel } from '$lib/transfer/transfer-state.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -8,6 +9,7 @@
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import { WifiOffFill } from '$lib/icons';
 
 	const importSegments = [
 		{ value: 'ONLINE', label: '知行理工' },
@@ -29,6 +31,7 @@
 
 	const saveCheckboxEnabled = $derived(canSaveCredentials(transferState.savedCredentialState));
 	const saveCheckboxLabel = $derived(saveCredentialsLabel(transferState.savedCredentialState));
+	const onlineImportDisabled = $derived(loading || !networkStatus.isOnline);
 
 	function notifyTransferMessages() {
 		const { statusMessage, errorMessage } = transfer.state;
@@ -105,6 +108,16 @@
 		{#if transferState.selectedSource === 'ONLINE'}
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
+					{#if !networkStatus.isOnline}
+						<div
+							class="flex items-start gap-2 rounded-xl bg-surface-variant/60 px-3 py-2.5 text-on-surface-variant"
+						>
+							<WifiOffFill class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+							<p class="m3-body-small">
+								在线导入需要网络连接。可改用「分享链接」或「HTML 文件」导入课表。
+							</p>
+						</div>
+					{/if}
 					<div>
 						<h2 class="m3-title-medium text-on-surface">从知行理工获取</h2>
 						<p class="m3-body-small mt-0.5 text-on-surface-variant">
@@ -144,7 +157,7 @@
 						<Button
 							variant="filled"
 							class="w-full"
-							disabled={loading}
+							disabled={onlineImportDisabled}
 							onclick={handleOnlinePreview}
 						>
 							{loading ? '获取中…' : '从此账号导入课表'}
@@ -168,7 +181,7 @@
 									<Button
 										variant="outlined"
 										class="w-full"
-										disabled={loading}
+										disabled={onlineImportDisabled}
 										onclick={handleSavedCredentialPreview}
 									>
 										{loading ? '获取中…' : '验证并预览'}

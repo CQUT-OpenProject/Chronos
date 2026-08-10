@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { marked } from 'marked';
+	import { networkStatus } from '$lib/client/network-status.svelte';
+	import { resolveFetchErrorMessage } from '$lib/client/fetch-error-message';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
+	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
 	let {
@@ -14,8 +17,11 @@
 		documentPath: string;
 	} = $props();
 
-	let loading = $state(true);
+	type LoadState = 'loading' | 'ready' | 'error';
+
+	let loadState = $state<LoadState>('loading');
 	let htmlContent = $state('');
+	let errorMessage = $state('');
 
 	const renderer = new marked.Renderer();
 	renderer.link = ({ href, title: linkTitle, text }) => {
@@ -23,19 +29,43 @@
 		return `<a href="${href}"${titleAttr} target="_blank" rel="noreferrer">${text}</a>`;
 	};
 
-	onMount(async () => {
-		const response = await fetch(documentPath);
-		const markdown = response.ok ? await response.text() : '无法加载文档内容';
-		htmlContent = marked.parse(markdown, { renderer, async: false }) as string;
-		loading = false;
+	async function loadDocument() {
+		loadState = 'loading';
+		errorMessage = '';
+
+		try {
+			const response = await fetch(documentPath);
+			if (!response.ok) {
+				errorMessage = resolveFetchErrorMessage(!networkStatus.isOnline, '无法加载文档内容');
+				loadState = 'error';
+				return;
+			}
+
+			const markdown = await response.text();
+			htmlContent = marked.parse(markdown, { renderer, async: false }) as string;
+			loadState = 'ready';
+		} catch {
+			errorMessage = resolveFetchErrorMessage(!networkStatus.isOnline, '无法加载文档内容');
+			loadState = 'error';
+		}
+	}
+
+	onMount(() => {
+		void loadDocument();
 	});
 </script>
 
 <SecondaryPageShell {title} {backHref}>
-	{#if loading}
+	{#if loadState === 'loading'}
 		<div class="flex items-center justify-center py-12">
 			<LoadingIndicator />
 		</div>
+	{:else if loadState === 'error'}
+		<FetchErrorState
+			offline={!networkStatus.isOnline}
+			description={errorMessage}
+			onRetry={loadDocument}
+		/>
 	{:else}
 		<div class="legal-prose prose prose-sm max-w-none px-4 py-2 dark:prose-invert">
 			{@html htmlContent}
