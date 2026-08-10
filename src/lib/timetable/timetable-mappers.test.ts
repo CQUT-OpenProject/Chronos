@@ -64,8 +64,8 @@ describe('timetable-mappers', () => {
 			importMetadata: {
 				source: TimetableImportSource.ONLINE_EDU,
 				campusPeriodTimes: {
-					两江校区: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
-					花溪校区: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
+					liangjiang: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
+					huaxi: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
 				}
 			},
 			viewPrefs: {
@@ -75,8 +75,8 @@ describe('timetable-mappers', () => {
 			}
 		};
 
-		expect(applyCampusPeriodTimes(draft, '花溪校区')).toBe(true);
-		expect(draft.importMetadata.campusName).toBe('花溪校区');
+		expect(applyCampusPeriodTimes(draft, 'huaxi')).toBe(true);
+		expect(draft.importMetadata.campusId).toBe('huaxi');
 		expect(draft.academicConfig.periodTimes[0]?.startTime).toBe('08:00');
 
 		const legacyDraft: TimetableSettingsDraft = {
@@ -88,8 +88,8 @@ describe('timetable-mappers', () => {
 			}
 		};
 		ensureOnlineCampusMetadata(legacyDraft);
-		expect(legacyDraft.importMetadata.campusName).toBe('两江校区');
-		expect(legacyDraft.importMetadata.campusPeriodTimes?.两江校区).toEqual([
+		expect(legacyDraft.importMetadata.campusId).toBe('liangjiang');
+		expect(legacyDraft.importMetadata.campusPeriodTimes?.liangjiang).toEqual([
 			{ index: 1, startTime: '08:30', endTime: '09:15' }
 		]);
 	});

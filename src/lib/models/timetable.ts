@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CQUT_CAMPUSES } from './cqut-campus';
+import { CQUT_CAMPUS_IDS } from './cqut-campus';
 import { defaultPeriodTimes } from './defaults';
 
 export enum TimetableImportSource {
@@ -26,12 +26,12 @@ export const academicConfigSchema = z.object({
 
 export type AcademicConfig = z.infer<typeof academicConfigSchema>;
 
-const cqutCampusNameSchema = z.enum(CQUT_CAMPUSES);
+const cqutCampusIdSchema = z.enum(CQUT_CAMPUS_IDS);
 
 export const timetableImportMetadataSchema = z.object({
 	source: z.nativeEnum(TimetableImportSource).default(TimetableImportSource.UNKNOWN),
-	campusName: cqutCampusNameSchema.optional(),
-	campusPeriodTimes: z.record(cqutCampusNameSchema, z.array(periodTimeSchema)).optional()
+	campusId: cqutCampusIdSchema.optional(),
+	campusPeriodTimes: z.record(cqutCampusIdSchema, z.array(periodTimeSchema)).optional()
 });
 
 export type TimetableImportMetadata = z.infer<typeof timetableImportMetadataSchema>;

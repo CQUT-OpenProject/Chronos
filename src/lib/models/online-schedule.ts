@@ -1,9 +1,9 @@
-import type { CqutCampusName } from './cqut-campus';
+import type { CqutCampusId } from './cqut-campus';
 import type { PeriodTime } from './timetable';
 
 export interface OnlineScheduleCampusContext {
-	campusName: CqutCampusName;
-	campusPeriodTimes: Record<CqutCampusName, PeriodTime[]>;
+	campusId: CqutCampusId;
+	campusPeriodTimes: Record<CqutCampusId, PeriodTime[]>;
 }
 
 export interface OnlineScheduleFetchResult {

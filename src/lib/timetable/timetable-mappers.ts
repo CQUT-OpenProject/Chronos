@@ -1,8 +1,8 @@
 import type { Course } from '$lib/models/course';
 import {
-	DEFAULT_CQUT_CAMPUS,
-	type CqutCampusName,
-	isCqutCampusName
+	DEFAULT_CQUT_CAMPUS_ID,
+	resolveCampusIdFromApiName,
+	type CqutCampusId
 } from '$lib/models/cqut-campus';
 import type { CourseDraft, PeriodTimeDraft, TimetableSettingsDraft } from '$lib/models/drafts';
 import type { Timetable } from '$lib/models/timetable';
@@ -47,7 +47,7 @@ export function toSettingsDraft(timetable: Timetable): TimetableSettingsDraft {
 		},
 		importMetadata: {
 			source: timetable.importMetadata.source,
-			campusName: timetable.importMetadata.campusName,
+			campusId: timetable.importMetadata.campusId,
 			campusPeriodTimes: timetable.importMetadata.campusPeriodTimes
 				? { ...timetable.importMetadata.campusPeriodTimes }
 				: undefined
@@ -83,12 +83,12 @@ export function mapCampusTimeInfoToPeriodTimes(rows: CampusTimeInfoRow[]): Perio
 
 export function applyCampusPeriodTimes(
 	draft: TimetableSettingsDraft,
-	campusName: CqutCampusName
+	campusId: CqutCampusId
 ): boolean {
-	const periods = draft.importMetadata.campusPeriodTimes?.[campusName];
+	const periods = draft.importMetadata.campusPeriodTimes?.[campusId];
 	if (!periods?.length) return false;
 
-	draft.importMetadata.campusName = campusName;
+	draft.importMetadata.campusId = campusId;
 	draft.academicConfig.periodTimes = periods.map((period) => ({ ...period }));
 	return true;
 }
@@ -96,18 +96,18 @@ export function applyCampusPeriodTimes(
 export function ensureOnlineCampusMetadata(draft: TimetableSettingsDraft): void {
 	if (!shouldUseOnlineCampusPeriodTimes(draft.importMetadata.source)) return;
 
-	const campusName = draft.importMetadata.campusName ?? DEFAULT_CQUT_CAMPUS;
-	draft.importMetadata.campusName = campusName;
+	const campusId = draft.importMetadata.campusId ?? DEFAULT_CQUT_CAMPUS_ID;
+	draft.importMetadata.campusId = campusId;
 
 	if (!draft.importMetadata.campusPeriodTimes && draft.academicConfig.periodTimes.length > 0) {
 		draft.importMetadata.campusPeriodTimes = {
-			[campusName]: draft.academicConfig.periodTimes.map((period) => ({ ...period }))
+			[campusId]: draft.academicConfig.periodTimes.map((period) => ({ ...period }))
 		};
 	}
 }
 
-export function resolveUserCampusName(value: string | null | undefined): CqutCampusName {
-	return value && isCqutCampusName(value) ? value : DEFAULT_CQUT_CAMPUS;
+export function resolveUserCampusId(value: string | null | undefined): CqutCampusId {
+	return resolveCampusIdFromApiName(value);
 }
 
 export function shouldShowNonCurrentWeekCourseSetting(
