@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CQUT_CAMPUSES, type CqutCampusName } from '$lib/models/cqut-campus';
+	import { CQUT_CAMPUS_IDS, getCampusApiName, type CqutCampusId } from '$lib/models/cqut-campus';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
@@ -9,18 +9,18 @@
 		missingCampusMessage = null,
 		onSelectCampus
 	}: {
-		selectedCampus: CqutCampusName;
+		selectedCampus: CqutCampusId;
 		missingCampusMessage?: string | null;
-		onSelectCampus: (campusName: CqutCampusName) => void;
+		onSelectCampus: (campusId: CqutCampusId) => void;
 	} = $props();
 </script>
 
 <MineSection title="节次时间">
-	{#each CQUT_CAMPUSES as campus (campus)}
-		{@const selected = selectedCampus === campus}
-		<MineRow label title={campus} onclick={() => onSelectCampus(campus)}>
+	{#each CQUT_CAMPUS_IDS as campusId (campusId)}
+		{@const selected = selectedCampus === campusId}
+		<MineRow title={getCampusApiName(campusId)} onclick={() => onSelectCampus(campusId)}>
 			{#snippet trailing()}
-				<Radio name="cqut-campus" checked={selected} onchange={() => onSelectCampus(campus)} />
+				<Radio name="cqut-campus" checked={selected} />
 			{/snippet}
 		</MineRow>
 	{/each}

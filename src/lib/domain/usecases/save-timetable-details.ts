@@ -22,7 +22,7 @@ export class SaveTimetableDetailsUseCase {
 
 		const importMetadata: TimetableImportMetadata = {
 			source: draft.importMetadata.source,
-			campusName: draft.importMetadata.campusName,
+			campusId: draft.importMetadata.campusId,
 			campusPeriodTimes: draft.importMetadata.campusPeriodTimes
 				? (Object.fromEntries(
 						Object.entries(draft.importMetadata.campusPeriodTimes).map(([campus, periods]) => [

@@ -4,11 +4,14 @@
 		previewSourceLabel,
 		type TransferStateController
 	} from '$lib/transfer/transfer-state.svelte';
+	import { DEFAULT_CQUT_CAMPUS_ID } from '$lib/models/cqut-campus';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import OnlineCampusPeriodSection from '$lib/components/timetable/OnlineCampusPeriodSection.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { CalendarMonthFill, InfoFill, DownloadFill } from '$lib/icons';
+	import { countDistinctCourseNames } from '$lib/parsers/import-course-utils';
 
 	let {
 		transfer,
@@ -22,7 +25,15 @@
 
 	const transferState = $derived(transfer.state);
 	const preview = $derived(transferState.preview);
-	const requiresTermStartDate = $derived(transferState.previewSource === 'HTML');
+	const isHtmlImport = $derived(transferState.previewSource === 'HTML');
+	const selectedCampus = $derived(transferState.htmlImportCampusId ?? DEFAULT_CQUT_CAMPUS_ID);
+	const displayedCourseCount = $derived.by(() => {
+		if (!preview) return 0;
+		if (transferState.previewSource === 'ONLINE' || transferState.previewSource === 'HTML') {
+			return countDistinctCourseNames(preview.courses);
+		}
+		return preview.courses.length;
+	});
 	let loading = $state(false);
 
 	async function handleConfirm() {
@@ -64,7 +75,7 @@
 					>
 						<span class="m3-body-small font-medium text-on-surface-variant">课程数</span>
 						<span class="m3-title-large mt-0.5 font-bold text-on-surface"
-							>{preview.courses.length}</span
+							>{displayedCourseCount}</span
 						>
 					</div>
 					<div
@@ -135,8 +146,13 @@
 			</div>
 		</div>
 
-		<!-- Date Input Section for HTML source -->
-		{#if requiresTermStartDate}
+		<!-- HTML import options -->
+		{#if isHtmlImport}
+			<OnlineCampusPeriodSection
+				{selectedCampus}
+				onSelectCampus={(campusId) => transfer.setHtmlImportCampusId(campusId)}
+			/>
+
 			<Card variant="outlined" class="p-4">
 				<div class="flex flex-col gap-3">
 					<h3 class="m3-title-medium font-semibold text-on-surface">学期起始日期</h3>
@@ -166,7 +182,9 @@
 		<div class="pt-2">
 			<Button
 				variant="filled"
-				disabled={loading || (requiresTermStartDate && !transferState.htmlImportTermStartDate)}
+				disabled={loading ||
+					(isHtmlImport &&
+						(!transferState.htmlImportTermStartDate || !transferState.htmlImportCampusId))}
 				class="h-12 w-full text-base font-semibold shadow-xs"
 				onclick={handleConfirm}
 			>

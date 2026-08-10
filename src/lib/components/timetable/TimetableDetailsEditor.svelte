@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { TimetableDetailsController } from '$lib/timetable/timetable-details.svelte';
-	import type { CqutCampusName } from '$lib/models/cqut-campus';
+	import type { CqutCampusId } from '$lib/models/cqut-campus';
 	import { defaultPeriodTimes } from '$lib/models/defaults';
 	import {
 		removePeriodAt,
@@ -65,8 +65,8 @@
 		);
 	}
 
-	function selectCampus(campusName: CqutCampusName) {
-		editor.selectCampus(campusName);
+	function selectCampus(campusId: CqutCampusId) {
+		editor.selectCampus(campusId);
 	}
 </script>
 

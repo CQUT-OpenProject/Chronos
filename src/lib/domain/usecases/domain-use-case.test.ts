@@ -300,10 +300,10 @@ describe('domain use cases', () => {
 			},
 			importMetadata: {
 				source: TimetableImportSource.ONLINE_EDU,
-				campusName: '两江校区',
+				campusId: 'liangjiang',
 				campusPeriodTimes: {
-					两江校区: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
-					花溪校区: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
+					liangjiang: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
+					huaxi: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
 				}
 			},
 			viewPrefs: {
@@ -314,8 +314,8 @@ describe('domain use cases', () => {
 		});
 
 		const saved = await repo.getTimetable(timetable.id);
-		expect(saved?.importMetadata.campusName).toBe('两江校区');
-		expect(saved?.importMetadata.campusPeriodTimes?.花溪校区?.[0]?.startTime).toBe('08:00');
+		expect(saved?.importMetadata.campusId).toBe('liangjiang');
+		expect(saved?.importMetadata.campusPeriodTimes?.huaxi?.[0]?.startTime).toBe('08:00');
 	});
 
 	it('createTimetable uses time provider for defaults', async () => {

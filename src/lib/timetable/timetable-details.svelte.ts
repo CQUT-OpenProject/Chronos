@@ -1,5 +1,5 @@
 import type { AppShellController } from '$lib/app/app-shell.svelte';
-import { DEFAULT_CQUT_CAMPUS, type CqutCampusName } from '$lib/models/cqut-campus';
+import { DEFAULT_CQUT_CAMPUS_ID, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import { currentWeekMonday, defaultPeriodTimes } from '$lib/models/defaults';
 import { TimetableImportSource } from '$lib/models/timetable';
@@ -25,13 +25,13 @@ export class TimetableDetailsEditor {
 		return Boolean(this.draft);
 	}
 
-	get selectedCampus(): CqutCampusName | null {
-		return this.draft?.importMetadata.campusName ?? null;
+	get selectedCampus(): CqutCampusId | null {
+		return this.draft?.importMetadata.campusId ?? null;
 	}
 
-	selectCampus = (campusName: CqutCampusName) => {
+	selectCampus = (campusId: CqutCampusId) => {
 		if (!this.draft) return;
-		const applied = applyCampusPeriodTimes(this.draft, campusName);
+		const applied = applyCampusPeriodTimes(this.draft, campusId);
 		this.missingCampusMessage = applied ? null : '请重新导入课表以获取该校区节次时间';
 	};
 
@@ -52,7 +52,7 @@ export class TimetableDetailsEditor {
 		};
 
 		if (this.draft.importMetadata.source === TimetableImportSource.ONLINE_EDU) {
-			const applied = applyCampusPeriodTimes(this.draft, DEFAULT_CQUT_CAMPUS);
+			const applied = applyCampusPeriodTimes(this.draft, DEFAULT_CQUT_CAMPUS_ID);
 			this.missingCampusMessage = applied ? null : '请重新导入课表以获取该校区节次时间';
 			if (!applied) {
 				this.draft.academicConfig = {
