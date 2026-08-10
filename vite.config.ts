@@ -293,11 +293,23 @@ export default defineConfig({
 					}
 				]
 			},
+			kit: {
+				spa: true
+			},
 			workbox: {
+				clientsClaim: true,
+				skipWaiting: true,
 				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-				// SSR（Vercel adapter）无预渲染 "/"，禁用 navigateFallback 避免 non-precached-url
-				navigateFallback: null,
 				runtimeCaching: [
+					{
+						urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
+						handler: 'NetworkFirst',
+						options: {
+							cacheName: 'pages-cache',
+							expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 },
+							networkTimeoutSeconds: 3
+						}
+					},
 					{
 						urlPattern: /^https:\/\/api\.github\.com\/.*/i,
 						handler: 'NetworkFirst',

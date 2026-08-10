@@ -58,51 +58,19 @@
 				window.addEventListener(
 					'error',
 					function (event) {
-						var message = String(event.message || '');
 						var isScript = event.target && event.target.tagName === 'SCRIPT';
-						if (
-							isScript ||
-							message.includes('Failed to fetch') ||
-							message.includes('dynamically imported module')
-						) {
+						if (isScript && !window.__chronosAppMounted) {
 							showBootFallback();
 						}
 					},
 					true
 				);
 
-				window.addEventListener('unhandledrejection', function (event) {
-					var reason = event.reason;
-					var message = String(reason && reason.message ? reason.message : reason || '');
-					if (
-						message.includes('Failed to fetch') ||
-						message.includes('dynamically imported module') ||
-						message.includes('ERR_INTERNET_DISCONNECTED')
-					) {
+				setTimeout(function () {
+					if (!window.__chronosAppMounted) {
 						showBootFallback();
 					}
-				});
-
-				function checkOfflineBootFailure() {
-					if (window.__chronosAppMounted) return;
-					if (!navigator.onLine) {
-						showBootFallback();
-					}
-				}
-
-				if (document.readyState === 'loading') {
-					document.addEventListener('DOMContentLoaded', checkOfflineBootFailure, { once: true });
-				} else {
-					checkOfflineBootFailure();
-				}
-
-				if (location.hostname === 'localhost' && 'serviceWorker' in navigator) {
-					navigator.serviceWorker.getRegistrations().then(function (registrations) {
-						for (var i = 0; i < registrations.length; i++) {
-							registrations[i].unregister();
-						}
-					});
-				}
+				}, 5000);
 			})();
 		</script>
 		%sveltekit.head%

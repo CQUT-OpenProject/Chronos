@@ -21,6 +21,12 @@ export class NetworkStatusController {
 		if (this.initialized || typeof window === 'undefined') return;
 		this.initialized = true;
 
+		this.isOnline = navigator.onLine;
+		this.wasOffline = !navigator.onLine;
+		if (!this.isOnline) {
+			snackbar(OFFLINE_SNACKBAR_MESSAGE);
+		}
+
 		window.addEventListener('online', this.handleOnline);
 		window.addEventListener('offline', this.handleOffline);
 	}
