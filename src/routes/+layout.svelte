@@ -4,7 +4,9 @@
 	import { onMount } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
+	import { networkStatus } from '$lib/client/network-status.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
+	import OfflineBanner from '$lib/components/pwa/OfflineBanner.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { initWebVitals } from '$lib/client/web-vitals';
 	import { ensureShareLinkBrotliReady } from '$lib/parsers/share-link/share-link-brotli';
@@ -51,10 +53,17 @@
 
 	onMount(() => {
 		initNavigationStack(page.url.pathname);
+		networkStatus.init();
 		shell.init();
 		timetableScreen.init(shell);
 		initWebVitals();
 		void ensureShareLinkBrotliReady();
+
+		window.__chronosHideBootFallback?.();
+
+		return () => {
+			networkStatus.destroy();
+		};
 	});
 
 	$effect(() => {
@@ -88,6 +97,7 @@
 	</div>
 {/if}
 
+<OfflineBanner />
 <InstallPrompt />
 <Snackbar />
 

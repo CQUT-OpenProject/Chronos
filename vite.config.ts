@@ -295,7 +295,8 @@ export default defineConfig({
 			},
 			workbox: {
 				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-				navigateFallback: '/',
+				// SSR（Vercel adapter）无预渲染 "/"，禁用 navigateFallback 避免 non-precached-url
+				navigateFallback: null,
 				runtimeCaching: [
 					{
 						urlPattern: /^https:\/\/api\.github\.com\/.*/i,
@@ -304,10 +305,26 @@ export default defineConfig({
 							cacheName: 'github-api',
 							expiration: { maxEntries: 32, maxAgeSeconds: 86_400 }
 						}
+					},
+					{
+						urlPattern: /\/legal\/.*\.md$|\/licenses\/.*$/i,
+						handler: 'CacheFirst',
+						options: {
+							cacheName: 'static-legal-licenses',
+							expiration: { maxEntries: 16, maxAgeSeconds: 2_592_000 }
+						}
+					},
+					{
+						urlPattern: /\/manifest\.webmanifest$/i,
+						handler: 'CacheFirst',
+						options: {
+							cacheName: 'pwa-manifest',
+							expiration: { maxEntries: 1, maxAgeSeconds: 2_592_000 }
+						}
 					}
 				]
 			},
-			devOptions: { enabled: true, type: 'module', suppressWarnings: true }
+			devOptions: { enabled: false }
 		}),
 		paraglideVitePlugin({
 			project: './project.inlang',
