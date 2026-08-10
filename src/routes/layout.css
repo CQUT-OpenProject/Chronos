@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@source '..';
 @import '../lib/m3/generated-theme.css';
 @import 'swiper/css';
 @plugin '@tailwindcss/forms';
@@ -7,28 +8,47 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-	--color-canvas: light-dark(#f0f4f8, #121316);
-	--color-ink: light-dark(#0b1f33, #f8fafc);
 	--color-danger: #e60012;
-	--color-success: light-dark(#15803d, #4ade80);
-	--color-warning: light-dark(#b45309, #fbbf24);
 	--spacing-tabbar: 5rem;
 }
 
 @theme inline {
+	--color-canvas: var(--color-canvas);
+	--color-ink: var(--color-ink);
+	--color-success: var(--color-success);
+	--color-warning: var(--color-warning);
 	--color-border: var(--color-border-subtle);
 }
 
 @layer tokens {
 	:root {
+		--color-canvas: #f0f4f8;
+		--color-ink: #0b1f33;
+		--color-success: #15803d;
+		--color-warning: #b45309;
+
 		/* Elevated cards/lists: white on canvas (light), lifted surface on canvas (dark) */
-		--color-surface: light-dark(#ffffff, #1e2026);
-		--color-surface-container: light-dark(#ffffff, #1e2026);
-		--color-surface-container-high: light-dark(#f1f5f9, #24262e);
+		--color-surface: #ffffff;
+		--color-surface-container: #ffffff;
+		--color-surface-container-high: #f1f5f9;
 		/* Softer borders — less visual separation than raw M3 outline tokens */
-		--color-outline: light-dark(#cbd5e1, #334155);
-		--color-outline-variant: light-dark(#e2e8f0, #2e3038);
-		--color-border-subtle: light-dark(#d4e0eb, #2e3038);
+		--color-outline: #cbd5e1;
+		--color-outline-variant: #e2e8f0;
+		--color-border-subtle: #d4e0eb;
+	}
+
+	.dark {
+		--color-canvas: #121316;
+		--color-ink: #f8fafc;
+		--color-success: #4ade80;
+		--color-warning: #fbbf24;
+
+		--color-surface: #1e2026;
+		--color-surface-container: #1e2026;
+		--color-surface-container-high: #24262e;
+		--color-outline: #334155;
+		--color-outline-variant: #2e3038;
+		--color-border-subtle: #2e3038;
 	}
 }
 

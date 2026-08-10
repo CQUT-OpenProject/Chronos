@@ -127,21 +127,24 @@ function toKebabCase(name: string) {
 	return name.replaceAll('_', '-');
 }
 
-function genColorVariable(name: string, lightArgb: number, darkArgb: number) {
-	const kebabCase = toKebabCase(name);
-	const lightHex = argbToHex(lightArgb);
-	const darkHex = argbToHex(darkArgb);
-	return `    --color-${kebabCase}: ${lightHex === darkHex ? lightHex : `light-dark(${lightHex}, ${darkHex})`};`;
-}
-
 function getM3ColorNames(): string[] {
 	return allDynamicColors.map((color) => toKebabCase(color.name));
 }
 
 export function buildGeneratedThemeCss() {
-	const colorVars = allDynamicColors
-		.map((color) => genColorVariable(color.name, color.getArgb(light), color.getArgb(dark)))
-		.join('\n');
+	const lightVars: string[] = [];
+	const darkVars: string[] = [];
+
+	for (const color of allDynamicColors) {
+		const kebabCase = toKebabCase(color.name);
+		const lightHex = argbToHex(color.getArgb(light));
+		const darkHex = argbToHex(color.getArgb(dark));
+
+		lightVars.push(`    --color-${kebabCase}: ${lightHex};`);
+		if (lightHex !== darkHex) {
+			darkVars.push(`    --color-${kebabCase}: ${darkHex};`);
+		}
+	}
 
 	const themeInlineVars = [
 		...getM3ColorNames().map((name) => `  --color-${name}: var(--color-${name});`),
@@ -154,7 +157,11 @@ export function buildGeneratedThemeCss() {
 
 @layer tokens {
   :root {
-${colorVars}
+${lightVars.join('\n')}
+  }
+
+  .dark {
+${darkVars.join('\n')}
   }
 }
 
