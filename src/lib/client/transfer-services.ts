@@ -14,6 +14,10 @@ export function createTransferServices(
 	repository: TimetableRepository = getRepository(),
 	preferences: PreferencesRepository = getPreferencesRepository()
 ) {
+	// Dual codec seam wiring (see interface JSDoc on each codec):
+	// previewImported → shareLinkCodec (+ htmlParser fallback)
+	// previewOnline   → onlineCodec
+	// exportCurrent   → shareLinkCodec only
 	const onlineCodec = new DefaultTimetableShareCodec();
 	const shareLinkCodec = new ChronosTimetableShareLinkCodec();
 	const htmlParser = new EducationalTimetableHtmlParser();
