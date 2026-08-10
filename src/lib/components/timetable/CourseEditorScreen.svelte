@@ -16,13 +16,25 @@
 </script>
 
 {#if editor.draft}
-	{#snippet deleteFooter()}
-		<Button variant="danger" class="w-full" onclick={() => (deleteDialogOpen = true)}>
-			删除课程
-		</Button>
+	{#snippet footer()}
+		<div class="flex w-full gap-3">
+			{#if editor.draft.id}
+				<Button variant="danger" class="w-full flex-1" onclick={() => (deleteDialogOpen = true)}>
+					删除课程
+				</Button>
+			{/if}
+			<Button
+				variant="filled"
+				class="w-full flex-1"
+				disabled={!editor.canSave}
+				onclick={editor.save}
+			>
+				保存
+			</Button>
+		</div>
 	{/snippet}
 
-	<FormScreenLayout footer={editor.draft.id ? deleteFooter : undefined}>
+	<FormScreenLayout {footer}>
 		<CourseEditorForm
 			draft={editor.draft}
 			maxPeriods={editor.timetable?.academicConfig.periodTimes.length ?? 10}

@@ -5,7 +5,6 @@
 	import { getContext } from 'svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
 	import CourseEditorScreen from '$lib/components/timetable/CourseEditorScreen.svelte';
 	import { createCourseEditor } from '$lib/timetable/course-editor.svelte';
 
@@ -19,14 +18,6 @@
 	);
 </script>
 
-{#snippet saveAction()}
-	{#if editor.draft}
-		<Button variant="text" class="px-2" disabled={!editor.canSave} onclick={editor.save}>
-			保存
-		</Button>
-	{/if}
-{/snippet}
-
-<SecondaryPageShell title="编辑课程" backHref="/" actions={saveAction} flush>
+<SecondaryPageShell title="编辑课程" backHref="/" flush>
 	<CourseEditorScreen {editor} />
 </SecondaryPageShell>

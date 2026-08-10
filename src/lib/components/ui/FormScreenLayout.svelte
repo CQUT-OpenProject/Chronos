@@ -1,4 +1,8 @@
 <script lang="ts">
+	/**
+	 * Scrollable form body with a pinned bottom action bar.
+	 * Use inside `SecondaryPageShell` with `flush` so only this module owns scrolling.
+	 */
 	import type { Snippet } from 'svelte';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
 

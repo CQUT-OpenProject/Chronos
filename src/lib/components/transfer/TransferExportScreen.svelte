@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
-	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
+	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { IosShareFill } from '$lib/icons';
@@ -37,9 +37,21 @@
 	}
 </script>
 
-<div class="flex h-full min-h-0 flex-1 flex-col">
+{#snippet footer()}
+	<Button
+		variant="filled"
+		class="w-full"
+		disabled={loading || !currentTimetableName}
+		onclick={handleExport}
+	>
+		<IosShareFill class="size-5" />
+		{loading ? '导出中…' : '复制课表链接'}
+	</Button>
+{/snippet}
+
+<FormScreenLayout {footer}>
 	<div
-		class="m3-body-medium flex flex-1 flex-col items-center justify-center gap-1 p-4 text-center text-on-surface-variant"
+		class="m3-body-medium flex min-h-full flex-col items-center justify-center gap-1 text-center text-on-surface-variant"
 	>
 		<p>
 			将「{currentTimetableName
@@ -51,16 +63,4 @@
 			<p class="text-warning">课表较大，部分应用可能截断链接内容</p>
 		{/if}
 	</div>
-
-	<ActionBottomBar>
-		<Button
-			variant="filled"
-			class="w-full"
-			disabled={loading || !currentTimetableName}
-			onclick={handleExport}
-		>
-			<IosShareFill class="size-5" />
-			{loading ? '导出中…' : '复制课表链接'}
-		</Button>
-	</ActionBottomBar>
-</div>
+</FormScreenLayout>

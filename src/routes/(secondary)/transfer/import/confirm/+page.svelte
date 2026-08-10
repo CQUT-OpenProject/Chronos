@@ -28,7 +28,7 @@
 </script>
 
 {#if ready}
-	<SecondaryPageShell title="确认导入" backHref="/transfer/import">
+	<SecondaryPageShell title="确认导入" backHref="/transfer/import" flush>
 		<TransferImportConfirmScreen {transfer} {currentTimetableName} onConfirm={handleConfirmed} />
 	</SecondaryPageShell>
 {/if}
