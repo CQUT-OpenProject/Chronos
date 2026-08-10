@@ -140,29 +140,29 @@ export function buildGeneratedThemeCss() {
 		const lightHex = argbToHex(color.getArgb(light));
 		const darkHex = argbToHex(color.getArgb(dark));
 
-		lightVars.push(`    --color-${kebabCase}: ${lightHex};`);
+		lightVars.push(`\t\t--color-${kebabCase}: ${lightHex};`);
 		if (lightHex !== darkHex) {
-			darkVars.push(`    --color-${kebabCase}: ${darkHex};`);
+			darkVars.push(`\t\t--color-${kebabCase}: ${darkHex};`);
 		}
 	}
 
 	const themeInlineVars = [
-		...getM3ColorNames().map((name) => `  --color-${name}: var(--color-${name});`),
+		...getM3ColorNames().map((name) => `\t--color-${name}: var(--color-${name});`),
 		...CHRONOS_COLOR_ALIASES.map(
-			(alias) => `  --color-${alias.name}: var(--color-${alias.source});`
+			(alias) => `\t--color-${alias.name}: var(--color-${alias.source});`
 		)
 	].join('\n');
 
 	return `/* generated, do not edit */
 
 @layer tokens {
-  :root {
+	:root {
 ${lightVars.join('\n')}
-  }
+	}
 
-  .dark {
+	.dark {
 ${darkVars.join('\n')}
-  }
+	}
 }
 
 @theme inline {
