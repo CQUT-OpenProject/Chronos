@@ -23,7 +23,7 @@
 		HTMLAnchorAttributes = $props();
 
 	const variantClasses = $derived({
-		filled: 'bg-brand text-white hover:shadow-xs active:opacity-90',
+		filled: 'bg-brand text-on-primary hover:shadow-xs active:opacity-90',
 		outlined: 'border border-outline text-brand hover:bg-brand/10 active:bg-brand/20',
 		text:
 			tone === 'inverse'

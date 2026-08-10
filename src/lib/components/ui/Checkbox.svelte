@@ -23,7 +23,7 @@
 >
 	{#snippet children({ checked })}
 		{#if checked}
-			<CheckCircleFill class="size-3.5 text-white" />
+			<CheckCircleFill class="size-3.5 text-on-primary" />
 		{/if}
 	{/snippet}
 </Checkbox.Root>
