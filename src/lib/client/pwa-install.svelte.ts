@@ -1,4 +1,5 @@
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+import { onboardingController } from './onboarding.svelte';
 
 const INSTALLED_KEY = 'chronos:pwa-installed';
 const OPEN_IN_APP_HINT = '如未自动跳转，请从程序坞、启动台或开始菜单手动打开 Chronos。';
@@ -17,6 +18,7 @@ export class PWAInstallController {
 
 	private installListenerAttached = false;
 	private dialogScheduled = false;
+	private dialogTimer: ReturnType<typeof setTimeout> | null = null;
 
 	constructor() {
 		if (typeof window !== 'undefined') {
@@ -125,8 +127,15 @@ export class PWAInstallController {
 		if (this.dialogScheduled || this.isStandalone) return;
 		this.dialogScheduled = true;
 
-		setTimeout(() => {
+		this.dialogTimer = setTimeout(() => {
+			this.dialogTimer = null;
 			if (this.isStandalone) return;
+
+			if (onboardingController.open) {
+				// Onboarding covers install guidance; finish() cancels any pending popup.
+				this.dialogScheduled = false;
+				return;
+			}
 
 			if (this.isInstalledLocally) {
 				this.openInAppDialogOpen = true;
@@ -138,9 +147,18 @@ export class PWAInstallController {
 		}, 3000);
 	}
 
-	private tryScheduleInstallDialog() {
+	tryScheduleInstallDialog() {
 		if (this.isInstalledLocally) return;
 		this.scheduleDialog();
+	}
+
+	/** Cancels a pending auto-popup, e.g. because onboarding already covered install guidance. */
+	cancelScheduledDialog() {
+		if (this.dialogTimer) {
+			clearTimeout(this.dialogTimer);
+			this.dialogTimer = null;
+		}
+		this.dialogScheduled = false;
 	}
 
 	async init() {

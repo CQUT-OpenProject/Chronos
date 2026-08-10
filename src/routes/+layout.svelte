@@ -5,7 +5,9 @@
 	import { createAppShell } from '$lib/app/app-shell.svelte';
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
 	import { networkStatus } from '$lib/client/network-status.svelte';
+	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
+	import OnboardingFlow from '$lib/components/onboarding/OnboardingFlow.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { initWebVitals } from '$lib/client/web-vitals';
 	import { ensureShareLinkBrotliReady } from '$lib/parsers/share-link/share-link-brotli';
@@ -69,6 +71,12 @@
 		document.documentElement.classList.toggle('dark', shell.state.isDark);
 		document.documentElement.style.colorScheme = shell.state.isDark ? 'dark' : 'light';
 	});
+
+	$effect(() => {
+		if (timetableScreen.state.hasLoadedAppState) {
+			onboardingController.maybeShow(Boolean(timetableScreen.state.appState.currentTimetable));
+		}
+	});
 </script>
 
 <svelte:head>
@@ -97,6 +105,7 @@
 {/if}
 
 <InstallPrompt />
+<OnboardingFlow />
 <Snackbar />
 
 <div style="display:none">
