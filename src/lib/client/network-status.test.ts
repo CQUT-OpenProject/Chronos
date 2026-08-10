@@ -70,7 +70,7 @@ describe('NetworkStatusController', () => {
 
 		expect(controller.isOnline).toBe(false);
 		expect(controller.wasOffline).toBe(true);
-		expect(snackbar).toHaveBeenCalledWith('当前处于离线状态，课表可正常查看');
+		expect(snackbar).toHaveBeenCalledWith('当前处于离线状态');
 	});
 
 	it('updates isOnline and shows snackbar when going back online', () => {

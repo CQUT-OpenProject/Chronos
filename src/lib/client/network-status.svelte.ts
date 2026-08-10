@@ -1,6 +1,6 @@
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
-const OFFLINE_SNACKBAR_MESSAGE = '当前处于离线状态，课表可正常查看';
+const OFFLINE_SNACKBAR_MESSAGE = '当前处于离线状态';
 const ONLINE_SNACKBAR_MESSAGE = '网络已恢复';
 const ONLINE_SNACKBAR_DURATION = 2000;
 

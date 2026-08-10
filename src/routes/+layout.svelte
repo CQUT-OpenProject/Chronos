@@ -6,7 +6,6 @@
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
 	import { networkStatus } from '$lib/client/network-status.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
-	import OfflineBanner from '$lib/components/pwa/OfflineBanner.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { initWebVitals } from '$lib/client/web-vitals';
 	import { ensureShareLinkBrotliReady } from '$lib/parsers/share-link/share-link-brotli';
@@ -97,7 +96,6 @@
 	</div>
 {/if}
 
-<OfflineBanner />
 <InstallPrompt />
 <Snackbar />
 
