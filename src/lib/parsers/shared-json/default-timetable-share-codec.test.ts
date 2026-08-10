@@ -97,16 +97,16 @@ describe('DefaultTimetableShareCodec', () => {
 		};
 
 		const imported = codec.toTimetable(payload, {
-			campusName: '花溪校区',
+			campusId: 'huaxi',
 			campusPeriodTimes: {
-				两江校区: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
-				花溪校区: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
+				liangjiang: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
+				huaxi: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
 			}
 		});
 		expect(imported.ok).toBe(true);
 		if (!imported.ok) return;
 
-		expect(imported.value.importMetadata.campusName).toBe('花溪校区');
+		expect(imported.value.importMetadata.campusId).toBe('huaxi');
 		expect(imported.value.academicConfig.periodTimes).toEqual([
 			{ index: 1, startTime: '08:00', endTime: '08:45' }
 		]);

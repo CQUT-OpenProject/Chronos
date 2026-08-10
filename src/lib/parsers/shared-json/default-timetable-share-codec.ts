@@ -91,7 +91,7 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 
 		const importSource =
 			this.toTimetableImportSource(payload.importSource) ?? TimetableImportSource.SHARED_JSON;
-		const campusName = campusContext?.campusName;
+		const campusId = campusContext?.campusId;
 		const campusPeriodTimes: TimetableImportMetadata['campusPeriodTimes'] | undefined =
 			campusContext?.campusPeriodTimes
 				? (Object.fromEntries(
@@ -102,8 +102,8 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 					) as TimetableImportMetadata['campusPeriodTimes'])
 				: undefined;
 		const periodTimes =
-			campusName && campusPeriodTimes
-				? (campusPeriodTimes[campusName] ?? []).map((period) => ({ ...period }))
+			campusId && campusPeriodTimes
+				? (campusPeriodTimes[campusId] ?? []).map((period) => ({ ...period }))
 				: [];
 
 		return success({
@@ -125,7 +125,7 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 			},
 			importMetadata: {
 				source: importSource,
-				campusName,
+				campusId,
 				campusPeriodTimes
 			},
 			viewPrefs: {

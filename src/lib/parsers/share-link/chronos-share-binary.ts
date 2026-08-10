@@ -1,5 +1,12 @@
 import type { Course } from '$lib/models/course';
 import {
+	campusIdToShareIndex,
+	getCampusDefaultPeriodTimes,
+	resolveShareCampusId,
+	shareIndexToCampusId,
+	type CqutCampusId
+} from '$lib/models/cqut-campus';
+import {
 	TimetableImportSource,
 	normalizeTimetableName,
 	type Timetable
@@ -172,6 +179,22 @@ function normalizeTimetable(timetable: Timetable): Timetable {
 	};
 }
 
+function applyShareImportCampus(
+	timetable: Timetable,
+	campusId: CqutCampusId
+): Pick<Timetable, 'academicConfig' | 'importMetadata'> {
+	return {
+		academicConfig: {
+			...timetable.academicConfig,
+			periodTimes: getCampusDefaultPeriodTimes(campusId)
+		},
+		importMetadata: {
+			source: TimetableImportSource.SHARED_JSON,
+			campusId
+		}
+	};
+}
+
 export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 	const normalized = normalizeTimetable(timetable);
 	if (normalized.courses.length === 0) {
@@ -232,6 +255,9 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 		(endWeek !== DEFAULT_END_WEEK ? FLAG_CUSTOM_END_WEEK : 0) |
 		(globalWeekMask ? FLAG_GLOBAL_WEEK_MASK : 0) |
 		(singleBuildingIdx >= 0 ? FLAG_SINGLE_BUILDING : 0);
+	const campusIdx = campusIdToShareIndex(
+		resolveShareCampusId(normalized.importMetadata.campusId, normalized.courses)
+	);
 
 	const bytes: number[] = [...MAGIC, VERSION, flags];
 	const termDays = dateToDaysSinceEpoch(normalized.academicConfig.termStartDate);
@@ -239,6 +265,7 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 	if ((flags & FLAG_CUSTOM_END_WEEK) !== 0) bytes.push(endWeek);
 	bytes.push(normalized.courses.length);
 	if ((flags & FLAG_SINGLE_BUILDING) !== 0) bytes.push(singleBuildingIdx);
+	bytes.push(campusIdx);
 
 	writeStringTable(pool, bytes);
 	weekMaskTable.write(bytes);
@@ -292,6 +319,11 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 		if (singleBuildingIdx === undefined) throw new ShareBinaryDecodeError('truncated header');
 		offset += 1;
 	}
+
+	const campusIdx = bytes[offset];
+	if (campusIdx === undefined) throw new ShareBinaryDecodeError('truncated header');
+	offset += 1;
+	const campusId = shareIndexToCampusId(campusIdx);
 
 	const { strings, nextOffset: stringTableEnd } = readStringTable(bytes, offset);
 	offset = stringTableEnd;
@@ -369,15 +401,17 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 
 	if (courses.length === 0) throw new ShareBinaryDecodeError('no valid courses decoded');
 
-	return {
+	const sortedCourses = [...courses].sort(
+		(left, right) =>
+			left.dayOfWeek - right.dayOfWeek ||
+			left.startPeriod - right.startPeriod ||
+			left.name.localeCompare(right.name)
+	);
+
+	const baseTimetable: Timetable = {
 		id: 'share-import',
 		name: timetableName,
-		courses: [...courses].sort(
-			(left, right) =>
-				left.dayOfWeek - right.dayOfWeek ||
-				left.startPeriod - right.startPeriod ||
-				left.name.localeCompare(right.name)
-		),
+		courses: sortedCourses,
 		createdAt: now,
 		updatedAt: now,
 		academicConfig: {
@@ -392,6 +426,12 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 			showSunday: courses.some((course) => course.dayOfWeek === 7),
 			showNonCurrentWeekCourses: false
 		}
+	};
+
+	const campusFields = applyShareImportCampus(baseTimetable, campusId);
+	return {
+		...baseTimetable,
+		...campusFields
 	};
 }
 

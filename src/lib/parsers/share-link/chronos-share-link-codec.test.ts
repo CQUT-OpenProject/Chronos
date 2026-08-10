@@ -72,6 +72,8 @@ describe('chronos-share-binary', () => {
 		expect(decoded.academicConfig.termStartDate).toBe('2026-03-02');
 		expect(decoded.academicConfig.endWeek).toBe(20);
 		expect(decoded.importMetadata.source).toBe(TimetableImportSource.SHARED_JSON);
+		expect(decoded.importMetadata.campusId).toBe('liangjiang');
+		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:30');
 		expect(decoded.courses[0]).toMatchObject({
 			name: '编译原理',
 			teacher: '张老师',
@@ -82,6 +84,39 @@ describe('chronos-share-binary', () => {
 			weeks: [1, 2, 3],
 			remark: '带教材第 3 版'
 		});
+	});
+
+	it('round-trips explicit huaxi campus', () => {
+		const timetable = createTimetable({
+			...sampleTimetable(),
+			importMetadata: { source: TimetableImportSource.ONLINE_EDU, campusId: 'huaxi' }
+		});
+		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
+		expect(decoded.importMetadata.campusId).toBe('huaxi');
+		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:20');
+	});
+
+	it('infers huaxi campus from course locations when exporting', () => {
+		const timetable = createTimetable({
+			...sampleTimetable(),
+			courses: [
+				course('c1', '编译原理', '张老师', {
+					location: '花溪校区 至善楼A101',
+					dayOfWeek: 6,
+					weeks: [1, 2, 3]
+				})
+			]
+		});
+		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
+		expect(decoded.importMetadata.campusId).toBe('huaxi');
+		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:20');
+	});
+
+	it('defaults to liangjiang campus when no campus info is available', () => {
+		const timetable = sampleTimetable();
+		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
+		expect(decoded.importMetadata.campusId).toBe('liangjiang');
+		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:30');
 	});
 
 	it('rejects weeks beyond the supported range', () => {
@@ -164,6 +199,8 @@ describe('chronos-share-link-codec', () => {
 		expect(decoded.ok).toBe(true);
 		if (!decoded.ok) return;
 		expect(decoded.value.courses[0]?.name).toBe('编译原理');
+		expect(decoded.value.importMetadata.campusId).toBe('liangjiang');
+		expect(decoded.value.academicConfig.periodTimes[0]?.startTime).toBe('08:30');
 
 		const link = await encodeShareLink(timetable, 'https://chronos.test');
 		expect(link).toBe(`https://chronos.test/s#${payload}`);
