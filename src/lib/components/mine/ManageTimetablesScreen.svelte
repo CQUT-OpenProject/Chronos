@@ -2,8 +2,8 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
-	import Radio from '$lib/components/ui/Radio.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
+	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
 
 	let {
 		shell
@@ -47,21 +47,13 @@
 		<div class="flex flex-col gap-2.5">
 			{#each appState.timetables as timetable (timetable.id)}
 				{@const isActive = appState.currentTimetableId === timetable.id}
-				<button
-					type="button"
-					class="flex min-h-[56px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {isActive
-						? 'border-brand bg-primary-container/30 shadow-xs'
-						: 'border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
+				<SelectableOption
+					name="current-timetable"
+					label={timetable.name}
+					description="{timetable.courseCount} 门课程"
+					selected={isActive}
 					onclick={() => handleSwitch(timetable.id)}
-				>
-					<Radio name="current-timetable" checked={isActive} />
-					<div class="flex flex-col justify-center">
-						<span class="m3-body-large font-medium text-on-surface">{timetable.name}</span>
-						<span class="m3-body-small mt-0.5 text-on-surface-variant"
-							>{timetable.courseCount} 门课程</span
-						>
-					</div>
-				</button>
+				/>
 			{/each}
 		</div>
 	</div>

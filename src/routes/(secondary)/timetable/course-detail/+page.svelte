@@ -6,6 +6,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import CourseDetailScreen from '$lib/components/timetable/CourseDetailScreen.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import { Edit } from '$lib/icons';
 
 	const shell = getContext<AppShellController>('appShell');
@@ -26,14 +27,9 @@
 
 {#snippet editAction()}
 	{#if course}
-		<button
-			type="button"
-			class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-on-surface hover:bg-surface-variant/50"
-			aria-label="编辑课程"
-			onclick={editCourse}
-		>
+		<IconButton variant="standard" size="sm" ariaLabel="编辑课程" onclick={editCourse}>
 			<Edit class="size-[22px]" />
-		</button>
+		</IconButton>
 	{/if}
 {/snippet}
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { snackbarStore } from './snackbar-state.svelte';
+	import Button from './Button.svelte';
 </script>
 
 {#if snackbarStore.open}
@@ -9,24 +10,27 @@
 		>
 			<span class="m3-body-medium flex-1">{snackbarStore.message}</span>
 			{#if snackbarStore.action}
-				<button
-					type="button"
+				<Button
+					variant="text"
+					tone="inverse"
+					class="h-8 shrink-0 px-2"
 					onclick={() => {
 						snackbarStore.open = false;
 						snackbarStore.action?.onClick();
 					}}
-					class="m3-label-large shrink-0 text-inverse-primary hover:underline"
 				>
 					{snackbarStore.action.label}
-				</button>
+				</Button>
 			{/if}
-			<button
-				type="button"
+			<Button
+				variant="text"
+				tone="inverse"
+				class="h-8 shrink-0 px-2 !text-inverse-on-surface/70"
+				aria-label="关闭"
 				onclick={() => (snackbarStore.open = false)}
-				class="m3-label-large shrink-0 text-inverse-on-surface/70 hover:underline"
 			>
 				关闭
-			</button>
+			</Button>
 		</div>
 	</div>
 {/if}

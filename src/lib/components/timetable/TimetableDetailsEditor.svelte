@@ -12,6 +12,7 @@
 	} from '$lib/timetable/timetable-mappers';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import OnlineCampusPeriodSection from '$lib/components/timetable/OnlineCampusPeriodSection.svelte';
 	import StepperField from '$lib/components/ui/StepperField.svelte';
 	import Switch from '$lib/components/ui/Switch.svelte';
@@ -127,14 +128,15 @@
 					<Card variant="outlined" class="!p-3">
 						<div class="mb-2 flex items-center justify-between">
 							<span class="m3-body-medium text-on-surface-variant">第 {period.index} 节</span>
-							<button
-								type="button"
-								class="flex size-8 shrink-0 items-center justify-center rounded-full text-error transition-colors hover:bg-error/10 active:bg-error/20"
-								aria-label={`删除第 ${period.index} 节`}
+							<IconButton
+								variant="danger"
+								size="sm"
+								class="!size-8"
+								ariaLabel={`删除第 ${period.index} 节`}
 								onclick={() => removePeriod(index)}
 							>
 								<DeleteFill class="size-5" />
-							</button>
+							</IconButton>
 						</div>
 						<div class="grid grid-cols-2 gap-2">
 							<TextField label="开始" type="time" bind:value={period.startTime} />

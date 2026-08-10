@@ -3,17 +3,17 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow, { type MineIconTone } from '$lib/components/mine/MineRow.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import type { Component } from 'svelte';
 	import {
 		AddHomeFill,
-		Close,
 		DownloadFill,
 		InfoFill,
 		IosShareFill,
 		ListAltFill,
 		PaletteFill,
-		Search,
 		WallpaperFill
 	} from '$lib/icons';
 
@@ -146,27 +146,7 @@
 	<div class="flex flex-col gap-3">
 		<h1 class="m3-page-title m3-headline-medium font-medium">我的</h1>
 
-		<div
-			class="flex h-11 items-center gap-2.5 rounded-full border border-outline-variant bg-surface px-4 shadow-xs transition-colors focus-within:border-brand"
-		>
-			<Search class="size-5 shrink-0 text-on-surface-variant" />
-			<input
-				type="text"
-				bind:value={searchQuery}
-				placeholder="搜索设置..."
-				class="m3-body-medium w-full border-none bg-transparent p-0 text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
-			/>
-			{#if searchQuery}
-				<button
-					type="button"
-					onclick={() => (searchQuery = '')}
-					class="flex size-6 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-variant/50"
-					aria-label="清空搜索"
-				>
-					<Close class="size-4" />
-				</button>
-			{/if}
-		</div>
+		<SearchField bind:value={searchQuery} placeholder="搜索设置..." />
 	</div>
 
 	{#each filteredSections as section (section.title)}
@@ -184,13 +164,7 @@
 	{:else}
 		<div class="flex flex-col items-center justify-center py-12 text-center">
 			<p class="m3-body-medium text-on-surface-variant">未找到“{searchQuery}”相关设置</p>
-			<button
-				type="button"
-				onclick={() => (searchQuery = '')}
-				class="m3-label-large mt-2 text-brand hover:underline"
-			>
-				清空搜索词
-			</button>
+			<Button variant="text" class="mt-2" onclick={() => (searchQuery = '')}>清空搜索词</Button>
 		</div>
 	{/each}
 </div>

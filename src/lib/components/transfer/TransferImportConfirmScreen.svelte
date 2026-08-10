@@ -6,12 +6,13 @@
 	} from '$lib/transfer/transfer-state.svelte';
 	import { DEFAULT_CQUT_CAMPUS_ID } from '$lib/models/cqut-campus';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Radio from '$lib/components/ui/Radio.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import OnlineCampusPeriodSection from '$lib/components/timetable/OnlineCampusPeriodSection.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
+	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
+	import TextField from '$lib/components/ui/TextField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-	import { CalendarMonthFill, InfoFill, DownloadFill } from '$lib/icons';
+	import { InfoFill, DownloadFill } from '$lib/icons';
 	import { countDistinctCourseNames } from '$lib/parsers/import-course-utils';
 
 	let {
@@ -77,7 +78,6 @@
 
 	<FormScreenLayout {footer}>
 		<div class="flex flex-col gap-6 py-1">
-			<!-- MD3 Preview Summary Card -->
 			<Card variant="filled" class="border border-outline-variant/50 !bg-surface-variant/30 p-4.5">
 				<div class="flex flex-col gap-3.5">
 					<div class="flex items-center justify-between gap-3">
@@ -120,55 +120,27 @@
 				</div>
 			</Card>
 
-			<!-- Import Mode Selection Section -->
 			<div class="flex flex-col gap-3">
 				<h3 class="m3-title-medium px-1 text-on-surface">导入方式</h3>
 
 				<div class="flex flex-col gap-2.5">
-					<button
-						type="button"
-						class="flex min-h-[56px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {transferState.importMode ===
-						ImportMode.AS_NEW
-							? 'border-brand bg-primary-container/30 shadow-xs'
-							: 'border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
+					<SelectableOption
+						name="import-mode"
+						label="作为新课程表导入"
+						selected={transferState.importMode === ImportMode.AS_NEW}
 						onclick={() => transfer.setImportMode(ImportMode.AS_NEW)}
-					>
-						<Radio
-							name="import-mode"
-							checked={transferState.importMode === ImportMode.AS_NEW}
-							onchange={() => transfer.setImportMode(ImportMode.AS_NEW)}
-						/>
-						<div class="flex flex-col justify-center">
-							<span class="m3-body-large font-medium text-on-surface">作为新课程表导入</span>
-						</div>
-					</button>
+					/>
 
-					<button
-						type="button"
-						class="flex min-h-[56px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {transferState.importMode ===
-						ImportMode.OVERWRITE_CURRENT
-							? 'border-brand bg-primary-container/30 shadow-xs'
-							: 'border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
+					<SelectableOption
+						name="import-mode"
+						label="覆盖当前课程表"
+						description={currentTimetableName ? `当前课程表：${currentTimetableName}` : undefined}
+						selected={transferState.importMode === ImportMode.OVERWRITE_CURRENT}
 						onclick={() => transfer.setImportMode(ImportMode.OVERWRITE_CURRENT)}
-					>
-						<Radio
-							name="import-mode"
-							checked={transferState.importMode === ImportMode.OVERWRITE_CURRENT}
-							onchange={() => transfer.setImportMode(ImportMode.OVERWRITE_CURRENT)}
-						/>
-						<div class="flex flex-col justify-center">
-							<span class="m3-body-large font-medium text-on-surface">覆盖当前课程表</span>
-							{#if currentTimetableName}
-								<span class="m3-body-small mt-0.5 text-on-surface-variant">
-									当前课程表：{currentTimetableName}
-								</span>
-							{/if}
-						</div>
-					</button>
+					/>
 				</div>
 			</div>
 
-			<!-- HTML import options -->
 			{#if isHtmlImport}
 				<OnlineCampusPeriodSection
 					{selectedCampus}
@@ -177,21 +149,12 @@
 
 				<Card variant="outlined" class="p-4">
 					<div class="flex flex-col gap-3">
-						<h3 class="m3-title-medium text-on-surface">学期起始日期</h3>
-						<div
-							class="relative flex items-center rounded-xl border border-outline bg-surface px-3.5 py-2.5 text-on-surface transition-all focus-within:border-2 focus-within:border-brand"
-						>
-							<CalendarMonthFill class="mr-2.5 size-5 shrink-0 text-on-surface-variant" />
-							<input
-								type="date"
-								class="m3-body-large w-full border-none bg-transparent p-0 text-on-surface outline-none focus:ring-0"
-								value={transferState.htmlImportTermStartDate ?? ''}
-								oninput={(event) =>
-									transfer.setHtmlImportTermStartDate(
-										(event.currentTarget as HTMLInputElement).value
-									)}
-							/>
-						</div>
+						<TextField
+							label="学期起始日期"
+							type="date"
+							value={transferState.htmlImportTermStartDate ?? ''}
+							onValueChange={(value) => transfer.setHtmlImportTermStartDate(value)}
+						/>
 						<p class="m3-body-small flex items-center gap-1.5 text-on-surface-variant">
 							<InfoFill class="size-4 shrink-0 text-on-surface-variant/80" />
 							<span>HTML 导入需要指定本学期第一周的周一日期。</span>

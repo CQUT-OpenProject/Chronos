@@ -4,6 +4,7 @@
 
 	let {
 		variant = 'filled',
+		tone = 'default',
 		disabled = false,
 		href,
 		onclick,
@@ -12,6 +13,7 @@
 		...props
 	}: {
 		variant?: 'filled' | 'outlined' | 'text' | 'danger';
+		tone?: 'default' | 'inverse';
 		disabled?: boolean;
 		href?: string;
 		onclick?: (event: MouseEvent) => void;
@@ -20,13 +22,16 @@
 	} & HTMLButtonAttributes &
 		HTMLAnchorAttributes = $props();
 
-	const variantClasses = {
+	const variantClasses = $derived({
 		filled: 'bg-brand text-white hover:shadow-xs active:opacity-90',
 		outlined: 'border border-outline text-brand hover:bg-brand/10 active:bg-brand/20',
-		text: 'text-brand hover:bg-brand/10 active:bg-brand/20',
+		text:
+			tone === 'inverse'
+				? 'text-inverse-primary hover:underline'
+				: 'text-brand hover:bg-brand/10 active:bg-brand/20',
 		danger:
 			'bg-error-container text-on-error-container hover:opacity-90 active:opacity-90 focus-visible:ring-error'
-	};
+	});
 </script>
 
 {#if href}

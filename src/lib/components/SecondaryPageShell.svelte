@@ -2,6 +2,7 @@
 	import type { Pathname } from '$app/types';
 	import { resolve } from '$app/paths';
 	import { ArrowBack } from '$lib/icons';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 
 	let {
@@ -26,14 +27,9 @@
 <div class="relative z-[60] flex h-dvh flex-col overflow-hidden bg-canvas">
 	<TopAppBar {title} {actions} class="shrink-0">
 		{#snippet leading()}
-			<a
-				href={resolve(backHref)}
-				aria-label="返回"
-				onclick={vibrate}
-				class="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-variant/50 active:bg-surface-variant/80"
-			>
+			<IconButton href={resolve(backHref)} ariaLabel="返回" onclick={vibrate}>
 				<ArrowBack class="size-6 text-on-surface" />
-			</a>
+			</IconButton>
 		{/snippet}
 	</TopAppBar>
 	<main

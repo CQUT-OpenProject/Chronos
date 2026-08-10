@@ -1,10 +1,19 @@
 <script lang="ts">
+	import type { TransferImportSource } from '$lib/client/preview-persistence';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import { canSaveCredentials, saveCredentialsLabel } from '$lib/transfer/transfer-state.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import TextField from '$lib/components/ui/TextField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+
+	const importSegments = [
+		{ value: 'ONLINE', label: '知行理工' },
+		{ value: 'SHARE_LINK', label: '分享链接' },
+		{ value: 'HTML', label: 'HTML 文件' }
+	] as const;
 
 	let {
 		transfer,
@@ -20,10 +29,6 @@
 
 	const saveCheckboxEnabled = $derived(canSaveCredentials(transferState.savedCredentialState));
 	const saveCheckboxLabel = $derived(saveCredentialsLabel(transferState.savedCredentialState));
-
-	// Tab sources index calculation for sliding pill indicator animation
-	const sources = ['ONLINE', 'SHARE_LINK', 'HTML'] as const;
-	const selectedIndex = $derived(sources.indexOf(transferState.selectedSource));
 
 	function notifyTransferMessages() {
 		const { statusMessage, errorMessage } = transfer.state;
@@ -90,52 +95,14 @@
 		支持知行理工在线导入、分享链接与教务系统导出的 HTML 文件。
 	</p>
 
-	<!-- Animated Segmented Tab Switcher with List-Matching bg-surface Background Color -->
-	<div class="relative flex w-full rounded-full border border-border bg-surface p-1.5 shadow-xs">
-		<!-- Sliding Pill Indicator -->
-		<div
-			class="absolute top-1.5 bottom-1.5 rounded-full bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
-			style="left: calc({selectedIndex * 33.333}% - {selectedIndex *
-				0.25}rem + 0.5rem); width: calc(33.333% - 0.5rem);"
-		></div>
+	<SegmentedControl
+		segments={[...importSegments]}
+		value={transferState.selectedSource}
+		onValueChange={(value) => transfer.setSelectedSource(value as TransferImportSource)}
+	/>
 
-		<!-- Tab Buttons -->
-		<button
-			type="button"
-			class="m3-label-large relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center transition-colors duration-200 {transferState.selectedSource ===
-			'ONLINE'
-				? 'text-on-secondary-container'
-				: 'text-on-surface-variant hover:text-on-surface'}"
-			onclick={() => transfer.setSelectedSource('ONLINE')}
-		>
-			知行理工
-		</button>
-		<button
-			type="button"
-			class="m3-label-large relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center transition-colors duration-200 {transferState.selectedSource ===
-			'SHARE_LINK'
-				? 'text-on-secondary-container'
-				: 'text-on-surface-variant hover:text-on-surface'}"
-			onclick={() => transfer.setSelectedSource('SHARE_LINK')}
-		>
-			分享链接
-		</button>
-		<button
-			type="button"
-			class="m3-label-large relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center transition-colors duration-200 {transferState.selectedSource ===
-			'HTML'
-				? 'text-on-secondary-container'
-				: 'text-on-surface-variant hover:text-on-surface'}"
-			onclick={() => transfer.setSelectedSource('HTML')}
-		>
-			HTML 文件
-		</button>
-	</div>
-
-	<!-- Tab Content Area -->
 	<div class="w-full">
 		{#if transferState.selectedSource === 'ONLINE'}
-			<!-- Tab 1: 知行理工 -->
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					<div>
@@ -146,29 +113,21 @@
 					</div>
 
 					<div class="flex flex-col gap-3.5 pt-1">
-						<div class="flex flex-col gap-1">
-							<label for="import-account" class="m3-field-label">账号</label>
-							<input
-								id="import-account"
-								type="text"
-								inputmode="numeric"
-								value={transferState.account}
-								oninput={(event) =>
-									transfer.setAccount((event.currentTarget as HTMLInputElement).value)}
-								class="m3-field-input"
-							/>
-						</div>
-						<div class="flex flex-col gap-1">
-							<label for="import-password" class="m3-field-label">密码</label>
-							<input
-								id="import-password"
-								type="password"
-								value={transferState.password}
-								oninput={(event) =>
-									transfer.setPassword((event.currentTarget as HTMLInputElement).value)}
-								class="m3-field-input"
-							/>
-						</div>
+						<TextField
+							id="import-account"
+							label="账号"
+							type="text"
+							inputmode="numeric"
+							value={transferState.account}
+							onValueChange={(value) => transfer.setAccount(value)}
+						/>
+						<TextField
+							id="import-password"
+							label="密码"
+							type="password"
+							value={transferState.password}
+							onValueChange={(value) => transfer.setPassword(value)}
+						/>
 						<label
 							class="m3-body-medium flex cursor-pointer items-center gap-2 pt-1 text-on-surface-variant"
 						>
@@ -231,7 +190,6 @@
 				</div>
 			</Card>
 		{:else if transferState.selectedSource === 'SHARE_LINK'}
-			<!-- Tab 2: 分享链接 -->
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					<div>
@@ -253,7 +211,6 @@
 				</div>
 			</Card>
 		{:else}
-			<!-- Tab 3: HTML 文件 -->
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					<div>

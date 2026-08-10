@@ -8,6 +8,7 @@
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 
@@ -111,17 +112,17 @@
 			</div>
 		{/snippet}
 		{#snippet actions()}
-			<button
-				type="button"
-				class="flex items-center justify-center rounded-full p-1.5 text-on-surface-variant hover:bg-surface-variant"
-				aria-label="编辑课表"
+			<IconButton
+				variant="tonal"
+				size="sm"
+				ariaLabel="编辑课表"
 				onclick={() => {
 					navigator.vibrate?.(10);
 					onEditTimetableDetails();
 				}}
 			>
 				<EditNote class="size-[22px]" />
-			</button>
+			</IconButton>
 		{/snippet}
 	</TopAppBar>
 
