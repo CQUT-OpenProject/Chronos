@@ -293,13 +293,13 @@ export default defineConfig({
 					}
 				]
 			},
-			kit: {
-				spa: true
-			},
 			workbox: {
 				clientsClaim: true,
 				skipWaiting: true,
 				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
+				// SSR（Vercel adapter）无预渲染 "/"，禁用 navigateFallback 避免自动注入的
+				// NavigationRoute 抢在下方自定义 NetworkFirst 规则之前拦截所有导航请求
+				navigateFallback: null,
 				runtimeCaching: [
 					{
 						urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
