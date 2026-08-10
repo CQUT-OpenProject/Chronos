@@ -72,7 +72,7 @@ describe('fetch-campus-time', () => {
 		});
 		expect(result.ok).toBe(true);
 		if (result.ok) {
-			expect(result.value).toBe('花溪校区');
+			expect(result.value).toBe('huaxi');
 		}
 	});
 
@@ -97,7 +97,7 @@ describe('fetch-campus-time', () => {
 		});
 
 		const jar = new CookieJar();
-		const result = await fetchCampusTimeInfo(jar, '两江校区', undefined, {
+		const result = await fetchCampusTimeInfo(jar, 'liangjiang', undefined, {
 			getCampusTimeInfoUrl: `${baseUrl}/api/courseSchedule/getCampusTimeInfo`
 		});
 		expect(result.ok).toBe(true);

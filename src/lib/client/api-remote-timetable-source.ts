@@ -1,5 +1,5 @@
 import type { AuthSnapshot } from '$lib/models/auth';
-import type { CqutCampusName } from '$lib/models/cqut-campus';
+import type { CqutCampusId } from '$lib/models/cqut-campus';
 import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
 import type { PeriodTime } from '$lib/models/timetable';
 import type { RemoteTimetableSource } from '$lib/domain/interfaces/remote-timetable-source';
@@ -14,8 +14,8 @@ interface PreviewApiResponse {
 	ok: true;
 	payload: {
 		payload: OnlineSchedulePayload;
-		campusName: CqutCampusName;
-		campusPeriodTimes: Record<CqutCampusName, PeriodTime[]>;
+		campusId: CqutCampusId;
+		campusPeriodTimes: Record<CqutCampusId, PeriodTime[]>;
 	};
 }
 
@@ -80,7 +80,7 @@ export class ApiRemoteTimetableSource implements RemoteTimetableSource {
 		return success({
 			schedule: body.payload.payload,
 			campus: {
-				campusName: body.payload.campusName,
+				campusId: body.payload.campusId,
 				campusPeriodTimes: body.payload.campusPeriodTimes
 			}
 		});

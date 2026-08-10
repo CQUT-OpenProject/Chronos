@@ -1,10 +1,10 @@
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import { CQUT_CAMPUSES, type CqutCampusName } from '$lib/models/cqut-campus';
+import { CQUT_CAMPUS_IDS, getCampusApiName, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { PeriodTime } from '$lib/models/timetable';
 import {
 	mapCampusTimeInfoToPeriodTimes,
-	resolveUserCampusName,
+	resolveUserCampusId,
 	type CampusTimeInfoRow
 } from '$lib/timetable/timetable-mappers';
 import { GET_CAMPUS_TIME_INFO_URL, GET_USER_INFO_URL, JSON_MEDIA_TYPE } from './config';
@@ -17,15 +17,15 @@ export interface CampusTimeFetchOverrides {
 }
 
 export interface CampusTimesForImport {
-	campusName: CqutCampusName;
-	campusPeriodTimes: Record<CqutCampusName, PeriodTime[]>;
+	campusId: CqutCampusId;
+	campusPeriodTimes: Record<CqutCampusId, PeriodTime[]>;
 }
 
 export async function fetchUserCampusName(
 	jar: CookieJar,
 	signal?: AbortSignal,
 	overrides?: CampusTimeFetchOverrides
-): Promise<AppResult<CqutCampusName>> {
+): Promise<AppResult<CqutCampusId>> {
 	const response = await request(
 		jar,
 		overrides?.getUserInfoUrl ?? GET_USER_INFO_URL,
@@ -48,12 +48,12 @@ export async function fetchUserCampusName(
 	}
 
 	const campusName = extractUserCampusName(parsed);
-	return success(resolveUserCampusName(campusName));
+	return success(resolveUserCampusId(campusName));
 }
 
 export async function fetchCampusTimeInfo(
 	jar: CookieJar,
-	campusName: CqutCampusName,
+	campusId: CqutCampusId,
 	signal?: AbortSignal,
 	overrides?: CampusTimeFetchOverrides
 ): Promise<AppResult<PeriodTime[]>> {
@@ -63,7 +63,7 @@ export async function fetchCampusTimeInfo(
 		{
 			method: 'POST',
 			headers: { 'Content-Type': JSON_MEDIA_TYPE },
-			body: JSON.stringify({ campusName })
+			body: JSON.stringify({ campusName: getCampusApiName(campusId) })
 		},
 		{ signal }
 	);
@@ -93,24 +93,24 @@ export async function fetchCampusTimesForImport(
 	jar: CookieJar,
 	signal?: AbortSignal
 ): Promise<AppResult<CampusTimesForImport>> {
-	const campusNameResult = await fetchUserCampusName(jar, signal);
-	if (!campusNameResult.ok) return campusNameResult;
+	const campusIdResult = await fetchUserCampusName(jar, signal);
+	if (!campusIdResult.ok) return campusIdResult;
 
 	const campusResults = await Promise.all(
-		CQUT_CAMPUSES.map(async (campus) => {
-			const result = await fetchCampusTimeInfo(jar, campus, signal);
-			return { campus, result };
+		CQUT_CAMPUS_IDS.map(async (campusId) => {
+			const result = await fetchCampusTimeInfo(jar, campusId, signal);
+			return { campusId, result };
 		})
 	);
 
-	const campusPeriodTimes = {} as Record<CqutCampusName, PeriodTime[]>;
-	for (const { campus, result } of campusResults) {
+	const campusPeriodTimes = {} as Record<CqutCampusId, PeriodTime[]>;
+	for (const { campusId, result } of campusResults) {
 		if (!result.ok) return result;
-		campusPeriodTimes[campus] = result.value;
+		campusPeriodTimes[campusId] = result.value;
 	}
 
 	return success({
-		campusName: campusNameResult.value,
+		campusId: campusIdResult.value,
 		campusPeriodTimes
 	});
 }

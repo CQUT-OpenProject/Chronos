@@ -1,6 +1,6 @@
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import type { CqutCampusName } from '$lib/models/cqut-campus';
+import type { CqutCampusId } from '$lib/models/cqut-campus';
 import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
 import type { PeriodTime } from '$lib/models/timetable';
 import { onlineSchedulePayloadSchema } from '$lib/models/online-schedule-schema';
@@ -26,8 +26,8 @@ export interface FetchCqutScheduleInput {
 
 export interface FetchCqutScheduleResult {
 	payload: OnlineSchedulePayload;
-	campusName: CqutCampusName;
-	campusPeriodTimes: Record<CqutCampusName, PeriodTime[]>;
+	campusId: CqutCampusId;
+	campusPeriodTimes: Record<CqutCampusId, PeriodTime[]>;
 }
 
 export async function fetchCqutSchedule(
@@ -48,7 +48,7 @@ export async function fetchCqutSchedule(
 
 		return success({
 			payload: timetableResult.value,
-			campusName: campusTimesResult.value.campusName,
+			campusId: campusTimesResult.value.campusId,
 			campusPeriodTimes: campusTimesResult.value.campusPeriodTimes
 		});
 	} catch (error) {
