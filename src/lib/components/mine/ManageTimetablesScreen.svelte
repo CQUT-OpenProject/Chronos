@@ -42,7 +42,7 @@
 
 <FormScreenLayout footer={deleteFooter}>
 	<div class="flex flex-col gap-3">
-		<h3 class="m3-title-medium px-1 font-semibold text-on-surface">我的课表</h3>
+		<h3 class="m3-title-medium px-1 text-on-surface">我的课表</h3>
 
 		<div class="flex flex-col gap-2.5">
 			{#each appState.timetables as timetable (timetable.id)}

@@ -100,11 +100,11 @@
 							onValueCommit={weekGesture.onSliderCommit}
 						/>
 					{:else}
-						<p class="truncate text-xl leading-none font-bold">{weekRangeText}</p>
+						<p class="m3-title-large truncate leading-none font-bold">{weekRangeText}</p>
 					{/if}
 				</div>
 				<div class="flex h-5 items-center">
-					<p class="truncate text-sm leading-none text-on-surface-variant">
+					<p class="m3-body-medium truncate leading-none text-on-surface-variant">
 						第 {displayedWeekNumber} 周{headerTodayLabel ? ` ${headerTodayLabel}` : ''}
 					</p>
 				</div>

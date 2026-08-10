@@ -17,7 +17,7 @@
 </script>
 
 <div class={['space-y-2', className]}>
-	<span class="text-sm text-on-surface-variant">{label}</span>
+	<span class="m3-field-label">{label}</span>
 	<div class="flex flex-wrap gap-2">
 		{#each colors as color (color.background)}
 			{@const isSelected = selectedBackground.toLowerCase() === color.background.toLowerCase()}

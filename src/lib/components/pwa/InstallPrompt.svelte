@@ -43,26 +43,20 @@
 
 <!-- iOS Safari Guide Dialog -->
 <Dialog bind:open={pwaInstallController.iosGuideOpen} title="安装 Chronos">
-	<div class="flex flex-col gap-3 text-left text-sm leading-relaxed text-on-surface-variant">
-		<p class="m3-body-medium">将 Chronos 添加到主屏幕后，可以快捷打开应用。</p>
+	<div class="m3-body-medium flex flex-col gap-3 text-left leading-relaxed text-on-surface-variant">
+		<p>将 Chronos 添加到主屏幕后，可以快捷打开应用。</p>
 		<ol class="flex flex-col gap-2 pt-1">
 			<li class="flex items-start gap-2">
-				<span
-					class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
-					>1</span
-				>
-				<span>
+				<span class="m3-step-badge">1</span>
+				<span class="m3-body-medium">
 					点击 Safari 浏览器底部的 <strong class="inline-flex items-center gap-1 text-on-surface">
 						分享图标 <IosShareFill class="inline h-4 w-4 text-brand" />
 					</strong>
 				</span>
 			</li>
 			<li class="flex items-start gap-2">
-				<span
-					class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
-					>2</span
-				>
-				<span>
+				<span class="m3-step-badge">2</span>
+				<span class="m3-body-medium">
 					选择 <strong class="text-on-surface">“添加到主屏幕”</strong>
 				</span>
 			</li>

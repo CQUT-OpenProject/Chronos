@@ -21,12 +21,11 @@
 	} & HTMLInputAttributes &
 		HTMLTextareaAttributes = $props();
 
-	const inputClass =
-		'w-full rounded-lg border border-outline px-3 py-2 text-sm outline-none focus:border-brand dark:border-outline-variant dark:bg-surface-variant';
+	const inputClass = 'm3-field-input';
 </script>
 
 <label class={['block space-y-1', className]} for={id}>
-	<span class="text-sm text-on-surface-variant">{label}</span>
+	<span class="m3-field-label">{label}</span>
 	{#if multiline}
 		<textarea {id} class={inputClass} {rows} bind:value {...props}></textarea>
 	{:else}

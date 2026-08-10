@@ -154,7 +154,7 @@
 				type="text"
 				bind:value={searchQuery}
 				placeholder="搜索设置..."
-				class="w-full border-none bg-transparent p-0 text-sm font-normal text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
+				class="m3-body-medium w-full border-none bg-transparent p-0 text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
 			/>
 			{#if searchQuery}
 				<button
@@ -183,11 +183,11 @@
 		</MineSection>
 	{:else}
 		<div class="flex flex-col items-center justify-center py-12 text-center">
-			<p class="text-sm font-medium text-on-surface-variant">未找到“{searchQuery}”相关设置</p>
+			<p class="m3-body-medium text-on-surface-variant">未找到“{searchQuery}”相关设置</p>
 			<button
 				type="button"
 				onclick={() => (searchQuery = '')}
-				class="mt-2 text-xs font-semibold text-brand hover:underline"
+				class="m3-label-large mt-2 text-brand hover:underline"
 			>
 				清空搜索词
 			</button>

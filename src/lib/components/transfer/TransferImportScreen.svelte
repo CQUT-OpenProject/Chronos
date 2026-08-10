@@ -102,7 +102,7 @@
 		<!-- Tab Buttons -->
 		<button
 			type="button"
-			class="relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center text-sm font-semibold transition-colors duration-200 {transferState.selectedSource ===
+			class="m3-label-large relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center transition-colors duration-200 {transferState.selectedSource ===
 			'ONLINE'
 				? 'text-on-secondary-container'
 				: 'text-on-surface-variant hover:text-on-surface'}"
@@ -112,7 +112,7 @@
 		</button>
 		<button
 			type="button"
-			class="relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center text-sm font-semibold transition-colors duration-200 {transferState.selectedSource ===
+			class="m3-label-large relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center transition-colors duration-200 {transferState.selectedSource ===
 			'SHARE_LINK'
 				? 'text-on-secondary-container'
 				: 'text-on-surface-variant hover:text-on-surface'}"
@@ -122,7 +122,7 @@
 		</button>
 		<button
 			type="button"
-			class="relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center text-sm font-semibold transition-colors duration-200 {transferState.selectedSource ===
+			class="m3-label-large relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center transition-colors duration-200 {transferState.selectedSource ===
 			'HTML'
 				? 'text-on-secondary-container'
 				: 'text-on-surface-variant hover:text-on-surface'}"
@@ -139,7 +139,7 @@
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					<div>
-						<h2 class="m3-title-medium font-bold text-on-surface">从知行理工获取</h2>
+						<h2 class="m3-title-medium text-on-surface">从知行理工获取</h2>
 						<p class="m3-body-small mt-0.5 text-on-surface-variant">
 							请输入您在知行理工的学号与密码在线抓取课表。
 						</p>
@@ -147,9 +147,7 @@
 
 					<div class="flex flex-col gap-3.5 pt-1">
 						<div class="flex flex-col gap-1">
-							<label for="import-account" class="text-xs font-medium text-on-surface-variant"
-								>账号</label
-							>
+							<label for="import-account" class="m3-field-label">账号</label>
 							<input
 								id="import-account"
 								type="text"
@@ -157,20 +155,18 @@
 								value={transferState.account}
 								oninput={(event) =>
 									transfer.setAccount((event.currentTarget as HTMLInputElement).value)}
-								class="w-full rounded-lg border border-outline bg-surface px-3.5 py-2 text-sm text-on-surface outline-none focus:border-brand"
+								class="m3-field-input"
 							/>
 						</div>
 						<div class="flex flex-col gap-1">
-							<label for="import-password" class="text-xs font-medium text-on-surface-variant"
-								>密码</label
-							>
+							<label for="import-password" class="m3-field-label">密码</label>
 							<input
 								id="import-password"
 								type="password"
 								value={transferState.password}
 								oninput={(event) =>
 									transfer.setPassword((event.currentTarget as HTMLInputElement).value)}
-								class="w-full rounded-lg border border-outline bg-surface px-3.5 py-2 text-sm text-on-surface outline-none focus:border-brand"
+								class="m3-field-input"
 							/>
 						</div>
 						<label
@@ -198,7 +194,7 @@
 
 					{#if transferState.savedCredentialState.hasSavedCredential}
 						<div class="flex flex-col gap-3 border-t border-outline-variant/60 pt-4">
-							<p class="m3-title-small font-bold text-on-surface">
+							<p class="m3-title-small text-on-surface">
 								已保存账号：{transferState.savedCredentialState.account ?? '未知'}
 							</p>
 							{#if transferState.savedCredentialState.protectionAvailable}
@@ -239,7 +235,7 @@
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					<div>
-						<h2 class="m3-title-medium font-bold text-on-surface">从分享链接导入</h2>
+						<h2 class="m3-title-medium text-on-surface">从分享链接导入</h2>
 						<p class="m3-body-small mt-0.5 text-on-surface-variant">
 							复制课表分享链接后点击下方按钮
 						</p>
@@ -261,7 +257,7 @@
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					<div>
-						<h2 class="m3-title-medium font-bold text-on-surface">从文件导入课表</h2>
+						<h2 class="m3-title-medium text-on-surface">从文件导入课表</h2>
 						<p class="m3-body-small mt-0.5 text-on-surface-variant">
 							选择教务系统导出的 HTML 课表文件。
 						</p>

@@ -47,5 +47,5 @@
 		{/snippet}
 	</Dialog>
 {:else}
-	<p class="p-4 text-sm text-on-surface-variant">未找到当前课表</p>
+	<p class="m3-body-medium p-4 text-on-surface-variant">未找到当前课表</p>
 {/if}

@@ -52,7 +52,9 @@
 					{/if}
 				</span>
 				<span
-					class="text-xs {active ? 'font-semibold text-on-secondary-container' : 'font-medium'}"
+					class="m3-label-small {active
+						? 'text-on-secondary-container'
+						: 'text-on-surface-variant'}"
 				>
 					{tab.label}
 				</span>

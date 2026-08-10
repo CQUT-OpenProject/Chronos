@@ -50,5 +50,5 @@
 		</Dialog>
 	{/if}
 {:else}
-	<p class="p-4 text-sm text-on-surface-variant">未找到课程</p>
+	<p class="m3-body-medium p-4 text-on-surface-variant">未找到课程</p>
 {/if}

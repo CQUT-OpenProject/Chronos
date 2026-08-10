@@ -34,7 +34,7 @@
 		{href}
 		{onclick}
 		{...props}
-		class="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full px-6 text-sm font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand {disabled
+		class="m3-label-large inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full px-6 transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand {disabled
 			? 'pointer-events-none opacity-40'
 			: ''} {variantClasses[variant]} {className}"
 	>
@@ -46,7 +46,7 @@
 		{disabled}
 		{onclick}
 		{...props}
-		class="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full px-6 text-sm font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:pointer-events-none disabled:opacity-40 {variantClasses[
+		class="m3-label-large inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full px-6 transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:pointer-events-none disabled:opacity-40 {variantClasses[
 			variant
 		]} {className}"
 	>

@@ -31,7 +31,7 @@
 				</Dialog.Title>
 			{/if}
 			{#if description}
-				<Dialog.Description class="text-sm text-on-surface-variant">
+				<Dialog.Description class="m3-body-medium text-on-surface-variant">
 					{description}
 				</Dialog.Description>
 			{/if}

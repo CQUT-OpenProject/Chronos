@@ -17,7 +17,7 @@
 	<div class="flex flex-col items-center gap-1">
 		<h1 class="m3-headline-small font-semibold text-on-surface">{title}</h1>
 		{#if subtitle}
-			<p class="m3-body-medium text-xs text-on-surface-variant">{subtitle}</p>
+			<p class="m3-body-small text-on-surface-variant">{subtitle}</p>
 		{/if}
 	</div>
 </div>

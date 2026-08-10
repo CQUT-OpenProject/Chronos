@@ -61,7 +61,7 @@
 			disabled={loading ||
 				(isHtmlImport &&
 					(!transferState.htmlImportTermStartDate || !transferState.htmlImportCampusId))}
-			class="h-12 w-full text-base font-semibold shadow-xs"
+			class="m3-body-large h-12 w-full shadow-xs"
 			onclick={handleConfirm}
 		>
 			{#if loading}
@@ -81,11 +81,11 @@
 			<Card variant="filled" class="border border-outline-variant/50 !bg-surface-variant/30 p-4.5">
 				<div class="flex flex-col gap-3.5">
 					<div class="flex items-center justify-between gap-3">
-						<h2 class="m3-title-medium flex-1 font-bold text-on-surface">
+						<h2 class="m3-title-medium flex-1 text-on-surface">
 							{preview.name}
 						</h2>
 						<span
-							class="inline-flex items-center rounded-full bg-secondary-container px-3 py-1 text-xs font-semibold text-on-secondary-container"
+							class="m3-label-large inline-flex items-center rounded-full bg-secondary-container px-3 py-1 text-on-secondary-container"
 						>
 							{previewSourceLabel(transferState.previewSource)}
 						</span>
@@ -95,7 +95,7 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small font-medium text-on-surface-variant">课程数</span>
+							<span class="m3-body-small text-on-surface-variant">课程数</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{displayedCourseCount}</span
 							>
@@ -103,7 +103,7 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small font-medium text-on-surface-variant">开始周</span>
+							<span class="m3-body-small text-on-surface-variant">开始周</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{preview.academicConfig.startWeek}</span
 							>
@@ -111,7 +111,7 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small font-medium text-on-surface-variant">结束周</span>
+							<span class="m3-body-small text-on-surface-variant">结束周</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{preview.academicConfig.endWeek}</span
 							>
@@ -122,7 +122,7 @@
 
 			<!-- Import Mode Selection Section -->
 			<div class="flex flex-col gap-3">
-				<h3 class="m3-title-medium px-1 font-semibold text-on-surface">导入方式</h3>
+				<h3 class="m3-title-medium px-1 text-on-surface">导入方式</h3>
 
 				<div class="flex flex-col gap-2.5">
 					<button
@@ -177,7 +177,7 @@
 
 				<Card variant="outlined" class="p-4">
 					<div class="flex flex-col gap-3">
-						<h3 class="m3-title-medium font-semibold text-on-surface">学期起始日期</h3>
+						<h3 class="m3-title-medium text-on-surface">学期起始日期</h3>
 						<div
 							class="relative flex items-center rounded-xl border border-outline bg-surface px-3.5 py-2.5 text-on-surface transition-all focus-within:border-2 focus-within:border-brand"
 						>

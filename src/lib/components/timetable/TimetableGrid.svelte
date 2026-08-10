@@ -267,7 +267,7 @@
 	<div class="relative z-10 flex h-full min-h-0 w-full flex-col">
 		<div class="flex shrink-0 items-center py-2" {@attach gridHeaderMeasureAttach}>
 			<div
-				class="flex w-[var(--sidebar-width)] flex-col items-center text-center text-xs text-on-surface-variant"
+				class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
 			>
 				<span>{gridModel.monthLabel}</span>
 				<span>月</span>
@@ -275,11 +275,11 @@
 			<div class="flex min-w-0 flex-1">
 				{#each gridModel.visibleDays as day (day.dayOfWeek)}
 					<div class="flex min-w-0 flex-1 flex-col items-center">
-						<span class="text-xs text-on-surface-variant"
+						<span class="m3-body-small text-on-surface-variant"
 							>{timetableDayShortLabel(day.dayOfWeek)}</span
 						>
 						<div
-							class="mt-1 flex size-[26px] items-center justify-center rounded-full text-sm {day.isToday
+							class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
 								? 'bg-brand text-on-primary'
 								: 'text-on-surface'}"
 						>
@@ -311,11 +311,11 @@
 									? 'bg-brand text-on-primary'
 									: ''}"
 							>
-								<span class="text-sm font-bold">
+								<span class="m3-body-medium font-bold">
 									{period.index}
 								</span>
 								<span
-									class="mt-1 text-[10px] leading-tight {isActive ? '' : 'text-on-surface-variant'}"
+									class="m3-caption mt-1 leading-tight {isActive ? '' : 'text-on-surface-variant'}"
 								>
 									{period.startTime}<br />{period.endTime}
 								</span>

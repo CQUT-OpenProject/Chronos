@@ -34,7 +34,7 @@
 		className
 	]}
 >
-	<span class="text-sm">{label}</span>
+	<span class="m3-body-medium">{label}</span>
 	<div class="flex items-center gap-2">
 		<Button
 			variant="text"
@@ -45,7 +45,7 @@
 		>
 			-
 		</Button>
-		<span>{value}</span>
+		<span class="m3-body-large">{value}</span>
 		<Button
 			variant="text"
 			class="size-8 min-w-8 px-0"

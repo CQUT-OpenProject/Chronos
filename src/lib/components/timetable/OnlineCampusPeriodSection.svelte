@@ -27,5 +27,5 @@
 </MineSection>
 
 {#if missingCampusMessage}
-	<p class="px-1 text-sm text-on-surface-variant">{missingCampusMessage}</p>
+	<p class="m3-body-medium px-1 text-on-surface-variant">{missingCampusMessage}</p>
 {/if}
