@@ -24,7 +24,7 @@
 			<button
 				type="button"
 				class="h-[34px] w-[34px] rounded-[32px] border-2 {isSelected
-					? 'border-brand dark:border-soft-blue'
+					? 'border-brand'
 					: 'border-transparent'}"
 				style:background-color={color.background}
 				aria-label={`选择颜色 ${color.background}`}

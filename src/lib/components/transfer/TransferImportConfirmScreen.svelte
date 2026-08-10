@@ -129,7 +129,7 @@
 						type="button"
 						class="flex min-h-[56px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {transferState.importMode ===
 						ImportMode.AS_NEW
-							? 'border-brand bg-primary-container/30 shadow-xs dark:border-soft-blue'
+							? 'border-brand bg-primary-container/30 shadow-xs'
 							: 'border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
 						onclick={() => transfer.setImportMode(ImportMode.AS_NEW)}
 					>
@@ -147,7 +147,7 @@
 						type="button"
 						class="flex min-h-[56px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {transferState.importMode ===
 						ImportMode.OVERWRITE_CURRENT
-							? 'border-brand bg-primary-container/30 shadow-xs dark:border-soft-blue'
+							? 'border-brand bg-primary-container/30 shadow-xs'
 							: 'border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
 						onclick={() => transfer.setImportMode(ImportMode.OVERWRITE_CURRENT)}
 					>

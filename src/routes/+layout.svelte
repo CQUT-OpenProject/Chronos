@@ -21,7 +21,6 @@
 	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import '$lib/m3/m3.css';
-	import { chronosM3Theme } from '$lib/m3/theme';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { pwaInfo } from 'virtual:pwa-info';
@@ -65,9 +64,6 @@
 </script>
 
 <svelte:head>
-	<style>
-		{@html chronosM3Theme}
-	</style>
 	{@html webManifestLink}
 	<link rel="icon" href={favicon} />
 </svelte:head>

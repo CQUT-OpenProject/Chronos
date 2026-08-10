@@ -1,3 +1,6 @@
+import { writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
 	ContrastCurve,
 	DynamicColor,
@@ -104,6 +107,13 @@ const allDynamicColors = [
 	onErrorContainerSubtle
 ];
 
+const CHRONOS_COLOR_ALIASES = [
+	{ name: 'brand', source: 'primary' },
+	{ name: 'brand-muted', source: 'primary-container-subtle' },
+	{ name: 'soft-blue', source: 'inverse-primary' },
+	{ name: 'surface-variant', source: 'surface-container-low' }
+] as const;
+
 function argbToHex(argb: number) {
 	const rgb = argb & 0xffffff;
 	const hex = rgb.toString(16).padStart(6, '0');
@@ -113,25 +123,51 @@ function argbToHex(argb: number) {
 	return `#${hex}`;
 }
 
-function genColorVariable(name: string, lightArgb: number, darkArgb: number) {
-	const kebabCase = name.replaceAll('_', '-');
-	const lightHex = argbToHex(lightArgb);
-	const darkHex = argbToHex(darkArgb);
-	return `    --m3c-${kebabCase}: ${lightHex === darkHex ? lightHex : `light-dark(${lightHex}, ${darkHex})`};`;
+function toKebabCase(name: string) {
+	return name.replaceAll('_', '-');
 }
 
-function buildThemeCSS() {
+function genColorVariable(name: string, lightArgb: number, darkArgb: number) {
+	const kebabCase = toKebabCase(name);
+	const lightHex = argbToHex(lightArgb);
+	const darkHex = argbToHex(darkArgb);
+	return `    --color-${kebabCase}: ${lightHex === darkHex ? lightHex : `light-dark(${lightHex}, ${darkHex})`};`;
+}
+
+function getM3ColorNames(): string[] {
+	return allDynamicColors.map((color) => toKebabCase(color.name));
+}
+
+export function buildGeneratedThemeCss() {
 	const colorVars = allDynamicColors
 		.map((color) => genColorVariable(color.name, color.getArgb(light), color.getArgb(dark)))
 		.join('\n');
-	return `:root {
-  color-scheme: light dark;
-}
+
+	const themeInlineVars = [
+		...getM3ColorNames().map((name) => `  --color-${name}: var(--color-${name});`),
+		...CHRONOS_COLOR_ALIASES.map(
+			(alias) => `  --color-${alias.name}: var(--color-${alias.source});`
+		)
+	].join('\n');
+
+	return `/* generated, do not edit */
+
 @layer tokens {
   :root {
 ${colorVars}
   }
-}`;
 }
 
-export const chronosM3Theme = buildThemeCSS();
+@theme inline {
+${themeInlineVars}
+}
+`;
+}
+
+const generatedThemePath = resolve(dirname(fileURLToPath(import.meta.url)), 'generated-theme.css');
+
+export function writeGeneratedThemeCss() {
+	const css = buildGeneratedThemeCss();
+	writeFileSync(generatedThemePath, css, 'utf8');
+	return generatedThemePath;
+}

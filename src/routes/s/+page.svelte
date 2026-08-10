@@ -50,6 +50,6 @@
 		<p class="m3-body-large text-on-surface">正在导入课表…</p>
 	{:else}
 		<p class="m3-body-large text-on-surface-variant">无法导入课表</p>
-		<a href={resolve('/transfer/import')} class="m3-label-large text-primary">前往手动导入</a>
+		<a href={resolve('/transfer/import')} class="m3-label-large text-brand">前往手动导入</a>
 	{/if}
 </div>

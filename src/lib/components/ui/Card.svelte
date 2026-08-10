@@ -14,8 +14,8 @@
 	} & HTMLAttributes<HTMLDivElement> = $props();
 
 	const variantClasses = {
-		elevated: 'bg-surface text-on-surface shadow-xs border border-outline-variant/40',
-		outlined: 'border border-outline-variant bg-surface text-on-surface',
+		elevated: 'bg-surface text-on-surface shadow-xs border border-border/60',
+		outlined: 'border border-border/60 bg-surface text-on-surface',
 		filled: 'bg-surface-variant/50 text-on-surface'
 	};
 </script>

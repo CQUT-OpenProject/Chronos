@@ -13,9 +13,7 @@
 </script>
 
 <li class="flex items-center gap-3.5">
-	<div
-		class="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-	>
+	<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
 		<Icon class="h-5 w-5" />
 	</div>
 	<div class="flex min-w-0 flex-1 flex-col justify-center">

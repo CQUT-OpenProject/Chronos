@@ -64,9 +64,9 @@
 		findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
 	);
 
-	const shellBgClass = $derived(hasWallpaper ? '' : isDark ? 'bg-zinc-900' : 'bg-white');
+	const shellBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
 
-	const gridBodySolidBgClass = $derived(hasWallpaper ? '' : isDark ? 'bg-zinc-900' : 'bg-white');
+	const gridBodySolidBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
 
 	let gridHeaderHeight = $state(0);
 
@@ -267,7 +267,7 @@
 	<div class="relative z-10 flex h-full min-h-0 w-full flex-col">
 		<div class="flex shrink-0 items-center py-2" {@attach gridHeaderMeasureAttach}>
 			<div
-				class="flex w-[var(--sidebar-width)] flex-col items-center text-center text-xs text-zinc-500"
+				class="flex w-[var(--sidebar-width)] flex-col items-center text-center text-xs text-on-surface-variant"
 			>
 				<span>{gridModel.monthLabel}</span>
 				<span>月</span>
@@ -275,11 +275,13 @@
 			<div class="flex min-w-0 flex-1">
 				{#each gridModel.visibleDays as day (day.dayOfWeek)}
 					<div class="flex min-w-0 flex-1 flex-col items-center">
-						<span class="text-xs text-zinc-500">{timetableDayShortLabel(day.dayOfWeek)}</span>
+						<span class="text-xs text-on-surface-variant"
+							>{timetableDayShortLabel(day.dayOfWeek)}</span
+						>
 						<div
 							class="mt-1 flex size-[26px] items-center justify-center rounded-full text-sm {day.isToday
-								? 'bg-brand text-white dark:bg-soft-blue dark:text-ink'
-								: 'text-zinc-900 dark:text-zinc-100'}"
+								? 'bg-brand text-on-primary'
+								: 'text-on-surface'}"
 						>
 							{dayOfMonth(day.date)}
 						</div>
@@ -306,16 +308,14 @@
 						>
 							<div
 								class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
-									? 'bg-brand-muted dark:bg-soft-blue/25'
+									? 'bg-brand text-on-primary'
 									: ''}"
 							>
-								<span class="text-sm font-bold {isActive ? 'text-brand dark:text-soft-blue' : ''}">
+								<span class="text-sm font-bold">
 									{period.index}
 								</span>
 								<span
-									class="mt-1 text-[10px] leading-tight {isActive
-										? 'text-brand dark:text-soft-blue'
-										: 'text-zinc-500'}"
+									class="mt-1 text-[10px] leading-tight {isActive ? '' : 'text-on-surface-variant'}"
 								>
 									{period.startTime}<br />{period.endTime}
 								</span>
@@ -341,13 +341,10 @@
 							{#if item.kind === 'overlap-placeholder'}
 								<button
 									type="button"
-									class="flex h-full w-full items-center justify-center rounded-xl border border-zinc-300/50 bg-zinc-100 p-2 text-center shadow-sm dark:border-zinc-600/50 dark:bg-zinc-800/60"
+									class="flex h-full w-full items-center justify-center rounded-xl border border-outline-variant/50 bg-surface-variant p-2 text-center shadow-sm"
 									onclick={() => expandSlot(item.key)}
 								>
-									<span
-										class="text-zinc-600 dark:text-zinc-300"
-										style:font-size="{item.placeholderPx}px"
-									>
+									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
 										此时段有 {item.count} 门课程重叠
 									</span>
 								</button>

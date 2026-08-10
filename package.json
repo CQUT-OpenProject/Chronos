@@ -14,6 +14,7 @@
 		"format": "vp fmt .",
 		"test:unit": "vp test",
 		"test": "vp test -- --run",
+		"theme:generate": "node --experimental-strip-types scripts/generate-theme-tokens.ts",
 		"icons:png": "node --experimental-strip-types scripts/generate-icons.ts",
 		"bench:share-link": "node --experimental-strip-types scripts/share-link-compression-benchmark.ts"
 	},

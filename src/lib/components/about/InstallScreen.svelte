@@ -72,7 +72,7 @@
 	<!-- Action / Guide Area -->
 	{#if pwaInstallController.isStandalone}
 		<Card variant="filled" class="text-center">
-			<p class="m3-title-small text-primary flex items-center justify-center gap-2 font-bold">
+			<p class="m3-title-small flex items-center justify-center gap-2 font-bold text-brand">
 				<CheckCircleFill class="h-5 w-5" />
 				<span>Chronos 已安装</span>
 			</p>
@@ -83,7 +83,7 @@
 	{:else if pwaInstallController.isInstalledLocally}
 		<Card variant="outlined">
 			<div class="flex flex-col gap-4">
-				<p class="m3-title-small text-primary flex items-center justify-center gap-2 font-bold">
+				<p class="m3-title-small flex items-center justify-center gap-2 font-bold text-brand">
 					<CheckCircleFill class="h-5 w-5" />
 					<span>Chronos 已安装</span>
 				</p>
@@ -103,7 +103,7 @@
 			<ol class="flex flex-col gap-3 text-on-surface-variant">
 				<li class="flex items-start gap-2.5">
 					<span
-						class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+						class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
 						>1</span
 					>
 					<span class="m3-body-medium text-xs"
@@ -112,7 +112,7 @@
 				</li>
 				<li class="flex items-start gap-2.5">
 					<span
-						class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+						class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
 						>2</span
 					>
 					<span class="m3-body-medium text-xs"
@@ -121,7 +121,7 @@
 				</li>
 				<li class="flex items-start gap-2.5">
 					<span
-						class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+						class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
 						>3</span
 					>
 					<span class="m3-body-medium text-xs"
@@ -137,18 +137,18 @@
 			<ol class="flex flex-col gap-3 text-on-surface-variant">
 				<li class="flex items-start gap-2.5">
 					<span
-						class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+						class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
 						>1</span
 					>
 					<span class="m3-body-medium text-xs">
 						点击 Safari 底部的 <strong>
-							分享图标 <IosShareFill class="text-primary inline h-3.5 w-3.5" />
+							分享图标 <IosShareFill class="inline h-3.5 w-3.5 text-brand" />
 						</strong>
 					</span>
 				</li>
 				<li class="flex items-start gap-2.5">
 					<span
-						class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+						class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
 						>2</span
 					>
 					<span class="m3-body-medium text-xs"
@@ -157,7 +157,7 @@
 				</li>
 				<li class="flex items-start gap-2.5">
 					<span
-						class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+						class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
 						>3</span
 					>
 					<span class="m3-body-medium text-xs">点击右上角 <strong>“添加”</strong> 确认</span>

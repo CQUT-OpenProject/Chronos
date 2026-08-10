@@ -20,6 +20,6 @@
 		</div>
 	{:else}
 		<pre
-			class="text-xs leading-relaxed whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">{licenseText}</pre>
+			class="text-xs leading-relaxed whitespace-pre-wrap text-on-surface-variant">{licenseText}</pre>
 	{/if}
 </SecondaryPageShell>

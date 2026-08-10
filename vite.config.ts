@@ -6,6 +6,19 @@ import { playwright } from 'vite-plus/test/browser-playwright';
 import adapter from '@sveltejs/adapter-vercel';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import { writeGeneratedThemeCss } from './src/lib/m3/theme';
+
+function chronosThemeTokensPlugin() {
+	return {
+		name: 'chronos-theme-tokens',
+		configureServer() {
+			writeGeneratedThemeCss();
+		},
+		buildStart() {
+			writeGeneratedThemeCss();
+		}
+	};
+}
 
 export default defineConfig({
 	define: {
@@ -245,6 +258,7 @@ export default defineConfig({
 		]
 	},
 	plugins: lazyPlugins(() => [
+		chronosThemeTokensPlugin(),
 		functionsMixins(),
 		tailwindcss(),
 		sveltekit({

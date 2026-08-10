@@ -10,7 +10,7 @@
 >
 	<img src={favicon} alt="" class="h-[220px] w-[220px]" aria-hidden="true" />
 
-	<p class="m3-label-large font-semibold text-brand dark:text-soft-blue">Chronos</p>
+	<p class="m3-label-large font-semibold text-brand">Chronos</p>
 	<h2 class="m3-headline-medium font-bold text-on-surface">还没有课程表</h2>
 
 	<div class="mt-4">

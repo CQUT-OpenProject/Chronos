@@ -76,9 +76,7 @@
 				onclick={() => (remarkExpanded = !remarkExpanded)}
 			>
 				<span>备注</span>
-				<span class="text-xs text-brand dark:text-soft-blue"
-					>{remarkExpanded ? '收起' : '展开'}</span
-				>
+				<span class="text-xs text-brand">{remarkExpanded ? '收起' : '展开'}</span>
 			</button>
 			{#if remarkExpanded}
 				<p class="mt-2 text-sm text-on-surface-variant" transition:slide={{ duration: 200 }}>

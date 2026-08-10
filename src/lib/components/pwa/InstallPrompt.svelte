@@ -48,18 +48,18 @@
 		<ol class="flex flex-col gap-2 pt-1">
 			<li class="flex items-start gap-2">
 				<span
-					class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+					class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
 					>1</span
 				>
 				<span>
 					点击 Safari 浏览器底部的 <strong class="inline-flex items-center gap-1 text-on-surface">
-						分享图标 <IosShareFill class="text-primary inline h-4 w-4" />
+						分享图标 <IosShareFill class="inline h-4 w-4 text-brand" />
 					</strong>
 				</span>
 			</li>
 			<li class="flex items-start gap-2">
 				<span
-					class="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+					class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
 					>2</span
 				>
 				<span>
