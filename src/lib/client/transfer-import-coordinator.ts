@@ -2,6 +2,8 @@ import type { TransferServices } from '$lib/client/transfer-services';
 import type { SecureCredentialStore } from '$lib/domain/interfaces/secure-credential-store';
 import { ImportMode } from '$lib/domain/import-mode';
 import type { SavedCredentialState } from '$lib/models/auth';
+import type { CqutCampusId } from '$lib/models/cqut-campus';
+import { getCampusDefaultPeriodTimes } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import { createPrfCredential, getPrfOutput } from '$lib/client/webauthn/prf-coordinator';
 import { base64ToBytes } from '$lib/client/webauthn/binary';
@@ -247,18 +249,28 @@ export function createTransferImportCoordinator({
 		preview: Timetable,
 		previewSource: TransferImportSource,
 		importMode: ImportMode,
-		htmlImportTermStartDate: string | null
+		htmlImportTermStartDate: string | null,
+		htmlImportCampusId: CqutCampusId | null
 	): Promise<ImportOutcome> {
 		let finalPreview = preview;
 		if (previewSource === 'HTML') {
 			if (!htmlImportTermStartDate) {
 				return { ok: false, errorMessage: '请选择学期起始日期' };
 			}
+			if (!htmlImportCampusId) {
+				return { ok: false, errorMessage: '请选择校区' };
+			}
+			const periodTimes = getCampusDefaultPeriodTimes(htmlImportCampusId);
 			finalPreview = {
 				...preview,
 				academicConfig: {
 					...preview.academicConfig,
-					termStartDate: htmlImportTermStartDate
+					termStartDate: htmlImportTermStartDate,
+					periodTimes
+				},
+				importMetadata: {
+					...preview.importMetadata,
+					campusId: htmlImportCampusId
 				}
 			};
 		}

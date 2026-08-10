@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
 	consolidateCourses,
+	countDistinctCourseNames,
 	sanitizeAddress,
 	sanitizeEventFields,
 	sanitizeTeacher
@@ -55,6 +56,32 @@ describe('import-course-utils', () => {
 
 		expect(courses).toHaveLength(1);
 		expect(courses[0]?.weeks).toEqual([3, 4]);
+	});
+
+	it('counts distinct course names across time slots', () => {
+		expect(
+			countDistinctCourseNames([
+				course({ name: '数据库原理及应用', startPeriod: 1 }),
+				course({ name: '数据库原理及应用', startPeriod: 3, dayOfWeek: 3 })
+			])
+		).toBe(1);
+		expect(
+			countDistinctCourseNames([course({ name: '数据库原理及应用' }), course({ name: '操作系统' })])
+		).toBe(2);
+	});
+
+	it('normalizes course names before counting', () => {
+		expect(
+			countDistinctCourseNames([
+				course({ name: '数据库原理及应用' }),
+				course({ name: '【调】数据库原理及应用' }),
+				course({ name: '操作系统★' })
+			])
+		).toBe(2);
+	});
+
+	it('returns zero for an empty course list', () => {
+		expect(countDistinctCourseNames([])).toBe(0);
 	});
 });
 

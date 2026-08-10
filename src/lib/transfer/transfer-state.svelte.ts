@@ -5,6 +5,8 @@ import { createCredentialServices } from '$lib/client/credential-services';
 import { createTransferImportCoordinator } from '$lib/client/transfer-import-coordinator';
 import type { TransferImportSource } from '$lib/client/preview-persistence';
 import type { SavedCredentialState } from '$lib/models/auth';
+import type { CqutCampusId } from '$lib/models/cqut-campus';
+import { inferCampusIdFromCourses } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
 import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
@@ -18,6 +20,7 @@ export interface TransferPreviewState {
 	previewSource: TransferImportSource | null;
 	importMode: ImportMode;
 	htmlImportTermStartDate: string | null;
+	htmlImportCampusId: CqutCampusId | null;
 	selectedSource: TransferImportSource;
 	account: string;
 	password: string;
@@ -36,6 +39,7 @@ export function createTransferState(
 	let previewSource = $state<TransferImportSource | null>(null);
 	let importMode = $state<ImportMode>(ImportMode.AS_NEW);
 	let htmlImportTermStartDate = $state<string | null>(null);
+	let htmlImportCampusId = $state<CqutCampusId | null>(null);
 	let account = $state('');
 	let password = $state('');
 	let saveCredentials = $state(false);
@@ -74,6 +78,7 @@ export function createTransferState(
 		preview = null;
 		previewSource = null;
 		htmlImportTermStartDate = null;
+		htmlImportCampusId = null;
 		clearMessages();
 	}
 
@@ -108,10 +113,15 @@ export function createTransferState(
 		);
 	}
 
+	function setHtmlImportCampusId(campusId: CqutCampusId) {
+		htmlImportCampusId = campusId;
+	}
+
 	function clearPreview() {
 		preview = null;
 		previewSource = null;
 		htmlImportTermStartDate = null;
+		htmlImportCampusId = null;
 		coordinator.clearPersistedPreview();
 		clearMessages();
 	}
@@ -126,6 +136,7 @@ export function createTransferState(
 		preview = result.preview;
 		previewSource = result.source;
 		htmlImportTermStartDate = null;
+		htmlImportCampusId = null;
 		return true;
 	}
 
@@ -139,6 +150,7 @@ export function createTransferState(
 		preview = result.preview;
 		previewSource = result.source;
 		htmlImportTermStartDate = null;
+		htmlImportCampusId = inferCampusIdFromCourses(result.preview.courses);
 		return true;
 	}
 
@@ -157,6 +169,7 @@ export function createTransferState(
 		preview = result.preview;
 		previewSource = result.source;
 		htmlImportTermStartDate = null;
+		htmlImportCampusId = null;
 		if (result.statusMessage) {
 			statusMessage = result.statusMessage;
 		}
@@ -173,6 +186,7 @@ export function createTransferState(
 		preview = result.preview;
 		previewSource = result.source;
 		htmlImportTermStartDate = null;
+		htmlImportCampusId = null;
 		if (result.account) account = result.account;
 		if (result.password) password = result.password;
 		return true;
@@ -199,7 +213,8 @@ export function createTransferState(
 			preview,
 			previewSource,
 			importMode,
-			htmlImportTermStartDate
+			htmlImportTermStartDate,
+			htmlImportCampusId
 		});
 	}
 
@@ -210,6 +225,11 @@ export function createTransferState(
 		previewSource = snapshot.previewSource;
 		importMode = snapshot.importMode;
 		htmlImportTermStartDate = snapshot.htmlImportTermStartDate;
+		htmlImportCampusId =
+			snapshot.htmlImportCampusId ??
+			(snapshot.previewSource === 'HTML'
+				? inferCampusIdFromCourses(snapshot.preview.courses)
+				: null);
 		return true;
 	}
 
@@ -228,7 +248,8 @@ export function createTransferState(
 			preview,
 			previewSource,
 			importMode,
-			htmlImportTermStartDate
+			htmlImportTermStartDate,
+			htmlImportCampusId
 		);
 		if (!result.ok) {
 			errorMessage = result.errorMessage;
@@ -258,6 +279,7 @@ export function createTransferState(
 		previewSource,
 		importMode,
 		htmlImportTermStartDate,
+		htmlImportCampusId,
 		account,
 		password,
 		saveCredentials,
@@ -276,6 +298,7 @@ export function createTransferState(
 		setSaveCredentials,
 		setImportMode,
 		setHtmlImportTermStartDate,
+		setHtmlImportCampusId,
 		clearPreview,
 		previewFromClipboard,
 		previewFromHtmlFile,

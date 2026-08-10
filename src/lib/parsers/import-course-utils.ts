@@ -1,5 +1,6 @@
 import type { Course } from '$lib/models/course';
 import type { OnlineScheduleEvent } from '$lib/models/online-schedule';
+import { normalizedCourseName } from '$lib/parsers/course-palette';
 
 const YEAR_TERM_PATTERN = /^\d{4}-\d{4}-\d+$/;
 const CAMPUS_PATTERN = /[^ ]+校区/g;
@@ -68,4 +69,9 @@ export function consolidateCourses(courses: Course[]): Course[] {
 	}
 
 	return [...merged.values()];
+}
+
+export function countDistinctCourseNames(courses: Course[]): number {
+	if (courses.length === 0) return 0;
+	return new Set(courses.map((course) => normalizedCourseName(course.name))).size;
 }
