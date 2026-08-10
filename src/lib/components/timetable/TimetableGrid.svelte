@@ -7,6 +7,10 @@
 	import { placeCapsules, type PlacedCourseCapsule } from '$lib/timetable/capsule-layout';
 	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
 	import {
+		buildCourseCapsuleAriaLabel,
+		buildOverlapPlaceholderAriaLabel
+	} from '$lib/timetable/course-a11y';
+	import {
 		computeDelayUntilNextCurrentTimeRefreshMillis,
 		currentTimeMinutes,
 		findCurrentPeriodIndex,
@@ -216,6 +220,12 @@
 					return;
 				}
 				onCourseClick?.(course);
+			},
+			onkeydown: (event: KeyboardEvent) => {
+				if (event.key === 'Enter' && event.shiftKey && onCourseLongClick) {
+					event.preventDefault();
+					onCourseLongClick(course);
+				}
 			}
 		};
 	}
@@ -294,9 +304,12 @@
 			{@attach bodyScrollAttach}
 			class="min-h-0 flex-1 overflow-y-auto"
 			style:padding-bottom={bottomContentPadding}
+			role="region"
+			aria-label="本周课程表"
 		>
 			<div class="flex" style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})">
 				<aside
+					aria-label="节次与时间"
 					class="shrink-0"
 					style:width="var(--sidebar-width)"
 					style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
@@ -342,6 +355,7 @@
 								<button
 									type="button"
 									class="flex h-full w-full items-center justify-center rounded-xl border border-outline-variant/50 bg-surface-variant p-2 text-center shadow-sm"
+									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
 									onclick={() => expandSlot(item.key)}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
@@ -374,12 +388,15 @@
 			: 'opacity-45'}"
 		style:background-color={colors.background}
 		style:border-color="color-mix(in srgb, {colors.text} 12%, transparent)"
+		aria-label={buildCourseCapsuleAriaLabel(placed.course, { teacher })}
+		aria-keyshortcuts="Shift+Enter"
 		oncontextmenu={handlers.oncontextmenu}
 		onpointerdown={handlers.onpointerdown}
 		onpointerup={handlers.onpointerup}
 		onpointerleave={handlers.onpointerleave}
 		onpointercancel={handlers.onpointercancel}
 		onclick={handlers.onclick}
+		onkeydown={handlers.onkeydown}
 	>
 		{#if placed.badgeLabel}
 			<span class="mb-0.5 flex w-full shrink-0 justify-center">

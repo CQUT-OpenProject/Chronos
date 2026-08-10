@@ -50,6 +50,32 @@
 			? timetableDayLabel(dayOfWeekFromIso(screenState.today))
 			: ''
 	);
+	const weekHeaderAriaLabel = $derived(
+		`第 ${displayedWeekNumber} 周，${weekRangeText}，点击返回本周`
+	);
+
+	function focusWeekSliderThumb() {
+		requestAnimationFrame(() => {
+			const slider = document.getElementById('week-slider');
+			const thumb = slider?.querySelector<HTMLElement>('[role="slider"]');
+			thumb?.focus();
+		});
+	}
+
+	function onWeekHeaderKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowDown' || (event.key === 'Enter' && event.shiftKey)) {
+			event.preventDefault();
+			if (weekGesture.openWeekSlider()) {
+				focusWeekSliderThumb();
+			}
+			return;
+		}
+
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			weekGesture.onHeaderTap();
+		}
+	}
 
 	function formatWeekRange(gridModel: TimetableGridModel | undefined) {
 		const days = gridModel?.visibleDays ?? [];
@@ -85,13 +111,18 @@
 				class="flex min-h-16 min-w-0 flex-1 cursor-pointer touch-none flex-col justify-center select-none"
 				role="button"
 				tabindex="0"
+				aria-label={weekHeaderAriaLabel}
+				aria-expanded={weekGesture.weekSliderVisible}
+				aria-controls={weekGesture.weekSliderVisible ? 'week-slider' : undefined}
 				onpointerdown={weekGesture.onPointerDown}
-				onkeydown={(event) => event.key === 'Enter' && weekGesture.onHeaderTap()}
+				onkeydown={onWeekHeaderKeydown}
 				oncontextmenu={(event) => event.preventDefault()}
 			>
 				<div class="flex h-7 items-center">
 					{#if weekGesture.weekSliderVisible && startWeek < endWeek}
 						<Slider
+							id="week-slider"
+							ariaLabel="选择教学周次"
 							bind:value={weekGesture.dragWeek}
 							min={startWeek}
 							max={endWeek}
