@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "vp dev",
 		"build": "vp build",
+		"build:pages": "CHRONOS_DEPLOY_TARGET=pages vp build",
 		"preview": "vp preview",
 		"prepare": "vp config && svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -36,6 +37,7 @@
 	"devDependencies": {
 		"@inlang/paraglide-js": "^2.18.2",
 		"@resvg/resvg-js": "^2.6.2",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/adapter-vercel": "^6.3.3",
 		"@sveltejs/kit": "^2.63.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",

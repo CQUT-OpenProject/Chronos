@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
+	import { onlineImportEnabled } from '$lib/config/features';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import AppHero from '$lib/components/AppHero.svelte';
@@ -172,7 +173,9 @@
 								<HighlightRow
 									icon={DownloadFill}
 									title="多种导入方式"
-									subtitle="知行理工在线导入、分享链接、HTML 文件均可"
+									subtitle={onlineImportEnabled
+										? '知行理工在线导入、分享链接、HTML 文件均可'
+										: '分享链接、HTML 文件均可导入'}
 								/>
 								<HighlightRow
 									icon={PaletteFill}
@@ -195,11 +198,13 @@
 								如何导入课表？
 							</h2>
 							<div class="flex flex-col gap-3">
-								{@render importMethodCard(
-									DownloadFill,
-									'知行理工在线导入',
-									'输入学号与密码，在线抓取课表'
-								)}
+								{#if onlineImportEnabled}
+									{@render importMethodCard(
+										DownloadFill,
+										'知行理工在线导入',
+										'输入学号与密码，在线抓取课表'
+									)}
+								{/if}
 								{@render importMethodCard(
 									IosShareFill,
 									'分享链接导入',

@@ -4,6 +4,7 @@ import { functionsMixins } from 'vite-plugin-functions-mixins';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 import { playwright } from 'vite-plus/test/browser-playwright';
 import adapter from '@sveltejs/adapter-vercel';
+import adapterStatic from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { writeGeneratedThemeCss } from './src/lib/m3/theme';
@@ -20,9 +21,16 @@ function chronosThemeTokensPlugin() {
 	};
 }
 
+// GitHub Pages 静态版：无服务端，用 adapter-static 构建，屏蔽知行理工在线导入。
+// vp build/dev 不支持自定义 --config，因此两套构建复用同一份 vite.config.ts，按环境变量分支。
+const isPagesBuild = process.env.CHRONOS_DEPLOY_TARGET === 'pages';
+const pagesBase = '/Chronos';
+const basePath = isPagesBuild ? pagesBase : '';
+
 export default defineConfig({
 	define: {
-		__BUILD_TIME__: JSON.stringify(new Date().toISOString())
+		__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+		__ONLINE_IMPORT_ENABLED__: JSON.stringify(!isPagesBuild)
 	},
 	staged: {
 		'*': 'vp check --fix'
@@ -267,7 +275,12 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			adapter: adapter()
+			paths: {
+				base: basePath
+			},
+			// GitHub Pages 没有服务端，fallback 用 404.html 才能让 GitHub Pages 的默认
+			// 404 兜底把深层链接导航请求交回 SvelteKit 客户端路由处理（经典 SPA on Pages 方案）。
+			adapter: isPagesBuild ? adapterStatic({ fallback: '404.html' }) : adapter()
 		}),
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
@@ -278,15 +291,15 @@ export default defineConfig({
 				theme_color: '#0068B7',
 				background_color: '#F7FAFC',
 				display: 'standalone',
-				start_url: '/',
-				id: '/',
+				start_url: `${basePath}/`,
+				id: `${basePath}/`,
 				launch_handler: {
 					client_mode: 'focus-existing'
 				},
 				icons: [
-					{ src: '/pwa-192.png', sizes: '192x192', type: 'image/png' },
+					{ src: `${basePath}/pwa-192.png`, sizes: '192x192', type: 'image/png' },
 					{
-						src: '/pwa-512.png',
+						src: `${basePath}/pwa-512.png`,
 						sizes: '512x512',
 						type: 'image/png',
 						purpose: 'any maskable'

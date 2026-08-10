@@ -12,6 +12,7 @@ import { ImportMode } from '$lib/domain/import-mode';
 import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
+import { onlineImportEnabled } from '$lib/config/features';
 
 export type { TransferImportSource };
 
@@ -34,7 +35,7 @@ export function createTransferState(
 	services: TransferServices = createTransferServices(),
 	credentialServices: CredentialServices = createCredentialServices()
 ) {
-	let selectedSource = $state<TransferImportSource>('ONLINE');
+	let selectedSource = $state<TransferImportSource>(onlineImportEnabled ? 'ONLINE' : 'SHARE_LINK');
 	let preview = $state<Timetable | null>(null);
 	let previewSource = $state<TransferImportSource | null>(null);
 	let importMode = $state<ImportMode>(ImportMode.AS_NEW);

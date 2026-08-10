@@ -5,17 +5,19 @@
 	import { canSaveCredentials, saveCredentialsLabel } from '$lib/transfer/transfer-state.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import FormCard from '$lib/components/ui/FormCard.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { WifiOffFill } from '$lib/icons';
+	import { onlineImportEnabled } from '$lib/config/features';
 
 	const importSegments = [
-		{ value: 'ONLINE', label: '知行理工' },
+		...(onlineImportEnabled ? [{ value: 'ONLINE', label: '知行理工' }] : []),
 		{ value: 'SHARE_LINK', label: '分享链接' },
 		{ value: 'HTML', label: 'HTML 文件' }
-	] as const;
+	];
 
 	let {
 		transfer,
@@ -95,17 +97,19 @@
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
 	<p class="m3-body-medium text-on-surface-variant">
-		支持知行理工在线导入、分享链接与教务系统导出的 HTML 文件。
+		{onlineImportEnabled
+			? '支持知行理工在线导入、分享链接与教务系统导出的 HTML 文件。'
+			: '支持分享链接与教务系统导出的 HTML 文件。'}
 	</p>
 
 	<SegmentedControl
-		segments={[...importSegments]}
+		segments={importSegments}
 		value={transferState.selectedSource}
 		onValueChange={(value) => transfer.setSelectedSource(value as TransferImportSource)}
 	/>
 
 	<div class="w-full">
-		{#if transferState.selectedSource === 'ONLINE'}
+		{#if onlineImportEnabled && transferState.selectedSource === 'ONLINE'}
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					{#if !networkStatus.isOnline}
@@ -125,7 +129,7 @@
 						</p>
 					</div>
 
-					<div class="flex flex-col gap-3.5 pt-1">
+					<FormCard>
 						<TextField
 							id="import-account"
 							label="账号"
@@ -141,17 +145,17 @@
 							value={transferState.password}
 							onValueChange={(value) => transfer.setPassword(value)}
 						/>
-						<label
-							class="m3-body-medium flex cursor-pointer items-center gap-2 pt-1 text-on-surface-variant"
-						>
-							<Checkbox
-								checked={transferState.saveCredentials}
-								disabled={!saveCheckboxEnabled}
-								onCheckedChange={(checked) => transfer.setSaveCredentials(checked)}
-							/>
-							<span>{saveCheckboxLabel}</span>
-						</label>
-					</div>
+					</FormCard>
+					<label
+						class="m3-body-medium flex cursor-pointer items-center gap-2 px-1 text-on-surface-variant"
+					>
+						<Checkbox
+							checked={transferState.saveCredentials}
+							disabled={!saveCheckboxEnabled}
+							onCheckedChange={(checked) => transfer.setSaveCredentials(checked)}
+						/>
+						<span>{saveCheckboxLabel}</span>
+					</label>
 
 					<div class="flex w-full pt-1">
 						<Button
