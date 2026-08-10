@@ -5,10 +5,12 @@
 	let {
 		value = $bindable(''),
 		placeholder = '搜索...',
+		ariaLabel = placeholder,
 		class: className = ''
 	}: {
 		value?: string;
 		placeholder?: string;
+		ariaLabel?: string;
 		class?: string;
 	} = $props();
 </script>
@@ -16,11 +18,12 @@
 <div
 	class="flex h-11 items-center gap-2.5 rounded-full border border-outline-variant bg-surface px-4 shadow-xs transition-colors focus-within:border-brand {className}"
 >
-	<Search class="size-5 shrink-0 text-on-surface-variant" />
+	<Search aria-hidden="true" class="size-5 shrink-0 text-on-surface-variant" />
 	<input
 		type="search"
 		bind:value
 		{placeholder}
+		aria-label={ariaLabel}
 		class="m3-body-medium w-full border-none bg-transparent p-0 text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
 	/>
 	{#if value}

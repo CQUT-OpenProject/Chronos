@@ -23,6 +23,9 @@
 	} & HTMLInputAttributes &
 		HTMLTextareaAttributes = $props();
 
+	const fallbackId = `text-field-${Math.random().toString(36).slice(2, 9)}`;
+	const fieldId = $derived(id ?? fallbackId);
+
 	const inputClass = 'm3-field-input';
 
 	function handleInput(event: Event) {
@@ -32,11 +35,12 @@
 	}
 </script>
 
-<label class={['block space-y-1', className]} for={id}>
+<label class={['block space-y-1', className]} for={fieldId}>
 	<span class="m3-field-label">{label}</span>
 	{#if multiline}
-		<textarea {id} class={inputClass} {rows} bind:value oninput={handleInput} {...props}></textarea>
+		<textarea id={fieldId} class={inputClass} {rows} bind:value oninput={handleInput} {...props}
+		></textarea>
 	{:else}
-		<input {id} class={inputClass} {type} bind:value oninput={handleInput} {...props} />
+		<input id={fieldId} class={inputClass} {type} bind:value oninput={handleInput} {...props} />
 	{/if}
 </label>

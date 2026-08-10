@@ -3,5 +3,7 @@
 </script>
 
 <div class="pb-[var(--bottom-bar-height)]">
-	{@render children()}
+	<main>
+		{@render children()}
+	</main>
 </div>

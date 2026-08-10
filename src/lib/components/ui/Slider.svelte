@@ -7,6 +7,8 @@
 		max = 100,
 		step = 1,
 		stops = false,
+		id,
+		ariaLabel,
 		onValueChange,
 		onValueCommit,
 		class: className = ''
@@ -16,6 +18,8 @@
 		max?: number;
 		step?: number;
 		stops?: boolean;
+		id?: string;
+		ariaLabel?: string;
 		onValueChange?: (val: number) => void;
 		onValueCommit?: (val: number) => void;
 		class?: string;
@@ -33,6 +37,8 @@
 
 <Slider.Root
 	type="single"
+	{id}
+	aria-label={ariaLabel}
 	{value}
 	onValueChange={handleValueChange}
 	onValueCommit={handleValueCommit}

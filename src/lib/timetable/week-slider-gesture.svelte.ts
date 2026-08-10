@@ -6,6 +6,10 @@ export interface WeekFromClientXInput {
 	endWeek: number;
 }
 
+export function canOpenWeekSlider(startWeek: number, endWeek: number): boolean {
+	return startWeek < endWeek;
+}
+
 export function weekFromClientX({
 	clientX,
 	rectLeft,
@@ -158,6 +162,13 @@ export function createWeekSliderGesture({
 		weekSliderVisible = false;
 	}
 
+	function openWeekSlider(): boolean {
+		if (!canOpenWeekSlider(getStartWeek(), getEndWeek())) return false;
+		dragWeek = getDisplayedWeek();
+		weekSliderVisible = true;
+		return true;
+	}
+
 	return {
 		get weekSliderVisible() {
 			return weekSliderVisible;
@@ -179,7 +190,8 @@ export function createWeekSliderGesture({
 		onWindowPointerUp,
 		onWindowPointerCancel,
 		onSliderCommit,
-		onHeaderTap
+		onHeaderTap,
+		openWeekSlider
 	};
 }
 

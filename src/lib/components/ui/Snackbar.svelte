@@ -4,7 +4,11 @@
 </script>
 
 {#if snackbarStore.open}
-	<div class="pointer-events-none fixed inset-x-4 bottom-20 z-[80] flex justify-center">
+	<div
+		class="pointer-events-none fixed inset-x-4 bottom-20 z-[80] flex justify-center"
+		role="status"
+		aria-live={snackbarStore.priority}
+	>
 		<div
 			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-inverse-on-surface shadow-lg transition-all duration-200"
 		>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
@@ -10,7 +11,10 @@
 
 	const screen = getContext<TimetableScreenController>('timetableScreen');
 
+	let clientReady = $state(false);
+
 	onMount(() => {
+		clientReady = true;
 		screen.refresh();
 	});
 
@@ -23,16 +27,16 @@
 	}
 </script>
 
-{#if screen.state.hasLoadedAppState && !screen.state.appState.currentTimetable}
+{#if browser && clientReady && screen.state.hasLoadedAppState && !screen.state.appState.currentTimetable}
 	<EmptyTimetableState />
-{:else if screen.state.hasLoadedAppState}
+{:else if browser && clientReady && screen.state.hasLoadedAppState}
 	<TimetableScreen
 		{screen}
 		onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
 		onCourseClick={navigateToCourseDetail}
 		onCourseLongClick={navigateToCourseEditor}
 	/>
-{:else}
+{:else if browser && clientReady}
 	<div class="flex min-h-[60vh] items-center justify-center p-4">
 		<LoadingIndicator />
 	</div>

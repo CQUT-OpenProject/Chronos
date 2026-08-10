@@ -146,7 +146,7 @@
 	<div class="flex flex-col gap-3">
 		<h1 class="m3-page-title m3-headline-medium font-medium">我的</h1>
 
-		<SearchField bind:value={searchQuery} placeholder="搜索设置..." />
+		<SearchField bind:value={searchQuery} placeholder="搜索设置..." ariaLabel="搜索设置" />
 	</div>
 
 	{#each filteredSections as section (section.title)}

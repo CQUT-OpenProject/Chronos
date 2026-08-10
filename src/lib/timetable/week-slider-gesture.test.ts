@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { weekFromClientX } from './week-slider-gesture.svelte';
+import { canOpenWeekSlider, weekFromClientX } from './week-slider-gesture.svelte';
+
+describe('canOpenWeekSlider', () => {
+	it('allows opening when start week is before end week', () => {
+		expect(canOpenWeekSlider(1, 16)).toBe(true);
+	});
+
+	it('blocks opening when start week equals end week', () => {
+		expect(canOpenWeekSlider(5, 5)).toBe(false);
+	});
+
+	it('blocks opening when start week is after end week', () => {
+		expect(canOpenWeekSlider(10, 5)).toBe(false);
+	});
+});
 
 describe('weekFromClientX', () => {
 	it('maps clientX across the header width to week numbers', () => {

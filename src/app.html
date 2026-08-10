@@ -14,11 +14,163 @@
 				event.preventDefault();
 				window.__chronosInstallPrompt = event;
 			});
+
+			(function () {
+				var bootFallbackShown = false;
+
+				function applyBootFallback() {
+					if (bootFallbackShown) return;
+					bootFallbackShown = true;
+
+					var el = document.getElementById('chronos-boot-fallback');
+					var detail = document.getElementById('chronos-boot-fallback-detail');
+					if (!el) return;
+
+					if (detail) {
+						detail.textContent = navigator.onLine
+							? '应用资源加载失败，请刷新重试。'
+							: '当前处于离线状态，无法加载应用资源。请先在线打开一次，或连接网络后重试。';
+					}
+
+					el.hidden = false;
+				}
+
+				function showBootFallback() {
+					if (document.getElementById('chronos-boot-fallback')) {
+						applyBootFallback();
+						return;
+					}
+					document.addEventListener(
+						'DOMContentLoaded',
+						function () {
+							applyBootFallback();
+						},
+						{ once: true }
+					);
+				}
+
+				window.__chronosHideBootFallback = function () {
+					window.__chronosAppMounted = true;
+					var el = document.getElementById('chronos-boot-fallback');
+					if (el) el.hidden = true;
+				};
+
+				window.addEventListener(
+					'error',
+					function (event) {
+						var message = String(event.message || '');
+						var isScript = event.target && event.target.tagName === 'SCRIPT';
+						if (
+							isScript ||
+							message.includes('Failed to fetch') ||
+							message.includes('dynamically imported module')
+						) {
+							showBootFallback();
+						}
+					},
+					true
+				);
+
+				window.addEventListener('unhandledrejection', function (event) {
+					var reason = event.reason;
+					var message = String(reason && reason.message ? reason.message : reason || '');
+					if (
+						message.includes('Failed to fetch') ||
+						message.includes('dynamically imported module') ||
+						message.includes('ERR_INTERNET_DISCONNECTED')
+					) {
+						showBootFallback();
+					}
+				});
+
+				function checkOfflineBootFailure() {
+					if (window.__chronosAppMounted) return;
+					if (!navigator.onLine) {
+						showBootFallback();
+					}
+				}
+
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', checkOfflineBootFailure, { once: true });
+				} else {
+					checkOfflineBootFailure();
+				}
+
+				if (location.hostname === 'localhost' && 'serviceWorker' in navigator) {
+					navigator.serviceWorker.getRegistrations().then(function (registrations) {
+						for (var i = 0; i < registrations.length; i++) {
+							registrations[i].unregister();
+						}
+					});
+				}
+			})();
 		</script>
 		%sveltekit.head%
 	</head>
 
 	<body data-sveltekit-preload-data="hover">
+		<div id="chronos-boot-fallback" hidden>
+			<div class="chronos-boot-fallback-card">
+				<p class="chronos-boot-fallback-title">无法加载 Chronos</p>
+				<p id="chronos-boot-fallback-detail" class="chronos-boot-fallback-detail">
+					应用资源加载失败，请刷新重试。
+				</p>
+				<button type="button" class="chronos-boot-fallback-button" onclick="location.reload()">
+					重试
+				</button>
+			</div>
+		</div>
 		<div style="display: contents">%sveltekit.body%</div>
+		<style>
+			#chronos-boot-fallback {
+				position: fixed;
+				inset: 0;
+				z-index: 9999;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 1.5rem;
+				padding-top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+				background: #f0f4f8;
+				color: #0f172a;
+				font-family:
+					system-ui,
+					-apple-system,
+					sans-serif;
+			}
+
+			#chronos-boot-fallback[hidden] {
+				display: none !important;
+			}
+
+			.chronos-boot-fallback-card {
+				max-width: 20rem;
+				text-align: center;
+			}
+
+			.chronos-boot-fallback-title {
+				margin: 0 0 0.5rem;
+				font-size: 1.125rem;
+				font-weight: 700;
+			}
+
+			.chronos-boot-fallback-detail {
+				margin: 0 0 1rem;
+				font-size: 0.875rem;
+				line-height: 1.5;
+				color: #475569;
+			}
+
+			.chronos-boot-fallback-button {
+				border: none;
+				border-radius: 9999px;
+				background: #0068b7;
+				color: #fff;
+				font-size: 0.875rem;
+				font-weight: 600;
+				padding: 0.625rem 1.5rem;
+				cursor: pointer;
+			}
+		</style>
 	</body>
 </html>

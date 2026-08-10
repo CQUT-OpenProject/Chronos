@@ -31,7 +31,7 @@
 
 {#snippet rowContent()}
 	{#if Icon}
-		<span class="m3-leading-icon tone-{iconTone}">
+		<span class="m3-leading-icon tone-{iconTone}" aria-hidden="true">
 			<Icon />
 		</span>
 	{/if}
@@ -44,7 +44,7 @@
 	{#if trailing}
 		{@render trailing()}
 	{:else}
-		<ChevronRight class="size-4.5 shrink-0 text-on-surface-variant" />
+		<ChevronRight aria-hidden="true" class="size-4.5 shrink-0 text-on-surface-variant" />
 	{/if}
 {/snippet}
 

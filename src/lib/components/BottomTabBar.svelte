@@ -32,15 +32,17 @@
 </script>
 
 <div class="bottom-bar w-full flex-col justify-center">
-	<nav class="flex w-full max-w-md items-center justify-around">
+	<nav aria-label="主导航" class="flex w-full max-w-md items-center justify-around">
 		{#each tabs as tab (tab.href)}
 			{@const active = isActive(tab.href)}
 			<a
 				href={resolve(tab.href)}
+				aria-current={active ? 'page' : undefined}
 				class="flex h-16 min-w-24 flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-on-surface-variant transition-colors hover:text-on-surface"
 				onclick={tab.href === '/' ? onTimetableTabClick : vibrate}
 			>
 				<span
+					aria-hidden="true"
 					class="flex h-8 w-14 items-center justify-center rounded-full transition-colors {active
 						? 'bg-secondary-container text-on-secondary-container'
 						: ''}"

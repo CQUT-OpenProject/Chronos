@@ -7,6 +7,8 @@ interface BeforeInstallPromptEvent extends Event {
 
 interface Window {
 	__chronosInstallPrompt?: BeforeInstallPromptEvent | null;
+	__chronosHideBootFallback?: () => void;
+	__chronosAppMounted?: boolean;
 }
 
 declare module 'virtual:pwa-info' {
