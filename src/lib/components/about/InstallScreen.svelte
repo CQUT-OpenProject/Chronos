@@ -1,15 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { FullscreenFill, RocketLaunchFill, WifiOffFill } from '$lib/icons';
 	import AppHero from '$lib/components/AppHero.svelte';
 	import HighlightRow from '$lib/components/ui/HighlightRow.svelte';
 	import HighlightRowList from '$lib/components/ui/HighlightRowList.svelte';
 	import InstallGuideCard from '$lib/components/pwa/InstallGuideCard.svelte';
-
-	onMount(() => {
-		void pwaInstallController.init();
-	});
 </script>
 
 <div class="mx-auto flex max-w-lg flex-col gap-6 py-2">

@@ -4,20 +4,15 @@
 	import { onMount } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
-	import { networkStatus } from '$lib/client/network-status.svelte';
-	import { credentialEnvironment } from '$lib/client/credential-environment.svelte';
-	import { onboardingController } from '$lib/client/onboarding.svelte';
+	import { createPlatformBootstrap } from '$lib/platform/platform-bootstrap.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
 	import OnboardingFlow from '$lib/components/onboarding/OnboardingFlow.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
-	import { initWebVitals } from '$lib/client/web-vitals';
-	import { ensureShareLinkBrotliReady } from '$lib/parsers/share-link/share-link-brotli';
 	import { setContext } from 'svelte';
 	import type { Pathname } from '$app/types';
 	import { page } from '$app/state';
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import {
-		initNavigationStack,
 		updateTransitionDirection,
 		type NavigationDirection
 	} from '$lib/navigation/navigation-direction';
@@ -50,35 +45,12 @@
 
 	const shell = createAppShell();
 	const timetableScreen = getTimetableScreen();
+	const platform = createPlatformBootstrap({ shell, timetableScreen });
+
 	setContext('appShell', shell);
 	setContext('timetableScreen', timetableScreen);
 
-	onMount(() => {
-		initNavigationStack(page.url.pathname);
-		networkStatus.init();
-		void credentialEnvironment.init();
-		shell.init();
-		timetableScreen.init(shell);
-		initWebVitals();
-		void ensureShareLinkBrotliReady();
-
-		window.__chronosHideBootFallback?.();
-
-		return () => {
-			networkStatus.destroy();
-		};
-	});
-
-	$effect(() => {
-		document.documentElement.classList.toggle('dark', shell.state.isDark);
-		document.documentElement.style.colorScheme = shell.state.isDark ? 'dark' : 'light';
-	});
-
-	$effect(() => {
-		if (timetableScreen.state.hasLoadedAppState) {
-			onboardingController.maybeShow(Boolean(timetableScreen.state.appState.currentTimetable));
-		}
-	});
+	onMount(() => platform.init(page.url.pathname));
 </script>
 
 <svelte:head>

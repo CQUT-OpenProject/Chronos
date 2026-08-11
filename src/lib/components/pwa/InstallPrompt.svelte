@@ -1,15 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { IosShareFill } from '$lib/icons';
-
-	onMount(() => {
-		void pwaInstallController.init();
-	});
 
 	function goToInstallPage() {
 		pwaInstallController.dismiss();

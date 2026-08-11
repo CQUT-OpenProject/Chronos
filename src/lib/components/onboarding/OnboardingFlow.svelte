@@ -3,7 +3,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
-	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { onlineImportEnabled } from '$lib/config/features';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -24,14 +23,8 @@
 	const isLastStep = $derived(step === onboardingController.totalSteps - 1);
 	const stepTitleId = 'onboarding-step-title';
 
-	function suppressInstallPrompts() {
-		pwaInstallController.cancelScheduledDialog();
-		pwaInstallController.dismiss();
-	}
-
 	$effect(() => {
 		if (!onboardingController.open) return;
-		suppressInstallPrompts();
 		const prevOverflow = document.body.style.overflow;
 		document.body.style.overflow = 'hidden';
 		return () => {
@@ -95,7 +88,6 @@
 	}
 
 	function completeOnboarding() {
-		suppressInstallPrompts();
 		onboardingController.finish();
 	}
 

@@ -1,5 +1,4 @@
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-import { onboardingController } from './onboarding.svelte';
 import { isPwaStandalone, PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalone';
 
 const INSTALLED_KEY = 'chronos:pwa-installed';
@@ -19,6 +18,7 @@ export class PWAInstallController {
 
 	private installListenerAttached = false;
 	private displayModeListenerAttached = false;
+	private installPromptGate: (() => boolean) | null = null;
 	private dialogScheduled = false;
 	private dialogTimer: ReturnType<typeof setTimeout> | null = null;
 	private environmentRecheckTimers: ReturnType<typeof setTimeout>[] = [];
@@ -148,7 +148,7 @@ export class PWAInstallController {
 
 		this.scheduleEnvironmentRecheck();
 
-		if (!onboardingController.open) {
+		if (!this.shouldDeferInstallPrompt()) {
 			this.tryFocusInstalledAppWindow();
 		}
 	}
@@ -185,8 +185,7 @@ export class PWAInstallController {
 			this.dialogTimer = null;
 			if (this.isStandalone) return;
 
-			if (onboardingController.open) {
-				// Onboarding covers install guidance; finish() cancels any pending popup.
+			if (this.shouldDeferInstallPrompt()) {
 				this.dialogScheduled = false;
 				return;
 			}
@@ -213,6 +212,14 @@ export class PWAInstallController {
 			this.dialogTimer = null;
 		}
 		this.dialogScheduled = false;
+	}
+
+	setInstallPromptGate(gate: () => boolean) {
+		this.installPromptGate = gate;
+	}
+
+	private shouldDeferInstallPrompt(): boolean {
+		return this.installPromptGate?.() ?? false;
 	}
 
 	async init() {
