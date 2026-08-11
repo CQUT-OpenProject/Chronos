@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
 	import type { Course } from '$lib/models/course';
+	import { TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
@@ -18,6 +19,7 @@
 	} from '$lib/timetable/period-clock';
 
 	const FIT_MIN_FONT_PX = 6;
+	const SCROLL_ROW_HEIGHT = '5.5rem';
 
 	interface Props {
 		displayedWeek: number;
@@ -26,6 +28,7 @@
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasWallpaper: boolean;
 		isDark?: boolean;
+		layoutMode?: TimetableLayoutMode;
 		onCourseClick?: (course: Course) => void;
 		onCourseLongClick?: (course: Course) => void;
 	}
@@ -37,6 +40,7 @@
 		courseDisplayModels,
 		hasWallpaper,
 		isDark = false,
+		layoutMode = TimetableLayoutMode.SCROLL,
 		onCourseClick,
 		onCourseLongClick
 	}: Props = $props();
@@ -58,7 +62,8 @@
 			visibleDays: gridModel.visibleDays,
 			columnWidthPx,
 			expandedSlotKeys: expandedSlots,
-			isDark
+			isDark,
+			layoutMode
 		})
 	);
 
@@ -67,6 +72,13 @@
 	);
 
 	const solidBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
+	const isFitLayout = $derived(layoutMode === TimetableLayoutMode.FIT);
+	const rowHeightCss = $derived.by(() => {
+		if (!isFitLayout || bodyViewportHeight <= 0 || gridModel.displayedPeriodCount <= 0) {
+			return SCROLL_ROW_HEIGHT;
+		}
+		return `${bodyViewportHeight / gridModel.displayedPeriodCount}px`;
+	});
 
 	let gridHeaderHeight = $state(0);
 
@@ -95,6 +107,7 @@
 	});
 
 	$effect(() => {
+		if (isFitLayout) return;
 		const centerKey = `${displayedWeek}-${isCurrentWeek}`;
 		if (!isCurrentWeek || centeredFor === centerKey || !scrollContainer || bodyViewportHeight === 0)
 			return;
@@ -257,7 +270,7 @@
 
 <div
 	class="relative flex h-full w-full flex-col {solidBgClass}"
-	style="--row-height: 5.5rem; --sidebar-width: 3.25rem"
+	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"
 >
 	{#if hasWallpaper}
 		<div
@@ -298,7 +311,7 @@
 
 		<div
 			{@attach bodyScrollAttach}
-			class="min-h-0 flex-1 overflow-y-auto"
+			class="min-h-0 flex-1 {isFitLayout ? 'overflow-hidden' : 'overflow-y-auto'}"
 			role="region"
 			aria-label="本周课程表"
 		>

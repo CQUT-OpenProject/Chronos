@@ -1,11 +1,11 @@
 const SEEN_KEY = 'chronos:onboarding-seen';
 
-/** First-launch onboarding flow: welcome → highlights → import guide → install → CTA. */
+/** First-launch onboarding: welcome → highlights → display style → import → install → CTA. */
 export class OnboardingController {
 	open = $state(false);
 	step = $state(0);
 
-	readonly totalSteps = 5;
+	readonly totalSteps = 6;
 
 	private hasChecked = false;
 

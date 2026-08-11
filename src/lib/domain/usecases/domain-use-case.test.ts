@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { createCourse } from '$lib/models/course';
 import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
-import { ThemeMode, type AppState } from '$lib/models/app-state';
+import { ThemeMode, TimetableLayoutMode, type AppState } from '$lib/models/app-state';
 import {
 	emptyOnlineSchedulePayload,
 	type OnlineScheduleFetchResult,
@@ -41,12 +41,14 @@ class FakeAppBackend {
 	currentTimetableId: string | null = null;
 	wallpaperUri: string | null = null;
 	themeMode = ThemeMode.SYSTEM;
+	timetableLayoutMode = TimetableLayoutMode.SCROLL;
 	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
 		wallpaperUri: null,
 		currentTimetable: null,
-		themeMode: ThemeMode.SYSTEM
+		themeMode: ThemeMode.SYSTEM,
+		timetableLayoutMode: TimetableLayoutMode.SCROLL
 	};
 
 	syncState() {
@@ -64,7 +66,8 @@ class FakeAppBackend {
 			currentTimetableId: this.currentTimetableId,
 			wallpaperUri: this.wallpaperUri,
 			currentTimetable: current,
-			themeMode: this.themeMode
+			themeMode: this.themeMode,
+			timetableLayoutMode: this.timetableLayoutMode
 		};
 	}
 }
@@ -158,6 +161,11 @@ class FakePreferencesRepository implements PreferencesRepository {
 
 	async setThemeMode(mode: ThemeMode): Promise<void> {
 		this.backend.themeMode = mode;
+		this.backend.syncState();
+	}
+
+	async setTimetableLayoutMode(mode: TimetableLayoutMode): Promise<void> {
+		this.backend.timetableLayoutMode = mode;
 		this.backend.syncState();
 	}
 }

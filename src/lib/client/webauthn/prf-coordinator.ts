@@ -68,6 +68,13 @@ export async function createPrfCredential(salt: Uint8Array): Promise<{
 	};
 }
 
+export class WebAuthnCredentialUnavailableError extends Error {
+	constructor(message = 'WebAuthn credential not found') {
+		super(message);
+		this.name = 'WebAuthnCredentialUnavailableError';
+	}
+}
+
 export async function getPrfOutput(
 	saltBase64: string,
 	credentialIdBase64: string
@@ -75,19 +82,42 @@ export async function getPrfOutput(
 	const salt = base64ToBytes(saltBase64);
 	const credentialId = base64ToBytes(credentialIdBase64);
 
-	const credential = (await navigator.credentials.get({
-		publicKey: {
-			challenge: crypto.getRandomValues(new Uint8Array(32)),
-			allowCredentials: [{ id: toBufferSource(credentialId), type: 'public-key' }],
-			userVerification: 'required',
-			extensions: {
-				prf: { eval: { first: toBufferSource(salt) } }
+	let credential: PublicKeyCredential | null;
+	try {
+		credential = (await navigator.credentials.get({
+			publicKey: {
+				challenge: crypto.getRandomValues(new Uint8Array(32)),
+				rpId: rpId(),
+				// Platform-only: matches create() authenticatorAttachment and avoids hybrid QR
+				// fallback when the local passkey was deleted from the password manager.
+				allowCredentials: [
+					{
+						id: toBufferSource(credentialId),
+						type: 'public-key',
+						transports: ['internal']
+					}
+				],
+				userVerification: 'required',
+				extensions: {
+					prf: { eval: { first: toBufferSource(salt) } }
+				}
 			}
+		})) as PublicKeyCredential | null;
+	} catch (error) {
+		const name = error instanceof DOMException ? error.name : 'unknown';
+		// Chrome reports both "no passkeys" (after closing that dialog) and UV cancel as
+		// NotAllowedError — we cannot tell them apart, so treat as invalidated and clear.
+		if (name === 'NotFoundError' || name === 'NotAllowedError') {
+			throw new WebAuthnCredentialUnavailableError();
 		}
-	})) as PublicKeyCredential | null;
+		if (name === 'AbortError') {
+			throw new Error('WebAuthn verification was cancelled', { cause: error });
+		}
+		throw error;
+	}
 
 	if (!credential) {
-		throw new Error('WebAuthn verification was cancelled');
+		throw new WebAuthnCredentialUnavailableError();
 	}
 
 	const prfOutput = readPrfOutput(credential);

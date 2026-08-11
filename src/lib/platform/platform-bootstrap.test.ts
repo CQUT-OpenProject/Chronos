@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
 	credentialEnvironmentInit: vi.fn().mockResolvedValue(undefined),
 	pwaInstallInit: vi.fn().mockResolvedValue(undefined),
 	setInstallPromptGate: vi.fn(),
+	tryScheduleInstallDialog: vi.fn(),
 	initWebVitals: vi.fn(),
 	ensureShareLinkBrotliReady: vi.fn().mockResolvedValue(undefined),
 	attachOfflineUx: vi.fn(() => vi.fn())
@@ -35,7 +36,8 @@ vi.mock('$lib/client/pwa-install.svelte', () => ({
 		init: mocks.pwaInstallInit,
 		setInstallPromptGate: mocks.setInstallPromptGate,
 		cancelScheduledDialog: vi.fn(),
-		dismiss: vi.fn()
+		dismiss: vi.fn(),
+		tryScheduleInstallDialog: mocks.tryScheduleInstallDialog
 	}
 }));
 

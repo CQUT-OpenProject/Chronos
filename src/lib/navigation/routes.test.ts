@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 import { secondaryRouteRoots } from '../../routes/(secondary)/navigation';
 import { tabRoutes } from '../../routes/(tabs)/navigation';
 import { isSecondaryRoute } from './routes';
+
+vi.mock('$app/paths', () => ({
+	base: '/Chronos'
+}));
 
 describe('navigation routes', () => {
 	it('does not treat tab routes as secondary', () => {
@@ -24,5 +28,15 @@ describe('navigation routes', () => {
 
 	it('does not treat unknown routes as secondary', () => {
 		expect(isSecondaryRoute('/unknown')).toBe(false);
+	});
+
+	it('normalizes deploy-base pathnames before matching', () => {
+		for (const route of tabRoutes) {
+			expect(isSecondaryRoute(`/Chronos${route === '/' ? '' : route}`)).toBe(false);
+		}
+
+		expect(isSecondaryRoute('/Chronos/about')).toBe(true);
+		expect(isSecondaryRoute('/Chronos/about/install')).toBe(true);
+		expect(isSecondaryRoute('/Chronos/mine')).toBe(false);
 	});
 });

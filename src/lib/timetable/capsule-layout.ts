@@ -1,4 +1,5 @@
 import type { Course } from '$lib/models/course';
+import { TimetableLayoutMode } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel } from '$lib/models/presentation';
 import { periodSlotKey } from './slot-key';
 
@@ -8,6 +9,14 @@ const BADGE_LABEL = '非本周';
 
 /** Hide “xx校区” when effective column width is below this. */
 export const HIDE_LOCATION_CAMPUS_BELOW_PX = 70;
+
+/** Fit layout: one tier smaller than scroll (title/detail/badge floors = narrowest anchors). */
+const FIT_TITLE_DELTA = 2;
+const FIT_DETAIL_DELTA = 1;
+const FIT_BADGE_DELTA = 1;
+const MIN_TITLE_PX = 12;
+const MIN_DETAIL_PX = 8;
+const MIN_BADGE_PX = 8;
 
 export interface CapsuleTypeScale {
 	titlePx: number;
@@ -54,6 +63,7 @@ export interface PlaceCapsulesInput {
 	columnWidthPx: number;
 	expandedSlotKeys: ReadonlySet<string>;
 	isDark: boolean;
+	layoutMode?: TimetableLayoutMode;
 }
 
 interface SlotPosition {
@@ -107,7 +117,15 @@ const BADGE_ANCHORS: ReadonlyArray<readonly [number, number]> = [
  * UI renders the result; DOM fitting (truncate / fitFont) stays across the seam.
  */
 export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
-	const { courseDisplayModels, visibleDays, columnWidthPx, expandedSlotKeys, isDark } = input;
+	const {
+		courseDisplayModels,
+		visibleDays,
+		columnWidthPx,
+		expandedSlotKeys,
+		isDark,
+		layoutMode = TimetableLayoutMode.SCROLL
+	} = input;
+	const compact = layoutMode === TimetableLayoutMode.FIT;
 	const visibleDayCount = visibleDays.length;
 	if (visibleDayCount === 0) return [];
 
@@ -131,6 +149,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					columnWidthPx,
 					overlapCount: 1,
 					isDark,
+					compact,
 					key: `${key}:${displayModel.course.id}`
 				})
 			);
@@ -138,7 +157,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		}
 
 		if (!expandedSlotKeys.has(key)) {
-			const scale = resolveCapsuleTypeScale(columnWidthPx, 1);
+			const scale = resolveCapsuleTypeScale(columnWidthPx, 1, compact);
 			items.push({
 				kind: 'overlap-placeholder',
 				key,
@@ -164,6 +183,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					columnWidthPx,
 					overlapCount: count,
 					isDark,
+					compact,
 					key: `${key}:${displayModel.course.id}`
 				})
 			);
@@ -180,14 +200,23 @@ function placeCourseCapsule(options: {
 	columnWidthPx: number;
 	overlapCount: number;
 	isDark: boolean;
+	compact: boolean;
 	key: string;
 }): PlacedCourseCapsule {
-	const { displayModel, columnLeft, widthPercent, columnWidthPx, overlapCount, isDark, key } =
-		options;
+	const {
+		displayModel,
+		columnLeft,
+		widthPercent,
+		columnWidthPx,
+		overlapCount,
+		isDark,
+		compact,
+		key
+	} = options;
 	const course = displayModel.course;
 	const showCampus = shouldShowLocationCampus(columnWidthPx, overlapCount);
 	const locationLines = locationDisplayLines(course.location, { includeCampus: showCampus });
-	const scale = resolveCapsuleTypeScale(columnWidthPx, overlapCount);
+	const scale = resolveCapsuleTypeScale(columnWidthPx, overlapCount, compact);
 	const locationMetrics = resolveLocationBlockMetrics(
 		scale.detailPx,
 		showCampus,
@@ -238,14 +267,26 @@ export function resolveLocationBlockMetrics(
 /**
  * Map column content width (+ overlap) to capsule type sizes.
  * `columnWidthPx` is one day column; overlap narrows the effective width.
+ * `compact` (fit layout) subtracts one fixed tier from each size.
  */
-export function resolveCapsuleTypeScale(columnWidthPx: number, overlapCount = 1): CapsuleTypeScale {
+export function resolveCapsuleTypeScale(
+	columnWidthPx: number,
+	overlapCount = 1,
+	compact = false
+): CapsuleTypeScale {
 	const overlap = Math.max(1, overlapCount);
 	const effective = Math.max(0, columnWidthPx) / overlap;
 
-	const titlePx = roundPx(lerpAnchors(effective, TITLE_ANCHORS));
-	const detailPx = roundPx(lerpAnchors(effective, DETAIL_ANCHORS));
-	const badgePx = roundPx(lerpAnchors(effective, BADGE_ANCHORS));
+	let titlePx = roundPx(lerpAnchors(effective, TITLE_ANCHORS));
+	let detailPx = roundPx(lerpAnchors(effective, DETAIL_ANCHORS));
+	let badgePx = roundPx(lerpAnchors(effective, BADGE_ANCHORS));
+
+	if (compact) {
+		titlePx = Math.max(MIN_TITLE_PX, roundPx(titlePx - FIT_TITLE_DELTA));
+		detailPx = Math.max(MIN_DETAIL_PX, roundPx(detailPx - FIT_DETAIL_DELTA));
+		badgePx = Math.max(MIN_BADGE_PX, roundPx(badgePx - FIT_BADGE_DELTA));
+	}
+
 	const placeholderPx = roundPx(Math.max(11, titlePx - 1));
 
 	return { titlePx, detailPx, badgePx, placeholderPx };

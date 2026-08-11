@@ -1,12 +1,13 @@
 {
 	"name": "chronos",
 	"private": true,
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
+	"packageManager": "pnpm@11.20.0",
 	"scripts": {
 		"dev": "vp dev",
 		"build": "vp build",
-		"build:pages": "CHRONOS_DEPLOY_TARGET=pages vp build",
+		"build:pages": "CHRONOS_DEPLOY_TARGET=pages vp build && cp build/404.html build/index.html",
 		"preview": "vp preview",
 		"prepare": "vp config && svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -56,12 +57,5 @@
 		"vite": "catalog:",
 		"vite-plus": "catalog:",
 		"vitest": "catalog:"
-	},
-	"devEngines": {
-		"packageManager": {
-			"name": "pnpm",
-			"version": "11.20.0",
-			"onFail": "download"
-		}
 	}
 }

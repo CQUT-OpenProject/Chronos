@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { DatePicker } from 'bits-ui';
-	import type { DateValue } from '@internationalized/date';
+	import { getLocalTimeZone, today, type DateValue } from '@internationalized/date';
 	import { CalendarMonth, ChevronLeft, ChevronRight } from '$lib/icons';
+	import Button from '$lib/components/ui/Button.svelte';
 	import {
+		buildDateFieldTriggerLabel,
 		calendarDateToIso,
 		formatDateDisplay,
 		isoToCalendarDate
@@ -30,24 +32,50 @@
 	const fieldId = $derived(id ?? fallbackId);
 	const labelId = $derived(`${fieldId}-label`);
 
-	const displayValue = $derived(formatDateDisplay(value));
-	const pickerValue = $derived(isoToCalendarDate(value));
+	let open = $state(false);
+	let draftIso = $state('');
 
-	function handleValueChange(next: DateValue | undefined) {
-		const iso = calendarDateToIso(next);
-		value = iso;
-		onValueChange?.(iso);
+	const displayValue = $derived(formatDateDisplay(value));
+	const triggerAriaLabel = $derived(buildDateFieldTriggerLabel(label, open ? draftIso : value));
+	const draftPickerValue = $derived(isoToCalendarDate(draftIso));
+
+	function handleOpenChange(nextOpen: boolean) {
+		if (nextOpen) {
+			draftIso = value;
+		}
+	}
+
+	function handleDraftChange(next: DateValue | undefined) {
+		draftIso = calendarDateToIso(next);
+	}
+
+	function confirmSelection() {
+		if (draftIso !== value) {
+			value = draftIso;
+			onValueChange?.(draftIso);
+		}
+		open = false;
+	}
+
+	function selectToday() {
+		draftIso = calendarDateToIso(today(getLocalTimeZone()));
+	}
+
+	function clearDate() {
+		draftIso = '';
 	}
 </script>
 
 <DatePicker.Root
-	value={pickerValue}
-	onValueChange={handleValueChange}
+	bind:open
+	onOpenChange={handleOpenChange}
+	value={draftPickerValue}
+	onValueChange={handleDraftChange}
+	closeOnDateSelect={false}
 	locale="zh-CN"
 	weekdayFormat="short"
 	weekStartsOn={1}
 	fixedWeeks
-	readonly
 	{disabled}
 	{calendarLabel}
 >
@@ -55,25 +83,27 @@
 		<span id={labelId} class="m3-field-label">{label}</span>
 		<DatePicker.Input aria-labelledby={labelId}>
 			{#snippet child({ props })}
-				<div {...props} id={fieldId} class="m3-form-field-input m3-date-field-input">
-					<span
-						class={[
-							'm3-date-field-value m3-body-large truncate',
-							displayValue ? 'text-on-surface' : 'text-on-surface-variant/60'
-						]}
-					>
-						{displayValue || '选择日期'}
-					</span>
+				<div {...props} id={fieldId}>
 					<DatePicker.Trigger>
 						{#snippet child({ props: triggerProps })}
 							<button
 								{...triggerProps}
 								type="button"
-								class="m3-date-field-trigger"
-								aria-label="打开日历"
+								class="m3-form-field-input m3-date-field-input"
+								aria-label={triggerAriaLabel}
 								{disabled}
 							>
-								<CalendarMonth class="size-5" aria-hidden="true" />
+								<span
+									class={[
+										'm3-date-field-value m3-body-large truncate text-left',
+										displayValue ? 'text-on-surface' : 'text-on-surface-variant/60'
+									]}
+								>
+									{displayValue || '选择日期'}
+								</span>
+								<span class="m3-date-field-trigger" aria-hidden="true">
+									<CalendarMonth class="size-5" />
+								</span>
 							</button>
 						{/snippet}
 					</DatePicker.Trigger>
@@ -132,6 +162,23 @@
 								</DatePicker.GridBody>
 							</DatePicker.Grid>
 						{/each}
+
+						<div
+							class="mt-3 flex items-center justify-between gap-2 border-t border-outline-variant/40 pt-3"
+						>
+							<div class="flex items-center gap-1">
+								<Button variant="text" class="h-9 px-3" onclick={selectToday}>今天</Button>
+								<Button
+									variant="text"
+									class="h-9 px-3 text-on-surface-variant"
+									disabled={!draftIso}
+									onclick={clearDate}
+								>
+									清除
+								</Button>
+							</div>
+							<Button class="h-9 px-4" onclick={confirmSelection}>确认</Button>
+						</div>
 					{/snippet}
 				</DatePicker.Calendar>
 			</DatePicker.Content>

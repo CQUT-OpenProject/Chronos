@@ -54,6 +54,23 @@ describe('resolveCapsuleTypeScale', () => {
 		expect(wideSeven.detailPx).toBeGreaterThan(narrowFive.detailPx);
 	});
 
+	it('compact shrinks one fixed tier', () => {
+		const scroll = resolveCapsuleTypeScale(110);
+		const fit = resolveCapsuleTypeScale(110, 1, true);
+		expect(fit.titlePx).toBe(15);
+		expect(fit.detailPx).toBe(11);
+		expect(fit.badgePx).toBe(11);
+		expect(fit.titlePx).toBeLessThan(scroll.titlePx);
+		expect(fit.detailPx).toBeLessThan(scroll.detailPx);
+	});
+
+	it('compact clamps at the smallest tier floors', () => {
+		const floor = resolveCapsuleTypeScale(50, 1, true);
+		expect(floor.titlePx).toBe(12);
+		expect(floor.detailPx).toBe(8);
+		expect(floor.badgePx).toBe(8);
+	});
+
 	it('hides campus below the 70px threshold', () => {
 		expect(shouldShowLocationCampus(70, 1)).toBe(true);
 		expect(shouldShowLocationCampus(69, 1)).toBe(false);

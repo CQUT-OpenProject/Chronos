@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
+	import { toAppPathname } from '$lib/navigation/app-pathname';
 	import { CalendarMonth, CalendarMonthFill, Person, PersonFill } from '$lib/icons';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
@@ -12,7 +13,8 @@
 		{ href: '/mine', label: '我的', Icon: Person, IconFill: PersonFill }
 	] as const;
 
-	const activeTabHref = $derived(page.url.pathname === '/mine' ? '/mine' : '/');
+	const appPathname = $derived(toAppPathname(page.url.pathname));
+	const activeTabHref = $derived(appPathname === '/mine' ? '/mine' : '/');
 
 	function isActive(href: string) {
 		return activeTabHref === href;
@@ -25,7 +27,7 @@
 	function onTimetableTabClick(event: MouseEvent) {
 		vibrate();
 		timetableScreen.jumpToCurrentWeek();
-		if (page.url.pathname === '/') {
+		if (appPathname === '/') {
 			event.preventDefault();
 		}
 	}
@@ -37,6 +39,7 @@
 			{@const active = isActive(tab.href)}
 			<a
 				href={resolve(tab.href)}
+				data-sveltekit-preload-data="off"
 				aria-current={active ? 'page' : undefined}
 				class="flex h-16 min-w-24 flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-on-surface-variant transition-colors hover:text-on-surface"
 				onclick={tab.href === '/' ? onTimetableTabClick : vibrate}

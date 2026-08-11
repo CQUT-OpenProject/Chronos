@@ -292,6 +292,7 @@ export default defineConfig({
 				display: 'standalone',
 				start_url: `${basePath}/`,
 				id: `${basePath}/`,
+				scope: basePath ? `${basePath}/` : '/',
 				launch_handler: {
 					// `focus-existing` refocuses the installing browser tab after install instead of opening standalone.
 					client_mode: 'auto'
@@ -320,7 +321,7 @@ export default defineConfig({
 						options: {
 							cacheName: 'pages-cache',
 							expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 },
-							networkTimeoutSeconds: 3
+							networkTimeoutSeconds: 0.3
 						}
 					},
 					{
