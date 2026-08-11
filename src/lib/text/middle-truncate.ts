@@ -118,81 +118,6 @@ export function buildMiddleCandidate(
 }
 
 /**
- * Finder-style middle truncation for a single line.
- * Retains roughly equal grapheme counts on both sides of the ellipsis, snapped to CJK cuts.
- */
-export function truncateMiddle(
-	text: string,
-	maxWidth: number,
-	measure: MeasureFn,
-	ellipsis = DEFAULT_ELLIPSIS
-): string {
-	if (!text || maxWidth <= 0) {
-		return maxWidth <= 0 ? '' : text;
-	}
-	if (measure(text) <= maxWidth) return text;
-
-	const ellipsisWidth = measure(ellipsis);
-	if (ellipsisWidth > maxWidth) return '';
-
-	const graphemes = toGraphemes(text);
-	const boundaries = cutBoundaryIndices(text, graphemes);
-	let best = ellipsis;
-	let low = 0;
-	let high = graphemes.length;
-
-	while (low <= high) {
-		const retained = Math.floor((low + high) / 2);
-		const candidate = buildMiddleCandidate(graphemes, retained, ellipsis, boundaries);
-		if (measure(candidate) <= maxWidth) {
-			best = candidate;
-			low = retained + 1;
-		} else {
-			high = retained - 1;
-		}
-	}
-
-	return best;
-}
-
-/**
- * Middle truncation that must wrap into at most `maxLines` within `maxWidth`,
- * using grapheme-greedy line breaks (suitable for CJK course names).
- */
-export function truncateMiddleMultiline(
-	text: string,
-	maxWidth: number,
-	maxLines: number,
-	measure: MeasureFn,
-	ellipsis = DEFAULT_ELLIPSIS
-): string {
-	if (!text) return text;
-	if (maxWidth <= 0 || maxLines <= 0) return '';
-	if (fitsMultiline(text, maxWidth, maxLines, measure)) return text;
-
-	const graphemes = toGraphemes(text);
-	if (!fitsMultiline(ellipsis, maxWidth, maxLines, measure)) return '';
-
-	const boundaries = cutBoundaryIndices(text, graphemes);
-	let best = ellipsis;
-	let low = 0;
-	let high = graphemes.length;
-
-	while (low <= high) {
-		const retained = Math.floor((low + high) / 2);
-		const candidate = buildMiddleCandidate(graphemes, retained, ellipsis, boundaries);
-		if (fitsMultiline(candidate, maxWidth, maxLines, measure)) {
-			best = candidate;
-			low = retained + 1;
-		} else {
-			high = retained - 1;
-		}
-	}
-
-	return best;
-}
-
-/**
  * Binary-search middle truncation against a DOM/layout `fits` predicate.
  * Used when canvas line estimates disagree with CSS wrapping.
  */
@@ -223,39 +148,6 @@ export function truncateMiddleByFit(
 	}
 
 	return best;
-}
-
-export function fitsMultiline(
-	text: string,
-	maxWidth: number,
-	maxLines: number,
-	measure: MeasureFn
-): boolean {
-	if (maxLines <= 0 || maxWidth <= 0) return false;
-	if (!text) return true;
-
-	const graphemes = toGraphemes(text);
-	let lines = 1;
-	let lineStart = 0;
-
-	for (let index = 0; index < graphemes.length; index += 1) {
-		const line = graphemes.slice(lineStart, index + 1).join('');
-		if (measure(line) <= maxWidth) continue;
-
-		if (index === lineStart) {
-			// Single grapheme wider than the line — still consumes a line.
-			lines += 1;
-			lineStart = index + 1;
-		} else {
-			lines += 1;
-			lineStart = index;
-			index -= 1;
-		}
-
-		if (lines > maxLines) return false;
-	}
-
-	return true;
 }
 
 let sharedCanvas: HTMLCanvasElement | null = null;

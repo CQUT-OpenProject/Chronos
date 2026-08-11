@@ -16,7 +16,6 @@ import type { AuthSnapshot } from '$lib/models/auth';
 import { AcademicCalendarService } from '../services/academic-calendar';
 import type { TimeProvider } from '../services/time-provider';
 import { CalculateAcademicWeekUseCase } from './calculate-academic-week';
-import { CreateTimetableUseCase } from './create-timetable';
 import { ImportTimetableUseCase } from './import-timetable';
 import { PreviewOnlineTimetableUseCase } from './preview-online-timetable';
 import { SaveTimetableDetailsUseCase } from './save-timetable-details';
@@ -316,25 +315,6 @@ describe('domain use cases', () => {
 		const saved = await repo.getTimetable(timetable.id);
 		expect(saved?.importMetadata.campusId).toBe('liangjiang');
 		expect(saved?.importMetadata.campusPeriodTimes?.huaxi?.[0]?.startTime).toBe('08:00');
-	});
-
-	it('createTimetable uses time provider for defaults', async () => {
-		const repo = new FakeTimetableRepository();
-		const useCase = new CreateTimetableUseCase(
-			repo,
-			repo.preferences,
-			academicCalendarService,
-			new FixedTimeProvider()
-		);
-
-		await useCase.invoke(' ');
-
-		const current = (await repo.getAppStateSnapshot()).currentTimetable;
-		expect(current).not.toBeNull();
-		expect(current?.name).toBe('未命名课表');
-		expect(current?.academicConfig.termStartDate).toBe('2026-03-02');
-		expect(current?.createdAt).toBe(100);
-		expect(current?.updatedAt).toBe(100);
 	});
 
 	it('importTimetable overwrite preserves identity and view prefs while replacing structure', async () => {

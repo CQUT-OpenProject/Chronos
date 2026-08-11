@@ -46,20 +46,16 @@
 		"@tailwindcss/vite": "^4.3.0",
 		"@types/node": "^24",
 		"@vite-pwa/sveltekit": "^1.1.0",
-		"@vitest/browser-playwright": "catalog:",
 		"eslint-plugin-svelte": "^3.19.0",
 		"fflate": "^0.8.3",
-		"globals": "^17.6.0",
 		"linkedom": "^0.18.13",
-		"playwright": "^1.60.0",
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.3",
 		"vite": "catalog:",
 		"vite-plus": "catalog:",
-		"vitest": "catalog:",
-		"vitest-browser-svelte": "^2.1.1"
+		"vitest": "catalog:"
 	},
 	"devEngines": {
 		"packageManager": {

@@ -1,6 +1,3 @@
 {
-	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from zh-cn!",
-	"cqut_campus_liangjiang": "两江校区",
-	"cqut_campus_huaxi": "花溪校区"
+	"$schema": "https://inlang.com/schema/inlang-message-format"
 }

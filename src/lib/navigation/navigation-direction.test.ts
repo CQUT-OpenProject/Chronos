@@ -26,14 +26,13 @@ describe('getNavigationDirection', () => {
 	});
 
 	it('returns forward when going deeper in secondary routes', () => {
-		expect(getNavigationDirection('/about', '/about/version-release')).toBe('forward');
 		expect(getNavigationDirection('/about', '/about/releases')).toBe('forward');
 		expect(getNavigationDirection('/about/releases', '/about/releases/v0.1.0')).toBe('forward');
 		expect(getNavigationDirection('/transfer/import', '/transfer/import/confirm')).toBe('forward');
 	});
 
 	it('returns back when going shallower in secondary routes', () => {
-		expect(getNavigationDirection('/about/version-release', '/about')).toBe('back');
+		expect(getNavigationDirection('/about/releases/v0.1.0', '/about/releases')).toBe('back');
 		expect(getNavigationDirection('/open-source-licenses/project', '/open-source-licenses')).toBe(
 			'back'
 		);

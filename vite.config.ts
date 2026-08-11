@@ -2,7 +2,6 @@ import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { functionsMixins } from 'vite-plugin-functions-mixins';
 import { defineConfig, lazyPlugins } from 'vite-plus';
-import { playwright } from 'vite-plus/test/browser-playwright';
 import adapter from '@sveltejs/adapter-vercel';
 import adapterStatic from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
@@ -360,30 +359,8 @@ export default defineConfig({
 	]),
 	test: {
 		expect: { requireAssertions: true },
-		projects: [
-			{
-				extends: './vite.config.ts',
-				test: {
-					name: 'client',
-					browser: {
-						enabled: true,
-						provider: playwright(),
-						instances: [{ browser: 'chromium', headless: true }]
-					},
-					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: ['src/lib/server/**']
-				}
-			},
-
-			{
-				extends: './vite.config.ts',
-				test: {
-					name: 'server',
-					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}'],
-					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
-				}
-			}
-		]
+		environment: 'node',
+		include: ['src/**/*.{test,spec}.{js,ts}'],
+		exclude: ['src/**/*.svelte.{test,spec}.{js,ts}', 'src/lib/server/**']
 	}
 });

@@ -34,12 +34,6 @@
 	font-weight: 500;
 }
 
-.m3-label-medium {
-	font-size: 0.75rem;
-	line-height: 1.33;
-	font-weight: 500;
-}
-
 .m3-label-small {
 	font-size: 0.6875rem;
 	line-height: 1.45;
@@ -392,13 +386,6 @@
 	align-items: center;
 	gap: 0.25rem;
 	flex-shrink: 0;
-}
-
-.m3-page {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-	color: var(--color-on-surface);
 }
 
 .m3-page-title {
