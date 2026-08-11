@@ -320,7 +320,7 @@ export default defineConfig({
 						options: {
 							cacheName: 'pages-cache',
 							expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 },
-							networkTimeoutSeconds: 3
+							networkTimeoutSeconds: 0.3
 						}
 					},
 					{
