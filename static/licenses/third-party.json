@@ -1,0 +1,18 @@
+[
+	{ "name": "dexie", "license": "Apache-2.0" },
+	{ "name": "jsencrypt", "license": "MIT" },
+	{ "name": "swiper", "license": "MIT" },
+	{ "name": "zod", "license": "MIT" },
+	{ "name": "svelte", "license": "MIT" },
+	{ "name": "@sveltejs/kit", "license": "MIT" },
+	{ "name": "vite", "license": "MIT" },
+	{ "name": "@vite-pwa/sveltekit", "license": "MIT" },
+	{ "name": "tailwindcss", "license": "MIT" },
+	{ "name": "marked", "license": "MIT" },
+	{ "name": "web-vitals", "license": "Apache-2.0" },
+	{ "name": "workbox-window", "license": "MIT" },
+	{ "name": "@ktibow/material-color-utilities-nightly", "license": "Apache-2.0" },
+	{ "name": "@material-symbols-svg/svelte", "license": "Apache-2.0" },
+	{ "name": "bits-ui", "license": "MIT" },
+	{ "name": "vite-plugin-functions-mixins", "license": "MIT" }
+]

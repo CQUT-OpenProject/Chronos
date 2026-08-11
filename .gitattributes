@@ -1,0 +1,7 @@
+.vite-hooks/pre-commit linguist-language=Shell
+
+.agents/** linguist-documentation
+
+.svelte-kit/** linguist-generated
+src/lib/paraglide/** linguist-generated
+project.inlang/cache/** linguist-generated

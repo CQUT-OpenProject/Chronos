@@ -1,0 +1,133 @@
+.markdown-prose :global(h1) {
+	margin: 0 0 1rem;
+	font-size: 1.25rem;
+	line-height: 1.4;
+	font-weight: 700;
+	color: var(--color-on-surface);
+}
+
+.markdown-prose :global(h2) {
+	margin: 1.75rem 0 0.75rem;
+	font-size: 1.0625rem;
+	line-height: 1.5;
+	font-weight: 600;
+	color: var(--color-primary);
+}
+
+.markdown-prose :global(h3) {
+	margin: 1.25rem 0 0.5rem;
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	font-weight: 600;
+	color: var(--color-on-surface);
+}
+
+.markdown-prose :global(p) {
+	margin: 0 0 0.75rem;
+	color: var(--color-on-surface-variant);
+	line-height: 1.65;
+}
+
+.markdown-prose :global(p:last-child) {
+	margin-bottom: 0;
+}
+
+.markdown-prose :global(ul),
+.markdown-prose :global(ol) {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin: 0 0 1rem;
+	padding-left: 1.25rem;
+	color: var(--color-on-surface-variant);
+}
+
+.markdown-prose :global(li) {
+	line-height: 1.65;
+}
+
+.markdown-prose :global(li::marker) {
+	color: var(--color-brand);
+	font-weight: 600;
+}
+
+.markdown-prose :global(strong) {
+	color: var(--color-on-surface);
+	font-weight: 600;
+}
+
+.markdown-prose :global(a) {
+	color: var(--color-brand);
+	text-decoration: underline;
+	text-underline-offset: 0.125rem;
+}
+
+.markdown-prose :global(a:hover) {
+	opacity: 0.8;
+}
+
+.markdown-prose :global(hr) {
+	margin: 1.5rem 0;
+	border: none;
+	border-top: 1px solid var(--color-border);
+}
+
+.markdown-prose :global(table) {
+	width: 100%;
+	margin: 0 0 1rem;
+	border-collapse: collapse;
+	font-size: 0.8125rem;
+}
+
+.markdown-prose :global(th),
+.markdown-prose :global(td) {
+	padding: 0.5rem 0.625rem;
+	border: 1px solid var(--color-border);
+	text-align: left;
+	vertical-align: top;
+}
+
+.markdown-prose :global(th) {
+	background: var(--color-surface-container);
+	color: var(--color-on-surface);
+	font-weight: 600;
+}
+
+.markdown-prose :global(td) {
+	color: var(--color-on-surface-variant);
+}
+
+.markdown-prose :global(em) {
+	color: var(--color-on-surface-variant);
+	font-style: italic;
+}
+
+.markdown-prose--developer :global(h2:first-child) {
+	margin-top: 0;
+}
+
+.markdown-prose--developer :global(ul),
+.markdown-prose--developer :global(ol) {
+	gap: 0.625rem;
+	margin-bottom: 1.25rem;
+	color: var(--color-on-surface);
+}
+
+.markdown-prose--developer :global(li) {
+	line-height: 1.6;
+}
+
+.markdown-prose--release :global(h2) {
+	margin: 0 0 0.75rem;
+	font-size: 1rem;
+	font-weight: 500;
+	color: var(--color-on-surface);
+}
+
+.markdown-prose--release :global(ul) {
+	margin-bottom: 0;
+}
+
+.markdown-prose--release :global(a) {
+	text-decoration: none;
+}
