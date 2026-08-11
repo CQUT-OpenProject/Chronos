@@ -39,6 +39,7 @@
 			{@const active = isActive(tab.href)}
 			<a
 				href={resolve(tab.href)}
+				data-sveltekit-preload-data="off"
 				aria-current={active ? 'page' : undefined}
 				class="flex h-16 min-w-24 flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-on-surface-variant transition-colors hover:text-on-surface"
 				onclick={tab.href === '/' ? onTimetableTabClick : vibrate}
