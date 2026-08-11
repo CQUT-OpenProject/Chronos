@@ -133,147 +133,149 @@
 		{@attach dialogAttach}
 		transition:fade={{ duration: stepTransitionDuration }}
 	>
-		<div
-			class="flex items-center justify-end gap-2 px-4 pb-2"
-			style:padding-top="calc(var(--topbar-safe) + 0.75rem)"
-		>
-			<button
-				type="button"
-				class="cursor-pointer text-sm font-medium text-on-surface-variant hover:text-on-surface"
-				onclick={handleLater}
+		<div class="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col">
+			<div
+				class="flex items-center justify-end gap-2 px-4 pb-2"
+				style:padding-top="calc(var(--topbar-safe) + 0.75rem)"
 			>
-				跳过
-			</button>
-		</div>
-
-		<div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
-			{#key step}
-				<div
-					class="flex h-full flex-col"
-					in:fade={{ duration: stepTransitionDuration, delay: stepTransitionDuration }}
-					out:fade={{ duration: stepTransitionDuration }}
+				<button
+					type="button"
+					class="cursor-pointer text-sm font-medium text-on-surface-variant hover:text-on-surface"
+					onclick={handleLater}
 				>
-					{#if step === 0}
-						<div class="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-							<AppHero
-								title="欢迎使用 Chronos"
-								subtitle="无广告 · 轻量化的课表体验"
-								titleId={stepTitleId}
-							/>
-						</div>
-					{:else if step === 1}
-						<div class="flex flex-1 flex-col items-center justify-center gap-6">
-							<h2
-								id={stepTitleId}
-								class="m3-headline-small text-center font-semibold text-on-surface"
-							>
-								功能亮点
-							</h2>
-							<HighlightRowList>
-								<HighlightRow
-									icon={DownloadFill}
-									title="多种导入方式"
-									subtitle={onlineImportEnabled
-										? '知行理工在线导入、分享链接、HTML 文件均可'
-										: '分享链接、HTML 文件均可导入'}
+					跳过
+				</button>
+			</div>
+
+			<div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+				{#key step}
+					<div
+						class="flex h-full flex-col"
+						in:fade={{ duration: stepTransitionDuration, delay: stepTransitionDuration }}
+						out:fade={{ duration: stepTransitionDuration }}
+					>
+						{#if step === 0}
+							<div class="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+								<AppHero
+									title="欢迎使用 Chronos"
+									subtitle="无广告 · 轻量化的课表体验"
+									titleId={stepTitleId}
 								/>
-								<HighlightRow
-									icon={PaletteFill}
-									title="自定义主题与壁纸"
-									subtitle="浅色、深色或跟随系统，还能设置课表壁纸"
-								/>
-								<HighlightRow
-									icon={WifiOffFill}
-									title="完全离线可用"
-									subtitle="自动本地缓存，断网无网状态下仍可查课表"
-								/>
-							</HighlightRowList>
-						</div>
-					{:else if step === 2}
-						<div class="flex flex-1 flex-col justify-center gap-4">
-							<h2
-								id={stepTitleId}
-								class="m3-headline-small text-center font-semibold text-on-surface"
-							>
-								如何导入课表？
-							</h2>
-							<div class="flex flex-col gap-3">
-								{#if onlineImportEnabled}
+							</div>
+						{:else if step === 1}
+							<div class="flex flex-1 flex-col items-center justify-center gap-6">
+								<h2
+									id={stepTitleId}
+									class="m3-headline-small text-center font-semibold text-on-surface"
+								>
+									功能亮点
+								</h2>
+								<HighlightRowList>
+									<HighlightRow
+										icon={DownloadFill}
+										title="多种导入方式"
+										subtitle={onlineImportEnabled
+											? '知行理工在线导入、分享链接、HTML 文件均可'
+											: '分享链接、HTML 文件均可导入'}
+									/>
+									<HighlightRow
+										icon={PaletteFill}
+										title="自定义主题与壁纸"
+										subtitle="浅色、深色或跟随系统，还能设置课表壁纸"
+									/>
+									<HighlightRow
+										icon={WifiOffFill}
+										title="完全离线可用"
+										subtitle="自动本地缓存，断网无网状态下仍可查课表"
+									/>
+								</HighlightRowList>
+							</div>
+						{:else if step === 2}
+							<div class="flex flex-1 flex-col justify-center gap-4">
+								<h2
+									id={stepTitleId}
+									class="m3-headline-small text-center font-semibold text-on-surface"
+								>
+									如何导入课表？
+								</h2>
+								<div class="flex flex-col gap-3">
+									{#if onlineImportEnabled}
+										{@render importMethodCard(
+											DownloadFill,
+											'知行理工在线导入',
+											'输入学号与密码，在线抓取课表'
+										)}
+									{/if}
 									{@render importMethodCard(
-										DownloadFill,
-										'知行理工在线导入',
-										'输入学号与密码，在线抓取课表'
+										IosShareFill,
+										'分享链接导入',
+										'粘贴他人分享的课表链接即可导入'
 									)}
-								{/if}
-								{@render importMethodCard(
-									IosShareFill,
-									'分享链接导入',
-									'粘贴他人分享的课表链接即可导入'
-								)}
-								{@render importMethodCard(
-									DescriptionFill,
-									'HTML 文件导入',
-									'从教务系统导出课表页面后，导入该 HTML 文件'
-								)}
+									{@render importMethodCard(
+										DescriptionFill,
+										'HTML 文件导入',
+										'从教务系统导出课表页面后，导入该 HTML 文件'
+									)}
+								</div>
 							</div>
-						</div>
-					{:else if step === 3}
-						<div class="flex flex-1 flex-col justify-center gap-4">
-							<h2
-								id={stepTitleId}
-								class="m3-headline-small text-center font-semibold text-on-surface"
-							>
-								安装到主屏幕
-							</h2>
-							<p class="m3-body-small text-center text-on-surface-variant">
-								添加到主屏幕后可快捷打开，并支持离线使用。
-							</p>
-							<InstallGuideCard />
-						</div>
+						{:else if step === 3}
+							<div class="flex flex-1 flex-col justify-center gap-4">
+								<h2
+									id={stepTitleId}
+									class="m3-headline-small text-center font-semibold text-on-surface"
+								>
+									安装到主屏幕
+								</h2>
+								<p class="m3-body-small text-center text-on-surface-variant">
+									添加到主屏幕后可快捷打开，并支持离线使用。
+								</p>
+								<InstallGuideCard inOnboarding />
+							</div>
+						{:else}
+							<div class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+								<div
+									class="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10 text-brand"
+								>
+									<DownloadFill class="h-8 w-8" />
+								</div>
+								<h2 id={stepTitleId} class="m3-headline-small font-semibold text-on-surface">
+									开始使用 Chronos
+								</h2>
+								<p class="m3-body-medium text-on-surface-variant">
+									导入课程表后即可查看每周课程安排。
+								</p>
+							</div>
+						{/if}
+					</div>
+				{/key}
+			</div>
+
+			<div
+				class="flex flex-col gap-4 px-6 pt-2"
+				style:padding-bottom="calc(var(--tabbar-safe) + 1.25rem)"
+			>
+				<ol class="flex list-none justify-center gap-1.5" aria-label="引导步骤">
+					{#each stepIndices as index (index)}
+						<li
+							class="h-1.5 w-6 rounded-full transition-colors {index <= step
+								? 'bg-brand dark:bg-soft-blue'
+								: 'bg-outline-variant'}"
+							aria-current={index === step ? 'step' : undefined}
+							aria-label="第 {index + 1} 步，共 {stepIndices.length} 步"
+						></li>
+					{/each}
+				</ol>
+				<div class="flex gap-3">
+					{#if !isLastStep}
+						{#if step > 0}
+							<Button variant="text" class="flex-1" onclick={handleBack}>上一步</Button>
+						{/if}
+						<Button variant="filled" class="flex-1" onclick={handleNext}>下一步</Button>
 					{:else}
-						<div class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-							<div
-								class="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10 text-brand"
-							>
-								<DownloadFill class="h-8 w-8" />
-							</div>
-							<h2 id={stepTitleId} class="m3-headline-small font-semibold text-on-surface">
-								开始使用 Chronos
-							</h2>
-							<p class="m3-body-medium text-on-surface-variant">
-								导入课程表后即可查看每周课程安排。
-							</p>
-						</div>
+						<Button variant="text" class="flex-1" onclick={handleLater}>稍后再说</Button>
+						<Button variant="filled" class="flex-1" onclick={handleStartImport}>开始导入</Button>
 					{/if}
 				</div>
-			{/key}
-		</div>
-
-		<div
-			class="flex flex-col gap-4 px-6 pt-2"
-			style:padding-bottom="calc(var(--tabbar-safe) + 1.25rem)"
-		>
-			<ol class="flex list-none justify-center gap-1.5" aria-label="引导步骤">
-				{#each stepIndices as index (index)}
-					<li
-						class="h-1.5 w-6 rounded-full transition-colors {index <= step
-							? 'bg-brand dark:bg-soft-blue'
-							: 'bg-outline-variant'}"
-						aria-current={index === step ? 'step' : undefined}
-						aria-label="第 {index + 1} 步，共 {stepIndices.length} 步"
-					></li>
-				{/each}
-			</ol>
-			<div class="flex gap-3">
-				{#if !isLastStep}
-					{#if step > 0}
-						<Button variant="text" class="flex-1" onclick={handleBack}>上一步</Button>
-					{/if}
-					<Button variant="filled" class="flex-1" onclick={handleNext}>下一步</Button>
-				{:else}
-					<Button variant="text" class="flex-1" onclick={handleLater}>稍后再说</Button>
-					<Button variant="filled" class="flex-1" onclick={handleStartImport}>开始导入</Button>
-				{/if}
 			</div>
 		</div>
 	</div>

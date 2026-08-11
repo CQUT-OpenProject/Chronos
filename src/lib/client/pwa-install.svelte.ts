@@ -1,5 +1,6 @@
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 import { onboardingController } from './onboarding.svelte';
+import { isPwaStandalone, PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalone';
 
 const INSTALLED_KEY = 'chronos:pwa-installed';
 const OPEN_IN_APP_HINT = '如未自动跳转，请从程序坞、启动台或开始菜单手动打开 Chronos。';
@@ -17,14 +18,17 @@ export class PWAInstallController {
 	canPrompt = $derived(this.deferredPrompt !== null);
 
 	private installListenerAttached = false;
+	private displayModeListenerAttached = false;
 	private dialogScheduled = false;
 	private dialogTimer: ReturnType<typeof setTimeout> | null = null;
+	private environmentRecheckTimers: ReturnType<typeof setTimeout>[] = [];
 
 	constructor() {
 		if (typeof window !== 'undefined') {
 			this.checkEnvironment();
 			this.restoreDeferredPrompt();
 			this.attachInstallListener();
+			this.attachDisplayModeListener();
 		}
 	}
 
@@ -38,10 +42,7 @@ export class PWAInstallController {
 	checkEnvironment() {
 		if (typeof window === 'undefined') return;
 
-		this.isStandalone =
-			window.matchMedia('(display-mode: standalone)').matches ||
-			// @ts-expect-error iOS Safari
-			window.navigator.standalone === true;
+		this.isStandalone = isPwaStandalone();
 
 		if (this.isStandalone) {
 			localStorage.setItem(INSTALLED_KEY, '1');
@@ -80,6 +81,16 @@ export class PWAInstallController {
 		this.isMacSafari = isMac && isSafari;
 	}
 
+	private attachDisplayModeListener() {
+		if (this.displayModeListenerAttached || typeof window === 'undefined') return;
+		this.displayModeListenerAttached = true;
+
+		for (const mode of PWA_DISPLAY_MODE_MEDIA_QUERIES) {
+			const mq = window.matchMedia(`(display-mode: ${mode})`);
+			mq.addEventListener('change', () => this.checkEnvironment());
+		}
+	}
+
 	private attachInstallListener() {
 		if (this.installListenerAttached) return;
 		this.installListenerAttached = true;
@@ -93,10 +104,53 @@ export class PWAInstallController {
 		};
 
 		window.addEventListener('beforeinstallprompt', onBeforeInstall);
-		window.addEventListener('appinstalled', () => {
-			localStorage.setItem(INSTALLED_KEY, '1');
-			this.isInstalledLocally = true;
-		});
+		window.addEventListener('appinstalled', () => this.onAppInstalled());
+	}
+
+	private markInstalled() {
+		localStorage.setItem(INSTALLED_KEY, '1');
+		this.isInstalledLocally = true;
+	}
+
+	private clearDeferredPrompt() {
+		this.deferredPrompt = null;
+		window.__chronosInstallPrompt = null;
+	}
+
+	private scheduleEnvironmentRecheck() {
+		for (const timer of this.environmentRecheckTimers) {
+			clearTimeout(timer);
+		}
+		this.environmentRecheckTimers = [];
+
+		for (const delay of [100, 500, 1000]) {
+			const timer = setTimeout(() => {
+				this.checkEnvironment();
+			}, delay);
+			this.environmentRecheckTimers.push(timer);
+		}
+	}
+
+	private getAppUrl() {
+		return `${window.location.origin}${window.location.pathname}${window.location.search}`;
+	}
+
+	/** Chromium may route this to the installed app window instead of a browser tab. */
+	private tryFocusInstalledAppWindow() {
+		window.open(this.getAppUrl(), '_blank', 'noopener,noreferrer');
+	}
+
+	private onAppInstalled() {
+		this.markInstalled();
+		this.checkEnvironment();
+
+		if (this.isStandalone) return;
+
+		this.scheduleEnvironmentRecheck();
+
+		if (!onboardingController.open) {
+			this.tryFocusInstalledAppWindow();
+		}
 	}
 
 	private async detectInstalledLocally() {
@@ -184,10 +238,8 @@ export class PWAInstallController {
 		const choice = await this.deferredPrompt.userChoice;
 		if (choice.outcome === 'accepted') {
 			this.installDialogOpen = false;
-			this.deferredPrompt = null;
-			window.__chronosInstallPrompt = null;
-			localStorage.setItem(INSTALLED_KEY, '1');
-			this.isInstalledLocally = true;
+			this.clearDeferredPrompt();
+			this.onAppInstalled();
 			return true;
 		}
 		return false;
@@ -195,8 +247,7 @@ export class PWAInstallController {
 
 	openInApp() {
 		this.openInAppDialogOpen = false;
-		const target = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-		window.open(target, '_blank', 'noopener,noreferrer');
+		this.tryFocusInstalledAppWindow();
 		snackbar(OPEN_IN_APP_HINT);
 	}
 

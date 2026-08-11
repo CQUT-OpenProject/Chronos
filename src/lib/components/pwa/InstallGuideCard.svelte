@@ -5,6 +5,8 @@
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { AddHomeFill, CheckCircleFill, IosShareFill, RocketLaunchFill } from '$lib/icons';
 
+	let { inOnboarding = false }: { inOnboarding?: boolean } = $props();
+
 	async function handleInstallAction() {
 		if (pwaInstallController.isStandalone) {
 			snackbar('当前已成功安装为桌面应用');
@@ -17,10 +19,7 @@
 		}
 
 		if (pwaInstallController.canPrompt) {
-			const success = await pwaInstallController.install();
-			if (success) {
-				snackbar('正在启动安装程序...');
-			}
+			await pwaInstallController.install();
 			return;
 		}
 
@@ -40,8 +39,20 @@
 			<span>Chronos 已安装</span>
 		</p>
 		<p class="m3-body-small text-on-surface-variant">
-			你目前正在独立应用模式下运行，享受完整 PWA 体验
+			{#if inOnboarding}
+				安装成功，你目前正在独立应用模式下运行
+			{:else}
+				你目前正在独立应用模式下运行，享受完整 PWA 体验
+			{/if}
 		</p>
+	</Card>
+{:else if pwaInstallController.isInstalledLocally && inOnboarding}
+	<Card variant="filled" class="text-center">
+		<p class="m3-title-small flex items-center justify-center gap-2 text-brand">
+			<CheckCircleFill class="h-5 w-5" />
+			<span>安装成功</span>
+		</p>
+		<p class="m3-body-small text-on-surface-variant">Chronos 已添加到主屏幕，点击下一步继续</p>
 	</Card>
 {:else if pwaInstallController.isInstalledLocally}
 	<Card variant="outlined">

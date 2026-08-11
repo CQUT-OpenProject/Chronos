@@ -294,7 +294,8 @@ export default defineConfig({
 				start_url: `${basePath}/`,
 				id: `${basePath}/`,
 				launch_handler: {
-					client_mode: 'focus-existing'
+					// `focus-existing` refocuses the installing browser tab after install instead of opening standalone.
+					client_mode: 'auto'
 				},
 				icons: [
 					{ src: `${basePath}/pwa-192.png`, sizes: '192x192', type: 'image/png' },
