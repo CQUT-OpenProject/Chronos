@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { marked } from 'marked';
+	import { parseMarkdown } from '$lib/content/markdown';
 	import { formatPublishedDate } from '$lib/content/releases/release-display';
 	import {
 		createReleaseDetailState,
@@ -27,9 +27,7 @@
 	});
 
 	const htmlBody = $derived(
-		detailState.state.release?.body
-			? (marked.parse(detailState.state.release.body, { async: false }) as string)
-			: ''
+		detailState.state.release?.body ? parseMarkdown(detailState.state.release.body) : ''
 	);
 </script>
 
@@ -55,7 +53,9 @@
 		</HighlightRowList>
 
 		<MineSection title="更新内容">
-			<div class="release-prose prose prose-sm max-w-none px-2 dark:prose-invert">
+			<div
+				class="markdown-prose markdown-prose--release prose prose-sm max-w-none px-2 dark:prose-invert"
+			>
 				{@html htmlBody || '<p>此 Release 没有正文内容。</p>'}
 			</div>
 		</MineSection>
@@ -68,39 +68,3 @@
 		</p>
 	</Card>
 {/if}
-
-<style>
-	.release-prose :global(h2) {
-		margin: 0 0 0.75rem;
-		font-size: 1rem;
-		line-height: 1.5;
-		font-weight: 500;
-		color: var(--color-on-surface);
-	}
-
-	.release-prose :global(p) {
-		margin: 0 0 0.75rem;
-		color: var(--color-on-surface-variant);
-	}
-
-	.release-prose :global(p:last-child) {
-		margin-bottom: 0;
-	}
-
-	.release-prose :global(ul) {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin: 0;
-		padding-left: 1.25rem;
-	}
-
-	.release-prose :global(li::marker) {
-		color: var(--color-brand);
-	}
-
-	.release-prose :global(a) {
-		color: var(--color-brand);
-		text-underline-offset: 0.125rem;
-	}
-</style>

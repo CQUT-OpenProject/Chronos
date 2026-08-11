@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @source '..';
 @import '../lib/m3/generated-theme.css';
+@import '../lib/content/markdown-prose.css';
 @import 'swiper/css';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';

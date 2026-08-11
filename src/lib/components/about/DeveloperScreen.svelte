@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { marked } from 'marked';
+	import { parseMarkdown } from '$lib/content/markdown';
 
 	const markdownContent = `
 ## 一些有趣的事实
@@ -29,68 +29,11 @@
 - 本项目由[「重庆理工大学开源计划」](https://cqut-openproject.github.io/home/)维护，CQUT-OSP 致力于收集和维护本校开源项目
 `.trim();
 
-	const renderer = new marked.Renderer();
-	renderer.link = ({ href, title, text }) => {
-		const titleAttr = title ? ` title="${title}"` : '';
-		return `<a href="${href}"${titleAttr} target="_blank" rel="noreferrer">${text}</a>`;
-	};
-
-	const htmlContent = marked.parse(markdownContent, { renderer, async: false }) as string;
+	const htmlContent = parseMarkdown(markdownContent);
 </script>
 
-<div class="developer-prose prose prose-sm max-w-none px-4 py-2 dark:prose-invert">
+<div
+	class="markdown-prose markdown-prose--developer prose prose-sm max-w-none px-4 py-2 dark:prose-invert"
+>
 	{@html htmlContent}
 </div>
-
-<style>
-	.developer-prose :global(h2) {
-		margin: 1.5rem 0 0.75rem;
-		font-size: 1.125rem;
-		line-height: 1.5;
-		font-weight: 600;
-		color: var(--color-primary);
-	}
-
-	.developer-prose :global(h2:first-child) {
-		margin-top: 0;
-	}
-
-	.developer-prose :global(p) {
-		margin: 0 0 0.75rem;
-		color: var(--color-on-surface-variant);
-	}
-
-	.developer-prose :global(ul),
-	.developer-prose :global(ol) {
-		display: flex;
-		flex-direction: column;
-		gap: 0.625rem;
-		margin: 0 0 1.25rem;
-		padding-left: 1.25rem;
-		color: var(--color-on-surface);
-	}
-
-	.developer-prose :global(li) {
-		line-height: 1.6;
-	}
-
-	.developer-prose :global(li::marker) {
-		color: var(--color-brand);
-		font-weight: 600;
-	}
-
-	.developer-prose :global(strong) {
-		color: var(--color-on-surface);
-		font-weight: 600;
-	}
-
-	.developer-prose :global(a) {
-		color: var(--color-brand);
-		text-decoration: underline;
-		text-underline-offset: 0.125rem;
-	}
-
-	.developer-prose :global(a:hover) {
-		opacity: 0.8;
-	}
-</style>
