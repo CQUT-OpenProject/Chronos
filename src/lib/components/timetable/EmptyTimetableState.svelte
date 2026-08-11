@@ -4,8 +4,6 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 
-	let { onImport }: { onImport?: () => void } = $props();
-
 	function showImportGuide() {
 		onboardingController.openAt(2);
 	}
@@ -20,9 +18,7 @@
 	<h2 class="m3-headline-medium font-bold text-on-surface">还没有课程表</h2>
 
 	<div class="mt-4 flex flex-col items-center gap-3">
-		<Button variant="outlined" href={resolve('/transfer/import')} onclick={onImport}>
-			导入课程表
-		</Button>
+		<Button variant="outlined" href={resolve('/transfer/import')}>导入课程表</Button>
 		<button
 			type="button"
 			class="cursor-pointer text-sm font-medium text-on-surface-variant underline-offset-2 hover:text-on-surface hover:underline"

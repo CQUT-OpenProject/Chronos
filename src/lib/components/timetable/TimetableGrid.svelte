@@ -26,7 +26,6 @@
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasWallpaper: boolean;
 		isDark?: boolean;
-		bottomContentPadding?: string;
 		onCourseClick?: (course: Course) => void;
 		onCourseLongClick?: (course: Course) => void;
 	}
@@ -38,7 +37,6 @@
 		courseDisplayModels,
 		hasWallpaper,
 		isDark = false,
-		bottomContentPadding = '0px',
 		onCourseClick,
 		onCourseLongClick
 	}: Props = $props();
@@ -68,9 +66,7 @@
 		findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
 	);
 
-	const shellBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
-
-	const gridBodySolidBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
+	const solidBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
 
 	let gridHeaderHeight = $state(0);
 
@@ -260,7 +256,7 @@
 </script>
 
 <div
-	class="relative flex h-full w-full flex-col {shellBgClass}"
+	class="relative flex h-full w-full flex-col {solidBgClass}"
 	style="--row-height: 5.5rem; --sidebar-width: 3.25rem"
 >
 	{#if hasWallpaper}
@@ -303,7 +299,6 @@
 		<div
 			{@attach bodyScrollAttach}
 			class="min-h-0 flex-1 overflow-y-auto"
-			style:padding-bottom={bottomContentPadding}
 			role="region"
 			aria-label="本周课程表"
 		>
@@ -339,7 +334,7 @@
 
 				<div
 					{@attach gridBodyWidthAttach}
-					class="relative min-w-0 flex-1 {gridBodySolidBgClass}"
+					class="relative min-w-0 flex-1 {solidBgClass}"
 					style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 				>
 					{#each placements as item (item.key)}

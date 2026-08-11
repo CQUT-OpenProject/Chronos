@@ -174,7 +174,7 @@
 	</TopAppBar>
 
 	<div class="relative min-h-0 flex-1">
-		{#if hasWallpaper && screenState.appState.wallpaperUri}
+		{#if hasWallpaper}
 			<div
 				class="absolute inset-0 bg-cover bg-center"
 				style:background-image="url('{screenState.appState.wallpaperUri}')"

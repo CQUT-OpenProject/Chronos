@@ -86,7 +86,6 @@
 					{courseDisplayModels}
 					hasWallpaper={true}
 					{isDark}
-					bottomContentPadding="0px"
 				/>
 			</div>
 		</div>

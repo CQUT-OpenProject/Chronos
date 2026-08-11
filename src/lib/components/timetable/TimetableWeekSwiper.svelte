@@ -95,7 +95,6 @@
 					courseDisplayModels={courseModels}
 					{hasWallpaper}
 					{isDark}
-					bottomContentPadding="0px"
 					onCourseClick={(course) => onCourseClick(course.id)}
 					onCourseLongClick={(course) => onCourseLongClick(course.id)}
 				/>
