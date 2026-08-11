@@ -1,4 +1,10 @@
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+import {
+	isInstallPromptSnoozed,
+	parseSnoozedUntil,
+	SNOOZE_DURATION_MS,
+	SNOOZE_KEY
+} from './pwa-install-snooze';
 import { isPwaStandalone, PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalone';
 
 const INSTALLED_KEY = 'chronos:pwa-installed';
@@ -177,8 +183,17 @@ export class PWAInstallController {
 		}
 	}
 
+	private readSnoozedUntil(): number | null {
+		if (typeof localStorage === 'undefined') return null;
+		return parseSnoozedUntil(localStorage.getItem(SNOOZE_KEY));
+	}
+
+	private isSnoozed(): boolean {
+		return isInstallPromptSnoozed(this.readSnoozedUntil());
+	}
+
 	private scheduleDialog() {
-		if (this.dialogScheduled || this.isStandalone) return;
+		if (this.dialogScheduled || this.isStandalone || this.isSnoozed()) return;
 		this.dialogScheduled = true;
 
 		this.dialogTimer = setTimeout(() => {
@@ -256,6 +271,13 @@ export class PWAInstallController {
 		this.openInAppDialogOpen = false;
 		this.tryFocusInstalledAppWindow();
 		snackbar(OPEN_IN_APP_HINT);
+	}
+
+	snoozeInstallPrompt() {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_DURATION_MS));
+		}
+		this.installDialogOpen = false;
 	}
 
 	dismiss() {
