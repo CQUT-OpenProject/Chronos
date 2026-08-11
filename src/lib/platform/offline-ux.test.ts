@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+import { offlineCopy } from './offline-copy';
 import { applyOfflineUxTransition } from './offline-ux.svelte';
 
 describe('applyOfflineUxTransition', () => {
@@ -13,7 +14,7 @@ describe('applyOfflineUxTransition', () => {
 		const next = applyOfflineUxTransition(false, undefined, snackbarFn);
 
 		expect(next).toBe(false);
-		expect(snackbarFn).toHaveBeenCalledWith('当前处于离线状态');
+		expect(snackbarFn).toHaveBeenCalledWith(offlineCopy.snackbarOffline);
 	});
 
 	it('does not show snackbar on first attach when online', () => {
@@ -28,7 +29,7 @@ describe('applyOfflineUxTransition', () => {
 		const next = applyOfflineUxTransition(false, true, snackbarFn);
 
 		expect(next).toBe(false);
-		expect(snackbarFn).toHaveBeenCalledWith('当前处于离线状态');
+		expect(snackbarFn).toHaveBeenCalledWith(offlineCopy.snackbarOffline);
 	});
 
 	it('shows snackbar when going back online', () => {
@@ -36,7 +37,7 @@ describe('applyOfflineUxTransition', () => {
 		const next = applyOfflineUxTransition(true, false, snackbarFn);
 
 		expect(next).toBe(true);
-		expect(snackbarFn).toHaveBeenCalledWith('网络已恢复', undefined, 2000);
+		expect(snackbarFn).toHaveBeenCalledWith(offlineCopy.snackbarOnline, undefined, 2000);
 	});
 
 	it('does not show snackbar when staying online', () => {

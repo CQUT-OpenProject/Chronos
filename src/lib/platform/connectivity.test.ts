@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { NetworkStatusController } from './network-status.svelte';
+import { ConnectivityController } from './connectivity.svelte';
 
 function createWindowStub() {
 	const listeners = new Map<string, Set<EventListenerOrEventListenerObject>>();
@@ -29,15 +29,15 @@ function createWindowStub() {
 	};
 }
 
-describe('NetworkStatusController', () => {
-	let controller: NetworkStatusController;
+describe('ConnectivityController', () => {
+	let controller: ConnectivityController;
 	let windowStub: ReturnType<typeof createWindowStub>;
 
 	beforeEach(() => {
 		windowStub = createWindowStub();
 		vi.stubGlobal('window', windowStub);
 		vi.stubGlobal('navigator', { onLine: true });
-		controller = new NetworkStatusController();
+		controller = new ConnectivityController();
 	});
 
 	afterEach(() => {
@@ -47,7 +47,7 @@ describe('NetworkStatusController', () => {
 
 	it('reflects navigator.onLine on construction', () => {
 		vi.stubGlobal('navigator', { onLine: false });
-		const offlineController = new NetworkStatusController();
+		const offlineController = new ConnectivityController();
 		expect(offlineController.isOnline).toBe(false);
 		offlineController.destroy();
 	});
@@ -63,7 +63,7 @@ describe('NetworkStatusController', () => {
 
 	it('updates isOnline when going back online', () => {
 		vi.stubGlobal('navigator', { onLine: false });
-		const offlineController = new NetworkStatusController();
+		const offlineController = new ConnectivityController();
 		offlineController.init();
 
 		windowStub.dispatchEvent(new Event('online'));

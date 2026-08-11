@@ -1,8 +1,7 @@
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-import type { ConnectivityController } from '$lib/client/network-status.svelte';
+import type { ConnectivityReader } from '$lib/platform/connectivity.svelte';
+import { offlineCopy } from '$lib/platform/offline-copy';
 
-const OFFLINE_SNACKBAR_MESSAGE = '当前处于离线状态';
-const ONLINE_SNACKBAR_MESSAGE = '网络已恢复';
 const ONLINE_SNACKBAR_DURATION = 2000;
 
 export type SnackbarFn = typeof snackbar;
@@ -14,7 +13,7 @@ export function applyOfflineUxTransition(
 ): boolean {
 	if (previousOnline === undefined) {
 		if (!online) {
-			snackbarFn(OFFLINE_SNACKBAR_MESSAGE);
+			snackbarFn(offlineCopy.snackbarOffline);
 		}
 		return online;
 	}
@@ -24,16 +23,16 @@ export function applyOfflineUxTransition(
 	}
 
 	if (online) {
-		snackbarFn(ONLINE_SNACKBAR_MESSAGE, undefined, ONLINE_SNACKBAR_DURATION);
+		snackbarFn(offlineCopy.snackbarOnline, undefined, ONLINE_SNACKBAR_DURATION);
 	} else {
-		snackbarFn(OFFLINE_SNACKBAR_MESSAGE);
+		snackbarFn(offlineCopy.snackbarOffline);
 	}
 
 	return online;
 }
 
 export function attachOfflineUx(
-	connectivity: ConnectivityController,
+	connectivity: ConnectivityReader,
 	snackbarFn: SnackbarFn = snackbar
 ): () => void {
 	let previousOnline: boolean | undefined;

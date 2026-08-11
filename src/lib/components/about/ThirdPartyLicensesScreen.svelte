@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { networkStatus } from '$lib/client/network-status.svelte';
+	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import { resolveFetchErrorMessage } from '$lib/client/fetch-error-message';
 	import Card from '$lib/components/ui/Card.svelte';
 	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
@@ -24,10 +24,7 @@
 		try {
 			const response = await fetch('/licenses/third-party.json');
 			if (!response.ok) {
-				errorMessage = resolveFetchErrorMessage(
-					!networkStatus.isOnline,
-					'无法加载第三方许可证列表'
-				);
+				errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载第三方许可证列表');
 				loadState = 'error';
 				return;
 			}
@@ -35,7 +32,7 @@
 			licenses = (await response.json()) as ThirdPartyLicense[];
 			loadState = licenses.length > 0 ? 'ready' : 'empty';
 		} catch {
-			errorMessage = resolveFetchErrorMessage(!networkStatus.isOnline, '无法加载第三方许可证列表');
+			errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载第三方许可证列表');
 			loadState = 'error';
 		}
 	}
@@ -51,7 +48,7 @@
 	</div>
 {:else if loadState === 'error'}
 	<FetchErrorState
-		offline={!networkStatus.isOnline}
+		offline={!connectivity.isOnline}
 		description={errorMessage}
 		onRetry={loadLicenses}
 	/>

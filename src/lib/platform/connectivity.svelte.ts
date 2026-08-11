@@ -1,4 +1,4 @@
-export class NetworkStatusController {
+export class ConnectivityController {
 	isOnline = $state(true);
 
 	private initialized = false;
@@ -38,6 +38,6 @@ export class NetworkStatusController {
 	};
 }
 
-export const networkStatus = new NetworkStatusController();
+export const connectivity = new ConnectivityController();
 
-export type ConnectivityController = Pick<NetworkStatusController, 'isOnline'>;
+export type ConnectivityReader = Pick<ConnectivityController, 'isOnline'>;

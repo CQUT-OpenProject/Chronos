@@ -2,6 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import { InfoFill, WifiOffFill } from '$lib/icons';
+	import { offlineCopy } from '$lib/platform/offline-copy';
 
 	let {
 		offline = false,
@@ -15,9 +16,9 @@
 		onRetry?: () => void;
 	} = $props();
 
-	const resolvedTitle = $derived(title ?? (offline ? '当前处于离线状态' : '加载失败'));
+	const resolvedTitle = $derived(title ?? (offline ? offlineCopy.fetchTitle : '加载失败'));
 	const resolvedDescription = $derived(
-		description ?? (offline ? '无法加载内容。连接网络后重试。' : '加载失败，请稍后重试。')
+		description ?? (offline ? offlineCopy.fetchDescription : '加载失败，请稍后重试。')
 	);
 </script>
 

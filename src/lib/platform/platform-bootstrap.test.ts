@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 const mocks = vi.hoisted(() => ({
 	initNavigationStack: vi.fn(),
-	networkStatusInit: vi.fn(),
-	networkStatusDestroy: vi.fn(),
+	connectivityInit: vi.fn(),
+	connectivityDestroy: vi.fn(),
 	credentialEnvironmentInit: vi.fn().mockResolvedValue(undefined),
 	pwaInstallInit: vi.fn().mockResolvedValue(undefined),
 	setInstallPromptGate: vi.fn(),
@@ -16,10 +16,10 @@ vi.mock('$lib/navigation/navigation-direction', () => ({
 	initNavigationStack: mocks.initNavigationStack
 }));
 
-vi.mock('$lib/client/network-status.svelte', () => ({
-	networkStatus: {
-		init: mocks.networkStatusInit,
-		destroy: mocks.networkStatusDestroy,
+vi.mock('$lib/platform/connectivity.svelte', () => ({
+	connectivity: {
+		init: mocks.connectivityInit,
+		destroy: mocks.connectivityDestroy,
 		isOnline: true
 	}
 }));
@@ -88,7 +88,7 @@ describe('createPlatformBootstrap', () => {
 		const teardown = platform.init('/');
 
 		expect(mocks.initNavigationStack).toHaveBeenCalledWith('/');
-		expect(mocks.networkStatusInit).toHaveBeenCalled();
+		expect(mocks.connectivityInit).toHaveBeenCalled();
 		expect(mocks.credentialEnvironmentInit).toHaveBeenCalled();
 		expect(shell.init).toHaveBeenCalled();
 		expect(timetableScreen.init).toHaveBeenCalledWith(shell);
@@ -100,7 +100,7 @@ describe('createPlatformBootstrap', () => {
 		expect(window.__chronosHideBootFallback).toHaveBeenCalled();
 
 		teardown();
-		expect(mocks.networkStatusDestroy).toHaveBeenCalled();
+		expect(mocks.connectivityDestroy).toHaveBeenCalled();
 	});
 
 	it('is idempotent on repeated init', () => {

@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type { TransferImportSource } from '$lib/client/preview-persistence';
-	import { networkStatus } from '$lib/client/network-status.svelte';
+	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import {
 		canSaveCredentials,
 		saveCredentialsLabel,
 		savedCredentialHint
 	} from '$lib/transfer/transfer-state.svelte';
+	import OfflineInlineNotice from '$lib/components/connectivity/OfflineInlineNotice.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import FormCard from '$lib/components/ui/FormCard.svelte';
@@ -14,7 +15,6 @@
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-	import { WifiOffFill } from '$lib/icons';
 	import { onlineImportEnabled } from '$lib/config/features';
 
 	const importSegments = [
@@ -40,7 +40,7 @@
 	const savedCredentialDescription = $derived(
 		savedCredentialHint(transferState.savedCredentialState)
 	);
-	const onlineImportDisabled = $derived(loading || !networkStatus.isOnline);
+	const onlineImportDisabled = $derived(loading || !connectivity.isOnline);
 
 	function notifyTransferMessages() {
 		const { statusMessage, errorMessage } = transfer.state;
@@ -119,15 +119,8 @@
 		{#if onlineImportEnabled && transferState.selectedSource === 'ONLINE'}
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
-					{#if !networkStatus.isOnline}
-						<div
-							class="flex items-start gap-2 rounded-xl bg-surface-variant/60 px-3 py-2.5 text-on-surface-variant"
-						>
-							<WifiOffFill class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-							<p class="m3-body-small">
-								在线导入需要网络连接。可改用「分享链接」或「HTML 文件」导入课表。
-							</p>
-						</div>
+					{#if !connectivity.isOnline}
+						<OfflineInlineNotice />
 					{/if}
 					<div>
 						<h2 class="m3-title-medium text-on-surface">从知行理工获取</h2>

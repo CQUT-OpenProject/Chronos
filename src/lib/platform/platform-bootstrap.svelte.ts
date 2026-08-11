@@ -1,6 +1,6 @@
 import type { AppShellController } from '$lib/app/app-shell.svelte';
 import { credentialEnvironment } from '$lib/client/credential-environment.svelte';
-import { networkStatus } from '$lib/client/network-status.svelte';
+import { connectivity } from '$lib/platform/connectivity.svelte';
 import { onboardingController } from '$lib/client/onboarding.svelte';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 import { initWebVitals } from '$lib/client/web-vitals';
@@ -28,7 +28,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		started = true;
 
 		initNavigationStack(pathname);
-		networkStatus.init();
+		connectivity.init();
 		void credentialEnvironment.init();
 		deps.shell.init();
 		deps.timetableScreen.init(deps.shell);
@@ -38,7 +38,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		window.__chronosHideBootFallback?.();
 
 		pwaInstallController.setInstallPromptGate(() => onboardingController.open);
-		disposeOfflineUx = attachOfflineUx(networkStatus);
+		disposeOfflineUx = attachOfflineUx(connectivity);
 
 		disposeEffects = $effect.root(() => {
 			$effect(() => {
@@ -66,7 +66,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 			disposeEffects = null;
 			disposeOfflineUx?.();
 			disposeOfflineUx = null;
-			networkStatus.destroy();
+			connectivity.destroy();
 			started = false;
 		};
 	}

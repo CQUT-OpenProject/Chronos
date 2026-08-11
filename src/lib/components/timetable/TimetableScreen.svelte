@@ -6,9 +6,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
 	import { getContext } from 'svelte';
-	import { EditNote, WifiOffFill } from '$lib/icons';
-	import { networkStatus } from '$lib/client/network-status.svelte';
-	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
@@ -32,7 +30,6 @@
 	const endWeek = $derived(screenState.endWeek);
 	const isDark = $derived(shell.state.isDark);
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
-	const isOffline = $derived(!networkStatus.isOnline);
 
 	const weekGesture = createWeekSliderGesture({
 		getStartWeek: () => startWeek,
@@ -146,19 +143,6 @@
 			</div>
 		{/snippet}
 		{#snippet actions()}
-			{#if isOffline}
-				<IconButton
-					variant="danger"
-					size="sm"
-					ariaLabel="当前处于离线状态"
-					onclick={() => {
-						navigator.vibrate?.(10);
-						snackbar('当前处于离线状态');
-					}}
-				>
-					<WifiOffFill class="size-5" />
-				</IconButton>
-			{/if}
 			<IconButton
 				variant="tonal"
 				size="sm"

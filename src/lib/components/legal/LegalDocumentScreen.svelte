@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { parseMarkdown } from '$lib/content/markdown';
-	import { networkStatus } from '$lib/client/network-status.svelte';
+	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import { resolveFetchErrorMessage } from '$lib/client/fetch-error-message';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
@@ -30,7 +30,7 @@
 		try {
 			const response = await fetch(documentPath);
 			if (!response.ok) {
-				errorMessage = resolveFetchErrorMessage(!networkStatus.isOnline, '无法加载文档内容');
+				errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载文档内容');
 				loadState = 'error';
 				return;
 			}
@@ -39,7 +39,7 @@
 			htmlContent = parseMarkdown(markdown);
 			loadState = 'ready';
 		} catch {
-			errorMessage = resolveFetchErrorMessage(!networkStatus.isOnline, '无法加载文档内容');
+			errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载文档内容');
 			loadState = 'error';
 		}
 	}
@@ -56,7 +56,7 @@
 		</div>
 	{:else if loadState === 'error'}
 		<FetchErrorState
-			offline={!networkStatus.isOnline}
+			offline={!connectivity.isOnline}
 			description={errorMessage}
 			onRetry={loadDocument}
 		/>
