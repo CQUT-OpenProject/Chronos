@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import { register } from 'swiper/element/bundle';
 	import type { SwiperContainer } from 'swiper/element/bundle';
+	import type { TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableGrid from './TimetableGrid.svelte';
 
@@ -11,12 +12,14 @@
 		screen,
 		hasWallpaper,
 		isDark,
+		layoutMode,
 		onCourseClick,
 		onCourseLongClick
 	}: {
 		screen: TimetableScreenController;
 		hasWallpaper: boolean;
 		isDark: boolean;
+		layoutMode: TimetableLayoutMode;
 		onCourseClick: (courseId: string) => void;
 		onCourseLongClick: (courseId: string) => void;
 	} = $props();
@@ -95,6 +98,7 @@
 					courseDisplayModels={courseModels}
 					{hasWallpaper}
 					{isDark}
+					{layoutMode}
 					onCourseClick={(course) => onCourseClick(course.id)}
 					onCourseLongClick={(course) => onCourseLongClick(course.id)}
 				/>
