@@ -7,7 +7,7 @@
 
 基于渐进式 Web 的课程表应用，深度适配本校课表
 
-![Ask DeepWiki](https://deepwiki.com/badge.svg)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CQUT-OpenProject/Chronos)
 
 </div>
 
