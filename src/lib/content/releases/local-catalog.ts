@@ -3,7 +3,7 @@ import { AppError } from '$lib/domain/result/app-error';
 import type { ReleaseCatalog } from './catalog';
 import type { Release } from './release';
 
-const RELEASE_FILES = import.meta.glob('./*.md', {
+const RELEASE_FILES = import.meta.glob('./entries/*.md', {
 	query: '?raw',
 	import: 'default',
 	eager: true
