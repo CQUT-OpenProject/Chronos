@@ -118,7 +118,7 @@
 					<div>
 						<h2 class="m3-title-medium text-on-surface">从知行理工获取</h2>
 						<p class="m3-body-small mt-0.5 text-on-surface-variant">
-							请输入您在知行理工的学号与密码在线抓取课表。
+							请输入知行理工账号密码以获取在线课表。
 						</p>
 					</div>
 
