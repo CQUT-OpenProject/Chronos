@@ -1,9 +1,9 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"framework": "sveltekit-1",
-	"installCommand": "npx --yes -p vite-plus vp install --frozen-lockfile",
+	"installCommand": "corepack enable && corepack prepare pnpm@11.20.0 --activate && pnpm install --frozen-lockfile",
 	"buildCommand": "pnpm run build",
-	"devCommand": "vp dev --port $PORT",
+	"devCommand": "pnpm run dev -- --port $PORT",
 	"headers": [
 		{
 			"source": "/sw.js",
