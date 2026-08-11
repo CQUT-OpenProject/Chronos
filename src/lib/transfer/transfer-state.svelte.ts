@@ -276,6 +276,10 @@ export function createTransferState(
 		return true;
 	}
 
+	async function getExportMetadata() {
+		return await coordinator.getExportMetadata();
+	}
+
 	const state = $derived({
 		selectedSource,
 		preview,
@@ -312,7 +316,8 @@ export function createTransferState(
 		loadPersistedPreview,
 		clearPersistedPreview,
 		confirmImport,
-		exportToClipboard
+		exportToClipboard,
+		getExportMetadata
 	};
 }
 

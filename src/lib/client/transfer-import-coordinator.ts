@@ -298,6 +298,10 @@ export function createTransferImportCoordinator({
 		}
 	}
 
+	async function getExportMetadata() {
+		return await services.exportCurrent.getExportMetadata();
+	}
+
 	return {
 		previewFromClipboard,
 		previewFromHtmlFile,
@@ -308,7 +312,8 @@ export function createTransferImportCoordinator({
 		loadPersistedPreview,
 		clearPersistedPreview,
 		confirmImport,
-		exportToClipboard
+		exportToClipboard,
+		getExportMetadata
 	};
 }
 
