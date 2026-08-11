@@ -2,7 +2,11 @@
 	import type { TransferImportSource } from '$lib/client/preview-persistence';
 	import { networkStatus } from '$lib/client/network-status.svelte';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
-	import { canSaveCredentials, saveCredentialsLabel } from '$lib/transfer/transfer-state.svelte';
+	import {
+		canSaveCredentials,
+		saveCredentialsLabel,
+		savedCredentialHint
+	} from '$lib/transfer/transfer-state.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import FormCard from '$lib/components/ui/FormCard.svelte';
@@ -33,6 +37,9 @@
 
 	const saveCheckboxEnabled = $derived(canSaveCredentials(transferState.savedCredentialState));
 	const saveCheckboxLabel = $derived(saveCredentialsLabel(transferState.savedCredentialState));
+	const savedCredentialDescription = $derived(
+		savedCredentialHint(transferState.savedCredentialState)
+	);
 	const onlineImportDisabled = $derived(loading || !networkStatus.isOnline);
 
 	function notifyTransferMessages() {
@@ -175,14 +182,10 @@
 							<p class="m3-title-small text-on-surface">
 								已保存账号：{transferState.savedCredentialState.account ?? '未知'}
 							</p>
-							{#if transferState.savedCredentialState.protectionAvailable}
-								<p class="m3-body-small text-on-surface-variant">每次使用前都会触发设备验证。</p>
-							{:else}
-								<p class="m3-body-small text-on-surface-variant">
-									仅保存了账号，预览时仍需输入密码。
-								</p>
+							{#if savedCredentialDescription}
+								<p class="m3-body-small text-on-surface-variant">{savedCredentialDescription}</p>
 							{/if}
-							{#if transferState.savedCredentialState.protectionAvailable}
+							{#if transferState.savedCredentialState.savedMode === 'prf'}
 								<div class="flex w-full">
 									<Button
 										variant="outlined"

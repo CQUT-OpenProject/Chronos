@@ -6,10 +6,10 @@ import {
 	readOnlineCredentialRecord,
 	writeOnlineCredentialRecord
 } from '$lib/storage/online-credential-record';
+import { credentialEnvironment } from './credential-environment.svelte';
 import { encodePasswordPayload, decodePasswordPayload } from './webauthn/credential-payload';
 import { base64ToBytes, bytesToBase64, randomBytes } from './webauthn/binary';
 import { deriveAesKey, decryptPayload, encryptPayload } from './webauthn/prf-crypto';
-import { isPrfProtectionAvailable } from './webauthn/prf-support';
 
 const CREDENTIAL_INVALIDATED_MESSAGE = '已保存凭据已失效，请重新录入账号和密码';
 
@@ -17,8 +17,7 @@ export function createWebAuthnSecureCredentialStore(
 	storage: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null
 ): SecureCredentialStore {
 	const listeners = new Set<(state: SavedCredentialState) => void>();
-	let prfProtectionAvailable = false;
-	let accountOnlyFallbackAvailable = storage != null;
+	const accountOnlyFallbackAvailable = storage != null;
 	let pendingSalt: string | null = null;
 
 	function buildState(): SavedCredentialState {
@@ -29,7 +28,9 @@ export function createWebAuthnSecureCredentialStore(
 		return {
 			account: savedAccount,
 			hasSavedCredential: record != null,
-			protectionAvailable: prfProtectionAvailable
+			protectionAvailable: credentialEnvironment.prfAvailable,
+			capabilitiesReady: credentialEnvironment.ready,
+			savedMode: record?.mode ?? null
 		};
 	}
 
@@ -40,14 +41,13 @@ export function createWebAuthnSecureCredentialStore(
 		}
 	}
 
-	async function refreshCapabilities() {
-		prfProtectionAvailable = await isPrfProtectionAvailable();
-		accountOnlyFallbackAvailable = storage != null;
-		notify();
+	async function ensureEnvironmentReady(): Promise<void> {
+		await credentialEnvironment.init();
 	}
 
 	if (typeof window !== 'undefined') {
-		void refreshCapabilities();
+		credentialEnvironment.subscribe(() => notify());
+		void ensureEnvironmentReady();
 	}
 
 	function subscribeSavedCredentialState(
@@ -59,8 +59,8 @@ export function createWebAuthnSecureCredentialStore(
 	}
 
 	async function prepareSave(): Promise<AppResult<string>> {
-		await refreshCapabilities();
-		if (!prfProtectionAvailable) {
+		await ensureEnvironmentReady();
+		if (!credentialEnvironment.prfAvailable) {
 			return failure(AppError.security('当前设备不支持保存帐号密码'));
 		}
 
@@ -79,9 +79,9 @@ export function createWebAuthnSecureCredentialStore(
 			return failure(AppError.validation('账号不能为空'));
 		}
 
-		await refreshCapabilities();
+		await ensureEnvironmentReady();
 
-		if (!prfProtectionAvailable) {
+		if (!credentialEnvironment.prfAvailable) {
 			if (!accountOnlyFallbackAvailable) {
 				return failure(AppError.security('当前设备不支持保存帐号密码'));
 			}
@@ -129,7 +129,7 @@ export function createWebAuthnSecureCredentialStore(
 	}
 
 	async function prepareUnlock(): Promise<AppResult<string>> {
-		await refreshCapabilities();
+		await ensureEnvironmentReady();
 		const record = readOnlineCredentialRecord(storage);
 		if (!record) {
 			return failure(AppError.security('当前没有可用的已保存凭据'));
@@ -188,16 +188,4 @@ export function createWebAuthnSecureCredentialStore(
 		prepareSave,
 		prepareUnlock
 	};
-}
-
-export async function sanitizeOnlineCredentialAtStartup(
-	storage: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null
-): Promise<void> {
-	const record = readOnlineCredentialRecord(storage);
-	if (!record || record.mode !== 'prf') return;
-
-	const prfAvailable = await isPrfProtectionAvailable();
-	if (!prfAvailable) {
-		writeOnlineCredentialRecord(null, storage);
-	}
 }

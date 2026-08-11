@@ -47,7 +47,9 @@ export function createTransferState(
 	let savedCredentialState = $state<SavedCredentialState>({
 		account: null,
 		hasSavedCredential: false,
-		protectionAvailable: false
+		protectionAvailable: false,
+		capabilitiesReady: false,
+		savedMode: null
 	});
 	let errorMessage = $state<string | null>(null);
 	let statusMessage = $state<string | null>(null);
@@ -330,10 +332,14 @@ export function previewSourceLabel(source: TransferImportSource | null): string 
 }
 
 export function canSaveCredentials(state: SavedCredentialState): boolean {
+	if (!state.capabilitiesReady) return false;
 	return state.protectionAvailable || isAccountOnlyFallbackAvailable();
 }
 
 export function saveCredentialsLabel(state: SavedCredentialState): string {
+	if (!state.capabilitiesReady) {
+		return '正在检测设备能力…';
+	}
 	if (state.protectionAvailable) {
 		return '保存帐号密码';
 	}
@@ -341,4 +347,12 @@ export function saveCredentialsLabel(state: SavedCredentialState): string {
 		return '保存账号（密码需每次输入）';
 	}
 	return '当前设备不支持保存帐号密码';
+}
+
+export function savedCredentialHint(state: SavedCredentialState): string | null {
+	if (!state.hasSavedCredential) return null;
+	if (state.savedMode === 'prf') {
+		return '每次使用前都会触发设备验证。';
+	}
+	return '仅保存了账号，预览时仍需输入密码。';
 }

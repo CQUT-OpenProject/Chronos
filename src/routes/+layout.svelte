@@ -5,6 +5,7 @@
 	import { createAppShell } from '$lib/app/app-shell.svelte';
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
 	import { networkStatus } from '$lib/client/network-status.svelte';
+	import { credentialEnvironment } from '$lib/client/credential-environment.svelte';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
 	import OnboardingFlow from '$lib/components/onboarding/OnboardingFlow.svelte';
@@ -55,6 +56,7 @@
 	onMount(() => {
 		initNavigationStack(page.url.pathname);
 		networkStatus.init();
+		void credentialEnvironment.init();
 		shell.init();
 		timetableScreen.init(shell);
 		initWebVitals();

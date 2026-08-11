@@ -4,9 +4,22 @@ import {
 	readOnlineCredentialRecord,
 	writeOnlineCredentialRecord
 } from '$lib/storage/online-credential-record';
-import * as prfSupport from '$lib/client/webauthn/prf-support';
 import * as prfCrypto from '$lib/client/webauthn/prf-crypto';
 import { bytesToBase64 } from '$lib/client/webauthn/binary';
+
+const mockCredentialEnvironment = vi.hoisted(() => ({
+	prfAvailable: false,
+	ready: true,
+	init: vi.fn(async () => {}),
+	subscribe: vi.fn((listener: () => void) => {
+		listener();
+		return () => {};
+	})
+}));
+
+vi.mock('$lib/client/credential-environment.svelte', () => ({
+	credentialEnvironment: mockCredentialEnvironment
+}));
 
 function createMemoryStorage(): Storage {
 	const map = new Map<string, string>();
@@ -27,11 +40,15 @@ describe('WebAuthnSecureCredentialStore', () => {
 
 	beforeEach(() => {
 		storage = createMemoryStorage();
+		mockCredentialEnvironment.prfAvailable = false;
+		mockCredentialEnvironment.ready = true;
+		mockCredentialEnvironment.init.mockClear();
+		mockCredentialEnvironment.subscribe.mockClear();
 		vi.restoreAllMocks();
 	});
 
 	it('saves account-only credential when PRF is unavailable', async () => {
-		vi.spyOn(prfSupport, 'isPrfProtectionAvailable').mockResolvedValue(false);
+		mockCredentialEnvironment.prfAvailable = false;
 		const store = createWebAuthnSecureCredentialStore(storage);
 
 		const result = await store.saveCredential('20240101', '', '');
@@ -48,7 +65,7 @@ describe('WebAuthnSecureCredentialStore', () => {
 	});
 
 	it('saves encrypted credential when PRF unlock token is provided', async () => {
-		vi.spyOn(prfSupport, 'isPrfProtectionAvailable').mockResolvedValue(true);
+		mockCredentialEnvironment.prfAvailable = true;
 		vi.spyOn(prfCrypto, 'deriveAesKey').mockResolvedValue({} as CryptoKey);
 		vi.spyOn(prfCrypto, 'encryptPayload').mockResolvedValue({
 			iv: 'iv',
@@ -90,7 +107,7 @@ describe('WebAuthnSecureCredentialStore', () => {
 			storage
 		);
 
-		vi.spyOn(prfSupport, 'isPrfProtectionAvailable').mockResolvedValue(true);
+		mockCredentialEnvironment.prfAvailable = true;
 		vi.spyOn(prfCrypto, 'deriveAesKey').mockResolvedValue({} as CryptoKey);
 		vi.spyOn(prfCrypto, 'decryptPayload').mockResolvedValue(new TextEncoder().encode('secret'));
 
