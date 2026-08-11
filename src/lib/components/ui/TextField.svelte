@@ -51,20 +51,12 @@
 	}
 </script>
 
-<div
-	class={[
-		'm3-form-field',
-		multiline && 'm3-form-field--multiline',
-		showCounter && 'm3-form-field--with-counter',
-		passwordToggleEnabled && 'm3-form-field--with-trailing-action',
-		className
-	]}
->
+<div class={['m3-form-field', multiline && 'm3-form-field--multiline', className]}>
 	<label class="m3-field-label" for={fieldId}>{label}</label>
 	{#if multiline}
 		<textarea
 			id={fieldId}
-			class="m3-form-field-input shadow-none ring-0 focus:ring-0"
+			class="m3-form-field-input"
 			{rows}
 			{maxlength}
 			enterkeyhint="enter"
@@ -75,7 +67,7 @@
 		<div class="m3-form-field-input-row">
 			<input
 				id={fieldId}
-				class="m3-form-field-input shadow-none ring-0 focus:ring-0"
+				class="m3-form-field-input"
 				type={inputType}
 				{maxlength}
 				bind:value
@@ -98,7 +90,7 @@
 	{:else}
 		<input
 			id={fieldId}
-			class="m3-form-field-input shadow-none ring-0 focus:ring-0"
+			class="m3-form-field-input"
 			{type}
 			{maxlength}
 			bind:value

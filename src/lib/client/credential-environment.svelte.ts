@@ -3,15 +3,14 @@ import {
 	readOnlineCredentialRecord,
 	writeOnlineCredentialRecord
 } from '$lib/storage/online-credential-record';
-import { SvelteSet } from 'svelte/reactivity';
 
 async function sanitizeOnlineCredentialAtStartup(
+	prfAvailable: boolean,
 	storage: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null
 ): Promise<void> {
 	const record = readOnlineCredentialRecord(storage);
 	if (!record || record.mode !== 'prf') return;
 
-	const prfAvailable = await isPrfProtectionAvailable();
 	if (!prfAvailable) {
 		writeOnlineCredentialRecord(null, storage);
 	}
@@ -23,7 +22,8 @@ export class CredentialEnvironmentController {
 
 	private initialized = false;
 	private initPromise: Promise<void> | null = null;
-	private listeners = new SvelteSet<() => void>();
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- listeners not read in $derived/$effect
+	private listeners = new Set<() => void>();
 
 	subscribe(listener: () => void): () => void {
 		this.listeners.add(listener);
@@ -42,7 +42,7 @@ export class CredentialEnvironmentController {
 		this.initialized = true;
 
 		this.prfAvailable = await isPrfProtectionAvailable();
-		await sanitizeOnlineCredentialAtStartup();
+		await sanitizeOnlineCredentialAtStartup(this.prfAvailable);
 		this.ready = true;
 		this.notify();
 	}
