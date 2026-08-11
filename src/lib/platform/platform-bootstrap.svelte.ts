@@ -59,6 +59,11 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 				pwaInstallController.cancelScheduledDialog();
 				pwaInstallController.dismiss();
 			});
+
+			$effect(() => {
+				if (onboardingController.open) return;
+				pwaInstallController.tryScheduleInstallDialog();
+			});
 		});
 
 		return () => {
