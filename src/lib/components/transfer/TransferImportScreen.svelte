@@ -2,11 +2,7 @@
 	import type { TransferImportSource } from '$lib/client/preview-persistence';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
-	import {
-		canSaveCredentials,
-		saveCredentialsLabel,
-		savedCredentialHint
-	} from '$lib/transfer/transfer-state.svelte';
+	import { canSaveCredentials, saveCredentialsLabel } from '$lib/transfer/transfer-state.svelte';
 	import OfflineInlineNotice from '$lib/components/connectivity/OfflineInlineNotice.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -37,9 +33,6 @@
 
 	const saveCheckboxEnabled = $derived(canSaveCredentials(transferState.savedCredentialState));
 	const saveCheckboxLabel = $derived(saveCredentialsLabel(transferState.savedCredentialState));
-	const savedCredentialDescription = $derived(
-		savedCredentialHint(transferState.savedCredentialState)
-	);
 	const onlineImportDisabled = $derived(loading || !connectivity.isOnline);
 
 	function notifyTransferMessages() {
@@ -175,9 +168,6 @@
 							<p class="m3-title-small text-on-surface">
 								已保存账号：{transferState.savedCredentialState.account ?? '未知'}
 							</p>
-							{#if savedCredentialDescription}
-								<p class="m3-body-small text-on-surface-variant">{savedCredentialDescription}</p>
-							{/if}
 							{#if transferState.savedCredentialState.savedMode === 'prf'}
 								<div class="flex w-full">
 									<Button

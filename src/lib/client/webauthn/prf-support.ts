@@ -20,7 +20,7 @@ export async function isPrfProtectionAvailable(): Promise<boolean> {
 
 	if (credentialCtor.getClientCapabilities) {
 		const capabilities = await credentialCtor.getClientCapabilities();
-		return capabilities['extension.prf'] === true;
+		return capabilities['extension:prf'] === true;
 	}
 
 	return false;

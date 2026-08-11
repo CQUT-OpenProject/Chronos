@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Checkbox } from 'bits-ui';
-	import { CheckCircleFill } from '$lib/icons';
+	import { Check } from '$lib/icons';
 
 	let {
 		checked = $bindable(false),
@@ -23,7 +23,7 @@
 >
 	{#snippet children({ checked })}
 		{#if checked}
-			<CheckCircleFill class="size-3.5 text-on-primary" />
+			<Check class="size-3.5 text-on-primary" />
 		{/if}
 	{/snippet}
 </Checkbox.Root>

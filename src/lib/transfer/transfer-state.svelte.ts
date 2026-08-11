@@ -353,11 +353,3 @@ export function saveCredentialsLabel(state: SavedCredentialState): string {
 	}
 	return '当前设备不支持保存帐号密码';
 }
-
-export function savedCredentialHint(state: SavedCredentialState): string | null {
-	if (!state.hasSavedCredential) return null;
-	if (state.savedMode === 'prf') {
-		return '每次使用前都会触发设备验证。';
-	}
-	return '仅保存了账号，预览时仍需输入密码。';
-}

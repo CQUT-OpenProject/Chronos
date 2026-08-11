@@ -2,8 +2,7 @@ import { describe, expect, it, beforeEach, vi } from 'vite-plus/test';
 import {
 	canSaveCredentials,
 	createTransferState,
-	saveCredentialsLabel,
-	savedCredentialHint
+	saveCredentialsLabel
 } from './transfer-state.svelte';
 import type { SavedCredentialState } from '$lib/models/auth';
 import type { TransferServices } from '$lib/client/transfer-services';
@@ -119,23 +118,5 @@ describe('credential copy helpers', () => {
 		};
 		expect(saveCredentialsLabel(state)).toBe('保存账号（密码需每次输入）');
 		expect(canSaveCredentials(state)).toBe(true);
-	});
-
-	it('returns saved credential hints by mode', () => {
-		expect(
-			savedCredentialHint({
-				...baseState,
-				hasSavedCredential: true,
-				savedMode: 'prf'
-			})
-		).toBe('每次使用前都会触发设备验证。');
-
-		expect(
-			savedCredentialHint({
-				...baseState,
-				hasSavedCredential: true,
-				savedMode: 'account_only'
-			})
-		).toBe('仅保存了账号，预览时仍需输入密码。');
 	});
 });
