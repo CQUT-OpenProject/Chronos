@@ -192,6 +192,16 @@
 	gap: 0.25rem;
 }
 
+button.m3-date-field-input {
+	width: 100%;
+	cursor: pointer;
+	background: transparent;
+	border: none;
+	border-radius: 0;
+	padding: 0;
+	text-align: left;
+}
+
 .m3-date-field-value {
 	flex: 1;
 	min-width: 0;

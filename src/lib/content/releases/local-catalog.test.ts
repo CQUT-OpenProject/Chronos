@@ -34,7 +34,7 @@ describe('LocalReleaseCatalog', () => {
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.value.length).toBeGreaterThan(0);
-		expect(result.value[0].tagName).toBe('v0.1.0');
+		expect(result.value[0].tagName).toBe('v0.1.1');
 		for (let i = 1; i < result.value.length; i++) {
 			expect(
 				result.value[i - 1].publishedAt.localeCompare(result.value[i].publishedAt)

@@ -135,6 +135,9 @@ export function createPreferencesRepository(
 		},
 		async setThemeMode(mode) {
 			settings.setThemeMode(mode);
+		},
+		async setTimetableLayoutMode(mode) {
+			settings.setTimetableLayoutMode(mode);
 		}
 	};
 }

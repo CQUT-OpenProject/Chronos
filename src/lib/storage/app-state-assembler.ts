@@ -26,6 +26,7 @@ export function assembleAppState(
 		currentTimetableId,
 		wallpaperUri,
 		currentTimetable: currentTimetable ? copyForStateBoundary(currentTimetable) : null,
-		themeMode: preferences.themeMode
+		themeMode: preferences.themeMode,
+		timetableLayoutMode: preferences.timetableLayoutMode
 	};
 }

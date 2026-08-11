@@ -5,7 +5,11 @@ import type { SavedCredentialState } from '$lib/models/auth';
 import type { CqutCampusId } from '$lib/models/cqut-campus';
 import { getCampusDefaultPeriodTimes } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
-import { createPrfCredential, getPrfOutput } from '$lib/client/webauthn/prf-coordinator';
+import {
+	createPrfCredential,
+	getPrfOutput,
+	WebAuthnCredentialUnavailableError
+} from '$lib/client/webauthn/prf-coordinator';
 import { base64ToBytes } from '$lib/client/webauthn/binary';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import {
@@ -215,6 +219,13 @@ export function createTransferImportCoordinator({
 				password: unlockResult.value.password
 			};
 		} catch (error) {
+			if (error instanceof WebAuthnCredentialUnavailableError) {
+				await secureCredentialStore.clearCredential();
+				return {
+					ok: false,
+					errorMessage: '已保存凭据已失效，请重新录入账号和密码'
+				};
+			}
 			const message = error instanceof Error ? error.message : '设备验证失败';
 			return {
 				ok: false,

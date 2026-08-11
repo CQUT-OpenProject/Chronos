@@ -31,7 +31,7 @@
 	description="将 Chronos 添加到主屏幕后，可以快捷打开应用。"
 >
 	{#snippet footer()}
-		<Button variant="text" onclick={() => pwaInstallController.dismiss()}>稍后</Button>
+		<Button variant="text" onclick={() => pwaInstallController.snoozeInstallPrompt()}>稍后</Button>
 		<Button variant="filled" onclick={goToInstallPage}>安装</Button>
 	{/snippet}
 </Dialog>

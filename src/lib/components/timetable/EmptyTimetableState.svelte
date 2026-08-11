@@ -5,7 +5,7 @@
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 
 	function showImportGuide() {
-		onboardingController.openAt(2);
+		onboardingController.openAt(3);
 	}
 </script>
 

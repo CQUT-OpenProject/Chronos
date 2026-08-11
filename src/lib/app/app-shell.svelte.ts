@@ -1,4 +1,9 @@
-import { ThemeMode, type AppState, emptyAppState } from '$lib/models/app-state';
+import {
+	ThemeMode,
+	TimetableLayoutMode,
+	type AppState,
+	emptyAppState
+} from '$lib/models/app-state';
 import { createAppServices, type AppServices } from '$lib/client/app-services';
 import { clearAllAppData } from '$lib/client/repository';
 
@@ -54,6 +59,10 @@ export function createAppShell() {
 		await getServices().preferences.setThemeMode(mode);
 	}
 
+	async function setTimetableLayoutMode(mode: TimetableLayoutMode) {
+		await getServices().preferences.setTimetableLayoutMode(mode);
+	}
+
 	async function setWallpaper(wallpaper: Blob | null) {
 		await getServices().preferences.setWallpaper(wallpaper);
 	}
@@ -74,6 +83,7 @@ export function createAppShell() {
 		init,
 		destroy,
 		setThemeMode,
+		setTimetableLayoutMode,
 		setWallpaper,
 		clearAllData,
 		get services() {

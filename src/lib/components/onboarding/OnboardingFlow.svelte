@@ -1,27 +1,50 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import { onlineImportEnabled } from '$lib/config/features';
+	import { TimetableLayoutMode } from '$lib/models/app-state';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import Radio from '$lib/components/ui/Radio.svelte';
 	import AppHero from '$lib/components/AppHero.svelte';
 	import HighlightRowList from '$lib/components/ui/HighlightRowList.svelte';
 	import HighlightRow from '$lib/components/ui/HighlightRow.svelte';
 	import InstallGuideCard from '$lib/components/pwa/InstallGuideCard.svelte';
 	import {
 		DownloadFill,
+		FullscreenFill,
 		PaletteFill,
+		ScheduleFill,
 		WifiOffFill,
 		IosShareFill,
 		DescriptionFill
 	} from '$lib/icons';
 
+	const shell = getContext<AppShellController>('appShell');
 	const step = $derived(onboardingController.step);
-	const stepIndices = [0, 1, 2, 3, 4] as const;
+	const stepIndices = [0, 1, 2, 3, 4, 5] as const;
 	const isLastStep = $derived(step === onboardingController.totalSteps - 1);
 	const stepTitleId = 'onboarding-step-title';
+	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
+
+	const layoutOptions = [
+		{
+			mode: TimetableLayoutMode.SCROLL,
+			label: '滚动查看',
+			description: '上下滚动查看完整课表，字体更大',
+			Icon: ScheduleFill
+		},
+		{
+			mode: TimetableLayoutMode.FIT,
+			label: '一屏显示',
+			description: '无需滚动，一屏展示全天课程',
+			Icon: FullscreenFill
+		}
+	] as const;
 
 	$effect(() => {
 		if (!onboardingController.open) return;
@@ -100,6 +123,11 @@
 		vibrate();
 		completeOnboarding();
 	}
+
+	async function selectLayoutMode(mode: TimetableLayoutMode) {
+		vibrate();
+		await shell.setTimetableLayoutMode(mode);
+	}
 </script>
 
 {#snippet importMethodCard(Icon: typeof DownloadFill, title: string, description: string)}
@@ -172,7 +200,7 @@
 									/>
 									<HighlightRow
 										icon={PaletteFill}
-										title="自定义主题与壁纸"
+										title="主题与壁纸"
 										subtitle="浅色、深色或跟随系统，还能设置课表壁纸"
 									/>
 									<HighlightRow
@@ -188,6 +216,50 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
+									选择课表显示样式
+								</h2>
+								<p class="m3-body-small text-center text-on-surface-variant">
+									可随时在「显示设置」中更改。
+								</p>
+								<div class="flex flex-col gap-3">
+									{#each layoutOptions as option (option.mode)}
+										{@const selected = layoutMode === option.mode}
+										<label class="block w-full cursor-pointer">
+											<Card
+												variant="outlined"
+												class="flex items-start gap-3.5 {selected
+													? 'border-brand ring-1 ring-brand'
+													: ''}"
+											>
+												<div
+													class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand"
+												>
+													<option.Icon class="h-5 w-5" />
+												</div>
+												<div class="flex min-w-0 flex-1 flex-col justify-center">
+													<p class="m3-body-large text-on-surface">{option.label}</p>
+													<p class="m3-body-small text-on-surface-variant">
+														{option.description}
+													</p>
+												</div>
+												<div class="flex shrink-0 items-center self-center">
+													<Radio
+														name="onboarding-layout-mode"
+														checked={selected}
+														onchange={() => selectLayoutMode(option.mode)}
+													/>
+												</div>
+											</Card>
+										</label>
+									{/each}
+								</div>
+							</div>
+						{:else if step === 3}
+							<div class="flex flex-1 flex-col justify-center gap-4">
+								<h2
+									id={stepTitleId}
+									class="m3-headline-small text-center font-semibold text-on-surface"
+								>
 									如何导入课表？
 								</h2>
 								<div class="flex flex-col gap-3">
@@ -195,7 +267,7 @@
 										{@render importMethodCard(
 											DownloadFill,
 											'知行理工在线导入',
-											'输入学号与密码，在线抓取课表'
+											'输入知行理工账号密码，获取在线课表'
 										)}
 									{/if}
 									{@render importMethodCard(
@@ -210,7 +282,7 @@
 									)}
 								</div>
 							</div>
-						{:else if step === 3}
+						{:else if step === 4}
 							<div class="flex flex-1 flex-col justify-center gap-4">
 								<h2
 									id={stepTitleId}

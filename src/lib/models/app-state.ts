@@ -23,6 +23,28 @@ export function themeModeFromStorage(value: string | null | undefined): ThemeMod
 	return ThemeMode.SYSTEM;
 }
 
+export enum TimetableLayoutMode {
+	SCROLL = 'SCROLL',
+	FIT = 'FIT'
+}
+
+const LAYOUT_STORAGE: Record<TimetableLayoutMode, string> = {
+	[TimetableLayoutMode.SCROLL]: 'scroll',
+	[TimetableLayoutMode.FIT]: 'fit'
+};
+
+export function timetableLayoutModeToStorage(mode: TimetableLayoutMode): string {
+	return LAYOUT_STORAGE[mode];
+}
+
+export function timetableLayoutModeFromStorage(
+	value: string | null | undefined
+): TimetableLayoutMode {
+	const normalized = value?.trim().toLowerCase();
+	if (normalized === 'fit') return TimetableLayoutMode.FIT;
+	return TimetableLayoutMode.SCROLL;
+}
+
 export interface TimetableSummary {
 	id: string;
 	name: string;
@@ -37,6 +59,7 @@ export interface AppState {
 	wallpaperUri: string | null;
 	currentTimetable: Timetable | null;
 	themeMode: ThemeMode;
+	timetableLayoutMode: TimetableLayoutMode;
 }
 
 export function emptyAppState(): AppState {
@@ -45,6 +68,7 @@ export function emptyAppState(): AppState {
 		currentTimetableId: null,
 		wallpaperUri: null,
 		currentTimetable: null,
-		themeMode: ThemeMode.SYSTEM
+		themeMode: ThemeMode.SYSTEM,
+		timetableLayoutMode: TimetableLayoutMode.SCROLL
 	};
 }

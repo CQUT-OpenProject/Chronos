@@ -77,4 +77,24 @@ describe('CredentialEnvironmentController', () => {
 
 		expect(readOnlineCredentialRecord()).toBeNull();
 	});
+
+	it('keeps PRF credentials when PRF remains available (no WebAuthn probe at startup)', async () => {
+		writeOnlineCredentialRecord(
+			{
+				mode: 'prf',
+				account: '20240101',
+				credentialId: 'credential-id',
+				salt: 'salt',
+				iv: 'iv',
+				ciphertext: 'ciphertext'
+			},
+			localStorage
+		);
+		vi.spyOn(prfSupport, 'isPrfProtectionAvailable').mockResolvedValue(true);
+
+		const environment = new CredentialEnvironmentController();
+		await environment.init();
+
+		expect(readOnlineCredentialRecord()).not.toBeNull();
+	});
 });

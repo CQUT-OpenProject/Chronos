@@ -75,12 +75,27 @@
 			title: '个性化',
 			items: [
 				{
-					id: 'theme',
-					title: '主题设置',
-					href: resolve('/theme-settings'),
+					id: 'display',
+					title: '显示设置',
+					href: resolve('/display-settings'),
 					icon: PaletteFill,
 					iconTone: 'secondary',
-					keywords: ['主题', '外观', '深色', '夜间', '亮色', '白天', '模式', '颜色', '跟随系统']
+					keywords: [
+						'主题',
+						'显示',
+						'外观',
+						'深色',
+						'夜间',
+						'亮色',
+						'白天',
+						'模式',
+						'颜色',
+						'跟随系统',
+						'滚动',
+						'一屏',
+						'布局',
+						'课表'
+					]
 				},
 				{
 					id: 'wallpaper',

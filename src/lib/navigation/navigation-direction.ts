@@ -1,4 +1,5 @@
 import { isSecondaryRoute } from './routes';
+import { toAppPathname } from './app-pathname';
 
 export type NavigationDirection = 'forward' | 'back' | 'none';
 
@@ -19,12 +20,19 @@ export function updateTransitionDirection(
 	navigationType: 'link' | 'popstate' | 'goto' | 'leave' | 'form',
 	historyDelta?: number
 ): NavigationDirection {
-	if (!to) {
+	const fromPath = from ? toAppPathname(from) : undefined;
+	const toPath = toAppPathname(to);
+	if (!toPath) {
 		currentTransitionDirection = 'none';
 		return currentTransitionDirection;
 	}
 
-	currentTransitionDirection = resolveNavigationDirection(from, to, navigationType, historyDelta);
+	currentTransitionDirection = resolveNavigationDirection(
+		fromPath,
+		toPath,
+		navigationType,
+		historyDelta
+	);
 	return currentTransitionDirection;
 }
 
@@ -33,7 +41,7 @@ function pathDepth(pathname: string): number {
 }
 
 export function initNavigationStack(pathname: string): void {
-	navigationStack = [pathname];
+	navigationStack = [toAppPathname(pathname)];
 }
 
 export function resetNavigationStack(): void {

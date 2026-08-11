@@ -21,3 +21,8 @@ export function formatDateDisplay(iso: string): string {
 	if (!iso.trim()) return '';
 	return formatSlashDate(iso);
 }
+
+export function buildDateFieldTriggerLabel(label: string, iso: string): string {
+	const display = formatDateDisplay(iso);
+	return display ? `${label}：${display}` : `选择${label}`;
+}

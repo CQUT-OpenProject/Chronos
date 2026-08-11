@@ -39,7 +39,7 @@ describe('getNavigationDirection', () => {
 	});
 
 	it('returns forward for lateral secondary navigation at same depth', () => {
-		expect(getNavigationDirection('/about', '/theme-settings')).toBe('forward');
+		expect(getNavigationDirection('/about', '/display-settings')).toBe('forward');
 	});
 });
 

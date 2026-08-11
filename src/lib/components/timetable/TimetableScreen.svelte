@@ -30,6 +30,7 @@
 	const endWeek = $derived(screenState.endWeek);
 	const isDark = $derived(shell.state.isDark);
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
+	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
 
 	const weekGesture = createWeekSliderGesture({
 		getStartWeek: () => startWeek,
@@ -166,7 +167,14 @@
 		{/if}
 
 		{#key screenState.appState.currentTimetable?.id}
-			<TimetableWeekSwiper {screen} {hasWallpaper} {isDark} {onCourseClick} {onCourseLongClick} />
+			<TimetableWeekSwiper
+				{screen}
+				{hasWallpaper}
+				{isDark}
+				{layoutMode}
+				{onCourseClick}
+				{onCourseLongClick}
+			/>
 		{/key}
 	</div>
 </div>
