@@ -36,7 +36,8 @@
 				preview: result.value,
 				previewSource: 'SHARE_LINK',
 				importMode: ImportMode.AS_NEW,
-				htmlImportTermStartDate: null
+				htmlImportTermStartDate: null,
+				htmlImportCampusId: null
 			});
 
 			window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
