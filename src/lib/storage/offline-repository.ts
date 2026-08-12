@@ -7,7 +7,6 @@ import { assembleAppState, resolveCurrentTimetableId } from './app-state-assembl
 import { createSettingsRepo, type SettingsRepo } from './settings-repo';
 import * as timetableLocal from './timetable-local';
 import * as wallpaperLocal from './wallpaper-local';
-import { db } from './db';
 
 let wallpaperDisplayUrl: string | null = null;
 let refreshAppState: (() => Promise<void>) | null = null;
@@ -141,5 +140,3 @@ export function createPreferencesRepository(
 		}
 	};
 }
-
-export { db };
