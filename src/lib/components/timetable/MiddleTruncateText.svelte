@@ -10,39 +10,48 @@
 
 	let { text, class: className = '', style }: Props = $props();
 
-	// Stable identity: ResizeObserver stays mounted; $effect re-applies when `text` changes.
-	const truncateAttach: Attachment<HTMLElement> = (node) => {
-		const apply = () => {
-			const content = text;
-			if (node.clientWidth <= 0 || node.clientHeight <= 0) {
-				node.textContent = content;
-				node.removeAttribute('title');
-				return;
-			}
+	let node = $state<HTMLElement | null>(null);
 
-			const display = truncateMiddleByFit(content, (candidate) => {
-				node.textContent = candidate;
-				return node.scrollHeight <= node.clientHeight + 0.5;
-			});
-			node.textContent = display;
+	function apply(el: HTMLElement) {
+		const content = text;
+		if (el.clientWidth <= 0 || el.clientHeight <= 0) {
+			el.textContent = content;
+			el.removeAttribute('title');
+			return;
+		}
 
-			if (display !== content) {
-				node.title = content;
-			} else {
-				node.removeAttribute('title');
-			}
-		};
-
-		$effect(() => {
-			void text;
-			void style;
-			apply();
+		const display = truncateMiddleByFit(content, (candidate) => {
+			el.textContent = candidate;
+			return el.scrollHeight <= el.clientHeight + 0.5;
 		});
+		el.textContent = display;
 
-		const observer = new ResizeObserver(apply);
-		observer.observe(node);
-		return () => observer.disconnect();
+		if (display !== content) {
+			el.title = content;
+		} else {
+			el.removeAttribute('title');
+		}
+	}
+
+	const truncateAttach: Attachment<HTMLElement> = (el) => {
+		node = el;
+		const observer = new ResizeObserver(() => {
+			apply(el);
+		});
+		observer.observe(el);
+		return () => {
+			observer.disconnect();
+			node = null;
+		};
 	};
+
+	$effect(() => {
+		void text;
+		void style;
+		if (node) {
+			apply(node);
+		}
+	});
 </script>
 
 <span

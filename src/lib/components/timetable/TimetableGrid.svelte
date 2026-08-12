@@ -82,7 +82,7 @@
 
 	let gridHeaderHeight = $state(0);
 
-	const gridHeaderMeasureAttach: Attachment = (node) => {
+	const gridHeaderMeasureAttach: Attachment<HTMLElement> = (node) => {
 		const update = () => {
 			gridHeaderHeight = node.offsetHeight;
 		};
