@@ -1,10 +1,3 @@
----
-name: 版本发布
-about: 用于 Chronos 版本更新与发布的 Pull Request
-title: '✨ 发布 v'
-labels: release
----
-
 ## 版本信息
 
 | 项       | 内容         |
