@@ -11,7 +11,6 @@ import {
 	WebAuthnCredentialUnavailableError
 } from '$lib/client/webauthn/prf-coordinator';
 import { base64ToBytes } from '$lib/client/webauthn/binary';
-import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import {
 	createSessionPreviewPersistence,
 	type PreviewPersistence,
@@ -76,18 +75,14 @@ export function createTransferImportCoordinator({
 	previewPersistence = createSessionPreviewPersistence(),
 	clipboard = createNavigatorClipboardGateway()
 }: TransferImportCoordinatorDeps) {
-	async function previewFromText(content: string): Promise<PreviewOutcome> {
-		const result = await services.previewImported.invoke(content.trim());
-		if (!result.ok) {
-			return { ok: false, errorMessage: result.error.message };
-		}
-		return { ok: true, preview: result.value, source: 'SHARE_LINK' };
-	}
-
 	async function previewFromClipboard(): Promise<PreviewOutcome> {
 		try {
 			const content = await clipboard.readText();
-			return previewFromText(content);
+			const result = await services.previewImported.invoke(content.trim());
+			if (!result.ok) {
+				return { ok: false, errorMessage: result.error.message };
+			}
+			return { ok: true, preview: result.value, source: 'SHARE_LINK' };
 		} catch {
 			return { ok: false, errorMessage: '无法读取剪贴板，请检查浏览器权限' };
 		}
@@ -138,11 +133,6 @@ export function createTransferImportCoordinator({
 			}
 			return null;
 		}
-
-		if (!isAccountOnlyFallbackAvailable()) {
-			return '当前设备不支持保存帐号密码';
-		}
-
 		const saveResult = await secureCredentialStore.saveCredential(trimmedAccount, '', '');
 		if (!saveResult.ok) {
 			return saveResult.error.message;
