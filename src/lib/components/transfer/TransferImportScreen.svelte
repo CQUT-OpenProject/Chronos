@@ -147,7 +147,7 @@
 						<Checkbox
 							checked={transferState.saveCredentials}
 							disabled={!saveCheckboxEnabled}
-							onCheckedChange={(checked) => transfer.setSaveCredentials(checked)}
+							onCheckedChange={(checked) => transfer.setSaveCredentials(checked === true)}
 						/>
 						<span>{saveCheckboxLabel}</span>
 					</label>

@@ -10,7 +10,7 @@
 	}: {
 		checked?: boolean;
 		disabled?: boolean;
-		onCheckedChange?: (checked: boolean) => void;
+		onCheckedChange?: (checked: boolean | 'indeterminate') => void;
 		class?: string;
 	} = $props();
 </script>

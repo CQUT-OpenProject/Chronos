@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { Pathname } from '$app/types';
 	import { staticPath } from '$lib/config/static-path';
 	import { parseMarkdown } from '$lib/content/markdown';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
@@ -14,7 +15,7 @@
 		documentPath
 	}: {
 		title: string;
-		backHref: string;
+		backHref: Pathname;
 		documentPath: string;
 	} = $props();
 
