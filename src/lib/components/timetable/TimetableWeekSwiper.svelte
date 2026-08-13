@@ -101,6 +101,7 @@
 					courseDisplayModels={courseModels}
 					{hasWallpaper}
 					{coursePalette}
+					paletteCourses={screenState.appState.currentTimetable?.courses}
 					{layoutMode}
 					onCourseClick={(course) => onCourseClick(course.id)}
 					onCourseLongClick={(course) => onCourseLongClick(course.id)}

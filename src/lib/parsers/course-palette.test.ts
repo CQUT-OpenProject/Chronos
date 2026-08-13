@@ -3,6 +3,7 @@ import { PaletteMode } from '$lib/models/app-state';
 import {
 	COURSE_PALETTE_ENTRIES,
 	EASTER_EGG_PALETTE_ENTRIES,
+	assignCourseDisplayColors,
 	defaultPaletteSlot,
 	displaySwatchBackground,
 	persistSwatchSelection,
@@ -71,5 +72,42 @@ describe('displaySwatchBackground', () => {
 
 	it('leaves custom colors unchanged', () => {
 		expect(displaySwatchBackground('#123456', EASTER_EGG_PALETTE_ENTRIES)).toBe('#123456');
+	});
+});
+
+describe('assignCourseDisplayColors', () => {
+	it('spreads colliding default-slot courses across unused display colors', () => {
+		const mapped = assignCourseDisplayColors(
+			[
+				{ name: '编译原理', color: '#EADDFF' },
+				{ name: '操作系统', color: '#EADDFF' },
+				{ name: '计算机网络', color: '#EADDFF' }
+			],
+			EASTER_EGG_PALETTE_ENTRIES
+		);
+		const backgrounds = [...mapped.values()].map((entry) => entry.background);
+		expect(backgrounds).toHaveLength(3);
+		expect(new Set(backgrounds).size).toBe(3);
+		expect(
+			backgrounds.every((hex) =>
+				EASTER_EGG_PALETTE_ENTRIES.some((entry) => entry.background === hex)
+			)
+		).toBe(true);
+	});
+
+	it('keeps a unique preferred slot when it is free', () => {
+		const mapped = assignCourseDisplayColors(
+			[{ name: '编译原理', color: '#F6E1B0' }],
+			EASTER_EGG_PALETTE_ENTRIES
+		);
+		expect(mapped.get('编译原理')).toEqual(EASTER_EGG_PALETTE_ENTRIES[5]);
+	});
+
+	it('leaves custom-hex courses out of the assignment map', () => {
+		const mapped = assignCourseDisplayColors(
+			[{ name: '自定义', color: '#123456' }],
+			EASTER_EGG_PALETTE_ENTRIES
+		);
+		expect(mapped.size).toBe(0);
 	});
 });

@@ -29,6 +29,7 @@
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasWallpaper: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
+		paletteCourses?: { name: string; color: string }[];
 		layoutMode?: TimetableLayoutMode;
 		onCourseClick?: (course: Course) => void;
 		onCourseLongClick?: (course: Course) => void;
@@ -41,6 +42,7 @@
 		courseDisplayModels,
 		hasWallpaper,
 		coursePalette,
+		paletteCourses,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		onCourseClick,
 		onCourseLongClick
@@ -64,6 +66,7 @@
 			columnWidthPx,
 			expandedSlotKeys: expandedSlots,
 			coursePalette,
+			paletteCourses,
 			layoutMode
 		})
 	);

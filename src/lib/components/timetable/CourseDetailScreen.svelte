@@ -2,7 +2,11 @@
 	import { slide } from 'svelte/transition';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { Course } from '$lib/models/course';
-	import { resolveCoursePaint } from '$lib/parsers/course-palette';
+	import {
+		assignCourseDisplayColors,
+		normalizedCourseName,
+		resolveCoursePaint
+	} from '$lib/parsers/course-palette';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 
 	let {
@@ -21,9 +25,15 @@
 					null)
 			: null
 	);
-	const paint = $derived(
-		course ? resolveCoursePaint(course, shell.appearance.coursePalette) : null
-	);
+	const paint = $derived.by(() => {
+		if (!course) return null;
+		const palette = shell.appearance.coursePalette;
+		const assigned = assignCourseDisplayColors(
+			shell.state.appState.currentTimetable?.courses ?? [],
+			palette
+		);
+		return assigned.get(normalizedCourseName(course.name)) ?? resolveCoursePaint(course, palette);
+	});
 
 	function formatWeeks(weeks: number[]) {
 		if (weeks.length === 0) return '全部周次';

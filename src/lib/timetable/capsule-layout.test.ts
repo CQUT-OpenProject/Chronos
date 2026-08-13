@@ -177,7 +177,7 @@ describe('placeCapsules', () => {
 		expect(on[0].colors.text).toBe('#1a1a1a');
 	});
 
-	it('keeps colliding default-palette courses on the same display color', () => {
+	it('spreads colliding default-palette courses across unused display colors', () => {
 		const models = [
 			courseModel('a', 1, 1, 1),
 			courseModel('b', 1, 3, 3),
@@ -193,7 +193,37 @@ describe('placeCapsules', () => {
 		const backgrounds = items
 			.filter((item) => item.kind === 'course')
 			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
-		expect(backgrounds).toEqual(['#FFEE55', '#FFEE55', '#FFEE55']);
+		expect(backgrounds).toHaveLength(3);
+		expect(new Set(backgrounds).size).toBe(3);
+		expect(
+			backgrounds.every((hex) =>
+				EASTER_EGG_PALETTE_ENTRIES.some((entry) => entry.background === hex)
+			)
+		).toBe(true);
+	});
+
+	it('spreads unique automatic courses across all display colors', () => {
+		const models = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1),
+			courseModel('d', 2, 3, 3),
+			courseModel('e', 3, 1, 1),
+			courseModel('f', 3, 3, 3)
+		];
+		const items = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(new Set(backgrounds)).toEqual(
+			new Set(EASTER_EGG_PALETTE_ENTRIES.map((entry) => entry.background))
+		);
 	});
 
 	it('maps each default-palette slot onto the matching display-palette entry', () => {
@@ -216,6 +246,38 @@ describe('placeCapsules', () => {
 			.filter((item) => item.kind === 'course')
 			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
 		expect(backgrounds).toEqual(['#FFEE55', '#FFBBCC', '#4477CC', '#9977CC', '#EE5577', '#4D5B4C']);
+	});
+
+	it('keeps a course color stable when the visible week is a subset', () => {
+		const all = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1),
+			courseModel('d', 2, 3, 3),
+			courseModel('e', 3, 1, 1)
+		];
+		const paletteCourses = all.map((model) => model.course);
+		const full = placeCapsules({
+			courseDisplayModels: all,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
+			paletteCourses
+		});
+		const week = placeCapsules({
+			courseDisplayModels: [courseModel('e', 3, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
+			paletteCourses
+		});
+		const fromFull = full.find((item) => item.kind === 'course' && item.course.name === 'e');
+		expect(fromFull?.kind).toBe('course');
+		expect(week[0]?.kind).toBe('course');
+		if (fromFull?.kind !== 'course' || week[0]?.kind !== 'course') return;
+		expect(week[0].colors.background).toBe(fromFull.colors.background);
 	});
 
 	it('leaves custom course colors unchanged when a custom course palette is passed', () => {

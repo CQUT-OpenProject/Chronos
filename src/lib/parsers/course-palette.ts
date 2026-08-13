@@ -98,6 +98,54 @@ export function resolveCoursePaint(
 	return displayPalette[slot % displayPalette.length]!;
 }
 
+/** Spread automatic (default-slot) courses across the display palette. */
+export function assignCourseDisplayColors(
+	courses: { name: string; color: string }[],
+	palette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
+): Map<string, CoursePaletteEntry> {
+	if (palette.length === 0) return new Map();
+
+	const preferred = new Map<string, number>();
+	for (const course of courses) {
+		const slot = defaultPaletteSlot(course.color);
+		if (slot == null) continue;
+		const name = normalizedCourseName(course.name);
+		if (!preferred.has(name)) preferred.set(name, slot);
+	}
+
+	const names = [...preferred.keys()].sort(
+		(left, right) =>
+			kotlinStringHashCode(left) - kotlinStringHashCode(right) || left.localeCompare(right)
+	);
+
+	const assigned = new Map<string, CoursePaletteEntry>();
+	const occupied = new Set<number>();
+	const deferred: string[] = [];
+
+	for (const name of names) {
+		const slot = preferred.get(name)! % palette.length;
+		if (occupied.has(slot)) {
+			deferred.push(name);
+			continue;
+		}
+		occupied.add(slot);
+		assigned.set(name, palette[slot]!);
+	}
+
+	let next = 0;
+	for (const name of deferred) {
+		while (occupied.has(next % palette.length) && occupied.size < palette.length) {
+			next += 1;
+		}
+		const slot = next % palette.length;
+		occupied.add(slot);
+		assigned.set(name, palette[slot]!);
+		next += 1;
+	}
+
+	return assigned;
+}
+
 export function displaySwatchBackground(
 	storedBackground: string,
 	displayPalette: readonly CoursePaletteEntry[]

@@ -89,6 +89,7 @@
 					{courseDisplayModels}
 					hasWallpaper={true}
 					{coursePalette}
+					paletteCourses={timetable.courses}
 				/>
 			</div>
 		</div>
