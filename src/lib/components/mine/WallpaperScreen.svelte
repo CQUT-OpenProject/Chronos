@@ -89,7 +89,8 @@
 					{courseDisplayModels}
 					hasWallpaper={true}
 					{isDark}
-					randomTheme={appState.randomTheme}
+					paletteMode={appState.paletteMode}
+					wallpaperCoursePalette={shell.wallpaperCoursePalette}
 					paletteCourses={timetable.courses}
 				/>
 			</div>

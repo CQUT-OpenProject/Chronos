@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { createCourse } from '$lib/models/course';
 import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
-import { ThemeMode, TimetableLayoutMode, type AppState } from '$lib/models/app-state';
+import { PaletteMode, ThemeMode, TimetableLayoutMode, type AppState } from '$lib/models/app-state';
 import {
 	emptyOnlineSchedulePayload,
 	type OnlineScheduleFetchResult,
@@ -42,7 +42,7 @@ class FakeAppBackend {
 	wallpaperUri: string | null = null;
 	themeMode = ThemeMode.SYSTEM;
 	timetableLayoutMode = TimetableLayoutMode.SCROLL;
-	randomTheme = false;
+	paletteMode = PaletteMode.DEFAULT;
 	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
@@ -50,7 +50,7 @@ class FakeAppBackend {
 		currentTimetable: null,
 		themeMode: ThemeMode.SYSTEM,
 		timetableLayoutMode: TimetableLayoutMode.SCROLL,
-		randomTheme: false
+		paletteMode: PaletteMode.DEFAULT
 	};
 
 	syncState() {
@@ -70,7 +70,7 @@ class FakeAppBackend {
 			currentTimetable: current,
 			themeMode: this.themeMode,
 			timetableLayoutMode: this.timetableLayoutMode,
-			randomTheme: this.randomTheme
+			paletteMode: this.paletteMode
 		};
 	}
 }
@@ -172,8 +172,8 @@ class FakePreferencesRepository implements PreferencesRepository {
 		this.backend.syncState();
 	}
 
-	async setRandomTheme(enabled: boolean): Promise<void> {
-		this.backend.randomTheme = enabled;
+	async setPaletteMode(mode: PaletteMode): Promise<void> {
+		this.backend.paletteMode = mode;
 		this.backend.syncState();
 	}
 }

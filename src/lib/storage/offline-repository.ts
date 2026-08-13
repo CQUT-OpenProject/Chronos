@@ -138,8 +138,8 @@ export function createPreferencesRepository(
 		async setTimetableLayoutMode(mode) {
 			settings.setTimetableLayoutMode(mode);
 		},
-		async setRandomTheme(enabled) {
-			settings.setRandomTheme(enabled);
+		async setPaletteMode(mode) {
+			settings.setPaletteMode(mode);
 		}
 	};
 }

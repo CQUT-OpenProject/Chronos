@@ -3,8 +3,9 @@
 	import { register } from 'swiper/element/bundle';
 	import type { SwiperContainer } from 'swiper/element/bundle';
 	import { trackEvent } from '$lib/client/analytics';
-	import type { TimetableLayoutMode } from '$lib/models/app-state';
+	import type { PaletteMode, TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
+	import type { CoursePaletteEntry } from '$lib/parsers/course-palette';
 	import TimetableGrid from './TimetableGrid.svelte';
 
 	register();
@@ -13,7 +14,8 @@
 		screen,
 		hasWallpaper,
 		isDark,
-		randomTheme,
+		paletteMode,
+		wallpaperCoursePalette,
 		layoutMode,
 		onCourseClick,
 		onCourseLongClick
@@ -21,7 +23,8 @@
 		screen: TimetableScreenController;
 		hasWallpaper: boolean;
 		isDark: boolean;
-		randomTheme: boolean;
+		paletteMode: PaletteMode;
+		wallpaperCoursePalette: CoursePaletteEntry[] | null;
 		layoutMode: TimetableLayoutMode;
 		onCourseClick: (courseId: string) => void;
 		onCourseLongClick: (courseId: string) => void;
@@ -102,7 +105,8 @@
 					courseDisplayModels={courseModels}
 					{hasWallpaper}
 					{isDark}
-					{randomTheme}
+					{paletteMode}
+					{wallpaperCoursePalette}
 					paletteCourses={screenState.appState.currentTimetable?.courses}
 					{layoutMode}
 					onCourseClick={(course) => onCourseClick(course.id)}

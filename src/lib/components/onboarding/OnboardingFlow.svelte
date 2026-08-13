@@ -36,13 +36,13 @@
 		{
 			mode: TimetableLayoutMode.SCROLL,
 			label: '滚动查看',
-			description: '上下滚动查看完整课表，字体更大',
+			description: '上下滚动查看全天课程，字体更大',
 			Icon: ScheduleFill
 		},
 		{
 			mode: TimetableLayoutMode.FIT,
 			label: '一屏显示',
-			description: '无需滚动，一屏展示全天课程',
+			description: '一屏展示全天课程，无需滚动',
 			Icon: FullscreenFill
 		}
 	] as const;

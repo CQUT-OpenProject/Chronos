@@ -11,7 +11,7 @@
 		class: className = ''
 	}: {
 		label?: string;
-		colors: CoursePaletteEntry[];
+		colors: readonly CoursePaletteEntry[];
 		selectedBackground: string;
 		onSelect: (background: string, foreground: string) => void;
 		class?: string;

@@ -1,4 +1,5 @@
 import {
+	PaletteMode,
 	ThemeMode,
 	TimetableLayoutMode,
 	type AppState,
@@ -6,6 +7,7 @@ import {
 } from '$lib/models/app-state';
 import { createAppServices, type AppServices } from '$lib/client/app-services';
 import { clearAllAppData } from '$lib/client/repository';
+import type { CoursePaletteEntry } from '$lib/parsers/course-palette';
 
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
 	if (themeMode === ThemeMode.DARK) return true;
@@ -19,6 +21,7 @@ export function createAppShell() {
 	let systemPrefersDark = $state(false);
 	let unsubscribe: (() => void) | null = null;
 	let mediaQueryCleanup: (() => void) | null = null;
+	let wallpaperCoursePalette = $state.raw<CoursePaletteEntry[] | null>(null);
 	let services: AppServices | null = null;
 
 	function getServices() {
@@ -63,8 +66,12 @@ export function createAppShell() {
 		await getServices().preferences.setTimetableLayoutMode(mode);
 	}
 
-	async function setRandomTheme(enabled: boolean) {
-		await getServices().preferences.setRandomTheme(enabled);
+	async function setPaletteMode(mode: PaletteMode) {
+		await getServices().preferences.setPaletteMode(mode);
+	}
+
+	function setWallpaperCoursePalette(palette: CoursePaletteEntry[] | null) {
+		wallpaperCoursePalette = palette;
 	}
 
 	async function setWallpaper(wallpaper: Blob | null) {
@@ -84,11 +91,15 @@ export function createAppShell() {
 				hasWallpaper
 			};
 		},
+		get wallpaperCoursePalette() {
+			return wallpaperCoursePalette;
+		},
 		init,
 		destroy,
 		setThemeMode,
 		setTimetableLayoutMode,
-		setRandomTheme,
+		setPaletteMode,
+		setWallpaperCoursePalette,
 		setWallpaper,
 		clearAllData,
 		get services() {

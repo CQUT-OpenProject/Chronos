@@ -1,4 +1,4 @@
-import type { ThemeMode, TimetableLayoutMode } from '$lib/models/app-state';
+import type { PaletteMode, ThemeMode, TimetableLayoutMode } from '$lib/models/app-state';
 
 /** Writes user preferences (localStorage for theme/timetable; wallpaper in IndexedDB). */
 export interface PreferencesRepository {
@@ -6,5 +6,5 @@ export interface PreferencesRepository {
 	setWallpaper(wallpaper: Blob | null): Promise<void>;
 	setThemeMode(mode: ThemeMode): Promise<void>;
 	setTimetableLayoutMode(mode: TimetableLayoutMode): Promise<void>;
-	setRandomTheme(enabled: boolean): Promise<void>;
+	setPaletteMode(mode: PaletteMode): Promise<void>;
 }

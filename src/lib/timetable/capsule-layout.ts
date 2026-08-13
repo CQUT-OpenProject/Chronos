@@ -3,6 +3,7 @@ import { TimetableLayoutMode } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel } from '$lib/models/presentation';
 import {
 	assignCourseDisplayColors,
+	COURSE_PALETTE_ENTRIES,
 	normalizedCourseName,
 	type CoursePaletteEntry
 } from '$lib/parsers/course-palette';
@@ -69,7 +70,7 @@ export interface PlaceCapsulesInput {
 	expandedSlotKeys: ReadonlySet<string>;
 	isDark: boolean;
 	layoutMode?: TimetableLayoutMode;
-	randomTheme?: boolean;
+	coursePalette?: readonly CoursePaletteEntry[];
 	paletteCourses?: { name: string; color: string }[];
 }
 
@@ -131,7 +132,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		expandedSlotKeys,
 		isDark,
 		layoutMode = TimetableLayoutMode.SCROLL,
-		randomTheme = false,
+		coursePalette = COURSE_PALETTE_ENTRIES,
 		paletteCourses
 	} = input;
 	const compact = layoutMode === TimetableLayoutMode.FIT;
@@ -140,7 +141,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 
 	const paletteByName = assignCourseDisplayColors(
 		paletteCourses ?? courseDisplayModels.map((model) => model.course),
-		randomTheme
+		coursePalette
 	);
 	const visibleDayIndexMap = new Map(visibleDays.map((day, index) => [day.dayOfWeek, index]));
 	const columnFraction = 100 / visibleDayCount;

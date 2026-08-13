@@ -39,6 +39,7 @@
 	<FormScreenLayout {footer}>
 		<CourseEditorForm
 			{draft}
+			colors={editor.coursePalette}
 			maxPeriods={editor.timetable?.academicConfig.periodTimes.length ?? 10}
 		/>
 	</FormScreenLayout>

@@ -28,6 +28,6 @@ export function assembleAppState(
 		currentTimetable: currentTimetable ? copyForStateBoundary(currentTimetable) : null,
 		themeMode: preferences.themeMode,
 		timetableLayoutMode: preferences.timetableLayoutMode,
-		randomTheme: preferences.randomTheme
+		paletteMode: preferences.paletteMode
 	};
 }

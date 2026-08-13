@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { ThemeMode, TimetableLayoutMode } from '$lib/models/app-state';
+	import { PaletteMode, ThemeMode, TimetableLayoutMode } from '$lib/models/app-state';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import Radio from '$lib/components/ui/Radio.svelte';
-	import Switch from '$lib/components/ui/Switch.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import {
@@ -12,13 +11,14 @@
 		FullscreenFill,
 		LightModeFill,
 		PaletteFill,
-		ScheduleFill
+		ScheduleFill,
+		WallpaperFill
 	} from '$lib/icons';
 
 	let { shell }: { shell: AppShellController } = $props();
 	const themeMode = $derived(shell.state.appState.themeMode);
 	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
-	const randomTheme = $derived(shell.state.appState.randomTheme);
+	const paletteMode = $derived(shell.state.appState.paletteMode);
 
 	const themeOptions = [
 		{
@@ -40,6 +40,30 @@
 			label: '跟随系统',
 			description: '根据系统外观自动切换',
 			Icon: AutoModeFill,
+			iconTone: 'primary' as const
+		}
+	] as const;
+
+	const paletteOptions = [
+		{
+			mode: PaletteMode.DEFAULT,
+			label: '默认',
+			description: '使用 Chronos 品牌配色',
+			Icon: PaletteFill,
+			iconTone: 'primary' as const
+		},
+		{
+			mode: PaletteMode.WALLPAPER,
+			label: '壁纸',
+			description: '从当前壁纸提取配色；未设置壁纸时使用默认',
+			Icon: WallpaperFill,
+			iconTone: 'primary' as const
+		},
+		{
+			mode: PaletteMode.RANDOM,
+			label: '随机',
+			description: '随机生成的配色方案，不定时变更',
+			Icon: PaletteFill,
 			iconTone: 'primary' as const
 		}
 	] as const;
@@ -66,13 +90,14 @@
 		await shell.setThemeMode(mode);
 	}
 
+	async function selectPaletteMode(mode: PaletteMode) {
+		trackEvent('settings_color_scheme_change', { mode });
+		await shell.setPaletteMode(mode);
+	}
+
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
 		trackEvent('settings_layout_change', { mode });
 		await shell.setTimetableLayoutMode(mode);
-	}
-
-	async function selectRandomTheme(enabled: boolean) {
-		await shell.setRandomTheme(enabled);
 	}
 </script>
 
@@ -99,18 +124,26 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title="配色">
-		<MineRow
-			label
-			title="随机主题"
-			supporting="随机生成的配色方案，不定时变更"
-			icon={PaletteFill}
-			iconTone="primary"
-		>
-			{#snippet trailing()}
-				<Switch checked={randomTheme} onCheckedChange={selectRandomTheme} />
-			{/snippet}
-		</MineRow>
+	<MineSection title="配色方案">
+		{#each paletteOptions as option (option.mode)}
+			{@const selected = paletteMode === option.mode}
+			<MineRow
+				label={true}
+				title={option.label}
+				supporting={option.description}
+				icon={option.Icon}
+				iconTone={option.iconTone}
+				onclick={() => selectPaletteMode(option.mode)}
+			>
+				{#snippet trailing()}
+					<Radio
+						name="palette-mode"
+						checked={selected}
+						onchange={() => selectPaletteMode(option.mode)}
+					/>
+				{/snippet}
+			</MineRow>
+		{/each}
 	</MineSection>
 
 	<MineSection title="课表显示样式">

@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { CourseDraft } from '$lib/models/drafts';
 	import { COURSE_REMARK_MAX_LENGTH } from '$lib/models/course';
-	import { COURSE_PALETTE_ENTRIES } from '$lib/parsers/course-palette';
+	import {
+		COURSE_PALETTE_ENTRIES,
+		displaySwatchBackground,
+		type CoursePaletteEntry
+	} from '$lib/parsers/course-palette';
 	import ColorSwatchPicker from '$lib/components/ui/ColorSwatchPicker.svelte';
 	import FormCard from '$lib/components/ui/FormCard.svelte';
 	import StepperField from '$lib/components/ui/StepperField.svelte';
@@ -9,11 +13,15 @@
 
 	let {
 		draft = $bindable(),
-		maxPeriods = 10
+		maxPeriods = 10,
+		colors = COURSE_PALETTE_ENTRIES
 	}: {
 		draft: CourseDraft;
 		maxPeriods?: number;
+		colors?: readonly CoursePaletteEntry[];
 	} = $props();
+
+	const selectedBackground = $derived(displaySwatchBackground(draft.color, colors));
 
 	function handleStartPeriodChange(value: number) {
 		draft.endPeriod = Math.max(draft.endPeriod, value);
@@ -65,9 +73,5 @@
 		/>
 	</FormCard>
 
-	<ColorSwatchPicker
-		colors={COURSE_PALETTE_ENTRIES}
-		selectedBackground={draft.color}
-		onSelect={selectColor}
-	/>
+	<ColorSwatchPicker {colors} {selectedBackground} onSelect={selectColor} />
 </div>

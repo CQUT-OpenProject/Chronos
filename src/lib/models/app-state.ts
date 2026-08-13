@@ -45,6 +45,34 @@ export function timetableLayoutModeFromStorage(
 	return TimetableLayoutMode.SCROLL;
 }
 
+export enum PaletteMode {
+	DEFAULT = 'DEFAULT',
+	WALLPAPER = 'WALLPAPER',
+	RANDOM = 'RANDOM'
+}
+
+const PALETTE_STORAGE: Record<PaletteMode, string> = {
+	[PaletteMode.DEFAULT]: 'default',
+	[PaletteMode.WALLPAPER]: 'wallpaper',
+	[PaletteMode.RANDOM]: 'random'
+};
+
+export function paletteModeToStorage(mode: PaletteMode): string {
+	return PALETTE_STORAGE[mode];
+}
+
+export function paletteModeFromStorage(
+	value: string | null | undefined,
+	legacyRandomTheme?: string | null
+): PaletteMode {
+	const normalized = value?.trim().toLowerCase();
+	if (normalized === 'wallpaper') return PaletteMode.WALLPAPER;
+	if (normalized === 'random') return PaletteMode.RANDOM;
+	if (normalized === 'default') return PaletteMode.DEFAULT;
+	if (legacyRandomTheme === '1') return PaletteMode.RANDOM;
+	return PaletteMode.DEFAULT;
+}
+
 export interface TimetableSummary {
 	id: string;
 	name: string;
@@ -60,7 +88,7 @@ export interface AppState {
 	currentTimetable: Timetable | null;
 	themeMode: ThemeMode;
 	timetableLayoutMode: TimetableLayoutMode;
-	randomTheme: boolean;
+	paletteMode: PaletteMode;
 }
 
 export function emptyAppState(): AppState {
@@ -71,6 +99,6 @@ export function emptyAppState(): AppState {
 		currentTimetable: null,
 		themeMode: ThemeMode.SYSTEM,
 		timetableLayoutMode: TimetableLayoutMode.SCROLL,
-		randomTheme: false
+		paletteMode: PaletteMode.DEFAULT
 	};
 }

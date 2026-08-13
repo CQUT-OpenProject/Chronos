@@ -1,6 +1,9 @@
 import {
+	PaletteMode,
 	ThemeMode,
 	TimetableLayoutMode,
+	paletteModeFromStorage,
+	paletteModeToStorage,
 	themeModeFromStorage,
 	themeModeToStorage,
 	timetableLayoutModeFromStorage,
@@ -11,13 +14,14 @@ export interface UserPreferenceState {
 	currentTimetableId: string | null;
 	themeMode: ThemeMode;
 	timetableLayoutMode: TimetableLayoutMode;
-	randomTheme: boolean;
+	paletteMode: PaletteMode;
 }
 
 const KEYS = {
 	currentTimetableId: 'current_timetable_id',
 	themeMode: 'theme_mode',
 	timetableLayoutMode: 'timetable_layout_mode',
+	paletteMode: 'palette_mode',
 	randomTheme: 'random_theme'
 } as const;
 
@@ -42,7 +46,7 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 				currentTimetableId: null,
 				themeMode: ThemeMode.SYSTEM,
 				timetableLayoutMode: TimetableLayoutMode.SCROLL,
-				randomTheme: false
+				paletteMode: PaletteMode.DEFAULT
 			};
 		}
 
@@ -52,7 +56,10 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 			timetableLayoutMode: timetableLayoutModeFromStorage(
 				target.getItem(storageKey(KEYS.timetableLayoutMode))
 			),
-			randomTheme: target.getItem(storageKey(KEYS.randomTheme)) === '1'
+			paletteMode: paletteModeFromStorage(
+				target.getItem(storageKey(KEYS.paletteMode)),
+				target.getItem(storageKey(KEYS.randomTheme))
+			)
 		};
 	}
 
@@ -99,8 +106,11 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 		setTimetableLayoutMode(mode: TimetableLayoutMode) {
 			setString(KEYS.timetableLayoutMode, timetableLayoutModeToStorage(mode));
 		},
-		setRandomTheme(enabled: boolean) {
-			setString(KEYS.randomTheme, enabled ? '1' : null);
+		setPaletteMode(mode: PaletteMode) {
+			if (!storage) return;
+			storage.setItem(storageKey(KEYS.paletteMode), paletteModeToStorage(mode));
+			storage.removeItem(storageKey(KEYS.randomTheme));
+			notify();
 		}
 	};
 }

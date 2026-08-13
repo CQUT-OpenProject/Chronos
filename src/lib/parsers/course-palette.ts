@@ -1,3 +1,5 @@
+import { PaletteMode } from '$lib/models/app-state';
+
 export type CoursePaletteEntry = { background: string; foreground: string };
 
 const COURSE_PALETTE: [string, string][] = [
@@ -62,15 +64,36 @@ function relativeLuminance(hex: string): number {
 	return 0.2126 * channel(16) + 0.7152 * channel(8) + 0.0722 * channel(0);
 }
 
-const EASTER_EGG_PALETTE_ENTRIES: CoursePaletteEntry[] = EASTER_EGG_COURSE_BACKGROUNDS.map(
+export const EASTER_EGG_PALETTE_ENTRIES: CoursePaletteEntry[] = EASTER_EGG_COURSE_BACKGROUNDS.map(
 	(background) => ({ background, foreground: onColorForBackground(background) })
 );
 
+export function resolveCoursePalette(
+	paletteMode: PaletteMode,
+	wallpaperPalette: readonly CoursePaletteEntry[] | null | undefined
+): readonly CoursePaletteEntry[] {
+	if (paletteMode === PaletteMode.RANDOM) return EASTER_EGG_PALETTE_ENTRIES;
+	if (paletteMode === PaletteMode.WALLPAPER && wallpaperPalette && wallpaperPalette.length > 0) {
+		return wallpaperPalette;
+	}
+	return COURSE_PALETTE_ENTRIES;
+}
+
+export function displaySwatchBackground(
+	storedBackground: string,
+	displayPalette: readonly CoursePaletteEntry[]
+): string {
+	const index = COURSE_PALETTE_ENTRIES.findIndex(
+		(entry) => entry.background.toLowerCase() === storedBackground.trim().toLowerCase()
+	);
+	if (index < 0) return storedBackground;
+	return displayPalette[index % displayPalette.length]?.background ?? storedBackground;
+}
+
 export function assignCourseDisplayColors(
 	courses: { name: string; color: string }[],
-	randomTheme = false
+	palette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
 ): Map<string, CoursePaletteEntry> {
-	const palette = randomTheme ? EASTER_EGG_PALETTE_ENTRIES : COURSE_PALETTE_ENTRIES;
 	const names = [
 		...new Set(
 			courses

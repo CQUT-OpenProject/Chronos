@@ -8,6 +8,7 @@ import {
 	resolveLocationBlockMetrics,
 	shouldShowLocationCampus
 } from './capsule-layout';
+import { EASTER_EGG_PALETTE_ENTRIES } from '$lib/parsers/course-palette';
 import { periodSlotKey } from './slot-key';
 
 describe('resolveCapsuleTypeScale', () => {
@@ -155,7 +156,7 @@ describe('placeCapsules', () => {
 		expect(item.colors.background).toBe('#EADDFF');
 	});
 
-	it('remaps default palette colors when randomTheme is on', () => {
+	it('remaps default palette colors when a custom course palette is passed', () => {
 		const off = placeCapsules({
 			courseDisplayModels: [courseModel('a', 1, 1, 1)],
 			visibleDays,
@@ -169,7 +170,7 @@ describe('placeCapsules', () => {
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
 			isDark: false,
-			randomTheme: true
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
 		expect(off[0]?.kind).toBe('course');
 		expect(on[0]?.kind).toBe('course');
@@ -219,7 +220,7 @@ describe('placeCapsules', () => {
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
 			isDark: false,
-			randomTheme: true
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
 		const backgrounds = items
 			.filter((item) => item.kind === 'course')
@@ -245,7 +246,7 @@ describe('placeCapsules', () => {
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
 			isDark: false,
-			randomTheme: true,
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
 			paletteCourses
 		});
 		const week = placeCapsules({
@@ -254,7 +255,7 @@ describe('placeCapsules', () => {
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
 			isDark: false,
-			randomTheme: true,
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
 			paletteCourses
 		});
 		const fromFull = full.find((item) => item.kind === 'course' && item.course.name === 'e');
@@ -264,14 +265,14 @@ describe('placeCapsules', () => {
 		expect(week[0].colors.background).toBe(fromFull.colors.background);
 	});
 
-	it('leaves custom course colors unchanged when randomTheme is on', () => {
+	it('leaves custom course colors unchanged when a custom course palette is passed', () => {
 		const [item] = placeCapsules({
 			courseDisplayModels: [courseModel('a', 1, 1, 1, { color: '#123456' })],
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
 			isDark: false,
-			randomTheme: true
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
 		expect(item?.kind).toBe('course');
 		if (item?.kind !== 'course') return;
