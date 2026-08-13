@@ -335,7 +335,9 @@
 						>
 							<div
 								class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
-									? 'bg-secondary text-on-secondary'
+									? randomTheme
+										? 'text-on-primary'
+										: 'bg-brand text-on-primary'
 									: ''}"
 								style:background-image={isActive && randomTheme
 									? 'linear-gradient(to bottom, var(--ee-secondary), var(--ee-primary))'
