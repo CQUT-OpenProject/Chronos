@@ -91,7 +91,6 @@
 					hasWallpaper={true}
 					{isDark}
 					{coursePalette}
-					paletteCourses={timetable.courses}
 				/>
 			</div>
 		</div>

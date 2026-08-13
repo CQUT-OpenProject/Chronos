@@ -4,6 +4,7 @@
 	import {
 		COURSE_PALETTE_ENTRIES,
 		displaySwatchBackground,
+		persistSwatchSelection,
 		type CoursePaletteEntry
 	} from '$lib/parsers/course-palette';
 	import ColorSwatchPicker from '$lib/components/ui/ColorSwatchPicker.svelte';
@@ -27,9 +28,10 @@
 		draft.endPeriod = Math.max(draft.endPeriod, value);
 	}
 
-	function selectColor(background: string, foreground: string) {
-		draft.color = background;
-		draft.textColor = foreground;
+	function selectColor(index: number) {
+		const identity = persistSwatchSelection(index);
+		draft.color = identity.background;
+		draft.textColor = identity.foreground;
 	}
 </script>
 

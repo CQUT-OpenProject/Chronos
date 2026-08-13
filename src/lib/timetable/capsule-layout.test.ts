@@ -180,39 +180,11 @@ describe('placeCapsules', () => {
 		expect(on[0].colors.text).toBe('#1a1a1a');
 	});
 
-	it('spreads colliding default-palette courses across all capsule colors', () => {
+	it('keeps colliding default-palette courses on the same display color', () => {
 		const models = [
 			courseModel('a', 1, 1, 1),
 			courseModel('b', 1, 3, 3),
-			courseModel('c', 2, 1, 1),
-			courseModel('d', 2, 3, 3),
-			courseModel('e', 3, 1, 1),
-			courseModel('f', 3, 3, 3)
-		];
-		const items = placeCapsules({
-			courseDisplayModels: models,
-			visibleDays,
-			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false
-		});
-		const backgrounds = items
-			.filter((item) => item.kind === 'course')
-			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
-		expect(backgrounds).toHaveLength(6);
-		expect(new Set(backgrounds)).toEqual(
-			new Set(['#EADDFF', '#FFDBC9', '#C4EED0', '#D3E3FD', '#FFD8E4', '#F6E1B0'])
-		);
-	});
-
-	it('spreads unique courses across all easter-egg colors', () => {
-		const models = [
-			courseModel('a', 1, 1, 1),
-			courseModel('b', 1, 3, 3),
-			courseModel('c', 2, 1, 1),
-			courseModel('d', 2, 3, 3),
-			courseModel('e', 3, 1, 1),
-			courseModel('f', 3, 3, 3)
+			courseModel('c', 2, 1, 1)
 		];
 		const items = placeCapsules({
 			courseDisplayModels: models,
@@ -225,44 +197,30 @@ describe('placeCapsules', () => {
 		const backgrounds = items
 			.filter((item) => item.kind === 'course')
 			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
-		expect(backgrounds).toHaveLength(6);
-		expect(new Set(backgrounds)).toEqual(
-			new Set(['#FFEE55', '#FFBBCC', '#4477CC', '#9977CC', '#EE5577', '#4D5B4C'])
-		);
+		expect(backgrounds).toEqual(['#FFEE55', '#FFEE55', '#FFEE55']);
 	});
 
-	it('keeps a course color stable when the visible week is a subset', () => {
-		const all = [
-			courseModel('a', 1, 1, 1),
-			courseModel('b', 1, 3, 3),
-			courseModel('c', 2, 1, 1),
-			courseModel('d', 2, 3, 3),
-			courseModel('e', 3, 1, 1)
+	it('maps each default-palette slot onto the matching display-palette entry', () => {
+		const models = [
+			courseModel('a', 1, 1, 1, { color: '#EADDFF' }),
+			courseModel('b', 1, 3, 3, { color: '#FFDBC9' }),
+			courseModel('c', 2, 1, 1, { color: '#C4EED0' }),
+			courseModel('d', 2, 3, 3, { color: '#D3E3FD' }),
+			courseModel('e', 3, 1, 1, { color: '#FFD8E4' }),
+			courseModel('f', 3, 3, 3, { color: '#F6E1B0' })
 		];
-		const paletteCourses = all.map((model) => model.course);
-		const full = placeCapsules({
-			courseDisplayModels: all,
+		const items = placeCapsules({
+			courseDisplayModels: models,
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
 			isDark: false,
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
-			paletteCourses
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
-		const week = placeCapsules({
-			courseDisplayModels: [courseModel('e', 3, 1, 1)],
-			visibleDays,
-			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false,
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
-			paletteCourses
-		});
-		const fromFull = full.find((item) => item.kind === 'course' && item.course.name === 'e');
-		expect(fromFull?.kind).toBe('course');
-		expect(week[0]?.kind).toBe('course');
-		if (fromFull?.kind !== 'course' || week[0]?.kind !== 'course') return;
-		expect(week[0].colors.background).toBe(fromFull.colors.background);
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(backgrounds).toEqual(['#FFEE55', '#FFBBCC', '#4477CC', '#9977CC', '#EE5577', '#4D5B4C']);
 	});
 
 	it('leaves custom course colors unchanged when a custom course palette is passed', () => {

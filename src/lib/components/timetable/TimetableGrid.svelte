@@ -30,7 +30,6 @@
 		hasWallpaper: boolean;
 		isDark?: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
-		paletteCourses?: { name: string; color: string }[];
 		layoutMode?: TimetableLayoutMode;
 		onCourseClick?: (course: Course) => void;
 		onCourseLongClick?: (course: Course) => void;
@@ -44,7 +43,6 @@
 		hasWallpaper,
 		isDark = false,
 		coursePalette,
-		paletteCourses,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		onCourseClick,
 		onCourseLongClick
@@ -69,7 +67,6 @@
 			expandedSlotKeys: expandedSlots,
 			isDark,
 			coursePalette,
-			paletteCourses,
 			layoutMode
 		})
 	);

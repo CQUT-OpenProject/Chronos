@@ -2,9 +2,8 @@ import type { Course } from '$lib/models/course';
 import { TimetableLayoutMode } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel } from '$lib/models/presentation';
 import {
-	assignCourseDisplayColors,
 	COURSE_PALETTE_ENTRIES,
-	normalizedCourseName,
+	resolveCoursePaint,
 	type CoursePaletteEntry
 } from '$lib/parsers/course-palette';
 import { periodSlotKey } from './slot-key';
@@ -71,7 +70,6 @@ export interface PlaceCapsulesInput {
 	isDark: boolean;
 	layoutMode?: TimetableLayoutMode;
 	coursePalette?: readonly CoursePaletteEntry[];
-	paletteCourses?: { name: string; color: string }[];
 }
 
 interface SlotPosition {
@@ -132,17 +130,12 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		expandedSlotKeys,
 		isDark,
 		layoutMode = TimetableLayoutMode.SCROLL,
-		coursePalette = COURSE_PALETTE_ENTRIES,
-		paletteCourses
+		coursePalette = COURSE_PALETTE_ENTRIES
 	} = input;
 	const compact = layoutMode === TimetableLayoutMode.FIT;
 	const visibleDayCount = visibleDays.length;
 	if (visibleDayCount === 0) return [];
 
-	const paletteByName = assignCourseDisplayColors(
-		paletteCourses ?? courseDisplayModels.map((model) => model.course),
-		coursePalette
-	);
 	const visibleDayIndexMap = new Map(visibleDays.map((day, index) => [day.dayOfWeek, index]));
 	const columnFraction = 100 / visibleDayCount;
 	const items: PlacedItem[] = [];
@@ -163,7 +156,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					columnWidthPx,
 					overlapCount: 1,
 					isDark,
-					paletteByName,
+					coursePalette,
 					compact,
 					key: `${key}:${displayModel.course.id}`
 				})
@@ -198,7 +191,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					columnWidthPx,
 					overlapCount: count,
 					isDark,
-					paletteByName,
+					coursePalette,
 					compact,
 					key: `${key}:${displayModel.course.id}`
 				})
@@ -216,7 +209,7 @@ function placeCourseCapsule(options: {
 	columnWidthPx: number;
 	overlapCount: number;
 	isDark: boolean;
-	paletteByName: Map<string, CoursePaletteEntry>;
+	coursePalette: readonly CoursePaletteEntry[];
 	compact: boolean;
 	key: string;
 }): PlacedCourseCapsule {
@@ -227,7 +220,7 @@ function placeCourseCapsule(options: {
 		columnWidthPx,
 		overlapCount,
 		isDark,
-		paletteByName,
+		coursePalette,
 		compact,
 		key
 	} = options;
@@ -252,7 +245,7 @@ function placeCourseCapsule(options: {
 			startPeriod: course.startPeriod,
 			endPeriod: course.endPeriod
 		},
-		colors: courseColors(course, isDark, paletteByName),
+		colors: courseColors(course, isDark, coursePalette),
 		scale,
 		locationLines,
 		locationMetrics,
@@ -382,10 +375,10 @@ export function blendColors(background: string, surface: string, ratio: number):
 function courseColors(
 	course: Course,
 	isDark: boolean,
-	paletteByName: Map<string, CoursePaletteEntry>
+	coursePalette: readonly CoursePaletteEntry[]
 ): { background: string; text: string } {
-	const remapped = paletteByName.get(normalizedCourseName(course.name)) ?? null;
-	const rawBackground = remapped?.background ?? parseColor(course.color);
+	const paint = resolveCoursePaint(course, coursePalette);
+	const rawBackground = parseColor(paint.background);
 	if (isDark) {
 		return {
 			background: blendColors(rawBackground, DARK_SURFACE, 0.58),
@@ -394,7 +387,7 @@ function courseColors(
 	}
 	return {
 		background: rawBackground,
-		text: remapped?.foreground ?? parseColor(course.textColor)
+		text: parseColor(paint.foreground)
 	};
 }
 

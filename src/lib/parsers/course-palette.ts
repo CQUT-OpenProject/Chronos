@@ -47,10 +47,6 @@ export function coursePalette(name: string): [string, string] {
 	return COURSE_PALETTE[index] ?? COURSE_PALETTE[0]!;
 }
 
-const DEFAULT_PALETTE_BACKGROUNDS = new Set(
-	COURSE_PALETTE.map(([background]) => background.toLowerCase())
-);
-
 function onColorForBackground(hex: string): string {
 	return relativeLuminance(hex) > 0.55 ? '#1a1a1a' : '#fff';
 }
@@ -79,31 +75,32 @@ export function resolveCoursePalette(
 	return COURSE_PALETTE_ENTRIES;
 }
 
+export function defaultPaletteSlot(hex: string): number | null {
+	const normalized = hex.trim().toLowerCase();
+	const index = COURSE_PALETTE_ENTRIES.findIndex(
+		(entry) => entry.background.toLowerCase() === normalized
+	);
+	return index < 0 ? null : index;
+}
+
+export function persistSwatchSelection(displayIndex: number): CoursePaletteEntry {
+	return COURSE_PALETTE_ENTRIES[displayIndex] ?? COURSE_PALETTE_ENTRIES[0]!;
+}
+
+export function resolveCoursePaint(
+	stored: { color: string; textColor: string },
+	displayPalette: readonly CoursePaletteEntry[]
+): { background: string; foreground: string } {
+	const slot = defaultPaletteSlot(stored.color);
+	if (slot == null || displayPalette.length === 0) {
+		return { background: stored.color, foreground: stored.textColor };
+	}
+	return displayPalette[slot % displayPalette.length]!;
+}
+
 export function displaySwatchBackground(
 	storedBackground: string,
 	displayPalette: readonly CoursePaletteEntry[]
 ): string {
-	const index = COURSE_PALETTE_ENTRIES.findIndex(
-		(entry) => entry.background.toLowerCase() === storedBackground.trim().toLowerCase()
-	);
-	if (index < 0) return storedBackground;
-	return displayPalette[index % displayPalette.length]?.background ?? storedBackground;
-}
-
-export function assignCourseDisplayColors(
-	courses: { name: string; color: string }[],
-	palette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
-): Map<string, CoursePaletteEntry> {
-	const names = [
-		...new Set(
-			courses
-				.filter((course) => DEFAULT_PALETTE_BACKGROUNDS.has(course.color.trim().toLowerCase()))
-				.map((course) => normalizedCourseName(course.name))
-		)
-	];
-	names.sort(
-		(left, right) =>
-			kotlinStringHashCode(left) - kotlinStringHashCode(right) || left.localeCompare(right)
-	);
-	return new Map(names.map((name, index) => [name, palette[index % palette.length]!]));
+	return resolveCoursePaint({ color: storedBackground, textColor: '' }, displayPalette).background;
 }
