@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
 	setInstallPromptGate: vi.fn(),
 	tryScheduleInstallDialog: vi.fn(),
 	initWebVitals: vi.fn(),
+	initAnalytics: vi.fn(),
 	ensureShareLinkBrotliReady: vi.fn().mockResolvedValue(undefined),
 	attachOfflineUx: vi.fn(() => vi.fn())
 }));
@@ -43,6 +44,10 @@ vi.mock('$lib/client/pwa-install.svelte', () => ({
 
 vi.mock('$lib/client/web-vitals', () => ({
 	initWebVitals: mocks.initWebVitals
+}));
+
+vi.mock('$lib/client/analytics', () => ({
+	initAnalytics: mocks.initAnalytics
 }));
 
 vi.mock('$lib/parsers/share-link/share-link-brotli', () => ({
@@ -96,6 +101,7 @@ describe('createPlatformBootstrap', () => {
 		expect(timetableScreen.init).toHaveBeenCalledWith(shell);
 		expect(mocks.pwaInstallInit).toHaveBeenCalled();
 		expect(mocks.initWebVitals).toHaveBeenCalled();
+		expect(mocks.initAnalytics).toHaveBeenCalled();
 		expect(mocks.ensureShareLinkBrotliReady).toHaveBeenCalled();
 		expect(mocks.setInstallPromptGate).toHaveBeenCalled();
 		expect(mocks.attachOfflineUx).toHaveBeenCalled();

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ThemeMode, TimetableLayoutMode } from '$lib/models/app-state';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
@@ -58,10 +59,12 @@
 	] as const;
 
 	async function selectThemeMode(mode: ThemeMode) {
+		trackEvent('settings_theme_change', { mode });
 		await shell.setThemeMode(mode);
 	}
 
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
+		trackEvent('settings_layout_change', { mode });
 		await shell.setTimetableLayoutMode(mode);
 	}
 </script>

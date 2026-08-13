@@ -1,4 +1,5 @@
 import type { AppShellController } from '$lib/app/app-shell.svelte';
+import { trackEvent } from '$lib/client/analytics';
 import type { CourseDraft } from '$lib/models/drafts';
 import { courseToDraft } from '$lib/timetable/timetable-mappers';
 
@@ -46,12 +47,14 @@ export function createCourseEditor(
 	async function save() {
 		if (!timetable || !draft) return;
 		await shell.services.saveCourse.invoke(timetable.id, draft);
+		trackEvent('course_save');
 		onDone();
 	}
 
 	async function deleteCourse() {
 		if (!draft?.id) return;
 		await shell.services.deleteCourse.invoke(draft.id);
+		trackEvent('course_delete');
 		onDone();
 	}
 

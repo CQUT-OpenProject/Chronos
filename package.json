@@ -29,6 +29,7 @@
 		"dexie": "^4.0.11",
 		"jsencrypt": "^3.5.4",
 		"marked": "^18.0.9",
+		"posthog-js": "^1.415.6",
 		"swiper": "^11.2.10",
 		"vite-plugin-functions-mixins": "^0.4.1",
 		"web-vitals": "^6.1.0",

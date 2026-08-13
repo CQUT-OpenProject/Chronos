@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { trackEvent } from '$lib/client/analytics';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -23,8 +24,10 @@
 		try {
 			const ok = await transfer.exportToClipboard();
 			if (ok) {
+				trackEvent('export_copy_link');
 				snackbar('已复制课表链接');
 				if (longLinkWarning) {
+					trackEvent('export_long_link_warning_shown');
 					snackbar('课表较大，部分应用可能截断链接内容，请注意核对导入结果');
 				}
 				return;

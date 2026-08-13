@@ -3,6 +3,7 @@ import { credentialEnvironment } from '$lib/client/credential-environment.svelte
 import { connectivity } from '$lib/platform/connectivity.svelte';
 import { onboardingController } from '$lib/client/onboarding.svelte';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
+import { initAnalytics } from '$lib/client/analytics';
 import { initWebVitals } from '$lib/client/web-vitals';
 import { initNavigationStack } from '$lib/navigation/navigation-direction';
 import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
@@ -34,6 +35,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		deps.timetableScreen.init(deps.shell);
 		void pwaInstallController.init();
 		initWebVitals();
+		initAnalytics();
 		void ensureShareLinkBrotliReady();
 		window.__chronosHideBootFallback?.();
 
@@ -57,7 +59,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 			$effect(() => {
 				if (!onboardingController.open) return;
 				pwaInstallController.cancelScheduledDialog();
-				pwaInstallController.dismiss();
+				pwaInstallController.dismiss({ track: false });
 			});
 
 			$effect(() => {

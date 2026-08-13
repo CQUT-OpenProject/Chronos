@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import { register } from 'swiper/element/bundle';
 	import type { SwiperContainer } from 'swiper/element/bundle';
+	import { trackEvent } from '$lib/client/analytics';
 	import type { TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableGrid from './TimetableGrid.svelte';
@@ -33,6 +34,7 @@
 		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
 		const slideIndex = swiperEl.swiper.activeIndex;
 		if (slideIndex !== screen.state.slideIndex) {
+			trackEvent('timetable_week_swipe');
 			screen.settlePagerAtSlide(slideIndex);
 		}
 	}

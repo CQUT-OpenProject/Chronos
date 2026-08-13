@@ -1,3 +1,4 @@
+import { trackEvent } from '$lib/client/analytics';
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 import {
 	isInstallPromptSnoozed,
@@ -212,6 +213,7 @@ export class PWAInstallController {
 			} else {
 				this.installDialogOpen = true;
 			}
+			trackEvent('pwa_install_prompt_show');
 		}, 3000);
 	}
 
@@ -259,6 +261,7 @@ export class PWAInstallController {
 		await this.deferredPrompt.prompt();
 		const choice = await this.deferredPrompt.userChoice;
 		if (choice.outcome === 'accepted') {
+			trackEvent('pwa_install_accept');
 			this.installDialogOpen = false;
 			this.clearDeferredPrompt();
 			this.onAppInstalled();
@@ -274,13 +277,17 @@ export class PWAInstallController {
 	}
 
 	snoozeInstallPrompt() {
+		trackEvent('pwa_install_snooze');
 		if (typeof localStorage !== 'undefined') {
 			localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_DURATION_MS));
 		}
 		this.installDialogOpen = false;
 	}
 
-	dismiss() {
+	dismiss({ track = true }: { track?: boolean } = {}) {
+		if (track) {
+			trackEvent('pwa_install_dismiss');
+		}
 		this.installDialogOpen = false;
 		this.openInAppDialogOpen = false;
 		this.iosGuideOpen = false;

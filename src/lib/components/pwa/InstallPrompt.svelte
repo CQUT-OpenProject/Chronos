@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { trackEvent } from '$lib/client/analytics';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { IosShareFill } from '$lib/icons';
 
 	function goToInstallPage() {
-		pwaInstallController.dismiss();
+		trackEvent('pwa_install_cta_click');
+		pwaInstallController.dismiss({ track: false });
 		void goto(resolve('/about/install'));
 	}
 </script>

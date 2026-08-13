@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import { onlineImportEnabled } from '$lib/config/features';
 	import { TimetableLayoutMode } from '$lib/models/app-state';
@@ -101,11 +102,13 @@
 	}
 
 	function handleNext() {
+		trackEvent('onboarding_step_next', { step });
 		vibrate();
 		onboardingController.next();
 	}
 
 	function handleBack() {
+		trackEvent('onboarding_step_back', { step });
 		vibrate();
 		onboardingController.back();
 	}
@@ -115,16 +118,19 @@
 	}
 
 	function handleStartImport() {
+		trackEvent('onboarding_start_import');
 		completeOnboarding();
 		void goto(resolve('/transfer/import'));
 	}
 
 	function handleLater() {
+		trackEvent('onboarding_skip', { step });
 		vibrate();
 		completeOnboarding();
 	}
 
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
+		trackEvent('onboarding_layout_selected', { mode });
 		vibrate();
 		await shell.setTimetableLayoutMode(mode);
 	}

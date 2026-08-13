@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { browser } from '$app/environment';
+	import { trackEvent } from '$lib/client/analytics';
 	import { ImportMode } from '$lib/domain/import-mode';
 	import { createSessionPreviewPersistence } from '$lib/client/preview-persistence';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
@@ -20,6 +21,7 @@
 			const payload = extractSharePayloadFromLocation(window.location);
 
 			if (!payload) {
+				trackEvent('share_link_decode_fail');
 				status = 'error';
 				snackbar('链接中未找到课表数据');
 				return;
@@ -27,10 +29,13 @@
 
 			const result = await decodeSharePayload(payload);
 			if (!result.ok) {
+				trackEvent('share_link_decode_fail');
 				status = 'error';
 				snackbar(result.error.message);
 				return;
 			}
+
+			trackEvent('share_link_decode_success');
 
 			createSessionPreviewPersistence().save({
 				preview: result.value,

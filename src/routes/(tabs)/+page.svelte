@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableScreen from '$lib/components/timetable/TimetableScreen.svelte';
 	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
@@ -19,10 +20,12 @@
 	});
 
 	function navigateToCourseDetail(courseId: string) {
+		trackEvent('course_detail_open');
 		goto(resolve(`/timetable/course-detail?courseId=${encodeURIComponent(courseId)}`));
 	}
 
 	function navigateToCourseEditor(courseId: string) {
+		trackEvent('course_editor_open', { trigger: 'long_press' });
 		goto(resolve(`/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`));
 	}
 </script>
