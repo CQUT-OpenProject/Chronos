@@ -29,6 +29,7 @@
 		hasWallpaper: boolean;
 		isDark?: boolean;
 		randomTheme?: boolean;
+		paletteCourses?: { name: string; color: string }[];
 		layoutMode?: TimetableLayoutMode;
 		onCourseClick?: (course: Course) => void;
 		onCourseLongClick?: (course: Course) => void;
@@ -42,6 +43,7 @@
 		hasWallpaper,
 		isDark = false,
 		randomTheme = false,
+		paletteCourses,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		onCourseClick,
 		onCourseLongClick
@@ -66,6 +68,7 @@
 			expandedSlotKeys: expandedSlots,
 			isDark,
 			randomTheme,
+			paletteCourses,
 			layoutMode
 		})
 	);
@@ -334,6 +337,9 @@
 								class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
 									? 'bg-secondary text-on-secondary'
 									: ''}"
+								style:background-image={isActive && randomTheme
+									? 'linear-gradient(to bottom, var(--ee-secondary), var(--ee-primary))'
+									: undefined}
 							>
 								<span class="m3-body-medium font-bold">
 									{period.index}

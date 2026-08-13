@@ -56,4 +56,16 @@ describe('analytics', () => {
 			})
 		);
 	});
+
+	it('flushes events captured before posthog finishes loading', async () => {
+		envState.PUBLIC_POSTHOG_KEY = 'phc_test';
+		const { initAnalytics, trackEvent } = await import('./analytics');
+
+		initAnalytics();
+		trackEvent('share_link_decode_success');
+
+		await vi.waitFor(() => {
+			expect(posthog.capture).toHaveBeenCalledWith('share_link_decode_success', undefined);
+		});
+	});
 });

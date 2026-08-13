@@ -1,8 +1,6 @@
 import { env } from '$env/dynamic/public';
 import type { PostHog } from 'posthog-js';
 
-let client: PostHog | null = null;
-
 export type AnalyticsEvent =
 	| 'onboarding_step_next'
 	| 'onboarding_step_back'
@@ -48,27 +46,45 @@ export type AnalyticsEvent =
 	| 'pwa_update_apply'
 	| 'about_clear_all_data';
 
+let client: PostHog | null = null;
+let pending: Array<[AnalyticsEvent, Record<string, string | number | boolean> | undefined]> | null =
+	null;
+
 export function initAnalytics() {
 	if (import.meta.env.DEV) return;
 
 	const key = env.PUBLIC_POSTHOG_KEY;
 	if (!key) return;
 
-	void import('posthog-js').then(({ default: posthog }) => {
-		posthog.init(key, {
-			api_host: env.PUBLIC_POSTHOG_HOST,
-			defaults: '2026-05-30',
-			autocapture: false,
-			disable_session_recording: true,
-			persistence: 'localStorage'
+	pending = [];
+	void import('posthog-js')
+		.then(({ default: posthog }) => {
+			posthog.init(key, {
+				api_host: env.PUBLIC_POSTHOG_HOST,
+				defaults: '2026-05-30',
+				autocapture: false,
+				disable_session_recording: true,
+				persistence: 'localStorage'
+			});
+			client = posthog;
+			const queued = pending;
+			pending = null;
+			for (const [name, properties] of queued ?? []) {
+				posthog.capture(name, properties);
+			}
+		})
+		.catch(() => {
+			pending = null;
 		});
-		client = posthog;
-	});
 }
 
 export function trackEvent(
 	name: AnalyticsEvent,
 	properties?: Record<string, string | number | boolean>
 ) {
-	client?.capture(name, properties);
+	if (client) {
+		client.capture(name, properties);
+		return;
+	}
+	pending?.push([name, properties]);
 }

@@ -2,7 +2,7 @@ import type { Course } from '$lib/models/course';
 import { TimetableLayoutMode } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel } from '$lib/models/presentation';
 import {
-	assignEasterEggCourseColors,
+	assignCourseDisplayColors,
 	normalizedCourseName,
 	type CoursePaletteEntry
 } from '$lib/parsers/course-palette';
@@ -70,6 +70,7 @@ export interface PlaceCapsulesInput {
 	isDark: boolean;
 	layoutMode?: TimetableLayoutMode;
 	randomTheme?: boolean;
+	paletteCourses?: { name: string; color: string }[];
 }
 
 interface SlotPosition {
@@ -130,15 +131,17 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		expandedSlotKeys,
 		isDark,
 		layoutMode = TimetableLayoutMode.SCROLL,
-		randomTheme = false
+		randomTheme = false,
+		paletteCourses
 	} = input;
 	const compact = layoutMode === TimetableLayoutMode.FIT;
 	const visibleDayCount = visibleDays.length;
 	if (visibleDayCount === 0) return [];
 
-	const easterEggByName = randomTheme
-		? assignEasterEggCourseColors(courseDisplayModels.map((model) => model.course))
-		: null;
+	const paletteByName = assignCourseDisplayColors(
+		paletteCourses ?? courseDisplayModels.map((model) => model.course),
+		randomTheme
+	);
 	const visibleDayIndexMap = new Map(visibleDays.map((day, index) => [day.dayOfWeek, index]));
 	const columnFraction = 100 / visibleDayCount;
 	const items: PlacedItem[] = [];
@@ -159,7 +162,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					columnWidthPx,
 					overlapCount: 1,
 					isDark,
-					easterEggByName,
+					paletteByName,
 					compact,
 					key: `${key}:${displayModel.course.id}`
 				})
@@ -194,7 +197,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					columnWidthPx,
 					overlapCount: count,
 					isDark,
-					easterEggByName,
+					paletteByName,
 					compact,
 					key: `${key}:${displayModel.course.id}`
 				})
@@ -212,7 +215,7 @@ function placeCourseCapsule(options: {
 	columnWidthPx: number;
 	overlapCount: number;
 	isDark: boolean;
-	easterEggByName: Map<string, CoursePaletteEntry> | null;
+	paletteByName: Map<string, CoursePaletteEntry>;
 	compact: boolean;
 	key: string;
 }): PlacedCourseCapsule {
@@ -223,7 +226,7 @@ function placeCourseCapsule(options: {
 		columnWidthPx,
 		overlapCount,
 		isDark,
-		easterEggByName,
+		paletteByName,
 		compact,
 		key
 	} = options;
@@ -248,7 +251,7 @@ function placeCourseCapsule(options: {
 			startPeriod: course.startPeriod,
 			endPeriod: course.endPeriod
 		},
-		colors: courseColors(course, isDark, easterEggByName),
+		colors: courseColors(course, isDark, paletteByName),
 		scale,
 		locationLines,
 		locationMetrics,
@@ -378,9 +381,9 @@ export function blendColors(background: string, surface: string, ratio: number):
 function courseColors(
 	course: Course,
 	isDark: boolean,
-	easterEggByName: Map<string, CoursePaletteEntry> | null
+	paletteByName: Map<string, CoursePaletteEntry>
 ): { background: string; text: string } {
-	const remapped = easterEggByName?.get(normalizedCourseName(course.name)) ?? null;
+	const remapped = paletteByName.get(normalizedCourseName(course.name)) ?? null;
 	const rawBackground = remapped?.background ?? parseColor(course.color);
 	if (isDark) {
 		return {

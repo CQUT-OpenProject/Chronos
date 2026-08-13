@@ -103,6 +103,7 @@
 					{hasWallpaper}
 					{isDark}
 					{randomTheme}
+					paletteCourses={screenState.appState.currentTimetable?.courses}
 					{layoutMode}
 					onCourseClick={(course) => onCourseClick(course.id)}
 					onCourseLongClick={(course) => onCourseLongClick(course.id)}

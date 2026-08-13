@@ -4,9 +4,9 @@ const COURSE_PALETTE: [string, string][] = [
 	['#EADDFF', '#21005D'],
 	['#FFDBC9', '#311100'],
 	['#C4EED0', '#072711'],
-	['#F9DEDC', '#410E0B'],
 	['#D3E3FD', '#041E49'],
-	['#FFD8E4', '#31111D']
+	['#FFD8E4', '#31111D'],
+	['#F6E1B0', '#241A00']
 ];
 
 const EASTER_EGG_COURSE_BACKGROUNDS = [
@@ -14,7 +14,8 @@ const EASTER_EGG_COURSE_BACKGROUNDS = [
 	'#FFBBCC',
 	'#4477CC',
 	'#9977CC',
-	'#EE5577'
+	'#EE5577',
+	'#4D5B4C'
 ] as const;
 
 export const COURSE_PALETTE_ENTRIES: CoursePaletteEntry[] = COURSE_PALETTE.map(
@@ -48,29 +49,6 @@ const DEFAULT_PALETTE_BACKGROUNDS = new Set(
 	COURSE_PALETTE.map(([background]) => background.toLowerCase())
 );
 
-export function assignEasterEggCourseColors(
-	courses: { name: string; color: string }[]
-): Map<string, CoursePaletteEntry> {
-	const names = [
-		...new Set(
-			courses
-				.filter((course) => DEFAULT_PALETTE_BACKGROUNDS.has(course.color.trim().toLowerCase()))
-				.map((course) => normalizedCourseName(course.name))
-		)
-	];
-	names.sort(
-		(left, right) =>
-			kotlinStringHashCode(left) - kotlinStringHashCode(right) || left.localeCompare(right)
-	);
-	return new Map(
-		names.map((name, index) => {
-			const background =
-				EASTER_EGG_COURSE_BACKGROUNDS[index % EASTER_EGG_COURSE_BACKGROUNDS.length]!;
-			return [name, { background, foreground: onColorForBackground(background) }];
-		})
-	);
-}
-
 function onColorForBackground(hex: string): string {
 	return relativeLuminance(hex) > 0.55 ? '#1a1a1a' : '#fff';
 }
@@ -82,4 +60,27 @@ function relativeLuminance(hex: string): number {
 		return srgb <= 0.03928 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
 	};
 	return 0.2126 * channel(16) + 0.7152 * channel(8) + 0.0722 * channel(0);
+}
+
+const EASTER_EGG_PALETTE_ENTRIES: CoursePaletteEntry[] = EASTER_EGG_COURSE_BACKGROUNDS.map(
+	(background) => ({ background, foreground: onColorForBackground(background) })
+);
+
+export function assignCourseDisplayColors(
+	courses: { name: string; color: string }[],
+	randomTheme = false
+): Map<string, CoursePaletteEntry> {
+	const palette = randomTheme ? EASTER_EGG_PALETTE_ENTRIES : COURSE_PALETTE_ENTRIES;
+	const names = [
+		...new Set(
+			courses
+				.filter((course) => DEFAULT_PALETTE_BACKGROUNDS.has(course.color.trim().toLowerCase()))
+				.map((course) => normalizedCourseName(course.name))
+		)
+	];
+	names.sort(
+		(left, right) =>
+			kotlinStringHashCode(left) - kotlinStringHashCode(right) || left.localeCompare(right)
+	);
+	return new Map(names.map((name, index) => [name, palette[index % palette.length]!]));
 }
