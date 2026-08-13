@@ -332,7 +332,7 @@
 						>
 							<div
 								class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
-									? 'bg-brand text-on-primary'
+									? 'bg-secondary text-on-secondary'
 									: ''}"
 							>
 								<span class="m3-body-medium font-bold">

@@ -74,17 +74,18 @@
 			if (elements.length === 0) return;
 			const first = elements[0];
 			const last = elements[elements.length - 1];
-			if (event.shiftKey && document.activeElement === first) {
+			const active = document.activeElement;
+			if (event.shiftKey && (active === first || active === node)) {
 				event.preventDefault();
 				last.focus();
-			} else if (!event.shiftKey && document.activeElement === last) {
+			} else if (!event.shiftKey && active === last) {
 				event.preventDefault();
 				first.focus();
 			}
 		}
 
 		node.addEventListener('keydown', onKeydown);
-		queueMicrotask(() => getFocusable()[0]?.focus());
+		queueMicrotask(() => node.focus());
 
 		return () => node.removeEventListener('keydown', onKeydown);
 	}
@@ -138,11 +139,9 @@
 
 {#snippet importMethodCard(Icon: typeof DownloadFill, title: string, description: string)}
 	<Card variant="outlined" class="flex items-start gap-3.5">
-		<div
-			class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand"
-		>
-			<Icon class="h-5 w-5" />
-		</div>
+		<span class="m3-leading-icon tone-primary" aria-hidden="true">
+			<Icon />
+		</span>
 		<div class="flex min-w-0 flex-1 flex-col justify-center">
 			<p class="m3-body-large text-on-surface">{title}</p>
 			<p class="m3-body-small text-on-surface-variant">{description}</p>
@@ -152,10 +151,11 @@
 
 {#if onboardingController.open}
 	<div
-		class="fixed inset-0 z-[85] flex flex-col bg-canvas text-ink"
+		class="fixed inset-0 z-[85] flex flex-col bg-canvas text-ink outline-none"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby={stepTitleId}
+		tabindex="-1"
 		{@attach dialogAttach}
 		transition:fade={{ duration: stepTransitionDuration }}
 	>
@@ -237,11 +237,9 @@
 													? 'border-brand ring-1 ring-brand'
 													: ''}"
 											>
-												<div
-													class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand"
-												>
-													<option.Icon class="h-5 w-5" />
-												</div>
+												<span class="m3-leading-icon tone-primary" aria-hidden="true">
+													<option.Icon />
+												</span>
 												<div class="flex min-w-0 flex-1 flex-col justify-center">
 													<p class="m3-body-large text-on-surface">{option.label}</p>
 													<p class="m3-body-small text-on-surface-variant">
