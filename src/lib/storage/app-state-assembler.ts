@@ -27,6 +27,7 @@ export function assembleAppState(
 		wallpaperUri,
 		currentTimetable: currentTimetable ? copyForStateBoundary(currentTimetable) : null,
 		themeMode: preferences.themeMode,
-		timetableLayoutMode: preferences.timetableLayoutMode
+		timetableLayoutMode: preferences.timetableLayoutMode,
+		randomTheme: preferences.randomTheme
 	};
 }

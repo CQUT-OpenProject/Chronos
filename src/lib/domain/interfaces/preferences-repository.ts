@@ -6,4 +6,5 @@ export interface PreferencesRepository {
 	setWallpaper(wallpaper: Blob | null): Promise<void>;
 	setThemeMode(mode: ThemeMode): Promise<void>;
 	setTimetableLayoutMode(mode: TimetableLayoutMode): Promise<void>;
+	setRandomTheme(enabled: boolean): Promise<void>;
 }

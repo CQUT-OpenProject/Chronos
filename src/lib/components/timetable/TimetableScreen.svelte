@@ -29,6 +29,7 @@
 	const startWeek = $derived(screenState.startWeek);
 	const endWeek = $derived(screenState.endWeek);
 	const isDark = $derived(shell.state.isDark);
+	const randomTheme = $derived(shell.state.appState.randomTheme);
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
 	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
 
@@ -171,6 +172,7 @@
 				{screen}
 				{hasWallpaper}
 				{isDark}
+				{randomTheme}
 				{layoutMode}
 				{onCourseClick}
 				{onCourseLongClick}

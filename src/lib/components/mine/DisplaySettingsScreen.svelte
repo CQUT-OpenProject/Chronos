@@ -3,6 +3,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import Radio from '$lib/components/ui/Radio.svelte';
+	import Switch from '$lib/components/ui/Switch.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import {
@@ -10,12 +11,14 @@
 		DarkModeFill,
 		FullscreenFill,
 		LightModeFill,
+		PaletteFill,
 		ScheduleFill
 	} from '$lib/icons';
 
 	let { shell }: { shell: AppShellController } = $props();
 	const themeMode = $derived(shell.state.appState.themeMode);
 	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
+	const randomTheme = $derived(shell.state.appState.randomTheme);
 
 	const themeOptions = [
 		{
@@ -67,6 +70,10 @@
 		trackEvent('settings_layout_change', { mode });
 		await shell.setTimetableLayoutMode(mode);
 	}
+
+	async function selectRandomTheme(enabled: boolean) {
+		await shell.setRandomTheme(enabled);
+	}
 </script>
 
 <div class="flex flex-col gap-5">
@@ -90,6 +97,20 @@
 				{/snippet}
 			</MineRow>
 		{/each}
+	</MineSection>
+
+	<MineSection title="配色">
+		<MineRow
+			label
+			title="随机主题"
+			supporting="随机生成的配色方案，不定时变更"
+			icon={PaletteFill}
+			iconTone="primary"
+		>
+			{#snippet trailing()}
+				<Switch checked={randomTheme} onCheckedChange={selectRandomTheme} />
+			{/snippet}
+		</MineRow>
 	</MineSection>
 
 	<MineSection title="课表显示样式">

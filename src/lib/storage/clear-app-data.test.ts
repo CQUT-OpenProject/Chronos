@@ -81,14 +81,16 @@ describe('clearAllAppData', () => {
 			getSnapshot: vi.fn(() => ({
 				currentTimetableId: null,
 				themeMode: ThemeMode.SYSTEM,
-				timetableLayoutMode: TimetableLayoutMode.SCROLL
+				timetableLayoutMode: TimetableLayoutMode.SCROLL,
+				randomTheme: false
 			})),
 			reloadFromStorage() {
 				reloadFromStorageCalls += 1;
 			},
 			setCurrentTimetableId: vi.fn(),
 			setThemeMode: vi.fn(),
-			setTimetableLayoutMode: vi.fn()
+			setTimetableLayoutMode: vi.fn(),
+			setRandomTheme: vi.fn()
 		};
 		vi.stubGlobal('localStorage', createMemoryStorage({ 'chronos:credential': 'x' }));
 		vi.stubGlobal('sessionStorage', createMemoryStorage({ 'chronos:import-preview': 'y' }));

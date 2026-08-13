@@ -28,6 +28,7 @@
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasWallpaper: boolean;
 		isDark?: boolean;
+		randomTheme?: boolean;
 		layoutMode?: TimetableLayoutMode;
 		onCourseClick?: (course: Course) => void;
 		onCourseLongClick?: (course: Course) => void;
@@ -40,6 +41,7 @@
 		courseDisplayModels,
 		hasWallpaper,
 		isDark = false,
+		randomTheme = false,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		onCourseClick,
 		onCourseLongClick
@@ -63,6 +65,7 @@
 			columnWidthPx,
 			expandedSlotKeys: expandedSlots,
 			isDark,
+			randomTheme,
 			layoutMode
 		})
 	);

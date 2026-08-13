@@ -13,6 +13,7 @@
 		screen,
 		hasWallpaper,
 		isDark,
+		randomTheme,
 		layoutMode,
 		onCourseClick,
 		onCourseLongClick
@@ -20,6 +21,7 @@
 		screen: TimetableScreenController;
 		hasWallpaper: boolean;
 		isDark: boolean;
+		randomTheme: boolean;
 		layoutMode: TimetableLayoutMode;
 		onCourseClick: (courseId: string) => void;
 		onCourseLongClick: (courseId: string) => void;
@@ -100,6 +102,7 @@
 					courseDisplayModels={courseModels}
 					{hasWallpaper}
 					{isDark}
+					{randomTheme}
 					{layoutMode}
 					onCourseClick={(course) => onCourseClick(course.id)}
 					onCourseLongClick={(course) => onCourseLongClick(course.id)}

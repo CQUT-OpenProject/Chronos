@@ -63,6 +63,10 @@ export function createAppShell() {
 		await getServices().preferences.setTimetableLayoutMode(mode);
 	}
 
+	async function setRandomTheme(enabled: boolean) {
+		await getServices().preferences.setRandomTheme(enabled);
+	}
+
 	async function setWallpaper(wallpaper: Blob | null) {
 		await getServices().preferences.setWallpaper(wallpaper);
 	}
@@ -84,6 +88,7 @@ export function createAppShell() {
 		destroy,
 		setThemeMode,
 		setTimetableLayoutMode,
+		setRandomTheme,
 		setWallpaper,
 		clearAllData,
 		get services() {

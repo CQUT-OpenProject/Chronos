@@ -45,6 +45,10 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		disposeEffects = $effect.root(() => {
 			$effect(() => {
 				document.documentElement.classList.toggle('dark', deps.shell.state.isDark);
+				document.documentElement.classList.toggle(
+					'theme-random',
+					Boolean(deps.shell.state.appState.randomTheme)
+				);
 				document.documentElement.style.colorScheme = deps.shell.state.isDark ? 'dark' : 'light';
 			});
 

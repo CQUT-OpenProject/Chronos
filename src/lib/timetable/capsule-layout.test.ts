@@ -155,6 +155,69 @@ describe('placeCapsules', () => {
 		expect(item.colors.background).toBe('#EADDFF');
 	});
 
+	it('remaps default palette colors when randomTheme is on', () => {
+		const off = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			isDark: false
+		});
+		const on = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			isDark: false,
+			randomTheme: true
+		});
+		expect(off[0]?.kind).toBe('course');
+		expect(on[0]?.kind).toBe('course');
+		if (off[0]?.kind !== 'course' || on[0]?.kind !== 'course') return;
+		expect(off[0].colors.background).toBe('#EADDFF');
+		expect(on[0].colors.background).toBe('#FFEE55');
+		expect(on[0].colors.text).toBe('#1a1a1a');
+	});
+
+	it('spreads five default-palette courses across all easter-egg colors', () => {
+		const models = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1),
+			courseModel('d', 2, 3, 3),
+			courseModel('e', 3, 1, 1)
+		];
+		const items = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			isDark: false,
+			randomTheme: true
+		});
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(backgrounds).toHaveLength(5);
+		expect(new Set(backgrounds)).toEqual(
+			new Set(['#FFEE55', '#FFBBCC', '#4477CC', '#9977CC', '#EE5577'])
+		);
+	});
+
+	it('leaves custom course colors unchanged when randomTheme is on', () => {
+		const [item] = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1, { color: '#123456' })],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			isDark: false,
+			randomTheme: true
+		});
+		expect(item?.kind).toBe('course');
+		if (item?.kind !== 'course') return;
+		expect(item.colors.background).toBe('#123456');
+	});
+
 	it('emits an overlap placeholder until the slot is expanded', () => {
 		const models = [courseModel('a', 1, 1, 2), courseModel('b', 1, 2, 3)];
 		const key = periodSlotKey(1, 1, 3);
@@ -234,7 +297,7 @@ function courseModel(
 	dayOfWeek: number,
 	startPeriod: number,
 	endPeriod: number,
-	options?: { location?: string; isInDisplayedWeek?: boolean }
+	options?: { location?: string; isInDisplayedWeek?: boolean; color?: string }
 ) {
 	return {
 		course: {
@@ -245,7 +308,7 @@ function courseModel(
 			dayOfWeek,
 			startPeriod,
 			endPeriod,
-			color: '#EADDFF',
+			color: options?.color ?? '#EADDFF',
 			textColor: '#21005D',
 			weeks: [1],
 			remark: ''

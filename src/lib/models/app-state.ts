@@ -60,6 +60,7 @@ export interface AppState {
 	currentTimetable: Timetable | null;
 	themeMode: ThemeMode;
 	timetableLayoutMode: TimetableLayoutMode;
+	randomTheme: boolean;
 }
 
 export function emptyAppState(): AppState {
@@ -69,6 +70,7 @@ export function emptyAppState(): AppState {
 		wallpaperUri: null,
 		currentTimetable: null,
 		themeMode: ThemeMode.SYSTEM,
-		timetableLayoutMode: TimetableLayoutMode.SCROLL
+		timetableLayoutMode: TimetableLayoutMode.SCROLL,
+		randomTheme: false
 	};
 }

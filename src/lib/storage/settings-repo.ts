@@ -11,12 +11,14 @@ export interface UserPreferenceState {
 	currentTimetableId: string | null;
 	themeMode: ThemeMode;
 	timetableLayoutMode: TimetableLayoutMode;
+	randomTheme: boolean;
 }
 
 const KEYS = {
 	currentTimetableId: 'current_timetable_id',
 	themeMode: 'theme_mode',
-	timetableLayoutMode: 'timetable_layout_mode'
+	timetableLayoutMode: 'timetable_layout_mode',
+	randomTheme: 'random_theme'
 } as const;
 
 const STORAGE_PREFIX = 'chronos_preferences:';
@@ -39,7 +41,8 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 			return {
 				currentTimetableId: null,
 				themeMode: ThemeMode.SYSTEM,
-				timetableLayoutMode: TimetableLayoutMode.SCROLL
+				timetableLayoutMode: TimetableLayoutMode.SCROLL,
+				randomTheme: false
 			};
 		}
 
@@ -48,7 +51,8 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 			themeMode: themeModeFromStorage(target.getItem(storageKey(KEYS.themeMode))),
 			timetableLayoutMode: timetableLayoutModeFromStorage(
 				target.getItem(storageKey(KEYS.timetableLayoutMode))
-			)
+			),
+			randomTheme: target.getItem(storageKey(KEYS.randomTheme)) === '1'
 		};
 	}
 
@@ -94,6 +98,9 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 		},
 		setTimetableLayoutMode(mode: TimetableLayoutMode) {
 			setString(KEYS.timetableLayoutMode, timetableLayoutModeToStorage(mode));
+		},
+		setRandomTheme(enabled: boolean) {
+			setString(KEYS.randomTheme, enabled ? '1' : null);
 		}
 	};
 }

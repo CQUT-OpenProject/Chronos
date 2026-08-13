@@ -51,6 +51,27 @@
 		--color-outline-variant: #2e3038;
 		--color-border-subtle: #2e3038;
 	}
+
+	.theme-random {
+		--ee-primary: #2288dd;
+		--ee-secondary: #ff7788;
+		--color-primary: var(--ee-primary);
+		--color-primary-dim: var(--ee-primary);
+		--color-on-primary: #fff;
+		--color-primary-container: var(--ee-primary);
+		--color-on-primary-container: #fff;
+		--color-inverse-primary: var(--ee-primary);
+		--color-on-on-primary: var(--ee-primary);
+		--color-primary-container-subtle: var(--ee-primary);
+		--color-on-primary-container-subtle: #fff;
+		--color-secondary: var(--ee-secondary);
+		--color-secondary-dim: var(--ee-secondary);
+		--color-on-secondary: #fff;
+		--color-secondary-container: var(--ee-secondary);
+		--color-on-secondary-container: #fff;
+		--color-secondary-container-subtle: var(--ee-secondary);
+		--color-on-secondary-container-subtle: #fff;
+	}
 }
 
 @layer base {
@@ -109,4 +130,12 @@
 		min-height: calc(3.5rem + var(--topbar-safe));
 		padding-top: calc(0.5rem + var(--topbar-safe));
 	}
+}
+
+.theme-random .m3-leading-icon.tone-primary,
+.theme-random .m3-leading-icon.tone-secondary,
+.theme-random .m3-leading-icon.tone-tertiary,
+.theme-random .m3-leading-icon.tone-neutral {
+	background-color: color-mix(in srgb, var(--color-secondary-container) 75%, transparent);
+	color: var(--color-on-secondary-container);
 }

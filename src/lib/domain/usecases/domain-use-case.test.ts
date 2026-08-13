@@ -42,13 +42,15 @@ class FakeAppBackend {
 	wallpaperUri: string | null = null;
 	themeMode = ThemeMode.SYSTEM;
 	timetableLayoutMode = TimetableLayoutMode.SCROLL;
+	randomTheme = false;
 	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
 		wallpaperUri: null,
 		currentTimetable: null,
 		themeMode: ThemeMode.SYSTEM,
-		timetableLayoutMode: TimetableLayoutMode.SCROLL
+		timetableLayoutMode: TimetableLayoutMode.SCROLL,
+		randomTheme: false
 	};
 
 	syncState() {
@@ -67,7 +69,8 @@ class FakeAppBackend {
 			wallpaperUri: this.wallpaperUri,
 			currentTimetable: current,
 			themeMode: this.themeMode,
-			timetableLayoutMode: this.timetableLayoutMode
+			timetableLayoutMode: this.timetableLayoutMode,
+			randomTheme: this.randomTheme
 		};
 	}
 }
@@ -166,6 +169,11 @@ class FakePreferencesRepository implements PreferencesRepository {
 
 	async setTimetableLayoutMode(mode: TimetableLayoutMode): Promise<void> {
 		this.backend.timetableLayoutMode = mode;
+		this.backend.syncState();
+	}
+
+	async setRandomTheme(enabled: boolean): Promise<void> {
+		this.backend.randomTheme = enabled;
 		this.backend.syncState();
 	}
 }
