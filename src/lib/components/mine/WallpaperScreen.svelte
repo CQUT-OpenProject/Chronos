@@ -23,6 +23,7 @@
 	const appState = $derived(shell.state.appState);
 	const hasWallpaper = $derived(shell.state.hasWallpaper);
 	const isDark = $derived(shell.state.isDark);
+	const coursePalette = $derived(shell.appearance.coursePalette);
 	const timetable = $derived(appState.currentTimetable);
 	const today = $derived(timeProvider.today());
 	const academicWeek = $derived(invokeCalculateAcademicWeek(today, timetable?.academicConfig));
@@ -89,8 +90,7 @@
 					{courseDisplayModels}
 					hasWallpaper={true}
 					{isDark}
-					paletteMode={appState.paletteMode}
-					wallpaperCoursePalette={shell.wallpaperCoursePalette}
+					{coursePalette}
 					paletteCourses={timetable.courses}
 				/>
 			</div>

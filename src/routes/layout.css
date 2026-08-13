@@ -72,6 +72,16 @@
 		--color-secondary-container-subtle: var(--ee-secondary);
 		--color-on-secondary-container-subtle: #fff;
 	}
+
+	.period-active {
+		background-color: var(--color-brand);
+		color: var(--color-on-primary);
+	}
+
+	.theme-random .period-active {
+		background-color: transparent;
+		background-image: linear-gradient(to bottom, var(--ee-secondary), var(--ee-primary));
+	}
 }
 
 @layer base {

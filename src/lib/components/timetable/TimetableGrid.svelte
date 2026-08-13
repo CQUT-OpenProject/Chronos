@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
 	import type { Course } from '$lib/models/course';
-	import { TimetableLayoutMode, PaletteMode } from '$lib/models/app-state';
+	import { TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
@@ -17,7 +17,7 @@
 		findCurrentPeriodIndex,
 		parsePeriodRanges
 	} from '$lib/timetable/period-clock';
-	import { resolveCoursePalette, type CoursePaletteEntry } from '$lib/parsers/course-palette';
+	import { type CoursePaletteEntry } from '$lib/parsers/course-palette';
 
 	const FIT_MIN_FONT_PX = 6;
 	const SCROLL_ROW_HEIGHT = '5.5rem';
@@ -29,8 +29,7 @@
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasWallpaper: boolean;
 		isDark?: boolean;
-		paletteMode?: PaletteMode;
-		wallpaperCoursePalette?: CoursePaletteEntry[] | null;
+		coursePalette: readonly CoursePaletteEntry[];
 		paletteCourses?: { name: string; color: string }[];
 		layoutMode?: TimetableLayoutMode;
 		onCourseClick?: (course: Course) => void;
@@ -44,8 +43,7 @@
 		courseDisplayModels,
 		hasWallpaper,
 		isDark = false,
-		paletteMode = PaletteMode.DEFAULT,
-		wallpaperCoursePalette = null,
+		coursePalette,
 		paletteCourses,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		onCourseClick,
@@ -62,9 +60,6 @@
 	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
-
-	const randomTheme = $derived(paletteMode === PaletteMode.RANDOM);
-	const coursePalette = $derived(resolveCoursePalette(paletteMode, wallpaperCoursePalette));
 
 	const placements = $derived(
 		placeCapsules({
@@ -341,13 +336,8 @@
 						>
 							<div
 								class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
-									? randomTheme
-										? 'text-on-primary'
-										: 'bg-brand text-on-primary'
+									? 'period-active'
 									: ''}"
-								style:background-image={isActive && randomTheme
-									? 'linear-gradient(to bottom, var(--ee-secondary), var(--ee-primary))'
-									: undefined}
 							>
 								<span class="m3-body-medium font-bold">
 									{period.index}

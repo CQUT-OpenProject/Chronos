@@ -1,7 +1,6 @@
 import type { AppShellController } from '$lib/app/app-shell.svelte';
 import { trackEvent } from '$lib/client/analytics';
 import type { CourseDraft } from '$lib/models/drafts';
-import { resolveCoursePalette } from '$lib/parsers/course-palette';
 import { courseToDraft } from '$lib/timetable/timetable-mappers';
 
 function emptyDraft(): CourseDraft {
@@ -29,9 +28,7 @@ export function createCourseEditor(
 
 	const timetable = $derived(shell.state.appState.currentTimetable);
 	const canSave = $derived(Boolean(draft?.name.trim()));
-	const coursePalette = $derived(
-		resolveCoursePalette(shell.state.appState.paletteMode, shell.wallpaperCoursePalette)
-	);
+	const coursePalette = $derived(shell.appearance.coursePalette);
 
 	function syncFromRoute() {
 		const courseId = getCourseId();

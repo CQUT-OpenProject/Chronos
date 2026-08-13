@@ -68,8 +68,14 @@ vi.mock('$lib/client/onboarding.svelte', () => ({
 import { createPlatformBootstrap, type PlatformBootstrapDeps } from './platform-bootstrap.svelte';
 
 describe('createPlatformBootstrap', () => {
+	const appearance = {
+		apply: vi.fn(),
+		reset: vi.fn(),
+		coursePalette: []
+	};
 	const shell = {
 		init: vi.fn(),
+		appearance,
 		state: { isDark: false, appState: {}, initialized: false, hasWallpaper: false }
 	};
 	const timetableScreen = {
@@ -109,6 +115,7 @@ describe('createPlatformBootstrap', () => {
 
 		teardown();
 		expect(mocks.connectivityDestroy).toHaveBeenCalled();
+		expect(appearance.reset).toHaveBeenCalled();
 	});
 
 	it('is idempotent on repeated init', () => {
