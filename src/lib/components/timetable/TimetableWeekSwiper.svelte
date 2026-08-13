@@ -13,7 +13,6 @@
 	let {
 		screen,
 		hasWallpaper,
-		isDark,
 		coursePalette,
 		layoutMode,
 		onCourseClick,
@@ -21,7 +20,6 @@
 	}: {
 		screen: TimetableScreenController;
 		hasWallpaper: boolean;
-		isDark: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
 		layoutMode: TimetableLayoutMode;
 		onCourseClick: (courseId: string) => void;
@@ -102,7 +100,6 @@
 					{gridModel}
 					courseDisplayModels={courseModels}
 					{hasWallpaper}
-					{isDark}
 					{coursePalette}
 					{layoutMode}
 					onCourseClick={(course) => onCourseClick(course.id)}

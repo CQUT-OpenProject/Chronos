@@ -28,7 +28,6 @@
 		gridModel: TimetableGridModel;
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasWallpaper: boolean;
-		isDark?: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
 		layoutMode?: TimetableLayoutMode;
 		onCourseClick?: (course: Course) => void;
@@ -41,7 +40,6 @@
 		gridModel,
 		courseDisplayModels,
 		hasWallpaper,
-		isDark = false,
 		coursePalette,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		onCourseClick,
@@ -65,7 +63,6 @@
 			visibleDays: gridModel.visibleDays,
 			columnWidthPx,
 			expandedSlotKeys: expandedSlots,
-			isDark,
 			coursePalette,
 			layoutMode
 		})
@@ -394,12 +391,12 @@
 	{@const handlers = courseCardHandlers(placed.course)}
 	<button
 		type="button"
-		class="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left shadow-md {placed
+		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left shadow-md {placed
 			.displayModel.isInDisplayedWeek
 			? ''
 			: 'opacity-45'}"
-		style:background-color={colors.background}
-		style:border-color="color-mix(in srgb, {colors.text} 12%, transparent)"
+		style:--capsule={colors.background}
+		style:--capsule-fg={colors.text}
 		aria-label={buildCourseCapsuleAriaLabel(placed.course, { teacher })}
 		aria-keyshortcuts="Shift+Enter"
 		oncontextmenu={handlers.oncontextmenu}
@@ -414,8 +411,8 @@
 			<span class="mb-0.5 flex w-full shrink-0 justify-center">
 				<span
 					class="max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap"
-					style:background-color="color-mix(in srgb, {colors.text} 12%, transparent)"
-					style:color="color-mix(in srgb, {colors.text} 80%, transparent)"
+					style:background-color="color-mix(in srgb, currentColor 12%, transparent)"
+					style:color="color-mix(in srgb, currentColor 80%, transparent)"
 					style:font-size="{scale.badgePx}px"
 					{@attach fitWidthFont(() => ({
 						lines: [placed.badgeLabel!],
@@ -430,12 +427,12 @@
 		<MiddleTruncateText
 			text={placed.course.name}
 			class="min-h-0 flex-1 leading-tight font-medium"
-			style="color: {colors.text}; font-size: {scale.titlePx}px"
+			style="font-size: {scale.titlePx}px"
 		/>
 		{#if locationLines.length > 0}
 			<div
 				class="mt-1.5 shrink-0 overflow-hidden leading-tight"
-				style="color: color-mix(in srgb, {colors.text} 80%, transparent); font-size: {locationMetrics.fontPx}px; height: {locationMetrics.heightPx}px"
+				style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {locationMetrics.fontPx}px; height: {locationMetrics.heightPx}px"
 				{@attach fitWidthFont(() => ({
 					lines: locationLines,
 					maxFontPx: locationMetrics.fontPx
@@ -449,7 +446,7 @@
 		{#if teacher}
 			<div
 				class="mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap"
-				style="color: color-mix(in srgb, {colors.text} 80%, transparent); font-size: {scale.detailPx}px"
+				style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {scale.detailPx}px"
 				{@attach fitWidthFont(() => ({ lines: [teacher], maxFontPx: scale.detailPx }))}
 			>
 				{teacher}

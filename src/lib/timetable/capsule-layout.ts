@@ -8,8 +8,6 @@ import {
 } from '$lib/parsers/course-palette';
 import { periodSlotKey } from './slot-key';
 
-const DARK_SURFACE = '#17171a';
-const ON_SURFACE_DARK = '#f4f4f5';
 const BADGE_LABEL = '非本周';
 
 /** Hide “xx校区” when effective column width is below this. */
@@ -67,7 +65,6 @@ export interface PlaceCapsulesInput {
 	visibleDays: { dayOfWeek: number }[];
 	columnWidthPx: number;
 	expandedSlotKeys: ReadonlySet<string>;
-	isDark: boolean;
 	layoutMode?: TimetableLayoutMode;
 	coursePalette?: readonly CoursePaletteEntry[];
 }
@@ -128,7 +125,6 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		visibleDays,
 		columnWidthPx,
 		expandedSlotKeys,
-		isDark,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		coursePalette = COURSE_PALETTE_ENTRIES
 	} = input;
@@ -155,7 +151,6 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					widthPercent: columnFraction,
 					columnWidthPx,
 					overlapCount: 1,
-					isDark,
 					coursePalette,
 					compact,
 					key: `${key}:${displayModel.course.id}`
@@ -190,7 +185,6 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					widthPercent: perCourseWidth,
 					columnWidthPx,
 					overlapCount: count,
-					isDark,
 					coursePalette,
 					compact,
 					key: `${key}:${displayModel.course.id}`
@@ -208,7 +202,6 @@ function placeCourseCapsule(options: {
 	widthPercent: number;
 	columnWidthPx: number;
 	overlapCount: number;
-	isDark: boolean;
 	coursePalette: readonly CoursePaletteEntry[];
 	compact: boolean;
 	key: string;
@@ -219,7 +212,6 @@ function placeCourseCapsule(options: {
 		widthPercent,
 		columnWidthPx,
 		overlapCount,
-		isDark,
 		coursePalette,
 		compact,
 		key
@@ -245,7 +237,7 @@ function placeCourseCapsule(options: {
 			startPeriod: course.startPeriod,
 			endPeriod: course.endPeriod
 		},
-		colors: courseColors(course, isDark, coursePalette),
+		colors: courseColors(course, coursePalette),
 		scale,
 		locationLines,
 		locationMetrics,
@@ -364,29 +356,13 @@ export function parseColor(hex: string): string {
 	return /^#[0-9A-Fa-f]{6}$/.test(normalized) ? normalized : '#EADDFF';
 }
 
-export function blendColors(background: string, surface: string, ratio: number): string {
-	const bg = hexToRgb(background);
-	const sf = hexToRgb(surface);
-	if (!bg || !sf) return background;
-	const mix = (left: number, right: number) => Math.round(left * (1 - ratio) + right * ratio);
-	return rgbToHex(mix(bg.r, sf.r), mix(bg.g, sf.g), mix(bg.b, sf.b));
-}
-
 function courseColors(
 	course: Course,
-	isDark: boolean,
 	coursePalette: readonly CoursePaletteEntry[]
 ): { background: string; text: string } {
 	const paint = resolveCoursePaint(course, coursePalette);
-	const rawBackground = parseColor(paint.background);
-	if (isDark) {
-		return {
-			background: blendColors(rawBackground, DARK_SURFACE, 0.58),
-			text: blendColors(ON_SURFACE_DARK, rawBackground, 0.18)
-		};
-	}
 	return {
-		background: rawBackground,
+		background: parseColor(paint.background),
 		text: parseColor(paint.foreground)
 	};
 }
@@ -459,19 +435,4 @@ function lerpAnchors(
 
 function roundPx(value: number): number {
 	return Math.round(value * 10) / 10;
-}
-
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-	const normalized = parseColor(hex).slice(1);
-	const value = Number.parseInt(normalized, 16);
-	if (Number.isNaN(value)) return null;
-	return {
-		r: (value >> 16) & 255,
-		g: (value >> 8) & 255,
-		b: value & 255
-	};
-}
-
-function rgbToHex(r: number, g: number, b: number): string {
-	return `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
 }

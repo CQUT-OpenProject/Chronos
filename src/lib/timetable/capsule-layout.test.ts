@@ -136,8 +136,7 @@ describe('placeCapsules', () => {
 			courseDisplayModels: [courseModel('a', 1, 2, 3, { location: '两江校区 弘远楼A0213' })],
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 
 		expect(items).toHaveLength(1);
@@ -161,15 +160,13 @@ describe('placeCapsules', () => {
 			courseDisplayModels: [courseModel('a', 1, 1, 1)],
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 		const on = placeCapsules({
 			courseDisplayModels: [courseModel('a', 1, 1, 1)],
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			isDark: false,
 			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
 		expect(off[0]?.kind).toBe('course');
@@ -191,7 +188,6 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			isDark: false,
 			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
 		const backgrounds = items
@@ -214,7 +210,6 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			isDark: false,
 			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
 		const backgrounds = items
@@ -229,7 +224,6 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			isDark: false,
 			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
 		expect(item?.kind).toBe('course');
@@ -245,8 +239,7 @@ describe('placeCapsules', () => {
 			courseDisplayModels: models,
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 		expect(collapsed).toHaveLength(1);
 		expect(collapsed[0]).toMatchObject({
@@ -259,8 +252,7 @@ describe('placeCapsules', () => {
 			courseDisplayModels: models,
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set([key]),
-			isDark: false
+			expandedSlotKeys: new Set([key])
 		});
 		expect(expanded).toHaveLength(2);
 		expect(expanded.every((item) => item.kind === 'course')).toBe(true);
@@ -270,27 +262,12 @@ describe('placeCapsules', () => {
 		expect(expanded[0].overlapCount).toBe(2);
 	});
 
-	it('blends course colors in dark mode', () => {
-		const [item] = placeCapsules({
-			courseDisplayModels: [courseModel('a', 1, 1, 1)],
-			visibleDays,
-			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: true
-		});
-		expect(item?.kind).toBe('course');
-		if (item?.kind !== 'course') return;
-		expect(item.colors.background).not.toBe('#EADDFF');
-		expect(item.colors.background.startsWith('#')).toBe(true);
-	});
-
 	it('hides campus lines when the column is narrow', () => {
 		const [item] = placeCapsules({
 			courseDisplayModels: [courseModel('a', 1, 1, 1, { location: '两江校区 弘远楼A0213' })],
 			visibleDays,
 			columnWidthPx: 69,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 		expect(item?.kind).toBe('course');
 		if (item?.kind !== 'course') return;
@@ -302,8 +279,7 @@ describe('placeCapsules', () => {
 			courseDisplayModels: [courseModel('a', 1, 1, 1, { isInDisplayedWeek: false })],
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 		expect(item?.kind).toBe('course');
 		if (item?.kind !== 'course') return;

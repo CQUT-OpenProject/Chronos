@@ -22,7 +22,6 @@
 
 	const appState = $derived(shell.state.appState);
 	const hasWallpaper = $derived(shell.state.hasWallpaper);
-	const isDark = $derived(shell.state.isDark);
 	const coursePalette = $derived(shell.appearance.coursePalette);
 	const timetable = $derived(appState.currentTimetable);
 	const today = $derived(timeProvider.today());
@@ -89,7 +88,6 @@
 					{gridModel}
 					{courseDisplayModels}
 					hasWallpaper={true}
-					{isDark}
 					{coursePalette}
 				/>
 			</div>

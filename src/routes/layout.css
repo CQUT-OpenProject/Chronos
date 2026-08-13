@@ -78,6 +78,19 @@
 		color: var(--color-on-primary);
 	}
 
+	/* Light: raw course paint. Dark: 42%/18% course mix (was layout blendColors 0.58/0.18). */
+	.course-capsule {
+		background-color: var(--capsule);
+		color: var(--capsule-fg);
+		border-color: color-mix(in srgb, var(--capsule-fg) 12%, transparent);
+	}
+
+	.dark .course-capsule {
+		background-color: color-mix(in srgb, var(--capsule) 42%, var(--color-surface));
+		color: color-mix(in srgb, var(--capsule) 18%, var(--color-on-surface));
+		border-color: color-mix(in srgb, currentColor 12%, transparent);
+	}
+
 	.theme-random .period-active {
 		background-color: transparent;
 		background-image: linear-gradient(to bottom, var(--ee-secondary), var(--ee-primary));
