@@ -32,6 +32,7 @@ export type AnalyticsEvent =
 	| 'export_copy_link'
 	| 'export_long_link_warning_shown'
 	| 'settings_theme_change'
+	| 'settings_color_scheme_change'
 	| 'settings_layout_change'
 	| 'wallpaper_set'
 	| 'wallpaper_clear'
@@ -51,7 +52,7 @@ let pending: Array<[AnalyticsEvent, Record<string, string | number | boolean> | 
 	null;
 
 export function initAnalytics() {
-	if (import.meta.env.DEV) return;
+	if (import.meta.env.DEV || !__ANALYTICS_ENABLED__) return;
 
 	const key = env.PUBLIC_POSTHOG_KEY;
 	if (!key) return;
