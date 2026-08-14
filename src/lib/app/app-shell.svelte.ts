@@ -1,4 +1,6 @@
+import { createAppearance } from '$lib/appearance/appearance.svelte';
 import {
+	PaletteMode,
 	ThemeMode,
 	TimetableLayoutMode,
 	type AppState,
@@ -19,6 +21,7 @@ export function createAppShell() {
 	let systemPrefersDark = $state(false);
 	let unsubscribe: (() => void) | null = null;
 	let mediaQueryCleanup: (() => void) | null = null;
+	const appearance = createAppearance();
 	let services: AppServices | null = null;
 
 	function getServices() {
@@ -63,6 +66,10 @@ export function createAppShell() {
 		await getServices().preferences.setTimetableLayoutMode(mode);
 	}
 
+	async function setPaletteMode(mode: PaletteMode) {
+		await getServices().preferences.setPaletteMode(mode);
+	}
+
 	async function setWallpaper(wallpaper: Blob | null) {
 		await getServices().preferences.setWallpaper(wallpaper);
 	}
@@ -80,10 +87,14 @@ export function createAppShell() {
 				hasWallpaper
 			};
 		},
+		get appearance() {
+			return appearance;
+		},
 		init,
 		destroy,
 		setThemeMode,
 		setTimetableLayoutMode,
+		setPaletteMode,
 		setWallpaper,
 		clearAllData,
 		get services() {

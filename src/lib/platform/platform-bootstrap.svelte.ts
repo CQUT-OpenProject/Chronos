@@ -3,6 +3,7 @@ import { credentialEnvironment } from '$lib/client/credential-environment.svelte
 import { connectivity } from '$lib/platform/connectivity.svelte';
 import { onboardingController } from '$lib/client/onboarding.svelte';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
+import { initAnalytics } from '$lib/client/analytics';
 import { initWebVitals } from '$lib/client/web-vitals';
 import { initNavigationStack } from '$lib/navigation/navigation-direction';
 import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
@@ -34,6 +35,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		deps.timetableScreen.init(deps.shell);
 		void pwaInstallController.init();
 		initWebVitals();
+		initAnalytics();
 		void ensureShareLinkBrotliReady();
 		window.__chronosHideBootFallback?.();
 
@@ -42,8 +44,13 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 
 		disposeEffects = $effect.root(() => {
 			$effect(() => {
-				document.documentElement.classList.toggle('dark', deps.shell.state.isDark);
-				document.documentElement.style.colorScheme = deps.shell.state.isDark ? 'dark' : 'light';
+				const isDark = deps.shell.state.isDark;
+				const paletteMode = deps.shell.state.appState.paletteMode;
+				const wallpaperUri = deps.shell.state.appState.wallpaperUri;
+
+				const ac = new AbortController();
+				void deps.shell.appearance.apply({ isDark, paletteMode, wallpaperUri }, ac.signal);
+				return () => ac.abort();
 			});
 
 			$effect(() => {
@@ -57,7 +64,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 			$effect(() => {
 				if (!onboardingController.open) return;
 				pwaInstallController.cancelScheduledDialog();
-				pwaInstallController.dismiss();
+				pwaInstallController.dismiss({ track: false });
 			});
 
 			$effect(() => {
@@ -69,6 +76,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		return () => {
 			disposeEffects?.();
 			disposeEffects = null;
+			deps.shell.appearance.reset();
 			disposeOfflineUx?.();
 			disposeOfflineUx = null;
 			connectivity.destroy();

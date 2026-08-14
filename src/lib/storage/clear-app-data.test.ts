@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { ThemeMode, TimetableLayoutMode } from '$lib/models/app-state';
+import { PaletteMode, ThemeMode, TimetableLayoutMode } from '$lib/models/app-state';
 import {
 	clearAllAppData,
 	estimateStorageBytes,
@@ -81,14 +81,16 @@ describe('clearAllAppData', () => {
 			getSnapshot: vi.fn(() => ({
 				currentTimetableId: null,
 				themeMode: ThemeMode.SYSTEM,
-				timetableLayoutMode: TimetableLayoutMode.SCROLL
+				timetableLayoutMode: TimetableLayoutMode.SCROLL,
+				paletteMode: PaletteMode.DEFAULT
 			})),
 			reloadFromStorage() {
 				reloadFromStorageCalls += 1;
 			},
 			setCurrentTimetableId: vi.fn(),
 			setThemeMode: vi.fn(),
-			setTimetableLayoutMode: vi.fn()
+			setTimetableLayoutMode: vi.fn(),
+			setPaletteMode: vi.fn()
 		};
 		vi.stubGlobal('localStorage', createMemoryStorage({ 'chronos:credential': 'x' }));
 		vi.stubGlobal('sessionStorage', createMemoryStorage({ 'chronos:import-preview': 'y' }));

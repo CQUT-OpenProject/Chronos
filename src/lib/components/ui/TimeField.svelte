@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { TimeField } from 'bits-ui';
-	import type { Time } from '@internationalized/date';
+	import { TimeField, type TimeValue } from 'bits-ui';
 	import { ScheduleFill } from '$lib/icons';
 	import { parseTimeString, timeToString } from '$lib/components/ui/time-field-utils';
 
@@ -26,7 +25,7 @@
 
 	const pickerValue = $derived(parseTimeString(value));
 
-	function handleValueChange(next: Time | undefined) {
+	function handleValueChange(next: TimeValue | undefined) {
 		const nextValue = timeToString(next);
 		value = nextValue;
 		onValueChange?.(nextValue);
@@ -37,7 +36,7 @@
 	value={pickerValue}
 	onValueChange={handleValueChange}
 	locale="zh-CN"
-	hourCycle="24"
+	hourCycle={24}
 	granularity="minute"
 	{disabled}
 >

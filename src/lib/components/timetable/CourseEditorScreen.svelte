@@ -7,6 +7,8 @@
 
 	let { editor }: { editor: CourseEditorController } = $props();
 
+	const draft = $derived(editor.draft);
+
 	let deleteDialogOpen = $state(false);
 
 	async function confirmDelete() {
@@ -15,10 +17,10 @@
 	}
 </script>
 
-{#if editor.draft}
+{#if draft}
 	{#snippet footer()}
 		<div class="flex w-full gap-3">
-			{#if editor.draft.id}
+			{#if draft.id}
 				<Button variant="danger" class="w-full flex-1" onclick={() => (deleteDialogOpen = true)}>
 					删除课程
 				</Button>
@@ -36,12 +38,13 @@
 
 	<FormScreenLayout {footer}>
 		<CourseEditorForm
-			draft={editor.draft}
+			{draft}
+			colors={editor.coursePalette}
 			maxPeriods={editor.timetable?.academicConfig.periodTimes.length ?? 10}
 		/>
 	</FormScreenLayout>
 
-	{#if editor.draft.id}
+	{#if draft.id}
 		<Dialog bind:open={deleteDialogOpen} title="删除课程？" description="删除后无法恢复。">
 			{#snippet footer()}
 				<Button variant="text" onclick={() => (deleteDialogOpen = false)}>取消</Button>
