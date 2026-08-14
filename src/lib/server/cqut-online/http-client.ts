@@ -1,10 +1,14 @@
+import { AppError } from '$lib/domain/result/app-error';
+import { failure, success, type AppResult } from '$lib/domain/result/app-result';
 import { HTTP_RETRY_DELAY_MS, REQUEST_TIMEOUT_MS } from './config';
 import type { CookieJar } from './cookie-jar';
+import { toUpstreamNetworkError } from './upstream-error';
 
 export interface HttpRequestOptions {
 	redirect?: RequestRedirect;
 	signal?: AbortSignal;
 	retryOnServerError?: boolean;
+	acceptStatus?: (status: number) => boolean;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -62,4 +66,23 @@ export async function request(
 
 	await sleep(HTTP_RETRY_DELAY_MS);
 	return execute();
+}
+
+export async function requestStep(
+	jar: CookieJar,
+	url: string,
+	init: RequestInit,
+	options: HttpRequestOptions,
+	step: string
+): Promise<AppResult<Response>> {
+	try {
+		const response = await request(jar, url, init, options);
+		const acceptable = options.acceptStatus?.(response.status) ?? response.ok;
+		if (!acceptable) {
+			return failure(AppError.network(`${step}失败：HTTP ${response.status}`));
+		}
+		return success(response);
+	} catch (error) {
+		return failure(toUpstreamNetworkError(error, step, options.signal));
+	}
 }

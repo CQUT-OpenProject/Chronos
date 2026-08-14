@@ -9,7 +9,7 @@ interface PreviewRequestBody {
 	yearTerm?: string | null;
 }
 
-/** Vercel Pro allows up to 60s; Hobby plans may still enforce a lower platform limit. */
+/** Route-level maxDuration; platform limit is set via adapter maxDuration in vite.config.ts. */
 export const config = {
 	maxDuration: 60
 };

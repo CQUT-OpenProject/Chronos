@@ -1,7 +1,7 @@
 import { failure, success } from '$lib/domain/result/app-result';
 import { AppError } from '$lib/domain/result/app-error';
 import type { ReleaseCatalog } from './catalog';
-import type { Release } from './release';
+import { compareReleaseVersions, type Release } from './release';
 
 const RELEASE_FILES = import.meta.glob('./entries/*.md', {
 	query: '?raw',
@@ -21,7 +21,7 @@ export function createLocalReleaseCatalog(): ReleaseCatalog {
 		},
 		async listReleases() {
 			const list = Object.values(releases).sort((a, b) =>
-				b.publishedAt.localeCompare(a.publishedAt)
+				compareReleaseVersions(b.tagName, a.tagName)
 			);
 			return success(list);
 		}

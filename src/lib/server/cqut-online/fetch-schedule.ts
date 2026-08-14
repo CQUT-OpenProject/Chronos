@@ -15,7 +15,8 @@ import {
 } from './config';
 import { mapWithConcurrency } from './concurrency';
 import { CookieJar } from './cookie-jar';
-import { request } from './http-client';
+import { requestStep } from './http-client';
+import { toUpstreamNetworkError } from './upstream-error';
 
 export interface FetchCqutScheduleInput {
 	account: string;
@@ -52,10 +53,7 @@ export async function fetchCqutSchedule(
 			campusPeriodTimes: campusTimesResult.value.campusPeriodTimes
 		});
 	} catch (error) {
-		if (isAbortError(error)) {
-			return failure(AppError.network('在线课表请求超时，请稍后重试'));
-		}
-		throw error;
+		return failure(toUpstreamNetworkError(error, '在线课表导入', signal));
 	}
 }
 
@@ -127,7 +125,8 @@ async function fetchWeekEvents(
 		yearTerm: yearTerm?.trim() || null
 	});
 
-	const response = await request(
+	const step = weekNum?.trim() ? `获取第 ${weekNum.trim()} 周课表` : '获取课表';
+	const responseResult = await requestStep(
 		jar,
 		WEEK_EVENTS_URL,
 		{
@@ -135,13 +134,12 @@ async function fetchWeekEvents(
 			headers: { 'Content-Type': JSON_MEDIA_TYPE },
 			body
 		},
-		{ signal }
+		{ signal },
+		step
 	);
-	if (!response.ok) {
-		return failure(AppError.network(`在线课表请求失败：HTTP ${response.status}`));
-	}
+	if (!responseResult.ok) return responseResult;
 
-	const raw = await response.text();
+	const raw = await responseResult.value.text();
 	const jsonObject = parsePayloadObject(raw);
 	if (!jsonObject.ok) return jsonObject;
 
@@ -189,8 +187,4 @@ function looksLikeAuthError(jsonObject: Record<string, unknown>): boolean {
 function authErrorMessage(jsonObject: Record<string, unknown>): string {
 	const message = typeof jsonObject.msg === 'string' ? jsonObject.msg : null;
 	return message?.trim() || '登录失败，请重新输入密码';
-}
-
-function isAbortError(error: unknown): boolean {
-	return error instanceof DOMException && error.name === 'AbortError';
 }

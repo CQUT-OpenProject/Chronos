@@ -285,7 +285,9 @@ export default defineConfig(({ mode }) => {
 				},
 				// GitHub Pages 没有服务端，fallback 用 404.html 才能让 GitHub Pages 的默认
 				// 404 兜底把深层链接导航请求交回 SvelteKit 客户端路由处理（经典 SPA on Pages 方案）。
-				adapter: isPagesBuild ? adapterStatic({ fallback: '404.html' }) : adapter()
+				adapter: isPagesBuild
+					? adapterStatic({ fallback: '404.html' })
+					: adapter({ maxDuration: 60 })
 			}),
 			SvelteKitPWA({
 				registerType: 'autoUpdate',

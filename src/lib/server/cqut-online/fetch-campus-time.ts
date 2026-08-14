@@ -9,7 +9,7 @@ import {
 } from '$lib/timetable/timetable-mappers';
 import { GET_CAMPUS_TIME_INFO_URL, GET_USER_INFO_URL, JSON_MEDIA_TYPE } from './config';
 import type { CookieJar } from './cookie-jar';
-import { request } from './http-client';
+import { requestStep } from './http-client';
 
 export interface CampusTimeFetchOverrides {
 	getUserInfoUrl?: string;
@@ -26,7 +26,7 @@ export async function fetchUserCampusName(
 	signal?: AbortSignal,
 	overrides?: CampusTimeFetchOverrides
 ): Promise<AppResult<CqutCampusId>> {
-	const response = await request(
+	const responseResult = await requestStep(
 		jar,
 		overrides?.getUserInfoUrl ?? GET_USER_INFO_URL,
 		{
@@ -34,15 +34,14 @@ export async function fetchUserCampusName(
 			headers: { 'Content-Type': JSON_MEDIA_TYPE },
 			body: '{}'
 		},
-		{ signal }
+		{ signal },
+		'获取用户校区信息'
 	);
-	if (!response.ok) {
-		return failure(AppError.network(`获取用户信息失败：HTTP ${response.status}`));
-	}
+	if (!responseResult.ok) return responseResult;
 
 	let parsed: unknown;
 	try {
-		parsed = await response.json();
+		parsed = await responseResult.value.json();
 	} catch {
 		return failure(AppError.dataFormat('用户信息响应格式错误'));
 	}
@@ -57,7 +56,7 @@ export async function fetchCampusTimeInfo(
 	signal?: AbortSignal,
 	overrides?: CampusTimeFetchOverrides
 ): Promise<AppResult<PeriodTime[]>> {
-	const response = await request(
+	const responseResult = await requestStep(
 		jar,
 		overrides?.getCampusTimeInfoUrl ?? GET_CAMPUS_TIME_INFO_URL,
 		{
@@ -65,15 +64,14 @@ export async function fetchCampusTimeInfo(
 			headers: { 'Content-Type': JSON_MEDIA_TYPE },
 			body: JSON.stringify({ campusName: getCampusApiName(campusId) })
 		},
-		{ signal }
+		{ signal },
+		'获取校区节次时间'
 	);
-	if (!response.ok) {
-		return failure(AppError.network(`获取校区节次时间失败：HTTP ${response.status}`));
-	}
+	if (!responseResult.ok) return responseResult;
 
 	let parsed: unknown;
 	try {
-		parsed = await response.json();
+		parsed = await responseResult.value.json();
 	} catch {
 		return failure(AppError.dataFormat('校区节次时间响应格式错误'));
 	}
