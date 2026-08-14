@@ -2,7 +2,7 @@
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	let {
-		checked = false,
+		checked = $bindable(false),
 		disabled = false,
 		name,
 		value,

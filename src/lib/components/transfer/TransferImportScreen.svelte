@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { trackEvent } from '$lib/client/analytics';
 	import type { TransferImportSource } from '$lib/client/preview-persistence';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
@@ -42,9 +43,11 @@
 	}
 
 	async function handleClipboardPreview() {
+		trackEvent('import_share_preview_attempt');
 		loading = true;
 		try {
 			const ok = await transfer.previewFromClipboard();
+			trackEvent(ok ? 'import_share_preview_success' : 'import_share_preview_fail');
 			if (ok) onContinue();
 			else notifyTransferMessages();
 		} finally {
@@ -53,9 +56,11 @@
 	}
 
 	async function handleOnlinePreview() {
+		trackEvent('import_online_preview_attempt');
 		loading = true;
 		try {
 			const ok = await transfer.previewOnline();
+			trackEvent(ok ? 'import_online_preview_success' : 'import_online_preview_fail');
 			if (ok) onContinue();
 			else notifyTransferMessages();
 		} finally {
@@ -83,15 +88,23 @@
 		const input = event.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
+		trackEvent('import_html_preview_attempt');
 		loading = true;
 		try {
 			const ok = await transfer.previewFromHtmlFile(file);
+			trackEvent(ok ? 'import_html_preview_success' : 'import_html_preview_fail');
 			if (ok) onContinue();
 			else notifyTransferMessages();
 		} finally {
 			loading = false;
 			input.value = '';
 		}
+	}
+
+	function handleSourceChange(value: string) {
+		const source = value as TransferImportSource;
+		transfer.setSelectedSource(source);
+		trackEvent('import_source_select', { source });
 	}
 </script>
 
@@ -105,7 +118,7 @@
 	<SegmentedControl
 		segments={importSegments}
 		value={transferState.selectedSource}
-		onValueChange={(value) => transfer.setSelectedSource(value as TransferImportSource)}
+		onValueChange={handleSourceChange}
 	/>
 
 	<div class="w-full">
@@ -147,7 +160,7 @@
 						<Checkbox
 							checked={transferState.saveCredentials}
 							disabled={!saveCheckboxEnabled}
-							onCheckedChange={(checked) => transfer.setSaveCredentials(checked)}
+							onCheckedChange={(checked) => transfer.setSaveCredentials(checked === true)}
 						/>
 						<span>{saveCheckboxLabel}</span>
 					</label>

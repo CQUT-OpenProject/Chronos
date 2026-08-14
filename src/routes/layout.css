@@ -51,12 +51,57 @@
 		--color-outline-variant: #2e3038;
 		--color-border-subtle: #2e3038;
 	}
+
+	.theme-random {
+		--ee-primary: #2288dd;
+		--ee-secondary: #ff7788;
+		--color-primary: var(--ee-primary);
+		--color-primary-dim: var(--ee-primary);
+		--color-on-primary: #fff;
+		--color-primary-container: var(--ee-primary);
+		--color-on-primary-container: #fff;
+		--color-inverse-primary: var(--ee-primary);
+		--color-on-on-primary: var(--ee-primary);
+		--color-primary-container-subtle: var(--ee-primary);
+		--color-on-primary-container-subtle: #fff;
+		--color-secondary: var(--ee-secondary);
+		--color-secondary-dim: var(--ee-secondary);
+		--color-on-secondary: #fff;
+		--color-secondary-container: var(--ee-secondary);
+		--color-on-secondary-container: #fff;
+		--color-secondary-container-subtle: var(--ee-secondary);
+		--color-on-secondary-container-subtle: #fff;
+	}
+
+	.period-active {
+		background-color: var(--color-brand);
+		color: var(--color-on-primary);
+	}
+
+	/* Light: raw course paint. Dark: 42%/18% course mix (was layout blendColors 0.58/0.18). */
+	.course-capsule {
+		background-color: var(--capsule);
+		color: var(--capsule-fg);
+		border-color: color-mix(in srgb, var(--capsule-fg) 12%, transparent);
+	}
+
+	.dark .course-capsule {
+		background-color: color-mix(in srgb, var(--capsule) 42%, var(--color-surface));
+		color: color-mix(in srgb, var(--capsule) 18%, var(--color-on-surface));
+		border-color: color-mix(in srgb, currentColor 12%, transparent);
+	}
+
+	.theme-random .period-active {
+		background-color: transparent;
+		background-image: linear-gradient(to bottom, var(--ee-secondary), var(--ee-primary));
+	}
 }
 
 @layer base {
 	html {
 		font-size: 15px;
 		line-height: 1.47;
+		touch-action: pan-x pan-y;
 	}
 
 	@media (min-width: 768px) {
@@ -109,4 +154,12 @@
 		min-height: calc(3.5rem + var(--topbar-safe));
 		padding-top: calc(0.5rem + var(--topbar-safe));
 	}
+}
+
+.theme-random .m3-leading-icon.tone-primary,
+.theme-random .m3-leading-icon.tone-secondary,
+.theme-random .m3-leading-icon.tone-tertiary,
+.theme-random .m3-leading-icon.tone-neutral {
+	background-color: color-mix(in srgb, var(--color-secondary-container) 75%, transparent);
+	color: var(--color-on-secondary-container);
 }

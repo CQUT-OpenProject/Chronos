@@ -2,8 +2,10 @@
 	import { untrack } from 'svelte';
 	import { register } from 'swiper/element/bundle';
 	import type { SwiperContainer } from 'swiper/element/bundle';
+	import { trackEvent } from '$lib/client/analytics';
 	import type { TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
+	import type { CoursePaletteEntry } from '$lib/parsers/course-palette';
 	import TimetableGrid from './TimetableGrid.svelte';
 
 	register();
@@ -11,14 +13,14 @@
 	let {
 		screen,
 		hasWallpaper,
-		isDark,
+		coursePalette,
 		layoutMode,
 		onCourseClick,
 		onCourseLongClick
 	}: {
 		screen: TimetableScreenController;
 		hasWallpaper: boolean;
-		isDark: boolean;
+		coursePalette: readonly CoursePaletteEntry[];
 		layoutMode: TimetableLayoutMode;
 		onCourseClick: (courseId: string) => void;
 		onCourseLongClick: (courseId: string) => void;
@@ -33,6 +35,7 @@
 		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
 		const slideIndex = swiperEl.swiper.activeIndex;
 		if (slideIndex !== screen.state.slideIndex) {
+			trackEvent('timetable_week_swipe');
 			screen.settlePagerAtSlide(slideIndex);
 		}
 	}
@@ -97,7 +100,8 @@
 					{gridModel}
 					courseDisplayModels={courseModels}
 					{hasWallpaper}
-					{isDark}
+					{coursePalette}
+					paletteCourses={screenState.appState.currentTimetable?.courses}
 					{layoutMode}
 					onCourseClick={(course) => onCourseClick(course.id)}
 					onCourseLongClick={(course) => onCourseLongClick(course.id)}

@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import { dismissSnackbar, snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -67,6 +68,7 @@
 	}
 
 	async function confirmClear() {
+		trackEvent('about_clear_all_data');
 		clearing = true;
 		try {
 			await shell.clearAllData();

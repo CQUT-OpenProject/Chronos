@@ -11,9 +11,9 @@
 		class: className = ''
 	}: {
 		label?: string;
-		colors: CoursePaletteEntry[];
+		colors: readonly CoursePaletteEntry[];
 		selectedBackground: string;
-		onSelect: (background: string, foreground: string) => void;
+		onSelect: (index: number) => void;
 		class?: string;
 	} = $props();
 
@@ -28,7 +28,7 @@
 			role="radiogroup"
 			aria-labelledby={labelId}
 		>
-			{#each colors as color (color.background)}
+			{#each colors as color, index (color.background)}
 				{@const isSelected = selectedBackground.toLowerCase() === color.background.toLowerCase()}
 				<button
 					type="button"
@@ -36,7 +36,7 @@
 					role="radio"
 					aria-checked={isSelected}
 					aria-label={`选择颜色 ${color.background}`}
-					onclick={() => onSelect(color.background, color.foreground)}
+					onclick={() => onSelect(index)}
 				>
 					<span
 						class="relative flex size-8 items-center justify-center rounded-full border-2 {isSelected

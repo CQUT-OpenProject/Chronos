@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
 	setInstallPromptGate: vi.fn(),
 	tryScheduleInstallDialog: vi.fn(),
 	initWebVitals: vi.fn(),
+	initAnalytics: vi.fn(),
 	ensureShareLinkBrotliReady: vi.fn().mockResolvedValue(undefined),
 	attachOfflineUx: vi.fn(() => vi.fn())
 }));
@@ -45,6 +46,10 @@ vi.mock('$lib/client/web-vitals', () => ({
 	initWebVitals: mocks.initWebVitals
 }));
 
+vi.mock('$lib/client/analytics', () => ({
+	initAnalytics: mocks.initAnalytics
+}));
+
 vi.mock('$lib/parsers/share-link/share-link-brotli', () => ({
 	ensureShareLinkBrotliReady: mocks.ensureShareLinkBrotliReady
 }));
@@ -63,8 +68,14 @@ vi.mock('$lib/client/onboarding.svelte', () => ({
 import { createPlatformBootstrap, type PlatformBootstrapDeps } from './platform-bootstrap.svelte';
 
 describe('createPlatformBootstrap', () => {
+	const appearance = {
+		apply: vi.fn(),
+		reset: vi.fn(),
+		coursePalette: []
+	};
 	const shell = {
 		init: vi.fn(),
+		appearance,
 		state: { isDark: false, appState: {}, initialized: false, hasWallpaper: false }
 	};
 	const timetableScreen = {
@@ -96,6 +107,7 @@ describe('createPlatformBootstrap', () => {
 		expect(timetableScreen.init).toHaveBeenCalledWith(shell);
 		expect(mocks.pwaInstallInit).toHaveBeenCalled();
 		expect(mocks.initWebVitals).toHaveBeenCalled();
+		expect(mocks.initAnalytics).toHaveBeenCalled();
 		expect(mocks.ensureShareLinkBrotliReady).toHaveBeenCalled();
 		expect(mocks.setInstallPromptGate).toHaveBeenCalled();
 		expect(mocks.attachOfflineUx).toHaveBeenCalled();
@@ -103,6 +115,7 @@ describe('createPlatformBootstrap', () => {
 
 		teardown();
 		expect(mocks.connectivityDestroy).toHaveBeenCalled();
+		expect(appearance.reset).toHaveBeenCalled();
 	});
 
 	it('is idempotent on repeated init', () => {

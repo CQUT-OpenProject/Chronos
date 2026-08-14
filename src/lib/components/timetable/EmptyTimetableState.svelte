@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import favicon from '$lib/assets/favicon.svg';
-	import Button from '$lib/components/ui/Button.svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+
+	function handleImportClick() {
+		trackEvent('empty_import_click');
+	}
 
 	function showImportGuide() {
+		trackEvent('empty_import_guide_open');
 		onboardingController.openAt(3);
 	}
 </script>
@@ -18,7 +24,9 @@
 	<h2 class="m3-headline-medium font-bold text-on-surface">还没有课程表</h2>
 
 	<div class="mt-4 flex flex-col items-center gap-3">
-		<Button variant="outlined" href={resolve('/transfer/import')}>导入课程表</Button>
+		<Button variant="outlined" href={resolve('/transfer/import')} onclick={handleImportClick}>
+			导入课程表
+		</Button>
 		<button
 			type="button"
 			class="cursor-pointer text-sm font-medium text-on-surface-variant underline-offset-2 hover:text-on-surface hover:underline"

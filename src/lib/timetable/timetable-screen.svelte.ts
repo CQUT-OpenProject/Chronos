@@ -1,5 +1,6 @@
 import { untrack } from 'svelte';
 import { SvelteDate, SvelteMap } from 'svelte/reactivity';
+import { trackEvent } from '$lib/client/analytics';
 import { emptyAppState, type AppState } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 import type { AppShellController } from '$lib/app/app-shell.svelte';
@@ -174,6 +175,7 @@ function createTimetableScreen() {
 	function jumpToCurrentWeek() {
 		const timetable = currentAppState().currentTimetable;
 		if (!timetable) return;
+		trackEvent('timetable_week_jump_current');
 		const academicWeek = invokeCalculateAcademicWeek(today, timetable.academicConfig);
 		const { startWeek, endWeek } = academicBounds(timetable);
 		displayedWeekMemory = clampDisplayedWeek(academicWeek, startWeek, endWeek);

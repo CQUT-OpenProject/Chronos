@@ -8,6 +8,7 @@ import {
 	resolveLocationBlockMetrics,
 	shouldShowLocationCampus
 } from './capsule-layout';
+import { EASTER_EGG_PALETTE_ENTRIES } from '$lib/parsers/course-palette';
 import { periodSlotKey } from './slot-key';
 
 describe('resolveCapsuleTypeScale', () => {
@@ -135,8 +136,7 @@ describe('placeCapsules', () => {
 			courseDisplayModels: [courseModel('a', 1, 2, 3, { location: '两江校区 弘远楼A0213' })],
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 
 		expect(items).toHaveLength(1);
@@ -155,6 +155,144 @@ describe('placeCapsules', () => {
 		expect(item.colors.background).toBe('#EADDFF');
 	});
 
+	it('remaps default palette colors when a custom course palette is passed', () => {
+		const off = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set()
+		});
+		const on = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		expect(off[0]?.kind).toBe('course');
+		expect(on[0]?.kind).toBe('course');
+		if (off[0]?.kind !== 'course' || on[0]?.kind !== 'course') return;
+		expect(off[0].colors.background).toBe('#EADDFF');
+		expect(on[0].colors.background).toBe('#FFEE55');
+		expect(on[0].colors.text).toBe('#1a1a1a');
+	});
+
+	it('spreads colliding default-palette courses across unused display colors', () => {
+		const models = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1)
+		];
+		const items = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(backgrounds).toHaveLength(3);
+		expect(new Set(backgrounds).size).toBe(3);
+		expect(
+			backgrounds.every((hex) =>
+				EASTER_EGG_PALETTE_ENTRIES.some((entry) => entry.background === hex)
+			)
+		).toBe(true);
+	});
+
+	it('spreads unique automatic courses across all display colors', () => {
+		const models = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1),
+			courseModel('d', 2, 3, 3),
+			courseModel('e', 3, 1, 1),
+			courseModel('f', 3, 3, 3)
+		];
+		const items = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(new Set(backgrounds)).toEqual(
+			new Set(EASTER_EGG_PALETTE_ENTRIES.map((entry) => entry.background))
+		);
+	});
+
+	it('maps each default-palette slot onto the matching display-palette entry', () => {
+		const models = [
+			courseModel('a', 1, 1, 1, { color: '#EADDFF' }),
+			courseModel('b', 1, 3, 3, { color: '#FFDBC9' }),
+			courseModel('c', 2, 1, 1, { color: '#C4EED0' }),
+			courseModel('d', 2, 3, 3, { color: '#D3E3FD' }),
+			courseModel('e', 3, 1, 1, { color: '#FFD8E4' }),
+			courseModel('f', 3, 3, 3, { color: '#F6E1B0' })
+		];
+		const items = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(backgrounds).toEqual(['#FFEE55', '#FFBBCC', '#4477CC', '#9977CC', '#EE5577', '#4D5B4C']);
+	});
+
+	it('keeps a course color stable when the visible week is a subset', () => {
+		const all = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1),
+			courseModel('d', 2, 3, 3),
+			courseModel('e', 3, 1, 1)
+		];
+		const paletteCourses = all.map((model) => model.course);
+		const full = placeCapsules({
+			courseDisplayModels: all,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
+			paletteCourses
+		});
+		const week = placeCapsules({
+			courseDisplayModels: [courseModel('e', 3, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
+			paletteCourses
+		});
+		const fromFull = full.find((item) => item.kind === 'course' && item.course.name === 'e');
+		expect(fromFull?.kind).toBe('course');
+		expect(week[0]?.kind).toBe('course');
+		if (fromFull?.kind !== 'course' || week[0]?.kind !== 'course') return;
+		expect(week[0].colors.background).toBe(fromFull.colors.background);
+	});
+
+	it('leaves custom course colors unchanged when a custom course palette is passed', () => {
+		const [item] = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1, { color: '#123456' })],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		expect(item?.kind).toBe('course');
+		if (item?.kind !== 'course') return;
+		expect(item.colors.background).toBe('#123456');
+	});
+
 	it('emits an overlap placeholder until the slot is expanded', () => {
 		const models = [courseModel('a', 1, 1, 2), courseModel('b', 1, 2, 3)];
 		const key = periodSlotKey(1, 1, 3);
@@ -163,8 +301,7 @@ describe('placeCapsules', () => {
 			courseDisplayModels: models,
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 		expect(collapsed).toHaveLength(1);
 		expect(collapsed[0]).toMatchObject({
@@ -177,8 +314,7 @@ describe('placeCapsules', () => {
 			courseDisplayModels: models,
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set([key]),
-			isDark: false
+			expandedSlotKeys: new Set([key])
 		});
 		expect(expanded).toHaveLength(2);
 		expect(expanded.every((item) => item.kind === 'course')).toBe(true);
@@ -188,27 +324,12 @@ describe('placeCapsules', () => {
 		expect(expanded[0].overlapCount).toBe(2);
 	});
 
-	it('blends course colors in dark mode', () => {
-		const [item] = placeCapsules({
-			courseDisplayModels: [courseModel('a', 1, 1, 1)],
-			visibleDays,
-			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: true
-		});
-		expect(item?.kind).toBe('course');
-		if (item?.kind !== 'course') return;
-		expect(item.colors.background).not.toBe('#EADDFF');
-		expect(item.colors.background.startsWith('#')).toBe(true);
-	});
-
 	it('hides campus lines when the column is narrow', () => {
 		const [item] = placeCapsules({
 			courseDisplayModels: [courseModel('a', 1, 1, 1, { location: '两江校区 弘远楼A0213' })],
 			visibleDays,
 			columnWidthPx: 69,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 		expect(item?.kind).toBe('course');
 		if (item?.kind !== 'course') return;
@@ -220,8 +341,7 @@ describe('placeCapsules', () => {
 			courseDisplayModels: [courseModel('a', 1, 1, 1, { isInDisplayedWeek: false })],
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			isDark: false
+			expandedSlotKeys: new Set()
 		});
 		expect(item?.kind).toBe('course');
 		if (item?.kind !== 'course') return;
@@ -234,7 +354,7 @@ function courseModel(
 	dayOfWeek: number,
 	startPeriod: number,
 	endPeriod: number,
-	options?: { location?: string; isInDisplayedWeek?: boolean }
+	options?: { location?: string; isInDisplayedWeek?: boolean; color?: string }
 ) {
 	return {
 		course: {
@@ -245,7 +365,7 @@ function courseModel(
 			dayOfWeek,
 			startPeriod,
 			endPeriod,
-			color: '#EADDFF',
+			color: options?.color ?? '#EADDFF',
 			textColor: '#21005D',
 			weeks: [1],
 			remark: ''

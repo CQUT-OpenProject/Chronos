@@ -47,7 +47,7 @@
 				<span
 					aria-hidden="true"
 					class="flex h-8 w-14 items-center justify-center rounded-full transition-colors {active
-						? 'bg-secondary-container text-on-secondary-container'
+						? 'bg-primary-container text-on-primary-container'
 						: ''}"
 				>
 					{#if active}
@@ -56,11 +56,7 @@
 						<tab.Icon class="size-6" />
 					{/if}
 				</span>
-				<span
-					class="m3-label-small {active
-						? 'text-on-secondary-container'
-						: 'text-on-surface-variant'}"
-				>
+				<span class="m3-label-small {active ? 'text-on-surface' : 'text-on-surface-variant'}">
 					{tab.label}
 				</span>
 			</a>

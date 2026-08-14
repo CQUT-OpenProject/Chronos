@@ -13,7 +13,7 @@ export function parseTimeString(value: string): Time | undefined {
 	return new Time(hour, minute);
 }
 
-export function timeToString(value: Time | undefined): string {
+export function timeToString(value: { hour: number; minute: number } | undefined): string {
 	if (!value) return '';
 	return `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`;
 }

@@ -42,7 +42,6 @@
 
 	function handleInput(event: Event) {
 		const target = event.currentTarget as HTMLInputElement | HTMLTextAreaElement;
-		value = target.value;
 		onValueChange?.(target.value);
 	}
 

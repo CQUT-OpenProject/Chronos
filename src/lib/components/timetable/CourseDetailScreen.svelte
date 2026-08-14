@@ -2,6 +2,11 @@
 	import { slide } from 'svelte/transition';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { Course } from '$lib/models/course';
+	import {
+		assignCourseDisplayColors,
+		normalizedCourseName,
+		resolveCoursePaint
+	} from '$lib/parsers/course-palette';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 
 	let {
@@ -20,6 +25,15 @@
 					null)
 			: null
 	);
+	const paint = $derived.by(() => {
+		if (!course) return null;
+		const palette = shell.appearance.coursePalette;
+		const assigned = assignCourseDisplayColors(
+			shell.state.appState.currentTimetable?.courses ?? [],
+			palette
+		);
+		return assigned.get(normalizedCourseName(course.name)) ?? resolveCoursePaint(course, palette);
+	});
 
 	function formatWeeks(weeks: number[]) {
 		if (weeks.length === 0) return '全部周次';
@@ -52,7 +66,11 @@
 	<p class="m3-body-medium text-on-surface-variant">未指定课程</p>
 {:else if course}
 	<div class="mb-6 flex items-center gap-3 py-2">
-		<span class="size-3 shrink-0 rounded-full" style:background-color={course.color}></span>
+		<span
+			class="course-capsule size-3 shrink-0 rounded-full"
+			style:--capsule={paint.background}
+			style:--capsule-fg={paint.foreground}
+		></span>
 		<h2 class="m3-headline-small flex-1 font-bold text-on-surface">{course.name}</h2>
 	</div>
 

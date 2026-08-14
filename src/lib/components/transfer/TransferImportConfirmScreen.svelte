@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { trackEvent } from '$lib/client/analytics';
 	import { ImportMode } from '$lib/domain/import-mode';
 	import {
 		previewSourceLabel,
@@ -39,10 +40,21 @@
 	});
 	let loading = $state(false);
 
+	function analyticsImportMode(mode: ImportMode) {
+		return mode === ImportMode.AS_NEW ? 'as_new' : 'overwrite';
+	}
+
+	function selectImportMode(mode: ImportMode) {
+		transfer.setImportMode(mode);
+		trackEvent('import_mode_select', { mode: analyticsImportMode(mode) });
+	}
+
 	async function handleConfirm() {
 		loading = true;
+		const mode = analyticsImportMode(transferState.importMode);
 		try {
 			const ok = await transfer.confirmImport();
+			trackEvent('import_confirm', { mode, success: ok });
 			if (ok) {
 				snackbar('导入成功');
 				onConfirm();
@@ -129,7 +141,7 @@
 						name="import-mode"
 						label="作为新课程表导入"
 						selected={transferState.importMode === ImportMode.AS_NEW}
-						onclick={() => transfer.setImportMode(ImportMode.AS_NEW)}
+						onclick={() => selectImportMode(ImportMode.AS_NEW)}
 					/>
 
 					<SelectableOption
@@ -137,7 +149,7 @@
 						label="覆盖当前课程表"
 						description={currentTimetableName ? `当前课程表：${currentTimetableName}` : undefined}
 						selected={transferState.importMode === ImportMode.OVERWRITE_CURRENT}
-						onclick={() => transfer.setImportMode(ImportMode.OVERWRITE_CURRENT)}
+						onclick={() => selectImportMode(ImportMode.OVERWRITE_CURRENT)}
 					/>
 				</div>
 			</div>

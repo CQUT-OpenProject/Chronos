@@ -55,8 +55,14 @@ Chronos 不需要配置任何环境变量即可正常部署，以下变量仅在
 | ----------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
 | `CHRONOS_DEPLOY_TARGET` | 构建时 | 设为 `pages` 时构建 GitHub Pages 静态版，默认不设置则构建 Vercel 版                                              |
 | `ORIGIN`                | 运行时 | SvelteKit 标准变量，用于 CSRF 校验等场景。本地开发一般无需配置；若部署后出现 origin 相关报错，可设为站点完整 URL |
+| `PUBLIC_POSTHOG_KEY`    | 构建时 | PostHog 项目密钥；留空则构建期剔除埋点（GitHub Pages、自行部署默认不启用）                                       |
+| `PUBLIC_POSTHOG_HOST`   | 运行时 | PostHog API 地址，默认 `https://eu.i.posthog.com`                                                                |
 
 ## 数据收集
+
+官方 Vercel 托管版在生产环境且配置了 `PUBLIC_POSTHOG_KEY` 时，会通过 [PostHog](https://posthog.com/) 收集匿名化的功能使用统计（如导入、主题/配色切换、PWA 安装等），不包含课表内容与账号凭据。未配置密钥的构建不会启用埋点。
+
+详见应用内「关于 → 隐私政策」，或 [`static/legal/privacy-policy.md`](static/legal/privacy-policy.md)。
 
 ## 切换到旧版
 

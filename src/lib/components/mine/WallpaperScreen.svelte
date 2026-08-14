@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import TimetableGrid from '$lib/components/timetable/TimetableGrid.svelte';
 	import {
 		buildTimetableWeekPreview,
@@ -21,7 +22,7 @@
 
 	const appState = $derived(shell.state.appState);
 	const hasWallpaper = $derived(shell.state.hasWallpaper);
-	const isDark = $derived(shell.state.isDark);
+	const coursePalette = $derived(shell.appearance.coursePalette);
 	const timetable = $derived(appState.currentTimetable);
 	const today = $derived(timeProvider.today());
 	const academicWeek = $derived(invokeCalculateAcademicWeek(today, timetable?.academicConfig));
@@ -41,6 +42,7 @@
 		const input = event.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
+		trackEvent('wallpaper_set');
 		try {
 			await shell.setWallpaper(file);
 		} catch (error) {
@@ -58,6 +60,7 @@
 	}
 
 	async function clearWallpaper() {
+		trackEvent('wallpaper_clear');
 		await shell.setWallpaper(null);
 	}
 </script>
@@ -85,7 +88,8 @@
 					{gridModel}
 					{courseDisplayModels}
 					hasWallpaper={true}
-					{isDark}
+					{coursePalette}
+					paletteCourses={timetable.courses}
 				/>
 			</div>
 		</div>

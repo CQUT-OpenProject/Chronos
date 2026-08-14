@@ -28,7 +28,7 @@
 	const shell = getContext<AppShellController>('appShell');
 	const startWeek = $derived(screenState.startWeek);
 	const endWeek = $derived(screenState.endWeek);
-	const isDark = $derived(shell.state.isDark);
+	const coursePalette = $derived(shell.appearance.coursePalette);
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
 	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
 
@@ -170,7 +170,7 @@
 			<TimetableWeekSwiper
 				{screen}
 				{hasWallpaper}
-				{isDark}
+				{coursePalette}
 				{layoutMode}
 				{onCourseClick}
 				{onCourseLongClick}

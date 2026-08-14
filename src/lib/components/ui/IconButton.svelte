@@ -35,10 +35,13 @@
 		sm: 'p-1.5'
 	};
 
-	const focusRingClass =
-		variant === 'danger' ? 'focus-visible:ring-error' : 'focus-visible:ring-brand';
+	const focusRingClass = $derived(
+		variant === 'danger' ? 'focus-visible:ring-error' : 'focus-visible:ring-brand'
+	);
 
-	const baseClass = `inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors outline-none focus-visible:ring-2 ${focusRingClass}`;
+	const baseClass = $derived(
+		`inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors outline-none focus-visible:ring-2 ${focusRingClass}`
+	);
 </script>
 
 {#if href}

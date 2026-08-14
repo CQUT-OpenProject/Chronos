@@ -85,9 +85,6 @@ export function createWebAuthnSecureCredentialStore(
 			if (!accountOnlyFallbackAvailable) {
 				return failure(AppError.security('当前设备不支持保存帐号密码'));
 			}
-			if (unlockToken.trim()) {
-				return failure(AppError.security('当前设备不支持保存帐号密码'));
-			}
 			writeOnlineCredentialRecord({ mode: 'account_only', account: trimmedAccount }, storage);
 			pendingSalt = null;
 			notify();

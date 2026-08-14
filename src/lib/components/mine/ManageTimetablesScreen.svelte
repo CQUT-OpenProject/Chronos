@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
@@ -19,11 +20,13 @@
 	let deleteDialogOpen = $state(false);
 
 	async function handleSwitch(id: string) {
+		trackEvent('timetable_switch');
 		await shell.services.preferences.setCurrentTimetableId(id);
 	}
 
 	async function confirmDelete() {
 		if (!appState.currentTimetableId) return;
+		trackEvent('timetable_delete');
 		await shell.services.deleteTimetable.invoke(appState.currentTimetableId);
 		deleteDialogOpen = false;
 	}
