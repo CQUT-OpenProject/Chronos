@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { createLocalReleaseCatalog } from './local-catalog';
+import { compareReleaseVersions } from './release';
 
 describe('LocalReleaseCatalog', () => {
 	it('returns the local release matching the tag', async () => {
@@ -29,7 +30,7 @@ describe('LocalReleaseCatalog', () => {
 		expect(result.error.message).toContain('v9.9.9');
 	});
 
-	it('returns all local releases sorted by publishedAt descending', async () => {
+	it('returns all local releases sorted by xyz version descending', async () => {
 		const catalog = createLocalReleaseCatalog();
 
 		const result = await catalog.listReleases();
@@ -43,7 +44,7 @@ describe('LocalReleaseCatalog', () => {
 		}
 		for (let i = 1; i < result.value.length; i++) {
 			expect(
-				result.value[i - 1].publishedAt.localeCompare(result.value[i].publishedAt)
+				compareReleaseVersions(result.value[i - 1].tagName, result.value[i].tagName)
 			).toBeGreaterThanOrEqual(0);
 		}
 	});
