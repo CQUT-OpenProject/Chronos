@@ -10,7 +10,7 @@ import {
 	TIMETABLE_BASE_URL
 } from './config';
 import type { CookieJar } from './cookie-jar';
-import { request } from './http-client';
+import { requestStep } from './http-client';
 
 function buildJsonObject(entries: Record<string, string | null>): string {
 	const objectValue: Record<string, string> = {};
@@ -79,7 +79,7 @@ export async function loginCas(
 		loginType: 'login'
 	});
 
-	const loginResponse = await request(
+	const loginResponseResult = await requestStep(
 		jar,
 		endpoints.casLoginUrl,
 		{
@@ -87,13 +87,12 @@ export async function loginCas(
 			headers: { 'Content-Type': JSON_MEDIA_TYPE },
 			body: loginBody
 		},
-		{ signal }
+		{ signal },
+		'统一身份认证登录'
 	);
-	if (!loginResponse.ok) {
-		return failure(AppError.network(`统一身份认证登录失败：HTTP ${loginResponse.status}`));
-	}
+	if (!loginResponseResult.ok) return loginResponseResult;
 
-	const loginJson = parsePayloadObject(await loginResponse.text());
+	const loginJson = parsePayloadObject(await loginResponseResult.value.text());
 	if (!loginJson.ok) return loginJson;
 
 	const upstreamCode = Number(loginJson.value.code);
@@ -106,17 +105,21 @@ export async function loginCas(
 	}
 
 	const casTicketUrl = `${endpoints.casTicketUrl}?service=${encodeURIComponent(endpoints.casServiceUrl)}`;
-	const ticketResponse = await request(
+	const ticketResponseResult = await requestStep(
 		jar,
 		casTicketUrl,
 		{ method: 'GET' },
-		{ redirect: 'manual', retryOnServerError: true, signal }
+		{
+			redirect: 'manual',
+			retryOnServerError: true,
+			signal,
+			acceptStatus: (status) => status >= 300 && status < 400
+		},
+		'获取课表系统登录票据'
 	);
-	if (ticketResponse.status < 300 || ticketResponse.status >= 400) {
-		return failure(AppError.network(`课表系统登录失败：HTTP ${ticketResponse.status}`));
-	}
+	if (!ticketResponseResult.ok) return ticketResponseResult;
 
-	const location = ticketResponse.headers.get('location');
+	const location = ticketResponseResult.value.headers.get('location');
 	if (!location) {
 		return failure(AppError.auth('登录失败，请重新输入账号或密码'));
 	}
@@ -132,15 +135,14 @@ export async function loginCas(
 	}
 
 	const casLoginUrl = `${endpoints.casServiceUrl}?ticket=${encodeURIComponent(ticket)}`;
-	const sessionResponse = await request(
+	const sessionResponseResult = await requestStep(
 		jar,
 		casLoginUrl,
 		{ method: 'GET' },
-		{ redirect: 'manual', signal }
+		{ redirect: 'manual', signal, acceptStatus: (status) => status < 500 },
+		'建立课表系统会话'
 	);
-	if (sessionResponse.status >= 500) {
-		return failure(AppError.network(`课表系统登录失败：HTTP ${sessionResponse.status}`));
-	}
+	if (!sessionResponseResult.ok) return sessionResponseResult;
 
 	if (!jar.hasCookie(endpoints.timetableHost, TIMETABLE_SESSION_COOKIE)) {
 		return failure(AppError.auth('登录失败，请重新输入账号或密码'));
