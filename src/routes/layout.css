@@ -101,6 +101,7 @@
 	html {
 		font-size: 15px;
 		line-height: 1.47;
+		touch-action: pan-x pan-y;
 	}
 
 	@media (min-width: 768px) {
