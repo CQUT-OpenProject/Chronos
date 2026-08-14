@@ -55,7 +55,7 @@
 		{
 			mode: PaletteMode.WALLPAPER,
 			label: '壁纸',
-			description: '从当前壁纸提取配色；未设置壁纸时使用默认',
+			description: '从当前壁纸提取配色',
 			Icon: WallpaperFill,
 			iconTone: 'primary' as const
 		},
