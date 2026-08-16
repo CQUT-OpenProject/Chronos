@@ -118,7 +118,7 @@
 
 	:root {
 		--topbar-safe: env(safe-area-inset-top, 0px);
-		--tabbar-safe: env(safe-area-inset-bottom);
+		--tabbar-safe: env(safe-area-inset-bottom, 0px);
 		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
 		--wallpaper-tint-sidebar: rgb(255 255 255 / 0.54);
 		--wallpaper-tint-grid: rgb(255 255 255 / 0.38);

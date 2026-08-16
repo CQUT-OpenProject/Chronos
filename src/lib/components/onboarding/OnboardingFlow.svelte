@@ -323,7 +323,7 @@
 				style:padding-bottom="calc(var(--tabbar-safe) + 1.25rem)"
 			>
 				<ol class="flex list-none justify-center gap-1.5" aria-label="引导步骤">
-					{#each stepIndices as index (index)}
+					{#each stepIndices as index}
 						<li
 							class="h-1.5 w-6 rounded-full transition-colors {index <= step
 								? 'bg-brand dark:bg-soft-blue'

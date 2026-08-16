@@ -441,7 +441,7 @@
 					maxFontPx: locationMetrics.fontPx
 				}))}
 			>
-				{#each locationLines as line, index (index)}
+				{#each locationLines as line}
 					<div class="overflow-hidden whitespace-nowrap">{line}</div>
 				{/each}
 			</div>
