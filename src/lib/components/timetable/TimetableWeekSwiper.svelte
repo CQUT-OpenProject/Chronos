@@ -3,7 +3,7 @@
 	import { register } from 'swiper/element/bundle';
 	import type { SwiperContainer } from 'swiper/element/bundle';
 	import { trackEvent } from '$lib/client/analytics';
-	import type { TimetableLayoutMode } from '$lib/models/app-state';
+	import { CapsuleCornerStyle, type TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import type { CoursePaletteEntry } from '$lib/parsers/course-palette';
 	import TimetableGrid from './TimetableGrid.svelte';
@@ -15,6 +15,7 @@
 		hasWallpaper,
 		coursePalette,
 		layoutMode,
+		capsuleCornerStyle = CapsuleCornerStyle.ROUNDED,
 		onCourseClick,
 		onCourseLongClick
 	}: {
@@ -22,6 +23,7 @@
 		hasWallpaper: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
 		layoutMode: TimetableLayoutMode;
+		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick: (courseId: string) => void;
 		onCourseLongClick: (courseId: string) => void;
 	} = $props();
@@ -103,6 +105,7 @@
 					{coursePalette}
 					paletteCourses={screenState.appState.currentTimetable?.courses}
 					{layoutMode}
+					{capsuleCornerStyle}
 					onCourseClick={(course) => onCourseClick(course.id)}
 					onCourseLongClick={(course) => onCourseLongClick(course.id)}
 				/>

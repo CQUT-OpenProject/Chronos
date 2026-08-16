@@ -384,8 +384,7 @@ button.m3-date-field-input {
 	justify-content: center;
 }
 
-.m3-top-app-bar-title h1,
-.m3-top-app-bar h1 {
+.m3-top-app-bar-title h1 {
 	flex: 1;
 	margin: 0;
 	min-width: 0;

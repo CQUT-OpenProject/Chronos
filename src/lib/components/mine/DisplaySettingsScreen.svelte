@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { PaletteMode, ThemeMode, TimetableLayoutMode } from '$lib/models/app-state';
+	import {
+		CapsuleCornerStyle,
+		PaletteMode,
+		ThemeMode,
+		TimetableLayoutMode
+	} from '$lib/models/app-state';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import Radio from '$lib/components/ui/Radio.svelte';
@@ -7,11 +12,10 @@
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import {
 		AutoModeFill,
+		CasinoFill,
 		DarkModeFill,
-		FullscreenFill,
 		LightModeFill,
 		PaletteFill,
-		ScheduleFill,
 		WallpaperFill
 	} from '$lib/icons';
 
@@ -19,6 +23,7 @@
 	const themeMode = $derived(shell.state.appState.themeMode);
 	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
 	const paletteMode = $derived(shell.state.appState.paletteMode);
+	const capsuleCornerStyle = $derived(shell.state.appState.capsuleCornerStyle);
 
 	const themeOptions = [
 		{
@@ -63,7 +68,7 @@
 			mode: PaletteMode.RANDOM,
 			label: '随机',
 			description: '随机生成的配色方案，不定时变更',
-			Icon: PaletteFill,
+			Icon: CasinoFill,
 			iconTone: 'primary' as const
 		}
 	] as const;
@@ -72,16 +77,30 @@
 		{
 			mode: TimetableLayoutMode.SCROLL,
 			label: '滚动查看',
-			description: '上下滚动查看完整课表，字体更大',
-			Icon: ScheduleFill,
-			iconTone: 'secondary' as const
+			description: '上下滚动查看完整课表，字体更大'
 		},
 		{
 			mode: TimetableLayoutMode.FIT,
 			label: '一屏显示',
-			description: '无需滚动，一屏展示全天课程',
-			Icon: FullscreenFill,
-			iconTone: 'secondary' as const
+			description: '一屏展示全天课程，无需滚动'
+		}
+	] as const;
+
+	const capsuleCornerOptions = [
+		{
+			mode: CapsuleCornerStyle.ROUNDED,
+			label: '保留圆角',
+			description: '四周保留完整圆角，保持原生样式'
+		},
+		{
+			mode: CapsuleCornerStyle.MERGE,
+			label: '合并圆角',
+			description: '相邻接触的课程边缘合并去圆角'
+		},
+		{
+			mode: CapsuleCornerStyle.SQUARE,
+			label: '移除圆角',
+			description: '移除四周圆角，呈现利落直角'
 		}
 	] as const;
 
@@ -98,6 +117,11 @@
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
 		trackEvent('settings_layout_change', { mode });
 		await shell.setTimetableLayoutMode(mode);
+	}
+
+	async function selectCapsuleCornerStyle(style: CapsuleCornerStyle) {
+		trackEvent('settings_capsule_corner_change', { style });
+		await shell.setCapsuleCornerStyle(style);
 	}
 </script>
 
@@ -146,15 +170,13 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title="课表显示样式">
+	<MineSection title="主页显示样式">
 		{#each layoutOptions as option (option.mode)}
 			{@const selected = layoutMode === option.mode}
 			<MineRow
 				label={true}
 				title={option.label}
 				supporting={option.description}
-				icon={option.Icon}
-				iconTone={option.iconTone}
 				onclick={() => selectLayoutMode(option.mode)}
 			>
 				{#snippet trailing()}
@@ -162,6 +184,26 @@
 						name="timetable-layout-mode"
 						checked={selected}
 						onchange={() => selectLayoutMode(option.mode)}
+					/>
+				{/snippet}
+			</MineRow>
+		{/each}
+	</MineSection>
+
+	<MineSection title="课程胶囊样式">
+		{#each capsuleCornerOptions as option (option.mode)}
+			{@const selected = capsuleCornerStyle === option.mode}
+			<MineRow
+				label={true}
+				title={option.label}
+				supporting={option.description}
+				onclick={() => selectCapsuleCornerStyle(option.mode)}
+			>
+				{#snippet trailing()}
+					<Radio
+						name="capsule-corner-style"
+						checked={selected}
+						onchange={() => selectCapsuleCornerStyle(option.mode)}
 					/>
 				{/snippet}
 			</MineRow>

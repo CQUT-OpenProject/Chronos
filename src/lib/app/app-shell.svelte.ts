@@ -1,5 +1,6 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
 import {
+	CapsuleCornerStyle,
 	PaletteMode,
 	ThemeMode,
 	TimetableLayoutMode,
@@ -70,6 +71,10 @@ export function createAppShell() {
 		await getServices().preferences.setPaletteMode(mode);
 	}
 
+	async function setCapsuleCornerStyle(style: CapsuleCornerStyle) {
+		await getServices().preferences.setCapsuleCornerStyle(style);
+	}
+
 	async function setWallpaper(wallpaper: Blob | null) {
 		await getServices().preferences.setWallpaper(wallpaper);
 	}
@@ -95,6 +100,7 @@ export function createAppShell() {
 		setThemeMode,
 		setTimetableLayoutMode,
 		setPaletteMode,
+		setCapsuleCornerStyle,
 		setWallpaper,
 		clearAllData,
 		get services() {

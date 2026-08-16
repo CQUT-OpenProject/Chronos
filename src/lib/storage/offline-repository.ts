@@ -140,6 +140,9 @@ export function createPreferencesRepository(
 		},
 		async setPaletteMode(mode) {
 			settings.setPaletteMode(mode);
+		},
+		async setCapsuleCornerStyle(style) {
+			settings.setCapsuleCornerStyle(style);
 		}
 	};
 }

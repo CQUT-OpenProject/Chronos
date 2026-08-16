@@ -57,6 +57,15 @@ export class TimetableDetailsEditor {
 		this.onDone();
 	};
 
+	private resetAcademicConfigToDefaults(today: string) {
+		if (!this.draft) return;
+		this.draft.academicConfig = {
+			...this.draft.academicConfig,
+			termStartDate: currentWeekMonday(today),
+			periodTimes: defaultPeriodTimes().map((period) => ({ ...period }))
+		};
+	}
+
 	resetToDefaultSettings = () => {
 		if (!this.draft) return;
 		const today = timeProvider.today();
@@ -70,20 +79,12 @@ export class TimetableDetailsEditor {
 			const applied = applyCampusPeriodTimes(this.draft, DEFAULT_CQUT_CAMPUS_ID);
 			this.missingCampusMessage = applied ? null : '请重新导入课表以获取该校区节次时间';
 			if (!applied) {
-				this.draft.academicConfig = {
-					...this.draft.academicConfig,
-					termStartDate: currentWeekMonday(today),
-					periodTimes: defaultPeriodTimes().map((period) => ({ ...period }))
-				};
+				this.resetAcademicConfigToDefaults(today);
 			}
 			return;
 		}
 
-		this.draft.academicConfig = {
-			...this.draft.academicConfig,
-			termStartDate: currentWeekMonday(today),
-			periodTimes: defaultPeriodTimes().map((period) => ({ ...period }))
-		};
+		this.resetAcademicConfigToDefaults(today);
 	};
 }
 

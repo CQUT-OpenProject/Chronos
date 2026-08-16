@@ -1,11 +1,15 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
 	import type { Course } from '$lib/models/course';
-	import { TimetableLayoutMode } from '$lib/models/app-state';
+	import { CapsuleCornerStyle, TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
-	import { placeCapsules, type PlacedCourseCapsule } from '$lib/timetable/capsule-layout';
+	import {
+		placeCapsules,
+		type CapsuleCorners,
+		type PlacedCourseCapsule
+	} from '$lib/timetable/capsule-layout';
 	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,
@@ -31,6 +35,7 @@
 		coursePalette: readonly CoursePaletteEntry[];
 		paletteCourses?: { name: string; color: string }[];
 		layoutMode?: TimetableLayoutMode;
+		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick?: (course: Course) => void;
 		onCourseLongClick?: (course: Course) => void;
 	}
@@ -44,6 +49,7 @@
 		coursePalette,
 		paletteCourses,
 		layoutMode = TimetableLayoutMode.SCROLL,
+		capsuleCornerStyle = CapsuleCornerStyle.ROUNDED,
 		onCourseClick,
 		onCourseLongClick
 	}: Props = $props();
@@ -67,7 +73,8 @@
 			expandedSlotKeys: expandedSlots,
 			coursePalette,
 			paletteCourses,
-			layoutMode
+			layoutMode,
+			capsuleCornerStyle
 		})
 	);
 
@@ -247,6 +254,17 @@
 		expandedSlots = new Set([...expandedSlots, key]);
 	}
 
+	function cornerClasses(corners: CapsuleCorners): string {
+		return [
+			corners.topLeft ? 'rounded-tl-xl' : null,
+			corners.topRight ? 'rounded-tr-xl' : null,
+			corners.bottomLeft ? 'rounded-bl-xl' : null,
+			corners.bottomRight ? 'rounded-br-xl' : null
+		]
+			.filter((name): name is string => name != null)
+			.join(' ');
+	}
+
 	const bodyScrollAttach: Attachment = (node) => {
 		const element = node as HTMLDivElement;
 		scrollContainer = element;
@@ -357,7 +375,7 @@
 					{#each placements as item (item.key)}
 						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
 						<div
-							class="absolute box-border overflow-hidden py-[3px]"
+							class="absolute box-border overflow-hidden"
 							style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
 							style:left="{item.geometry.leftPercent}%"
 							style:width="{item.geometry.widthPercent}%"
@@ -366,7 +384,9 @@
 							{#if item.kind === 'overlap-placeholder'}
 								<button
 									type="button"
-									class="flex h-full w-full items-center justify-center rounded-xl border border-outline-variant/50 bg-surface-variant p-2 text-center shadow-sm"
+									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
+										item.corners
+									)}"
 									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
 									onclick={() => expandSlot(item.key)}
 								>
@@ -394,10 +414,9 @@
 	{@const handlers = courseCardHandlers(placed.course)}
 	<button
 		type="button"
-		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left shadow-md {placed
-			.displayModel.isInDisplayedWeek
-			? ''
-			: 'opacity-45'}"
+		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
+			placed.corners
+		)} {placed.displayModel.isInDisplayedWeek ? '' : 'opacity-45'}"
 		style:--capsule={colors.background}
 		style:--capsule-fg={colors.text}
 		aria-label={buildCourseCapsuleAriaLabel(placed.course, { teacher })}
@@ -441,7 +460,7 @@
 					maxFontPx: locationMetrics.fontPx
 				}))}
 			>
-				{#each locationLines as line, index (index)}
+				{#each locationLines as line}
 					<div class="overflow-hidden whitespace-nowrap">{line}</div>
 				{/each}
 			</div>

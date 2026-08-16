@@ -1,7 +1,10 @@
 import {
+	CapsuleCornerStyle,
 	PaletteMode,
 	ThemeMode,
 	TimetableLayoutMode,
+	capsuleCornerStyleFromStorage,
+	capsuleCornerStyleToStorage,
 	paletteModeFromStorage,
 	paletteModeToStorage,
 	themeModeFromStorage,
@@ -15,6 +18,7 @@ export interface UserPreferenceState {
 	themeMode: ThemeMode;
 	timetableLayoutMode: TimetableLayoutMode;
 	paletteMode: PaletteMode;
+	capsuleCornerStyle: CapsuleCornerStyle;
 }
 
 const KEYS = {
@@ -22,6 +26,7 @@ const KEYS = {
 	themeMode: 'theme_mode',
 	timetableLayoutMode: 'timetable_layout_mode',
 	paletteMode: 'palette_mode',
+	capsuleCornerStyle: 'capsule_corner_style',
 	randomTheme: 'random_theme'
 } as const;
 
@@ -46,7 +51,8 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 				currentTimetableId: null,
 				themeMode: ThemeMode.SYSTEM,
 				timetableLayoutMode: TimetableLayoutMode.SCROLL,
-				paletteMode: PaletteMode.DEFAULT
+				paletteMode: PaletteMode.DEFAULT,
+				capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
 			};
 		}
 
@@ -59,6 +65,9 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 			paletteMode: paletteModeFromStorage(
 				target.getItem(storageKey(KEYS.paletteMode)),
 				target.getItem(storageKey(KEYS.randomTheme))
+			),
+			capsuleCornerStyle: capsuleCornerStyleFromStorage(
+				target.getItem(storageKey(KEYS.capsuleCornerStyle))
 			)
 		};
 	}
@@ -111,6 +120,9 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 			storage.setItem(storageKey(KEYS.paletteMode), paletteModeToStorage(mode));
 			storage.removeItem(storageKey(KEYS.randomTheme));
 			notify();
+		},
+		setCapsuleCornerStyle(style: CapsuleCornerStyle) {
+			setString(KEYS.capsuleCornerStyle, capsuleCornerStyleToStorage(style));
 		}
 	};
 }

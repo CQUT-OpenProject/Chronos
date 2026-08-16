@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { createCourse } from '$lib/models/course';
 import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
-import { PaletteMode, ThemeMode, TimetableLayoutMode, type AppState } from '$lib/models/app-state';
+import {
+	CapsuleCornerStyle,
+	PaletteMode,
+	ThemeMode,
+	TimetableLayoutMode,
+	type AppState
+} from '$lib/models/app-state';
 import {
 	emptyOnlineSchedulePayload,
 	type OnlineScheduleFetchResult,
@@ -15,7 +21,6 @@ import type { RemoteTimetableSource } from '../interfaces/remote-timetable-sourc
 import type { AuthSnapshot } from '$lib/models/auth';
 import { AcademicCalendarService } from '../services/academic-calendar';
 import type { TimeProvider } from '../services/time-provider';
-import { CalculateAcademicWeekUseCase } from './calculate-academic-week';
 import { ImportTimetableUseCase } from './import-timetable';
 import { PreviewOnlineTimetableUseCase } from './preview-online-timetable';
 import { SaveTimetableDetailsUseCase } from './save-timetable-details';
@@ -43,6 +48,7 @@ class FakeAppBackend {
 	themeMode = ThemeMode.SYSTEM;
 	timetableLayoutMode = TimetableLayoutMode.SCROLL;
 	paletteMode = PaletteMode.DEFAULT;
+	capsuleCornerStyle = CapsuleCornerStyle.ROUNDED;
 	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
@@ -50,7 +56,8 @@ class FakeAppBackend {
 		currentTimetable: null,
 		themeMode: ThemeMode.SYSTEM,
 		timetableLayoutMode: TimetableLayoutMode.SCROLL,
-		paletteMode: PaletteMode.DEFAULT
+		paletteMode: PaletteMode.DEFAULT,
+		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
 	};
 
 	syncState() {
@@ -70,7 +77,8 @@ class FakeAppBackend {
 			currentTimetable: current,
 			themeMode: this.themeMode,
 			timetableLayoutMode: this.timetableLayoutMode,
-			paletteMode: this.paletteMode
+			paletteMode: this.paletteMode,
+			capsuleCornerStyle: this.capsuleCornerStyle
 		};
 	}
 }
@@ -176,6 +184,11 @@ class FakePreferencesRepository implements PreferencesRepository {
 		this.backend.paletteMode = mode;
 		this.backend.syncState();
 	}
+
+	async setCapsuleCornerStyle(style: CapsuleCornerStyle): Promise<void> {
+		this.backend.capsuleCornerStyle = style;
+		this.backend.syncState();
+	}
 }
 
 class FakeTimetableShareCodec implements TimetableShareCodec {
@@ -183,10 +196,6 @@ class FakeTimetableShareCodec implements TimetableShareCodec {
 
 	decode(): AppResult<OnlineSchedulePayload> {
 		return success(emptyOnlineSchedulePayload());
-	}
-
-	encode(): AppResult<string> {
-		return success('{}');
 	}
 
 	toTimetable(_payload: OnlineSchedulePayload): AppResult<Timetable> {
@@ -230,8 +239,7 @@ describe('domain use cases', () => {
 	const academicCalendarService = new AcademicCalendarService();
 
 	it('calculateAcademicWeek clamps before term start', () => {
-		const useCase = new CalculateAcademicWeekUseCase();
-		const result = useCase.invoke('2026-03-01', {
+		const result = academicCalendarService.calculateAcademicWeek('2026-03-01', {
 			termStartDate: '2026-03-09',
 			startWeek: 3,
 			endWeek: 18,

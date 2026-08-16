@@ -73,6 +73,31 @@ export function paletteModeFromStorage(
 	return PaletteMode.DEFAULT;
 }
 
+export enum CapsuleCornerStyle {
+	ROUNDED = 'ROUNDED',
+	MERGE = 'MERGE',
+	SQUARE = 'SQUARE'
+}
+
+const CAPSULE_CORNER_STORAGE: Record<CapsuleCornerStyle, string> = {
+	[CapsuleCornerStyle.ROUNDED]: 'rounded',
+	[CapsuleCornerStyle.MERGE]: 'merge',
+	[CapsuleCornerStyle.SQUARE]: 'square'
+};
+
+export function capsuleCornerStyleToStorage(style: CapsuleCornerStyle): string {
+	return CAPSULE_CORNER_STORAGE[style];
+}
+
+export function capsuleCornerStyleFromStorage(
+	value: string | null | undefined
+): CapsuleCornerStyle {
+	const normalized = value?.trim().toLowerCase();
+	if (normalized === 'merge') return CapsuleCornerStyle.MERGE;
+	if (normalized === 'square') return CapsuleCornerStyle.SQUARE;
+	return CapsuleCornerStyle.ROUNDED;
+}
+
 export interface TimetableSummary {
 	id: string;
 	name: string;
@@ -89,6 +114,7 @@ export interface AppState {
 	themeMode: ThemeMode;
 	timetableLayoutMode: TimetableLayoutMode;
 	paletteMode: PaletteMode;
+	capsuleCornerStyle: CapsuleCornerStyle;
 }
 
 export function emptyAppState(): AppState {
@@ -99,6 +125,7 @@ export function emptyAppState(): AppState {
 		currentTimetable: null,
 		themeMode: ThemeMode.SYSTEM,
 		timetableLayoutMode: TimetableLayoutMode.SCROLL,
-		paletteMode: PaletteMode.DEFAULT
+		paletteMode: PaletteMode.DEFAULT,
+		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
 	};
 }

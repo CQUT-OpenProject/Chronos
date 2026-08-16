@@ -3,17 +3,17 @@ import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/model
 import type { AcademicConfig } from '$lib/models/timetable';
 import { BuildVisibleTimetableGridUseCase } from '$lib/domain/usecases/build-visible-timetable-grid';
 import { BuildTimetableCourseDisplayModelsUseCase } from '$lib/domain/usecases/build-timetable-course-display-models';
-import { CalculateAcademicWeekUseCase } from '$lib/domain/usecases/calculate-academic-week';
+import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
 
 const buildVisibleTimetableGrid = new BuildVisibleTimetableGridUseCase();
 const buildTimetableCourseDisplayModels = new BuildTimetableCourseDisplayModelsUseCase();
-const calculateAcademicWeek = new CalculateAcademicWeekUseCase();
+const academicCalendarService = new AcademicCalendarService();
 
 export function invokeCalculateAcademicWeek(
 	today: string,
 	academicConfig?: AcademicConfig | null
 ): number {
-	return calculateAcademicWeek.invoke(today, academicConfig);
+	return academicCalendarService.calculateAcademicWeek(today, academicConfig);
 }
 
 export function invokeBuildVisibleTimetableGrid(

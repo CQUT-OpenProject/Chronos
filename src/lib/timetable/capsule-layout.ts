@@ -1,5 +1,5 @@
 import type { Course } from '$lib/models/course';
-import { TimetableLayoutMode } from '$lib/models/app-state';
+import { CapsuleCornerStyle, TimetableLayoutMode } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel } from '$lib/models/presentation';
 import {
 	COURSE_PALETTE_ENTRIES,
@@ -37,6 +37,17 @@ export interface CapsuleGeometry {
 	endPeriod: number;
 }
 
+/**
+ * Per-corner rounding, derived from adjacent capsules: a corner keeps its
+ * radius only when both incident edges are exposed (no touching neighbor).
+ */
+export interface CapsuleCorners {
+	topLeft: boolean;
+	topRight: boolean;
+	bottomLeft: boolean;
+	bottomRight: boolean;
+}
+
 export interface PlacedCourseCapsule {
 	kind: 'course';
 	key: string;
@@ -50,6 +61,7 @@ export interface PlacedCourseCapsule {
 	teacher: string;
 	badgeLabel: string | null;
 	overlapCount: number;
+	corners: CapsuleCorners;
 }
 
 export interface PlacedOverlapPlaceholder {
@@ -58,6 +70,7 @@ export interface PlacedOverlapPlaceholder {
 	geometry: CapsuleGeometry;
 	count: number;
 	placeholderPx: number;
+	corners: CapsuleCorners;
 }
 
 export type PlacedItem = PlacedCourseCapsule | PlacedOverlapPlaceholder;
@@ -70,12 +83,7 @@ export interface PlaceCapsulesInput {
 	layoutMode?: TimetableLayoutMode;
 	coursePalette?: readonly CoursePaletteEntry[];
 	paletteCourses?: { name: string; color: string }[];
-}
-
-interface SlotPosition {
-	dayOfWeek: number;
-	startPeriod: number;
-	endPeriod: number;
+	capsuleCornerStyle?: CapsuleCornerStyle;
 }
 
 interface CourseSlotGroup {
@@ -83,7 +91,6 @@ interface CourseSlotGroup {
 	startPeriod: number;
 	endPeriod: number;
 	courses: TimetableCourseDisplayModel[];
-	position: SlotPosition;
 }
 
 interface LocationParts {
@@ -130,7 +137,8 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		expandedSlotKeys,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		coursePalette = COURSE_PALETTE_ENTRIES,
-		paletteCourses
+		paletteCourses,
+		capsuleCornerStyle = CapsuleCornerStyle.ROUNDED
 	} = input;
 	const compact = layoutMode === TimetableLayoutMode.FIT;
 	const visibleDayCount = visibleDays.length;
@@ -180,7 +188,8 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 					endPeriod: group.endPeriod
 				},
 				count,
-				placeholderPx: scale.placeholderPx
+				placeholderPx: scale.placeholderPx,
+				corners: ALL_CORNERS_ROUNDED
 			});
 			continue;
 		}
@@ -203,6 +212,11 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		});
 	}
 
+	if (capsuleCornerStyle === CapsuleCornerStyle.MERGE) {
+		applyCapsuleCornerRounding(items);
+	} else if (capsuleCornerStyle === CapsuleCornerStyle.SQUARE) {
+		applyCapsuleSquareCorners(items);
+	}
 	return items;
 }
 
@@ -255,8 +269,101 @@ function placeCourseCapsule(options: {
 		locationMetrics,
 		teacher: course.teacher.trim(),
 		badgeLabel: displayModel.isInDisplayedWeek ? null : BADGE_LABEL,
-		overlapCount
+		overlapCount,
+		corners: ALL_CORNERS_ROUNDED
 	};
+}
+
+const ALL_CORNERS_ROUNDED: CapsuleCorners = {
+	topLeft: true,
+	topRight: true,
+	bottomLeft: true,
+	bottomRight: true
+};
+
+const ALL_CORNERS_SQUARE: CapsuleCorners = {
+	topLeft: false,
+	topRight: false,
+	bottomLeft: false,
+	bottomRight: false
+};
+
+export function applyCapsuleSquareCorners<T extends CorneredItem>(items: T[]): void {
+	for (const item of items) {
+		item.corners = ALL_CORNERS_SQUARE;
+	}
+}
+
+const POSITION_EPSILON = 0.001;
+
+interface CorneredItem {
+	geometry: CapsuleGeometry;
+	corners: CapsuleCorners;
+}
+
+/**
+ * Derive per-corner rounding from neighbors using pure 2D rectangle contact:
+ * a corner stays rounded only when both incident edges are exposed. Vertical
+ * neighbors overlap in X and touch exactly in period range (start === previous
+ * end + 1); horizontal neighbors touch in X (flush at left + width) and share
+ * an overlapping period range. Column membership is derived from X overlap, so
+ * expanded subcolumns never misalign with adjacent days.
+ */
+export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): void {
+	if (items.length === 0) return;
+
+	for (const item of items) {
+		const { leftPercent: left, widthPercent: width, startPeriod, endPeriod } = item.geometry;
+		const right = left + width;
+		let topExposed = true;
+		let bottomExposed = true;
+		let leftExposed = true;
+		let rightExposed = true;
+
+		for (const other of items) {
+			if (other === item) continue;
+			const {
+				leftPercent: otherLeft,
+				widthPercent: otherWidth,
+				startPeriod: otherStart,
+				endPeriod: otherEnd
+			} = other.geometry;
+			const otherRight = otherLeft + otherWidth;
+
+			if (overlapsX(left, right, otherLeft, otherRight)) {
+				if (otherEnd + 1 === startPeriod) topExposed = false;
+				if (otherStart === endPeriod + 1) bottomExposed = false;
+			}
+			if (rangesIntersect(startPeriod, endPeriod, otherStart, otherEnd)) {
+				if (isFlushRightOf(otherLeft, otherRight, left)) leftExposed = false;
+				if (isFlushRightOf(left, right, otherLeft)) rightExposed = false;
+			}
+		}
+
+		item.corners = {
+			topLeft: topExposed && leftExposed,
+			topRight: topExposed && rightExposed,
+			bottomLeft: bottomExposed && leftExposed,
+			bottomRight: bottomExposed && rightExposed
+		};
+	}
+}
+
+function overlapsX(left: number, right: number, otherLeft: number, otherRight: number): boolean {
+	return Math.max(left, otherLeft) < Math.min(right, otherRight) - POSITION_EPSILON;
+}
+
+function rangesIntersect(
+	start: number,
+	end: number,
+	otherStart: number,
+	otherEnd: number
+): boolean {
+	return start <= otherEnd && otherStart <= end;
+}
+
+function isFlushRightOf(otherLeft: number, otherRight: number, left: number): boolean {
+	return Math.abs(otherRight - left) < POSITION_EPSILON;
 }
 export function shouldShowLocationCampus(columnWidthPx: number, overlapCount = 1): boolean {
 	const overlap = Math.max(1, overlapCount);
@@ -423,8 +530,7 @@ function toCourseSlotGroup(courses: TimetableCourseDisplayModel[]): CourseSlotGr
 		dayOfWeek,
 		startPeriod,
 		endPeriod,
-		courses,
-		position: { dayOfWeek, startPeriod, endPeriod }
+		courses
 	};
 }
 
