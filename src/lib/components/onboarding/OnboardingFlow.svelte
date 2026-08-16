@@ -17,9 +17,7 @@
 	import InstallGuideCard from '$lib/components/pwa/InstallGuideCard.svelte';
 	import {
 		DownloadFill,
-		FullscreenFill,
 		PaletteFill,
-		ScheduleFill,
 		WifiOffFill,
 		IosShareFill,
 		DescriptionFill
@@ -36,14 +34,12 @@
 		{
 			mode: TimetableLayoutMode.SCROLL,
 			label: '滚动查看',
-			description: '上下滚动查看全天课程，字体更大',
-			Icon: ScheduleFill
+			description: '上下滚动查看全天课程，字体更大'
 		},
 		{
 			mode: TimetableLayoutMode.FIT,
 			label: '一屏显示',
-			description: '一屏展示全天课程，无需滚动',
-			Icon: FullscreenFill
+			description: '一屏展示全天课程，无需滚动'
 		}
 	] as const;
 
@@ -222,7 +218,7 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									选择课表显示样式
+									选择主页显示样式
 								</h2>
 								<p class="m3-body-small text-center text-on-surface-variant">
 									可随时在「显示设置」中更改。
@@ -237,9 +233,6 @@
 													? 'border-brand ring-1 ring-brand'
 													: ''}"
 											>
-												<span class="m3-leading-icon tone-primary" aria-hidden="true">
-													<option.Icon />
-												</span>
 												<div class="flex min-w-0 flex-1 flex-col justify-center">
 													<p class="m3-body-large text-on-surface">{option.label}</p>
 													<p class="m3-body-small text-on-surface-variant">
