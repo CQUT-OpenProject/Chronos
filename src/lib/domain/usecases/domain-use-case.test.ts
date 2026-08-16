@@ -15,7 +15,6 @@ import type { RemoteTimetableSource } from '../interfaces/remote-timetable-sourc
 import type { AuthSnapshot } from '$lib/models/auth';
 import { AcademicCalendarService } from '../services/academic-calendar';
 import type { TimeProvider } from '../services/time-provider';
-import { CalculateAcademicWeekUseCase } from './calculate-academic-week';
 import { ImportTimetableUseCase } from './import-timetable';
 import { PreviewOnlineTimetableUseCase } from './preview-online-timetable';
 import { SaveTimetableDetailsUseCase } from './save-timetable-details';
@@ -226,8 +225,7 @@ describe('domain use cases', () => {
 	const academicCalendarService = new AcademicCalendarService();
 
 	it('calculateAcademicWeek clamps before term start', () => {
-		const useCase = new CalculateAcademicWeekUseCase();
-		const result = useCase.invoke('2026-03-01', {
+		const result = academicCalendarService.calculateAcademicWeek('2026-03-01', {
 			termStartDate: '2026-03-09',
 			startWeek: 3,
 			endWeek: 18,
