@@ -79,7 +79,7 @@
 		{
 			mode: TimetableLayoutMode.FIT,
 			label: '一屏显示',
-			description: '无需滚动，一屏展示全天课程',
+			description: '一屏展示全天课程，无需滚动',
 			Icon: FullscreenFill,
 			iconTone: 'secondary' as const
 		}

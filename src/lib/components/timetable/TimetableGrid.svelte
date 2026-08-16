@@ -5,7 +5,11 @@
 	import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
-	import { placeCapsules, type PlacedCourseCapsule } from '$lib/timetable/capsule-layout';
+	import {
+		placeCapsules,
+		type CapsuleCorners,
+		type PlacedCourseCapsule
+	} from '$lib/timetable/capsule-layout';
 	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,
@@ -247,6 +251,17 @@
 		expandedSlots = new Set([...expandedSlots, key]);
 	}
 
+	function cornerClasses(corners: CapsuleCorners): string {
+		return [
+			corners.topLeft ? 'rounded-tl-xl' : null,
+			corners.topRight ? 'rounded-tr-xl' : null,
+			corners.bottomLeft ? 'rounded-bl-xl' : null,
+			corners.bottomRight ? 'rounded-br-xl' : null
+		]
+			.filter((name): name is string => name != null)
+			.join(' ');
+	}
+
 	const bodyScrollAttach: Attachment = (node) => {
 		const element = node as HTMLDivElement;
 		scrollContainer = element;
@@ -366,7 +381,9 @@
 							{#if item.kind === 'overlap-placeholder'}
 								<button
 									type="button"
-									class="flex h-full w-full items-center justify-center rounded-xl border border-outline-variant/50 bg-surface-variant p-2 text-center"
+									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
+										item.corners
+									)}"
 									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
 									onclick={() => expandSlot(item.key)}
 								>
@@ -394,10 +411,9 @@
 	{@const handlers = courseCardHandlers(placed.course)}
 	<button
 		type="button"
-		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left {placed
-			.displayModel.isInDisplayedWeek
-			? ''
-			: 'opacity-45'}"
+		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
+			placed.corners
+		)} {placed.displayModel.isInDisplayedWeek ? '' : 'opacity-45'}"
 		style:--capsule={colors.background}
 		style:--capsule-fg={colors.text}
 		aria-label={buildCourseCapsuleAriaLabel(placed.course, { teacher })}

@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
+	applyCapsuleCornerRounding,
 	buildSlotGroups,
 	locationDisplayLines,
 	parseLocationParts,
 	placeCapsules,
 	resolveCapsuleTypeScale,
 	resolveLocationBlockMetrics,
-	shouldShowLocationCampus
+	shouldShowLocationCampus,
+	type CapsuleCorners,
+	type PlacedCourseCapsule,
+	type PlacedItem
 } from './capsule-layout';
 import { EASTER_EGG_PALETTE_ENTRIES } from '$lib/parsers/course-palette';
 import { periodSlotKey } from './slot-key';
@@ -346,6 +350,230 @@ describe('placeCapsules', () => {
 		expect(item?.kind).toBe('course');
 		if (item?.kind !== 'course') return;
 		expect(item.badgeLabel).toBe('非本周');
+	});
+});
+
+describe('capsule corner rounding', () => {
+	const visibleDays = [{ dayOfWeek: 1 }, { dayOfWeek: 2 }, { dayOfWeek: 3 }];
+
+	const allRounded: CapsuleCorners = {
+		topLeft: true,
+		topRight: true,
+		bottomLeft: true,
+		bottomRight: true
+	};
+
+	function findCourse(items: PlacedItem[], id: string): PlacedCourseCapsule {
+		const item = items.find((entry) => entry.kind === 'course' && entry.course.id === id);
+		expect(item?.kind).toBe('course');
+		if (item?.kind !== 'course') throw new Error(`missing course ${id}`);
+		return item;
+	}
+
+	function place(models: ReturnType<typeof courseModel>[], expanded = false) {
+		const slotKeys = new Set<string>();
+		if (expanded) {
+			for (const group of buildSlotGroups(models)) {
+				slotKeys.add(periodSlotKey(group.dayOfWeek, group.startPeriod, group.endPeriod));
+			}
+		}
+		return placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: slotKeys
+		});
+	}
+
+	it('keeps every corner rounded for an isolated capsule', () => {
+		const items = place([courseModel('a', 2, 2, 2)]);
+		expect(findCourse(items, 'a').corners).toEqual(allRounded);
+	});
+
+	it('squares the touching corners of vertically adjacent capsules', () => {
+		const items = place([courseModel('a', 2, 1, 1), courseModel('b', 2, 2, 2)]);
+		expect(findCourse(items, 'a').corners).toEqual({
+			topLeft: true,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'b').corners).toEqual({
+			topLeft: false,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: true
+		});
+	});
+
+	it('squares the touching corners of horizontally adjacent capsules', () => {
+		const items = place([courseModel('a', 1, 1, 1), courseModel('b', 2, 1, 1)]);
+		expect(findCourse(items, 'a').corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'b').corners).toEqual({
+			topLeft: false,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: true
+		});
+	});
+
+	it('squares every corner of a fully sandwiched capsule', () => {
+		const items = place([
+			courseModel('above', 2, 1, 1),
+			courseModel('center', 2, 2, 2),
+			courseModel('below', 2, 3, 3),
+			courseModel('left', 1, 2, 2),
+			courseModel('right', 3, 2, 2)
+		]);
+		expect(findCourse(items, 'center').corners).toEqual({
+			topLeft: false,
+			topRight: false,
+			bottomLeft: false,
+			bottomRight: false
+		});
+	});
+
+	it('squares the side corners of expanded overlap siblings', () => {
+		const items = place([courseModel('a', 1, 1, 2), courseModel('b', 1, 2, 3)], true);
+		expect(findCourse(items, 'a').corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'b').corners).toEqual({
+			topLeft: false,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: true
+		});
+	});
+
+	it('keeps rounding on the gap side when a row is empty', () => {
+		const items = place([courseModel('a', 2, 1, 1), courseModel('c', 2, 3, 3)]);
+		expect(findCourse(items, 'a').corners).toEqual(allRounded);
+		expect(findCourse(items, 'c').corners).toEqual(allRounded);
+	});
+
+	it('squares the side corners of an overlap placeholder next to a course', () => {
+		const items = place([
+			courseModel('a', 1, 1, 2),
+			courseModel('b', 1, 2, 3),
+			courseModel('c', 2, 1, 3)
+		]);
+		const placeholder = items.find((item) => item.kind === 'overlap-placeholder');
+		expect(placeholder?.kind).toBe('overlap-placeholder');
+		if (placeholder?.kind !== 'overlap-placeholder') return;
+		expect(placeholder.corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+	});
+
+	it('handles adjacent capsules that only partially overlap in period range', () => {
+		const items = place([courseModel('a', 1, 1, 2), courseModel('b', 2, 2, 3)]);
+		expect(findCourse(items, 'a').corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'b').corners).toEqual({
+			topLeft: false,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: true
+		});
+	});
+
+	it('never treats an expanded subcolumn as a vertical neighbor of the adjacent day', () => {
+		const items = place(
+			[courseModel('mon-1', 1, 2, 3), courseModel('mon-2', 1, 2, 3), courseModel('tue-1', 2, 1, 1)],
+			true
+		);
+		expect(findCourse(items, 'mon-2').corners.topRight).toBe(true);
+		expect(findCourse(items, 'tue-1').corners.bottomLeft).toBe(true);
+		expect(findCourse(items, 'tue-1').corners.bottomRight).toBe(true);
+	});
+
+	it('squares subcolumn corners against a full-width course above in the same day', () => {
+		const items = place(
+			[courseModel('above', 1, 1, 1), courseModel('mon-a', 1, 2, 3), courseModel('mon-b', 1, 2, 3)],
+			true
+		);
+		expect(findCourse(items, 'above').corners).toEqual({
+			topLeft: true,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'mon-a').corners).toEqual({
+			topLeft: false,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'mon-b').corners).toEqual({
+			topLeft: false,
+			topRight: false,
+			bottomLeft: false,
+			bottomRight: true
+		});
+	});
+
+	it('works when called directly on raw geometries', () => {
+		const items: PlacedItem[] = [
+			{
+				kind: 'course',
+				key: 'x',
+				course: courseModel('x', 1, 1, 1).course,
+				displayModel: courseModel('x', 1, 1, 1),
+				geometry: { leftPercent: 0, widthPercent: 50, startPeriod: 1, endPeriod: 1 },
+				colors: { background: '#EADDFF', text: '#21005D' },
+				scale: resolveCapsuleTypeScale(110),
+				locationLines: [],
+				locationMetrics: { fontPx: 10, heightPx: 30 },
+				teacher: '',
+				badgeLabel: null,
+				overlapCount: 1,
+				corners: allRounded
+			},
+			{
+				kind: 'course',
+				key: 'y',
+				course: courseModel('y', 1, 1, 1).course,
+				displayModel: courseModel('y', 1, 1, 1),
+				geometry: { leftPercent: 50, widthPercent: 50, startPeriod: 1, endPeriod: 1 },
+				colors: { background: '#EADDFF', text: '#21005D' },
+				scale: resolveCapsuleTypeScale(110),
+				locationLines: [],
+				locationMetrics: { fontPx: 10, heightPx: 30 },
+				teacher: '',
+				badgeLabel: null,
+				overlapCount: 1,
+				corners: allRounded
+			}
+		];
+		applyCapsuleCornerRounding(items);
+		expect(items[0]!.corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(items[1]!.corners).toEqual({
+			topLeft: false,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: true
+		});
 	});
 });
 
