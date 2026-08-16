@@ -6,10 +6,7 @@ import type {
 	OnlineSchedulePayload,
 	OnlineScheduleWeekDay
 } from '$lib/models/online-schedule';
-import {
-	encodeOnlineSchedulePayload,
-	parseOnlineSchedulePayload
-} from '$lib/models/online-schedule-schema';
+import { parseOnlineSchedulePayload } from '$lib/models/online-schedule-schema';
 import {
 	TimetableImportSource,
 	normalizeTimetableName,
@@ -51,14 +48,6 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 			return success(parseOnlineSchedulePayload(json));
 		} catch {
 			return failure(AppError.dataFormat('分享链接解析失败'));
-		}
-	}
-
-	encode(timetable: Timetable): AppResult<string> {
-		try {
-			return success(encodeOnlineSchedulePayload(this.toOnlinePayload(timetable)));
-		} catch {
-			return failure(AppError.dataFormat('课表导出失败'));
 		}
 	}
 
@@ -133,65 +122,6 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 				showSunday: courses.some((course) => course.dayOfWeek === 7),
 				showNonCurrentWeekCourses: false
 			}
-		});
-	}
-
-	private toOnlinePayload(timetable: Timetable): OnlineSchedulePayload {
-		const today = this.timeProvider.today();
-		const academicWeek = this.academicCalendarService.calculateAcademicWeek(
-			today,
-			timetable.academicConfig
-		);
-		const weekStart = this.academicCalendarService.resolveWeekStart(
-			timetable.academicConfig,
-			academicWeek,
-			today
-		);
-		const weekNum = String(academicWeek);
-		const weekList = Array.from(
-			{ length: timetable.academicConfig.endWeek - timetable.academicConfig.startWeek + 1 },
-			(_, index) => String(timetable.academicConfig.startWeek + index)
-		);
-
-		return {
-			yearTerm: timetable.name,
-			weekNum,
-			nowMonth: String(parseIsoDate(weekStart).getUTCMonth() + 1),
-			importSource: timetable.importMetadata.source,
-			termStartDate: this.exportTermStartDate(
-				timetable.importMetadata.source,
-				timetable.academicConfig.termStartDate,
-				today
-			),
-			yearTermList: [timetable.name],
-			weekList,
-			weekDayList: this.buildWeekDayList(today, weekStart),
-			eventList: timetable.courses.map((course) => this.toOnlineEvent(course, weekNum))
-		};
-	}
-
-	private exportTermStartDate(
-		importSource: TimetableImportSource,
-		termStartDate: string,
-		referenceDate: string
-	): string | null {
-		if (importSource === TimetableImportSource.ONLINE_EDU) return null;
-		return this.academicCalendarService.normalizeTermStartDate(termStartDate, referenceDate);
-	}
-
-	private buildWeekDayList(referenceDate: string, weekStart: string): OnlineScheduleWeekDay[] {
-		const labels = ['一', '二', '三', '四', '五', '六', '日'];
-		const start = parseIsoDate(weekStart);
-		const today = parseIsoDate(referenceDate);
-		return labels.map((weekDay, offset) => {
-			const date = addDays(start, offset);
-			const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-			const day = String(date.getUTCDate()).padStart(2, '0');
-			return {
-				weekDay,
-				weekDate: `${month}/${day}`,
-				today: formatIsoDate(date) === formatIsoDate(today)
-			};
 		});
 	}
 
@@ -434,34 +364,6 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 			weeks,
 			remark: sanitized.remark.trim()
 		};
-	}
-
-	private toOnlineEvent(course: Course, currentWeek: string): OnlineScheduleEvent {
-		return {
-			weekNum: currentWeek,
-			weekDay: String(course.dayOfWeek),
-			weekList: course.weeks.map(String),
-			weekCover: this.toWeekCover(course.weeks),
-			sessionList: Array.from({ length: course.endPeriod - course.startPeriod + 1 }, (_, index) =>
-				String(course.startPeriod + index)
-			),
-			sessionStart: String(course.startPeriod),
-			sessionLast: String(course.endPeriod - course.startPeriod + 1),
-			eventName: course.name,
-			address: course.location,
-			memberName: course.teacher,
-			remark: course.remark,
-			duplicateGroupType: 'none',
-			duplicateGroup: 0,
-			eventType: 'course',
-			eventID: course.id
-		};
-	}
-
-	private toWeekCover(weeks: number[]): string {
-		if (weeks.length === 0) return '';
-		if (weeks.length === 1) return `${weeks[0]}周`;
-		return `${weeks[0]}-${weeks[weeks.length - 1]}周`;
 	}
 
 	private toTimetableImportSource(value: string): TimetableImportSource | null {

@@ -152,15 +152,6 @@ export function truncateMiddleByFit(
 
 let sharedCanvas: HTMLCanvasElement | null = null;
 
-/** Reads the canvas `font` shorthand from a live element. */
-export function resolveFont(element: Element): string {
-	const style = getComputedStyle(element);
-	return (
-		style.font ||
-		`${style.fontStyle} ${style.fontWeight} ${style.fontSize} / ${style.lineHeight} ${style.fontFamily}`
-	);
-}
-
 /** Offscreen canvas measurer — avoids layout thrashing while truncating. */
 export function createCanvasMeasurer(font: string): MeasureFn {
 	if (typeof document === 'undefined') {

@@ -104,42 +104,6 @@ const EVENT_KEY_MAP: Record<string, keyof OnlineScheduleEvent> = {
 	eventID: 'eventID'
 };
 
-const PAYLOAD_SHORT_KEYS: Record<keyof OnlineSchedulePayload, string> = {
-	yearTerm: 'yt',
-	weekNum: 'wn',
-	nowMonth: 'nm',
-	importSource: 'is',
-	termStartDate: 'ts',
-	yearTermList: 'yl',
-	weekList: 'wl',
-	weekDayList: 'wd',
-	eventList: 'el'
-};
-
-const WEEK_DAY_SHORT_KEYS: Record<keyof OnlineScheduleWeekDay, string> = {
-	weekDay: 'wd',
-	weekDate: 'dt',
-	today: 'td'
-};
-
-const EVENT_SHORT_KEYS: Record<keyof OnlineScheduleEvent, string> = {
-	weekNum: 'wn',
-	weekDay: 'wd',
-	weekList: 'wl',
-	weekCover: 'wc',
-	sessionList: 'sl',
-	sessionStart: 'ss',
-	sessionLast: 'se',
-	eventName: 'en',
-	address: 'ad',
-	memberName: 'mn',
-	remark: 'rm',
-	duplicateGroupType: 'gt',
-	duplicateGroup: 'dg',
-	eventType: 'et',
-	eventID: 'id'
-};
-
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -184,43 +148,4 @@ export function normalizeShareJson(raw: unknown): unknown {
 export function parseOnlineSchedulePayload(json: string): OnlineSchedulePayload {
 	const raw = JSON.parse(json) as unknown;
 	return onlineSchedulePayloadSchema.parse(normalizeShareJson(raw));
-}
-
-export function encodeOnlineSchedulePayload(payload: OnlineSchedulePayload): string {
-	const shortPayload: Record<string, unknown> = {};
-	for (const [longKey, shortKey] of Object.entries(PAYLOAD_SHORT_KEYS) as [
-		keyof OnlineSchedulePayload,
-		string
-	][]) {
-		const value = payload[longKey];
-		if (longKey === 'termStartDate' && (value === null || value === undefined)) {
-			continue;
-		}
-		if (longKey === 'weekDayList') {
-			shortPayload[shortKey] = (value as OnlineScheduleWeekDay[]).map((day) => {
-				const item: Record<string, unknown> = {};
-				for (const [dayLong, dayShort] of Object.entries(WEEK_DAY_SHORT_KEYS) as [
-					keyof OnlineScheduleWeekDay,
-					string
-				][]) {
-					item[dayShort] = day[dayLong];
-				}
-				return item;
-			});
-		} else if (longKey === 'eventList') {
-			shortPayload[shortKey] = (value as OnlineScheduleEvent[]).map((event) => {
-				const item: Record<string, unknown> = {};
-				for (const [eventLong, eventShort] of Object.entries(EVENT_SHORT_KEYS) as [
-					keyof OnlineScheduleEvent,
-					string
-				][]) {
-					item[eventShort] = event[eventLong];
-				}
-				return item;
-			});
-		} else {
-			shortPayload[shortKey] = value;
-		}
-	}
-	return JSON.stringify(shortPayload);
 }

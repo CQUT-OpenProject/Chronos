@@ -185,10 +185,6 @@ class FakeTimetableShareCodec implements TimetableShareCodec {
 		return success(emptyOnlineSchedulePayload());
 	}
 
-	encode(): AppResult<string> {
-		return success('{}');
-	}
-
 	toTimetable(_payload: OnlineSchedulePayload): AppResult<Timetable> {
 		return success(this.timetable);
 	}

@@ -72,18 +72,11 @@ export interface PlaceCapsulesInput {
 	paletteCourses?: { name: string; color: string }[];
 }
 
-interface SlotPosition {
-	dayOfWeek: number;
-	startPeriod: number;
-	endPeriod: number;
-}
-
 interface CourseSlotGroup {
 	dayOfWeek: number;
 	startPeriod: number;
 	endPeriod: number;
 	courses: TimetableCourseDisplayModel[];
-	position: SlotPosition;
 }
 
 interface LocationParts {
@@ -423,8 +416,7 @@ function toCourseSlotGroup(courses: TimetableCourseDisplayModel[]): CourseSlotGr
 		dayOfWeek,
 		startPeriod,
 		endPeriod,
-		courses,
-		position: { dayOfWeek, startPeriod, endPeriod }
+		courses
 	};
 }
 
