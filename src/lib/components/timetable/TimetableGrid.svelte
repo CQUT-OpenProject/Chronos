@@ -357,7 +357,7 @@
 					{#each placements as item (item.key)}
 						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
 						<div
-							class="absolute box-border overflow-hidden py-[3px]"
+							class="absolute box-border overflow-hidden"
 							style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
 							style:left="{item.geometry.leftPercent}%"
 							style:width="{item.geometry.widthPercent}%"
@@ -366,7 +366,7 @@
 							{#if item.kind === 'overlap-placeholder'}
 								<button
 									type="button"
-									class="flex h-full w-full items-center justify-center rounded-xl border border-outline-variant/50 bg-surface-variant p-2 text-center shadow-sm"
+									class="flex h-full w-full items-center justify-center rounded-xl border border-outline-variant/50 bg-surface-variant p-2 text-center"
 									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
 									onclick={() => expandSlot(item.key)}
 								>
@@ -394,7 +394,7 @@
 	{@const handlers = courseCardHandlers(placed.course)}
 	<button
 		type="button"
-		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left shadow-md {placed
+		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border p-2 text-left {placed
 			.displayModel.isInDisplayedWeek
 			? ''
 			: 'opacity-45'}"
