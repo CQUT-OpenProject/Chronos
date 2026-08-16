@@ -28,6 +28,7 @@ export function assembleAppState(
 		currentTimetable: currentTimetable ? copyForStateBoundary(currentTimetable) : null,
 		themeMode: preferences.themeMode,
 		timetableLayoutMode: preferences.timetableLayoutMode,
-		paletteMode: preferences.paletteMode
+		paletteMode: preferences.paletteMode,
+		capsuleCornerStyle: preferences.capsuleCornerStyle
 	};
 }

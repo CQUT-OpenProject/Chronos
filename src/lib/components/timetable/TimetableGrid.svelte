@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
 	import type { Course } from '$lib/models/course';
-	import { TimetableLayoutMode } from '$lib/models/app-state';
+	import { CapsuleCornerStyle, TimetableLayoutMode } from '$lib/models/app-state';
 	import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
@@ -35,6 +35,7 @@
 		coursePalette: readonly CoursePaletteEntry[];
 		paletteCourses?: { name: string; color: string }[];
 		layoutMode?: TimetableLayoutMode;
+		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick?: (course: Course) => void;
 		onCourseLongClick?: (course: Course) => void;
 	}
@@ -48,6 +49,7 @@
 		coursePalette,
 		paletteCourses,
 		layoutMode = TimetableLayoutMode.SCROLL,
+		capsuleCornerStyle = CapsuleCornerStyle.ROUNDED,
 		onCourseClick,
 		onCourseLongClick
 	}: Props = $props();
@@ -71,7 +73,8 @@
 			expandedSlotKeys: expandedSlots,
 			coursePalette,
 			paletteCourses,
-			layoutMode
+			layoutMode,
+			capsuleCornerStyle
 		})
 	);
 

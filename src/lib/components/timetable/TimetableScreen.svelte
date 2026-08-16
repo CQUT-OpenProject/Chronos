@@ -31,6 +31,7 @@
 	const coursePalette = $derived(shell.appearance.coursePalette);
 	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
 	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
+	const capsuleCornerStyle = $derived(shell.state.appState.capsuleCornerStyle);
 
 	const weekGesture = createWeekSliderGesture({
 		getStartWeek: () => startWeek,
@@ -172,6 +173,7 @@
 				{hasWallpaper}
 				{coursePalette}
 				{layoutMode}
+				{capsuleCornerStyle}
 				{onCourseClick}
 				{onCourseLongClick}
 			/>

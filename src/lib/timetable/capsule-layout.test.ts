@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
 	applyCapsuleCornerRounding,
+	applyCapsuleSquareCorners,
 	buildSlotGroups,
 	locationDisplayLines,
 	parseLocationParts,
@@ -12,6 +13,7 @@ import {
 	type PlacedCourseCapsule,
 	type PlacedItem
 } from './capsule-layout';
+import { CapsuleCornerStyle } from '$lib/models/app-state';
 import { EASTER_EGG_PALETTE_ENTRIES } from '$lib/parsers/course-palette';
 import { periodSlotKey } from './slot-key';
 
@@ -363,6 +365,13 @@ describe('capsule corner rounding', () => {
 		bottomRight: true
 	};
 
+	const allSquare: CapsuleCorners = {
+		topLeft: false,
+		topRight: false,
+		bottomLeft: false,
+		bottomRight: false
+	};
+
 	function findCourse(items: PlacedItem[], id: string): PlacedCourseCapsule {
 		const item = items.find((entry) => entry.kind === 'course' && entry.course.id === id);
 		expect(item?.kind).toBe('course');
@@ -370,7 +379,11 @@ describe('capsule corner rounding', () => {
 		return item;
 	}
 
-	function place(models: ReturnType<typeof courseModel>[], expanded = false) {
+	function place(
+		models: ReturnType<typeof courseModel>[],
+		expanded = false,
+		capsuleCornerStyle = CapsuleCornerStyle.MERGE
+	) {
 		const slotKeys = new Set<string>();
 		if (expanded) {
 			for (const group of buildSlotGroups(models)) {
@@ -381,11 +394,27 @@ describe('capsule corner rounding', () => {
 			courseDisplayModels: models,
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: slotKeys
+			expandedSlotKeys: slotKeys,
+			capsuleCornerStyle
 		});
 	}
 
-	it('keeps every corner rounded for an isolated capsule', () => {
+	it('keeps every corner rounded in ROUNDED style even when adjacent', () => {
+		const items = place(
+			[courseModel('a', 2, 1, 1), courseModel('b', 2, 2, 2)],
+			false,
+			CapsuleCornerStyle.ROUNDED
+		);
+		expect(findCourse(items, 'a').corners).toEqual(allRounded);
+		expect(findCourse(items, 'b').corners).toEqual(allRounded);
+	});
+
+	it('squares every corner in SQUARE style even for isolated capsule', () => {
+		const items = place([courseModel('a', 2, 2, 2)], false, CapsuleCornerStyle.SQUARE);
+		expect(findCourse(items, 'a').corners).toEqual(allSquare);
+	});
+
+	it('keeps every corner rounded for an isolated capsule in MERGE style', () => {
 		const items = place([courseModel('a', 2, 2, 2)]);
 		expect(findCourse(items, 'a').corners).toEqual(allRounded);
 	});
@@ -574,6 +603,10 @@ describe('capsule corner rounding', () => {
 			bottomLeft: false,
 			bottomRight: true
 		});
+
+		applyCapsuleSquareCorners(items);
+		expect(items[0]!.corners).toEqual(allSquare);
+		expect(items[1]!.corners).toEqual(allSquare);
 	});
 });
 

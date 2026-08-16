@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { createCourse } from '$lib/models/course';
 import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
-import { PaletteMode, ThemeMode, TimetableLayoutMode, type AppState } from '$lib/models/app-state';
+import {
+	CapsuleCornerStyle,
+	PaletteMode,
+	ThemeMode,
+	TimetableLayoutMode,
+	type AppState
+} from '$lib/models/app-state';
 import {
 	emptyOnlineSchedulePayload,
 	type OnlineScheduleFetchResult,
@@ -42,6 +48,7 @@ class FakeAppBackend {
 	themeMode = ThemeMode.SYSTEM;
 	timetableLayoutMode = TimetableLayoutMode.SCROLL;
 	paletteMode = PaletteMode.DEFAULT;
+	capsuleCornerStyle = CapsuleCornerStyle.ROUNDED;
 	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
@@ -49,7 +56,8 @@ class FakeAppBackend {
 		currentTimetable: null,
 		themeMode: ThemeMode.SYSTEM,
 		timetableLayoutMode: TimetableLayoutMode.SCROLL,
-		paletteMode: PaletteMode.DEFAULT
+		paletteMode: PaletteMode.DEFAULT,
+		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
 	};
 
 	syncState() {
@@ -69,7 +77,8 @@ class FakeAppBackend {
 			currentTimetable: current,
 			themeMode: this.themeMode,
 			timetableLayoutMode: this.timetableLayoutMode,
-			paletteMode: this.paletteMode
+			paletteMode: this.paletteMode,
+			capsuleCornerStyle: this.capsuleCornerStyle
 		};
 	}
 }
@@ -173,6 +182,11 @@ class FakePreferencesRepository implements PreferencesRepository {
 
 	async setPaletteMode(mode: PaletteMode): Promise<void> {
 		this.backend.paletteMode = mode;
+		this.backend.syncState();
+	}
+
+	async setCapsuleCornerStyle(style: CapsuleCornerStyle): Promise<void> {
+		this.backend.capsuleCornerStyle = style;
 		this.backend.syncState();
 	}
 }

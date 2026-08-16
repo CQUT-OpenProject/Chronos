@@ -1,5 +1,5 @@
 import type { Course } from '$lib/models/course';
-import { TimetableLayoutMode } from '$lib/models/app-state';
+import { CapsuleCornerStyle, TimetableLayoutMode } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel } from '$lib/models/presentation';
 import {
 	COURSE_PALETTE_ENTRIES,
@@ -83,6 +83,7 @@ export interface PlaceCapsulesInput {
 	layoutMode?: TimetableLayoutMode;
 	coursePalette?: readonly CoursePaletteEntry[];
 	paletteCourses?: { name: string; color: string }[];
+	capsuleCornerStyle?: CapsuleCornerStyle;
 }
 
 interface CourseSlotGroup {
@@ -136,7 +137,8 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		expandedSlotKeys,
 		layoutMode = TimetableLayoutMode.SCROLL,
 		coursePalette = COURSE_PALETTE_ENTRIES,
-		paletteCourses
+		paletteCourses,
+		capsuleCornerStyle = CapsuleCornerStyle.ROUNDED
 	} = input;
 	const compact = layoutMode === TimetableLayoutMode.FIT;
 	const visibleDayCount = visibleDays.length;
@@ -210,7 +212,11 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		});
 	}
 
-	applyCapsuleCornerRounding(items);
+	if (capsuleCornerStyle === CapsuleCornerStyle.MERGE) {
+		applyCapsuleCornerRounding(items);
+	} else if (capsuleCornerStyle === CapsuleCornerStyle.SQUARE) {
+		applyCapsuleSquareCorners(items);
+	}
 	return items;
 }
 
@@ -274,6 +280,19 @@ const ALL_CORNERS_ROUNDED: CapsuleCorners = {
 	bottomLeft: true,
 	bottomRight: true
 };
+
+const ALL_CORNERS_SQUARE: CapsuleCorners = {
+	topLeft: false,
+	topRight: false,
+	bottomLeft: false,
+	bottomRight: false
+};
+
+export function applyCapsuleSquareCorners<T extends CorneredItem>(items: T[]): void {
+	for (const item of items) {
+		item.corners = ALL_CORNERS_SQUARE;
+	}
+}
 
 const POSITION_EPSILON = 0.001;
 
