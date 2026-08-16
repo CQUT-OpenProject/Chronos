@@ -82,13 +82,13 @@
 	.course-capsule {
 		background-color: var(--capsule);
 		color: var(--capsule-fg);
-		border-color: color-mix(in srgb, var(--capsule-fg) 12%, transparent);
+		border-color: color-mix(in srgb, var(--capsule-fg) 18%, transparent);
 	}
 
 	.dark .course-capsule {
 		background-color: color-mix(in srgb, var(--capsule) 42%, var(--color-surface));
 		color: color-mix(in srgb, var(--capsule) 18%, var(--color-on-surface));
-		border-color: color-mix(in srgb, currentColor 12%, transparent);
+		border-color: color-mix(in srgb, currentColor 18%, transparent);
 	}
 
 	.theme-random .period-active {
@@ -118,7 +118,7 @@
 
 	:root {
 		--topbar-safe: env(safe-area-inset-top, 0px);
-		--tabbar-safe: env(safe-area-inset-bottom);
+		--tabbar-safe: env(safe-area-inset-bottom, 0px);
 		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
 		--wallpaper-tint-sidebar: rgb(255 255 255 / 0.54);
 		--wallpaper-tint-grid: rgb(255 255 255 / 0.38);

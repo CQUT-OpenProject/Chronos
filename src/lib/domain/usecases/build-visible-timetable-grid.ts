@@ -2,7 +2,7 @@ import { defaultPeriodTimes } from '$lib/models/defaults';
 import type { PeriodTime, Timetable } from '$lib/models/timetable';
 import type { TimetableDayModel, TimetableGridModel } from '$lib/models/presentation';
 import { AcademicCalendarService } from '../services/academic-calendar';
-import { addDays, parseIsoDate } from '../date';
+import { addDays, formatIsoDate, parseIsoDate } from '../date';
 
 export class BuildVisibleTimetableGridUseCase {
 	constructor(private readonly academicCalendarService = new AcademicCalendarService()) {}
@@ -15,7 +15,7 @@ export class BuildVisibleTimetableGridUseCase {
 
 		const weekDays: TimetableDayModel[] = visibleDays.map((dayIndex) => {
 			const date = addDays(startOfWeek, dayIndex - 1);
-			const dateString = formatDate(date);
+			const dateString = formatIsoDate(date);
 			return {
 				dayOfWeek: dayIndex,
 				date: dateString,
@@ -74,11 +74,4 @@ function weekMonthLabel(weekDates: string[]): string {
 		: 0;
 	if (!firstMonth) return '';
 	return firstMonth === lastMonth ? String(firstMonth) : `${firstMonth}/${lastMonth}`;
-}
-
-function formatDate(date: Date): string {
-	const year = date.getUTCFullYear();
-	const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-	const day = String(date.getUTCDate()).padStart(2, '0');
-	return `${year}-${month}-${day}`;
 }

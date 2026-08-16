@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { PaletteMode } from '$lib/models/app-state';
+import { CapsuleCornerStyle, PaletteMode } from '$lib/models/app-state';
 import { createSettingsRepo } from './settings-repo';
 
 function createMemoryStorage(initial: Record<string, string> = {}): Storage {
@@ -45,5 +45,27 @@ describe('createSettingsRepo paletteMode', () => {
 		expect(storage.getItem('chronos_preferences:palette_mode')).toBe('wallpaper');
 		expect(storage.getItem('chronos_preferences:random_theme')).toBeNull();
 		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.WALLPAPER);
+	});
+});
+
+describe('createSettingsRepo capsuleCornerStyle', () => {
+	it('defaults to ROUNDED when storage is empty', () => {
+		const repo = createSettingsRepo(createMemoryStorage());
+		expect(repo.getSnapshot().capsuleCornerStyle).toBe(CapsuleCornerStyle.ROUNDED);
+	});
+
+	it('reads merge and square from storage', () => {
+		const repo = createSettingsRepo(
+			createMemoryStorage({ 'chronos_preferences:capsule_corner_style': 'merge' })
+		);
+		expect(repo.getSnapshot().capsuleCornerStyle).toBe(CapsuleCornerStyle.MERGE);
+	});
+
+	it('writes capsule_corner_style to storage', () => {
+		const storage = createMemoryStorage();
+		const repo = createSettingsRepo(storage);
+		repo.setCapsuleCornerStyle(CapsuleCornerStyle.SQUARE);
+		expect(storage.getItem('chronos_preferences:capsule_corner_style')).toBe('square');
+		expect(repo.getSnapshot().capsuleCornerStyle).toBe(CapsuleCornerStyle.SQUARE);
 	});
 });
