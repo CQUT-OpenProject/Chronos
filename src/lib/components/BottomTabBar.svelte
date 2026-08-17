@@ -5,6 +5,7 @@
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { toAppPathname } from '$lib/navigation/app-pathname';
 	import { CalendarMonth, CalendarMonthFill, Person, PersonFill } from '$lib/icons';
+	import { haptic } from '$lib/haptic/haptic';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
 
@@ -20,12 +21,8 @@
 		return activeTabHref === href;
 	}
 
-	function vibrate() {
-		navigator.vibrate?.(10);
-	}
-
 	function onTimetableTabClick(event: MouseEvent) {
-		vibrate();
+		haptic.light();
 		timetableScreen.jumpToCurrentWeek();
 		if (appPathname === '/') {
 			event.preventDefault();
@@ -42,7 +39,7 @@
 				data-sveltekit-preload-data="off"
 				aria-current={active ? 'page' : undefined}
 				class="flex h-16 min-w-24 flex-1 cursor-pointer flex-col items-center justify-center gap-1 text-on-surface-variant transition-colors hover:text-on-surface"
-				onclick={tab.href === '/' ? onTimetableTabClick : vibrate}
+				onclick={tab.href === '/' ? onTimetableTabClick : () => haptic.light()}
 			>
 				<span
 					aria-hidden="true"

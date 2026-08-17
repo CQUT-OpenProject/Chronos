@@ -11,6 +11,7 @@
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
+	import { haptic } from '$lib/haptic/haptic';
 
 	let {
 		screen,
@@ -150,7 +151,7 @@
 				size="sm"
 				ariaLabel="编辑课表"
 				onclick={() => {
-					navigator.vibrate?.(10);
+					haptic.light();
 					onEditTimetableDetails();
 				}}
 			>

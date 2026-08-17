@@ -1,4 +1,5 @@
 import type { Course } from '$lib/models/course';
+import { haptic } from '$lib/haptic/haptic';
 
 export const COURSE_CARD_LONG_PRESS_DELAY_MS = 500;
 export const COURSE_CARD_DRAG_THRESHOLD_PX = 8;
@@ -26,7 +27,7 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 	let activePointerId: number | null = null;
 
 	function clearTimer() {
-		if (longPressTimer !== undefined) {
+		if (longPressTimer) {
 			clearTimeout(longPressTimer);
 			longPressTimer = undefined;
 		}
@@ -50,7 +51,7 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 			clearTimer();
 			longPressTimer = setTimeout(() => {
 				didLongPress = true;
-				navigator.vibrate?.(10);
+				haptic.heavy();
 				onCourseLongClick(course);
 			}, longPressDelayMs);
 		},
