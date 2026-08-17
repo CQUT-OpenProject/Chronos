@@ -48,7 +48,6 @@ export type AnalyticsEvent =
 	| 'pwa_install_snooze'
 	| 'pwa_install_dismiss'
 	| 'pwa_install_cta_click'
-	| 'pwa_update_available'
 	| 'pwa_update_apply'
 	| 'update_check_attempt'
 	| 'update_check_success'

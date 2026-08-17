@@ -128,7 +128,7 @@ function normalizeEvent(raw: unknown): Record<string, unknown> {
 	return result;
 }
 
-export function normalizeShareJson(raw: unknown): unknown {
+function normalizeShareJson(raw: unknown): unknown {
 	if (!isRecord(raw)) return raw;
 	const result: Record<string, unknown> = {};
 	for (const [key, value] of Object.entries(raw)) {

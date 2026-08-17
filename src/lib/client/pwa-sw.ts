@@ -3,7 +3,7 @@ import { registerSW } from 'virtual:pwa-register';
 let registered = false;
 let needRefresh = false;
 
-export let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
+let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
 
 export function isSwUpdatePending(): boolean {
 	return needRefresh;
