@@ -149,6 +149,7 @@ export default defineConfig(({ mode }) => {
 				'svelte/infinite-reactive-loop': 'error',
 				'svelte/no-at-debug-tags': 'warn',
 				'svelte/no-at-html-tags': 'error',
+				'svelte/no-conflicting-module-names': 'error',
 				'svelte/no-dom-manipulating': 'error',
 				'svelte/no-dupe-else-if-blocks': 'error',
 				'svelte/no-dupe-on-directives': 'error',
