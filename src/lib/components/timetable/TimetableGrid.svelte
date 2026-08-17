@@ -23,6 +23,7 @@
 	} from '$lib/timetable/period-clock';
 	import { type CoursePaletteEntry } from '$lib/parsers/course-palette';
 	import { trackEvent } from '$lib/client/analytics';
+	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 
 	const FIT_MIN_FONT_PX = 6;
 	const SCROLL_ROW_HEIGHT = '5.5rem';
@@ -208,49 +209,6 @@
 		};
 	}
 
-	function courseCardHandlers(course: Course) {
-		let longPressTimer: ReturnType<typeof setTimeout> | undefined;
-		let didLongPress = false;
-
-		return {
-			oncontextmenu: (event: Event) => {
-				event.preventDefault();
-				onCourseLongClick?.(course);
-			},
-			onpointerdown: () => {
-				if (!onCourseLongClick) return;
-				didLongPress = false;
-				longPressTimer = setTimeout(() => {
-					didLongPress = true;
-					onCourseLongClick(course);
-				}, 500);
-			},
-			onpointerup: () => {
-				clearTimeout(longPressTimer);
-			},
-			onpointerleave: () => {
-				clearTimeout(longPressTimer);
-			},
-			onpointercancel: () => {
-				clearTimeout(longPressTimer);
-			},
-			onclick: (event: MouseEvent) => {
-				if (didLongPress) {
-					event.preventDefault();
-					didLongPress = false;
-					return;
-				}
-				onCourseClick?.(course);
-			},
-			onkeydown: (event: KeyboardEvent) => {
-				if (event.key === 'Enter' && event.shiftKey && onCourseLongClick) {
-					event.preventDefault();
-					onCourseLongClick(course);
-				}
-			}
-		};
-	}
-
 	function expandSlot(key: string) {
 		trackEvent('timetable_overlap_expand');
 		expandedSlots = new Set([...expandedSlots, key]);
@@ -413,7 +371,10 @@
 	{@const locationLines = placed.locationLines}
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
-	{@const handlers = courseCardHandlers(placed.course)}
+	{@const handlers = createCourseCardHandlers(placed.course, {
+		onCourseClick,
+		onCourseLongClick
+	})}
 	<button
 		type="button"
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
@@ -425,6 +386,7 @@
 		aria-keyshortcuts="Shift+Enter"
 		oncontextmenu={handlers.oncontextmenu}
 		onpointerdown={handlers.onpointerdown}
+		onpointermove={handlers.onpointermove}
 		onpointerup={handlers.onpointerup}
 		onpointerleave={handlers.onpointerleave}
 		onpointercancel={handlers.onpointercancel}
