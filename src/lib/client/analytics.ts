@@ -34,10 +34,14 @@ export type AnalyticsEvent =
 	| 'settings_theme_change'
 	| 'settings_color_scheme_change'
 	| 'settings_layout_change'
+	| 'settings_capsule_corner_change'
 	| 'wallpaper_set'
 	| 'wallpaper_clear'
 	| 'timetable_switch'
 	| 'timetable_delete'
+	| 'timetable_overlap_expand'
+	| 'timetable_details_save'
+	| 'timetable_details_reset'
 	| 'pwa_install_prompt_show'
 	| 'pwa_install_accept'
 	| 'pwa_install_snooze'
@@ -45,7 +49,12 @@ export type AnalyticsEvent =
 	| 'pwa_install_cta_click'
 	| 'pwa_update_available'
 	| 'pwa_update_apply'
-	| 'about_clear_all_data';
+	| 'update_check_attempt'
+	| 'update_check_success'
+	| 'update_check_fail'
+	| 'release_detail_open'
+	| 'about_clear_all_data'
+	| 'developer_easter_egg_open';
 
 let client: PostHog | null = null;
 let pending: Array<[AnalyticsEvent, Record<string, string | number | boolean> | undefined]> | null =

@@ -22,6 +22,7 @@
 		parsePeriodRanges
 	} from '$lib/timetable/period-clock';
 	import { type CoursePaletteEntry } from '$lib/parsers/course-palette';
+	import { trackEvent } from '$lib/client/analytics';
 
 	const FIT_MIN_FONT_PX = 6;
 	const SCROLL_ROW_HEIGHT = '5.5rem';
@@ -251,6 +252,7 @@
 	}
 
 	function expandSlot(key: string) {
+		trackEvent('timetable_overlap_expand');
 		expandedSlots = new Set([...expandedSlots, key]);
 	}
 
@@ -460,7 +462,7 @@
 					maxFontPx: locationMetrics.fontPx
 				}))}
 			>
-				{#each locationLines as line}
+				{#each locationLines as line, index (index)}
 					<div class="overflow-hidden whitespace-nowrap">{line}</div>
 				{/each}
 			</div>
