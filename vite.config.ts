@@ -290,7 +290,7 @@ export default defineConfig(({ mode }) => {
 					: adapter({ maxDuration: 60 })
 			}),
 			SvelteKitPWA({
-				registerType: 'autoUpdate',
+				registerType: 'prompt',
 				manifest: {
 					name: 'Chronos',
 					short_name: 'Chronos',
@@ -316,8 +316,6 @@ export default defineConfig(({ mode }) => {
 					]
 				},
 				workbox: {
-					clientsClaim: true,
-					skipWaiting: true,
 					globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
 					// SSR（Vercel adapter）无预渲染 "/"，禁用 navigateFallback 避免自动注入的
 					// NavigationRoute 抢在下方自定义 NetworkFirst 规则之前拦截所有导航请求

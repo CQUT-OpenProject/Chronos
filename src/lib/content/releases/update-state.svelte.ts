@@ -94,28 +94,35 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 		checking = true;
 		errorMessage = null;
 
-		void checkSwUpdate();
+		const swHasUpdate = await checkSwUpdate();
 
 		try {
 			const result = await fetchLatestRelease();
 			if (result.ok) {
 				const remote = result.value;
 				latestRelease = remote;
-				hasUpdate = compareReleaseVersions(remote.tagName, currentVersion) > 0;
+				hasUpdate = compareReleaseVersions(remote.tagName, currentVersion) > 0 || swHasUpdate;
 			} else {
 				const localListResult = await localCatalog.listReleases();
 				if (localListResult.ok && localListResult.value.length > 0) {
 					const localLatest = localListResult.value[0];
 					latestRelease = localLatest;
-					hasUpdate = compareReleaseVersions(localLatest.tagName, currentVersion) > 0;
+					hasUpdate =
+						compareReleaseVersions(localLatest.tagName, currentVersion) > 0 || swHasUpdate;
+				} else if (swHasUpdate) {
+					hasUpdate = true;
 				} else {
 					errorMessage = result.error.message;
 					hasUpdate = false;
 				}
 			}
 		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : '检查更新失败';
-			hasUpdate = false;
+			if (swHasUpdate) {
+				hasUpdate = true;
+			} else {
+				errorMessage = err instanceof Error ? err.message : '检查更新失败';
+				hasUpdate = false;
+			}
 		} finally {
 			lastChecked = new SvelteDate();
 			checking = false;

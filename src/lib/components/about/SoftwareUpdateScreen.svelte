@@ -136,7 +136,7 @@
 			<div>
 				<h3 class="m3-title-medium text-on-surface">当前已是最新版本</h3>
 				<p class="m3-body-small mt-1 text-on-surface-variant">
-					Chronos v{APP_VERSION} · 上次检查于 {formatCheckTime(updateState.state.lastChecked)}
+					上次检查于 {formatCheckTime(updateState.state.lastChecked)}
 				</p>
 			</div>
 			<Button variant="outlined" onclick={() => void updateState.checkUpdate()} class="mt-2">

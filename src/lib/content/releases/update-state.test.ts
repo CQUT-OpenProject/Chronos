@@ -79,7 +79,7 @@ describe('createUpdateState', () => {
 					publishedAt: '2026-08-16',
 					body: '当前版本'
 				}),
-			checkSwUpdate: async () => true,
+			checkSwUpdate: async () => false,
 			applyUpdate: async () => {}
 		});
 
@@ -113,6 +113,25 @@ describe('createUpdateState', () => {
 		expect(updateState.state.checking).toBe(false);
 		expect(updateState.state.hasUpdate).toBe(false);
 		expect(updateState.state.latestRelease?.tagName).toBe('v0.1.4');
+		expect(updateState.state.errorMessage).toBeNull();
+	});
+
+	it('detects update when service worker has a waiting update', async () => {
+		const updateState = createUpdateState({
+			currentVersion: '0.1.4',
+			fetchLatestRelease: async () => failure(AppError.network('Offline')),
+			localCatalog: {
+				getRelease: async () => failure(AppError.notFound('none')),
+				listReleases: async () => success([])
+			},
+			checkSwUpdate: async () => true,
+			applyUpdate: async () => {}
+		});
+
+		await updateState.checkUpdate();
+
+		expect(updateState.state.checking).toBe(false);
+		expect(updateState.state.hasUpdate).toBe(true);
 		expect(updateState.state.errorMessage).toBeNull();
 	});
 

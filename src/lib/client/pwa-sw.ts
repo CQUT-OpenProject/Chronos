@@ -1,15 +1,23 @@
 import { registerSW } from 'virtual:pwa-register';
 
 let registered = false;
+let needRefresh = false;
 
 export let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
+
+export function isSwUpdatePending(): boolean {
+	return needRefresh;
+}
 
 export function ensurePwaSwRegistered() {
 	if (registered || typeof window === 'undefined') return;
 	registered = true;
 
 	updateServiceWorker = registerSW({
-		immediate: true
+		immediate: true,
+		onNeedRefresh() {
+			needRefresh = true;
+		}
 	});
 }
 
@@ -19,12 +27,15 @@ export async function checkAndApplySwUpdate(): Promise<boolean> {
 		const registration = await navigator.serviceWorker.getRegistration();
 		if (registration) {
 			await registration.update();
-			return true;
+			if (registration.waiting) {
+				needRefresh = true;
+				return true;
+			}
 		}
 	} catch {
 		// ignore
 	}
-	return false;
+	return needRefresh;
 }
 
 export async function applyUpdateAndReload(): Promise<void> {
@@ -35,7 +46,7 @@ export async function applyUpdateAndReload(): Promise<void> {
 			return;
 		}
 	} catch {
-		// fallback to standard reload
+		// fallback
 	}
 	window.location.reload();
 }
