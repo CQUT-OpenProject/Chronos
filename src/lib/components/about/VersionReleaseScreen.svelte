@@ -6,6 +6,7 @@
 		createReleaseDetailState,
 		type ReleaseDetailStateController
 	} from '$lib/content/releases/catalog-state.svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
@@ -23,6 +24,7 @@
 	} = $props();
 
 	onMount(() => {
+		trackEvent('release_detail_open', { tag });
 		void detailState.load();
 	});
 

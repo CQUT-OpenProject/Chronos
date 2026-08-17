@@ -93,6 +93,7 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 	async function checkUpdate() {
 		checking = true;
 		errorMessage = null;
+		trackEvent('update_check_attempt');
 
 		const swHasUpdate = await checkSwUpdate();
 
@@ -102,6 +103,10 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 				const remote = result.value;
 				latestRelease = remote;
 				hasUpdate = compareReleaseVersions(remote.tagName, currentVersion) > 0 || swHasUpdate;
+				trackEvent('update_check_success', {
+					has_update: hasUpdate,
+					latest_version: remote.tagName
+				});
 			} else {
 				const localListResult = await localCatalog.listReleases();
 				if (localListResult.ok && localListResult.value.length > 0) {
@@ -109,19 +114,35 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 					latestRelease = localLatest;
 					hasUpdate =
 						compareReleaseVersions(localLatest.tagName, currentVersion) > 0 || swHasUpdate;
+					trackEvent('update_check_success', {
+						has_update: hasUpdate,
+						latest_version: localLatest.tagName
+					});
 				} else if (swHasUpdate) {
 					hasUpdate = true;
+					trackEvent('update_check_success', {
+						has_update: true
+					});
 				} else {
 					errorMessage = result.error.message;
 					hasUpdate = false;
+					trackEvent('update_check_fail', {
+						error_message: errorMessage
+					});
 				}
 			}
 		} catch (err) {
 			if (swHasUpdate) {
 				hasUpdate = true;
+				trackEvent('update_check_success', {
+					has_update: true
+				});
 			} else {
 				errorMessage = err instanceof Error ? err.message : '检查更新失败';
 				hasUpdate = false;
+				trackEvent('update_check_fail', {
+					error_message: errorMessage
+				});
 			}
 		} finally {
 			lastChecked = new SvelteDate();

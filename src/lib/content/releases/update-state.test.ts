@@ -3,6 +3,11 @@ import { createUpdateState, fetchLatestGitHubRelease } from './update-state.svel
 import { failure, success } from '$lib/domain/result/app-result';
 import { AppError } from '$lib/domain/result/app-error';
 
+const mockTrackEvent = vi.fn();
+vi.mock('$lib/client/analytics', () => ({
+	trackEvent: (...args: unknown[]) => mockTrackEvent(...args)
+}));
+
 describe('fetchLatestGitHubRelease', () => {
 	it('successfully parses release from github api', async () => {
 		const mockFetch = vi.fn().mockResolvedValue({
@@ -46,6 +51,7 @@ describe('fetchLatestGitHubRelease', () => {
 
 describe('createUpdateState', () => {
 	it('detects when a newer version is available from remote', async () => {
+		mockTrackEvent.mockClear();
 		const updateState = createUpdateState({
 			currentVersion: '0.1.4',
 			fetchLatestRelease: async () =>
@@ -67,9 +73,15 @@ describe('createUpdateState', () => {
 		expect(updateState.state.latestRelease?.tagName).toBe('v0.1.5');
 		expect(updateState.state.errorMessage).toBeNull();
 		expect(updateState.state.lastChecked).not.toBeNull();
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
+			has_update: true,
+			latest_version: 'v0.1.5'
+		});
 	});
 
 	it('detects when already on latest version', async () => {
+		mockTrackEvent.mockClear();
 		const updateState = createUpdateState({
 			currentVersion: '0.1.4',
 			fetchLatestRelease: async () =>
@@ -88,9 +100,15 @@ describe('createUpdateState', () => {
 		expect(updateState.state.checking).toBe(false);
 		expect(updateState.state.hasUpdate).toBe(false);
 		expect(updateState.state.latestRelease?.tagName).toBe('v0.1.4');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
+			has_update: false,
+			latest_version: 'v0.1.4'
+		});
 	});
 
 	it('falls back to local catalog when remote fetch fails', async () => {
+		mockTrackEvent.mockClear();
 		const updateState = createUpdateState({
 			currentVersion: '0.1.4',
 			fetchLatestRelease: async () => failure(AppError.network('Offline')),
@@ -114,9 +132,15 @@ describe('createUpdateState', () => {
 		expect(updateState.state.hasUpdate).toBe(false);
 		expect(updateState.state.latestRelease?.tagName).toBe('v0.1.4');
 		expect(updateState.state.errorMessage).toBeNull();
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
+			has_update: false,
+			latest_version: 'v0.1.4'
+		});
 	});
 
 	it('detects update when service worker has a waiting update', async () => {
+		mockTrackEvent.mockClear();
 		const updateState = createUpdateState({
 			currentVersion: '0.1.4',
 			fetchLatestRelease: async () => failure(AppError.network('Offline')),
@@ -133,9 +157,37 @@ describe('createUpdateState', () => {
 		expect(updateState.state.checking).toBe(false);
 		expect(updateState.state.hasUpdate).toBe(true);
 		expect(updateState.state.errorMessage).toBeNull();
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
+			has_update: true
+		});
 	});
 
-	it('triggers applyUpdate when installUpdate is called', async () => {
+	it('reports failure event when check update fails completely', async () => {
+		mockTrackEvent.mockClear();
+		const updateState = createUpdateState({
+			currentVersion: '0.1.4',
+			fetchLatestRelease: async () => failure(AppError.network('网络连接失败')),
+			localCatalog: {
+				getRelease: async () => failure(AppError.notFound('none')),
+				listReleases: async () => failure(AppError.notFound('none'))
+			},
+			checkSwUpdate: async () => false
+		});
+
+		await updateState.checkUpdate();
+
+		expect(updateState.state.checking).toBe(false);
+		expect(updateState.state.hasUpdate).toBe(false);
+		expect(updateState.state.errorMessage).toBe('网络连接失败');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_fail', {
+			error_message: '网络连接失败'
+		});
+	});
+
+	it('triggers applyUpdate and tracks event when installUpdate is called', async () => {
+		mockTrackEvent.mockClear();
 		const applyUpdateMock = vi.fn().mockResolvedValue(undefined);
 		const updateState = createUpdateState({
 			currentVersion: '0.1.4',
@@ -145,5 +197,6 @@ describe('createUpdateState', () => {
 		await updateState.installUpdate();
 
 		expect(applyUpdateMock).toHaveBeenCalled();
+		expect(mockTrackEvent).toHaveBeenCalledWith('pwa_update_apply');
 	});
 });
