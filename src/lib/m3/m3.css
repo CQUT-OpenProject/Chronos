@@ -364,7 +364,7 @@ button.m3-date-field-input {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	min-height: 3.5rem;
+	min-height: var(--top-bar-height, 3.75rem);
 	padding: 0.5rem 0.75rem;
 	background-color: color-mix(in srgb, var(--color-surface) 90%, transparent);
 	backdrop-filter: blur(8px);

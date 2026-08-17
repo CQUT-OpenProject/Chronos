@@ -5,7 +5,7 @@
 </script>
 
 <div class="bottom-bar w-full">
-	<div class="mx-auto w-full max-w-lg">
+	<div class="mx-auto flex h-full w-full max-w-lg items-center">
 		{@render children?.()}
 	</div>
 </div>
