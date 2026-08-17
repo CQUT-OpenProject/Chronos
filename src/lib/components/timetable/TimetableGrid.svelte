@@ -16,6 +16,10 @@
 		buildOverlapPlaceholderAriaLabel
 	} from '$lib/timetable/course-a11y';
 	import {
+		calculatePeriodCenterScrollOffset,
+		calculatePeriodOffsetByIndex
+	} from '$lib/timetable/period-scroll';
+	import {
 		computeDelayUntilNextCurrentTimeRefreshMillis,
 		currentTimeMinutes,
 		findCurrentPeriodIndex,
@@ -125,22 +129,70 @@
 		};
 	});
 
-	$effect(() => {
-		if (isFitLayout) return;
-		const centerKey = `${displayedWeek}-${isCurrentWeek}`;
-		if (!isCurrentWeek || centeredFor === centerKey || !scrollContainer || bodyViewportHeight === 0)
-			return;
+	function scrollToCurrentPeriod(smooth = false): boolean {
+		if (isFitLayout || !isCurrentWeek || !scrollContainer || bodyViewportHeight <= 0) {
+			return false;
+		}
 		const target = currentPeriodIndex;
-		if (target == null) return;
+		if (target == null) return false;
 
-		const rowHeight =
-			parseFloat(getComputedStyle(scrollContainer).getPropertyValue('--row-height')) || 96;
-		const targetOffset = Math.max(
-			0,
-			(target - 1) * rowHeight + rowHeight / 2 - bodyViewportHeight / 2
-		);
-		scrollContainer.scrollTop = targetOffset;
-		centeredFor = centerKey;
+		const periodElements = scrollContainer.querySelectorAll<HTMLElement>('aside > div');
+		const targetEl =
+			target >= 1 && target <= periodElements.length ? periodElements[target - 1] : null;
+
+		const targetOffset = targetEl
+			? calculatePeriodCenterScrollOffset({
+					periodTop: targetEl.offsetTop,
+					periodHeight: targetEl.offsetHeight,
+					viewportHeight: bodyViewportHeight,
+					scrollHeight: scrollContainer.scrollHeight
+				})
+			: calculatePeriodOffsetByIndex({
+					periodIndex: target,
+					rowHeightPx:
+						5.5 * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16),
+					viewportHeight: bodyViewportHeight,
+					scrollHeight: scrollContainer.scrollHeight
+				});
+
+		if (targetOffset === 0) {
+			scrollContainer.scrollTop = 0;
+			return true;
+		}
+
+		if (scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
+			return false;
+		}
+
+		if (smooth) {
+			scrollContainer.scrollTo({ top: targetOffset, behavior: 'smooth' });
+		} else {
+			scrollContainer.scrollTop = targetOffset;
+		}
+		return true;
+	}
+
+	$effect(() => {
+		if (isFitLayout) {
+			centeredFor = null;
+			return;
+		}
+		if (!isCurrentWeek) return;
+
+		const centerKey = `${displayedWeek}-${isCurrentWeek}`;
+		if (centeredFor === centerKey || !scrollContainer || bodyViewportHeight === 0) return;
+
+		const success = scrollToCurrentPeriod(false);
+		if (success) {
+			centeredFor = centerKey;
+		} else {
+			const rafId = requestAnimationFrame(() => {
+				if (scrollToCurrentPeriod(false)) {
+					centeredFor = centerKey;
+				}
+			});
+			return () => cancelAnimationFrame(rafId);
+		}
 	});
 
 	$effect(() => {
