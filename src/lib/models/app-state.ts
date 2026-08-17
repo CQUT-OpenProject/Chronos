@@ -61,15 +61,10 @@ export function paletteModeToStorage(mode: PaletteMode): string {
 	return PALETTE_STORAGE[mode];
 }
 
-export function paletteModeFromStorage(
-	value: string | null | undefined,
-	legacyRandomTheme?: string | null
-): PaletteMode {
+export function paletteModeFromStorage(value: string | null | undefined): PaletteMode {
 	const normalized = value?.trim().toLowerCase();
 	if (normalized === 'wallpaper') return PaletteMode.WALLPAPER;
 	if (normalized === 'random') return PaletteMode.RANDOM;
-	if (normalized === 'default') return PaletteMode.DEFAULT;
-	if (legacyRandomTheme === '1') return PaletteMode.RANDOM;
 	return PaletteMode.DEFAULT;
 }
 

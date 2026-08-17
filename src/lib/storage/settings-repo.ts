@@ -30,8 +30,7 @@ const KEYS = {
 	timetableLayoutMode: 'timetable_layout_mode',
 	paletteMode: 'palette_mode',
 	capsuleCornerStyle: 'capsule_corner_style',
-	hapticFeedbackEnabled: 'haptic_feedback_enabled',
-	randomTheme: 'random_theme'
+	hapticFeedbackEnabled: 'haptic_feedback_enabled'
 } as const;
 
 const STORAGE_PREFIX = 'chronos_preferences:';
@@ -67,10 +66,7 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 			timetableLayoutMode: timetableLayoutModeFromStorage(
 				target.getItem(storageKey(KEYS.timetableLayoutMode))
 			),
-			paletteMode: paletteModeFromStorage(
-				target.getItem(storageKey(KEYS.paletteMode)),
-				target.getItem(storageKey(KEYS.randomTheme))
-			),
+			paletteMode: paletteModeFromStorage(target.getItem(storageKey(KEYS.paletteMode))),
 			capsuleCornerStyle: capsuleCornerStyleFromStorage(
 				target.getItem(storageKey(KEYS.capsuleCornerStyle))
 			),
@@ -118,7 +114,6 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 		}
 		if (patch.paletteMode !== undefined) {
 			storage.setItem(storageKey(KEYS.paletteMode), paletteModeToStorage(patch.paletteMode));
-			storage.removeItem(storageKey(KEYS.randomTheme));
 		}
 		if (patch.capsuleCornerStyle !== undefined) {
 			storage.setItem(

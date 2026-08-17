@@ -23,6 +23,6 @@ describe('TimetableConfigJsonCodec', () => {
 		expect(decoded.academicConfig).toEqual(academicConfig);
 		expect(decoded.importMetadata).toEqual(importMetadata);
 		expect(decoded.viewPrefs).toEqual(viewPrefs);
-		expect(decoded.schemaVersion).toBe(2);
+		expect(decoded.schemaVersion).toBe(1);
 	});
 });

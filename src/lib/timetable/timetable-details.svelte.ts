@@ -5,11 +5,7 @@ import { currentWeekMonday, defaultPeriodTimes } from '$lib/models/defaults';
 import { TimetableImportSource, type Timetable } from '$lib/models/timetable';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import { trackEvent } from '$lib/client/analytics';
-import {
-	applyCampusPeriodTimes,
-	ensureOnlineCampusMetadata,
-	toSettingsDraft
-} from '$lib/timetable/timetable-mappers';
+import { applyCampusPeriodTimes, toSettingsDraft } from '$lib/timetable/timetable-mappers';
 
 const timeProvider = new SystemTimeProvider();
 
@@ -33,7 +29,6 @@ export class TimetableDetailsEditor {
 		if (this.loadedTimetableId === timetable.id) return;
 		this.loadedTimetableId = timetable.id;
 		this.draft = toSettingsDraft(timetable);
-		ensureOnlineCampusMetadata(this.draft);
 		this.missingCampusMessage = null;
 	}
 

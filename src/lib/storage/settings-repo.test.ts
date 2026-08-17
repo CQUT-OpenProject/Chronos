@@ -21,29 +21,23 @@ function createMemoryStorage(initial: Record<string, string> = {}): Storage {
 }
 
 describe('createSettingsRepo paletteMode', () => {
-	it('migrates random_theme=1 to RANDOM', () => {
+	it('defaults to DEFAULT when storage is empty', () => {
+		const repo = createSettingsRepo(createMemoryStorage());
+		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.DEFAULT);
+	});
+
+	it('reads palette_mode from storage', () => {
 		const repo = createSettingsRepo(
-			createMemoryStorage({ 'chronos_preferences:random_theme': '1' })
+			createMemoryStorage({ 'chronos_preferences:palette_mode': 'random' })
 		);
 		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.RANDOM);
 	});
 
-	it('prefers palette_mode over legacy random_theme', () => {
-		const repo = createSettingsRepo(
-			createMemoryStorage({
-				'chronos_preferences:random_theme': '1',
-				'chronos_preferences:palette_mode': 'default'
-			})
-		);
-		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.DEFAULT);
-	});
-
-	it('writes palette_mode and removes random_theme', () => {
-		const storage = createMemoryStorage({ 'chronos_preferences:random_theme': '1' });
+	it('writes palette_mode to storage', () => {
+		const storage = createMemoryStorage();
 		const repo = createSettingsRepo(storage);
 		repo.setPaletteMode(PaletteMode.WALLPAPER);
 		expect(storage.getItem('chronos_preferences:palette_mode')).toBe('wallpaper');
-		expect(storage.getItem('chronos_preferences:random_theme')).toBeNull();
 		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.WALLPAPER);
 	});
 });
