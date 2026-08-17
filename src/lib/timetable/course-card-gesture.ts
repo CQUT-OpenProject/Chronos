@@ -7,6 +7,7 @@ export const COURSE_CARD_DRAG_THRESHOLD_PX = 8;
 export interface CourseCardGestureOptions {
 	onCourseClick?: (course: Course) => void;
 	onCourseLongClick?: (course: Course) => void;
+	onLongPressFeedback?: () => void;
 	longPressDelayMs?: number;
 	dragThresholdPx?: number;
 }
@@ -15,6 +16,7 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 	const {
 		onCourseClick,
 		onCourseLongClick,
+		onLongPressFeedback = () => haptic.heavy(),
 		longPressDelayMs = COURSE_CARD_LONG_PRESS_DELAY_MS,
 		dragThresholdPx = COURSE_CARD_DRAG_THRESHOLD_PX
 	} = options;
@@ -51,7 +53,7 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 			clearTimer();
 			longPressTimer = setTimeout(() => {
 				didLongPress = true;
-				haptic.heavy();
+				onLongPressFeedback();
 				onCourseLongClick(course);
 			}, longPressDelayMs);
 		},

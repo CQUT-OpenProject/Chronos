@@ -22,8 +22,8 @@
 		parsePeriodRanges
 	} from '$lib/timetable/period-clock';
 	import { type CoursePaletteEntry } from '$lib/parsers/course-palette';
-	import { trackEvent } from '$lib/client/analytics';
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
+	import { createTimetableInteractionMediator } from '$lib/timetable/timetable-interaction-mediator';
 
 	const FIT_MIN_FONT_PX = 6;
 	const SCROLL_ROW_HEIGHT = '5.5rem';
@@ -66,6 +66,12 @@
 	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
+	const mediator = $derived(
+		createTimetableInteractionMediator({
+			onCourseClick,
+			onCourseLongClick
+		})
+	);
 
 	const placements = $derived(
 		placeCapsules({
@@ -210,7 +216,7 @@
 	}
 
 	function expandSlot(key: string) {
-		trackEvent('timetable_overlap_expand');
+		mediator.handleOverlapExpand(key);
 		expandedSlots = new Set([...expandedSlots, key]);
 	}
 
@@ -372,8 +378,9 @@
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
 	{@const handlers = createCourseCardHandlers(placed.course, {
-		onCourseClick,
-		onCourseLongClick
+		onCourseClick: mediator.handleCourseClick,
+		onCourseLongClick: mediator.handleCourseLongPress,
+		onLongPressFeedback: () => {}
 	})}
 	<button
 		type="button"

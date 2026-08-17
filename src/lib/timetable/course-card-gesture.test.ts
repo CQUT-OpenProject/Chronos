@@ -240,4 +240,19 @@ describe('createCourseCardHandlers', () => {
 		vi.advanceTimersByTime(COURSE_CARD_LONG_PRESS_DELAY_MS);
 		expect(onCourseLongClick).not.toHaveBeenCalled();
 	});
+
+	it('calls custom onLongPressFeedback when provided', () => {
+		const onCourseLongClick = vi.fn();
+		const onLongPressFeedback = vi.fn();
+		const handlers = createCourseCardHandlers(sampleCourse, {
+			onCourseLongClick,
+			onLongPressFeedback
+		});
+
+		handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
+		vi.advanceTimersByTime(COURSE_CARD_LONG_PRESS_DELAY_MS);
+
+		expect(onLongPressFeedback).toHaveBeenCalledOnce();
+		expect(onCourseLongClick).toHaveBeenCalledWith(sampleCourse);
+	});
 });
