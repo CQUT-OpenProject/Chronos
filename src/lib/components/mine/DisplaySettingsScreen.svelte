@@ -30,21 +30,18 @@
 		{
 			mode: ThemeMode.LIGHT,
 			label: '亮色主题',
-			description: '始终使用浅色界面',
 			Icon: LightModeFill,
 			iconTone: 'primary' as const
 		},
 		{
 			mode: ThemeMode.DARK,
 			label: '暗色主题',
-			description: '始终使用深色界面',
 			Icon: DarkModeFill,
 			iconTone: 'primary' as const
 		},
 		{
 			mode: ThemeMode.SYSTEM,
 			label: '跟随系统',
-			description: '根据系统外观自动切换',
 			Icon: AutoModeFill,
 			iconTone: 'primary' as const
 		}
