@@ -1,17 +1,3 @@
-# 仓库指南
-
-## 项目概览
-
-Chronos 是一款课程表 PWA 应用。
-
-| 项            | 内容                                                                     |
-| ------------- | ------------------------------------------------------------------------ |
-| 语言 / 框架   | TypeScript、Svelte 5、SvelteKit                                          |
-| 样式 / 部署   | Tailwind CSS 4、Vercel adapter                                           |
-| 数据 / 国际化 | Dexie（客户端）、Paraglide（en / zh-cn）                                 |
-| 包管理器      | **pnpm**（通过 `vp` 操作，勿直接调用 pnpm / npm / yarn）                 |
-| 插件          | eslint、prettier、vitest、paraglide、tailwindcss、sveltekit-adapter、PWA |
-
 <!--VITE PLUS START-->
 
 # Using Vite+, the Unified Toolchain for the Web
@@ -33,36 +19,25 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 
 <!--VITE PLUS END-->
 
-## Svelte 开发
+## Quick Overview
 
-编写或修改 `.svelte`、`.svelte.ts` 文件时，加载以下技能：
+Chronos is a PWA timetable app.
 
-- [svelte-code-writer](.agents/skills/svelte-code-writer/SKILL.md)
-- [svelte-core-bestpractices](.agents/skills/svelte-core-bestpractices/SKILL.md)
+- Stack: TypeScript, Svelte 5, SvelteKit, Tailwind CSS 4, Vercel
+- Data & i18n: Dexie (Client-side), Paraglide (en / zh-cn), PostHog
+- Package Manager: Use `vp` (Vite+) CLI only (do not invoke pnpm / npm / yarn directly)
 
-要求：
+## Skills & Tools
 
-1. 涉及 Svelte / SvelteKit 话题时，先查阅文档
-2. 写代码后使用 autofixer 检查，直至无问题或建议
-3. 代码已写入项目文件时，不生成 playground link
-4. 仅在用户确认后才提供 playground link
+- Before coding / refactoring: `.agents/skills/tobelazy/SKILL.md`
+- Before editing `.svelte` / `.svelte.ts`:
+  - [MCP] `.agents/agents/svelte-file-editor.md`
+  - [Skill] `.agents/skills/svelte-core-bestpractices/SKILL.md`
 
-## 提交与 Pull Request 规范
+## Response Format
 
-提交信息使用 emoji 前缀、中文编写、保持简洁、根据变更类型选择：
+Be concise. Do not write unsolicited "WHY" explanations.
 
-| 变更类型          | Emoji |
-| ----------------- | ----- |
-| 新功能 (`feat`)   | ✨    |
-| 修复 (`fix`)      | 🐛    |
-| 文档 (`docs`)     | 📝    |
-| 样式 (`style`)    | 💄    |
-| 重构 (`refactor`) | ♻️    |
-| 性能 (`perf`)     | ⚡️    |
-| 测试 (`test`)     | ✅    |
-| 杂务 (`chore`)    | 🔧    |
-| 构建 (`build`)    | 📦    |
-| CI (`ci`)         | 💚    |
-| 回滚 (`revert`)   | ⏪    |
+## Commit Convention
 
-提交信息中不必再添加 `feat:` 等冗余描述
+Use Gitmoji format: `<emoji> <concise Chinese>` (no `feat:`/`fix:` prefix). e.g., `✨ 新增课表导出功能`.
