@@ -30,7 +30,7 @@
 		"jsencrypt": "^3.5.4",
 		"marked": "^18.0.9",
 		"posthog-js": "^1.417.1",
-		"swiper": "^11.2.10",
+		"swiper": "^14.1.0",
 		"vite-plugin-functions-mixins": "^0.4.1",
 		"web-vitals": "^6.1.1",
 		"workbox-window": "^7.4.1",
