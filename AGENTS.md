@@ -27,12 +27,9 @@ Chronos is a PWA timetable app.
 - Data & i18n: Dexie (Client-side), Paraglide (en / zh-cn), PostHog
 - Package Manager: Use `vp` (Vite+) CLI only (do not invoke pnpm / npm / yarn directly)
 
-## Skills & Tools
+## Skills
 
-- Before coding / refactoring: `.agents/skills/tobelazy/SKILL.md`
-- Before editing `.svelte` / `.svelte.ts`:
-  - [MCP] `.agents/agents/svelte-file-editor.md`
-  - [Skill] `.agents/skills/svelte-core-bestpractices/SKILL.md`
+Before any code edits, must read `.agents/skills/tobelazy/SKILL.md`.
 
 ## Response Format
 

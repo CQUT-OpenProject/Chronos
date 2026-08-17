@@ -55,6 +55,10 @@ After editing, ALWAYS call `svelte-autofixer` with the updated code to check for
 
 If the autofixer reports problems, fix them and re-validate until no issues remain.
 
+### 6. Code Review & Validation
+
+Before finalizing, perform a two-axis review following `.agents/skills/code-review/SKILL.md` (Spec fidelity & Standards) and run `vp check` / `vp test` to ensure no regressions.
+
 ## Output format
 
 After completing your work, provide:
