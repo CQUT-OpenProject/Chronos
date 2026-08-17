@@ -1,21 +1,34 @@
-I already have a plan/approach. Next, write the code as a pragmatic, "lazy" senior developer.
+# Pragmatic Senior Developer ("Lazy" = Minimal & Strict)
 
-## Core Principle: "Lazy" = Minimal & Strict
+I already have a plan/approach. Next, write the code with minimal diffs and strict engineering rigor.
 
-- YAGNI: Solve only the immediate problem; do not engineer for hypothetical futures.
-- Rigor: Keep engineering standards high (type safety, edge cases, a11y, security, readability, clean call flows).
+## Sub-SKILL Routing Gates (Mandatory)
 
-## Key Points
+Evaluate the task against the checklist below and follow its routing checklist to read all applicable sub-SKILLs:
 
-If the changes relate to key points, be sure to read the associated sub-SKILLs:
+### 1. Pre-Code Gates (Read before editing code)
 
-1. Scope Check: Only implement what is explicitly asked. Share speculative ideas instead of coding them.
-2. Architecture: Structure deep modules with minimal interfaces per `.agents/skills/codebase-design/SKILL.md`.
-3. Reuse First: Prioritize existing utils/types in codebase > stdlib/installed deps > native platform features. Ask before adding new dependencies.
-4. Minimal Code: Implement with the least code necessary. Clean up obsolete/dead code when refactoring.
-5. Svelte Best Practices: When editing `.svelte` / `.svelte.ts`, follow `.agents/skills/svelte-core-bestpractices/SKILL.md` and `.agents/agents/svelte-file-editor.md`.
-6. Testing: For complex logic, follow `.agents/skills/tdd/SKILL.md` at defined seams.
-7. Pre-commit Audit: Before finalizing, run a two-axis review per `.agents/skills/code-review/SKILL.md`.
+- Svelte Files: When editing or creating `.svelte` or `.svelte.ts` files:
+  - `.agents/skills/svelte-core-bestpractices/SKILL.md`
+  - `.agents/agents/svelte-file-editor.md`
+- Architecture & Layering: When adding new modules, stores, services, or cross-layer interfaces:
+  - `.agents/skills/codebase-design/SKILL.md`
+- Bug Fixing: When diagnosing and fixing reported bugs or regressions:
+  - `.agents/skills/diagnosing-bugs/SKILL.md`
+- Complex Logic: When developing domain use cases, binary codecs, parsers, or layout algorithms:
+  - `.agents/skills/tdd/SKILL.md`
+
+### 2. Pre-Commit Audit Gate (Mandatory for ALL changes)
+
+- Audit & Review: Before finalizing, reporting completion, or committing:
+  - `.agents/skills/code-review/SKILL.md`
+
+## Core Principles
+
+1. YAGNI & Scope Check: Solve only the immediate problem. Only implement what is explicitly asked. Share speculative ideas instead of coding them.
+2. Reuse First: Prioritize existing utils/types in codebase > stdlib/installed deps > native platform features. Ask before adding new dependencies.
+3. Minimal Code: Implement with the least code necessary. Clean up obsolete/dead code when refactoring.
+4. Engineering Rigor: Keep high standards for type safety, edge cases, a11y, security, readability, and clean call flows.
 
 ## Do Not Write (Unless Explicitly Requested)
 
@@ -26,4 +39,3 @@ If the changes relate to key points, be sure to read the associated sub-SKILLs:
 ## Compromises & Problem Solving
 
 - Breaking changes are allowed if necessary for minimal/clean implementation, but must be clearly declared in the response.
-- When fixing bugs, follow `.agents/skills/diagnosing-bugs/SKILL.md` for deterministic diagnosis and root-cause verification.
