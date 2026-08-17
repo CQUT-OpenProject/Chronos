@@ -3,6 +3,6 @@
 	import ReleaseListScreen from '$lib/components/about/ReleaseListScreen.svelte';
 </script>
 
-<SecondaryPageShell title="更新历史" backHref="/about">
+<SecondaryPageShell title="更新历史" backHref="/about/update">
 	<ReleaseListScreen />
 </SecondaryPageShell>

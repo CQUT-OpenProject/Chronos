@@ -90,7 +90,7 @@
 		<MineRow
 			title="当前版本"
 			supporting={APP_VERSION}
-			href={resolve('/about/releases')}
+			href={resolve('/about/update')}
 			icon={InfoFill}
 			iconTone="primary"
 		/>
