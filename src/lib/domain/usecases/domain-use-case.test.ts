@@ -224,10 +224,6 @@ class FakePreferencesRepository implements PreferencesRepository {
 class FakeTimetableShareCodec implements TimetableShareCodec {
 	constructor(private readonly timetable: Timetable) {}
 
-	decode(): AppResult<OnlineSchedulePayload> {
-		return success(emptyOnlineSchedulePayload());
-	}
-
 	toTimetable(_payload: OnlineSchedulePayload): AppResult<Timetable> {
 		return success(this.timetable);
 	}
