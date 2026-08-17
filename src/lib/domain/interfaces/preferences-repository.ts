@@ -2,11 +2,13 @@ import type {
 	CapsuleCornerStyle,
 	PaletteMode,
 	ThemeMode,
-	TimetableLayoutMode
+	TimetableLayoutMode,
+	UserPreferences
 } from '$lib/models/app-state';
 
-/** Writes user preferences (localStorage for theme/timetable; wallpaper in IndexedDB). */
+/** Writes user preferences (localStorage for settings; wallpaper in IndexedDB). */
 export interface PreferencesRepository {
+	update(patch: Partial<UserPreferences>): Promise<void>;
 	setCurrentTimetableId(id: string | null): Promise<void>;
 	setWallpaper(wallpaper: Blob | null): Promise<void>;
 	setThemeMode(mode: ThemeMode): Promise<void>;

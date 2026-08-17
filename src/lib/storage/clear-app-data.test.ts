@@ -94,6 +94,7 @@ describe('clearAllAppData', () => {
 			reloadFromStorage() {
 				reloadFromStorageCalls += 1;
 			},
+			update: vi.fn(),
 			setCurrentTimetableId: vi.fn(),
 			setThemeMode: vi.fn(),
 			setTimetableLayoutMode: vi.fn(),

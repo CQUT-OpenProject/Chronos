@@ -100,3 +100,31 @@ describe('createSettingsRepo hapticFeedbackEnabled', () => {
 		expect(repo.getSnapshot().hapticFeedbackEnabled).toBe(true);
 	});
 });
+
+describe('createSettingsRepo update batch patch', () => {
+	it('updates multiple preferences atomically and notifies subscribers once', () => {
+		const storage = createMemoryStorage();
+		const repo = createSettingsRepo(storage);
+		let notifyCount = 0;
+		repo.subscribe(() => {
+			notifyCount += 1;
+		});
+		notifyCount = 0; // reset initial sync
+
+		repo.update({
+			capsuleCornerStyle: CapsuleCornerStyle.MERGE,
+			hapticFeedbackEnabled: false,
+			currentTimetableId: 'tt-123'
+		});
+
+		expect(notifyCount).toBe(1);
+		expect(storage.getItem('chronos_preferences:capsule_corner_style')).toBe('merge');
+		expect(storage.getItem('chronos_preferences:haptic_feedback_enabled')).toBe('0');
+		expect(storage.getItem('chronos_preferences:current_timetable_id')).toBe('tt-123');
+
+		const snapshot = repo.getSnapshot();
+		expect(snapshot.capsuleCornerStyle).toBe(CapsuleCornerStyle.MERGE);
+		expect(snapshot.hapticFeedbackEnabled).toBe(false);
+		expect(snapshot.currentTimetableId).toBe('tt-123');
+	});
+});

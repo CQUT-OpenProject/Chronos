@@ -107,6 +107,15 @@ export function hapticFeedbackFromStorage(value: string | null | undefined): boo
 	return true;
 }
 
+export interface UserPreferences {
+	currentTimetableId: string | null;
+	themeMode: ThemeMode;
+	timetableLayoutMode: TimetableLayoutMode;
+	paletteMode: PaletteMode;
+	capsuleCornerStyle: CapsuleCornerStyle;
+	hapticFeedbackEnabled: boolean;
+}
+
 export interface TimetableSummary {
 	id: string;
 	name: string;

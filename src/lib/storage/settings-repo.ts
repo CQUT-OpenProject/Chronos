@@ -97,13 +97,40 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 		return cached;
 	}
 
-	function setString(key: string, value: string | null) {
+	function update(patch: Partial<UserPreferenceState>) {
 		if (!storage) return;
-		const fullKey = storageKey(key);
-		if (value == null) {
-			storage.removeItem(fullKey);
-		} else {
-			storage.setItem(fullKey, value);
+		if (patch.currentTimetableId !== undefined) {
+			const fullKey = storageKey(KEYS.currentTimetableId);
+			if (patch.currentTimetableId === null) {
+				storage.removeItem(fullKey);
+			} else {
+				storage.setItem(fullKey, patch.currentTimetableId);
+			}
+		}
+		if (patch.themeMode !== undefined) {
+			storage.setItem(storageKey(KEYS.themeMode), themeModeToStorage(patch.themeMode));
+		}
+		if (patch.timetableLayoutMode !== undefined) {
+			storage.setItem(
+				storageKey(KEYS.timetableLayoutMode),
+				timetableLayoutModeToStorage(patch.timetableLayoutMode)
+			);
+		}
+		if (patch.paletteMode !== undefined) {
+			storage.setItem(storageKey(KEYS.paletteMode), paletteModeToStorage(patch.paletteMode));
+			storage.removeItem(storageKey(KEYS.randomTheme));
+		}
+		if (patch.capsuleCornerStyle !== undefined) {
+			storage.setItem(
+				storageKey(KEYS.capsuleCornerStyle),
+				capsuleCornerStyleToStorage(patch.capsuleCornerStyle)
+			);
+		}
+		if (patch.hapticFeedbackEnabled !== undefined) {
+			storage.setItem(
+				storageKey(KEYS.hapticFeedbackEnabled),
+				hapticFeedbackToStorage(patch.hapticFeedbackEnabled)
+			);
 		}
 		notify();
 	}
@@ -111,29 +138,27 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 	return {
 		subscribe,
 		getSnapshot,
+		update,
 		reloadFromStorage() {
 			notify();
 		},
 		setCurrentTimetableId(id: string | null) {
-			setString(KEYS.currentTimetableId, id);
+			update({ currentTimetableId: id });
 		},
 		setThemeMode(mode: ThemeMode) {
-			setString(KEYS.themeMode, themeModeToStorage(mode));
+			update({ themeMode: mode });
 		},
 		setTimetableLayoutMode(mode: TimetableLayoutMode) {
-			setString(KEYS.timetableLayoutMode, timetableLayoutModeToStorage(mode));
+			update({ timetableLayoutMode: mode });
 		},
 		setPaletteMode(mode: PaletteMode) {
-			if (!storage) return;
-			storage.setItem(storageKey(KEYS.paletteMode), paletteModeToStorage(mode));
-			storage.removeItem(storageKey(KEYS.randomTheme));
-			notify();
+			update({ paletteMode: mode });
 		},
 		setCapsuleCornerStyle(style: CapsuleCornerStyle) {
-			setString(KEYS.capsuleCornerStyle, capsuleCornerStyleToStorage(style));
+			update({ capsuleCornerStyle: style });
 		},
 		setHapticFeedbackEnabled(enabled: boolean) {
-			setString(KEYS.hapticFeedbackEnabled, hapticFeedbackToStorage(enabled));
+			update({ hapticFeedbackEnabled: enabled });
 		}
 	};
 }

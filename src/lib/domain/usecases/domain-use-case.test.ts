@@ -6,7 +6,8 @@ import {
 	PaletteMode,
 	ThemeMode,
 	TimetableLayoutMode,
-	type AppState
+	type AppState,
+	type UserPreferences
 } from '$lib/models/app-state';
 import {
 	emptyOnlineSchedulePayload,
@@ -163,9 +164,30 @@ class FakeTimetableRepository implements TimetableRepository {
 class FakePreferencesRepository implements PreferencesRepository {
 	constructor(private readonly backend: FakeAppBackend) {}
 
-	async setCurrentTimetableId(id: string | null): Promise<void> {
-		this.backend.currentTimetableId = id;
+	async update(patch: Partial<UserPreferences>): Promise<void> {
+		if (patch.currentTimetableId !== undefined) {
+			this.backend.currentTimetableId = patch.currentTimetableId;
+		}
+		if (patch.themeMode !== undefined) {
+			this.backend.themeMode = patch.themeMode;
+		}
+		if (patch.timetableLayoutMode !== undefined) {
+			this.backend.timetableLayoutMode = patch.timetableLayoutMode;
+		}
+		if (patch.paletteMode !== undefined) {
+			this.backend.paletteMode = patch.paletteMode;
+		}
+		if (patch.capsuleCornerStyle !== undefined) {
+			this.backend.capsuleCornerStyle = patch.capsuleCornerStyle;
+		}
+		if (patch.hapticFeedbackEnabled !== undefined) {
+			this.backend.hapticFeedbackEnabled = patch.hapticFeedbackEnabled;
+		}
 		this.backend.syncState();
+	}
+
+	async setCurrentTimetableId(id: string | null): Promise<void> {
+		await this.update({ currentTimetableId: id });
 	}
 
 	async setWallpaper(wallpaper: Blob | null): Promise<void> {
