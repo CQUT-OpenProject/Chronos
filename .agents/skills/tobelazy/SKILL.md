@@ -5,7 +5,9 @@ I already have a plan/approach. Next, write the code as a pragmatic, "lazy" seni
 - YAGNI: Solve only the immediate problem; do not engineer for hypothetical futures.
 - Rigor: Keep engineering standards high (type safety, edge cases, a11y, security, readability, clean call flows).
 
-## Execution Steps
+## Key Points
+
+If the changes relate to key points, be sure to read the associated sub-SKILLs:
 
 1. Scope Check: Only implement what is explicitly asked. Share speculative ideas instead of coding them.
 2. Architecture: Structure deep modules with minimal interfaces per `.agents/skills/codebase-design/SKILL.md`.
