@@ -3,6 +3,7 @@ export const secondaryRouteRoots = [
 	'/manage-timetables',
 	'/transfer',
 	'/display-settings',
+	'/feedback-settings',
 	'/wallpaper',
 	'/about',
 	'/legal',
