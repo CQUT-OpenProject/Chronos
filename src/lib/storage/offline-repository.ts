@@ -143,6 +143,9 @@ export function createPreferencesRepository(
 		},
 		async setCapsuleCornerStyle(style) {
 			settings.setCapsuleCornerStyle(style);
+		},
+		async setHapticFeedbackEnabled(enabled) {
+			settings.setHapticFeedbackEnabled(enabled);
 		}
 	};
 }

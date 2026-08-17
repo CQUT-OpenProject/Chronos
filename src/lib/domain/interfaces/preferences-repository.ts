@@ -13,4 +13,5 @@ export interface PreferencesRepository {
 	setTimetableLayoutMode(mode: TimetableLayoutMode): Promise<void>;
 	setPaletteMode(mode: PaletteMode): Promise<void>;
 	setCapsuleCornerStyle(style: CapsuleCornerStyle): Promise<void>;
+	setHapticFeedbackEnabled(enabled: boolean): Promise<void>;
 }

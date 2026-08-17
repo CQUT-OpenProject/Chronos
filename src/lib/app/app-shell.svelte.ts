@@ -75,6 +75,10 @@ export function createAppShell() {
 		await getServices().preferences.setCapsuleCornerStyle(style);
 	}
 
+	async function setHapticFeedbackEnabled(enabled: boolean) {
+		await getServices().preferences.setHapticFeedbackEnabled(enabled);
+	}
+
 	async function setWallpaper(wallpaper: Blob | null) {
 		await getServices().preferences.setWallpaper(wallpaper);
 	}
@@ -101,6 +105,7 @@ export function createAppShell() {
 		setTimetableLayoutMode,
 		setPaletteMode,
 		setCapsuleCornerStyle,
+		setHapticFeedbackEnabled,
 		setWallpaper,
 		clearAllData,
 		get services() {

@@ -5,6 +5,8 @@ import {
 	TimetableLayoutMode,
 	capsuleCornerStyleFromStorage,
 	capsuleCornerStyleToStorage,
+	hapticFeedbackFromStorage,
+	hapticFeedbackToStorage,
 	paletteModeFromStorage,
 	paletteModeToStorage,
 	themeModeFromStorage,
@@ -19,6 +21,7 @@ export interface UserPreferenceState {
 	timetableLayoutMode: TimetableLayoutMode;
 	paletteMode: PaletteMode;
 	capsuleCornerStyle: CapsuleCornerStyle;
+	hapticFeedbackEnabled: boolean;
 }
 
 const KEYS = {
@@ -27,6 +30,7 @@ const KEYS = {
 	timetableLayoutMode: 'timetable_layout_mode',
 	paletteMode: 'palette_mode',
 	capsuleCornerStyle: 'capsule_corner_style',
+	hapticFeedbackEnabled: 'haptic_feedback_enabled',
 	randomTheme: 'random_theme'
 } as const;
 
@@ -52,7 +56,8 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 				themeMode: ThemeMode.SYSTEM,
 				timetableLayoutMode: TimetableLayoutMode.SCROLL,
 				paletteMode: PaletteMode.DEFAULT,
-				capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
+				capsuleCornerStyle: CapsuleCornerStyle.ROUNDED,
+				hapticFeedbackEnabled: true
 			};
 		}
 
@@ -68,6 +73,9 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 			),
 			capsuleCornerStyle: capsuleCornerStyleFromStorage(
 				target.getItem(storageKey(KEYS.capsuleCornerStyle))
+			),
+			hapticFeedbackEnabled: hapticFeedbackFromStorage(
+				target.getItem(storageKey(KEYS.hapticFeedbackEnabled))
 			)
 		};
 	}
@@ -123,6 +131,9 @@ export function createSettingsRepo(storage: Storage | null = readStorage()) {
 		},
 		setCapsuleCornerStyle(style: CapsuleCornerStyle) {
 			setString(KEYS.capsuleCornerStyle, capsuleCornerStyleToStorage(style));
+		},
+		setHapticFeedbackEnabled(enabled: boolean) {
+			setString(KEYS.hapticFeedbackEnabled, hapticFeedbackToStorage(enabled));
 		}
 	};
 }

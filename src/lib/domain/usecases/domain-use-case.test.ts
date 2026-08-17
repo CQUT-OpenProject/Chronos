@@ -49,6 +49,7 @@ class FakeAppBackend {
 	timetableLayoutMode = TimetableLayoutMode.SCROLL;
 	paletteMode = PaletteMode.DEFAULT;
 	capsuleCornerStyle = CapsuleCornerStyle.ROUNDED;
+	hapticFeedbackEnabled = true;
 	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
@@ -57,7 +58,8 @@ class FakeAppBackend {
 		themeMode: ThemeMode.SYSTEM,
 		timetableLayoutMode: TimetableLayoutMode.SCROLL,
 		paletteMode: PaletteMode.DEFAULT,
-		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
+		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED,
+		hapticFeedbackEnabled: true
 	};
 
 	syncState() {
@@ -78,7 +80,8 @@ class FakeAppBackend {
 			themeMode: this.themeMode,
 			timetableLayoutMode: this.timetableLayoutMode,
 			paletteMode: this.paletteMode,
-			capsuleCornerStyle: this.capsuleCornerStyle
+			capsuleCornerStyle: this.capsuleCornerStyle,
+			hapticFeedbackEnabled: this.hapticFeedbackEnabled
 		};
 	}
 }
@@ -187,6 +190,11 @@ class FakePreferencesRepository implements PreferencesRepository {
 
 	async setCapsuleCornerStyle(style: CapsuleCornerStyle): Promise<void> {
 		this.backend.capsuleCornerStyle = style;
+		this.backend.syncState();
+	}
+
+	async setHapticFeedbackEnabled(enabled: boolean): Promise<void> {
+		this.backend.hapticFeedbackEnabled = enabled;
 		this.backend.syncState();
 	}
 }

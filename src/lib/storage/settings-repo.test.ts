@@ -69,3 +69,34 @@ describe('createSettingsRepo capsuleCornerStyle', () => {
 		expect(repo.getSnapshot().capsuleCornerStyle).toBe(CapsuleCornerStyle.SQUARE);
 	});
 });
+
+describe('createSettingsRepo hapticFeedbackEnabled', () => {
+	it('defaults to true when storage is empty', () => {
+		const repo = createSettingsRepo(createMemoryStorage());
+		expect(repo.getSnapshot().hapticFeedbackEnabled).toBe(true);
+	});
+
+	it('reads false from storage with "0" or "false"', () => {
+		const repo1 = createSettingsRepo(
+			createMemoryStorage({ 'chronos_preferences:haptic_feedback_enabled': '0' })
+		);
+		expect(repo1.getSnapshot().hapticFeedbackEnabled).toBe(false);
+
+		const repo2 = createSettingsRepo(
+			createMemoryStorage({ 'chronos_preferences:haptic_feedback_enabled': 'false' })
+		);
+		expect(repo2.getSnapshot().hapticFeedbackEnabled).toBe(false);
+	});
+
+	it('writes haptic_feedback_enabled to storage', () => {
+		const storage = createMemoryStorage();
+		const repo = createSettingsRepo(storage);
+		repo.setHapticFeedbackEnabled(false);
+		expect(storage.getItem('chronos_preferences:haptic_feedback_enabled')).toBe('0');
+		expect(repo.getSnapshot().hapticFeedbackEnabled).toBe(false);
+
+		repo.setHapticFeedbackEnabled(true);
+		expect(storage.getItem('chronos_preferences:haptic_feedback_enabled')).toBe('1');
+		expect(repo.getSnapshot().hapticFeedbackEnabled).toBe(true);
+	});
+});

@@ -29,6 +29,7 @@ export function assembleAppState(
 		themeMode: preferences.themeMode,
 		timetableLayoutMode: preferences.timetableLayoutMode,
 		paletteMode: preferences.paletteMode,
-		capsuleCornerStyle: preferences.capsuleCornerStyle
+		capsuleCornerStyle: preferences.capsuleCornerStyle,
+		hapticFeedbackEnabled: preferences.hapticFeedbackEnabled
 	};
 }
