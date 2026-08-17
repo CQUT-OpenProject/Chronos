@@ -77,19 +77,16 @@
 			<HighlightRowList>
 				<HighlightRow
 					icon={Update}
-					iconTone="primary"
 					title="最新版本"
 					subtitle={updateState.state.latestRelease.name || updateState.state.latestRelease.tagName}
 				/>
 				<HighlightRow
 					icon={CalendarMonthFill}
-					iconTone="secondary"
 					title="发布日期"
 					subtitle={formatPublishedDate(updateState.state.latestRelease.publishedAt)}
 				/>
 				<HighlightRow
 					icon={InfoFill}
-					iconTone="neutral"
 					title="当前版本"
 					subtitle={`v${updateState.state.currentVersion}`}
 				/>
@@ -112,9 +109,7 @@
 					disabled={updateState.state.updating}
 					onclick={() => void updateState.installUpdate()}
 				>
-					{#snippet leading()}
-						<DownloadFill class="size-5" />
-					{/snippet}
+					<DownloadFill class="size-5" />
 					{updateState.state.updating ? '正在更新…' : '立即安装更新'}
 				</Button>
 			</div>
@@ -124,9 +119,7 @@
 			<InfoFill class="h-8 w-8 text-on-surface-variant" />
 			<p class="m3-body-medium text-danger">{updateState.state.errorMessage}</p>
 			<Button variant="filled" onclick={() => void updateState.checkUpdate()} class="mt-2">
-				{#snippet leading()}
-					<Refresh class="size-4" />
-				{/snippet}
+				<Refresh class="size-4" />
 				重试
 			</Button>
 		</Card>
@@ -140,9 +133,7 @@
 				</p>
 			</div>
 			<Button variant="outlined" onclick={() => void updateState.checkUpdate()} class="mt-2">
-				{#snippet leading()}
-					<Refresh class="size-4" />
-				{/snippet}
+				<Refresh class="size-4" />
 				重新检查
 			</Button>
 		</Card>
