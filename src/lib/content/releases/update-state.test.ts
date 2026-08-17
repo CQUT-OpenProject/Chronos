@@ -199,4 +199,39 @@ describe('createUpdateState', () => {
 		expect(applyUpdateMock).toHaveBeenCalled();
 		expect(mockTrackEvent).toHaveBeenCalledWith('pwa_update_apply');
 	});
+
+	it('supports pluggable ServiceWorkerAdapter and ReleaseFeedAdapter', async () => {
+		mockTrackEvent.mockClear();
+		const mockSwAdapter = {
+			isSupported: () => true,
+			isUpdatePending: () => false,
+			checkForUpdate: vi.fn().mockResolvedValue(false),
+			applyUpdateAndReload: vi.fn().mockResolvedValue(undefined)
+		};
+		const mockFeedAdapter = {
+			fetchLatestRelease: vi.fn().mockResolvedValue(
+				success({
+					tagName: 'v0.2.0',
+					name: 'Chronos 0.2.0',
+					publishedAt: '2026-08-18',
+					body: 'Major upgrade'
+				})
+			)
+		};
+
+		const updateState = createUpdateState({
+			currentVersion: '0.1.4',
+			swAdapter: mockSwAdapter,
+			releaseFeedAdapter: mockFeedAdapter
+		});
+
+		await updateState.checkUpdate();
+		expect(updateState.state.hasUpdate).toBe(true);
+		expect(updateState.state.latestRelease?.tagName).toBe('v0.2.0');
+		expect(mockSwAdapter.checkForUpdate).toHaveBeenCalledOnce();
+		expect(mockFeedAdapter.fetchLatestRelease).toHaveBeenCalledOnce();
+
+		await updateState.installUpdate();
+		expect(mockSwAdapter.applyUpdateAndReload).toHaveBeenCalledOnce();
+	});
 });
