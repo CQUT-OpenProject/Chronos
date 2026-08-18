@@ -6,7 +6,6 @@ export const WEEK_EVENTS_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/listWee
 export const GET_USER_INFO_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/getUserInfo`;
 export const GET_CAMPUS_TIME_INFO_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/getCampusTimeInfo`;
 
-export const UNIVERSITY_ID = '100005';
 export const JSON_MEDIA_TYPE = 'application/json; charset=utf-8';
 export const TIMETABLE_SESSION_COOKIE = 'JSESSIONID';
 

@@ -18,6 +18,9 @@ importers:
 
   .:
     dependencies:
+      '@cqut-openproject/cas-sdk':
+        specifier: github:CQUT-OpenProject/CAS-SDK#1.0.0
+        version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f
       '@internationalized/date':
         specifier: ^3.12.3
         version: 3.12.3
@@ -36,9 +39,6 @@ importers:
       dexie:
         specifier: ^4.4.5
         version: 4.4.5
-      jsencrypt:
-        specifier: ^3.5.4
-        version: 3.5.4
       marked:
         specifier: ^18.0.9
         version: 18.0.9
@@ -639,6 +639,11 @@ packages:
 
   '@blazediff/core@1.9.1':
     resolution: {integrity: sha512-ehg3jIkYKulZh+8om/O25vkvSsXXwC+skXmyA87FFx6A/45eqOkZsBltMw/TVteb0mloiGT8oGRTcjRAz66zaA==}
+
+  '@cqut-openproject/cas-sdk@https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f':
+    resolution: {gitHosted: true, integrity: sha512-0zGJ11YWn/hRFV/9Ld3WSq5jDvgnRT9lolDGUFXQWH/JbesgQNFlrfRREIVZcKQ8PP5KImtONdGraCXD943/HQ==, tarball: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f}
+    version: 1.0.0
+    engines: {node: '>=18.0.0'}
 
   '@esbuild/aix-ppc64@0.28.1':
     resolution: {integrity: sha512-Svl7tq8k/08+p6CXPpRjQ1fKX+1odH/BQbb48fV6fj3CWHhsoIOoY87w1oHXm0qEpkIK3ZfVgp0hed3XBXzXMQ==}
@@ -2826,9 +2831,6 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  jsencrypt@3.5.4:
-    resolution: {integrity: sha512-kNjfYEMNASxrDGsmcSQh/rUTmcoRfSUkxnAz+MMywM8jtGu+fFEZ3nJjHM58zscVnwR0fYmG9sGkTDjqUdpiwA==}
-
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
     engines: {node: '>=6'}
@@ -4600,6 +4602,8 @@ snapshots:
       '@babel/helper-validator-identifier': 7.29.7
 
   '@blazediff/core@1.9.1': {}
+
+  '@cqut-openproject/cas-sdk@https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f': {}
 
   '@esbuild/aix-ppc64@0.28.1':
     optional: true
@@ -6473,8 +6477,6 @@ snapshots:
   jiti@2.7.0: {}
 
   js-tokens@4.0.0: {}
-
-  jsencrypt@3.5.4: {}
 
   jsesc@3.1.0: {}
 

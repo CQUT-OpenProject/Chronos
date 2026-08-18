@@ -1,6 +1,6 @@
 [
 	{ "name": "dexie", "license": "Apache-2.0" },
-	{ "name": "jsencrypt", "license": "MIT" },
+	{ "name": "@cqut-openproject/cas-sdk", "license": "MIT" },
 	{ "name": "swiper", "license": "MIT" },
 	{ "name": "zod", "license": "MIT" },
 	{ "name": "svelte", "license": "MIT" },

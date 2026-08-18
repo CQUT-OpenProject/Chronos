@@ -4,6 +4,7 @@ import { checkPreviewRateLimit } from '$lib/server/cqut-online/preview-rate-limi
 
 interface PreviewRequestBody {
 	account?: string;
+	password?: string;
 	encryptedPassword?: string;
 	weekNum?: string | null;
 	yearTerm?: string | null;
@@ -38,8 +39,8 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	}
 
 	const account = body.account?.trim() ?? '';
-	const encryptedPassword = body.encryptedPassword?.trim() ?? '';
-	if (!account || !encryptedPassword) {
+	const password = (body.password ?? body.encryptedPassword)?.trim() ?? '';
+	if (!account || !password) {
 		return json(
 			{ ok: false, error: { kind: 'Validation', message: '账号和密码不能为空' } },
 			{ status: 400 }
@@ -48,7 +49,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 
 	const result = await fetchCqutSchedule({
 		account,
-		encryptedPassword,
+		password,
 		weekNum: body.weekNum,
 		yearTerm: body.yearTerm
 	});

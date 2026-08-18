@@ -134,7 +134,6 @@
 			<MineRow
 				label={true}
 				title={option.label}
-				supporting={option.description}
 				icon={option.Icon}
 				iconTone={option.iconTone}
 				onclick={() => selectThemeMode(option.mode)}
