@@ -335,8 +335,8 @@ export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): 
 				if (otherStart === endPeriod + 1) bottomExposed = false;
 			}
 			if (rangesIntersect(startPeriod, endPeriod, otherStart, otherEnd)) {
-				if (isFlushRightOf(otherLeft, otherRight, left)) leftExposed = false;
-				if (isFlushRightOf(left, right, otherLeft)) rightExposed = false;
+				if (isFlushRightOf(otherRight, left)) leftExposed = false;
+				if (isFlushRightOf(right, otherLeft)) rightExposed = false;
 			}
 		}
 
@@ -362,7 +362,7 @@ function rangesIntersect(
 	return start <= otherEnd && otherStart <= end;
 }
 
-function isFlushRightOf(otherLeft: number, otherRight: number, left: number): boolean {
+function isFlushRightOf(otherRight: number, left: number): boolean {
 	return Math.abs(otherRight - left) < POSITION_EPSILON;
 }
 export function shouldShowLocationCampus(columnWidthPx: number, overlapCount = 1): boolean {

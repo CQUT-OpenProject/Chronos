@@ -38,7 +38,7 @@ export function computeDelayUntilNextCurrentTimeRefreshMillis(
 	periods: ParsedPeriodRange[],
 	minimumDelayMillis = MIN_TIME_REFRESH_DELAY_MILLIS
 ): number {
-	const nowMinutes = now.getHours() * 60 + now.getMinutes();
+	const nowMinutes = currentTimeMinutes(now);
 	const nextBoundaryToday = periods.reduce<number | null>((found, period) => {
 		if (found != null) return found;
 		if (nowMinutes >= period.startMinutes && nowMinutes <= period.endMinutes) {
