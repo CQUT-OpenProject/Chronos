@@ -177,22 +177,21 @@ export function fitFontSizePx(
 	if (maxWidth <= 0) return minPx;
 	const hi = Math.max(minPx, maxPx);
 	const lo = Math.min(minPx, hi);
-	if (measureAt(hi) <= maxWidth) return hi;
-	if (measureAt(lo) > maxWidth) return lo;
+	const measuredHi = measureAt(hi);
+	if (measuredHi <= maxWidth) return hi;
 
-	let low = lo;
-	let high = hi;
-	let best = lo;
-	for (let step = 0; step < 20; step += 1) {
-		const mid = (low + high) / 2;
-		if (measureAt(mid) <= maxWidth) {
-			best = mid;
-			low = mid;
-		} else {
-			high = mid;
+	const ideal = (maxWidth / measuredHi) * hi;
+	let fitted = Math.max(lo, Math.min(hi, Math.floor(ideal * 10) / 10));
+	if (fitted <= lo) return lo;
+
+	if (measureAt(fitted) > maxWidth) {
+		const measuredFitted = measureAt(fitted);
+		if (measuredFitted > maxWidth) {
+			const refined = (maxWidth / measuredFitted) * fitted;
+			fitted = Math.max(lo, Math.min(hi, Math.floor(refined * 10) / 10));
 		}
 	}
-	return Math.floor(best * 10) / 10;
+	return fitted;
 }
 
 /** Builds a size-parameterized measurer from an element's font family/weight/style. */
