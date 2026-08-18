@@ -85,19 +85,19 @@ describe('haptic feedback service', () => {
 		mockGetSnapshot.mockReturnValue({ hapticFeedbackEnabled: true });
 
 		haptic.light();
-		expect(mockVibrate).toHaveBeenLastCalledWith(10);
-
-		haptic.medium();
 		expect(mockVibrate).toHaveBeenLastCalledWith(20);
 
+		haptic.medium();
+		expect(mockVibrate).toHaveBeenLastCalledWith(40);
+
 		haptic.heavy();
-		expect(mockVibrate).toHaveBeenLastCalledWith(35);
+		expect(mockVibrate).toHaveBeenLastCalledWith(70);
 
 		haptic.success();
-		expect(mockVibrate).toHaveBeenLastCalledWith([15, 60, 20]);
+		expect(mockVibrate).toHaveBeenLastCalledWith([25, 60, 35]);
 
 		haptic.warning();
-		expect(mockVibrate).toHaveBeenLastCalledWith([30, 50, 30]);
+		expect(mockVibrate).toHaveBeenLastCalledWith([40, 60, 40]);
 
 		haptic.cancel();
 		expect(mockVibrate).toHaveBeenLastCalledWith(0);
