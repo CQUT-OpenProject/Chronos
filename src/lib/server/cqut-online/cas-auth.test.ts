@@ -38,6 +38,12 @@ async function startMockUpstream() {
 			url.pathname === `/center-auth-server/${CAS_APPLICATION_CODE}/cas/login` &&
 			req.method === 'GET'
 		) {
+			const cookie = req.headers.cookie ?? '';
+			if (!cookie.includes('auth_server_token=')) {
+				res.setHeader('Content-Type', 'text/html;charset=utf-8');
+				res.end('<html><form id="casLoginForm"></form></html>');
+				return;
+			}
 			const redirect = new URL(`${baseUrl}/api/auth/casLogin`);
 			redirect.searchParams.set('ticket', TEST_TICKET);
 			res.statusCode = 302;
@@ -91,6 +97,7 @@ describe('loginCas', () => {
 		expect(result.ok).toBe(true);
 		expect(jar.hasCookie('127.0.0.1', TIMETABLE_SESSION_COOKIE)).toBe(true);
 		expect(upstream.requests.map((item) => `${item.method} ${item.path.split('?')[0]}`)).toEqual([
+			`GET /center-auth-server/${CAS_APPLICATION_CODE}/cas/login`,
 			'POST /center-auth-server/sso/doLogin',
 			`GET /center-auth-server/${CAS_APPLICATION_CODE}/cas/login`,
 			'GET /api/auth/casLogin'

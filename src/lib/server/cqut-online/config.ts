@@ -6,14 +6,15 @@ export const WEEK_EVENTS_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/listWee
 export const GET_USER_INFO_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/getUserInfo`;
 export const GET_CAMPUS_TIME_INFO_URL = `${TIMETABLE_BASE_URL}/api/courseSchedule/getCampusTimeInfo`;
 
-export const UNIVERSITY_ID = '100005';
 export const JSON_MEDIA_TYPE = 'application/json; charset=utf-8';
 export const TIMETABLE_SESSION_COOKIE = 'JSESSIONID';
 
 export const WEEK_FETCH_CONCURRENCY = 4;
+export const CONNECT_TIMEOUT_MS = 15_000;
 export const REQUEST_TIMEOUT_MS = 20_000;
 export const TOTAL_FETCH_TIMEOUT_MS = 55_000;
-export const HTTP_RETRY_DELAY_MS = 250;
+export const HTTP_RETRY_DELAY_MS = 300;
+export const NETWORK_RETRY_COUNT = 2;
 
 /** Per-instance IP sliding window; not shared across Vercel instances. */
 export const PREVIEW_RATE_LIMIT_MAX = 8;

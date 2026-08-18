@@ -20,7 +20,8 @@ import { toUpstreamNetworkError } from './upstream-error';
 
 export interface FetchCqutScheduleInput {
 	account: string;
-	encryptedPassword: string;
+	password?: string;
+	encryptedPassword?: string;
 	weekNum?: string | null;
 	yearTerm?: string | null;
 }
@@ -36,15 +37,16 @@ export async function fetchCqutSchedule(
 ): Promise<AppResult<FetchCqutScheduleResult>> {
 	const jar = new CookieJar();
 	const signal = AbortSignal.timeout(TOTAL_FETCH_TIMEOUT_MS);
+	const password = input.password ?? input.encryptedPassword ?? '';
 
 	try {
-		const loginResult = await loginCas(jar, input.account, input.encryptedPassword, signal);
+		const loginResult = await loginCas(jar, input.account, password, signal);
 		if (!loginResult.ok) return loginResult;
 
 		const campusTimesResult = await fetchCampusTimesForImport(jar, signal);
 		if (!campusTimesResult.ok) return campusTimesResult;
 
-		const timetableResult = await fetchTimetable(jar, input, signal);
+		const timetableResult = await fetchTimetable(jar, input.account, password, input, signal);
 		if (!timetableResult.ok) return timetableResult;
 
 		return success({
@@ -59,15 +61,17 @@ export async function fetchCqutSchedule(
 
 async function fetchTimetable(
 	jar: CookieJar,
+	account: string,
+	password: string,
 	input: FetchCqutScheduleInput,
 	signal: AbortSignal
 ): Promise<AppResult<OnlineSchedulePayload>> {
 	const initialPayload = await fetchWeekEvents(
 		jar,
-		input.account,
+		account,
 		input.weekNum,
 		input.yearTerm,
-		input.encryptedPassword,
+		password,
 		true,
 		signal
 	);
@@ -90,15 +94,7 @@ async function fetchTimetable(
 		remainingWeeks,
 		WEEK_FETCH_CONCURRENCY,
 		async (targetWeek) =>
-			fetchWeekEvents(
-				jar,
-				input.account,
-				targetWeek,
-				targetYearTerm,
-				input.encryptedPassword,
-				true,
-				signal
-			)
+			fetchWeekEvents(jar, account, targetWeek, targetYearTerm, password, true, signal)
 	);
 
 	const payloads: OnlineSchedulePayload[] = [initialPayload.value];
@@ -115,7 +111,7 @@ async function fetchWeekEvents(
 	account: string,
 	weekNum: string | null | undefined,
 	yearTerm: string | null | undefined,
-	encryptedPassword: string,
+	password: string,
 	allowReloginRetry: boolean,
 	signal: AbortSignal
 ): Promise<AppResult<OnlineSchedulePayload>> {
@@ -147,9 +143,9 @@ async function fetchWeekEvents(
 		if (!allowReloginRetry) {
 			return failure(AppError.auth(authErrorMessage(jsonObject.value)));
 		}
-		const loginResult = await loginCas(jar, account, encryptedPassword, signal);
+		const loginResult = await loginCas(jar, account, password, signal);
 		if (!loginResult.ok) return loginResult;
-		return fetchWeekEvents(jar, account, weekNum, yearTerm, encryptedPassword, false, signal);
+		return fetchWeekEvents(jar, account, weekNum, yearTerm, password, false, signal);
 	}
 
 	try {

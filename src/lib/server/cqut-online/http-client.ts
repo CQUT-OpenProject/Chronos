@@ -1,8 +1,10 @@
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import { HTTP_RETRY_DELAY_MS, REQUEST_TIMEOUT_MS } from './config';
+import { fetch as undiciFetch, type RequestInit as UndiciRequestInit } from 'undici';
+import { HTTP_RETRY_DELAY_MS, NETWORK_RETRY_COUNT, REQUEST_TIMEOUT_MS } from './config';
 import type { CookieJar } from './cookie-jar';
-import { toUpstreamNetworkError } from './upstream-error';
+import { getCqutDispatcher } from './dispatcher';
+import { isTransientNetworkError, toUpstreamNetworkError } from './upstream-error';
 
 export interface HttpRequestOptions {
 	redirect?: RequestRedirect;
@@ -37,35 +39,53 @@ export async function request(
 	const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
 	const signal = options.signal ? mergeSignals([options.signal, timeoutSignal]) : timeoutSignal;
 
-	const execute = async (): Promise<Response> => {
+	const executeOnce = async (): Promise<Response> => {
 		const headers = new Headers(init.headers);
 		const cookieHeader = jar.cookieHeader(url);
 		if (cookieHeader) {
 			headers.set('cookie', cookieHeader);
 		}
-		const response = await fetch(url, {
-			...init,
+		const requestInit: UndiciRequestInit = {
+			...(init as UndiciRequestInit),
 			headers,
 			redirect: options.redirect ?? 'follow',
-			signal
-		});
+			signal,
+			dispatcher: getCqutDispatcher()
+		};
+		const response = (await undiciFetch(url, requestInit)) as unknown as Response;
 		jar.storeFrom(response, url);
 		return response;
 	};
 
+	const executeWithNetworkRetry = async (): Promise<Response> => {
+		let lastError: unknown;
+		for (let attempt = 1; attempt <= NETWORK_RETRY_COUNT; attempt++) {
+			try {
+				return await executeOnce();
+			} catch (error) {
+				lastError = error;
+				if (signal.aborted || attempt >= NETWORK_RETRY_COUNT || !isTransientNetworkError(error)) {
+					throw error;
+				}
+				await sleep(HTTP_RETRY_DELAY_MS);
+			}
+		}
+		throw lastError;
+	};
+
 	if (!options.retryOnServerError) {
-		return execute();
+		return executeWithNetworkRetry();
 	}
 
 	try {
-		const response = await execute();
+		const response = await executeWithNetworkRetry();
 		if (response.status < 500) return response;
 	} catch (error) {
 		if (signal.aborted) throw error;
 	}
 
 	await sleep(HTTP_RETRY_DELAY_MS);
-	return execute();
+	return executeWithNetworkRetry();
 }
 
 export async function requestStep(
