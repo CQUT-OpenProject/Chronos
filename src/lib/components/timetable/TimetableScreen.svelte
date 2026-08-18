@@ -121,7 +121,7 @@
 				onkeydown={onWeekHeaderKeydown}
 				oncontextmenu={(event) => event.preventDefault()}
 			>
-				<div class="flex h-5.5 items-center sm:h-6.5">
+				<div class="flex h-6 items-center sm:h-7">
 					{#if weekGesture.weekSliderVisible && startWeek < endWeek}
 						<Slider
 							id="week-slider"
@@ -142,7 +142,7 @@
 						</p>
 					{/if}
 				</div>
-				<div class="flex h-4 items-center sm:h-4.5">
+				<div class="flex h-4.5 items-center sm:h-5">
 					<p
 						class="m3-body-medium truncate text-xs leading-tight text-on-surface-variant sm:text-sm"
 					>
