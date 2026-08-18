@@ -27,3 +27,24 @@ export function compareReleaseVersions(a: string, b: string): number {
 	}
 	return 0;
 }
+
+export function parseFrontmatter(raw: string): {
+	name?: string;
+	publishedAt?: string;
+	body: string;
+} {
+	const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+	if (!match) {
+		return { body: raw.trim() };
+	}
+	const fields: Record<string, string> = {};
+	for (const line of match[1].split(/\r?\n/)) {
+		const head = line.match(/^([A-Za-z0-9]+)\s*:\s*(.*)$/);
+		if (head) fields[head[1]] = head[2].trim();
+	}
+	return {
+		name: fields['name'],
+		publishedAt: fields['publishedAt'],
+		body: match[2].trim()
+	};
+}
