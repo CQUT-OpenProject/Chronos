@@ -19,12 +19,13 @@ export function buildWeekGridModels(
 		displayedWeek + WEEK_GRID_CACHE_RADIUS
 	).filter((week) => week >= startWeek && week <= endWeek);
 
-	return new Map(
-		requiredWeeks.map((week) => [
-			week,
-			existingWeekGridModels.get(week) ?? buildGrid(today, week, timetable)
-		])
-	);
+	const resultMap = new Map(existingWeekGridModels);
+	for (const week of requiredWeeks) {
+		if (!resultMap.has(week)) {
+			resultMap.set(week, buildGrid(today, week, timetable));
+		}
+	}
+	return resultMap;
 }
 
 export function buildWeekCourseDisplayModels(
@@ -48,17 +49,16 @@ export function buildWeekCourseDisplayModels(
 		displayedWeek + WEEK_GRID_CACHE_RADIUS
 	).filter((week) => week >= startWeek && week <= endWeek);
 
-	return new Map(
-		requiredWeeks.map((week) => {
-			const existing = existingWeekCourseDisplayModels.get(week);
-			if (existing) return [week, existing] as const;
-
+	const resultMap = new Map(existingWeekCourseDisplayModels);
+	for (const week of requiredWeeks) {
+		if (!resultMap.has(week)) {
 			const visibleDayOfWeeks = new Set(
 				weekGridModels.get(week)?.visibleDays.map((day) => day.dayOfWeek) ?? []
 			);
-			return [week, buildDisplayModels(timetable, visibleDayOfWeeks, week, today)] as const;
-		})
-	);
+			resultMap.set(week, buildDisplayModels(timetable, visibleDayOfWeeks, week, today));
+		}
+	}
+	return resultMap;
 }
 
 export function computeDelayUntilNextMidnightMillis(

@@ -60,8 +60,8 @@ function createTimetableScreen() {
 
 	let cachedTimetable: AppState['currentTimetable'] = null;
 	let cachedToday = '';
-	let cachedWeekGridModels = new SvelteMap<number, TimetableGridModel>();
-	let cachedWeekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
+	const cachedWeekGridModels = new SvelteMap<number, TimetableGridModel>();
+	const cachedWeekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
 
 	let todayTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -102,11 +102,16 @@ function createTimetableScreen() {
 		const canReuseCache =
 			timetable != null && timetable === cachedTimetable && today === cachedToday;
 
+		if (!canReuseCache) {
+			cachedWeekGridModels.clear();
+			cachedWeekCourseDisplayModels.clear();
+		}
+
 		const nextWeekGridModels = buildWeekGridModels(
 			timetable,
 			today,
 			displayedWeekMemory,
-			canReuseCache ? cachedWeekGridModels : new SvelteMap(),
+			cachedWeekGridModels,
 			(todayValue, week, currentTimetable) =>
 				invokeBuildVisibleTimetableGrid(todayValue, week, currentTimetable)
 		);
@@ -116,7 +121,7 @@ function createTimetableScreen() {
 			today,
 			displayedWeekMemory,
 			nextWeekGridModels,
-			canReuseCache ? cachedWeekCourseDisplayModels : new SvelteMap(),
+			cachedWeekCourseDisplayModels,
 			(currentTimetable, visibleDayOfWeeks, week, todayValue) =>
 				invokeBuildTimetableCourseDisplayModels(
 					currentTimetable,
@@ -126,10 +131,15 @@ function createTimetableScreen() {
 				)
 		);
 
+		for (const [week, model] of nextWeekGridModels) {
+			cachedWeekGridModels.set(week, model);
+		}
+		for (const [week, models] of nextWeekCourseDisplayModels) {
+			cachedWeekCourseDisplayModels.set(week, models);
+		}
+
 		cachedTimetable = timetable;
 		cachedToday = today;
-		cachedWeekGridModels = new SvelteMap(nextWeekGridModels);
-		cachedWeekCourseDisplayModels = new SvelteMap(nextWeekCourseDisplayModels);
 		weekGridModels = new SvelteMap(nextWeekGridModels);
 		weekCourseDisplayModels = new SvelteMap(nextWeekCourseDisplayModels);
 	}
