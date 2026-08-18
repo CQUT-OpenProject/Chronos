@@ -72,19 +72,22 @@
 			<LoadingIndicator />
 			<p class="m3-body-medium text-on-surface-variant">正在检查最新版本…</p>
 		</Card>
-	{:else if updateState.state.hasUpdate && updateState.state.latestRelease}
+	{:else if updateState.state.hasUpdate}
 		<div class="flex flex-col gap-4">
 			<HighlightRowList>
-				<HighlightRow
-					icon={Update}
-					title="最新版本"
-					subtitle={updateState.state.latestRelease.name || updateState.state.latestRelease.tagName}
-				/>
-				<HighlightRow
-					icon={CalendarMonthFill}
-					title="发布日期"
-					subtitle={formatPublishedDate(updateState.state.latestRelease.publishedAt)}
-				/>
+				{#if updateState.state.latestRelease}
+					<HighlightRow
+						icon={Update}
+						title="最新版本"
+						subtitle={updateState.state.latestRelease.name ||
+							updateState.state.latestRelease.tagName}
+					/>
+					<HighlightRow
+						icon={CalendarMonthFill}
+						title="发布日期"
+						subtitle={formatPublishedDate(updateState.state.latestRelease.publishedAt)}
+					/>
+				{/if}
 				<HighlightRow
 					icon={InfoFill}
 					title="当前版本"

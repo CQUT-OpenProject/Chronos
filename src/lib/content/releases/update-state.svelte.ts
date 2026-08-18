@@ -4,18 +4,11 @@ import { trackEvent } from '$lib/client/analytics';
 import type { AppResult } from '$lib/domain/result/app-result';
 import type { ReleaseCatalog } from './catalog';
 import { compareReleaseVersions, type Release } from './release';
-import {
-	createReleaseFeedAdapter,
-	fetchLatestGitHubRelease,
-	type ReleaseFeedAdapter
-} from './release-feed-adapter';
+import { createReleaseFeedAdapter, type ReleaseFeedAdapter } from './release-feed-adapter';
 import {
 	createDefaultServiceWorkerAdapter,
 	type ServiceWorkerAdapter
 } from './service-worker-adapter';
-
-export { fetchLatestGitHubRelease, type ReleaseFeedAdapter };
-export { type ServiceWorkerAdapter };
 
 export interface SoftwareUpdateState {
 	checking: boolean;
@@ -73,7 +66,8 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 			if (result.ok) {
 				const release = result.value;
 				latestRelease = release;
-				hasUpdate = compareReleaseVersions(release.tagName, currentVersion) > 0 || swHasUpdate;
+				const hasNewerVersion = compareReleaseVersions(release.tagName, currentVersion) > 0;
+				hasUpdate = hasNewerVersion;
 				trackEvent('update_check_success', {
 					has_update: hasUpdate,
 					latest_version: release.tagName
