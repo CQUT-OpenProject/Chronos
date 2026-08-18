@@ -11,6 +11,7 @@ interface PreviewRequestBody {
 
 /** Route-level maxDuration; platform limit is set via adapter maxDuration in vite.config.ts. */
 export const config = {
+	regions: ['sin1'],
 	maxDuration: 60
 };
 
