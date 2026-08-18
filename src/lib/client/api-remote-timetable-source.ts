@@ -5,7 +5,6 @@ import type { PeriodTime } from '$lib/models/timetable';
 import type { RemoteTimetableSource } from '$lib/domain/interfaces/remote-timetable-source';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import { encryptCasPassword } from './cqut-cas-password-encryptor';
 
 interface PreviewApiResponse {
 	ok: true;
@@ -36,13 +35,6 @@ export class ApiRemoteTimetableSource implements RemoteTimetableSource {
 			return failure(AppError.validation('账号和密码不能为空'));
 		}
 
-		let encryptedPassword: string;
-		try {
-			encryptedPassword = await encryptCasPassword(password);
-		} catch {
-			return failure(AppError.security('密码加密失败'));
-		}
-
 		let response: Response;
 		try {
 			response = await fetch('/api/cqut/preview', {
@@ -50,7 +42,7 @@ export class ApiRemoteTimetableSource implements RemoteTimetableSource {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					account,
-					encryptedPassword,
+					password,
 					weekNum: weekNum ?? null,
 					yearTerm: yearTerm ?? null
 				})

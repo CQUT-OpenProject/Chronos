@@ -288,7 +288,7 @@ export default defineConfig(({ mode }) => {
 				// 404 兜底把深层链接导航请求交回 SvelteKit 客户端路由处理（经典 SPA on Pages 方案）。
 				adapter: isPagesBuild
 					? adapterStatic({ fallback: '404.html' })
-					: adapter({ maxDuration: 60 })
+					: adapter({ maxDuration: 60, regions: ['sin1'] })
 			}),
 			SvelteKitPWA({
 				registerType: 'prompt',
@@ -369,7 +369,7 @@ export default defineConfig(({ mode }) => {
 			expect: { requireAssertions: true },
 			environment: 'node',
 			include: ['src/**/*.{test,spec}.{js,ts}'],
-			exclude: ['src/**/*.svelte.{test,spec}.{js,ts}', 'src/lib/server/**']
+			exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
 		}
 	};
 });

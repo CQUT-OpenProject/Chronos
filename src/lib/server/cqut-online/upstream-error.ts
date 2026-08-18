@@ -19,6 +19,47 @@ function isDomAbortOrTimeout(error: unknown): boolean {
 	if (error instanceof DOMException) {
 		return error.name === 'AbortError' || error.name === 'TimeoutError';
 	}
+	if (error && typeof error === 'object' && 'name' in error) {
+		const name = (error as { name?: unknown }).name;
+		return name === 'AbortError' || name === 'TimeoutError';
+	}
+	return false;
+}
+
+const TRANSIENT_NETWORK_CODES = new Set([
+	'UND_ERR_CONNECT_TIMEOUT',
+	'UND_ERR_SOCKET',
+	'UND_ERR_HEADERS_TIMEOUT',
+	'UND_ERR_BODY_TIMEOUT',
+	'ETIMEDOUT',
+	'ECONNRESET',
+	'ECONNREFUSED',
+	'EHOSTUNREACH',
+	'ENETUNREACH',
+	'EAI_AGAIN'
+]);
+
+export function isTransientNetworkError(error: unknown): boolean {
+	if (isDomAbortOrTimeout(error)) {
+		const name = (error as { name?: unknown }).name;
+		return name === 'TimeoutError';
+	}
+
+	const code = getErrorCode(error);
+	if (code && TRANSIENT_NETWORK_CODES.has(code)) return true;
+
+	const cause = getCause(error);
+	if (cause && isTransientNetworkError(cause)) return true;
+
+	if (error instanceof TypeError && error.message === 'fetch failed' && cause) {
+		if (isDomAbortOrTimeout(cause)) {
+			const causeName = (cause as { name?: unknown }).name;
+			return causeName === 'TimeoutError';
+		}
+		const causeCode = getErrorCode(cause);
+		if (causeCode && TRANSIENT_NETWORK_CODES.has(causeCode)) return true;
+	}
+
 	return false;
 }
 
