@@ -6,7 +6,6 @@ import type {
 	OnlineSchedulePayload,
 	OnlineScheduleWeekDay
 } from '$lib/models/online-schedule';
-import { parseOnlineSchedulePayload } from '$lib/models/online-schedule-schema';
 import {
 	TimetableImportSource,
 	normalizeTimetableName,
@@ -42,14 +41,6 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 		private readonly academicCalendarService = new AcademicCalendarService(),
 		private readonly timeProvider: TimeProvider = new SystemTimeProvider()
 	) {}
-
-	decode(json: string): AppResult<OnlineSchedulePayload> {
-		try {
-			return success(parseOnlineSchedulePayload(json));
-		} catch {
-			return failure(AppError.dataFormat('分享链接解析失败'));
-		}
-	}
 
 	toTimetable(
 		payload: OnlineSchedulePayload,

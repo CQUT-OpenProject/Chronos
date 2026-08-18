@@ -31,6 +31,7 @@
 	const preview = $derived(transferState.preview);
 	const isHtmlImport = $derived(transferState.previewSource === 'HTML');
 	const selectedCampus = $derived(transferState.htmlImportCampusId ?? DEFAULT_CQUT_CAMPUS_ID);
+	const canOverwrite = $derived(Boolean(currentTimetableName));
 	const displayedCourseCount = $derived.by(() => {
 		if (!preview) return 0;
 		if (transferState.previewSource === 'ONLINE' || transferState.previewSource === 'HTML') {
@@ -45,11 +46,19 @@
 	}
 
 	function selectImportMode(mode: ImportMode) {
+		if (mode === ImportMode.OVERWRITE_CURRENT && !canOverwrite) {
+			snackbar('当前没有可覆盖的课程表');
+			return;
+		}
 		transfer.setImportMode(mode);
 		trackEvent('import_mode_select', { mode: analyticsImportMode(mode) });
 	}
 
 	async function handleConfirm() {
+		if (transferState.importMode === ImportMode.OVERWRITE_CURRENT && !canOverwrite) {
+			snackbar('当前没有可覆盖的课程表');
+			return;
+		}
 		loading = true;
 		const mode = analyticsImportMode(transferState.importMode);
 		try {
@@ -73,6 +82,7 @@
 		<Button
 			variant="filled"
 			disabled={loading ||
+				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
 				(isHtmlImport &&
 					(!transferState.htmlImportTermStartDate || !transferState.htmlImportCampusId))}
 			class="m3-body-large h-12 w-full shadow-xs"
@@ -148,6 +158,7 @@
 						name="import-mode"
 						label="覆盖当前课程表"
 						description={currentTimetableName ? `当前课程表：${currentTimetableName}` : undefined}
+						disabled={!canOverwrite}
 						selected={transferState.importMode === ImportMode.OVERWRITE_CURRENT}
 						onclick={() => selectImportMode(ImportMode.OVERWRITE_CURRENT)}
 					/>

@@ -2,21 +2,21 @@ allowBuilds:
   core-js: false
   esbuild: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@0.2.8
+  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
   vitest: 4.1.10
-  vite-plus: 0.2.8
+  vite-plus: 0.2.9
   '@vitest/browser-playwright': 4.1.10
 minimumReleaseAgeExclude:
-  - '@voidzero-dev/vite-plus-core@0.2.8'
-  - '@voidzero-dev/vite-plus-darwin-arm64@0.2.8'
-  - '@voidzero-dev/vite-plus-darwin-x64@0.2.8'
-  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.2.8'
-  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.2.8'
-  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.2.8'
-  - '@voidzero-dev/vite-plus-linux-x64-musl@0.2.8'
-  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.2.8'
-  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.2.8'
-  - vite-plus@0.2.8
+  - '@voidzero-dev/vite-plus-core@0.2.9'
+  - '@voidzero-dev/vite-plus-darwin-arm64@0.2.9'
+  - '@voidzero-dev/vite-plus-darwin-x64@0.2.9'
+  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.2.9'
+  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.2.9'
+  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.2.9'
+  - '@voidzero-dev/vite-plus-linux-x64-musl@0.2.9'
+  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.2.9'
+  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.2.9'
+  - vite-plus@0.2.9
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'

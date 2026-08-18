@@ -22,6 +22,7 @@
 		IosShareFill,
 		DescriptionFill
 	} from '$lib/icons';
+	import { haptic } from '$lib/haptic/haptic';
 
 	const shell = getContext<AppShellController>('appShell');
 	const step = $derived(onboardingController.step);
@@ -94,19 +95,15 @@
 
 	const stepTransitionDuration = $derived(prefersReducedMotion() ? 1 : 200);
 
-	function vibrate() {
-		navigator.vibrate?.(10);
-	}
-
 	function handleNext() {
 		trackEvent('onboarding_step_next', { step });
-		vibrate();
+		haptic.light();
 		onboardingController.next();
 	}
 
 	function handleBack() {
 		trackEvent('onboarding_step_back', { step });
-		vibrate();
+		haptic.light();
 		onboardingController.back();
 	}
 
@@ -122,13 +119,13 @@
 
 	function handleLater() {
 		trackEvent('onboarding_skip', { step });
-		vibrate();
+		haptic.light();
 		completeOnboarding();
 	}
 
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
 		trackEvent('onboarding_layout_selected', { mode });
-		vibrate();
+		haptic.light();
 		await shell.setTimetableLayoutMode(mode);
 	}
 </script>

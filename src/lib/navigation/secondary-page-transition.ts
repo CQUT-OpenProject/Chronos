@@ -1,7 +1,7 @@
 import type { TransitionConfig } from 'svelte/transition';
 import { getTransitionDirection, type NavigationDirection } from './navigation-direction';
 
-export const SECONDARY_PAGE_DURATION_MS = 300;
+const SECONDARY_PAGE_DURATION_MS = 300;
 
 type SecondaryPageTransitionParams = {
 	phase?: 'in' | 'out';
@@ -34,8 +34,8 @@ function cubicBezier(x1: number, y1: number, x2: number, y2: number) {
 }
 
 // MD3 Emphasized 缓动曲线
-export const md3EmphasizedDecelerate = cubicBezier(0.05, 0.7, 0.1, 1.0);
-export const md3EmphasizedAccelerate = cubicBezier(0.3, 0.0, 0.8, 0.15);
+const md3EmphasizedDecelerate = cubicBezier(0.05, 0.7, 0.1, 1.0);
+const md3EmphasizedAccelerate = cubicBezier(0.3, 0.0, 0.8, 0.15);
 
 export function secondaryPageTransition(
 	node: Element,

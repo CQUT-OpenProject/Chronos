@@ -18,6 +18,7 @@
 		PaletteFill,
 		WallpaperFill
 	} from '$lib/icons';
+	import { haptic } from '$lib/haptic/haptic';
 
 	let { shell }: { shell: AppShellController } = $props();
 	const themeMode = $derived(shell.state.appState.themeMode);
@@ -29,21 +30,18 @@
 		{
 			mode: ThemeMode.LIGHT,
 			label: '亮色主题',
-			description: '始终使用浅色界面',
 			Icon: LightModeFill,
 			iconTone: 'primary' as const
 		},
 		{
 			mode: ThemeMode.DARK,
 			label: '暗色主题',
-			description: '始终使用深色界面',
 			Icon: DarkModeFill,
 			iconTone: 'primary' as const
 		},
 		{
 			mode: ThemeMode.SYSTEM,
 			label: '跟随系统',
-			description: '根据系统外观自动切换',
 			Icon: AutoModeFill,
 			iconTone: 'primary' as const
 		}
@@ -105,21 +103,25 @@
 	] as const;
 
 	async function selectThemeMode(mode: ThemeMode) {
+		haptic.light();
 		trackEvent('settings_theme_change', { mode });
 		await shell.setThemeMode(mode);
 	}
 
 	async function selectPaletteMode(mode: PaletteMode) {
+		haptic.light();
 		trackEvent('settings_color_scheme_change', { mode });
 		await shell.setPaletteMode(mode);
 	}
 
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
+		haptic.light();
 		trackEvent('settings_layout_change', { mode });
 		await shell.setTimetableLayoutMode(mode);
 	}
 
 	async function selectCapsuleCornerStyle(style: CapsuleCornerStyle) {
+		haptic.light();
 		trackEvent('settings_capsule_corner_change', { style });
 		await shell.setCapsuleCornerStyle(style);
 	}

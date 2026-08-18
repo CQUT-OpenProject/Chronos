@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { trackEvent } from '$lib/client/analytics';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import CourseDetailScreen from '$lib/components/timetable/CourseDetailScreen.svelte';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
@@ -21,6 +22,7 @@
 
 	function editCourse() {
 		if (!course) return;
+		trackEvent('course_editor_open', { trigger: 'detail_page' });
 		goto(resolve(`/timetable/course-editor?courseId=${encodeURIComponent(course.id)}`));
 	}
 </script>

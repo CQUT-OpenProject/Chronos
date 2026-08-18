@@ -1,6 +1,7 @@
 import type { Release } from './release';
 import { normalizeReleaseTag } from './release';
-import { createReleaseCatalog, type ReleaseCatalog } from './catalog';
+import type { ReleaseCatalog } from './catalog';
+import { createLocalReleaseCatalog } from './local-catalog';
 
 export interface ReleaseListState {
 	loading: boolean;
@@ -14,7 +15,7 @@ export interface ReleaseDetailState {
 	errorMessage: string | null;
 }
 
-export function createReleaseListState(catalog: ReleaseCatalog = createReleaseCatalog()) {
+export function createReleaseListState(catalog: ReleaseCatalog = createLocalReleaseCatalog()) {
 	let loading = $state(true);
 	let releases = $state<Release[]>([]);
 	let errorMessage = $state<string | null>(null);
@@ -50,7 +51,7 @@ export type ReleaseListStateController = ReturnType<typeof createReleaseListStat
 
 export function createReleaseDetailState(
 	getTag: () => string,
-	catalog: ReleaseCatalog = createReleaseCatalog()
+	catalog: ReleaseCatalog = createLocalReleaseCatalog()
 ) {
 	let loading = $state(true);
 	let release = $state<Release | null>(null);

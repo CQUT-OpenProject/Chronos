@@ -38,10 +38,6 @@ export class ChronosDB extends Dexie {
 		super(name);
 		this.version(1).stores({
 			timetables: 'id, updatedAt',
-			courses: 'id, timetableId, [timetableId+dayOfWeek]'
-		});
-		this.version(2).stores({
-			timetables: 'id, updatedAt',
 			courses: 'id, timetableId, [timetableId+dayOfWeek]',
 			wallpapers: 'id'
 		});

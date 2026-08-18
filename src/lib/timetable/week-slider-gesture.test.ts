@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vite-plus/test';
-import { canOpenWeekSlider, weekFromClientX } from './week-slider-gesture.svelte';
+import { describe, expect, it, vi } from 'vite-plus/test';
+import {
+	canOpenWeekSlider,
+	createWeekSliderGesture,
+	weekFromClientX
+} from './week-slider-gesture.svelte';
 
 describe('canOpenWeekSlider', () => {
 	it('allows opening when start week is before end week', () => {
@@ -58,5 +62,32 @@ describe('weekFromClientX', () => {
 				endWeek: 10
 			})
 		).toBeNull();
+	});
+});
+
+describe('createWeekSliderGesture feedback decoupling', () => {
+	it('invokes onSliderOpenFeedback on long press activation', () => {
+		vi.useFakeTimers();
+		const onSliderOpenFeedback = vi.fn();
+		const gesture = createWeekSliderGesture({
+			getStartWeek: () => 1,
+			getEndWeek: () => 10,
+			getDisplayedWeek: () => 1,
+			onWeekChange: vi.fn(),
+			onJumpToCurrentWeek: vi.fn(),
+			onSliderOpenFeedback
+		});
+
+		gesture.onPointerDown({
+			button: 0,
+			pointerId: 1,
+			clientX: 10,
+			clientY: 10,
+			currentTarget: null
+		} as unknown as PointerEvent);
+
+		vi.advanceTimersByTime(350);
+		expect(onSliderOpenFeedback).toHaveBeenCalledOnce();
+		vi.useRealTimers();
 	});
 });

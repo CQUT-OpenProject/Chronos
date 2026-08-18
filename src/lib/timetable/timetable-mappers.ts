@@ -1,9 +1,5 @@
 import type { Course } from '$lib/models/course';
-import {
-	DEFAULT_CQUT_CAMPUS_ID,
-	resolveCampusIdFromApiName,
-	type CqutCampusId
-} from '$lib/models/cqut-campus';
+import { resolveCampusIdFromApiName, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { CourseDraft, PeriodTimeDraft, TimetableSettingsDraft } from '$lib/models/drafts';
 import type { Timetable } from '$lib/models/timetable';
 import { TimetableImportSource } from '$lib/models/timetable';
@@ -91,19 +87,6 @@ export function applyCampusPeriodTimes(
 	draft.importMetadata.campusId = campusId;
 	draft.academicConfig.periodTimes = periods.map((period) => ({ ...period }));
 	return true;
-}
-
-export function ensureOnlineCampusMetadata(draft: TimetableSettingsDraft): void {
-	if (!shouldUseOnlineCampusPeriodTimes(draft.importMetadata.source)) return;
-
-	const campusId = draft.importMetadata.campusId ?? DEFAULT_CQUT_CAMPUS_ID;
-	draft.importMetadata.campusId = campusId;
-
-	if (!draft.importMetadata.campusPeriodTimes && draft.academicConfig.periodTimes.length > 0) {
-		draft.importMetadata.campusPeriodTimes = {
-			[campusId]: draft.academicConfig.periodTimes.map((period) => ({ ...period }))
-		};
-	}
 }
 
 export function resolveUserCampusId(value: string | null | undefined): CqutCampusId {

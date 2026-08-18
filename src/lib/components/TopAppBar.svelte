@@ -26,7 +26,9 @@
 		{#if titleSnippet}
 			{@render titleSnippet()}
 		{:else if title}
-			<h1 class="m3-headline-small font-medium">{title}</h1>
+			<h1 class="m3-headline-small truncate text-lg font-medium sm:text-xl md:text-2xl">
+				{title}
+			</h1>
 		{/if}
 	</div>
 	{#if actions}

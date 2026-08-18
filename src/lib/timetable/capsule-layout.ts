@@ -13,7 +13,7 @@ import { periodSlotKey } from './slot-key';
 const BADGE_LABEL = '非本周';
 
 /** Hide “xx校区” when effective column width is below this. */
-export const HIDE_LOCATION_CAMPUS_BELOW_PX = 70;
+const HIDE_LOCATION_CAMPUS_BELOW_PX = 70;
 
 /** Fit layout: one tier smaller than scroll (title/detail/badge floors = narrowest anchors). */
 const FIT_TITLE_DELTA = 2;
@@ -470,7 +470,7 @@ export function locationDisplayLines(
 	return parts.filter((part) => part.length > 0);
 }
 
-export function parseColor(hex: string): string {
+function parseColor(hex: string): string {
 	const normalized = hex.trim();
 	return /^#[0-9A-Fa-f]{6}$/.test(normalized) ? normalized : '#EADDFF';
 }

@@ -68,8 +68,8 @@
 	<div class="mb-6 flex items-center gap-3 py-2">
 		<span
 			class="course-capsule size-3 shrink-0 rounded-full"
-			style:--capsule={paint.background}
-			style:--capsule-fg={paint.foreground}
+			style:--capsule={paint?.background}
+			style:--capsule-fg={paint?.foreground}
 		></span>
 		<h2 class="m3-headline-small flex-1 font-bold text-on-surface">{course.name}</h2>
 	</div>

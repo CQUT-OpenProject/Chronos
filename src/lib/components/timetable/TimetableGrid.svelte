@@ -16,12 +16,18 @@
 		buildOverlapPlaceholderAriaLabel
 	} from '$lib/timetable/course-a11y';
 	import {
+		calculatePeriodCenterScrollOffset,
+		calculatePeriodOffsetByIndex
+	} from '$lib/timetable/period-scroll';
+	import {
 		computeDelayUntilNextCurrentTimeRefreshMillis,
 		currentTimeMinutes,
 		findCurrentPeriodIndex,
 		parsePeriodRanges
 	} from '$lib/timetable/period-clock';
 	import { type CoursePaletteEntry } from '$lib/parsers/course-palette';
+	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
+	import { createTimetableInteractionMediator } from '$lib/timetable/timetable-interaction-mediator';
 
 	const FIT_MIN_FONT_PX = 6;
 	const SCROLL_ROW_HEIGHT = '5.5rem';
@@ -64,6 +70,12 @@
 	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
+	const mediator = $derived(
+		createTimetableInteractionMediator({
+			onCourseClick,
+			onCourseLongClick
+		})
+	);
 
 	const placements = $derived(
 		placeCapsules({
@@ -117,22 +129,70 @@
 		};
 	});
 
-	$effect(() => {
-		if (isFitLayout) return;
-		const centerKey = `${displayedWeek}-${isCurrentWeek}`;
-		if (!isCurrentWeek || centeredFor === centerKey || !scrollContainer || bodyViewportHeight === 0)
-			return;
+	function scrollToCurrentPeriod(smooth = false): boolean {
+		if (isFitLayout || !isCurrentWeek || !scrollContainer || bodyViewportHeight <= 0) {
+			return false;
+		}
 		const target = currentPeriodIndex;
-		if (target == null) return;
+		if (target == null) return false;
 
-		const rowHeight =
-			parseFloat(getComputedStyle(scrollContainer).getPropertyValue('--row-height')) || 96;
-		const targetOffset = Math.max(
-			0,
-			(target - 1) * rowHeight + rowHeight / 2 - bodyViewportHeight / 2
-		);
-		scrollContainer.scrollTop = targetOffset;
-		centeredFor = centerKey;
+		const periodElements = scrollContainer.querySelectorAll<HTMLElement>('aside > div');
+		const targetEl =
+			target >= 1 && target <= periodElements.length ? periodElements[target - 1] : null;
+
+		const targetOffset = targetEl
+			? calculatePeriodCenterScrollOffset({
+					periodTop: targetEl.offsetTop,
+					periodHeight: targetEl.offsetHeight,
+					viewportHeight: bodyViewportHeight,
+					scrollHeight: scrollContainer.scrollHeight
+				})
+			: calculatePeriodOffsetByIndex({
+					periodIndex: target,
+					rowHeightPx:
+						5.5 * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16),
+					viewportHeight: bodyViewportHeight,
+					scrollHeight: scrollContainer.scrollHeight
+				});
+
+		if (targetOffset === 0) {
+			scrollContainer.scrollTop = 0;
+			return true;
+		}
+
+		if (scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
+			return false;
+		}
+
+		if (smooth) {
+			scrollContainer.scrollTo({ top: targetOffset, behavior: 'smooth' });
+		} else {
+			scrollContainer.scrollTop = targetOffset;
+		}
+		return true;
+	}
+
+	$effect(() => {
+		if (isFitLayout) {
+			centeredFor = null;
+			return;
+		}
+		if (!isCurrentWeek) return;
+
+		const centerKey = `${displayedWeek}-${isCurrentWeek}`;
+		if (centeredFor === centerKey || !scrollContainer || bodyViewportHeight === 0) return;
+
+		const success = scrollToCurrentPeriod(false);
+		if (success) {
+			centeredFor = centerKey;
+		} else {
+			const rafId = requestAnimationFrame(() => {
+				if (scrollToCurrentPeriod(false)) {
+					centeredFor = centerKey;
+				}
+			});
+			return () => cancelAnimationFrame(rafId);
+		}
 	});
 
 	$effect(() => {
@@ -207,50 +267,8 @@
 		};
 	}
 
-	function courseCardHandlers(course: Course) {
-		let longPressTimer: ReturnType<typeof setTimeout> | undefined;
-		let didLongPress = false;
-
-		return {
-			oncontextmenu: (event: Event) => {
-				event.preventDefault();
-				onCourseLongClick?.(course);
-			},
-			onpointerdown: () => {
-				if (!onCourseLongClick) return;
-				didLongPress = false;
-				longPressTimer = setTimeout(() => {
-					didLongPress = true;
-					onCourseLongClick(course);
-				}, 500);
-			},
-			onpointerup: () => {
-				clearTimeout(longPressTimer);
-			},
-			onpointerleave: () => {
-				clearTimeout(longPressTimer);
-			},
-			onpointercancel: () => {
-				clearTimeout(longPressTimer);
-			},
-			onclick: (event: MouseEvent) => {
-				if (didLongPress) {
-					event.preventDefault();
-					didLongPress = false;
-					return;
-				}
-				onCourseClick?.(course);
-			},
-			onkeydown: (event: KeyboardEvent) => {
-				if (event.key === 'Enter' && event.shiftKey && onCourseLongClick) {
-					event.preventDefault();
-					onCourseLongClick(course);
-				}
-			}
-		};
-	}
-
 	function expandSlot(key: string) {
+		mediator.handleOverlapExpand(key);
 		expandedSlots = new Set([...expandedSlots, key]);
 	}
 
@@ -411,7 +429,11 @@
 	{@const locationLines = placed.locationLines}
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
-	{@const handlers = courseCardHandlers(placed.course)}
+	{@const handlers = createCourseCardHandlers(placed.course, {
+		onCourseClick: mediator.handleCourseClick,
+		onCourseLongClick: mediator.handleCourseLongPress,
+		onLongPressFeedback: () => {}
+	})}
 	<button
 		type="button"
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
@@ -423,6 +445,7 @@
 		aria-keyshortcuts="Shift+Enter"
 		oncontextmenu={handlers.oncontextmenu}
 		onpointerdown={handlers.onpointerdown}
+		onpointermove={handlers.onpointermove}
 		onpointerup={handlers.onpointerup}
 		onpointerleave={handlers.onpointerleave}
 		onpointercancel={handlers.onpointercancel}
@@ -460,7 +483,7 @@
 					maxFontPx: locationMetrics.fontPx
 				}))}
 			>
-				{#each locationLines as line}
+				{#each locationLines as line, index (index)}
 					<div class="overflow-hidden whitespace-nowrap">{line}</div>
 				{/each}
 			</div>

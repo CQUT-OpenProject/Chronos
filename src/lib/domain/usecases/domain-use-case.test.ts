@@ -6,7 +6,8 @@ import {
 	PaletteMode,
 	ThemeMode,
 	TimetableLayoutMode,
-	type AppState
+	type AppState,
+	type UserPreferences
 } from '$lib/models/app-state';
 import {
 	emptyOnlineSchedulePayload,
@@ -49,6 +50,7 @@ class FakeAppBackend {
 	timetableLayoutMode = TimetableLayoutMode.SCROLL;
 	paletteMode = PaletteMode.DEFAULT;
 	capsuleCornerStyle = CapsuleCornerStyle.ROUNDED;
+	hapticFeedbackEnabled = true;
 	state: AppState = {
 		timetables: [],
 		currentTimetableId: null,
@@ -57,7 +59,8 @@ class FakeAppBackend {
 		themeMode: ThemeMode.SYSTEM,
 		timetableLayoutMode: TimetableLayoutMode.SCROLL,
 		paletteMode: PaletteMode.DEFAULT,
-		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
+		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED,
+		hapticFeedbackEnabled: true
 	};
 
 	syncState() {
@@ -78,7 +81,8 @@ class FakeAppBackend {
 			themeMode: this.themeMode,
 			timetableLayoutMode: this.timetableLayoutMode,
 			paletteMode: this.paletteMode,
-			capsuleCornerStyle: this.capsuleCornerStyle
+			capsuleCornerStyle: this.capsuleCornerStyle,
+			hapticFeedbackEnabled: this.hapticFeedbackEnabled
 		};
 	}
 }
@@ -160,9 +164,30 @@ class FakeTimetableRepository implements TimetableRepository {
 class FakePreferencesRepository implements PreferencesRepository {
 	constructor(private readonly backend: FakeAppBackend) {}
 
-	async setCurrentTimetableId(id: string | null): Promise<void> {
-		this.backend.currentTimetableId = id;
+	async update(patch: Partial<UserPreferences>): Promise<void> {
+		if (patch.currentTimetableId !== undefined) {
+			this.backend.currentTimetableId = patch.currentTimetableId;
+		}
+		if (patch.themeMode !== undefined) {
+			this.backend.themeMode = patch.themeMode;
+		}
+		if (patch.timetableLayoutMode !== undefined) {
+			this.backend.timetableLayoutMode = patch.timetableLayoutMode;
+		}
+		if (patch.paletteMode !== undefined) {
+			this.backend.paletteMode = patch.paletteMode;
+		}
+		if (patch.capsuleCornerStyle !== undefined) {
+			this.backend.capsuleCornerStyle = patch.capsuleCornerStyle;
+		}
+		if (patch.hapticFeedbackEnabled !== undefined) {
+			this.backend.hapticFeedbackEnabled = patch.hapticFeedbackEnabled;
+		}
 		this.backend.syncState();
+	}
+
+	async setCurrentTimetableId(id: string | null): Promise<void> {
+		await this.update({ currentTimetableId: id });
 	}
 
 	async setWallpaper(wallpaper: Blob | null): Promise<void> {
@@ -189,14 +214,15 @@ class FakePreferencesRepository implements PreferencesRepository {
 		this.backend.capsuleCornerStyle = style;
 		this.backend.syncState();
 	}
+
+	async setHapticFeedbackEnabled(enabled: boolean): Promise<void> {
+		this.backend.hapticFeedbackEnabled = enabled;
+		this.backend.syncState();
+	}
 }
 
 class FakeTimetableShareCodec implements TimetableShareCodec {
 	constructor(private readonly timetable: Timetable) {}
-
-	decode(): AppResult<OnlineSchedulePayload> {
-		return success(emptyOnlineSchedulePayload());
-	}
 
 	toTimetable(_payload: OnlineSchedulePayload): AppResult<Timetable> {
 		return success(this.timetable);

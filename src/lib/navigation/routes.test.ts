@@ -20,6 +20,7 @@ describe('navigation routes', () => {
 		}
 
 		expect(isSecondaryRoute('/about/install')).toBe(true);
+		expect(isSecondaryRoute('/about/update')).toBe(true);
 		expect(isSecondaryRoute('/about/releases')).toBe(true);
 		expect(isSecondaryRoute('/about/releases/v0.1.0')).toBe(true);
 		expect(isSecondaryRoute('/transfer/import/confirm')).toBe(true);

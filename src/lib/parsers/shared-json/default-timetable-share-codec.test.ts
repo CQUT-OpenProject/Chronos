@@ -13,93 +13,90 @@ const fixedTimeProvider: TimeProvider = {
 describe('DefaultTimetableShareCodec', () => {
 	const codec = new DefaultTimetableShareCodec(undefined, fixedTimeProvider);
 
-	it('decode and toTimetable preserve key timetable semantics', () => {
-		const json = JSON.stringify({
-			yt: '2025-2026学年第2学期',
-			wn: '3',
-			nm: '3',
-			is: TimetableImportSource.SHARED_JSON,
-			ts: '2026-03-02',
-			yl: ['2025-2026学年第2学期'],
-			wl: ['1', '2', '3'],
-			wd: [{ wd: '六', dt: '03/21', td: false }],
-			el: [
+	it('toTimetable preserves key timetable semantics and course data', () => {
+		const payload = {
+			...emptyOnlineSchedulePayload(),
+			yearTerm: '2025-2026学年第2学期',
+			weekNum: '3',
+			nowMonth: '3',
+			importSource: TimetableImportSource.ONLINE_EDU,
+			termStartDate: '2026-03-02',
+			yearTermList: ['2025-2026学年第2学期'],
+			weekList: ['1', '2', '3'],
+			weekDayList: [{ weekDay: '六', weekDate: '03/21', today: false }],
+			eventList: [
 				{
-					wn: '3',
-					wd: '6',
-					wl: ['1', '2', '3'],
-					wc: '1-3周',
-					sl: ['1', '2'],
-					ss: '1',
-					se: '2',
-					en: '编译原理',
-					ad: 'B201',
-					mn: '张老师',
-					rm: '带教材第 3 版',
-					gt: 'none',
-					dg: 0,
-					et: 'course',
-					id: 'c1'
+					weekNum: '3',
+					weekDay: '6',
+					weekList: ['1', '2', '3'],
+					weekCover: '1-3周',
+					sessionList: ['1', '2'],
+					sessionStart: '1',
+					sessionLast: '2',
+					eventName: '编译原理',
+					address: 'B201',
+					memberName: '张老师',
+					remark: '带教材第 3 版',
+					duplicateGroupType: 'none',
+					duplicateGroup: 0,
+					eventType: 'course',
+					eventID: 'c1'
 				}
 			]
-		});
+		};
 
-		const payload = codec.decode(json);
-		expect(payload.ok).toBe(true);
-		if (!payload.ok) return;
-
-		const imported = codec.toTimetable(payload.value);
+		const imported = codec.toTimetable(payload);
 		expect(imported.ok).toBe(true);
 		if (!imported.ok) return;
 
-		expect(payload.value.yearTerm).toBe('2025-2026学年第2学期');
-		expect(payload.value.importSource).toBe(TimetableImportSource.SHARED_JSON);
-		expect(payload.value.termStartDate).toBe('2026-03-02');
-		expect(imported.value.importMetadata.source).toBe(TimetableImportSource.SHARED_JSON);
+		expect(imported.value.name).toBe('2025-2026学年第2学期');
+		expect(imported.value.importMetadata.source).toBe(TimetableImportSource.ONLINE_EDU);
 		expect(imported.value.academicConfig.termStartDate).toBe('2026-03-02');
 		expect(imported.value.viewPrefs.showSaturday).toBe(true);
+		expect(imported.value.courses[0]?.name).toBe('编译原理');
 		expect(imported.value.courses[0]?.remark).toBe('带教材第 3 版');
 	});
 
-	it('online import decodes payload without term start date', () => {
-		const json = JSON.stringify({
-			yt: '2025-2026-2',
-			wn: '1',
-			nm: '3',
-			is: TimetableImportSource.ONLINE_EDU,
-			yl: ['2025-2026-2'],
-			wl: ['1'],
-			wd: [{ wd: '一', dt: '03/02', td: true }],
-			el: [
+	it('toTimetable infers term start date when not explicitly provided', () => {
+		const payload = {
+			...emptyOnlineSchedulePayload(),
+			yearTerm: '2025-2026-2',
+			weekNum: '1',
+			nowMonth: '3',
+			importSource: TimetableImportSource.ONLINE_EDU,
+			termStartDate: null,
+			yearTermList: ['2025-2026-2'],
+			weekList: ['1'],
+			weekDayList: [{ weekDay: '一', weekDate: '03/02', today: true }],
+			eventList: [
 				{
-					wn: '1',
-					wd: '1',
-					wl: ['1'],
-					wc: '1周',
-					sl: ['1'],
-					ss: '1',
-					se: '1',
-					en: '编译原理',
-					ad: 'B201',
-					mn: '张老师',
-					rm: '',
-					gt: '',
-					dg: 0,
-					et: 'course',
-					id: '1'
+					weekNum: '1',
+					weekDay: '1',
+					weekList: ['1'],
+					weekCover: '1周',
+					sessionList: ['1'],
+					sessionStart: '1',
+					sessionLast: '1',
+					eventName: '编译原理',
+					address: 'B201',
+					memberName: '张老师',
+					remark: '',
+					duplicateGroupType: '',
+					duplicateGroup: 0,
+					eventType: 'course',
+					eventID: '1'
 				}
 			]
-		});
+		};
 
-		const payload = codec.decode(json);
-		expect(payload.ok).toBe(true);
-		if (!payload.ok) return;
+		const imported = codec.toTimetable(payload);
+		expect(imported.ok).toBe(true);
+		if (!imported.ok) return;
 
-		expect(payload.value.importSource).toBe(TimetableImportSource.ONLINE_EDU);
-		expect(payload.value.termStartDate).toBeNull();
+		expect(imported.value.academicConfig.termStartDate).toBe('2026-03-02');
 	});
 
-	it('decode rejects payload without courses', () => {
+	it('toTimetable rejects payload without courses', () => {
 		const result = codec.toTimetable({
 			yearTerm: '',
 			weekNum: '',
@@ -114,7 +111,7 @@ describe('DefaultTimetableShareCodec', () => {
 		expect(result.ok).toBe(false);
 	});
 
-	it('online import applies campus period times from fetch context', () => {
+	it('toTimetable applies campus period times from fetch context', () => {
 		const payload = {
 			...emptyOnlineSchedulePayload(),
 			yearTerm: '2025-2026-2',

@@ -61,15 +61,10 @@ export function paletteModeToStorage(mode: PaletteMode): string {
 	return PALETTE_STORAGE[mode];
 }
 
-export function paletteModeFromStorage(
-	value: string | null | undefined,
-	legacyRandomTheme?: string | null
-): PaletteMode {
+export function paletteModeFromStorage(value: string | null | undefined): PaletteMode {
 	const normalized = value?.trim().toLowerCase();
 	if (normalized === 'wallpaper') return PaletteMode.WALLPAPER;
 	if (normalized === 'random') return PaletteMode.RANDOM;
-	if (normalized === 'default') return PaletteMode.DEFAULT;
-	if (legacyRandomTheme === '1') return PaletteMode.RANDOM;
 	return PaletteMode.DEFAULT;
 }
 
@@ -98,6 +93,24 @@ export function capsuleCornerStyleFromStorage(
 	return CapsuleCornerStyle.ROUNDED;
 }
 
+export function hapticFeedbackToStorage(enabled: boolean): string {
+	return enabled ? '1' : '0';
+}
+
+export function hapticFeedbackFromStorage(value: string | null | undefined): boolean {
+	if (value === '0' || value === 'false') return false;
+	return true;
+}
+
+export interface UserPreferences {
+	currentTimetableId: string | null;
+	themeMode: ThemeMode;
+	timetableLayoutMode: TimetableLayoutMode;
+	paletteMode: PaletteMode;
+	capsuleCornerStyle: CapsuleCornerStyle;
+	hapticFeedbackEnabled: boolean;
+}
+
 export interface TimetableSummary {
 	id: string;
 	name: string;
@@ -115,6 +128,7 @@ export interface AppState {
 	timetableLayoutMode: TimetableLayoutMode;
 	paletteMode: PaletteMode;
 	capsuleCornerStyle: CapsuleCornerStyle;
+	hapticFeedbackEnabled: boolean;
 }
 
 export function emptyAppState(): AppState {
@@ -126,6 +140,7 @@ export function emptyAppState(): AppState {
 		themeMode: ThemeMode.SYSTEM,
 		timetableLayoutMode: TimetableLayoutMode.SCROLL,
 		paletteMode: PaletteMode.DEFAULT,
-		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
+		capsuleCornerStyle: CapsuleCornerStyle.ROUNDED,
+		hapticFeedbackEnabled: true
 	};
 }

@@ -1,6 +1,6 @@
 import type { PeriodTime } from '$lib/models/timetable';
 
-export const MIN_TIME_REFRESH_DELAY_MILLIS = 1_000;
+const MIN_TIME_REFRESH_DELAY_MILLIS = 1_000;
 
 export interface ParsedPeriodRange {
 	index: number;

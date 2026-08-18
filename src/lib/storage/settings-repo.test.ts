@@ -21,29 +21,23 @@ function createMemoryStorage(initial: Record<string, string> = {}): Storage {
 }
 
 describe('createSettingsRepo paletteMode', () => {
-	it('migrates random_theme=1 to RANDOM', () => {
+	it('defaults to DEFAULT when storage is empty', () => {
+		const repo = createSettingsRepo(createMemoryStorage());
+		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.DEFAULT);
+	});
+
+	it('reads palette_mode from storage', () => {
 		const repo = createSettingsRepo(
-			createMemoryStorage({ 'chronos_preferences:random_theme': '1' })
+			createMemoryStorage({ 'chronos_preferences:palette_mode': 'random' })
 		);
 		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.RANDOM);
 	});
 
-	it('prefers palette_mode over legacy random_theme', () => {
-		const repo = createSettingsRepo(
-			createMemoryStorage({
-				'chronos_preferences:random_theme': '1',
-				'chronos_preferences:palette_mode': 'default'
-			})
-		);
-		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.DEFAULT);
-	});
-
-	it('writes palette_mode and removes random_theme', () => {
-		const storage = createMemoryStorage({ 'chronos_preferences:random_theme': '1' });
+	it('writes palette_mode to storage', () => {
+		const storage = createMemoryStorage();
 		const repo = createSettingsRepo(storage);
 		repo.setPaletteMode(PaletteMode.WALLPAPER);
 		expect(storage.getItem('chronos_preferences:palette_mode')).toBe('wallpaper');
-		expect(storage.getItem('chronos_preferences:random_theme')).toBeNull();
 		expect(repo.getSnapshot().paletteMode).toBe(PaletteMode.WALLPAPER);
 	});
 });
@@ -67,5 +61,64 @@ describe('createSettingsRepo capsuleCornerStyle', () => {
 		repo.setCapsuleCornerStyle(CapsuleCornerStyle.SQUARE);
 		expect(storage.getItem('chronos_preferences:capsule_corner_style')).toBe('square');
 		expect(repo.getSnapshot().capsuleCornerStyle).toBe(CapsuleCornerStyle.SQUARE);
+	});
+});
+
+describe('createSettingsRepo hapticFeedbackEnabled', () => {
+	it('defaults to true when storage is empty', () => {
+		const repo = createSettingsRepo(createMemoryStorage());
+		expect(repo.getSnapshot().hapticFeedbackEnabled).toBe(true);
+	});
+
+	it('reads false from storage with "0" or "false"', () => {
+		const repo1 = createSettingsRepo(
+			createMemoryStorage({ 'chronos_preferences:haptic_feedback_enabled': '0' })
+		);
+		expect(repo1.getSnapshot().hapticFeedbackEnabled).toBe(false);
+
+		const repo2 = createSettingsRepo(
+			createMemoryStorage({ 'chronos_preferences:haptic_feedback_enabled': 'false' })
+		);
+		expect(repo2.getSnapshot().hapticFeedbackEnabled).toBe(false);
+	});
+
+	it('writes haptic_feedback_enabled to storage', () => {
+		const storage = createMemoryStorage();
+		const repo = createSettingsRepo(storage);
+		repo.setHapticFeedbackEnabled(false);
+		expect(storage.getItem('chronos_preferences:haptic_feedback_enabled')).toBe('0');
+		expect(repo.getSnapshot().hapticFeedbackEnabled).toBe(false);
+
+		repo.setHapticFeedbackEnabled(true);
+		expect(storage.getItem('chronos_preferences:haptic_feedback_enabled')).toBe('1');
+		expect(repo.getSnapshot().hapticFeedbackEnabled).toBe(true);
+	});
+});
+
+describe('createSettingsRepo update batch patch', () => {
+	it('updates multiple preferences atomically and notifies subscribers once', () => {
+		const storage = createMemoryStorage();
+		const repo = createSettingsRepo(storage);
+		let notifyCount = 0;
+		repo.subscribe(() => {
+			notifyCount += 1;
+		});
+		notifyCount = 0; // reset initial sync
+
+		repo.update({
+			capsuleCornerStyle: CapsuleCornerStyle.MERGE,
+			hapticFeedbackEnabled: false,
+			currentTimetableId: 'tt-123'
+		});
+
+		expect(notifyCount).toBe(1);
+		expect(storage.getItem('chronos_preferences:capsule_corner_style')).toBe('merge');
+		expect(storage.getItem('chronos_preferences:haptic_feedback_enabled')).toBe('0');
+		expect(storage.getItem('chronos_preferences:current_timetable_id')).toBe('tt-123');
+
+		const snapshot = repo.getSnapshot();
+		expect(snapshot.capsuleCornerStyle).toBe(CapsuleCornerStyle.MERGE);
+		expect(snapshot.hapticFeedbackEnabled).toBe(false);
+		expect(snapshot.currentTimetableId).toBe('tt-123');
 	});
 });

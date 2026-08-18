@@ -3,7 +3,6 @@
 	import { staticPath } from '$lib/config/static-path';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import { resolveFetchErrorMessage } from '$lib/client/fetch-error-message';
-	import Card from '$lib/components/ui/Card.svelte';
 	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
@@ -56,33 +55,12 @@
 {:else if loadState === 'empty'}
 	<FetchErrorState title="暂无许可证记录" description="未找到第三方依赖许可证数据。" />
 {:else}
-	<ul class="license-list">
+	<ul class="flex flex-col divide-y divide-outline-variant/60">
 		{#each licenses as entry (entry.name)}
-			<li>
-				<Card variant="outlined">
-					<p class="m3-title-small">{entry.name}</p>
-					<p class="m3-body-small text-on-surface-variant">{entry.license}</p>
-				</Card>
+			<li class="flex flex-col gap-0.5 py-3">
+				<span class="m3-title-small text-on-surface">{entry.name}</span>
+				<span class="m3-body-small text-on-surface-variant">{entry.license}</span>
 			</li>
 		{/each}
 	</ul>
 {/if}
-
-<style>
-	.license-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	p {
-		margin: 0;
-	}
-
-	p + p {
-		margin-top: 0.25rem;
-	}
-</style>

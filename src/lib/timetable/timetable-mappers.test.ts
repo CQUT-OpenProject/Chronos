@@ -3,7 +3,6 @@ import { createCourse } from '$lib/models/course';
 import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
 import {
 	applyCampusPeriodTimes,
-	ensureOnlineCampusMetadata,
 	mapCampusTimeInfoToPeriodTimes,
 	shouldUseOnlineCampusPeriodTimes,
 	shouldShowAcademicWeekRangeSettings,
@@ -78,20 +77,6 @@ describe('timetable-mappers', () => {
 		expect(applyCampusPeriodTimes(draft, 'huaxi')).toBe(true);
 		expect(draft.importMetadata.campusId).toBe('huaxi');
 		expect(draft.academicConfig.periodTimes[0]?.startTime).toBe('08:00');
-
-		const legacyDraft: TimetableSettingsDraft = {
-			...draft,
-			importMetadata: { source: TimetableImportSource.ONLINE_EDU },
-			academicConfig: {
-				...draft.academicConfig,
-				periodTimes: [{ index: 1, startTime: '08:30', endTime: '09:15' }]
-			}
-		};
-		ensureOnlineCampusMetadata(legacyDraft);
-		expect(legacyDraft.importMetadata.campusId).toBe('liangjiang');
-		expect(legacyDraft.importMetadata.campusPeriodTimes?.liangjiang).toEqual([
-			{ index: 1, startTime: '08:30', endTime: '09:15' }
-		]);
 	});
 });
 

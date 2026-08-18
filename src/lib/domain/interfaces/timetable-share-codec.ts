@@ -16,7 +16,6 @@ import type { AppResult } from '../result/app-result';
  * | Share link / HTML / export | —                            | not used     |
  */
 export interface TimetableShareCodec {
-	decode(json: string): AppResult<OnlineSchedulePayload>;
 	toTimetable(
 		payload: OnlineSchedulePayload,
 		campusContext?: OnlineScheduleCampusContext

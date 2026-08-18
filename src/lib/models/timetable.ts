@@ -45,7 +45,7 @@ export const timetableViewPrefsSchema = z.object({
 export type TimetableViewPrefs = z.infer<typeof timetableViewPrefsSchema>;
 
 export const timetableConfigSchema = z.object({
-	schemaVersion: z.number().int().default(2),
+	schemaVersion: z.number().int().default(1),
 	academicConfig: academicConfigSchema.optional().default(() => academicConfigSchema.parse({})),
 	importMetadata: timetableImportMetadataSchema
 		.optional()

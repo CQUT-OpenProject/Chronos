@@ -4,11 +4,8 @@ import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import { currentWeekMonday, defaultPeriodTimes } from '$lib/models/defaults';
 import { TimetableImportSource, type Timetable } from '$lib/models/timetable';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
-import {
-	applyCampusPeriodTimes,
-	ensureOnlineCampusMetadata,
-	toSettingsDraft
-} from '$lib/timetable/timetable-mappers';
+import { trackEvent } from '$lib/client/analytics';
+import { applyCampusPeriodTimes, toSettingsDraft } from '$lib/timetable/timetable-mappers';
 
 const timeProvider = new SystemTimeProvider();
 
@@ -32,7 +29,6 @@ export class TimetableDetailsEditor {
 		if (this.loadedTimetableId === timetable.id) return;
 		this.loadedTimetableId = timetable.id;
 		this.draft = toSettingsDraft(timetable);
-		ensureOnlineCampusMetadata(this.draft);
 		this.missingCampusMessage = null;
 	}
 
@@ -54,6 +50,7 @@ export class TimetableDetailsEditor {
 		const timetable = this.shell.state.appState.currentTimetable;
 		if (!timetable || !this.draft) return;
 		await this.shell.services.saveTimetableDetails.invoke(timetable.id, this.draft);
+		trackEvent('timetable_details_save');
 		this.onDone();
 	};
 
@@ -68,6 +65,7 @@ export class TimetableDetailsEditor {
 
 	resetToDefaultSettings = () => {
 		if (!this.draft) return;
+		trackEvent('timetable_details_reset');
 		const today = timeProvider.today();
 		this.draft.viewPrefs = {
 			showSaturday: true,
