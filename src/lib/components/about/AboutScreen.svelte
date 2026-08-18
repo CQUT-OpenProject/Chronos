@@ -59,6 +59,7 @@
 		clickCount += 1;
 		if (clickCount >= 10) {
 			clickCount = 0;
+			trackEvent('developer_easter_egg_open');
 			dismissSnackbar();
 			void goto(resolve('/about/easter-egg'));
 		} else if (clickCount >= 5) {
@@ -90,7 +91,7 @@
 		<MineRow
 			title="当前版本"
 			supporting={APP_VERSION}
-			href={resolve('/about/releases')}
+			href={resolve('/about/update')}
 			icon={InfoFill}
 			iconTone="primary"
 		/>

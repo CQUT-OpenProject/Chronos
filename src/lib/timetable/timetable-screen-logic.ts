@@ -1,8 +1,8 @@
 import type { Timetable } from '$lib/models/timetable';
 import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 
-export const WEEK_GRID_CACHE_RADIUS = 1;
-export const MIN_DELAY_MILLIS = 1_000;
+const WEEK_GRID_CACHE_RADIUS = 1;
+const MIN_DELAY_MILLIS = 1_000;
 
 export function buildWeekGridModels(
 	timetable: Timetable | null,

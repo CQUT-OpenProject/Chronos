@@ -120,8 +120,11 @@ export function createPreferencesRepository(
 	settings: SettingsRepo = createSettingsRepo()
 ): PreferencesRepository {
 	return {
+		async update(patch) {
+			settings.update(patch);
+		},
 		async setCurrentTimetableId(id: string | null) {
-			settings.setCurrentTimetableId(id);
+			settings.update({ currentTimetableId: id });
 		},
 		async setWallpaper(wallpaper: Blob | null) {
 			invalidateWallpaperDisplayUrl();
@@ -133,16 +136,19 @@ export function createPreferencesRepository(
 			await refreshAppState?.();
 		},
 		async setThemeMode(mode) {
-			settings.setThemeMode(mode);
+			settings.update({ themeMode: mode });
 		},
 		async setTimetableLayoutMode(mode) {
-			settings.setTimetableLayoutMode(mode);
+			settings.update({ timetableLayoutMode: mode });
 		},
 		async setPaletteMode(mode) {
-			settings.setPaletteMode(mode);
+			settings.update({ paletteMode: mode });
 		},
 		async setCapsuleCornerStyle(style) {
-			settings.setCapsuleCornerStyle(style);
+			settings.update({ capsuleCornerStyle: style });
+		},
+		async setHapticFeedbackEnabled(enabled) {
+			settings.update({ hapticFeedbackEnabled: enabled });
 		}
 	};
 }

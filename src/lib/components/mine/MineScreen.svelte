@@ -13,6 +13,7 @@
 		InfoFill,
 		IosShareFill,
 		ListAltFill,
+		MobileVibrateFill,
 		PaletteFill,
 		WallpaperFill
 	} from '$lib/icons';
@@ -97,9 +98,16 @@
 						'课表',
 						'配色',
 						'配色方案',
-						'随机',
-						'壁纸'
+						'随机'
 					]
+				},
+				{
+					id: 'feedback',
+					title: '反馈设置',
+					href: resolve('/feedback-settings'),
+					icon: MobileVibrateFill,
+					iconTone: 'tertiary',
+					keywords: ['反馈', '震动', '振动', '触感', '马达', '声音', '音效', 'haptic', 'feedback']
 				},
 				{
 					id: 'wallpaper',

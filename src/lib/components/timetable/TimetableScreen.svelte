@@ -11,6 +11,7 @@
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
+	import { haptic } from '$lib/haptic/haptic';
 
 	let {
 		screen,
@@ -110,7 +111,7 @@
 		{#snippet titleSnippet()}
 			<div
 				bind:this={weekGesture.headerContainerEl}
-				class="flex min-h-16 min-w-0 flex-1 cursor-pointer touch-none flex-col justify-center select-none"
+				class="flex min-h-0 flex-1 cursor-pointer touch-none flex-col justify-center py-0.5 select-none sm:py-1"
 				role="button"
 				tabindex="0"
 				aria-label={weekHeaderAriaLabel}
@@ -120,7 +121,7 @@
 				onkeydown={onWeekHeaderKeydown}
 				oncontextmenu={(event) => event.preventDefault()}
 			>
-				<div class="flex h-7 items-center">
+				<div class="flex h-6 items-center sm:h-7">
 					{#if weekGesture.weekSliderVisible && startWeek < endWeek}
 						<Slider
 							id="week-slider"
@@ -134,11 +135,17 @@
 							onValueCommit={weekGesture.onSliderCommit}
 						/>
 					{:else}
-						<p class="m3-title-large truncate leading-none font-bold">{weekRangeText}</p>
+						<p
+							class="m3-title-large truncate text-base leading-tight font-bold sm:text-lg md:text-xl"
+						>
+							{weekRangeText}
+						</p>
 					{/if}
 				</div>
-				<div class="flex h-5 items-center">
-					<p class="m3-body-medium truncate leading-none text-on-surface-variant">
+				<div class="flex h-4.5 items-center sm:h-5">
+					<p
+						class="m3-body-medium truncate text-xs leading-tight text-on-surface-variant sm:text-sm"
+					>
 						第 {displayedWeekNumber} 周{headerTodayLabel ? ` ${headerTodayLabel}` : ''}
 					</p>
 				</div>
@@ -150,7 +157,7 @@
 				size="sm"
 				ariaLabel="编辑课表"
 				onclick={() => {
-					navigator.vibrate?.(10);
+					haptic.light();
 					onEditTimetableDetails();
 				}}
 			>

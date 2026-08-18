@@ -88,16 +88,19 @@ describe('clearAllAppData', () => {
 				themeMode: ThemeMode.SYSTEM,
 				timetableLayoutMode: TimetableLayoutMode.SCROLL,
 				paletteMode: PaletteMode.DEFAULT,
-				capsuleCornerStyle: CapsuleCornerStyle.ROUNDED
+				capsuleCornerStyle: CapsuleCornerStyle.ROUNDED,
+				hapticFeedbackEnabled: true
 			})),
 			reloadFromStorage() {
 				reloadFromStorageCalls += 1;
 			},
+			update: vi.fn(),
 			setCurrentTimetableId: vi.fn(),
 			setThemeMode: vi.fn(),
 			setTimetableLayoutMode: vi.fn(),
 			setPaletteMode: vi.fn(),
-			setCapsuleCornerStyle: vi.fn()
+			setCapsuleCornerStyle: vi.fn(),
+			setHapticFeedbackEnabled: vi.fn()
 		};
 		vi.stubGlobal('localStorage', createMemoryStorage({ 'chronos:credential': 'x' }));
 		vi.stubGlobal('sessionStorage', createMemoryStorage({ 'chronos:import-preview': 'y' }));

@@ -1,3 +1,5 @@
+import { haptic } from '$lib/haptic/haptic';
+
 export interface WeekFromClientXInput {
 	clientX: number;
 	rectLeft: number;
@@ -29,6 +31,8 @@ export interface WeekSliderGestureOptions {
 	getDisplayedWeek: () => number;
 	onWeekChange: (week: number) => void;
 	onJumpToCurrentWeek: () => void;
+	onSliderOpenFeedback?: () => void;
+	onWeekStepFeedback?: () => void;
 }
 
 export function createWeekSliderGesture({
@@ -36,7 +40,9 @@ export function createWeekSliderGesture({
 	getEndWeek,
 	getDisplayedWeek,
 	onWeekChange,
-	onJumpToCurrentWeek
+	onJumpToCurrentWeek,
+	onSliderOpenFeedback = () => haptic.medium(),
+	onWeekStepFeedback = () => haptic.light()
 }: WeekSliderGestureOptions) {
 	let weekSliderVisible = $state(false);
 	let dragWeek = $state(0);
@@ -76,7 +82,7 @@ export function createWeekSliderGesture({
 
 		if (longPressTimer) clearTimeout(longPressTimer);
 		longPressTimer = setTimeout(() => {
-			navigator.vibrate?.(10);
+			onSliderOpenFeedback();
 			dragWeek = getDisplayedWeek();
 			weekSliderVisible = true;
 			isPressDragging = true;
@@ -106,6 +112,7 @@ export function createWeekSliderGesture({
 		});
 		if (nextWeek == null || dragWeek === nextWeek) return;
 		dragWeek = nextWeek;
+		onWeekStepFeedback();
 		onWeekChange(nextWeek);
 	}
 

@@ -35,7 +35,7 @@
 			<MineRow
 				title={release.name || release.tagName}
 				supporting={formatPublishedDate(release.publishedAt)}
-				href={resolve(releaseHref(release.tagName))}
+				href={resolve(releaseHref(release.tagName) as any)}
 			/>
 		{/each}
 	</MineSection>

@@ -10,7 +10,6 @@
 
 @theme {
 	--color-danger: #e60012;
-	--spacing-tabbar: 5rem;
 }
 
 @theme inline {
@@ -119,9 +118,26 @@
 	:root {
 		--topbar-safe: env(safe-area-inset-top, 0px);
 		--tabbar-safe: env(safe-area-inset-bottom, 0px);
+		--spacing-topbar: 4.5rem;
+		--spacing-tabbar: 4.25rem;
+		--top-bar-height: calc(var(--spacing-topbar) + var(--topbar-safe));
 		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
 		--wallpaper-tint-sidebar: rgb(255 255 255 / 0.54);
 		--wallpaper-tint-grid: rgb(255 255 255 / 0.38);
+	}
+
+	@media (max-height: 720px) {
+		:root {
+			--spacing-topbar: 3.75rem;
+			--spacing-tabbar: 3.625rem;
+		}
+	}
+
+	@media (max-height: 560px) {
+		:root {
+			--spacing-topbar: 3.25rem;
+			--spacing-tabbar: 3.125rem;
+		}
 	}
 
 	.dark {
@@ -147,12 +163,12 @@
 	}
 
 	.bottom-bar {
-		@apply flex h-[var(--bottom-bar-height)] shrink-0 items-center border-t border-border/60 bg-surface-container px-4 pb-[var(--tabbar-safe)];
+		@apply flex h-[var(--bottom-bar-height)] shrink-0 items-center border-t border-border/60 bg-surface-container px-3 pb-[var(--tabbar-safe)] sm:px-4;
 	}
 
 	.m3-top-app-bar {
-		min-height: calc(3.5rem + var(--topbar-safe));
-		padding-top: calc(0.5rem + var(--topbar-safe));
+		@apply flex min-h-[var(--top-bar-height)] shrink-0 items-center px-3 pb-0 sm:px-4;
+		padding-top: var(--topbar-safe);
 	}
 }
 

@@ -1,10 +1,13 @@
 import { registerSW } from 'virtual:pwa-register';
-import { trackEvent } from '$lib/client/analytics';
-import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 let registered = false;
+let needRefresh = false;
 
-export let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
+let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
+
+export function isSwUpdatePending(): boolean {
+	return needRefresh;
+}
 
 export function ensurePwaSwRegistered() {
 	if (registered || typeof window === 'undefined') return;
@@ -13,14 +16,37 @@ export function ensurePwaSwRegistered() {
 	updateServiceWorker = registerSW({
 		immediate: true,
 		onNeedRefresh() {
-			trackEvent('pwa_update_available');
-			snackbar('新版本可用，点击刷新即可更新', {
-				label: '刷新',
-				onClick: () => {
-					trackEvent('pwa_update_apply');
-					void updateServiceWorker?.();
-				}
-			});
+			needRefresh = true;
 		}
 	});
+}
+
+export async function checkAndApplySwUpdate(): Promise<boolean> {
+	if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
+	try {
+		const registration = await navigator.serviceWorker.getRegistration();
+		if (registration) {
+			await registration.update();
+			if (registration.waiting) {
+				needRefresh = true;
+				return true;
+			}
+		}
+	} catch {
+		// ignore
+	}
+	return needRefresh;
+}
+
+export async function applyUpdateAndReload(): Promise<void> {
+	if (typeof window === 'undefined') return;
+	try {
+		if (updateServiceWorker) {
+			await updateServiceWorker(true);
+			return;
+		}
+	} catch {
+		// fallback
+	}
+	window.location.reload();
 }

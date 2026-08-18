@@ -39,3 +39,10 @@ export { Search } from '@material-symbols-svg/svelte/icons/search';
 export { Close } from '@material-symbols-svg/svelte/icons/close';
 export { DeleteFill } from '@material-symbols-svg/svelte/icons/delete';
 export { CasinoFill } from '@material-symbols-svg/svelte/icons/casino';
+export { History } from '@material-symbols-svg/svelte/icons/history';
+export { Update } from '@material-symbols-svg/svelte/icons/update';
+export { Refresh } from '@material-symbols-svg/svelte/icons/refresh';
+export {
+	MobileVibrate,
+	MobileVibrateFill
+} from '@material-symbols-svg/svelte/icons/mobile-vibrate';

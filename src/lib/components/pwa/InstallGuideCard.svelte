@@ -3,7 +3,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
-	import { AddHomeFill, CheckCircleFill, IosShareFill, RocketLaunchFill } from '$lib/icons';
+	import { CheckCircleFill, IosShareFill, RocketLaunchFill } from '$lib/icons';
 
 	let { inOnboarding = false }: { inOnboarding?: boolean } = $props();
 
@@ -121,8 +121,7 @@
 	<Card variant="outlined">
 		<div class="flex flex-col gap-4">
 			<Button variant="filled" class="w-full" onclick={handleInstallAction}>
-				<AddHomeFill class="size-5" />
-				<span>安装 Chronos 到设备</span>
+				<span>安装 Chronos 到设备…</span>
 			</Button>
 
 			<div class="rounded-xl bg-surface-container-high/60 p-3.5 text-on-surface-variant">

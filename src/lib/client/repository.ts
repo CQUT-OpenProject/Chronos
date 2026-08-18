@@ -12,7 +12,7 @@ let settings: SettingsRepo | null = null;
 let timetableRepository: TimetableRepository | null = null;
 let preferencesRepository: PreferencesRepository | null = null;
 
-function getSharedSettings(): SettingsRepo {
+export function getSharedSettings(): SettingsRepo {
 	settings ??= createSettingsRepo();
 	return settings;
 }
