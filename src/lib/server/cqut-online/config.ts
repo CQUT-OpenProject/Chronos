@@ -11,9 +11,11 @@ export const JSON_MEDIA_TYPE = 'application/json; charset=utf-8';
 export const TIMETABLE_SESSION_COOKIE = 'JSESSIONID';
 
 export const WEEK_FETCH_CONCURRENCY = 4;
+export const CONNECT_TIMEOUT_MS = 15_000;
 export const REQUEST_TIMEOUT_MS = 20_000;
 export const TOTAL_FETCH_TIMEOUT_MS = 55_000;
-export const HTTP_RETRY_DELAY_MS = 250;
+export const HTTP_RETRY_DELAY_MS = 300;
+export const NETWORK_RETRY_COUNT = 2;
 
 /** Per-instance IP sliding window; not shared across Vercel instances. */
 export const PREVIEW_RATE_LIMIT_MAX = 8;
