@@ -128,6 +128,26 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))
 
+  packages/core: {}
+
+  packages/plugins:
+    dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/ui-kit:
+    dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../core
+      '@ktibow/material-color-utilities-nightly':
+        specifier: ^0.4.1772748028000
+        version: 0.4.1772748028000
+      svelte:
+        specifier: ^5.0.0
+        version: 5.56.9(@typescript-eslint/types@8.66.0)
+
 packages:
 
   '@apideck/better-ajv-errors@0.3.7':

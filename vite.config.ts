@@ -36,7 +36,13 @@ export default defineConfig(({ mode }) => {
 	return {
 		resolve: {
 			alias: {
-				'@chronos/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url))
+				'@chronos/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
+				'@chronos/ui-kit': fileURLToPath(
+					new URL('./packages/ui-kit/src/index.ts', import.meta.url)
+				),
+				'@chronos/plugins': fileURLToPath(
+					new URL('./packages/plugins/src/index.ts', import.meta.url)
+				)
 			}
 		},
 		define: {
@@ -239,7 +245,14 @@ export default defineConfig(({ mode }) => {
 					}
 				},
 				{
-					files: ['*.svelte', '**/*.svelte'],
+					files: [
+						'*.svelte',
+						'**/*.svelte',
+						'*.svelte.ts',
+						'**/*.svelte.ts',
+						'*.svelte.js',
+						'**/*.svelte.js'
+					],
 					rules: {
 						'no-inner-declarations': 'off',
 						'no-self-assign': 'off'
@@ -286,7 +299,9 @@ export default defineConfig(({ mode }) => {
 			tailwindcss(),
 			sveltekit({
 				alias: {
-					'@chronos/core': './packages/core/src/index.ts'
+					'@chronos/core': './packages/core/src/index.ts',
+					'@chronos/ui-kit': './packages/ui-kit/src/index.ts',
+					'@chronos/plugins': './packages/plugins/src/index.ts'
 				},
 				compilerOptions: {
 					// Force runes mode for the project, except for libraries. Can be removed in svelte 6.

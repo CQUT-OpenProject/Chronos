@@ -17,9 +17,12 @@ export interface Course {
 }
 
 export function createCourse(
-	partial: Omit<Course, 'weeks'> & Partial<Pick<Course, 'weeks'>>
+	partial: Omit<Course, 'weeks' | 'teacher' | 'location'> &
+		Partial<Pick<Course, 'weeks' | 'teacher' | 'location'>>
 ): Course {
 	return {
+		teacher: '',
+		location: '',
 		weeks: [],
 		remark: '',
 		...partial

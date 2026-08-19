@@ -88,6 +88,20 @@ export function resolveCoursePaint(
 	return displayPalette[slot % displayPalette.length]!;
 }
 
+export function resolveCoursePalette(
+	mode: string,
+	wallpaperPalette: readonly CoursePaletteEntry[] | null
+): readonly CoursePaletteEntry[] {
+	const normalized = (mode || '').toLowerCase();
+	if (normalized === 'random') {
+		return EASTER_EGG_PALETTE_ENTRIES;
+	}
+	if (normalized === 'wallpaper' && wallpaperPalette && wallpaperPalette.length > 0) {
+		return wallpaperPalette;
+	}
+	return COURSE_PALETTE_ENTRIES;
+}
+
 interface CourseSlotPreference {
 	name: string;
 	slot: number;
