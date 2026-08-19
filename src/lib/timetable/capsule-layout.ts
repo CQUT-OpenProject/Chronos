@@ -330,6 +330,10 @@ export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): 
 			} = other.geometry;
 			const otherRight = otherLeft + otherWidth;
 
+			if (otherRight < left - POSITION_EPSILON || otherLeft > right + POSITION_EPSILON) {
+				continue;
+			}
+
 			if (overlapsX(left, right, otherLeft, otherRight)) {
 				if (otherEnd + 1 === startPeriod) topExposed = false;
 				if (otherStart === endPeriod + 1) bottomExposed = false;

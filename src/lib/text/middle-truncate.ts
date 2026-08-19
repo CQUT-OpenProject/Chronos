@@ -10,7 +10,11 @@ let wordSegmenter: Intl.Segmenter | null | undefined;
 export function toGraphemes(text: string): string[] {
 	if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
 		graphemeSegmenter ??= new Intl.Segmenter('und', { granularity: 'grapheme' });
-		return [...graphemeSegmenter.segment(text)].map((part) => part.segment);
+		const graphemes: string[] = [];
+		for (const part of graphemeSegmenter.segment(text)) {
+			graphemes.push(part.segment);
+		}
+		return graphemes;
 	}
 	return Array.from(text);
 }

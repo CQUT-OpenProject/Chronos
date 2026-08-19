@@ -34,10 +34,13 @@ export class BuildTimetableCourseDisplayModelsUseCase {
 		for (const { course, originalIndex } of visibleCourses) {
 			if (course.weeks.length === 0 || course.weeks.includes(displayedWeek)) continue;
 
-			const nextWeek = course.weeks
-				.filter((week) => week >= displayedWeek)
-				.sort((a, b) => a - b)[0];
-			if (nextWeek == null) continue;
+			let nextWeek: number | null = null;
+			for (const week of course.weeks) {
+				if (week >= displayedWeek && (nextWeek === null || week < nextWeek)) {
+					nextWeek = week;
+				}
+			}
+			if (nextWeek === null) continue;
 
 			const key = courseSlotKey(course);
 			if (occupiedSlots.has(key)) continue;
