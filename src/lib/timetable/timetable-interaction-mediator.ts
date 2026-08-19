@@ -1,6 +1,6 @@
 import { haptic } from '$lib/haptic/haptic';
 import { trackEvent, type AnalyticsEvent } from '$lib/client/analytics';
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 
 export interface HapticPort {
 	light(): boolean;

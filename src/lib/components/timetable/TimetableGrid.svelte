@@ -1,15 +1,16 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
-	import type { Course } from '$lib/models/course';
-	import { CapsuleCornerStyle, TimetableLayoutMode } from '$lib/models/app-state';
-	import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
-	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
-	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
 	import {
 		placeCapsules,
 		type CapsuleCorners,
-		type PlacedCourseCapsule
-	} from '$lib/timetable/capsule-layout';
+		type Course,
+		type PlacedCourseCapsule,
+		type TimetableCourseDisplayModel,
+		type TimetableGridModel
+	} from '@chronos/core';
+	import { CapsuleCornerStyle, TimetableLayoutMode } from '$lib/models/app-state';
+	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
+	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
 	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,

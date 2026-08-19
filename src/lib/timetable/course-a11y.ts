@@ -1,4 +1,4 @@
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 import { timetableDayLabel } from '$lib/timetable/day-labels';
 
 function formatPeriodRange(startPeriod: number, endPeriod: number): string {

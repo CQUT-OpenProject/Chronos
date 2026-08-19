@@ -1,4 +1,4 @@
-import type { Course } from './course';
+import type { Course } from '@chronos/core';
 import type { PeriodTime } from './timetable';
 
 export const CQUT_CAMPUSES = {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { CourseDraft } from '$lib/models/drafts';
-	import { COURSE_REMARK_MAX_LENGTH } from '$lib/models/course';
+	import { COURSE_REMARK_MAX_LENGTH } from '@chronos/core';
 	import {
 		COURSE_PALETTE_ENTRIES,
 		displaySwatchBackground,

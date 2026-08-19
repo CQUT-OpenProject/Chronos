@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { TimetableImportSource } from '$lib/models/timetable';
 import { createTimetable } from '$lib/models/timetable';
-import type { TimetableGridModel } from '$lib/models/presentation';
+import type { TimetableGridModel } from '@chronos/core';
 import { buildWeekGridModels, computeDelayUntilNextMidnightMillis } from './timetable-screen-logic';
 
 describe('timetable-screen-logic', () => {

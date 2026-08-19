@@ -1,5 +1,5 @@
 import type { Timetable } from '$lib/models/timetable';
-import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
+import type { TimetableCourseDisplayModel, TimetableGridModel } from '@chronos/core';
 
 const WEEK_GRID_CACHE_RADIUS = 1;
 const MIN_DELAY_MILLIS = 1_000;

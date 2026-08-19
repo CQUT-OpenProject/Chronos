@@ -1,9 +1,8 @@
-import type { Course } from '$lib/models/course';
+import { AcademicCalendarService, type Course } from '@chronos/core';
 import { resolveCampusIdFromApiName, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { CourseDraft, PeriodTimeDraft, TimetableSettingsDraft } from '$lib/models/drafts';
 import type { Timetable } from '$lib/models/timetable';
 import { TimetableImportSource } from '$lib/models/timetable';
-import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 
 const academicCalendarService = new AcademicCalendarService();

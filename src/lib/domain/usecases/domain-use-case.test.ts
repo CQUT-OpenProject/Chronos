@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { createCourse } from '$lib/models/course';
+import { createCourse } from '@chronos/core';
 import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
 import {
 	CapsuleCornerStyle,
@@ -9,6 +9,7 @@ import {
 	type AppState,
 	type UserPreferences
 } from '$lib/models/app-state';
+import type { AuthSnapshot } from '$lib/models/auth';
 import {
 	emptyOnlineSchedulePayload,
 	type OnlineScheduleFetchResult,
@@ -19,8 +20,7 @@ import type { TimetableRepository } from '../interfaces/timetable-repository';
 import type { PreferencesRepository } from '../interfaces/preferences-repository';
 import type { TimetableShareCodec } from '../interfaces/timetable-share-codec';
 import type { RemoteTimetableSource } from '../interfaces/remote-timetable-source';
-import type { AuthSnapshot } from '$lib/models/auth';
-import { AcademicCalendarService } from '../services/academic-calendar';
+import { AcademicCalendarService } from '@chronos/core';
 import type { TimeProvider } from '../services/time-provider';
 import { ImportTimetableUseCase } from './import-timetable';
 import { PreviewOnlineTimetableUseCase } from './preview-online-timetable';

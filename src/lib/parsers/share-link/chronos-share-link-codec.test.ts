@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vite-plus/test';
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 import { TimetableImportSource, createTimetable } from '$lib/models/timetable';
 import { bitmaskToWeeks, weeksToBitmask } from './week-bitmask';
 import { decodeBinaryToTimetable, encodeTimetableToBinary } from './chronos-share-binary';

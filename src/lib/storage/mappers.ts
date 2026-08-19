@@ -1,5 +1,9 @@
-import type { Course } from '$lib/models/course';
-import { normalizeTimetableName, type Timetable } from '$lib/models/timetable';
+import type { Course } from '@chronos/core';
+import {
+	normalizeTimetableName,
+	TimetableImportSource,
+	type Timetable
+} from '$lib/models/timetable';
 import type { TimetableSummary } from '$lib/models/app-state';
 import type { CourseRow, TimetableRow } from './db';
 import { encodeTimetableConfig, decodeTimetableConfig } from './timetable-config-codec';
@@ -50,17 +54,20 @@ export function courseFromRow(row: CourseRow): Course {
 	};
 }
 
-export function timetableToRow(timetable: Timetable): TimetableRow {
+export function timetableToRow(
+	timetable: Timetable | import('@chronos/core').Timetable
+): TimetableRow {
+	const importMetadata =
+		'importMetadata' in timetable && timetable.importMetadata
+			? timetable.importMetadata
+			: { source: TimetableImportSource.UNKNOWN };
+
 	return {
 		id: timetable.id,
 		name: normalizeTimetableName(timetable.name),
 		createdAt: timetable.createdAt,
 		updatedAt: timetable.updatedAt,
-		configJson: encodeTimetableConfig(
-			timetable.academicConfig,
-			timetable.importMetadata,
-			timetable.viewPrefs
-		)
+		configJson: encodeTimetableConfig(timetable.academicConfig, importMetadata, timetable.viewPrefs)
 	};
 }
 

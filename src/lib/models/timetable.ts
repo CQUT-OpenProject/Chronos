@@ -67,7 +67,7 @@ export interface Timetable {
 	schemaVersion: number;
 	id: string;
 	name: string;
-	courses: import('./course').Course[];
+	courses: import('@chronos/core').Course[];
 	createdAt: number;
 	updatedAt: number;
 	academicConfig: AcademicConfig;

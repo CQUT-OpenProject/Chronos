@@ -2,7 +2,7 @@
 import { execFileSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import zlib from 'node:zlib';
-import type { Course } from '../src/lib/models/course.ts';
+import type { Course } from '../packages/core/src/index.ts';
 import { TimetableImportSource, createTimetable } from '../src/lib/models/timetable.ts';
 import { encodeTimetableToBinary } from '../src/lib/parsers/share-link/chronos-share-binary.ts';
 import { appendCrc32 } from '../src/lib/parsers/share-link/crc32.ts';

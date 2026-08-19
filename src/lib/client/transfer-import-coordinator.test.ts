@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { ImportMode } from '$lib/domain/import-mode';
 import { success } from '$lib/domain/result/app-result';
-import { createCourse } from '$lib/models/course';
+import { createCourse } from '@chronos/core';
 import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
 import { createSessionPreviewPersistence } from './preview-persistence';
 import { createTransferImportCoordinator } from './transfer-import-coordinator';

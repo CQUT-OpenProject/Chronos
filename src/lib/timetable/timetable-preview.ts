@@ -1,14 +1,16 @@
 import type { Timetable } from '$lib/models/timetable';
-import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
 import type { AcademicConfig } from '$lib/models/timetable';
-import { BuildVisibleTimetableGridUseCase } from '$lib/domain/usecases/build-visible-timetable-grid';
-import { BuildTimetableCourseDisplayModelsUseCase } from '$lib/domain/usecases/build-timetable-course-display-models';
-import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
+import {
+	AcademicCalendarService,
+	addDays,
+	buildTimetableCourseDisplayModels,
+	calculateTimetableGrid,
+	formatIsoDate,
+	parseIsoDate,
+	type TimetableCourseDisplayModel,
+	type TimetableGridModel
+} from '@chronos/core';
 
-import { addDays, formatIsoDate, parseIsoDate } from '$lib/domain/date';
-
-const buildVisibleTimetableGrid = new BuildVisibleTimetableGridUseCase();
-const buildTimetableCourseDisplayModels = new BuildTimetableCourseDisplayModelsUseCase();
 const academicCalendarService = new AcademicCalendarService();
 
 const fallbackAcademicConfig: AcademicConfig = {
@@ -51,21 +53,16 @@ export function invokeBuildVisibleTimetableGrid(
 	week: number,
 	timetable: Timetable
 ): TimetableGridModel {
-	return buildVisibleTimetableGrid.invoke(today, week, timetable);
+	return calculateTimetableGrid(today, week, timetable);
 }
 
 export function invokeBuildTimetableCourseDisplayModels(
 	timetable: Timetable,
 	visibleDayOfWeeks: Set<number>,
 	displayedWeek: number,
-	today: string
+	_today: string
 ): TimetableCourseDisplayModel[] {
-	return buildTimetableCourseDisplayModels.invoke(
-		timetable,
-		visibleDayOfWeeks,
-		displayedWeek,
-		today
-	);
+	return buildTimetableCourseDisplayModels(timetable, visibleDayOfWeeks, displayedWeek);
 }
 
 export function buildTimetableWeekPreview(

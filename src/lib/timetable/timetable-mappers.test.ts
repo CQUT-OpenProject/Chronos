@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { createCourse } from '$lib/models/course';
+import { createCourse } from '@chronos/core';
 import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
 import {
 	applyCampusPeriodTimes,

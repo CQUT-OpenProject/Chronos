@@ -1,5 +1,5 @@
 import { parseDate, type DateValue } from '@internationalized/date';
-import { formatSlashDate } from '$lib/domain/date';
+import { formatSlashDate } from '@chronos/core';
 
 export function isoToCalendarDate(iso: string): DateValue | undefined {
 	const trimmed = iso.trim();

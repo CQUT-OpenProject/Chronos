@@ -1,4 +1,4 @@
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 import {
 	campusIdToShareIndex,
 	getCampusDefaultPeriodTimes,

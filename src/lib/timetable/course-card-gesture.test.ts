@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { createCourse } from '$lib/models/course';
+import { createCourse } from '@chronos/core';
 import {
 	COURSE_CARD_DRAG_THRESHOLD_PX,
 	COURSE_CARD_LONG_PRESS_DELAY_MS,

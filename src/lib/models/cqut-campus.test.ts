@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { createCourse } from '$lib/models/course';
+import { createCourse } from '@chronos/core';
 import {
 	CQUT_CAMPUS_DEFAULT_PERIOD_TIMES,
 	campusIdToShareIndex,

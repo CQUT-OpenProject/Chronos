@@ -2,7 +2,7 @@ import { defaultPeriodTimes } from '$lib/models/defaults';
 import type { PeriodTime, TimetableImportMetadata } from '$lib/models/timetable';
 import { normalizeTimetableName } from '$lib/models/timetable';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
-import { AcademicCalendarService } from '../services/academic-calendar';
+import { AcademicCalendarService } from '@chronos/core';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
 import { SystemTimeProvider, type TimeProvider } from '../services/time-provider';
 

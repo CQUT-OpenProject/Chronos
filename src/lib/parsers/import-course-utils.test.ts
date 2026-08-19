@@ -6,7 +6,7 @@ import {
 	sanitizeEventFields,
 	sanitizeTeacher
 } from './import-course-utils';
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 
 describe('import-course-utils', () => {
 	it('clears polluted teacher fields', () => {

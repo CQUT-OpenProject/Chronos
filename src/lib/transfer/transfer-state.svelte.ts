@@ -9,7 +9,7 @@ import type { CqutCampusId } from '$lib/models/cqut-campus';
 import { inferCampusIdFromCourses } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
-import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
+import { AcademicCalendarService } from '@chronos/core';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import { onlineImportEnabled } from '$lib/config/features';

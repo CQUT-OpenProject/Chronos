@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 import { buildCourseCapsuleAriaLabel, buildOverlapPlaceholderAriaLabel } from './course-a11y';
 
 const baseCourse: Course = {

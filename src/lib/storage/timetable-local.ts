@@ -1,4 +1,4 @@
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 import type { Timetable } from '$lib/models/timetable';
 import type { TimetableSummary } from '$lib/models/app-state';
 import { db } from './db';

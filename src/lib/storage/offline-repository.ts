@@ -1,5 +1,5 @@
 import type { AppState } from '$lib/models/app-state';
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 import type { Timetable } from '$lib/models/timetable';
 import type { PreferencesRepository } from '$lib/domain/interfaces/preferences-repository';
 import type { TimetableRepository } from '$lib/domain/interfaces/timetable-repository';

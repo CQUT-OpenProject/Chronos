@@ -1,4 +1,3 @@
-import type { Course } from '$lib/models/course';
 import {
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	TimetableImportSource,
@@ -6,7 +5,7 @@ import {
 	type Timetable
 } from '$lib/models/timetable';
 import type { EducationalTimetableHtmlParser as EducationalTimetableHtmlParserInterface } from '$lib/domain/interfaces/educational-timetable-html-parser';
-import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
+import { AcademicCalendarService, type Course } from '@chronos/core';
 import { SystemTimeProvider, type TimeProvider } from '$lib/domain/services/time-provider';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';

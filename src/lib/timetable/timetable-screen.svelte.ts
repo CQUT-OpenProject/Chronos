@@ -2,7 +2,7 @@ import { untrack } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import { trackEvent } from '$lib/client/analytics';
 import { emptyAppState, type AppState } from '$lib/models/app-state';
-import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
+import type { TimetableCourseDisplayModel, TimetableGridModel } from '@chronos/core';
 import type { AppShellController } from '$lib/app/app-shell.svelte';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import {

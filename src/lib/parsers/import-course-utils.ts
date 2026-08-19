@@ -1,4 +1,4 @@
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 import type { OnlineScheduleEvent } from '$lib/models/online-schedule';
 import { normalizedCourseName } from '$lib/parsers/course-palette';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import type { Course } from '$lib/models/course';
+	import type { Course } from '@chronos/core';
 	import {
 		assignCourseDisplayColors,
 		normalizedCourseName,

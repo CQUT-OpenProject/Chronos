@@ -1,4 +1,4 @@
-import { COURSE_REMARK_MAX_LENGTH, createCourse } from '$lib/models/course';
+import { COURSE_REMARK_MAX_LENGTH, createCourse } from '@chronos/core';
 import type { CourseDraft } from '$lib/models/drafts';
 import type { TimetableRepository } from '../interfaces/timetable-repository';
 

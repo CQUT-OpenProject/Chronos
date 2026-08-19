@@ -1,4 +1,4 @@
-import type { Course } from '$lib/models/course';
+import type { Course } from '@chronos/core';
 import { haptic } from '$lib/haptic/haptic';
 
 export const COURSE_CARD_LONG_PRESS_DELAY_MS = 500;

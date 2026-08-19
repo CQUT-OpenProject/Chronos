@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { createCourse } from '$lib/models/course';
+import { createCourse } from '@chronos/core';
 import { createTimetableInteractionMediator } from './timetable-interaction-mediator';
 
 const sampleCourse = createCourse({

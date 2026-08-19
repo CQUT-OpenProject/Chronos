@@ -1,5 +1,4 @@
 import { currentWeekMonday } from '$lib/models/defaults';
-import type { Course } from '$lib/models/course';
 import type {
 	OnlineScheduleCampusContext,
 	OnlineScheduleEvent,
@@ -14,16 +13,17 @@ import {
 	type TimetableImportMetadata
 } from '$lib/models/timetable';
 import type { TimetableShareCodec } from '$lib/domain/interfaces/timetable-share-codec';
-import { AcademicCalendarService } from '$lib/domain/services/academic-calendar';
-import { SystemTimeProvider, type TimeProvider } from '$lib/domain/services/time-provider';
 import {
+	AcademicCalendarService,
 	addDays,
 	addWeeks,
 	formatIsoDate,
 	parseIsoDate,
 	previousOrSameMonday,
-	safeParseIsoDate
-} from '$lib/domain/date';
+	safeParseIsoDate,
+	type Course
+} from '@chronos/core';
+import { SystemTimeProvider, type TimeProvider } from '$lib/domain/services/time-provider';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
 import { coursePalette, normalizedCourseName } from '$lib/parsers/course-palette';
