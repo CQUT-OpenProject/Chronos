@@ -6,6 +6,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
+	import { getAppController } from '$lib/services/app-engine';
 	import type { Component } from 'svelte';
 	import {
 		AddHomeFill,
@@ -15,31 +16,47 @@
 		ListAltFill,
 		MobileVibrateFill,
 		PaletteFill,
-		WallpaperFill
+		WallpaperFill,
+		CodeFill
 	} from '$lib/icons';
 
 	let { shell }: { shell: AppShellController } = $props();
 
+	const controller = getAppController();
 	let searchQuery = $state('');
 
 	type SettingItem = {
 		id: string;
 		title: string;
 		supporting?: string;
-		href: string;
-		icon: Component<{ class?: string }>;
-		iconTone: MineIconTone;
-		keywords: string[];
+		href?: string;
+		onClick?: () => void | Promise<void>;
+		icon?: Component<{ class?: string }>;
+		iconTone?: MineIconTone;
+		keywords?: string[];
+		order?: number;
 	};
 
 	type SettingSection = {
+		id: string;
 		title: string;
+		order?: number;
 		items: SettingItem[];
 	};
 
-	const sections = $derived<SettingSection[]>([
+	function resolveText(text: string | (() => string) | undefined): string {
+		if (!text) return '';
+		return typeof text === 'function' ? text() : text;
+	}
+
+	const pluginSections = $derived(controller.getSlots('mine.section'));
+	const pluginItems = $derived(controller.getSlots('mine.item'));
+
+	const baseSections: SettingSection[] = [
 		{
+			id: 'timetable-management',
 			title: '课表管理',
+			order: 10,
 			items: [
 				{
 					id: 'manage-timetables',
@@ -47,12 +64,15 @@
 					href: resolve('/manage-timetables'),
 					icon: ListAltFill,
 					iconTone: 'primary',
-					keywords: ['课表', '管理', '切换', '编辑', '课程']
+					keywords: ['课表', '管理', '切换', '编辑', '课程'],
+					order: 10
 				}
 			]
 		},
 		{
+			id: 'data-sync',
 			title: '数据与分享',
+			order: 20,
 			items: [
 				{
 					id: 'import',
@@ -60,7 +80,8 @@
 					href: resolve('/transfer/import'),
 					icon: DownloadFill,
 					iconTone: 'secondary',
-					keywords: ['导入', '数据', '共享', '文件', '扫码', '课表']
+					keywords: ['导入', '数据', '共享', '文件', '扫码', '课表'],
+					order: 10
 				},
 				{
 					id: 'export',
@@ -68,12 +89,15 @@
 					href: resolve('/transfer/export'),
 					icon: IosShareFill,
 					iconTone: 'tertiary',
-					keywords: ['导出', '分享', '备份', '数据', '链接', '二维码']
+					keywords: ['导出', '分享', '备份', '数据', '链接', '二维码'],
+					order: 20
 				}
 			]
 		},
 		{
+			id: 'appearance-feedback',
 			title: '个性化',
+			order: 30,
 			items: [
 				{
 					id: 'display',
@@ -99,7 +123,8 @@
 						'配色',
 						'配色方案',
 						'随机'
-					]
+					],
+					order: 10
 				},
 				{
 					id: 'feedback',
@@ -107,7 +132,8 @@
 					href: resolve('/feedback-settings'),
 					icon: MobileVibrateFill,
 					iconTone: 'tertiary',
-					keywords: ['反馈', '震动', '振动', '触感', '马达', '声音', '音效', 'haptic', 'feedback']
+					keywords: ['反馈', '震动', '振动', '触感', '马达', '声音', '音效', 'haptic', 'feedback'],
+					order: 20
 				},
 				{
 					id: 'wallpaper',
@@ -115,12 +141,15 @@
 					href: resolve('/wallpaper'),
 					icon: WallpaperFill,
 					iconTone: 'primary',
-					keywords: ['壁纸', '背景', '图片', '自定义', '封面']
+					keywords: ['壁纸', '背景', '图片', '自定义', '封面'],
+					order: 30
 				}
 			]
 		},
 		{
+			id: 'app-support',
 			title: '应用与支持',
+			order: 40,
 			items: [
 				{
 					id: 'install',
@@ -133,7 +162,8 @@
 					href: resolve('/about/install'),
 					icon: AddHomeFill,
 					iconTone: 'primary',
-					keywords: ['安装', 'PWA', '桌面', '应用', '主屏幕', '快捷', '下载']
+					keywords: ['安装', 'PWA', '桌面', '应用', '主屏幕', '快捷', '下载'],
+					order: 10
 				},
 				{
 					id: 'about',
@@ -141,11 +171,72 @@
 					href: resolve('/about'),
 					icon: InfoFill,
 					iconTone: 'tertiary',
-					keywords: ['关于', '版本', '开源', '协议', '许可', '开发者', '更新', '说明']
+					keywords: ['关于', '版本', '开源', '协议', '许可', '开发者', '更新', '说明'],
+					order: 20
 				}
 			]
 		}
-	]);
+	];
+
+	const sections = $derived.by(() => {
+		const sectionMap: Record<string, SettingSection> = {};
+		for (const sec of baseSections) {
+			sectionMap[sec.id] = {
+				id: sec.id,
+				title: sec.title,
+				order: sec.order ?? 50,
+				items: [...sec.items]
+			};
+		}
+
+		for (const pSec of pluginSections) {
+			if (!sectionMap[pSec.id]) {
+				sectionMap[pSec.id] = {
+					id: pSec.id,
+					title: resolveText(pSec.title),
+					order: pSec.order ?? 50,
+					items: []
+				};
+			}
+		}
+
+		for (const item of pluginItems) {
+			const targetSectionId = item.sectionId || 'app-support';
+			let section = sectionMap[targetSectionId];
+			if (!section) {
+				section = {
+					id: targetSectionId,
+					title: '扩展设置',
+					order: 35,
+					items: []
+				};
+				sectionMap[targetSectionId] = section;
+			}
+
+			const context = controller.rawEngine.getPluginContext(item.id);
+			section.items.push({
+				id: item.id,
+				title: resolveText(item.title),
+				supporting: resolveText(item.supporting),
+				href: item.href,
+				onClick: item.onClick ? () => item.onClick!(context) : undefined,
+				icon: CodeFill,
+				iconTone: item.iconTone ?? 'neutral',
+				order: item.order ?? 50,
+				keywords: [resolveText(item.title), resolveText(item.supporting)]
+			});
+		}
+
+		const sortedSections = Object.values(sectionMap).sort(
+			(a, b) => (a.order ?? 50) - (b.order ?? 50)
+		);
+
+		for (const sec of sortedSections) {
+			sec.items.sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
+		}
+
+		return sortedSections;
+	});
 
 	const filteredSections = $derived.by(() => {
 		const query = searchQuery.trim().toLowerCase();
@@ -156,7 +247,7 @@
 				const matchingItems = section.items.filter((item) => {
 					const titleMatch = item.title.toLowerCase().includes(query);
 					const supportingMatch = item.supporting?.toLowerCase().includes(query);
-					const keywordMatch = item.keywords.some((kw) => kw.toLowerCase().includes(query));
+					const keywordMatch = item.keywords?.some((kw) => kw.toLowerCase().includes(query));
 					return titleMatch || supportingMatch || keywordMatch;
 				});
 
@@ -176,13 +267,14 @@
 		<SearchField bind:value={searchQuery} placeholder="搜索设置..." ariaLabel="搜索设置" />
 	</div>
 
-	{#each filteredSections as section (section.title)}
+	{#each filteredSections as section (section.id)}
 		<MineSection title={section.title}>
 			{#each section.items as item (item.id)}
 				<MineRow
 					title={item.title}
 					supporting={item.supporting}
 					href={item.href}
+					onclick={item.onClick}
 					icon={item.icon}
 					iconTone={item.iconTone}
 				/>
