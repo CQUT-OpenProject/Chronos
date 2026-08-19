@@ -8,7 +8,9 @@ const COURSE_PALETTE: [string, string][] = [
 	['#C4EED0', '#072711'],
 	['#D3E3FD', '#041E49'],
 	['#FFD8E4', '#31111D'],
-	['#F6E1B0', '#241A00']
+	['#F6E1B0', '#241A00'],
+	['#A9F0E4', '#00201C'],
+	['#DCE9A1', '#181E00']
 ];
 
 const EASTER_EGG_COURSE_BACKGROUNDS = [
