@@ -9,10 +9,15 @@ export function resolveWeeksToFetch(
 		return [explicitWeek];
 	}
 
-	const termWeeks = initialPayload.weekList
-		.map((week) => week.trim())
-		.filter((week) => week.length > 0);
-	const uniqueWeeks = [...new Set(termWeeks)];
+	const uniqueWeeks: string[] = [];
+	const seen = new Set<string>();
+	for (const week of initialPayload.weekList) {
+		const trimmed = week.trim();
+		if (trimmed && !seen.has(trimmed)) {
+			seen.add(trimmed);
+			uniqueWeeks.push(trimmed);
+		}
+	}
 	if (uniqueWeeks.length > 0) {
 		return uniqueWeeks;
 	}
@@ -47,9 +52,11 @@ function eventIdentityKey(event: OnlineScheduleEvent): string {
 }
 
 function mergeWeekLists(left: string[], right: string[]): string[] {
-	return [...new Set([...left, ...right])].sort(
-		(a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
-	);
+	const set = new Set(left);
+	for (const week of right) {
+		set.add(week);
+	}
+	return [...set].sort((a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10));
 }
 
 export function mergeWeekPayloads(

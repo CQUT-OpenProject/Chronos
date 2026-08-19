@@ -109,12 +109,14 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 					const key = normalizeWhitespace(titleSpan?.getAttribute('title') ?? '');
 					if (!key) continue;
 
-					const val = normalizeWhitespace(
-						[...paragraph.childNodes]
-							.filter((node) => node !== titleSpan)
-							.map((node) => node.textContent ?? '')
-							.join('')
-					);
+					let rawValue = '';
+					for (let i = 0; i < paragraph.childNodes.length; i += 1) {
+						const node = paragraph.childNodes[i]!;
+						if (node !== titleSpan) {
+							rawValue += node.textContent ?? '';
+						}
+					}
+					const val = normalizeWhitespace(rawValue);
 					if (!val) continue;
 
 					const existing = metadata.get(key);

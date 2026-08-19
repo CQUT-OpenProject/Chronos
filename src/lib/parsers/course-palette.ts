@@ -98,6 +98,12 @@ export function resolveCoursePaint(
 	return displayPalette[slot % displayPalette.length]!;
 }
 
+interface CourseSlotPreference {
+	name: string;
+	slot: number;
+	hash: number;
+}
+
 /** Spread automatic (default-slot) courses across the display palette. */
 export function assignCourseDisplayColors(
 	courses: { name: string; color: string }[],
@@ -105,36 +111,36 @@ export function assignCourseDisplayColors(
 ): Map<string, CoursePaletteEntry> {
 	if (palette.length === 0) return new Map();
 
-	const preferred = new Map<string, number>();
+	const preferredMap = new Map<string, CourseSlotPreference>();
 	for (const course of courses) {
 		const slot = defaultPaletteSlot(course.color);
 		if (slot == null) continue;
 		const name = normalizedCourseName(course.name);
-		if (!preferred.has(name)) preferred.set(name, slot);
+		if (!preferredMap.has(name)) {
+			preferredMap.set(name, {
+				name,
+				slot,
+				hash: kotlinStringHashCode(name)
+			});
+		}
 	}
 
-	const nameHashPairs = [...preferred.keys()].map((name) => ({
-		name,
-		hash: kotlinStringHashCode(name)
-	}));
-
-	nameHashPairs.sort(
+	const sortedPreferences = [...preferredMap.values()].sort(
 		(left, right) => left.hash - right.hash || left.name.localeCompare(right.name)
 	);
-	const names = nameHashPairs.map((pair) => pair.name);
 
 	const assigned = new Map<string, CoursePaletteEntry>();
 	const occupied = new Set<number>();
 	const deferred: string[] = [];
 
-	for (const name of names) {
-		const slot = preferred.get(name)! % palette.length;
-		if (occupied.has(slot)) {
+	for (const { name, slot } of sortedPreferences) {
+		const targetSlot = slot % palette.length;
+		if (occupied.has(targetSlot)) {
 			deferred.push(name);
 			continue;
 		}
-		occupied.add(slot);
-		assigned.set(name, palette[slot]!);
+		occupied.add(targetSlot);
+		assigned.set(name, palette[targetSlot]!);
 	}
 
 	let next = 0;
