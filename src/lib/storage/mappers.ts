@@ -21,6 +21,19 @@ export function courseToRow(course: Course, timetableId: string): CourseRow {
 	};
 }
 
+function parseWeeksCsv(weeksCsv: string): number[] {
+	if (!weeksCsv) return [];
+	const parts = weeksCsv.split(',');
+	const result: number[] = [];
+	for (let i = 0; i < parts.length; i += 1) {
+		const parsed = Number.parseInt(parts[i]!, 10);
+		if (!Number.isNaN(parsed)) {
+			result.push(parsed);
+		}
+	}
+	return result;
+}
+
 export function courseFromRow(row: CourseRow): Course {
 	return {
 		id: row.id,
@@ -32,10 +45,7 @@ export function courseFromRow(row: CourseRow): Course {
 		endPeriod: row.endPeriod,
 		color: row.color,
 		textColor: row.textColor,
-		weeks: row.weeksCsv
-			.split(',')
-			.map((value) => Number.parseInt(value, 10))
-			.filter((value) => !Number.isNaN(value)),
+		weeks: parseWeeksCsv(row.weeksCsv),
 		remark: row.remark
 	};
 }

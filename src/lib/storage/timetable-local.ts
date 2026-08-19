@@ -5,17 +5,17 @@ import { db } from './db';
 import { courseToRow, summaryFromRow, timetableFromRow, timetableToRow } from './mappers';
 
 export async function getTimetableSummaries(): Promise<TimetableSummary[]> {
-	const [rows, allCourses] = await Promise.all([
+	const [rows, courseKeys] = await Promise.all([
 		db.timetables.orderBy('updatedAt').reverse().toArray(),
-		db.courses.toArray()
+		db.courses.orderBy('timetableId').keys()
 	]);
 
 	const countByTimetableId = new Map<string, number>();
-	for (const course of allCourses) {
-		countByTimetableId.set(
-			course.timetableId,
-			(countByTimetableId.get(course.timetableId) ?? 0) + 1
-		);
+	for (let i = 0; i < courseKeys.length; i += 1) {
+		const key = courseKeys[i];
+		if (typeof key === 'string') {
+			countByTimetableId.set(key, (countByTimetableId.get(key) ?? 0) + 1);
+		}
 	}
 
 	return rows.map((row) => summaryFromRow(row, countByTimetableId.get(row.id) ?? 0));
