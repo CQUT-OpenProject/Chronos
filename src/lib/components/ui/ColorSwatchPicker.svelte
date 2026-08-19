@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CoursePaletteEntry } from '$lib/parsers/course-palette';
+	import type { CoursePaletteEntry } from '@chronos/core';
 	import { Check } from '$lib/icons';
 	import Card from '$lib/components/ui/Card.svelte';
 

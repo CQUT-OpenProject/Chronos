@@ -6,6 +6,7 @@ import { TimetableImportSource, type Timetable } from '$lib/models/timetable';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import { trackEvent } from '$lib/client/analytics';
 import { applyCampusPeriodTimes, toSettingsDraft } from '$lib/timetable/timetable-mappers';
+import { getAppController } from '$lib/services/app-engine';
 
 const timeProvider = new SystemTimeProvider();
 
@@ -49,7 +50,12 @@ export class TimetableDetailsEditor {
 	save = async () => {
 		const timetable = this.shell.state.appState.currentTimetable;
 		if (!timetable || !this.draft) return;
-		await this.shell.services.saveTimetableDetails.invoke(timetable.id, this.draft);
+		const controller = getAppController();
+		await controller.saveCurrentTimetableDetails({
+			name: this.draft.name,
+			academicConfig: this.draft.academicConfig,
+			viewPrefs: this.draft.viewPrefs
+		});
 		trackEvent('timetable_details_save');
 		this.onDone();
 	};

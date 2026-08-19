@@ -4,8 +4,7 @@
 	import type { SwiperContainer } from 'swiper/element/bundle';
 	import { trackEvent } from '$lib/client/analytics';
 	import { CapsuleCornerStyle, type TimetableLayoutMode } from '$lib/models/app-state';
-	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
-	import type { CoursePaletteEntry } from '$lib/parsers/course-palette';
+	import type { CoursePaletteEntry } from '@chronos/core';
 	import TimetableGrid from './TimetableGrid.svelte';
 
 	register();

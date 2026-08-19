@@ -5,9 +5,8 @@ import {
 	saveCredentialsLabel
 } from './transfer-state.svelte';
 import type { SavedCredentialState } from '$lib/models/auth';
-import type { TransferServices } from '$lib/client/transfer-services';
 import type { CredentialServices } from '$lib/client/credential-services';
-import type { SecureCredentialStore } from '$lib/domain/interfaces/secure-credential-store';
+import type { SecureCredentialStore } from '$lib/client/webauthn-secure-credential-store';
 
 describe('createTransferState', () => {
 	let mockStorage: Record<string, string> = {};
@@ -26,20 +25,13 @@ describe('createTransferState', () => {
 	});
 
 	it('clears preview from memory and sessionStorage when clearPreview is called', () => {
-		const mockTransferServices = {
-			previewImported: {} as unknown as TransferServices['previewImported'],
-			previewOnline: {} as unknown as TransferServices['previewOnline'],
-			importTimetable: {} as unknown as TransferServices['importTimetable'],
-			exportCurrent: {} as unknown as TransferServices['exportCurrent']
-		} satisfies TransferServices;
-
 		const mockCredentialServices = {
 			secureCredentialStore: {
 				subscribeSavedCredentialState: () => () => {}
 			} as unknown as SecureCredentialStore
 		} satisfies CredentialServices;
 
-		const controller = createTransferState(mockTransferServices, mockCredentialServices);
+		const controller = createTransferState(mockCredentialServices);
 
 		mockStorage['chronos:import-preview'] = JSON.stringify({ name: 'Test' });
 		mockStorage['chronos:import-preview-source'] = 'SHARE_LINK';
@@ -54,20 +46,13 @@ describe('createTransferState', () => {
 	});
 
 	it('clears sessionStorage when clearPersistedPreview is called', () => {
-		const mockTransferServices = {
-			previewImported: {} as unknown as TransferServices['previewImported'],
-			previewOnline: {} as unknown as TransferServices['previewOnline'],
-			importTimetable: {} as unknown as TransferServices['importTimetable'],
-			exportCurrent: {} as unknown as TransferServices['exportCurrent']
-		} satisfies TransferServices;
-
 		const mockCredentialServices = {
 			secureCredentialStore: {
 				subscribeSavedCredentialState: () => () => {}
 			} as unknown as SecureCredentialStore
 		} satisfies CredentialServices;
 
-		const controller = createTransferState(mockTransferServices, mockCredentialServices);
+		const controller = createTransferState(mockCredentialServices);
 
 		mockStorage['chronos:import-preview'] = JSON.stringify({ name: 'Test' });
 		mockStorage['chronos:import-preview-source'] = 'SHARE_LINK';
@@ -106,7 +91,7 @@ describe('credential copy helpers', () => {
 			capabilitiesReady: true,
 			protectionAvailable: true
 		};
-		expect(saveCredentialsLabel(state)).toBe('保存帐号密码');
+		expect(saveCredentialsLabel(state)).toBe('安全保存凭据');
 		expect(canSaveCredentials(state)).toBe(true);
 	});
 
@@ -116,7 +101,7 @@ describe('credential copy helpers', () => {
 			capabilitiesReady: true,
 			protectionAvailable: false
 		};
-		expect(saveCredentialsLabel(state)).toBe('保存账号（密码需每次输入）');
+		expect(saveCredentialsLabel(state)).toBe('仅保存账号');
 		expect(canSaveCredentials(state)).toBe(true);
 	});
 });

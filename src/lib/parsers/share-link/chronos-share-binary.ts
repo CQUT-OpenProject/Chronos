@@ -12,7 +12,7 @@ import {
 	normalizeTimetableName,
 	type Timetable
 } from '$lib/models/timetable';
-import { coursePalette, normalizedCourseName } from '$lib/parsers/course-palette';
+import { coursePalette, normalizedCourseName } from '@chronos/core';
 import { consolidateCourses } from '$lib/parsers/import-course-utils';
 import {
 	formatLocation,

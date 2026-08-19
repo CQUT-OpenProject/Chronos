@@ -4,7 +4,7 @@ import {
 	COURSE_PALETTE_ENTRIES,
 	EASTER_EGG_PALETTE_ENTRIES,
 	type CoursePaletteEntry
-} from '$lib/parsers/course-palette';
+} from '@chronos/core';
 import { applyAppearance, type WallpaperThemeAdapter } from './apply-appearance';
 
 function createFakeElement() {

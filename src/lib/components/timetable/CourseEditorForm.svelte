@@ -6,7 +6,7 @@
 		displaySwatchBackground,
 		persistSwatchSelection,
 		type CoursePaletteEntry
-	} from '$lib/parsers/course-palette';
+	} from '@chronos/core';
 	import ColorSwatchPicker from '$lib/components/ui/ColorSwatchPicker.svelte';
 	import FormCard from '$lib/components/ui/FormCard.svelte';
 	import StepperField from '$lib/components/ui/StepperField.svelte';

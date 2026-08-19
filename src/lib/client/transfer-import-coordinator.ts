@@ -1,15 +1,9 @@
-import type { TransferServices } from '$lib/client/transfer-services';
-import type { SecureCredentialStore } from '$lib/domain/interfaces/secure-credential-store';
 import { ImportMode } from '$lib/domain/import-mode';
 import type { SavedCredentialState } from '$lib/models/auth';
 import type { CqutCampusId } from '$lib/models/cqut-campus';
 import { getCampusDefaultPeriodTimes } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
-import {
-	createPrfCredential,
-	getPrfOutput,
-	WebAuthnCredentialUnavailableError
-} from '$lib/client/webauthn/prf-coordinator';
+import { createPrfCredential, getPrfOutput } from '$lib/client/webauthn/prf-coordinator';
 import { base64ToBytes } from '$lib/client/webauthn/binary';
 import {
 	createSessionPreviewPersistence,
@@ -17,6 +11,15 @@ import {
 	type PreviewSnapshot,
 	type TransferImportSource
 } from './preview-persistence';
+import { getAppEngine } from '$lib/services/app-engine';
+import { ChronosTimetableShareLinkCodec } from '$lib/parsers/share-link/chronos-timetable-share-link-codec';
+import { parseHtmlTimetable } from '@chronos/plugins';
+import {
+	type SecureCredentialStore,
+	WebAuthnSecureCredentialStore
+} from './webauthn-secure-credential-store';
+import { SHARE_LINK_WARNING_LENGTH } from '$lib/parsers/share-link/chronos-share-link-codec';
+import type { ChronosEngine } from '@chronos/core';
 
 export type { TransferImportSource };
 
@@ -63,38 +66,60 @@ export type ClearCredentialOutcome =
 	| { ok: false; errorMessage: string };
 
 export interface TransferImportCoordinatorDeps {
-	services: TransferServices;
-	secureCredentialStore: SecureCredentialStore;
+	secureCredentialStore?: SecureCredentialStore;
 	previewPersistence?: PreviewPersistence;
 	clipboard?: ClipboardGateway;
+	shareLinkCodec?: ChronosTimetableShareLinkCodec;
+	engine?: ChronosEngine;
 }
 
-export function createTransferImportCoordinator({
-	services,
-	secureCredentialStore,
-	previewPersistence = createSessionPreviewPersistence(),
-	clipboard = createNavigatorClipboardGateway()
-}: TransferImportCoordinatorDeps) {
+export function createTransferImportCoordinator(deps: TransferImportCoordinatorDeps = {}) {
+	const secureCredentialStore = deps.secureCredentialStore ?? new WebAuthnSecureCredentialStore();
+	const previewPersistence = deps.previewPersistence ?? createSessionPreviewPersistence();
+	const clipboard = deps.clipboard ?? createNavigatorClipboardGateway();
+	const shareLinkCodec = deps.shareLinkCodec ?? new ChronosTimetableShareLinkCodec();
+	const getEngine = () => deps.engine ?? getAppEngine();
+
 	async function previewFromClipboard(): Promise<PreviewOutcome> {
 		try {
 			const content = await clipboard.readText();
-			const result = await services.previewImported.invoke(content.trim());
-			if (!result.ok) {
-				return { ok: false, errorMessage: result.error.message };
+			const trimmed = content.trim();
+			if (!trimmed) {
+				return { ok: false, errorMessage: '剪贴板内容为空' };
 			}
-			return { ok: true, preview: result.value, source: 'SHARE_LINK' };
+
+			// 1. 尝试分享短链
+			const result = await shareLinkCodec.decode(trimmed);
+			if (result.ok) {
+				return { ok: true, preview: result.value as unknown as Timetable, source: 'SHARE_LINK' };
+			}
+
+			// 2. 尝试 JSON 备份源
+			const jsonSource = getEngine().slots.getSource('share-json');
+			if (jsonSource) {
+				try {
+					const timetable = await jsonSource.fetchSchedule({ fileContent: trimmed });
+					return { ok: true, preview: timetable as unknown as Timetable, source: 'SHARE_LINK' };
+				} catch {
+					// continue
+				}
+			}
+
+			return { ok: false, errorMessage: result.error.message || '无效的课表分享内容' };
 		} catch {
 			return { ok: false, errorMessage: '无法读取剪贴板，请检查浏览器权限' };
 		}
 	}
 
 	async function previewFromHtmlFile(file: File): Promise<PreviewOutcome> {
-		const bytes = new Uint8Array(await file.arrayBuffer());
-		const result = services.previewImported.previewHtml(bytes);
-		if (!result.ok) {
-			return { ok: false, errorMessage: result.error.message };
+		try {
+			const text = await file.text();
+			const timetable = parseHtmlTimetable(text);
+			return { ok: true, preview: timetable as unknown as Timetable, source: 'HTML' };
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : '解析 HTML 课表失败';
+			return { ok: false, errorMessage: msg };
 		}
-		return { ok: true, preview: result.value, source: 'HTML' };
 	}
 
 	async function saveCredentialsIfNeeded(
@@ -151,27 +176,37 @@ export function createTransferImportCoordinator({
 			return { ok: false, errorMessage: '请输入账号和密码' };
 		}
 
-		const result = await services.previewOnline.invoke({
-			account: trimmedAccount,
-			password
-		});
-		if (!result.ok) {
-			return { ok: false, errorMessage: result.error.message };
+		try {
+			const res = await fetch('/api/cqut/preview', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ account: trimmedAccount, password })
+			});
+			const data = (await res.json()) as {
+				ok: boolean;
+				value?: Timetable;
+				error?: { message: string };
+			};
+			if (!data.ok || !data.value) {
+				return { ok: false, errorMessage: data.error?.message || '获取课表失败，请检查账号密码' };
+			}
+
+			const statusMessage = await saveCredentialsIfNeeded(
+				trimmedAccount,
+				password,
+				saveCredentials,
+				savedCredentialState
+			);
+
+			return {
+				ok: true,
+				preview: data.value,
+				source: 'ONLINE',
+				statusMessage: statusMessage ?? undefined
+			};
+		} catch {
+			return { ok: false, errorMessage: '连接教务系统失败，请检查网络连接' };
 		}
-
-		const statusMessage = await saveCredentialsIfNeeded(
-			trimmedAccount,
-			password,
-			saveCredentials,
-			savedCredentialState
-		);
-
-		return {
-			ok: true,
-			preview: result.value,
-			source: 'ONLINE',
-			statusMessage: statusMessage ?? undefined
-		};
 	}
 
 	async function previewWithSavedCredential(
@@ -196,27 +231,23 @@ export function createTransferImportCoordinator({
 				return { ok: false, errorMessage: unlockResult.error.message };
 			}
 
-			const previewResult = await services.previewOnline.invoke(unlockResult.value);
+			const previewResult = await previewOnline(
+				unlockResult.value.account,
+				unlockResult.value.password,
+				false,
+				savedCredentialState
+			);
 			if (!previewResult.ok) {
-				return { ok: false, errorMessage: previewResult.error.message };
+				return previewResult;
 			}
 
 			return {
-				ok: true,
-				preview: previewResult.value,
-				source: 'ONLINE',
+				...previewResult,
 				account: unlockResult.value.account,
 				password: unlockResult.value.password
 			};
 		} catch (error) {
-			if (error instanceof WebAuthnCredentialUnavailableError) {
-				await secureCredentialStore.clearCredential();
-				return {
-					ok: false,
-					errorMessage: '已保存凭据已失效，请重新录入账号和密码'
-				};
-			}
-			const message = error instanceof Error ? error.message : '设备验证失败';
+			const message = error instanceof Error ? error.message : '已取消设备验证';
 			return {
 				ok: false,
 				errorMessage: message === 'WebAuthn verification was cancelled' ? '已取消设备验证' : message
@@ -229,11 +260,10 @@ export function createTransferImportCoordinator({
 		if (!result.ok) {
 			return { ok: false, errorMessage: result.error.message };
 		}
-		return { ok: true, statusMessage: '已清除已保存凭据' };
+		return { ok: true, statusMessage: '已清除保存的凭据' };
 	}
 
 	function persistPreview(snapshot: PreviewSnapshot): boolean {
-		if (!snapshot.preview || !snapshot.previewSource) return false;
 		previewPersistence.save(snapshot);
 		return true;
 	}
@@ -276,20 +306,32 @@ export function createTransferImportCoordinator({
 			};
 		}
 
-		const result = await services.importTimetable.import(finalPreview, importMode);
-		if (!result.ok) {
-			return { ok: false, errorMessage: result.error.message };
+		try {
+			const env = getEngine().env;
+			if (importMode === ImportMode.OVERWRITE_CURRENT) {
+				const activeId = await env.storage.getActiveTimetableId();
+				if (activeId) {
+					finalPreview = { ...finalPreview, id: activeId };
+				}
+			}
+			await env.storage.saveTimetable(finalPreview as unknown as import('@chronos/core').Timetable);
+			await env.storage.setActiveTimetableId(finalPreview.id);
+			return { ok: true };
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : '保存课表失败';
+			return { ok: false, errorMessage: msg };
 		}
-		return { ok: true };
 	}
 
 	async function exportToClipboard(): Promise<ExportOutcome> {
-		const result = await services.exportCurrent.invoke();
+		const engine = getEngine();
+		const current = engine.state.currentTimetable;
+		if (!current) {
+			return { ok: false, errorMessage: '当前没有可导出的课表' };
+		}
+		const result = await shareLinkCodec.encode(current as unknown as Timetable);
 		if (!result.ok) {
 			return { ok: false, errorMessage: result.error.message };
-		}
-		if (!result.value) {
-			return { ok: false, errorMessage: '当前没有可导出的课表' };
 		}
 		try {
 			await clipboard.writeText(result.value);
@@ -300,7 +342,17 @@ export function createTransferImportCoordinator({
 	}
 
 	async function getExportMetadata() {
-		return await services.exportCurrent.getExportMetadata();
+		const engine = getEngine();
+		const current = engine.state.currentTimetable;
+		if (!current) {
+			return { timetableName: null, longLinkWarning: false };
+		}
+		const encoded = await shareLinkCodec.encode(current as unknown as Timetable);
+		const length = encoded.ok ? encoded.value.length : 0;
+		return {
+			timetableName: current.name,
+			longLinkWarning: length > SHARE_LINK_WARNING_LENGTH
+		};
 	}
 
 	return {

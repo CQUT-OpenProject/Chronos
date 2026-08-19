@@ -26,7 +26,8 @@
 		findCurrentPeriodIndex,
 		parsePeriodRanges
 	} from '$lib/timetable/period-clock';
-	import { type CoursePaletteEntry } from '$lib/parsers/course-palette';
+	import { type CoursePaletteEntry } from '@chronos/core';
+	import { getAppController } from '$lib/services/app-engine';
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 	import { createTimetableInteractionMediator } from '$lib/timetable/timetable-interaction-mediator';
 
@@ -60,6 +61,8 @@
 		onCourseClick,
 		onCourseLongClick
 	}: Props = $props();
+
+	const controller = getAppController();
 
 	let scrollContainer = $state<HTMLDivElement | undefined>();
 	let bodyViewportHeight = $state(0);
@@ -402,6 +405,8 @@
 		onCourseLongClick: mediator.handleCourseLongPress,
 		onLongPressFeedback: () => {}
 	})}
+	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
+	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
 	<button
 		type="button"
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
@@ -420,7 +425,7 @@
 		onclick={handlers.onclick}
 		onkeydown={handlers.onkeydown}
 	>
-		{#if placed.badgeLabel}
+		{#if badgeText}
 			<span class="mb-0.5 flex w-full shrink-0 justify-center">
 				<span
 					class="max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap"
@@ -428,12 +433,12 @@
 					style:color="color-mix(in srgb, currentColor 80%, transparent)"
 					style:font-size="{scale.badgePx}px"
 					{@attach fitWidthFont(() => ({
-						lines: [placed.badgeLabel!],
+						lines: [badgeText],
 						maxFontPx: scale.badgePx,
 						fromParent: true
 					}))}
 				>
-					{placed.badgeLabel}
+					{badgeText}
 				</span>
 			</span>
 		{/if}

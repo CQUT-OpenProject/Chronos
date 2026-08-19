@@ -1,5 +1,5 @@
 import { PaletteMode } from '$lib/models/app-state';
-import { resolveCoursePalette, type CoursePaletteEntry } from '$lib/parsers/course-palette';
+import { resolveCoursePalette, type CoursePaletteEntry } from '@chronos/core';
 
 export interface WallpaperThemeAdapter {
 	extractWallpaperSeed(uri: string): Promise<{

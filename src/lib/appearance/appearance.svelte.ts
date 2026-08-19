@@ -1,5 +1,5 @@
 import { PaletteMode } from '$lib/models/app-state';
-import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from '$lib/parsers/course-palette';
+import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from '@chronos/core';
 import {
 	applyAppearance,
 	type ApplyAppearanceInput,

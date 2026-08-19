@@ -1,7 +1,8 @@
 import { argbFromHex, Hct } from '@ktibow/material-color-utilities-nightly';
 import { describe, expect, it } from 'vite-plus/test';
 import { colorsFromImageBytes } from './apply-wallpaper-theme';
-import { coursePaletteFromSources } from './scheme';
+import { coursePaletteFromSources } from '@chronos/ui-kit';
+import type { CoursePaletteEntry } from '@chronos/core';
 
 const RED = 0xffff0000;
 const BLUE = 0xff0000ff;
@@ -37,11 +38,13 @@ describe('colorsFromImageBytes', () => {
 			15
 		);
 
-		const palette = coursePaletteFromSources(ranked);
+		const palette: CoursePaletteEntry[] = coursePaletteFromSources(ranked);
 		expect(palette).toHaveLength(6);
 
-		const hues = palette.map((entry) => Hct.fromInt(argbFromHex(entry.background)).hue);
-		expect(hues.some((hue) => hueDistance(hue, RED_HUE) < 20)).toBe(true);
-		expect(hues.some((hue) => hueDistance(hue, BLUE_HUE) < 20)).toBe(true);
+		const hues = palette.map(
+			(entry: CoursePaletteEntry) => Hct.fromInt(argbFromHex(entry.background)).hue
+		);
+		expect(hues.some((hue: number) => hueDistance(hue, RED_HUE) < 20)).toBe(true);
+		expect(hues.some((hue: number) => hueDistance(hue, BLUE_HUE) < 20)).toBe(true);
 	});
 });

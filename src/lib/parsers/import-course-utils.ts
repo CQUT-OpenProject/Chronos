@@ -1,6 +1,4 @@
-import type { Course } from '@chronos/core';
-import type { OnlineScheduleEvent } from '$lib/models/online-schedule';
-import { normalizedCourseName } from '$lib/parsers/course-palette';
+import { normalizedCourseName, type Course } from '@chronos/core';
 
 const YEAR_TERM_PATTERN = /^\d{4}-\d{4}-\d+$/;
 const CAMPUS_PATTERN = /[^ ]+校区/g;
@@ -25,10 +23,10 @@ export function sanitizeAddress(address: string): string {
 	return trimmed.slice(0, secondCampus).trim();
 }
 
-export function sanitizeEventFields(
-	event: OnlineScheduleEvent,
+export function sanitizeEventFields<T extends { memberName: string; address: string }>(
+	event: T,
 	yearTerm: string
-): OnlineScheduleEvent {
+): T {
 	return {
 		...event,
 		memberName: sanitizeTeacher(event.memberName, yearTerm),
@@ -36,32 +34,35 @@ export function sanitizeEventFields(
 	};
 }
 
-function courseIdentityKey(course: Course): string {
-	return `${course.name}\0${course.dayOfWeek}\0${course.startPeriod}\0${course.endPeriod}\0${course.teacher}\0${course.location}`;
-}
-
 export function consolidateCourses(courses: Course[]): Course[] {
-	const merged = new Map<string, Course>();
+	const map = new Map<string, Course>();
 
 	for (const course of courses) {
-		const key = courseIdentityKey(course);
-		const existing = merged.get(key);
-		if (!existing) {
-			merged.set(key, course);
-			continue;
-		}
+		const key = `${course.name}|${course.teacher}|${course.location}|${course.dayOfWeek}|${course.startPeriod}|${course.endPeriod}|${course.remark}`;
+		const existing = map.get(key);
 
-		const weeks = [...new Set([...existing.weeks, ...course.weeks])].sort(
-			(left, right) => left - right
-		);
-		merged.set(key, {
-			...existing,
-			weeks,
-			remark: existing.remark || course.remark
-		});
+		if (existing) {
+			const combinedWeeks = Array.from(new Set([...existing.weeks, ...course.weeks])).sort(
+				(a, b) => a - b
+			);
+			existing.weeks = combinedWeeks;
+		} else {
+			map.set(key, {
+				...course,
+				weeks: [...course.weeks].sort((a, b) => a - b)
+			});
+		}
 	}
 
-	return [...merged.values()];
+	return Array.from(map.values()).sort((a, b) => {
+		if (a.dayOfWeek !== b.dayOfWeek) {
+			return a.dayOfWeek - b.dayOfWeek;
+		}
+		if (a.startPeriod !== b.startPeriod) {
+			return a.startPeriod - b.startPeriod;
+		}
+		return a.endPeriod - b.endPeriod;
+	});
 }
 
 export function countDistinctCourseNames(courses: Course[]): number {

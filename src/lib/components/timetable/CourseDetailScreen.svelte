@@ -6,8 +6,10 @@
 		assignCourseDisplayColors,
 		normalizedCourseName,
 		resolveCoursePaint
-	} from '$lib/parsers/course-palette';
+	} from '@chronos/core';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
+	import { getAppController } from '$lib/services/app-engine';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	let {
 		shell,
@@ -18,6 +20,8 @@
 	} = $props();
 
 	let remarkExpanded = $state(true);
+	const controller = getAppController();
+	const courseActions = $derived(controller.courseActions);
 
 	const course = $derived(
 		courseId
@@ -85,6 +89,25 @@
 			{/each}
 		</div>
 	</section>
+
+	{#if courseActions.length > 0}
+		<section class="mt-4 rounded-2xl bg-surface-variant/40 p-4">
+			<h3 class="m3-title-small mb-2 text-on-surface-variant">插件操作</h3>
+			<div class="flex flex-wrap gap-2">
+				{#each courseActions as action (action.id)}
+					<Button
+						variant="tonal"
+						onclick={() => {
+							const ctx = controller.rawEngine.scopedContext;
+							void action.onExecute(course, ctx);
+						}}
+					>
+						{typeof action.label === 'function' ? action.label() : action.label}
+					</Button>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	{#if course.remark.trim()}
 		<section class="mt-4 rounded-2xl bg-surface-variant/40 p-4">

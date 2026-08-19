@@ -8,8 +8,8 @@ import {
 	type UserPreferences,
 	emptyAppState
 } from '$lib/models/app-state';
-import { createAppServices, type AppServices } from '$lib/client/app-services';
-import { clearAllAppData } from '$lib/client/repository';
+import { getRepository, getPreferencesRepository, clearAllAppData } from '$lib/client/repository';
+import { getAppController } from '$lib/services/app-engine';
 
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
 	if (themeMode === ThemeMode.DARK) return true;
@@ -24,12 +24,7 @@ export function createAppShell() {
 	let unsubscribe: (() => void) | null = null;
 	let mediaQueryCleanup: (() => void) | null = null;
 	const appearance = createAppearance();
-	let services: AppServices | null = null;
-
-	function getServices() {
-		services ??= createAppServices();
-		return services;
-	}
+	const controller = getAppController();
 
 	const isDark = $derived(resolveDark(appState.themeMode, systemPrefersDark));
 	const hasWallpaper = $derived(Boolean(appState.wallpaperUri));
@@ -47,7 +42,8 @@ export function createAppShell() {
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
 
-		unsubscribe = getServices().repository.subscribeAppState((state) => {
+		const repo = getRepository();
+		unsubscribe = repo.subscribeAppState((state) => {
 			appState = state;
 			initialized = true;
 		});
@@ -61,7 +57,7 @@ export function createAppShell() {
 	}
 
 	async function updatePreferences(patch: Partial<UserPreferences>) {
-		await getServices().preferences.update(patch);
+		await getPreferencesRepository().update(patch);
 	}
 
 	async function setThemeMode(mode: ThemeMode) {
@@ -85,7 +81,19 @@ export function createAppShell() {
 	}
 
 	async function setWallpaper(wallpaper: Blob | null) {
-		await getServices().preferences.setWallpaper(wallpaper);
+		const env = controller.rawEngine.env;
+		if (env.storage.setWallpaper) {
+			const bytes = wallpaper ? new Uint8Array(await wallpaper.arrayBuffer()) : null;
+			await env.storage.setWallpaper(bytes);
+		}
+	}
+
+	async function switchTimetable(id: string) {
+		await controller.switchTimetable(id);
+	}
+
+	async function deleteTimetable(id: string) {
+		await controller.deleteTimetable(id);
 	}
 
 	async function clearAllData() {
@@ -104,6 +112,9 @@ export function createAppShell() {
 		get appearance() {
 			return appearance;
 		},
+		get controller() {
+			return controller;
+		},
 		init,
 		destroy,
 		updatePreferences,
@@ -113,10 +124,9 @@ export function createAppShell() {
 		setCapsuleCornerStyle,
 		setHapticFeedbackEnabled,
 		setWallpaper,
-		clearAllData,
-		get services() {
-			return getServices();
-		}
+		switchTimetable,
+		deleteTimetable,
+		clearAllData
 	};
 }
 

@@ -21,13 +21,13 @@
 
 	async function handleSwitch(id: string) {
 		trackEvent('timetable_switch');
-		await shell.services.preferences.setCurrentTimetableId(id);
+		await shell.switchTimetable(id);
 	}
 
 	async function confirmDelete() {
 		if (!appState.currentTimetableId) return;
 		trackEvent('timetable_delete');
-		await shell.services.deleteTimetable.invoke(appState.currentTimetableId);
+		await shell.deleteTimetable(appState.currentTimetableId);
 		deleteDialogOpen = false;
 	}
 </script>

@@ -2,6 +2,8 @@ import type { AppShellController } from '$lib/app/app-shell.svelte';
 import { trackEvent } from '$lib/client/analytics';
 import type { CourseDraft } from '$lib/models/drafts';
 import { courseToDraft } from '$lib/timetable/timetable-mappers';
+import { getAppController } from '$lib/services/app-engine';
+import { createCourse } from '@chronos/core';
 
 function emptyDraft(): CourseDraft {
 	return {
@@ -25,6 +27,7 @@ export function createCourseEditor(
 ) {
 	let draft = $state<CourseDraft | null>(null);
 	let syncedCourseKey = $state<string | null>(null);
+	const controller = getAppController();
 
 	const timetable = $derived(shell.state.appState.currentTimetable);
 	const canSave = $derived(Boolean(draft?.name.trim()));
@@ -47,14 +50,27 @@ export function createCourseEditor(
 
 	async function save() {
 		if (!timetable || !draft) return;
-		await shell.services.saveCourse.invoke(timetable.id, draft);
+		const course = createCourse({
+			id: draft.id || `c_${Date.now()}`,
+			name: draft.name,
+			teacher: draft.teacher,
+			location: draft.location,
+			dayOfWeek: draft.dayOfWeek,
+			startPeriod: draft.startPeriod,
+			endPeriod: draft.endPeriod,
+			color: draft.color,
+			textColor: draft.textColor,
+			weeks: draft.weeks,
+			remark: draft.remark
+		});
+		await controller.saveCourse(course);
 		trackEvent('course_save');
 		onDone();
 	}
 
 	async function deleteCourse() {
 		if (!draft?.id) return;
-		await shell.services.deleteCourse.invoke(draft.id);
+		await controller.deleteCourse(draft.id);
 		trackEvent('course_delete');
 		onDone();
 	}

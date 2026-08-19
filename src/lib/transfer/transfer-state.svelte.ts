@@ -1,6 +1,4 @@
-import type { TransferServices } from '$lib/client/transfer-services';
 import type { CredentialServices } from '$lib/client/credential-services';
-import { createTransferServices } from '$lib/client/transfer-services';
 import { createCredentialServices } from '$lib/client/credential-services';
 import { createTransferImportCoordinator } from '$lib/client/transfer-import-coordinator';
 import type { TransferImportSource } from '$lib/client/preview-persistence';
@@ -32,7 +30,6 @@ export interface TransferPreviewState {
 }
 
 export function createTransferState(
-	services: TransferServices = createTransferServices(),
 	credentialServices: CredentialServices = createCredentialServices()
 ) {
 	let selectedSource = $state<TransferImportSource>(onlineImportEnabled ? 'ONLINE' : 'SHARE_LINK');
@@ -58,7 +55,6 @@ export function createTransferState(
 	const timeProvider = new SystemTimeProvider();
 
 	const coordinator = createTransferImportCoordinator({
-		services,
 		secureCredentialStore: credentialServices.secureCredentialStore
 	});
 
@@ -254,14 +250,13 @@ export function createTransferState(
 			htmlImportTermStartDate,
 			htmlImportCampusId
 		);
+
 		if (!result.ok) {
 			errorMessage = result.errorMessage;
 			return false;
 		}
 
-		clearPersistedPreview();
 		clearPreview();
-		statusMessage = '导入成功';
 		return true;
 	}
 
@@ -280,24 +275,22 @@ export function createTransferState(
 		return await coordinator.getExportMetadata();
 	}
 
-	const state = $derived({
-		selectedSource,
-		preview,
-		previewSource,
-		importMode,
-		htmlImportTermStartDate,
-		htmlImportCampusId,
-		account,
-		password,
-		saveCredentials,
-		savedCredentialState,
-		errorMessage,
-		statusMessage
-	} satisfies TransferPreviewState);
-
 	return {
-		get state() {
-			return state;
+		get state(): TransferPreviewState {
+			return {
+				preview,
+				previewSource,
+				importMode,
+				htmlImportTermStartDate,
+				htmlImportCampusId,
+				selectedSource,
+				account,
+				password,
+				saveCredentials,
+				savedCredentialState,
+				errorMessage,
+				statusMessage
+			};
 		},
 		setSelectedSource,
 		setAccount,
@@ -323,33 +316,37 @@ export function createTransferState(
 
 export type TransferStateController = ReturnType<typeof createTransferState>;
 
+export function shouldShowCampusSelection(source: TransferImportSource | null): boolean {
+	return source === 'HTML';
+}
+
+export function shouldShowTermStartDateSelection(source: TransferImportSource | null): boolean {
+	return source === 'HTML';
+}
+
+export function canSaveCredentials(savedCredentialState: SavedCredentialState): boolean {
+	return (
+		savedCredentialState.capabilitiesReady &&
+		(savedCredentialState.protectionAvailable || isAccountOnlyFallbackAvailable())
+	);
+}
+
+export function saveCredentialsLabel(savedCredentialState: SavedCredentialState): string {
+	if (!savedCredentialState.capabilitiesReady) {
+		return '正在检测设备能力…';
+	}
+	return savedCredentialState.protectionAvailable ? '安全保存凭据' : '仅保存账号';
+}
+
 export function previewSourceLabel(source: TransferImportSource | null): string {
 	switch (source) {
 		case 'ONLINE':
 			return '知行理工';
-		case 'SHARE_LINK':
-			return '分享链接';
 		case 'HTML':
 			return 'HTML 文件';
+		case 'SHARE_LINK':
+			return '分享链接';
 		default:
 			return '未知来源';
 	}
-}
-
-export function canSaveCredentials(state: SavedCredentialState): boolean {
-	if (!state.capabilitiesReady) return false;
-	return state.protectionAvailable || isAccountOnlyFallbackAvailable();
-}
-
-export function saveCredentialsLabel(state: SavedCredentialState): string {
-	if (!state.capabilitiesReady) {
-		return '正在检测设备能力…';
-	}
-	if (state.protectionAvailable) {
-		return '保存帐号密码';
-	}
-	if (isAccountOnlyFallbackAvailable()) {
-		return '保存账号（密码需每次输入）';
-	}
-	return '当前设备不支持保存帐号密码';
 }

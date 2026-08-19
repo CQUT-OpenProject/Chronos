@@ -1,5 +1,4 @@
 import type { SavedCredentialState } from '$lib/models/auth';
-import type { SecureCredentialStore } from '$lib/domain/interfaces/secure-credential-store';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
 import {
@@ -13,59 +12,61 @@ import { deriveAesKey, decryptPayload, encryptPayload } from './webauthn/prf-cry
 
 const CREDENTIAL_INVALIDATED_MESSAGE = '已保存凭据已失效，请重新录入账号和密码';
 
+export interface SecureCredentialStore {
+	subscribeSavedCredentialState(listener: (state: SavedCredentialState) => void): () => void;
+	saveCredential(account: string, password: string, unlockToken: string): Promise<AppResult<void>>;
+	unlockCredential(unlockToken: string): Promise<AppResult<{ account: string; password: string }>>;
+	clearCredential(): Promise<AppResult<void>>;
+	prepareSave(): Promise<AppResult<string>>;
+	prepareUnlock(): Promise<AppResult<string>>;
+}
+
 export function createWebAuthnSecureCredentialStore(
 	storage: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null
 ): SecureCredentialStore {
 	const listeners = new Set<(state: SavedCredentialState) => void>();
-	const accountOnlyFallbackAvailable = storage != null;
 	let pendingSalt: string | null = null;
 
 	function buildState(): SavedCredentialState {
 		const record = readOnlineCredentialRecord(storage);
 		const savedAccount =
-			record?.mode === 'account_only' || record?.mode === 'prf' ? record.account : null;
+			record?.account ||
+			(typeof localStorage !== 'undefined'
+				? localStorage.getItem('cqut_username') || localStorage.getItem('last_account')
+				: null);
+
+		const hasValidEncryptedRecord =
+			record &&
+			record.mode === 'prf' &&
+			record.account &&
+			record.credentialId &&
+			record.salt &&
+			record.ciphertext &&
+			record.iv;
+
+		const hasSavedCredential = Boolean(hasValidEncryptedRecord || savedAccount);
 
 		return {
 			account: savedAccount,
-			hasSavedCredential: record != null,
+			hasSavedCredential,
 			protectionAvailable: credentialEnvironment.prfAvailable,
 			capabilitiesReady: credentialEnvironment.ready,
-			savedMode: record?.mode ?? null
+			savedMode: hasValidEncryptedRecord ? 'prf' : savedAccount ? 'account_only' : null
 		};
 	}
 
-	function notify() {
-		const state = buildState();
+	function notifyState() {
+		const nextState = buildState();
 		for (const listener of listeners) {
-			listener(state);
+			listener(nextState);
 		}
-	}
-
-	async function ensureEnvironmentReady(): Promise<void> {
-		await credentialEnvironment.init();
-	}
-
-	if (typeof window !== 'undefined') {
-		credentialEnvironment.subscribe(() => notify());
-		void ensureEnvironmentReady();
-	}
-
-	function subscribeSavedCredentialState(
-		listener: (state: SavedCredentialState) => void
-	): () => void {
-		listeners.add(listener);
-		listener(buildState());
-		return () => listeners.delete(listener);
 	}
 
 	async function prepareSave(): Promise<AppResult<string>> {
-		await ensureEnvironmentReady();
 		if (!credentialEnvironment.prfAvailable) {
-			return failure(AppError.security('当前设备不支持保存帐号密码'));
+			return failure(AppError.security('当前设备不支持硬件安全存储'));
 		}
-
-		const salt = randomBytes(32);
-		pendingSalt = bytesToBase64(salt);
+		pendingSalt = bytesToBase64(randomBytes(32));
 		return success(pendingSalt);
 	}
 
@@ -74,107 +75,123 @@ export function createWebAuthnSecureCredentialStore(
 		password: string,
 		unlockToken: string
 	): Promise<AppResult<void>> {
-		const trimmedAccount = account.trim();
-		if (!trimmedAccount) {
-			return failure(AppError.validation('账号不能为空'));
+		const trimmed = account.trim();
+		if (!trimmed) {
+			return failure(AppError.validation('请输入账号'));
 		}
 
-		await ensureEnvironmentReady();
-
-		if (!credentialEnvironment.prfAvailable) {
-			if (!accountOnlyFallbackAvailable) {
-				return failure(AppError.security('当前设备不支持保存帐号密码'));
-			}
-			writeOnlineCredentialRecord({ mode: 'account_only', account: trimmedAccount }, storage);
-			pendingSalt = null;
-			notify();
+		if (!password && !unlockToken) {
+			writeOnlineCredentialRecord(
+				{
+					mode: 'account_only',
+					account: trimmed
+				},
+				storage
+			);
+			notifyState();
 			return success(undefined);
 		}
 
-		if (!pendingSalt) {
-			return failure(AppError.security('请先准备保存凭据'));
-		}
-		if (!unlockToken.trim()) {
-			return failure(AppError.security('设备验证未完成'));
+		if (!unlockToken) {
+			return failure(AppError.validation('缺少凭据安全参数'));
 		}
 
 		try {
 			const parsed = JSON.parse(unlockToken) as { prf?: string; credentialId?: string };
 			if (!parsed.prf || !parsed.credentialId) {
-				return failure(AppError.security('保存在线凭据失败'));
+				return failure(AppError.validation('无效的安全参数结构'));
 			}
 
-			const aesKey = await deriveAesKey(base64ToBytes(parsed.prf), base64ToBytes(pendingSalt));
-			const encrypted = await encryptPayload(aesKey, encodePasswordPayload(password));
+			const saltBase64 = pendingSalt || bytesToBase64(randomBytes(32));
+			pendingSalt = null;
+
+			const salt = base64ToBytes(saltBase64);
+			const prfKey = base64ToBytes(parsed.prf);
+			const aesKey = await deriveAesKey(prfKey, salt);
+
+			const encoded = encodePasswordPayload(password);
+			const encrypted = await encryptPayload(aesKey, encoded);
+
 			writeOnlineCredentialRecord(
 				{
 					mode: 'prf',
-					account: trimmedAccount,
+					account: trimmed,
 					credentialId: parsed.credentialId,
-					salt: pendingSalt,
-					iv: encrypted.iv,
-					ciphertext: encrypted.ciphertext
+					salt: saltBase64,
+					ciphertext: encrypted.ciphertext,
+					iv: encrypted.iv
 				},
 				storage
 			);
-			pendingSalt = null;
-			notify();
+
+			notifyState();
 			return success(undefined);
-		} catch {
-			return failure(AppError.security('保存在线凭据失败'));
+		} catch (error) {
+			return failure(
+				AppError.security(error instanceof Error ? error.message : '保存安全凭据失败')
+			);
 		}
 	}
 
 	async function prepareUnlock(): Promise<AppResult<string>> {
-		await ensureEnvironmentReady();
 		const record = readOnlineCredentialRecord(storage);
-		if (!record) {
-			return failure(AppError.security('当前没有可用的已保存凭据'));
+		if (!record || record.mode !== 'prf' || !record.salt || !record.credentialId) {
+			return failure(AppError.notFound('未找到保存的凭据'));
 		}
-		if (record.mode === 'account_only') {
-			return failure(AppError.security('当前仅保存了账号，请输入密码后预览'));
-		}
-		return success(JSON.stringify({ salt: record.salt, credentialId: record.credentialId }));
+		return success(
+			JSON.stringify({
+				salt: record.salt,
+				credentialId: record.credentialId
+			})
+		);
 	}
 
 	async function unlockCredential(
 		unlockToken: string
 	): Promise<AppResult<{ account: string; password: string }>> {
 		const record = readOnlineCredentialRecord(storage);
-		if (!record) {
-			return failure(AppError.notFound('未找到已保存的在线凭据'));
-		}
-		if (record.mode === 'account_only') {
-			return failure(AppError.security('当前仅保存了账号，请输入密码后预览'));
-		}
-		if (!unlockToken.trim()) {
-			return failure(AppError.security('设备验证未完成'));
+		if (!record || record.mode !== 'prf' || !record.ciphertext || !record.iv || !record.salt) {
+			return failure(AppError.notFound(CREDENTIAL_INVALIDATED_MESSAGE));
 		}
 
 		try {
 			const parsed = JSON.parse(unlockToken) as { prf?: string };
 			if (!parsed.prf) {
-				return failure(AppError.security('读取已保存凭据失败'));
+				return failure(AppError.validation('无效的安全解锁参数'));
 			}
 
-			const aesKey = await deriveAesKey(base64ToBytes(parsed.prf), base64ToBytes(record.salt));
+			const salt = base64ToBytes(record.salt);
+			const prfKey = base64ToBytes(parsed.prf);
+			const aesKey = await deriveAesKey(prfKey, salt);
+
 			const decrypted = await decryptPayload(aesKey, record.iv, record.ciphertext);
+			const password = decodePasswordPayload(decrypted);
+
 			return success({
 				account: record.account,
-				password: decodePasswordPayload(decrypted)
+				password
 			});
 		} catch {
-			writeOnlineCredentialRecord(null, storage);
-			notify();
 			return failure(AppError.security(CREDENTIAL_INVALIDATED_MESSAGE));
 		}
 	}
 
 	async function clearCredential(): Promise<AppResult<void>> {
 		writeOnlineCredentialRecord(null, storage);
-		pendingSalt = null;
-		notify();
+		if (typeof localStorage !== 'undefined') {
+			localStorage.removeItem('cqut_username');
+			localStorage.removeItem('last_account');
+		}
+		notifyState();
 		return success(undefined);
+	}
+
+	function subscribeSavedCredentialState(listener: (state: SavedCredentialState) => void) {
+		listeners.add(listener);
+		listener(buildState());
+		return () => {
+			listeners.delete(listener);
+		};
 	}
 
 	return {
@@ -185,4 +202,29 @@ export function createWebAuthnSecureCredentialStore(
 		prepareSave,
 		prepareUnlock
 	};
+}
+
+export class WebAuthnSecureCredentialStore implements SecureCredentialStore {
+	private impl: SecureCredentialStore;
+	constructor(storage?: Storage | null) {
+		this.impl = createWebAuthnSecureCredentialStore(storage);
+	}
+	subscribeSavedCredentialState(listener: (state: SavedCredentialState) => void) {
+		return this.impl.subscribeSavedCredentialState(listener);
+	}
+	saveCredential(account: string, password: string, unlockToken: string) {
+		return this.impl.saveCredential(account, password, unlockToken);
+	}
+	unlockCredential(unlockToken: string) {
+		return this.impl.unlockCredential(unlockToken);
+	}
+	clearCredential() {
+		return this.impl.clearCredential();
+	}
+	prepareSave() {
+		return this.impl.prepareSave();
+	}
+	prepareUnlock() {
+		return this.impl.prepareUnlock();
+	}
 }

@@ -1,12 +1,38 @@
-import type { AppState } from '$lib/models/app-state';
+import type {
+	AppState,
+	UserPreferences,
+	ThemeMode,
+	TimetableLayoutMode,
+	PaletteMode,
+	CapsuleCornerStyle
+} from '$lib/models/app-state';
 import type { Course } from '@chronos/core';
 import type { Timetable } from '$lib/models/timetable';
-import type { PreferencesRepository } from '$lib/domain/interfaces/preferences-repository';
-import type { TimetableRepository } from '$lib/domain/interfaces/timetable-repository';
 import { assembleAppState, resolveCurrentTimetableId } from './app-state-assembler';
 import { createSettingsRepo, type SettingsRepo } from './settings-repo';
 import * as timetableLocal from './timetable-local';
 import * as wallpaperLocal from './wallpaper-local';
+
+export interface TimetableRepository {
+	subscribeAppState(listener: (state: AppState) => void): () => void;
+	getAppStateSnapshot(): Promise<AppState>;
+	getTimetable(id: string): Promise<Timetable | null>;
+	saveTimetable(timetable: Timetable): Promise<void>;
+	saveCourse(timetableId: string, course: Course): Promise<void>;
+	deleteCourse(courseId: string): Promise<void>;
+	deleteTimetable(id: string): Promise<void>;
+}
+
+export interface PreferencesRepository {
+	update(patch: Partial<UserPreferences>): Promise<void>;
+	setCurrentTimetableId(id: string | null): Promise<void>;
+	setWallpaper(wallpaper: Blob | null): Promise<void>;
+	setThemeMode(mode: ThemeMode): Promise<void>;
+	setTimetableLayoutMode(mode: TimetableLayoutMode): Promise<void>;
+	setPaletteMode(mode: PaletteMode): Promise<void>;
+	setCapsuleCornerStyle(style: CapsuleCornerStyle): Promise<void>;
+	setHapticFeedbackEnabled(enabled: boolean): Promise<void>;
+}
 
 let wallpaperDisplayUrl: string | null = null;
 let refreshAppState: (() => Promise<void>) | null = null;
