@@ -126,6 +126,10 @@ describe('cqutPlugin', () => {
 		expect(timetable.courses[0]?.name).toBe('高等数学');
 		expect(timetable.customMetadata?.['source-cqut']).toBeDefined();
 
+		await engine.events.emit('import:after', {
+			sourceId: 'cqut-online',
+			timetable
+		});
 		expect(notifications.length).toBeGreaterThan(0);
 		handle.dispose();
 		expect(engine.slots.getSource('cqut-online')).toBeUndefined();
@@ -171,5 +175,45 @@ describe('cqutPlugin', () => {
 			| CqutCampusScheduleMetadata
 			| undefined;
 		expect(metadata?.studentId).toBe('2024001');
+	});
+
+	it('parses CQUT server online schedule payload format', () => {
+		const timetable = parseCqutScheduleData(
+			{
+				campusId: 'huaxi',
+				campusPeriodTimes: {
+					huaxi: [{ index: 1, startTime: '08:30', endTime: '09:15' }]
+				},
+				payload: {
+					yearTerm: '2025-2026-2',
+					weekNum: '1',
+					termStartDate: null,
+					weekDayList: [{ weekDay: '1', weekDate: '03/02' }],
+					eventList: [
+						{
+							eventName: '高等数学A',
+							memberName: '王教授',
+							address: '花溪校区 第三教学楼301',
+							weekDay: '1',
+							sessionStart: '1',
+							sessionLast: '2',
+							weekList: ['1', '2', '3', '4']
+						}
+					]
+				}
+			},
+			'2024002'
+		);
+
+		expect(timetable.name).toBe('2024002的课表');
+		expect(timetable.academicConfig.termStartDate).toBe('2026-03-02');
+		expect(timetable.courses.length).toBe(1);
+		expect(timetable.courses[0]?.name).toBe('高等数学A');
+		expect(timetable.courses[0]?.teacher).toBe('王教授');
+		expect(timetable.courses[0]?.location).toBe('花溪校区 第三教学楼301');
+		expect(timetable.courses[0]?.dayOfWeek).toBe(1);
+		expect(timetable.courses[0]?.startPeriod).toBe(1);
+		expect(timetable.courses[0]?.endPeriod).toBe(2);
+		expect(timetable.courses[0]?.weeks).toEqual([1, 2, 3, 4]);
 	});
 });

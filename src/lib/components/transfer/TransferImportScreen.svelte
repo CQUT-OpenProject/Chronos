@@ -11,7 +11,7 @@
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
-	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import { snackbar, dismissSnackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { onlineImportEnabled } from '$lib/config/features';
 
 	const importSegments = [
@@ -48,8 +48,12 @@
 		try {
 			const ok = await transfer.previewFromClipboard();
 			trackEvent(ok ? 'import_share_preview_success' : 'import_share_preview_fail');
-			if (ok) onContinue();
-			else notifyTransferMessages();
+			if (ok) {
+				dismissSnackbar();
+				onContinue();
+			} else {
+				notifyTransferMessages();
+			}
 		} finally {
 			loading = false;
 		}
@@ -61,8 +65,12 @@
 		try {
 			const ok = await transfer.previewOnline();
 			trackEvent(ok ? 'import_online_preview_success' : 'import_online_preview_fail');
-			if (ok) onContinue();
-			else notifyTransferMessages();
+			if (ok) {
+				dismissSnackbar();
+				onContinue();
+			} else {
+				notifyTransferMessages();
+			}
 		} finally {
 			loading = false;
 		}
@@ -72,8 +80,12 @@
 		loading = true;
 		try {
 			const ok = await transfer.previewWithSavedCredential();
-			if (ok) onContinue();
-			else notifyTransferMessages();
+			if (ok) {
+				dismissSnackbar();
+				onContinue();
+			} else {
+				notifyTransferMessages();
+			}
 		} finally {
 			loading = false;
 		}

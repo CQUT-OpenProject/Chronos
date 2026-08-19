@@ -13,7 +13,7 @@ import {
 } from './preview-persistence';
 import { getAppEngine } from '$lib/services/app-engine';
 import { ChronosTimetableShareLinkCodec } from '$lib/parsers/share-link/chronos-timetable-share-link-codec';
-import { parseHtmlTimetable } from '@chronos/plugins';
+import { parseHtmlTimetable, parseCqutScheduleData } from '@chronos/plugins';
 import {
 	type SecureCredentialStore,
 	WebAuthnSecureCredentialStore
@@ -98,27 +98,43 @@ export function createTransferImportCoordinator(deps: TransferImportCoordinatorD
 			const jsonSource = getEngine().slots.getSource('share-json');
 			if (jsonSource) {
 				try {
-					const timetable = await jsonSource.fetchSchedule({ fileContent: trimmed });
-					return { ok: true, preview: timetable as unknown as Timetable, source: 'SHARE_LINK' };
+					const timetable = (await jsonSource.fetchSchedule({
+						fileContent: trimmed
+					})) as unknown as Timetable;
+					if (timetable && timetable.courses?.length > 0) {
+						return { ok: true, preview: timetable, source: 'SHARE_LINK' };
+					}
 				} catch {
-					// continue
+					// Fall through to error
 				}
 			}
 
-			return { ok: false, errorMessage: result.error.message || '无效的课表分享内容' };
+			return { ok: false, errorMessage: result.error.message };
 		} catch {
 			return { ok: false, errorMessage: '无法读取剪贴板，请检查浏览器权限' };
 		}
 	}
 
 	async function previewFromHtmlFile(file: File): Promise<PreviewOutcome> {
+		const htmlText = await file.text();
 		try {
-			const text = await file.text();
-			const timetable = parseHtmlTimetable(text);
-			return { ok: true, preview: timetable as unknown as Timetable, source: 'HTML' };
-		} catch (err) {
-			const msg = err instanceof Error ? err.message : '解析 HTML 课表失败';
-			return { ok: false, errorMessage: msg };
+			const htmlSource = getEngine().slots.getSource('html-parser');
+			let timetable: Timetable;
+			if (htmlSource) {
+				timetable = (await htmlSource.fetchSchedule({
+					fileContent: htmlText
+				})) as unknown as Timetable;
+			} else {
+				timetable = parseHtmlTimetable(htmlText) as unknown as Timetable;
+			}
+
+			if (!timetable || timetable.courses.length === 0) {
+				return { ok: false, errorMessage: 'HTML 文件中未识别到任何有效课程' };
+			}
+			return { ok: true, preview: timetable, source: 'HTML' };
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'HTML 文件解析失败，请确认文件格式';
+			return { ok: false, errorMessage: message };
 		}
 	}
 
@@ -177,18 +193,35 @@ export function createTransferImportCoordinator(deps: TransferImportCoordinatorD
 		}
 
 		try {
-			const res = await fetch('/api/cqut/preview', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ account: trimmedAccount, password })
-			});
-			const data = (await res.json()) as {
-				ok: boolean;
-				value?: Timetable;
-				error?: { message: string };
-			};
-			if (!data.ok || !data.value) {
-				return { ok: false, errorMessage: data.error?.message || '获取课表失败，请检查账号密码' };
+			const source = getEngine().slots.getSource('cqut-online');
+			let timetable: Timetable;
+
+			if (source) {
+				timetable = (await source.fetchSchedule({
+					username: trimmedAccount,
+					password
+				})) as unknown as Timetable;
+			} else {
+				const res = await fetch('/api/cqut/preview', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ account: trimmedAccount, password })
+				});
+				const data = (await res.json()) as {
+					ok: boolean;
+					payload?: unknown;
+					value?: Timetable;
+					error?: { message: string };
+				};
+				if (!data.ok) {
+					return { ok: false, errorMessage: data.error?.message || '获取课表失败，请检查账号密码' };
+				}
+				timetable = (data.value ??
+					parseCqutScheduleData(data.payload as never, trimmedAccount)) as Timetable;
+			}
+
+			if (!timetable || timetable.courses.length === 0) {
+				return { ok: false, errorMessage: '未能获取到有效课程数据，请检查学号与密码' };
 			}
 
 			const statusMessage = await saveCredentialsIfNeeded(
@@ -200,12 +233,13 @@ export function createTransferImportCoordinator(deps: TransferImportCoordinatorD
 
 			return {
 				ok: true,
-				preview: data.value,
+				preview: timetable,
 				source: 'ONLINE',
 				statusMessage: statusMessage ?? undefined
 			};
-		} catch {
-			return { ok: false, errorMessage: '连接教务系统失败，请检查网络连接' };
+		} catch (error) {
+			const message = error instanceof Error ? error.message : '连接教务系统失败，请检查网络连接';
+			return { ok: false, errorMessage: message };
 		}
 	}
 

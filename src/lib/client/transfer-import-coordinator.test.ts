@@ -180,4 +180,69 @@ describe('createTransferImportCoordinator', () => {
 		expect(result).toEqual({ ok: true, statusMessage: '已复制课表链接' });
 		expect(writeText).toHaveBeenCalledWith(clipboardText);
 	});
+
+	it('previews online schedule via cqut-online source slot', async () => {
+		const mockTimetable = createTimetable({
+			id: 'cqut-1',
+			name: '在线课表',
+			courses: [
+				createCourse({
+					id: 'c1',
+					name: '高等数学',
+					teacher: '张老师',
+					location: '一教101',
+					dayOfWeek: 1,
+					startPeriod: 1,
+					endPeriod: 2
+				})
+			],
+			createdAt: 0,
+			updatedAt: 0,
+			importMetadata: {
+				source: TimetableImportSource.ONLINE_EDU
+			},
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: []
+			},
+			viewPrefs: {
+				showSaturday: true,
+				showSunday: true,
+				showNonCurrentWeekCourses: false
+			}
+		});
+
+		const fetchScheduleMock = vi.fn().mockResolvedValue(mockTimetable);
+		const mockEngine = {
+			slots: {
+				getSource: (id: string) =>
+					id === 'cqut-online' ? { fetchSchedule: fetchScheduleMock } : undefined
+			}
+		} as unknown as ChronosEngine;
+
+		const coordinator = createTransferImportCoordinator({
+			engine: mockEngine
+		});
+
+		const result = await coordinator.previewOnline('123456', 'password', false, {
+			account: '123456',
+			capabilitiesReady: true,
+			hasSavedCredential: false,
+			protectionAvailable: false,
+			savedMode: null
+		});
+
+		expect(result).toEqual({
+			ok: true,
+			preview: mockTimetable,
+			source: 'ONLINE',
+			statusMessage: undefined
+		});
+		expect(fetchScheduleMock).toHaveBeenCalledWith({
+			username: '123456',
+			password: 'password'
+		});
+	});
 });
