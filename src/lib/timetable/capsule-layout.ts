@@ -310,9 +310,16 @@ interface CorneredItem {
  * expanded subcolumns never misalign with adjacent days.
  */
 export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): void {
-	if (items.length === 0) return;
+	const len = items.length;
+	if (len <= 1) {
+		if (len === 1) {
+			items[0]!.corners = ALL_CORNERS_ROUNDED;
+		}
+		return;
+	}
 
-	for (const item of items) {
+	for (let i = 0; i < len; i += 1) {
+		const item = items[i]!;
 		const { leftPercent: left, widthPercent: width, startPeriod, endPeriod } = item.geometry;
 		const right = left + width;
 		let topExposed = true;
@@ -320,8 +327,9 @@ export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): 
 		let leftExposed = true;
 		let rightExposed = true;
 
-		for (const other of items) {
-			if (other === item) continue;
+		for (let j = 0; j < len; j += 1) {
+			if (i === j) continue;
+			const other = items[j]!;
 			const {
 				leftPercent: otherLeft,
 				widthPercent: otherWidth,
