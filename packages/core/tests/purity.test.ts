@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vite-plus/test';
 import * as Core from '../src/index';
 
 describe('@chronos/core ECMAScript Purity', () => {
-	it('exports all expected core domain, engine, and types modules', () => {
+	it('exports all expected core domain, engine, schema, and runtime modules', () => {
 		expect(Core.createCourse).toBeTypeOf('function');
 		expect(Core.createTimetable).toBeTypeOf('function');
 		expect(Core.AcademicCalendarService).toBeTypeOf('function');
@@ -14,6 +14,12 @@ describe('@chronos/core ECMAScript Purity', () => {
 		expect(Core.EventBus).toBeTypeOf('function');
 		expect(Core.Pipeline).toBeTypeOf('function');
 		expect(Core.SlotRegistry).toBeTypeOf('function');
+		expect(Core.HierarchicalSlotRegistry).toBeTypeOf('function');
+		expect(Core.ServiceContainer).toBeTypeOf('function');
+		expect(Core.createServiceIdentifier).toBeTypeOf('function');
+		expect(Core.defineSchema).toBeTypeOf('function');
+		expect(Core.validateSchema).toBeTypeOf('function');
+		expect(Core.extractDefaultValues).toBeTypeOf('function');
 		expect(Core.ThemeRegistry).toBeTypeOf('function');
 		expect(Core.BadgeManager).toBeTypeOf('function');
 		expect(Core.ScopedContext).toBeTypeOf('function');

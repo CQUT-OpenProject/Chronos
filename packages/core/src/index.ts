@@ -12,13 +12,27 @@ export * from './engine/display-models';
 export * from './engine/capsule-layout';
 export * from './engine/palette';
 
+// Schema
+export * from './schema/schema';
+export * from './schema/validator';
+
 // Types
-export * from './types/env';
+export * from './types/services';
+export * from './types/slots';
+export type {
+	ThemeContribution,
+	CourseBadgeContribution,
+	CourseActionContribution,
+	TimetableSourceAdapter,
+	TimetableExporterAdapter
+} from './types/contributions';
+export type { PlatformType, ChronosEnv } from './types/env';
 export * from './types/context';
-export * from './types/contributions';
 export * from './types/marketplace';
 
 // Runtime
+export * from './runtime/service-container';
+export * from './runtime/hierarchical-slot-registry';
 export * from './runtime/event-bus';
 export * from './runtime/pipeline';
 export * from './runtime/slot-registry';

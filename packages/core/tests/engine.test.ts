@@ -6,6 +6,8 @@ import { createCourse } from '../src/domain/course';
 import { DEFAULT_USER_PREFERENCES } from '../src/domain/preferences';
 import type { ChronosEnv, StorageChangeEvent } from '../src/types/env';
 import type { ChronosContext, ChronosPlugin } from '../src/types/context';
+import { defineSchema } from '../src/schema/schema';
+import { IHttpService } from '../src/types/services';
 
 function createMockEnv() {
 	const timetables = new Map<string, Timetable>();
@@ -163,7 +165,7 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(onThemeChanged).toHaveBeenCalledWith({ themeId: 'catppuccin' });
 	});
 
-	it('loads and unloads plugins with lifecycle hooks', async () => {
+	it('loads and unloads plugins with ServiceContainer and HierarchicalSlotRegistry', async () => {
 		const { env } = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
@@ -171,23 +173,36 @@ describe('ChronosEngine in @chronos/core', () => {
 		const applyFn = vi.fn();
 		const disposeFn = vi.fn();
 
-		const plugin: ChronosPlugin = {
+		interface PluginConfig {
+			syncOnLaunch: boolean;
+		}
+
+		const plugin: ChronosPlugin<PluginConfig> = {
 			id: 'sample-plugin',
-			name: '测试插件',
+			name: 'Sample Plugin',
 			version: '1.0.0',
-			apply: (ctx: ChronosContext) => {
+			configSchema: defineSchema<PluginConfig>({
+				syncOnLaunch: {
+					type: 'boolean',
+					title: 'Sync on Launch',
+					default: true
+				}
+			}),
+			defaultConfig: {
+				syncOnLaunch: true
+			},
+			apply: (ctx: ChronosContext<PluginConfig>) => {
 				applyFn(ctx);
-				ctx.registerTheme({
-					id: 'sample-theme',
-					name: 'Sample Theme',
-					getTokens: () => ({
-						surface: '#fff',
-						onSurface: '#000',
-						primary: '#123',
-						onPrimary: '#fff',
-						surfaceVariant: '#eee',
-						outline: '#ccc'
-					})
+
+				// Capability service is accessible
+				const http = ctx.service(IHttpService);
+				expect(http).toBeDefined();
+
+				// Register hierarchical slot
+				ctx.registerSlot('import.source.tab', {
+					id: 'sample-import-tab',
+					title: 'Sample Source',
+					executeImport: vi.fn()
 				});
 			},
 			dispose: disposeFn
@@ -195,11 +210,15 @@ describe('ChronosEngine in @chronos/core', () => {
 
 		await engine.loadPlugin(plugin);
 		expect(applyFn).toHaveBeenCalled();
-		expect(engine.themes.getTheme('sample-theme')).toBeDefined();
+		expect(engine.slots.get('import.source.tab').length).toBe(1);
+
+		// Retrieve plugin context
+		const ctx = engine.getPluginContext('sample-plugin');
+		expect(ctx.config.syncOnLaunch).toBe(true);
 
 		await engine.unloadPlugin('sample-plugin');
 		expect(disposeFn).toHaveBeenCalled();
-		expect(engine.themes.getTheme('sample-theme')).toBeUndefined();
+		expect(engine.slots.get('import.source.tab').length).toBe(0);
 	});
 
 	it('disposes all subsystems on engine.dispose()', async () => {

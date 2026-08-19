@@ -1,44 +1,22 @@
 import type { Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
+import type {
+	Disposable,
+	HttpRequestOptions,
+	HttpResponse,
+	StorageChangeEvent,
+	VaultSecretOptions
+} from './services';
+
+export type {
+	Disposable,
+	HttpRequestOptions,
+	HttpResponse,
+	StorageChangeEvent,
+	VaultSecretOptions
+};
 
 export type PlatformType = 'web' | 'ios' | 'android' | 'node';
-
-export interface Disposable {
-	dispose(): void;
-}
-
-export interface HttpRequestOptions {
-	method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD';
-	headers?: Record<string, string>;
-	body?: string | Uint8Array;
-	/** Whether the host should maintain session cookies (via CookieJar on web proxy, or native network stack) */
-	useSession?: boolean;
-	/** Session identifier (requests sharing sessionId share the cookie context) */
-	sessionId?: string;
-	/** Whether the host should bypass CORS (transparent proxy on web, direct connection on native) */
-	bypassCors?: boolean;
-	timeoutMs?: number;
-}
-
-export interface HttpResponse {
-	status: number;
-	statusText: string;
-	headers: Record<string, string>;
-	ok: boolean;
-	text(): Promise<string>;
-	json<T = unknown>(): Promise<T>;
-	bytes(): Promise<Uint8Array>;
-}
-
-export interface StorageChangeEvent {
-	type: 'timetable' | 'preferences' | 'pluginData';
-	key: string;
-}
-
-export interface VaultSecretOptions {
-	/** Whether biometric authentication or explicit user gesture is required */
-	requireBiometrics?: boolean;
-}
 
 export interface ChronosEnv {
 	readonly platform: PlatformType;

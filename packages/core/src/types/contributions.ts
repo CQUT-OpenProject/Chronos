@@ -1,23 +1,11 @@
 import type { Course } from '../domain/course';
 import type { Timetable } from '../domain/timetable';
 import type { ChronosContext, LocalizedText } from './context';
+import type { DesignTokens, CoursePaint, CourseBadge, ExportResult } from './slots';
+
+export type { DesignTokens, CoursePaint, CourseBadge, ExportResult } from './slots';
 
 // 1. Theme Contribution
-export interface DesignTokens {
-	surface: string;
-	onSurface: string;
-	primary: string;
-	onPrimary: string;
-	surfaceVariant: string;
-	outline: string;
-	[customToken: string]: string;
-}
-
-export interface CoursePaint {
-	background: string;
-	foreground: string;
-}
-
 export interface ThemeContribution {
 	readonly id: string;
 	readonly name: LocalizedText;
@@ -31,12 +19,6 @@ export interface ThemeContribution {
 }
 
 // 2. Course Badge Contribution
-export interface CourseBadge {
-	id: string;
-	text: string;
-	colorScheme?: 'primary' | 'secondary' | 'error' | 'warning' | 'tertiary';
-}
-
 export interface CourseBadgeContribution {
 	readonly id: string;
 	/** Synchronously generate badge (in-process plugins) */
@@ -66,12 +48,6 @@ export interface TimetableSourceAdapter {
 }
 
 // 5. Timetable Exporter Adapter
-export interface ExportResult {
-	filename: string;
-	mimeType: string;
-	content: string | Uint8Array;
-}
-
 export interface TimetableExporterAdapter {
 	readonly id: string;
 	readonly title: LocalizedText;

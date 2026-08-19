@@ -1,8 +1,11 @@
 import type { Course } from '../domain/course';
 import type { AcademicConfig, Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
-import type { ChronosEnv, Disposable } from '../types/env';
+import type { ChronosEnv } from '../types/env';
+import type { Disposable, ServiceIdentifier } from '../types/services';
+import { IStorageService } from '../types/services';
 import type { ChronosContext, ChronosEvents, ExportTransformHook } from '../types/context';
+import type { StandardSlotMap, ThemeSlotContribution } from '../types/slots';
 import type {
 	CourseActionContribution,
 	CourseBadgeContribution,
@@ -12,17 +15,19 @@ import type {
 } from '../types/contributions';
 import type { EventBus } from './event-bus';
 import type { Pipeline } from './pipeline';
-import type { SlotRegistry } from './slot-registry';
+import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
+import type { ServiceContainer } from './service-container';
 import type { ThemeRegistry } from './theme-registry';
 import type { BadgeManager } from './badge-manager';
 
 export interface EngineContextHost {
-	readonly env: ChronosEnv;
+	readonly services: ServiceContainer;
 	readonly events: EventBus;
 	readonly pipeline: Pipeline;
-	readonly slots: SlotRegistry;
-	readonly themes: ThemeRegistry;
-	readonly badges: BadgeManager;
+	readonly slots: HierarchicalSlotRegistry;
+	readonly themes?: ThemeRegistry;
+	readonly badges?: BadgeManager;
+	readonly env: ChronosEnv;
 	readonly locale: string;
 	t(key: string, params?: Record<string, unknown>): string;
 	readonly state: {
@@ -46,30 +51,60 @@ export interface EngineContextHost {
 	};
 }
 
-export class ScopedContext implements ChronosContext, Disposable {
-	readonly env: Readonly<ChronosEnv>;
+export class ScopedContext<Config extends object = Record<string, unknown>>
+	implements ChronosContext<Config>, Disposable
+{
+	readonly subscriptions: Disposable[] = [];
+	private _config: Config;
+
 	readonly storage: {
 		get<T = unknown>(key: string): Promise<T | null>;
 		set<T = unknown>(key: string, value: T): Promise<void>;
 		delete(key: string): Promise<void>;
 	};
+
 	readonly i18n: {
 		readonly locale: string;
 		t(key: string, params?: Record<string, unknown>): string;
 	};
-	readonly subscriptions: Disposable[] = [];
 
 	constructor(
 		readonly pluginId: string,
-		private host: EngineContextHost
+		private host: EngineContextHost,
+		initialConfig?: Config
 	) {
-		this.env = host.env;
+		this._config = (initialConfig ?? {}) as Config;
 
 		this.storage = {
-			get: <T = unknown>(key: string) => this.host.env.storage.getPluginData<T>(this.pluginId, key),
-			set: <T = unknown>(key: string, value: T) =>
-				this.host.env.storage.setPluginData<T>(this.pluginId, key, value),
-			delete: (key: string) => this.host.env.storage.deletePluginData(this.pluginId, key)
+			get: <T = unknown>(key: string) => {
+				if (this.host.services.has(IStorageService)) {
+					return this.host.services.get(IStorageService).getPluginData<T>(this.pluginId, key);
+				}
+				if (this.host.env?.storage) {
+					return this.host.env.storage.getPluginData<T>(this.pluginId, key);
+				}
+				return Promise.resolve(null);
+			},
+			set: <T = unknown>(key: string, value: T) => {
+				if (this.host.services.has(IStorageService)) {
+					return this.host.services
+						.get(IStorageService)
+						.setPluginData<T>(this.pluginId, key, value);
+				}
+				if (this.host.env?.storage) {
+					return this.host.env.storage.setPluginData<T>(this.pluginId, key, value);
+				}
+				return Promise.resolve();
+			},
+			delete: (key: string) => {
+				if (this.host.services.has(IStorageService)) {
+					return this.host.services.get(IStorageService).deletePluginData(this.pluginId, key);
+				}
+				if (this.host.env?.storage) {
+					return this.host.env.storage.deletePluginData(this.pluginId, key);
+				}
+				return Promise.resolve();
+			}
 		};
 
 		this.i18n = {
@@ -78,6 +113,30 @@ export class ScopedContext implements ChronosContext, Disposable {
 			},
 			t: (key: string, params?: Record<string, unknown>) => host.t(key, params)
 		};
+	}
+
+	get env(): Readonly<ChronosEnv> {
+		return this.host.env;
+	}
+
+	get config(): Readonly<Config> {
+		return this._config;
+	}
+
+	async updateConfig(patch: Partial<Config>): Promise<void> {
+		this._config = {
+			...this._config,
+			...patch
+		};
+		await this.storage.set('__config__', this._config);
+		void this.host.events.emit('config:changed', {
+			pluginId: this.pluginId,
+			config: this._config as Record<string, unknown>
+		});
+	}
+
+	service<T>(identifier: ServiceIdentifier<T>): T {
+		return this.host.services.get(identifier);
 	}
 
 	get state() {
@@ -101,6 +160,17 @@ export class ScopedContext implements ChronosContext, Disposable {
 		} as T;
 	}
 
+	addDisposable(disposable: Disposable): void {
+		this.subscriptions.push(disposable);
+	}
+
+	registerSlot<K extends keyof StandardSlotMap>(
+		slotName: K,
+		contribution: StandardSlotMap[K] & { id: string }
+	): Disposable {
+		return this.track(this.host.slots.register(slotName, contribution));
+	}
+
 	on<E extends keyof ChronosEvents>(
 		event: E,
 		handler: (payload: ChronosEvents[E]) => void | Promise<void>
@@ -108,6 +178,11 @@ export class ScopedContext implements ChronosContext, Disposable {
 		return this.track(this.host.events.on(event, handler));
 	}
 
+	registerPipelineHook(hook: (context: unknown) => void | Promise<void>): Disposable {
+		return this.track(this.host.pipeline.registerExportTransform(hook as ExportTransformHook));
+	}
+
+	// === Backward Compatibility Transition Adapters ===
 	registerExportTransform(hook: ExportTransformHook): Disposable {
 		return this.track(this.host.pipeline.registerExportTransform(hook));
 	}
@@ -125,19 +200,39 @@ export class ScopedContext implements ChronosContext, Disposable {
 	}
 
 	registerCourseBadge(badge: CourseBadgeContribution): Disposable {
-		return this.track(this.host.badges.registerCourseBadge(badge));
+		if (this.host.badges) {
+			return this.track(this.host.badges.registerCourseBadge(badge));
+		}
+		return this.track(
+			this.host.slots.register('timetable.cell.badge', {
+				id: badge.id,
+				getBadge: (course) => (badge.getBadge ? badge.getBadge(course) : null)
+			})
+		);
 	}
 
-	registerTheme(theme: ThemeContribution): Disposable {
-		return this.track(this.host.themes.registerTheme(theme));
+	registerTheme(theme: ThemeContribution | ThemeSlotContribution): Disposable {
+		if (this.host.themes && 'supportsDynamicColor' in theme) {
+			return this.track(this.host.themes.registerTheme(theme as ThemeContribution));
+		}
+		return this.track(
+			this.host.slots.register('theme.definition', theme as ThemeSlotContribution & { id: string })
+		);
 	}
 
 	dispose(): void {
-		for (const subscription of this.subscriptions.slice()) {
-			try {
-				subscription.dispose();
-			} catch (error) {
-				console.error(`[ScopedContext] Error disposing subscription in "${this.pluginId}":`, error);
+		// Revoke all registrations and effects in reverse order (LIFO)
+		for (let i = this.subscriptions.length - 1; i >= 0; i--) {
+			const sub = this.subscriptions[i];
+			if (sub) {
+				try {
+					sub.dispose();
+				} catch (error) {
+					console.error(
+						`[ScopedContext] Error disposing subscription in "${this.pluginId}":`,
+						error
+					);
+				}
 			}
 		}
 		this.subscriptions.length = 0;
