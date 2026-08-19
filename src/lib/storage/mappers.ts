@@ -14,10 +14,10 @@ export function courseToRow(course: Course, timetableId: string): CourseRow {
 		dayOfWeek: course.dayOfWeek,
 		startPeriod: course.startPeriod,
 		endPeriod: course.endPeriod,
-		color: course.color,
-		textColor: course.textColor,
+		color: course.color ?? '',
+		textColor: course.textColor ?? '',
 		weeksCsv: course.weeks.join(','),
-		remark: course.remark
+		remark: course.remark ?? ''
 	};
 }
 

@@ -177,7 +177,7 @@ function normalizeTimetable(timetable: Timetable): Timetable {
 				name: normalizedCourseName(course.name),
 				teacher: course.teacher.trim(),
 				location: course.location.trim(),
-				remark: course.remark.trim()
+				remark: course.remark?.trim() ?? ''
 			}))
 		)
 	};
@@ -215,7 +215,8 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 	if (endWeek > MAX_WEEK) {
 		throw new ShareBinaryDecodeError(`week out of range: ${endWeek}`);
 	}
-	const hasRemarks = normalized.courses.some((course) => course.remark.length > 0);
+	const hasRemarks = normalized.courses.some((course) => (course.remark?.length ?? 0) > 0);
+
 	const firstWeeks = normalized.courses[0]?.weeks ?? [];
 	const globalWeekMask =
 		normalized.courses.length > 0 &&

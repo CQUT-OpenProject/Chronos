@@ -25,7 +25,8 @@ describe('Domain Models in @chronos/core', () => {
 
 		expect(course.id).toBe('c1');
 		expect(course.name).toBe('高等数学');
-		expect(course.textColor).toBe('#21005D');
+		expect(course.color).toBe('#EADDFF');
+		expect(course.textColor).toBeUndefined();
 		expect(course.weeks).toEqual([]);
 		expect(course.remark).toBe('');
 		expect(COURSE_REMARK_MAX_LENGTH).toBe(200);

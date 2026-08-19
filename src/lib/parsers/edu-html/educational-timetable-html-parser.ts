@@ -101,7 +101,7 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 
 		return [...cell.children]
 			.filter((child) => child.classList.contains('timetable_con'))
-			.map((block, blockIndex) => {
+			.map((block, blockIndex): Course | null => {
 				const rawTitle = normalizeWhitespace(block.querySelector('.title')?.textContent ?? '');
 				if (!rawTitle) return null;
 
@@ -139,7 +139,7 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 					textColor: foreground,
 					weeks: parseWeeks(metadata.get('节/周') ?? ''),
 					remark: ''
-				} satisfies Course;
+				};
 			})
 			.filter((course): course is Course => course != null);
 	}

@@ -18,10 +18,10 @@ export function courseToDraft(course: Course): CourseDraft {
 		dayOfWeek: course.dayOfWeek,
 		startPeriod: course.startPeriod,
 		endPeriod: course.endPeriod,
-		color: course.color,
-		textColor: course.textColor,
+		color: course.color ?? '',
+		textColor: course.textColor ?? '',
 		weeks: [...course.weeks],
-		remark: course.remark
+		remark: course.remark ?? ''
 	};
 }
 
