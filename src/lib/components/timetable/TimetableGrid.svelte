@@ -103,32 +103,6 @@
 		return `${bodyViewportHeight / gridModel.displayedPeriodCount}px`;
 	});
 
-	let gridHeaderHeight = $state(0);
-
-	const gridHeaderMeasureAttach: Attachment<HTMLElement> = (node) => {
-		const update = () => {
-			gridHeaderHeight = node.offsetHeight;
-		};
-		update();
-		const observer = new ResizeObserver(update);
-		observer.observe(node);
-		return () => observer.disconnect();
-	};
-
-	const wallpaperOverlayLayers = $derived.by(() => {
-		const headerHeight = gridHeaderHeight > 0 ? gridHeaderHeight : 60;
-		const headerBand =
-			'linear-gradient(var(--wallpaper-tint-sidebar), var(--wallpaper-tint-sidebar))';
-		const bodyBand =
-			'linear-gradient(90deg, var(--wallpaper-tint-sidebar) 0, var(--wallpaper-tint-sidebar) var(--sidebar-width), var(--wallpaper-tint-grid) var(--sidebar-width), var(--wallpaper-tint-grid) 100%)';
-		return {
-			backgroundImage: `${headerBand}, ${bodyBand}`,
-			backgroundSize: `100% ${headerHeight}px, 100% calc(100% - ${headerHeight}px)`,
-			backgroundPosition: 'top, bottom',
-			backgroundRepeat: 'no-repeat'
-		};
-	});
-
 	function scrollToCurrentPeriod(smooth = false): boolean {
 		if (isFitLayout || !isCurrentWeek || !scrollContainer || bodyViewportHeight <= 0) {
 			return false;
@@ -312,112 +286,105 @@
 	class="relative flex h-full w-full flex-col {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"
 >
-	{#if hasWallpaper}
+	<div
+		class="flex shrink-0 items-center py-2 {hasWallpaper
+			? 'bg-[var(--wallpaper-tint-sidebar)]'
+			: 'bg-surface'}"
+	>
 		<div
-			class="pointer-events-none absolute inset-0 z-0"
-			style:background-image={wallpaperOverlayLayers.backgroundImage}
-			style:background-size={wallpaperOverlayLayers.backgroundSize}
-			style:background-position={wallpaperOverlayLayers.backgroundPosition}
-			style:background-repeat={wallpaperOverlayLayers.backgroundRepeat}
-			aria-hidden="true"
-		></div>
-	{/if}
+			class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
+		>
+			<span>{gridModel.monthLabel}</span>
+			<span>月</span>
+		</div>
+		<div class="flex min-w-0 flex-1">
+			{#each gridModel.visibleDays as day (day.dayOfWeek)}
+				<div class="flex min-w-0 flex-1 flex-col items-center">
+					<span class="m3-body-small text-on-surface-variant"
+						>{timetableDayShortLabel(day.dayOfWeek)}</span
+					>
+					<div
+						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
+							? 'bg-brand text-on-primary'
+							: 'text-on-surface'}"
+					>
+						{dayOfMonth(day.date)}
+					</div>
+				</div>
+			{/each}
+		</div>
+	</div>
 
-	<div class="relative z-10 flex h-full min-h-0 w-full flex-col">
-		<div class="flex shrink-0 items-center py-2" {@attach gridHeaderMeasureAttach}>
-			<div
-				class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
+	<div
+		{@attach bodyScrollAttach}
+		class="min-h-0 flex-1 {isFitLayout ? 'overflow-hidden' : 'overflow-y-auto'} {hasWallpaper
+			? 'timetable-wallpaper-body'
+			: 'bg-surface'}"
+		role="region"
+		aria-label="本周课程表"
+	>
+		<div class="flex" style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})">
+			<aside
+				aria-label="节次与时间"
+				class="shrink-0"
+				style:width="var(--sidebar-width)"
+				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
-				<span>{gridModel.monthLabel}</span>
-				<span>月</span>
-			</div>
-			<div class="flex min-w-0 flex-1">
-				{#each gridModel.visibleDays as day (day.dayOfWeek)}
-					<div class="flex min-w-0 flex-1 flex-col items-center">
-						<span class="m3-body-small text-on-surface-variant"
-							>{timetableDayShortLabel(day.dayOfWeek)}</span
-						>
+				{#each gridModel.periods as period (period.index)}
+					{@const isActive = period.index === currentPeriodIndex}
+					<div
+						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
+					>
 						<div
-							class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
-								? 'bg-brand text-on-primary'
-								: 'text-on-surface'}"
+							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
+								? 'period-active'
+								: ''}"
 						>
-							{dayOfMonth(day.date)}
+							<span class="m3-body-medium font-bold">
+								{period.index}
+							</span>
+							<span
+								class="m3-caption mt-1 leading-tight {isActive ? '' : 'text-on-surface-variant'}"
+							>
+								{period.startTime}<br />{period.endTime}
+							</span>
 						</div>
 					</div>
 				{/each}
-			</div>
-		</div>
+			</aside>
 
-		<div
-			{@attach bodyScrollAttach}
-			class="min-h-0 flex-1 {isFitLayout ? 'overflow-hidden' : 'overflow-y-auto'}"
-			role="region"
-			aria-label="本周课程表"
-		>
-			<div class="flex" style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})">
-				<aside
-					aria-label="节次与时间"
-					class="shrink-0"
-					style:width="var(--sidebar-width)"
-					style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
-				>
-					{#each gridModel.periods as period (period.index)}
-						{@const isActive = period.index === currentPeriodIndex}
-						<div
-							class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
-						>
-							<div
-								class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
-									? 'period-active'
-									: ''}"
+			<div
+				{@attach gridBodyWidthAttach}
+				class="relative min-w-0 flex-1"
+				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
+			>
+				{#each placements as item (item.key)}
+					{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
+					<div
+						class="absolute box-border overflow-hidden"
+						style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
+						style:left="{item.geometry.leftPercent}%"
+						style:width="{item.geometry.widthPercent}%"
+						style:height="calc(var(--row-height) * {span})"
+					>
+						{#if item.kind === 'overlap-placeholder'}
+							<button
+								type="button"
+								class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
+									item.corners
+								)}"
+								aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
+								onclick={() => expandSlot(item.key)}
 							>
-								<span class="m3-body-medium font-bold">
-									{period.index}
+								<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
+									此时段有 {item.count} 门课程重叠
 								</span>
-								<span
-									class="m3-caption mt-1 leading-tight {isActive ? '' : 'text-on-surface-variant'}"
-								>
-									{period.startTime}<br />{period.endTime}
-								</span>
-							</div>
-						</div>
-					{/each}
-				</aside>
-
-				<div
-					{@attach gridBodyWidthAttach}
-					class="relative min-w-0 flex-1 {solidBgClass}"
-					style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
-				>
-					{#each placements as item (item.key)}
-						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
-						<div
-							class="absolute box-border overflow-hidden"
-							style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
-							style:left="{item.geometry.leftPercent}%"
-							style:width="{item.geometry.widthPercent}%"
-							style:height="calc(var(--row-height) * {span})"
-						>
-							{#if item.kind === 'overlap-placeholder'}
-								<button
-									type="button"
-									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
-										item.corners
-									)}"
-									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
-									onclick={() => expandSlot(item.key)}
-								>
-									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
-										此时段有 {item.count} 门课程重叠
-									</span>
-								</button>
-							{:else}
-								{@render courseCard(item)}
-							{/if}
-						</div>
-					{/each}
-				</div>
+							</button>
+						{:else}
+							{@render courseCard(item)}
+						{/if}
+					</div>
+				{/each}
 			</div>
 		</div>
 	</div>
@@ -499,3 +466,15 @@
 		{/if}
 	</button>
 {/snippet}
+
+<style>
+	.timetable-wallpaper-body {
+		background-image: linear-gradient(
+			90deg,
+			var(--wallpaper-tint-sidebar) 0,
+			var(--wallpaper-tint-sidebar) var(--sidebar-width),
+			var(--wallpaper-tint-grid) var(--sidebar-width),
+			var(--wallpaper-tint-grid) 100%
+		);
+	}
+</style>
