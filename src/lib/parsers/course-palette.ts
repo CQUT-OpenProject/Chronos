@@ -75,12 +75,12 @@ export function resolveCoursePalette(
 	return COURSE_PALETTE_ENTRIES;
 }
 
+const PALETTE_SLOT_MAP = new Map<string, number>(
+	COURSE_PALETTE_ENTRIES.map((entry, index) => [entry.background.toLowerCase(), index])
+);
+
 export function defaultPaletteSlot(hex: string): number | null {
-	const normalized = hex.trim().toLowerCase();
-	const index = COURSE_PALETTE_ENTRIES.findIndex(
-		(entry) => entry.background.toLowerCase() === normalized
-	);
-	return index < 0 ? null : index;
+	return PALETTE_SLOT_MAP.get(hex.trim().toLowerCase()) ?? null;
 }
 
 export function persistSwatchSelection(displayIndex: number): CoursePaletteEntry {
@@ -113,10 +113,15 @@ export function assignCourseDisplayColors(
 		if (!preferred.has(name)) preferred.set(name, slot);
 	}
 
-	const names = [...preferred.keys()].sort(
-		(left, right) =>
-			kotlinStringHashCode(left) - kotlinStringHashCode(right) || left.localeCompare(right)
+	const nameHashPairs = [...preferred.keys()].map((name) => ({
+		name,
+		hash: kotlinStringHashCode(name)
+	}));
+
+	nameHashPairs.sort(
+		(left, right) => left.hash - right.hash || left.name.localeCompare(right.name)
 	);
+	const names = nameHashPairs.map((pair) => pair.name);
 
 	const assigned = new Map<string, CoursePaletteEntry>();
 	const occupied = new Set<number>();

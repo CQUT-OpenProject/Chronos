@@ -341,19 +341,15 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 	offset += courseCount;
 	const endTeachers = readByteColumn(bytes, offset, courseCount);
 	offset += courseCount;
-	const buildingIndices =
-		(flags & FLAG_SINGLE_BUILDING) !== 0
-			? Array.from({ length: courseCount }, () => singleBuildingIdx)
-			: readByteColumn(bytes, offset, courseCount);
-	if ((flags & FLAG_SINGLE_BUILDING) === 0) offset += courseCount;
+	const hasSingleBuilding = (flags & FLAG_SINGLE_BUILDING) !== 0;
+	const buildingIndices = hasSingleBuilding ? [] : readByteColumn(bytes, offset, courseCount);
+	if (!hasSingleBuilding) offset += courseCount;
 	const roomColumnOffset = offset;
 	offset += courseCount * ROOM_BYTE_LENGTH;
-	const weekMaskIndices =
-		(flags & FLAG_GLOBAL_WEEK_MASK) !== 0
-			? Array.from({ length: courseCount }, () => 0)
-			: readByteColumn(bytes, offset, courseCount);
-	if ((flags & FLAG_GLOBAL_WEEK_MASK) === 0) offset += courseCount;
-	const globalWeekMaskIdx = (flags & FLAG_GLOBAL_WEEK_MASK) !== 0 ? 0 : -1;
+	const hasGlobalWeekMask = (flags & FLAG_GLOBAL_WEEK_MASK) !== 0;
+	const weekMaskIndices = hasGlobalWeekMask ? [] : readByteColumn(bytes, offset, courseCount);
+	if (!hasGlobalWeekMask) offset += courseCount;
+	const globalWeekMaskIdx = hasGlobalWeekMask ? 0 : -1;
 	const remarkIndices =
 		(flags & FLAG_HAS_REMARKS) !== 0 ? readByteColumn(bytes, offset, courseCount) : [];
 
@@ -364,7 +360,7 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 		const nameIdx = nameIndices[index];
 		const dayPeriod = dayPeriods[index];
 		const endTeacher = endTeachers[index];
-		const buildingIdx = buildingIndices[index];
+		const buildingIdx = hasSingleBuilding ? singleBuildingIdx : buildingIndices[index];
 		const weekMaskIdx = globalWeekMaskIdx >= 0 ? globalWeekMaskIdx : weekMaskIndices[index];
 		if (
 			nameIdx === undefined ||
