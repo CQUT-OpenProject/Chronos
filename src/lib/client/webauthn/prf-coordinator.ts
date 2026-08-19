@@ -23,10 +23,6 @@ function readPrfOutput(credential: PublicKeyCredential): Uint8Array | null {
 	return first ? new Uint8Array(first) : null;
 }
 
-function toBufferSource(bytes: Uint8Array): BufferSource {
-	return new Uint8Array(bytes);
-}
-
 export async function createPrfCredential(salt: Uint8Array): Promise<{
 	credentialId: string;
 	prfOutput: string;
@@ -48,7 +44,7 @@ export async function createPrfCredential(salt: Uint8Array): Promise<{
 				requireResidentKey: false
 			},
 			extensions: {
-				prf: { eval: { first: toBufferSource(salt) } }
+				prf: { eval: { first: salt as BufferSource } }
 			}
 		}
 	})) as PublicKeyCredential | null;
@@ -92,14 +88,14 @@ export async function getPrfOutput(
 				// fallback when the local passkey was deleted from the password manager.
 				allowCredentials: [
 					{
-						id: toBufferSource(credentialId),
+						id: credentialId as BufferSource,
 						type: 'public-key',
 						transports: ['internal']
 					}
 				],
 				userVerification: 'required',
 				extensions: {
-					prf: { eval: { first: toBufferSource(salt) } }
+					prf: { eval: { first: salt as BufferSource } }
 				}
 			}
 		})) as PublicKeyCredential | null;

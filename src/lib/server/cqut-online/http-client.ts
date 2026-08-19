@@ -17,19 +17,6 @@ function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function mergeSignals(signals: AbortSignal[]): AbortSignal {
-	if (signals.length === 1) return signals[0]!;
-	const controller = new AbortController();
-	for (const signal of signals) {
-		if (signal.aborted) {
-			controller.abort(signal.reason);
-			return controller.signal;
-		}
-		signal.addEventListener('abort', () => controller.abort(signal.reason), { once: true });
-	}
-	return controller.signal;
-}
-
 export async function request(
 	jar: CookieJar,
 	url: string,
@@ -37,7 +24,7 @@ export async function request(
 	options: HttpRequestOptions = {}
 ): Promise<Response> {
 	const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
-	const signal = options.signal ? mergeSignals([options.signal, timeoutSignal]) : timeoutSignal;
+	const signal = options.signal ? AbortSignal.any([options.signal, timeoutSignal]) : timeoutSignal;
 
 	const executeOnce = async (): Promise<Response> => {
 		const headers = new Headers(init.headers);
