@@ -31,7 +31,7 @@ export class BadgeManager implements Disposable {
 		}
 
 		for (const contribution of this.contributions.values()) {
-			// 1. 同步计算
+			// 1. Synchronous computation
 			if (contribution.getBadge) {
 				for (const course of courses) {
 					try {
@@ -49,7 +49,7 @@ export class BadgeManager implements Disposable {
 				}
 			}
 
-			// 2. 异步投影
+			// 2. Asynchronous projection
 			if (contribution.projectBadges) {
 				try {
 					const projected = await contribution.projectBadges(courses);

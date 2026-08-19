@@ -17,14 +17,14 @@ export class ReactiveChronosController implements Disposable {
 	private engine: ChronosEngine;
 	private disposables: Disposable[] = [];
 
-	// Svelte 5 Runes 核心状态代理
+	// Svelte 5 Runes core state reactive proxy
 	currentTimetable = $state<Timetable | null>(null);
 	activeWeek = $state<number>(1);
 	currentPeriodIndex = $state<number | null>(null);
 	activeThemeId = $state<string>('m3-default');
 	userPreferences = $state<UserPreferences | null>(null);
 
-	// 声明式扩展点与角标响应式代理
+	// Declarative extension points and badge reactive proxies
 	themes = $state<ReadonlyArray<ThemeContribution>>([]);
 	sources = $state<ReadonlyArray<TimetableSourceAdapter>>([]);
 	exporters = $state<ReadonlyArray<TimetableExporterAdapter>>([]);
@@ -35,7 +35,7 @@ export class ReactiveChronosController implements Disposable {
 		this.engine = engine;
 		this.syncAllState();
 
-		// 订阅引擎事件并收集注销函数
+		// Subscribe to engine events and collect disposable handles
 		this.disposables.push(
 			this.engine.on('timetable:loaded', ({ timetable }: { timetable: Timetable }) => {
 				this.currentTimetable = timetable;
@@ -95,7 +95,7 @@ export class ReactiveChronosController implements Disposable {
 		this.courseActions = this.engine.slots.getCourseActions();
 	}
 
-	// 快捷动作代理
+	// Action proxies
 	async createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable> {
 		return this.engine.actions.createTimetable(name, config);
 	}

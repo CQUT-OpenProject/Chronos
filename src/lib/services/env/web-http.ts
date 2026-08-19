@@ -9,6 +9,54 @@ export class WebHttpAdapter {
 				: undefined;
 
 		try {
+			// Host provider CORS bypass: route CQUT requests to local server proxy in browser environment
+			if (options?.bypassCors && url.includes('cqut.edu.cn') && typeof window !== 'undefined') {
+				let account = '';
+				let password = '';
+				if (typeof options.body === 'string') {
+					const searchParams = new URLSearchParams(options.body);
+					account = searchParams.get('username') || searchParams.get('account') || '';
+					password = searchParams.get('password') || '';
+				}
+
+				const proxyRes = await fetch('/api/cqut/preview', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ account, password }),
+					signal: controller?.signal
+				});
+
+				const proxyData = (await proxyRes.json()) as {
+					ok?: boolean;
+					payload?: unknown;
+					error?: { message?: string };
+				};
+
+				if (!proxyRes.ok || !proxyData.ok) {
+					const errorMsg = proxyData?.error?.message || 'CQUT upstream connection failed';
+					return {
+						status: proxyRes.status === 200 ? 502 : proxyRes.status,
+						statusText: errorMsg,
+						headers: {},
+						ok: false,
+						text: async () => JSON.stringify(proxyData),
+						json: async <T>() => proxyData as T,
+						bytes: async () => new Uint8Array()
+					};
+				}
+
+				const payloadStr = JSON.stringify(proxyData.payload ?? {});
+				return {
+					status: 200,
+					statusText: 'OK',
+					headers: { 'Content-Type': 'application/json' },
+					ok: true,
+					text: async () => payloadStr,
+					json: async <T>() => (proxyData.payload ?? {}) as T,
+					bytes: async () => new TextEncoder().encode(payloadStr)
+				};
+			}
+
 			const headers = new Headers(options?.headers);
 
 			let body: BodyInit | undefined;
