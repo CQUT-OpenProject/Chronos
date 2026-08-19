@@ -1,5 +1,5 @@
 import { untrack } from 'svelte';
-import { SvelteDate, SvelteMap } from 'svelte/reactivity';
+import { SvelteMap } from 'svelte/reactivity';
 import { trackEvent } from '$lib/client/analytics';
 import { emptyAppState, type AppState } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
@@ -55,8 +55,10 @@ function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
 	let today = $state(timeProvider.today());
 	let revision = $state(0);
-	let weekGridModels = new SvelteMap<number, TimetableGridModel>();
-	let weekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
+	let weekGridModels = $state.raw<Map<number, TimetableGridModel>>(new SvelteMap());
+	let weekCourseDisplayModels = $state.raw<Map<number, TimetableCourseDisplayModel[]>>(
+		new SvelteMap()
+	);
 
 	let cachedTimetable: AppState['currentTimetable'] = null;
 	let cachedToday = '';
@@ -140,13 +142,13 @@ function createTimetableScreen() {
 
 		cachedTimetable = timetable;
 		cachedToday = today;
-		weekGridModels = new SvelteMap(nextWeekGridModels);
-		weekCourseDisplayModels = new SvelteMap(nextWeekCourseDisplayModels);
+		weekGridModels = nextWeekGridModels;
+		weekCourseDisplayModels = nextWeekCourseDisplayModels;
 	}
 
 	function scheduleTodayRefresh() {
 		if (todayTimer) clearTimeout(todayTimer);
-		const delay = computeDelayUntilNextMidnightMillis(new SvelteDate());
+		const delay = computeDelayUntilNextMidnightMillis(new Date());
 		todayTimer = setTimeout(() => {
 			today = timeProvider.today();
 			recompute();
