@@ -8,8 +8,15 @@ export class DeleteTimetableUseCase {
 	) {}
 
 	async invoke(id: string): Promise<void> {
+		const currentSnapshot = await this.repository.getAppStateSnapshot();
+		const isDeletingActive = currentSnapshot.currentTimetableId === id;
+
 		await this.repository.deleteTimetable(id);
-		const nextTimetableId = (await this.repository.getAppStateSnapshot()).timetables[0]?.id ?? null;
-		await this.preferences.setCurrentTimetableId(nextTimetableId);
+
+		if (isDeletingActive) {
+			const updatedSnapshot = await this.repository.getAppStateSnapshot();
+			const nextTimetableId = updatedSnapshot.timetables[0]?.id ?? null;
+			await this.preferences.setCurrentTimetableId(nextTimetableId);
+		}
 	}
 }

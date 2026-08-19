@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { createUpdateState, fetchLatestGitHubRelease } from './update-state.svelte';
+import { createUpdateState } from './update-state.svelte';
+import { fetchLatestProjectRelease } from './release-feed-adapter';
 import { failure, success } from '$lib/domain/result/app-result';
 import { AppError } from '$lib/domain/result/app-error';
 
@@ -8,42 +9,42 @@ vi.mock('$lib/client/analytics', () => ({
 	trackEvent: (...args: unknown[]) => mockTrackEvent(...args)
 }));
 
-describe('fetchLatestGitHubRelease', () => {
-	it('successfully parses release from github api', async () => {
+describe('fetchLatestProjectRelease', () => {
+	it('successfully parses release from project version.json', async () => {
 		const mockFetch = vi.fn().mockResolvedValue({
 			ok: true,
 			status: 200,
 			json: async () => ({
-				tag_name: 'v0.1.5',
-				name: 'Chronos 0.1.5',
-				published_at: '2026-08-17T03:00:00Z',
+				tagName: 'v0.2.0',
+				name: 'Chronos 0.2.0',
+				publishedAt: '2026-08-18',
 				body: '### 新增\n- 软件更新页面'
 			})
 		});
 
-		const result = await fetchLatestGitHubRelease(
-			'test/repo',
-			mockFetch as unknown as typeof fetch
+		const result = await fetchLatestProjectRelease(
+			mockFetch as unknown as typeof fetch,
+			'/version.json'
 		);
 		expect(result.ok).toBe(true);
 		if (result.ok) {
-			expect(result.value.tagName).toBe('v0.1.5');
-			expect(result.value.name).toBe('Chronos 0.1.5');
+			expect(result.value.tagName).toBe('v0.2.0');
+			expect(result.value.name).toBe('Chronos 0.2.0');
 		}
 	});
 
 	it('handles 404 not found and network failure', async () => {
 		const mock404 = vi.fn().mockResolvedValue({ ok: false, status: 404 });
-		const notFoundResult = await fetchLatestGitHubRelease(
-			'test/repo',
-			mock404 as unknown as typeof fetch
+		const notFoundResult = await fetchLatestProjectRelease(
+			mock404 as unknown as typeof fetch,
+			'/version.json'
 		);
 		expect(notFoundResult.ok).toBe(false);
 
 		const mockError = vi.fn().mockRejectedValue(new Error('Network offline'));
-		const errorResult = await fetchLatestGitHubRelease(
-			'test/repo',
-			mockError as unknown as typeof fetch
+		const errorResult = await fetchLatestProjectRelease(
+			mockError as unknown as typeof fetch,
+			'/version.json'
 		);
 		expect(errorResult.ok).toBe(false);
 	});
@@ -56,12 +57,12 @@ describe('createUpdateState', () => {
 			currentVersion: '0.1.4',
 			fetchLatestRelease: async () =>
 				success({
-					tagName: 'v0.1.5',
-					name: 'Chronos 0.1.5',
-					publishedAt: '2026-08-17',
+					tagName: 'v0.2.0',
+					name: 'Chronos 0.2.0',
+					publishedAt: '2026-08-18',
 					body: '新功能发布'
 				}),
-			checkSwUpdate: async () => true,
+			checkSwUpdate: async () => false,
 			applyUpdate: async () => {}
 		});
 
@@ -70,25 +71,25 @@ describe('createUpdateState', () => {
 
 		expect(updateState.state.checking).toBe(false);
 		expect(updateState.state.hasUpdate).toBe(true);
-		expect(updateState.state.latestRelease?.tagName).toBe('v0.1.5');
+		expect(updateState.state.latestRelease?.tagName).toBe('v0.2.0');
 		expect(updateState.state.errorMessage).toBeNull();
 		expect(updateState.state.lastChecked).not.toBeNull();
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
 			has_update: true,
-			latest_version: 'v0.1.5'
+			latest_version: 'v0.2.0'
 		});
 	});
 
 	it('detects when already on latest version', async () => {
 		mockTrackEvent.mockClear();
 		const updateState = createUpdateState({
-			currentVersion: '0.1.4',
+			currentVersion: '0.2.0',
 			fetchLatestRelease: async () =>
 				success({
-					tagName: 'v0.1.4',
-					name: 'Chronos 0.1.4',
-					publishedAt: '2026-08-16',
+					tagName: 'v0.2.0',
+					name: 'Chronos 0.2.0',
+					publishedAt: '2026-08-18',
 					body: '当前版本'
 				}),
 			checkSwUpdate: async () => false,
@@ -99,27 +100,53 @@ describe('createUpdateState', () => {
 
 		expect(updateState.state.checking).toBe(false);
 		expect(updateState.state.hasUpdate).toBe(false);
-		expect(updateState.state.latestRelease?.tagName).toBe('v0.1.4');
+		expect(updateState.state.latestRelease?.tagName).toBe('v0.2.0');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
 			has_update: false,
-			latest_version: 'v0.1.4'
+			latest_version: 'v0.2.0'
+		});
+	});
+
+	it('does NOT trigger update when remote version is lower than current version', async () => {
+		mockTrackEvent.mockClear();
+		const updateState = createUpdateState({
+			currentVersion: '0.2.1',
+			fetchLatestRelease: async () =>
+				success({
+					tagName: 'v0.2.0',
+					name: 'Chronos 0.2.0',
+					publishedAt: '2026-08-18',
+					body: '旧版本'
+				}),
+			checkSwUpdate: async () => false,
+			applyUpdate: async () => {}
+		});
+
+		await updateState.checkUpdate();
+
+		expect(updateState.state.checking).toBe(false);
+		expect(updateState.state.hasUpdate).toBe(false);
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
+			has_update: false,
+			latest_version: 'v0.2.0'
 		});
 	});
 
 	it('falls back to local catalog when remote fetch fails', async () => {
 		mockTrackEvent.mockClear();
 		const updateState = createUpdateState({
-			currentVersion: '0.1.4',
+			currentVersion: '0.2.0',
 			fetchLatestRelease: async () => failure(AppError.network('Offline')),
 			localCatalog: {
 				getRelease: async () => failure(AppError.notFound('none')),
 				listReleases: async () =>
 					success([
 						{
-							tagName: 'v0.1.4',
-							name: 'Chronos 0.1.4',
-							publishedAt: '2026-08-16',
+							tagName: 'v0.2.0',
+							name: 'Chronos 0.2.0',
+							publishedAt: '2026-08-18',
 							body: '本地最新'
 						}
 					])
@@ -130,19 +157,19 @@ describe('createUpdateState', () => {
 
 		expect(updateState.state.checking).toBe(false);
 		expect(updateState.state.hasUpdate).toBe(false);
-		expect(updateState.state.latestRelease?.tagName).toBe('v0.1.4');
+		expect(updateState.state.latestRelease?.tagName).toBe('v0.2.0');
 		expect(updateState.state.errorMessage).toBeNull();
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
 			has_update: false,
-			latest_version: 'v0.1.4'
+			latest_version: 'v0.2.0'
 		});
 	});
 
-	it('detects update when service worker has a waiting update', async () => {
+	it('detects update when service worker has a waiting update upon remote failure', async () => {
 		mockTrackEvent.mockClear();
 		const updateState = createUpdateState({
-			currentVersion: '0.1.4',
+			currentVersion: '0.2.0',
 			fetchLatestRelease: async () => failure(AppError.network('Offline')),
 			localCatalog: {
 				getRelease: async () => failure(AppError.notFound('none')),
@@ -166,7 +193,7 @@ describe('createUpdateState', () => {
 	it('reports failure event when check update fails completely', async () => {
 		mockTrackEvent.mockClear();
 		const updateState = createUpdateState({
-			currentVersion: '0.1.4',
+			currentVersion: '0.2.0',
 			fetchLatestRelease: async () => failure(AppError.network('网络连接失败')),
 			localCatalog: {
 				getRelease: async () => failure(AppError.notFound('none')),
@@ -190,7 +217,7 @@ describe('createUpdateState', () => {
 		mockTrackEvent.mockClear();
 		const applyUpdateMock = vi.fn().mockResolvedValue(undefined);
 		const updateState = createUpdateState({
-			currentVersion: '0.1.4',
+			currentVersion: '0.2.0',
 			applyUpdate: applyUpdateMock
 		});
 
@@ -211,23 +238,23 @@ describe('createUpdateState', () => {
 		const mockFeedAdapter = {
 			fetchLatestRelease: vi.fn().mockResolvedValue(
 				success({
-					tagName: 'v0.2.0',
-					name: 'Chronos 0.2.0',
-					publishedAt: '2026-08-18',
+					tagName: 'v0.3.0',
+					name: 'Chronos 0.3.0',
+					publishedAt: '2026-08-19',
 					body: 'Major upgrade'
 				})
 			)
 		};
 
 		const updateState = createUpdateState({
-			currentVersion: '0.1.4',
+			currentVersion: '0.2.0',
 			swAdapter: mockSwAdapter,
 			releaseFeedAdapter: mockFeedAdapter
 		});
 
 		await updateState.checkUpdate();
 		expect(updateState.state.hasUpdate).toBe(true);
-		expect(updateState.state.latestRelease?.tagName).toBe('v0.2.0');
+		expect(updateState.state.latestRelease?.tagName).toBe('v0.3.0');
 		expect(mockSwAdapter.checkForUpdate).toHaveBeenCalledOnce();
 		expect(mockFeedAdapter.fetchLatestRelease).toHaveBeenCalledOnce();
 

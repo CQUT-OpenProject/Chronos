@@ -10,7 +10,11 @@ let wordSegmenter: Intl.Segmenter | null | undefined;
 export function toGraphemes(text: string): string[] {
 	if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
 		graphemeSegmenter ??= new Intl.Segmenter('und', { granularity: 'grapheme' });
-		return [...graphemeSegmenter.segment(text)].map((part) => part.segment);
+		const graphemes: string[] = [];
+		for (const part of graphemeSegmenter.segment(text)) {
+			graphemes.push(part.segment);
+		}
+		return graphemes;
 	}
 	return Array.from(text);
 }
@@ -31,11 +35,23 @@ export function cutBoundaryIndices(text: string, graphemes: string[]): number[] 
 
 	const segmenter = getWordSegmenter();
 	if (segmenter) {
+		const charToGrapheme = new Uint32Array(text.length + 1);
+		let charOffset = 0;
+		for (let gIndex = 0; gIndex < length; gIndex += 1) {
+			const gLen = graphemes[gIndex]!.length;
+			for (let c = 0; c < gLen; c += 1) {
+				charToGrapheme[charOffset + c] = gIndex;
+			}
+			charOffset += gLen;
+		}
+		charToGrapheme[charOffset] = length;
+
 		for (const part of segmenter.segment(text)) {
 			if (!part.isWordLike) continue;
-			const start = toGraphemes(text.slice(0, part.index)).length;
+			const start = charToGrapheme[part.index] ?? length;
+			const end = charToGrapheme[part.index + part.segment.length] ?? length;
 			boundaries.add(start);
-			boundaries.add(start + toGraphemes(part.segment).length);
+			boundaries.add(end);
 		}
 	}
 
@@ -177,22 +193,21 @@ export function fitFontSizePx(
 	if (maxWidth <= 0) return minPx;
 	const hi = Math.max(minPx, maxPx);
 	const lo = Math.min(minPx, hi);
-	if (measureAt(hi) <= maxWidth) return hi;
-	if (measureAt(lo) > maxWidth) return lo;
+	const measuredHi = measureAt(hi);
+	if (measuredHi <= maxWidth) return hi;
 
-	let low = lo;
-	let high = hi;
-	let best = lo;
-	for (let step = 0; step < 20; step += 1) {
-		const mid = (low + high) / 2;
-		if (measureAt(mid) <= maxWidth) {
-			best = mid;
-			low = mid;
-		} else {
-			high = mid;
+	const ideal = (maxWidth / measuredHi) * hi;
+	let fitted = Math.max(lo, Math.min(hi, Math.floor(ideal * 10) / 10));
+	if (fitted <= lo) return lo;
+
+	if (measureAt(fitted) > maxWidth) {
+		const measuredFitted = measureAt(fitted);
+		if (measuredFitted > maxWidth) {
+			const refined = (maxWidth / measuredFitted) * fitted;
+			fitted = Math.max(lo, Math.min(hi, Math.floor(refined * 10) / 10));
 		}
 	}
-	return Math.floor(best * 10) / 10;
+	return fitted;
 }
 
 /** Builds a size-parameterized measurer from an element's font family/weight/style. */

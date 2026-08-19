@@ -1,7 +1,7 @@
 import { failure, success } from '$lib/domain/result/app-result';
 import { AppError } from '$lib/domain/result/app-error';
 import type { ReleaseCatalog } from './catalog';
-import { compareReleaseVersions, type Release } from './release';
+import { compareReleaseVersions, parseFrontmatter, type Release } from './release';
 
 const RELEASE_FILES = import.meta.glob('./entries/*.md', {
 	query: '?raw',
@@ -46,25 +46,4 @@ function buildReleaseIndex(): Record<string, Release> {
 function tagNameFromPath(path: string): string {
 	const fileName = path.slice(path.lastIndexOf('/') + 1);
 	return fileName.replace(/\.md$/, '');
-}
-
-function parseFrontmatter(raw: string): {
-	name?: string;
-	publishedAt?: string;
-	body: string;
-} {
-	const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
-	if (!match) {
-		return { body: raw };
-	}
-	const fields: Record<string, string> = {};
-	for (const line of match[1].split(/\r?\n/)) {
-		const head = line.match(/^([A-Za-z0-9]+)\s*:\s*(.*)$/);
-		if (head) fields[head[1]] = head[2];
-	}
-	return {
-		name: fields['name'],
-		publishedAt: fields['publishedAt'],
-		body: match[2]
-	};
 }

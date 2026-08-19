@@ -20,8 +20,12 @@ export const SHARE_LINK_WARNING_LENGTH = 800;
 export const SHARE_LINK_CORRUPTED_MESSAGE = '分享链接已损坏或内容不完整';
 
 function bytesToBase64Url(bytes: Uint8Array): string {
+	const CHUNK_SIZE = 8192;
 	let binary = '';
-	for (const byte of bytes) binary += String.fromCharCode(byte);
+	for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+		const chunk = bytes.subarray(i, i + CHUNK_SIZE);
+		binary += String.fromCharCode(...chunk);
+	}
 	return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 

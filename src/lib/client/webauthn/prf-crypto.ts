@@ -3,19 +3,15 @@ import { bytesToBase64, base64ToBytes, randomBytes } from './binary';
 const HKDF_INFO = new TextEncoder().encode('chronos-online-credential');
 const GCM_IV_LENGTH = 12;
 
-function toBufferSource(bytes: Uint8Array): BufferSource {
-	return new Uint8Array(bytes);
-}
-
 export async function deriveAesKey(prfOutput: Uint8Array, salt: Uint8Array): Promise<CryptoKey> {
-	const baseKey = await crypto.subtle.importKey('raw', toBufferSource(prfOutput), 'HKDF', false, [
+	const baseKey = await crypto.subtle.importKey('raw', prfOutput as BufferSource, 'HKDF', false, [
 		'deriveKey'
 	]);
 	return crypto.subtle.deriveKey(
 		{
 			name: 'HKDF',
 			hash: 'SHA-256',
-			salt: toBufferSource(salt),
+			salt: salt as BufferSource,
 			info: HKDF_INFO
 		},
 		baseKey,
@@ -31,9 +27,9 @@ export async function encryptPayload(
 ): Promise<{ iv: string; ciphertext: string }> {
 	const iv = randomBytes(GCM_IV_LENGTH);
 	const encrypted = await crypto.subtle.encrypt(
-		{ name: 'AES-GCM', iv: toBufferSource(iv) },
+		{ name: 'AES-GCM', iv: iv as BufferSource },
 		aesKey,
-		toBufferSource(payload)
+		payload as BufferSource
 	);
 	return {
 		iv: bytesToBase64(iv),
@@ -49,9 +45,9 @@ export async function decryptPayload(
 	const iv = base64ToBytes(ivBase64);
 	const ciphertext = base64ToBytes(ciphertextBase64);
 	const decrypted = await crypto.subtle.decrypt(
-		{ name: 'AES-GCM', iv: toBufferSource(iv) },
+		{ name: 'AES-GCM', iv: iv as BufferSource },
 		aesKey,
-		toBufferSource(ciphertext)
+		ciphertext as BufferSource
 	);
 	return new Uint8Array(decrypted);
 }

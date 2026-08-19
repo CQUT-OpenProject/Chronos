@@ -1,5 +1,5 @@
 import { untrack } from 'svelte';
-import { SvelteDate, SvelteMap } from 'svelte/reactivity';
+import { SvelteMap } from 'svelte/reactivity';
 import { trackEvent } from '$lib/client/analytics';
 import { emptyAppState, type AppState } from '$lib/models/app-state';
 import type { TimetableCourseDisplayModel, TimetableGridModel } from '$lib/models/presentation';
@@ -55,13 +55,15 @@ function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
 	let today = $state(timeProvider.today());
 	let revision = $state(0);
-	let weekGridModels = new SvelteMap<number, TimetableGridModel>();
-	let weekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
+	let weekGridModels = $state.raw<Map<number, TimetableGridModel>>(new SvelteMap());
+	let weekCourseDisplayModels = $state.raw<Map<number, TimetableCourseDisplayModel[]>>(
+		new SvelteMap()
+	);
 
 	let cachedTimetable: AppState['currentTimetable'] = null;
 	let cachedToday = '';
-	let cachedWeekGridModels = new SvelteMap<number, TimetableGridModel>();
-	let cachedWeekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
+	const cachedWeekGridModels = new SvelteMap<number, TimetableGridModel>();
+	const cachedWeekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
 
 	let todayTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -102,11 +104,16 @@ function createTimetableScreen() {
 		const canReuseCache =
 			timetable != null && timetable === cachedTimetable && today === cachedToday;
 
+		if (!canReuseCache) {
+			cachedWeekGridModels.clear();
+			cachedWeekCourseDisplayModels.clear();
+		}
+
 		const nextWeekGridModels = buildWeekGridModels(
 			timetable,
 			today,
 			displayedWeekMemory,
-			canReuseCache ? cachedWeekGridModels : new SvelteMap(),
+			cachedWeekGridModels,
 			(todayValue, week, currentTimetable) =>
 				invokeBuildVisibleTimetableGrid(todayValue, week, currentTimetable)
 		);
@@ -116,7 +123,7 @@ function createTimetableScreen() {
 			today,
 			displayedWeekMemory,
 			nextWeekGridModels,
-			canReuseCache ? cachedWeekCourseDisplayModels : new SvelteMap(),
+			cachedWeekCourseDisplayModels,
 			(currentTimetable, visibleDayOfWeeks, week, todayValue) =>
 				invokeBuildTimetableCourseDisplayModels(
 					currentTimetable,
@@ -126,17 +133,22 @@ function createTimetableScreen() {
 				)
 		);
 
+		for (const [week, model] of nextWeekGridModels) {
+			cachedWeekGridModels.set(week, model);
+		}
+		for (const [week, models] of nextWeekCourseDisplayModels) {
+			cachedWeekCourseDisplayModels.set(week, models);
+		}
+
 		cachedTimetable = timetable;
 		cachedToday = today;
-		cachedWeekGridModels = new SvelteMap(nextWeekGridModels);
-		cachedWeekCourseDisplayModels = new SvelteMap(nextWeekCourseDisplayModels);
-		weekGridModels = new SvelteMap(nextWeekGridModels);
-		weekCourseDisplayModels = new SvelteMap(nextWeekCourseDisplayModels);
+		weekGridModels = nextWeekGridModels;
+		weekCourseDisplayModels = nextWeekCourseDisplayModels;
 	}
 
 	function scheduleTodayRefresh() {
 		if (todayTimer) clearTimeout(todayTimer);
-		const delay = computeDelayUntilNextMidnightMillis(new SvelteDate());
+		const delay = computeDelayUntilNextMidnightMillis(new Date());
 		todayTimer = setTimeout(() => {
 			today = timeProvider.today();
 			recompute();

@@ -41,6 +41,9 @@ export async function checkAndApplySwUpdate(): Promise<boolean> {
 export async function applyUpdateAndReload(): Promise<void> {
 	if (typeof window === 'undefined') return;
 	try {
+		if ('caches' in window) {
+			await caches.delete('pages-cache');
+		}
 		if (updateServiceWorker) {
 			await updateServiceWorker(true);
 			return;

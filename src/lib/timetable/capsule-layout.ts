@@ -310,9 +310,16 @@ interface CorneredItem {
  * expanded subcolumns never misalign with adjacent days.
  */
 export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): void {
-	if (items.length === 0) return;
+	const len = items.length;
+	if (len <= 1) {
+		if (len === 1) {
+			items[0]!.corners = ALL_CORNERS_ROUNDED;
+		}
+		return;
+	}
 
-	for (const item of items) {
+	for (let i = 0; i < len; i += 1) {
+		const item = items[i]!;
 		const { leftPercent: left, widthPercent: width, startPeriod, endPeriod } = item.geometry;
 		const right = left + width;
 		let topExposed = true;
@@ -320,8 +327,9 @@ export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): 
 		let leftExposed = true;
 		let rightExposed = true;
 
-		for (const other of items) {
-			if (other === item) continue;
+		for (let j = 0; j < len; j += 1) {
+			if (i === j) continue;
+			const other = items[j]!;
 			const {
 				leftPercent: otherLeft,
 				widthPercent: otherWidth,
@@ -330,13 +338,20 @@ export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): 
 			} = other.geometry;
 			const otherRight = otherLeft + otherWidth;
 
+			if (otherRight < left - POSITION_EPSILON || otherLeft > right + POSITION_EPSILON) {
+				continue;
+			}
+
 			if (overlapsX(left, right, otherLeft, otherRight)) {
 				if (otherEnd + 1 === startPeriod) topExposed = false;
 				if (otherStart === endPeriod + 1) bottomExposed = false;
 			}
 			if (rangesIntersect(startPeriod, endPeriod, otherStart, otherEnd)) {
-				if (isFlushRightOf(otherLeft, otherRight, left)) leftExposed = false;
-				if (isFlushRightOf(left, right, otherLeft)) rightExposed = false;
+				if (isFlushRightOf(otherRight, left)) leftExposed = false;
+				if (isFlushRightOf(right, otherLeft)) rightExposed = false;
+			}
+			if (!topExposed && !bottomExposed && !leftExposed && !rightExposed) {
+				break;
 			}
 		}
 
@@ -362,7 +377,7 @@ function rangesIntersect(
 	return start <= otherEnd && otherStart <= end;
 }
 
-function isFlushRightOf(otherLeft: number, otherRight: number, left: number): boolean {
+function isFlushRightOf(otherRight: number, left: number): boolean {
 	return Math.abs(otherRight - left) < POSITION_EPSILON;
 }
 export function shouldShowLocationCampus(columnWidthPx: number, overlapCount = 1): boolean {
@@ -420,9 +435,12 @@ export function buildSlotGroups(
 	const byDay = new Map<number, TimetableCourseDisplayModel[]>();
 	for (const model of courseDisplayModels) {
 		const day = model.course.dayOfWeek;
-		const list = byDay.get(day) ?? [];
-		list.push(model);
-		byDay.set(day, list);
+		const list = byDay.get(day);
+		if (list) {
+			list.push(model);
+		} else {
+			byDay.set(day, [model]);
+		}
 	}
 
 	return [...byDay.entries()]
@@ -509,26 +527,27 @@ function buildDaySlotGroups(sortedCourses: TimetableCourseDisplayModel[]): Cours
 			current.push(displayModel);
 			currentEndPeriod = Math.max(currentEndPeriod, course.endPeriod);
 		} else {
-			groups.push(toCourseSlotGroup(current));
+			groups.push(toCourseSlotGroup(current, currentEndPeriod));
 			current = [displayModel];
 			currentEndPeriod = course.endPeriod;
 		}
 	}
 
 	if (current.length > 0) {
-		groups.push(toCourseSlotGroup(current));
+		groups.push(toCourseSlotGroup(current, currentEndPeriod));
 	}
 
 	return groups;
 }
 
-function toCourseSlotGroup(courses: TimetableCourseDisplayModel[]): CourseSlotGroup {
-	const dayOfWeek = courses[0]!.course.dayOfWeek;
-	const startPeriod = Math.min(...courses.map((entry) => entry.course.startPeriod));
-	const endPeriod = Math.max(...courses.map((entry) => entry.course.endPeriod));
+function toCourseSlotGroup(
+	courses: TimetableCourseDisplayModel[],
+	endPeriod: number
+): CourseSlotGroup {
+	const first = courses[0]!;
 	return {
-		dayOfWeek,
-		startPeriod,
+		dayOfWeek: first.course.dayOfWeek,
+		startPeriod: first.course.startPeriod,
 		endPeriod,
 		courses
 	};
