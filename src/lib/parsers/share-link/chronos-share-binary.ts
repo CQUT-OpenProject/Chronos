@@ -7,6 +7,7 @@ import {
 	type CqutCampusId
 } from '$lib/models/cqut-campus';
 import {
+	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	TimetableImportSource,
 	normalizeTimetableName,
 	type Timetable
@@ -411,6 +412,7 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 	);
 
 	const baseTimetable: Timetable = {
+		schemaVersion: CURRENT_TIMETABLE_SCHEMA_VERSION,
 		id: 'share-import',
 		name: timetableName,
 		courses: sortedCourses,

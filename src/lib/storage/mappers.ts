@@ -67,6 +67,7 @@ export function timetableToRow(timetable: Timetable): TimetableRow {
 export function timetableFromRow(row: TimetableRow, courses: CourseRow[]): Timetable {
 	const config = decodeTimetableConfig(row.configJson, row.id);
 	return {
+		schemaVersion: config.schemaVersion,
 		id: row.id,
 		name: normalizeTimetableName(row.name),
 		createdAt: row.createdAt,

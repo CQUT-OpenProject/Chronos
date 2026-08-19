@@ -7,6 +7,7 @@ import type {
 	OnlineScheduleWeekDay
 } from '$lib/models/online-schedule';
 import {
+	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	TimetableImportSource,
 	normalizeTimetableName,
 	type Timetable,
@@ -87,6 +88,7 @@ export class DefaultTimetableShareCodec implements TimetableShareCodec {
 				: [];
 
 		return success({
+			schemaVersion: CURRENT_TIMETABLE_SCHEMA_VERSION,
 			id: 'online-import',
 			name: normalizeTimetableName(payload.yearTerm),
 			courses: [...courses].sort(

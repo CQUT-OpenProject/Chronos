@@ -1,5 +1,6 @@
 import type { Course } from '$lib/models/course';
 import {
+	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	TimetableImportSource,
 	normalizeTimetableName,
 	type Timetable
@@ -65,6 +66,7 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 		}
 
 		return success({
+			schemaVersion: CURRENT_TIMETABLE_SCHEMA_VERSION,
 			id: crypto.randomUUID(),
 			name: normalizeTimetableName(studentName ? `${studentName}的课表` : term),
 			courses,
