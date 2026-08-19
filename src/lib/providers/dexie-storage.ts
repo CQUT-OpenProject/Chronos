@@ -1,4 +1,10 @@
-import type { Disposable, StorageChangeEvent, Timetable, UserPreferences } from '@chronos/core';
+import type {
+	Disposable,
+	IStorageService,
+	StorageChangeEvent,
+	Timetable,
+	UserPreferences
+} from '@chronos/core';
 import { DEFAULT_USER_PREFERENCES, CURRENT_PREFERENCES_SCHEMA_VERSION } from '@chronos/core';
 import { db, type ChronosDB } from '$lib/storage/db';
 import { courseToRow, timetableFromRow, timetableToRow } from '$lib/storage/mappers';
@@ -14,7 +20,11 @@ const SETTINGS_KEYS = {
 
 const WALLPAPER_ID = 'default';
 
-export class WebStorageAdapter {
+/**
+ * DexieStorageProvider implements the core IStorageService contract
+ * using Dexie (IndexedDB) for structured records and localStorage for user preferences.
+ */
+export class DexieStorageProvider implements IStorageService {
 	private listeners = new Set<(event: StorageChangeEvent) => void>();
 	private storageListener?: (e: StorageEvent) => void;
 
@@ -32,12 +42,12 @@ export class WebStorageAdapter {
 		}
 	}
 
-	private notifyChange(event: StorageChangeEvent) {
+	private notifyChange(event: StorageChangeEvent): void {
 		for (const listener of this.listeners) {
 			try {
 				listener(event);
 			} catch (err) {
-				console.error('[WebStorageAdapter] Error in onChanged listener:', err);
+				console.error('[DexieStorageProvider] Error in onChanged listener:', err);
 			}
 		}
 	}

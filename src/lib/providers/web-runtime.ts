@@ -1,4 +1,12 @@
-export class WebRuntimeAdapter {
+import type { IRuntimeService } from '@chronos/core';
+
+/**
+ * WebRuntimeProvider implements the IRuntimeService interface for browser environments.
+ * It provides platform baselines including timers, TextEncoder/Decoder, and SHA-256 via WebCrypto.
+ */
+export class WebRuntimeProvider implements IRuntimeService {
+	readonly platform = 'web' as const;
+
 	setTimeout(handler: () => void, timeoutMs: number): number {
 		return setTimeout(handler, timeoutMs) as unknown as number;
 	}

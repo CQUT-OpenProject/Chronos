@@ -1,9 +1,14 @@
-import type { VaultSecretOptions } from '@chronos/core';
+import type { IVaultService, VaultSecretOptions } from '@chronos/core';
 import { isPrfProtectionAvailable } from '$lib/client/webauthn/prf-support';
 
 const VAULT_PREFIX = 'chronos_vault:';
 
-export class WebVaultAdapter {
+/**
+ * WebAuthnVaultProvider implements the IVaultService interface on Web platforms.
+ * It queries WebAuthn PRF capabilities when available and stores secrets
+ * in namespaced storage with encryption coordination.
+ */
+export class WebAuthnVaultProvider implements IVaultService {
 	constructor(
 		private storage: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null
 	) {}

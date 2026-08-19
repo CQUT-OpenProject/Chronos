@@ -33,9 +33,9 @@ export * from './types/marketplace';
 // Runtime
 export * from './runtime/service-container';
 export * from './runtime/hierarchical-slot-registry';
+export { HierarchicalSlotRegistry as SlotRegistry } from './runtime/hierarchical-slot-registry';
 export * from './runtime/event-bus';
 export * from './runtime/pipeline';
-export * from './runtime/slot-registry';
 export * from './runtime/theme-registry';
 export * from './runtime/badge-manager';
 export * from './runtime/scoped-context';

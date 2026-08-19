@@ -1,5 +1,5 @@
 import { ChronosEngine } from '@chronos/core';
-import { createWebChronosEnv, type WebChronosEnvOptions } from '$lib/services/env/web-env';
+import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
 import { builtinPlugins } from '@chronos/plugins';
 import { MarketplaceService } from '$lib/services/marketplace/marketplace-service';
@@ -11,7 +11,7 @@ let sharedEngine: ChronosEngine | null = null;
 let sharedController: ReactiveChronosController | null = null;
 let sharedMarketplace: MarketplaceService | null = null;
 
-export function getAppEngine(options?: WebChronosEnvOptions): ChronosEngine {
+export function getAppEngine(options?: WebProviderOptions): ChronosEngine {
 	if (!sharedEngine) {
 		const env = createWebChronosEnv(options);
 		sharedEngine = new ChronosEngine({
@@ -42,7 +42,7 @@ export function getAppEngine(options?: WebChronosEnvOptions): ChronosEngine {
 	return sharedEngine;
 }
 
-export function getAppController(options?: WebChronosEnvOptions): ReactiveChronosController {
+export function getAppController(options?: WebProviderOptions): ReactiveChronosController {
 	if (!sharedController) {
 		const engine = getAppEngine(options);
 		sharedController = new ReactiveChronosController(engine);
@@ -50,7 +50,7 @@ export function getAppController(options?: WebChronosEnvOptions): ReactiveChrono
 	return sharedController;
 }
 
-export function getMarketplaceService(options?: WebChronosEnvOptions): MarketplaceService {
+export function getMarketplaceService(options?: WebProviderOptions): MarketplaceService {
 	if (!sharedMarketplace) {
 		const engine = getAppEngine(options);
 		sharedMarketplace = new MarketplaceService(engine);
