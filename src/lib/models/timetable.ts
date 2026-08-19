@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { CQUT_CAMPUS_IDS } from './cqut-campus';
 import { defaultPeriodTimes } from './defaults';
+import {
+	CURRENT_TIMETABLE_SCHEMA_VERSION,
+	DEFAULT_TIMETABLE_NAME,
+	normalizeTimetableName
+} from '@chronos/core';
+
+export { CURRENT_TIMETABLE_SCHEMA_VERSION, DEFAULT_TIMETABLE_NAME, normalizeTimetableName };
 
 export enum TimetableImportSource {
 	UNKNOWN = 'UNKNOWN',
@@ -54,14 +61,6 @@ export const timetableConfigSchema = z.object({
 });
 
 export type TimetableConfig = z.infer<typeof timetableConfigSchema>;
-
-import {
-	CURRENT_TIMETABLE_SCHEMA_VERSION,
-	DEFAULT_TIMETABLE_NAME,
-	normalizeTimetableName
-} from '@chronos/core';
-
-export { CURRENT_TIMETABLE_SCHEMA_VERSION, DEFAULT_TIMETABLE_NAME, normalizeTimetableName };
 
 export interface Timetable {
 	schemaVersion: number;

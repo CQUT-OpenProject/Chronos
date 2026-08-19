@@ -29,28 +29,35 @@ export function toSettingsDraft(timetable: Timetable): TimetableSettingsDraft {
 		name: timetable.name,
 		academicConfig: {
 			termStartDate: academicCalendarService.normalizeTermStartDate(
-				timetable.academicConfig.termStartDate,
+				timetable.academicConfig?.termStartDate ?? '',
 				timeProvider.today()
 			),
-			startWeek: timetable.academicConfig.startWeek,
-			endWeek: timetable.academicConfig.endWeek,
-			periodTimes: timetable.academicConfig.periodTimes.map((period) => ({
+			startWeek: timetable.academicConfig?.startWeek ?? 1,
+			endWeek: timetable.academicConfig?.endWeek ?? 20,
+			periodTimes: (timetable.academicConfig?.periodTimes ?? []).map((period) => ({
 				index: period.index,
 				startTime: period.startTime,
 				endTime: period.endTime
 			}))
 		},
 		importMetadata: {
-			source: timetable.importMetadata.source,
-			campusId: timetable.importMetadata.campusId,
-			campusPeriodTimes: timetable.importMetadata.campusPeriodTimes
-				? { ...timetable.importMetadata.campusPeriodTimes }
+			source: timetable.importMetadata?.source ?? TimetableImportSource.UNKNOWN,
+			campusId: timetable.importMetadata?.campusId as CqutCampusId | undefined,
+			campusPeriodTimes: (timetable.importMetadata?.campusPeriodTimes as
+				| Record<CqutCampusId, PeriodTimeDraft[]>
+				| undefined)
+				? {
+						...(timetable.importMetadata?.campusPeriodTimes as Record<
+							CqutCampusId,
+							PeriodTimeDraft[]
+						>)
+					}
 				: undefined
 		},
 		viewPrefs: {
-			showSaturday: timetable.viewPrefs.showSaturday,
-			showSunday: timetable.viewPrefs.showSunday,
-			showNonCurrentWeekCourses: timetable.viewPrefs.showNonCurrentWeekCourses
+			showSaturday: timetable.viewPrefs?.showSaturday ?? true,
+			showSunday: timetable.viewPrefs?.showSunday ?? true,
+			showNonCurrentWeekCourses: timetable.viewPrefs?.showNonCurrentWeekCourses ?? false
 		}
 	};
 }
@@ -93,17 +100,19 @@ export function resolveUserCampusId(value: string | null | undefined): CqutCampu
 }
 
 export function shouldShowNonCurrentWeekCourseSetting(
-	_importSource: TimetableImportSource
+	_importSource?: TimetableImportSource
 ): boolean {
 	return true;
 }
 
-export function shouldShowTermStartDateSetting(importSource: TimetableImportSource): boolean {
-	return importSource !== TimetableImportSource.ONLINE_EDU;
+export function shouldShowTermStartDateSetting(_importSource?: TimetableImportSource): boolean {
+	return true;
 }
 
-export function shouldShowAcademicWeekRangeSettings(importSource: TimetableImportSource): boolean {
-	return importSource !== TimetableImportSource.ONLINE_EDU;
+export function shouldShowAcademicWeekRangeSettings(
+	_importSource?: TimetableImportSource
+): boolean {
+	return true;
 }
 
 export function removePeriodAt(periodTimes: PeriodTimeDraft[], index: number): PeriodTimeDraft[] {
