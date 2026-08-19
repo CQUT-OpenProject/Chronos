@@ -37,14 +37,7 @@ export function sanitizeEventFields(
 }
 
 function courseIdentityKey(course: Course): string {
-	return JSON.stringify([
-		course.name,
-		course.dayOfWeek,
-		course.startPeriod,
-		course.endPeriod,
-		course.teacher,
-		course.location
-	]);
+	return `${course.name}\0${course.dayOfWeek}\0${course.startPeriod}\0${course.endPeriod}\0${course.teacher}\0${course.location}`;
 }
 
 export function consolidateCourses(courses: Course[]): Course[] {

@@ -57,7 +57,12 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 		}
 
 		const now = this.timeProvider.currentTimeMillis();
-		const maxWeek = Math.max(20, ...courses.flatMap((course) => course.weeks));
+		let maxWeek = 20;
+		for (const course of courses) {
+			for (const week of course.weeks) {
+				if (week > maxWeek) maxWeek = week;
+			}
+		}
 
 		return success({
 			id: crypto.randomUUID(),
@@ -189,8 +194,11 @@ function normalizeWhitespace(value: string): string {
 
 function extractOwnText(element: Element | null | undefined): string {
 	if (!element) return '';
-	return [...element.childNodes]
-		.filter((node) => node.nodeType === 3)
-		.map((node) => node.textContent ?? '')
-		.join('');
+	let text = '';
+	for (const node of element.childNodes) {
+		if (node.nodeType === 3) {
+			text += node.textContent ?? '';
+		}
+	}
+	return text;
 }

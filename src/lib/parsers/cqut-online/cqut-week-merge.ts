@@ -21,17 +21,6 @@ export function resolveWeeksToFetch(
 	return fallbackWeek ? [fallbackWeek] : [];
 }
 
-interface OnlineScheduleEventKey {
-	weekDay: string;
-	sessionList: string[];
-	sessionStart: string;
-	sessionLast: string;
-	eventName: string;
-	address: string;
-	memberName: string;
-	eventType: string;
-}
-
 function normalizeEvent(event: OnlineScheduleEvent): OnlineScheduleEvent {
 	return {
 		...event,
@@ -53,27 +42,14 @@ function normalizeEvent(event: OnlineScheduleEvent): OnlineScheduleEvent {
 	};
 }
 
-function eventKey(event: OnlineScheduleEvent): OnlineScheduleEventKey {
-	return {
-		weekDay: event.weekDay,
-		sessionList: event.sessionList,
-		sessionStart: event.sessionStart,
-		sessionLast: event.sessionLast,
-		eventName: event.eventName,
-		address: event.address,
-		memberName: event.memberName,
-		eventType: event.eventType
-	};
+function eventIdentityKey(event: OnlineScheduleEvent): string {
+	return `${event.weekDay}\0${event.sessionStart}\0${event.sessionLast}\0${event.sessionList.join(',')}\0${event.eventName}\0${event.address}\0${event.memberName}\0${event.eventType}`;
 }
 
 function mergeWeekLists(left: string[], right: string[]): string[] {
 	return [...new Set([...left, ...right])].sort(
 		(a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
 	);
-}
-
-function eventKeyToString(key: OnlineScheduleEventKey): string {
-	return JSON.stringify(key);
 }
 
 export function mergeWeekPayloads(
@@ -85,7 +61,7 @@ export function mergeWeekPayloads(
 	for (const payload of payloads) {
 		for (const event of payload.eventList) {
 			const normalizedEvent = normalizeEvent(event);
-			const key = eventKeyToString(eventKey(normalizedEvent));
+			const key = eventIdentityKey(normalizedEvent);
 			const existing = mergedEvents.get(key);
 			if (!existing) {
 				mergedEvents.set(key, normalizedEvent);

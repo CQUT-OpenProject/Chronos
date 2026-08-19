@@ -91,10 +91,13 @@ function internString(pool: StringPool, value: string): number {
 	return index;
 }
 
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+
 function writeStringTable(pool: StringPool, target: number[]): void {
 	target.push(pool.strings.length);
 	for (const value of pool.strings) {
-		const bytes = new TextEncoder().encode(value);
+		const bytes = textEncoder.encode(value);
 		writeVarint(bytes.length, target);
 		for (const byte of bytes) target.push(byte);
 	}
@@ -114,7 +117,7 @@ function readStringTable(
 		const start = reader.position;
 		const slice = bytes.subarray(start, start + length);
 		if (slice.length !== length) throw new ShareBinaryDecodeError('truncated string entry');
-		strings.push(new TextDecoder().decode(slice));
+		strings.push(textDecoder.decode(slice));
 		reader.position = start + length;
 	}
 	return { strings, nextOffset: reader.position };
@@ -401,7 +404,7 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 
 	if (courses.length === 0) throw new ShareBinaryDecodeError('no valid courses decoded');
 
-	const sortedCourses = [...courses].sort(
+	const sortedCourses = courses.sort(
 		(left, right) =>
 			left.dayOfWeek - right.dayOfWeek ||
 			left.startPeriod - right.startPeriod ||
