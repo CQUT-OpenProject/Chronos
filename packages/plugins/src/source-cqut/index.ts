@@ -21,6 +21,7 @@ export interface CqutPluginConfig {
 
 export interface CqutImportForm {
 	username?: string;
+	account?: string;
 	password?: string;
 	campusId: CqutCampusId;
 	saveCredentials?: boolean;
@@ -312,6 +313,73 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 	},
 
 	apply(ctx: ChronosContext<CqutPluginConfig>) {
+		async function doImport(
+			inputs: Record<string, unknown>,
+			context?: ChronosContext
+		): Promise<Timetable> {
+			const activeCtx = context ?? ctx;
+			const form = inputs as unknown as {
+				username?: string;
+				account?: string;
+				password?: string;
+				campusId?: CqutCampusId;
+			};
+			const username = form.username || form.account;
+			const password = form.password;
+			const campusId = form.campusId;
+
+			if (!username || !password) {
+				throw new Error('请输入学号与密码');
+			}
+
+			activeCtx.actions.notify('正在连接知行理工...', 'info');
+
+			let http: { request: (url: string, opts?: HttpRequestOptions) => Promise<HttpResponse> };
+			try {
+				http = activeCtx.service(IHttpService);
+			} catch {
+				http = activeCtx.env.http;
+			}
+
+			const configObj = activeCtx.config as unknown as CqutPluginConfig | undefined;
+			const authUrl = configObj?.customAuthUrl || 'https://authserver.cqut.edu.cn/authserver/login';
+			const response = await http.request(authUrl, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+				useSession: true,
+				sessionId: `cqut-${username}`,
+				bypassCors: true
+			});
+
+			if (!response.ok) {
+				let errorMsg = '教务认证失败，请检查学号与密码';
+				try {
+					const errJson = (await response.json()) as { error?: { message?: string } };
+					if (errJson?.error?.message) {
+						errorMsg = errJson.error.message;
+					}
+				} catch {
+					// Keep default error message
+				}
+				throw new Error(errorMsg);
+			}
+
+			let parsedJson: CqutScheduleRawInput;
+			try {
+				parsedJson = (await response.json()) as CqutScheduleRawInput;
+			} catch {
+				parsedJson = {};
+			}
+
+			const timetable = parseCqutScheduleData(
+				parsedJson,
+				username,
+				campusId || configObj?.campusId || 'huaxi'
+			);
+			return timetable;
+		}
+
 		// Register import source tab slot
 		ctx.registerSlot('import.source.tab', {
 			id: 'cqut-online',
@@ -322,61 +390,9 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 				campusId: ctx.config.campusId || 'huaxi',
 				saveCredentials: false
 			},
-			async executeImport(inputs: Record<string, unknown>) {
-				const form = inputs as unknown as CqutImportForm;
-				const { username, password, campusId } = form;
-
-				if (!username || !password) {
-					throw new Error('请输入学号与密码');
-				}
-
-				ctx.actions.notify('正在连接知行理工...', 'info');
-
-				let http: { request: (url: string, opts?: HttpRequestOptions) => Promise<HttpResponse> };
-				try {
-					http = ctx.service(IHttpService);
-				} catch {
-					http = ctx.env.http;
-				}
-
-				const authUrl =
-					ctx.config.customAuthUrl || 'https://authserver.cqut.edu.cn/authserver/login';
-				const response = await http.request(authUrl, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
-					useSession: true,
-					sessionId: `cqut-${username}`,
-					bypassCors: true
-				});
-
-				if (!response.ok) {
-					let errorMsg = '教务认证失败，请检查学号与密码';
-					try {
-						const errJson = (await response.json()) as { error?: { message?: string } };
-						if (errJson?.error?.message) {
-							errorMsg = errJson.error.message;
-						}
-					} catch {
-						// Keep default error message
-					}
-					throw new Error(errorMsg);
-				}
-
-				let parsedJson: CqutScheduleRawInput;
-				try {
-					parsedJson = (await response.json()) as CqutScheduleRawInput;
-				} catch {
-					parsedJson = {};
-				}
-
-				const timetable = parseCqutScheduleData(
-					parsedJson,
-					username,
-					campusId || ctx.config.campusId
-				);
-				return timetable;
-			}
+			fetchSchedule: (inputs: Record<string, unknown>) => doImport(inputs, ctx),
+			executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
+				doImport(inputs, context)
 		});
 	}
 };

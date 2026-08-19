@@ -190,19 +190,22 @@ export const htmlParserPlugin: ChronosPlugin = {
 	description: () => '解析国内高校教务系统导出的 HTML 课表文件',
 
 	apply(ctx: ChronosContext) {
+		async function doImport(inputs: Record<string, unknown>): Promise<Timetable> {
+			const fileContent =
+				(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
+			if (!fileContent || typeof fileContent !== 'string') {
+				throw new Error('请选择有效的 HTML 课表文件');
+			}
+			return parseHtmlTimetable(fileContent);
+		}
+
 		ctx.registerSlot('import.source.tab', {
 			id: 'edu-html',
 			title: () => 'HTML 文件',
 			order: 30,
 			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			async executeImport(inputs: Record<string, unknown>) {
-				const fileContent =
-					(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
-				if (!fileContent || typeof fileContent !== 'string') {
-					throw new Error('请选择有效的 HTML 课表文件');
-				}
-				return parseHtmlTimetable(fileContent);
-			}
+			fetchSchedule: (inputs: Record<string, unknown>) => doImport(inputs),
+			executeImport: (inputs: Record<string, unknown>) => doImport(inputs)
 		});
 	}
 };

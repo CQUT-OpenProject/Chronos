@@ -3,7 +3,11 @@ import type { SavedCredentialState } from '$lib/models/auth';
 import type { CqutCampusId } from '$lib/models/cqut-campus';
 import { getCampusDefaultPeriodTimes } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
-import { createPrfCredential, getPrfOutput } from '$lib/client/webauthn/prf-coordinator';
+import {
+	createPrfCredential,
+	getPrfOutput,
+	WebAuthnCredentialUnavailableError
+} from '$lib/client/webauthn/prf-coordinator';
 import { base64ToBytes } from '$lib/client/webauthn/binary';
 import {
 	createSessionPreviewPersistence,
@@ -73,12 +77,14 @@ export interface TransferImportCoordinatorDeps {
 	engine?: ChronosEngine;
 }
 
-export function createTransferImportCoordinator(deps: TransferImportCoordinatorDeps = {}) {
-	const secureCredentialStore = deps.secureCredentialStore ?? new WebAuthnSecureCredentialStore();
-	const previewPersistence = deps.previewPersistence ?? createSessionPreviewPersistence();
-	const clipboard = deps.clipboard ?? createNavigatorClipboardGateway();
-	const shareLinkCodec = deps.shareLinkCodec ?? new ChronosTimetableShareLinkCodec();
-	const getEngine = () => deps.engine ?? getAppEngine();
+export function createTransferImportCoordinator({
+	secureCredentialStore = new WebAuthnSecureCredentialStore(),
+	previewPersistence = createSessionPreviewPersistence(),
+	clipboard = createNavigatorClipboardGateway(),
+	shareLinkCodec = new ChronosTimetableShareLinkCodec(),
+	engine
+}: TransferImportCoordinatorDeps = {}) {
+	const getEngine = () => engine ?? getAppEngine();
 
 	async function previewFromClipboard(): Promise<PreviewOutcome> {
 		try {
@@ -88,19 +94,38 @@ export function createTransferImportCoordinator(deps: TransferImportCoordinatorD
 				return { ok: false, errorMessage: '剪贴板内容为空' };
 			}
 
-			// 1. 尝试分享短链
+			// 1. Decode share link
 			const result = await shareLinkCodec.decode(trimmed);
 			if (result.ok) {
-				return { ok: true, preview: result.value as unknown as Timetable, source: 'SHARE_LINK' };
+				return { ok: true, preview: result.value, source: 'SHARE_LINK' };
 			}
 
-			// 2. 尝试 JSON 备份源
+			// 2. Decode JSON backup source if slot available
 			const jsonSource = getEngine().slots.getSource('share-json');
 			if (jsonSource) {
 				try {
-					const timetable = (await jsonSource.fetchSchedule({
-						fileContent: trimmed
-					})) as unknown as Timetable;
+					let timetable: Timetable;
+					if (
+						typeof (jsonSource as unknown as { executeImport?: unknown }).executeImport ===
+						'function'
+					) {
+						const ctx = getEngine().getPluginContext('codec-share');
+						timetable = (await (
+							jsonSource as unknown as {
+								executeImport: (
+									inputs: Record<string, unknown>,
+									ctx?: unknown
+								) => Promise<Timetable>;
+							}
+						).executeImport(
+							{ file: trimmed, content: trimmed, fileContent: trimmed },
+							ctx
+						)) as unknown as Timetable;
+					} else {
+						timetable = (await jsonSource.fetchSchedule({
+							fileContent: trimmed
+						})) as unknown as Timetable;
+					}
 					if (timetable && timetable.courses?.length > 0) {
 						return { ok: true, preview: timetable, source: 'SHARE_LINK' };
 					}
@@ -109,32 +134,48 @@ export function createTransferImportCoordinator(deps: TransferImportCoordinatorD
 				}
 			}
 
-			return { ok: false, errorMessage: result.error.message };
+			return { ok: false, errorMessage: result.error.message || '无效的课表分享内容' };
 		} catch {
 			return { ok: false, errorMessage: '无法读取剪贴板，请检查浏览器权限' };
 		}
 	}
 
 	async function previewFromHtmlFile(file: File): Promise<PreviewOutcome> {
-		const htmlText = await file.text();
 		try {
-			const htmlSource = getEngine().slots.getSource('html-parser');
+			const text = await file.text();
+			const htmlSource =
+				getEngine().slots.getSource('edu-html') || getEngine().slots.getSource('html-parser');
 			let timetable: Timetable;
+
 			if (htmlSource) {
-				timetable = (await htmlSource.fetchSchedule({
-					fileContent: htmlText
-				})) as unknown as Timetable;
+				if (
+					typeof (htmlSource as unknown as { executeImport?: unknown }).executeImport === 'function'
+				) {
+					const ctx = getEngine().getPluginContext('parser-html');
+					timetable = (await (
+						htmlSource as unknown as {
+							executeImport: (inputs: Record<string, unknown>, ctx?: unknown) => Promise<Timetable>;
+						}
+					).executeImport({ file: text, fileContent: text }, ctx)) as unknown as Timetable;
+				} else if (typeof htmlSource.fetchSchedule === 'function') {
+					timetable = (await htmlSource.fetchSchedule({
+						fileContent: text
+					})) as unknown as Timetable;
+				} else {
+					timetable = parseHtmlTimetable(text) as unknown as Timetable;
+				}
 			} else {
-				timetable = parseHtmlTimetable(htmlText) as unknown as Timetable;
+				timetable = parseHtmlTimetable(text) as unknown as Timetable;
 			}
 
 			if (!timetable || timetable.courses.length === 0) {
 				return { ok: false, errorMessage: 'HTML 文件中未识别到任何有效课程' };
 			}
+
 			return { ok: true, preview: timetable, source: 'HTML' };
-		} catch (error) {
-			const message = error instanceof Error ? error.message : 'HTML 文件解析失败，请确认文件格式';
-			return { ok: false, errorMessage: message };
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : '解析 HTML 课表失败';
+			return { ok: false, errorMessage: msg };
 		}
 	}
 
@@ -197,10 +238,48 @@ export function createTransferImportCoordinator(deps: TransferImportCoordinatorD
 			let timetable: Timetable;
 
 			if (source) {
-				timetable = (await source.fetchSchedule({
-					username: trimmedAccount,
-					password
-				})) as unknown as Timetable;
+				if (typeof source.fetchSchedule === 'function') {
+					timetable = (await source.fetchSchedule({
+						username: trimmedAccount,
+						password
+					})) as unknown as Timetable;
+				} else if (
+					typeof (source as unknown as { executeImport?: unknown }).executeImport === 'function'
+				) {
+					const ctx = getEngine().getPluginContext('source-cqut');
+					timetable = (await (
+						source as unknown as {
+							executeImport: (inputs: Record<string, unknown>, ctx?: unknown) => Promise<Timetable>;
+						}
+					).executeImport(
+						{
+							username: trimmedAccount,
+							account: trimmedAccount,
+							password
+						},
+						ctx
+					)) as unknown as Timetable;
+				} else {
+					const res = await fetch('/api/cqut/preview', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ account: trimmedAccount, password })
+					});
+					const data = (await res.json()) as {
+						ok: boolean;
+						payload?: unknown;
+						value?: Timetable;
+						error?: { message: string };
+					};
+					if (!data.ok) {
+						return {
+							ok: false,
+							errorMessage: data.error?.message || '获取课表失败，请检查账号密码'
+						};
+					}
+					timetable = (data.value ??
+						parseCqutScheduleData(data.payload as never, trimmedAccount)) as Timetable;
+				}
 			} else {
 				const res = await fetch('/api/cqut/preview', {
 					method: 'POST',
@@ -281,6 +360,13 @@ export function createTransferImportCoordinator(deps: TransferImportCoordinatorD
 				password: unlockResult.value.password
 			};
 		} catch (error) {
+			if (error instanceof WebAuthnCredentialUnavailableError) {
+				await secureCredentialStore.clearCredential();
+				return {
+					ok: false,
+					errorMessage: '已保存凭据已失效，请重新录入账号和密码'
+				};
+			}
 			const message = error instanceof Error ? error.message : '已取消设备验证';
 			return {
 				ok: false,
@@ -336,6 +422,13 @@ export function createTransferImportCoordinator(deps: TransferImportCoordinatorD
 				importMetadata: {
 					...preview.importMetadata,
 					campusId: htmlImportCampusId
+				},
+				customMetadata: {
+					...preview.customMetadata,
+					'core.import': {
+						source: 'FILE_HTML',
+						campusId: htmlImportCampusId
+					}
 				}
 			};
 		}

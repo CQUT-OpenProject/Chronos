@@ -17,8 +17,9 @@ export interface ImportTabSlotContribution<
 	/** Declare input fields required by the import source (credentials, captcha, campus select, HTML file, etc.) */
 	inputSchema?: ConfigSchema<FormState>;
 	defaultInput?: FormState;
+	fetchSchedule?(inputs: FormState): Promise<Timetable>;
 	/** Execute import action handler */
-	executeImport(inputs: FormState, ctx: ChronosContext): Promise<Timetable>;
+	executeImport(inputs: FormState, ctx?: ChronosContext): Promise<Timetable>;
 }
 
 // 2. Export action slot contribution specification
@@ -33,7 +34,7 @@ export interface ExportActionSlotContribution {
 	title: LocalizedText;
 	order?: number;
 	icon?: string;
-	export(timetable: Timetable, ctx: ChronosContext): Promise<ExportResult>;
+	export(timetable: Timetable, ctx?: ChronosContext): Promise<ExportResult>;
 }
 
 // 3. Mine/Settings section and item slot contribution specification

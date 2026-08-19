@@ -46,23 +46,26 @@ export const shareCodecPlugin: ChronosPlugin = {
 	description: () => '支持 Chronos 课表 JSON 备份文件的导入与导出',
 
 	apply(ctx: ChronosContext) {
+		async function doImport(inputs: Record<string, unknown>): Promise<Timetable> {
+			const rawContent =
+				(inputs.file as string | undefined) ??
+				(inputs.content as string | undefined) ??
+				(inputs.fileContent as string | undefined);
+
+			if (!rawContent || typeof rawContent !== 'string' || !rawContent.trim()) {
+				throw new Error('请输入或上传有效的 JSON 课表数据');
+			}
+			return parseTimetableFromJson(rawContent.trim());
+		}
+
 		// 1. Register import tab slot for JSON backup / pasted data
 		ctx.registerSlot('import.source.tab', {
 			id: 'share-json',
 			title: () => 'JSON 备份',
 			order: 20,
 			inputSchema: shareImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			async executeImport(inputs: Record<string, unknown>) {
-				const rawContent =
-					(inputs.file as string | undefined) ??
-					(inputs.content as string | undefined) ??
-					(inputs.fileContent as string | undefined);
-
-				if (!rawContent || typeof rawContent !== 'string' || !rawContent.trim()) {
-					throw new Error('请输入或上传有效的 JSON 课表数据');
-				}
-				return parseTimetableFromJson(rawContent.trim());
-			}
+			fetchSchedule: (inputs: Record<string, unknown>) => doImport(inputs),
+			executeImport: (inputs: Record<string, unknown>) => doImport(inputs)
 		});
 
 		// 2. Register export action slot for JSON download

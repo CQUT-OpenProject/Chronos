@@ -57,6 +57,11 @@ export class HierarchicalSlotRegistry implements Disposable {
 		};
 	}
 
+	clear(): void {
+		this.slots.clear();
+		this.notify();
+	}
+
 	// === Backward Compatibility Adapters ===
 	registerSource(adapter: TimetableSourceAdapter): Disposable {
 		const contribution = {
@@ -75,7 +80,25 @@ export class HierarchicalSlotRegistry implements Disposable {
 	}
 
 	getSource(id: string): TimetableSourceAdapter | undefined {
-		return this.getSlotItem('import.source.tab', id) as TimetableSourceAdapter | undefined;
+		const item = this.getSlotItem('import.source.tab', id);
+		if (!item) return undefined;
+		const raw = item as unknown as Record<string, unknown>;
+		if (typeof raw.fetchSchedule === 'function') {
+			return item as unknown as TimetableSourceAdapter;
+		}
+		if (typeof raw.executeImport === 'function') {
+			return {
+				...item,
+				fetchSchedule: (inputs: Record<string, unknown>) =>
+					(
+						raw.executeImport as (
+							inputs: Record<string, unknown>,
+							ctx?: unknown
+						) => Promise<import('../domain/timetable').Timetable>
+					)(inputs)
+			} as unknown as TimetableSourceAdapter;
+		}
+		return item as unknown as TimetableSourceAdapter;
 	}
 
 	getSources(): ReadonlyArray<TimetableSourceAdapter> {
@@ -94,7 +117,13 @@ export class HierarchicalSlotRegistry implements Disposable {
 	}
 
 	getExporter(id: string): TimetableExporterAdapter | undefined {
-		return this.getSlotItem('export.action', id) as TimetableExporterAdapter | undefined;
+		const item = this.getSlotItem('export.action', id);
+		if (!item) return undefined;
+		const raw = item as unknown as Record<string, unknown>;
+		if (typeof raw.export === 'function') {
+			return item as unknown as TimetableExporterAdapter;
+		}
+		return item as unknown as TimetableExporterAdapter;
 	}
 
 	getExporters(): ReadonlyArray<TimetableExporterAdapter> {
