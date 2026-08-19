@@ -3,8 +3,6 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildGeneratedThemeCss } from './scheme';
 
-export { buildGeneratedThemeCss } from './scheme';
-
 const generatedThemePath = resolve(dirname(fileURLToPath(import.meta.url)), 'generated-theme.css');
 
 export function writeGeneratedThemeCss() {

@@ -7,15 +7,18 @@ import adapterStatic from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { writeGeneratedThemeCss } from './src/lib/m3/theme';
+import { writeGeneratedVersionJson } from './src/lib/content/releases/version-generator';
 
 function chronosThemeTokensPlugin() {
 	return {
 		name: 'chronos-theme-tokens',
 		configureServer() {
 			writeGeneratedThemeCss();
+			writeGeneratedVersionJson();
 		},
 		buildStart() {
 			writeGeneratedThemeCss();
+			writeGeneratedVersionJson();
 		}
 	};
 }
@@ -319,25 +322,20 @@ export default defineConfig(({ mode }) => {
 				workbox: {
 					globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
 					// SSR（Vercel adapter）无预渲染 "/"，禁用 navigateFallback 避免自动注入的
-					// NavigationRoute 抢在下方自定义 NetworkFirst 规则之前拦截所有导航请求
+					// NavigationRoute 抢在下方自定义 CacheFirst 规则之前拦截所有导航请求
 					navigateFallback: null,
 					runtimeCaching: [
 						{
 							urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
-							handler: 'NetworkFirst',
+							handler: 'CacheFirst',
 							options: {
 								cacheName: 'pages-cache',
-								expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 },
-								networkTimeoutSeconds: 0.3
+								expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 }
 							}
 						},
 						{
-							urlPattern: /^https:\/\/api\.github\.com\/.*/i,
-							handler: 'NetworkFirst',
-							options: {
-								cacheName: 'github-api',
-								expiration: { maxEntries: 32, maxAgeSeconds: 86_400 }
-							}
+							urlPattern: /\/version\.json$/i,
+							handler: 'NetworkOnly'
 						},
 						{
 							urlPattern: /\/legal\/.*\.md$|\/licenses\/.*$/i,

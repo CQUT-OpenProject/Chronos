@@ -33,3 +33,7 @@ project.inlang/cache/
 
 # Agents
 .cursor/
+
+# Generated
+/static/version.json
+

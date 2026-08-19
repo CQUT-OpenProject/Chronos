@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { formatSlashDate } from '$lib/domain/date';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
-	import type { TimetableGridModel } from '$lib/models/presentation';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
+	import { formatWeekDateRange } from '$lib/timetable/timetable-preview';
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
@@ -46,10 +45,15 @@
 		weekGesture.weekSliderVisible ? weekGesture.dragWeek : screenState.displayedWeek
 	);
 	const weekRangeText = $derived(
-		formatWeekRange(screenState.weekGridModels.get(screenState.displayedWeek))
+		formatWeekDateRange(
+			screenState.appState.currentTimetable?.academicConfig,
+			displayedWeekNumber,
+			screenState.today,
+			screenState.appState.currentTimetable?.viewPrefs
+		)
 	);
 	const headerTodayLabel = $derived(
-		screenState.displayedWeek === screenState.academicWeek
+		displayedWeekNumber === screenState.academicWeek
 			? timetableDayLabel(dayOfWeekFromIso(screenState.today))
 			: ''
 	);
@@ -78,19 +82,6 @@
 			event.preventDefault();
 			weekGesture.onHeaderTap();
 		}
-	}
-
-	function formatWeekRange(gridModel: TimetableGridModel | undefined) {
-		const days = gridModel?.visibleDays ?? [];
-		const first = days[0]?.date;
-		const last = days.at(-1)?.date;
-		if (!first || !last) return formatSlashDate(screenState.today);
-		return `${formatShortDate(first)} - ${formatShortDate(last)}`;
-	}
-
-	function formatShortDate(iso: string) {
-		const [, month, day] = iso.split('-');
-		return `${Number(month)}/${Number(day)}`;
 	}
 
 	function dayOfWeekFromIso(iso: string) {
@@ -131,7 +122,7 @@
 							max={endWeek}
 							step={1}
 							stops
-							onValueChange={(week) => screen.setDisplayedWeek(week)}
+							onValueChange={weekGesture.onSliderValueChange}
 							onValueCommit={weekGesture.onSliderCommit}
 						/>
 					{:else}

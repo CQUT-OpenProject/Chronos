@@ -8,7 +8,9 @@ const COURSE_PALETTE: [string, string][] = [
 	['#C4EED0', '#072711'],
 	['#D3E3FD', '#041E49'],
 	['#FFD8E4', '#31111D'],
-	['#F6E1B0', '#241A00']
+	['#F6E1B0', '#241A00'],
+	['#A9F0E4', '#00201C'],
+	['#DCE9A1', '#181E00']
 ];
 
 const EASTER_EGG_COURSE_BACKGROUNDS = [
@@ -75,12 +77,12 @@ export function resolveCoursePalette(
 	return COURSE_PALETTE_ENTRIES;
 }
 
+const PALETTE_SLOT_MAP = new Map<string, number>(
+	COURSE_PALETTE_ENTRIES.map((entry, index) => [entry.background.toLowerCase(), index])
+);
+
 export function defaultPaletteSlot(hex: string): number | null {
-	const normalized = hex.trim().toLowerCase();
-	const index = COURSE_PALETTE_ENTRIES.findIndex(
-		(entry) => entry.background.toLowerCase() === normalized
-	);
-	return index < 0 ? null : index;
+	return PALETTE_SLOT_MAP.get(hex.trim().toLowerCase()) ?? null;
 }
 
 export function persistSwatchSelection(displayIndex: number): CoursePaletteEntry {
@@ -98,6 +100,12 @@ export function resolveCoursePaint(
 	return displayPalette[slot % displayPalette.length]!;
 }
 
+interface CourseSlotPreference {
+	name: string;
+	slot: number;
+	hash: number;
+}
+
 /** Spread automatic (default-slot) courses across the display palette. */
 export function assignCourseDisplayColors(
 	courses: { name: string; color: string }[],
@@ -105,31 +113,36 @@ export function assignCourseDisplayColors(
 ): Map<string, CoursePaletteEntry> {
 	if (palette.length === 0) return new Map();
 
-	const preferred = new Map<string, number>();
+	const preferredMap = new Map<string, CourseSlotPreference>();
 	for (const course of courses) {
 		const slot = defaultPaletteSlot(course.color);
 		if (slot == null) continue;
 		const name = normalizedCourseName(course.name);
-		if (!preferred.has(name)) preferred.set(name, slot);
+		if (!preferredMap.has(name)) {
+			preferredMap.set(name, {
+				name,
+				slot,
+				hash: kotlinStringHashCode(name)
+			});
+		}
 	}
 
-	const names = [...preferred.keys()].sort(
-		(left, right) =>
-			kotlinStringHashCode(left) - kotlinStringHashCode(right) || left.localeCompare(right)
+	const sortedPreferences = [...preferredMap.values()].sort(
+		(left, right) => left.hash - right.hash || left.name.localeCompare(right.name)
 	);
 
 	const assigned = new Map<string, CoursePaletteEntry>();
 	const occupied = new Set<number>();
 	const deferred: string[] = [];
 
-	for (const name of names) {
-		const slot = preferred.get(name)! % palette.length;
-		if (occupied.has(slot)) {
+	for (const { name, slot } of sortedPreferences) {
+		const targetSlot = slot % palette.length;
+		if (occupied.has(targetSlot)) {
 			deferred.push(name);
 			continue;
 		}
-		occupied.add(slot);
-		assigned.set(name, palette[slot]!);
+		occupied.add(targetSlot);
+		assigned.set(name, palette[targetSlot]!);
 	}
 
 	let next = 0;

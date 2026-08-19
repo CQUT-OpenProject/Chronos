@@ -23,7 +23,7 @@
 	<MineSection title="触感反馈">
 		<MineRow
 			label={true}
-			title="震动反馈"
+			title="振动反馈"
 			icon={MobileVibrateFill}
 			iconTone="primary"
 			onclick={() => toggleHapticFeedback(!hapticFeedbackEnabled)}

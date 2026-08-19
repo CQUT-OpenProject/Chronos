@@ -5,7 +5,7 @@ import type { TimetableGridModel } from '$lib/models/presentation';
 import { buildWeekGridModels, computeDelayUntilNextMidnightMillis } from './timetable-screen-logic';
 
 describe('timetable-screen-logic', () => {
-	it('buildWeekGridModels keeps only displayed week and adjacent pages', () => {
+	it('buildWeekGridModels preserves cached models and generates missing adjacent pages', () => {
 		const requestedWeeks: number[] = [];
 		const existingWeekSix = sampleGridModel('existing-6');
 
@@ -15,7 +15,7 @@ describe('timetable-screen-logic', () => {
 			7,
 			new Map([
 				[6, existingWeekSix],
-				[2, sampleGridModel('stale-2')]
+				[2, sampleGridModel('existing-2')]
 			]),
 			(_today, week) => {
 				requestedWeeks.push(week);
@@ -23,7 +23,7 @@ describe('timetable-screen-logic', () => {
 			}
 		);
 
-		expect([...weekGridModels.keys()]).toEqual([6, 7, 8]);
+		expect([...weekGridModels.keys()].sort((a, b) => a - b)).toEqual([2, 6, 7, 8]);
 		expect(weekGridModels.get(6)).toBe(existingWeekSix);
 		expect(requestedWeeks).toEqual([7, 8]);
 	});

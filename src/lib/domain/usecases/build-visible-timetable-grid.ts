@@ -47,11 +47,10 @@ function buildVisibleDayIndices(timetable: Timetable): number[] {
 }
 
 function buildDisplayPeriods(configuredPeriods: PeriodTime[], count: number): PeriodTime[] {
-	const configured = new Map(
-		[...configuredPeriods]
-			.sort((left, right) => left.index - right.index)
-			.map((period) => [period.index, period])
-	);
+	const configured = new Map<number, PeriodTime>();
+	for (const period of configuredPeriods) {
+		configured.set(period.index, period);
+	}
 	const defaults = defaultPeriodTimes();
 
 	return Array.from({ length: count }, (_, index) => {

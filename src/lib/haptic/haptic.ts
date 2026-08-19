@@ -61,7 +61,7 @@ export const haptic = {
 		return triggerVibrate([40, 60, 40]);
 	},
 
-	/** 取消当前正在进行的震动 */
+	/** 取消当前正在进行的振动 */
 	cancel(): boolean {
 		if (isVibrationSupported()) {
 			try {

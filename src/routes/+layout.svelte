@@ -9,7 +9,6 @@
 	import OnboardingFlow from '$lib/components/onboarding/OnboardingFlow.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { setContext } from 'svelte';
-	import type { Pathname } from '$app/types';
 	import { page } from '$app/state';
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import {

@@ -57,7 +57,12 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 		}
 
 		const now = this.timeProvider.currentTimeMillis();
-		const maxWeek = Math.max(20, ...courses.flatMap((course) => course.weeks));
+		let maxWeek = 20;
+		for (const course of courses) {
+			for (const week of course.weeks) {
+				if (week > maxWeek) maxWeek = week;
+			}
+		}
 
 		return success({
 			id: crypto.randomUUID(),
@@ -104,12 +109,14 @@ export class EducationalTimetableHtmlParser implements EducationalTimetableHtmlP
 					const key = normalizeWhitespace(titleSpan?.getAttribute('title') ?? '');
 					if (!key) continue;
 
-					const val = normalizeWhitespace(
-						[...paragraph.childNodes]
-							.filter((node) => node !== titleSpan)
-							.map((node) => node.textContent ?? '')
-							.join('')
-					);
+					let rawValue = '';
+					for (let i = 0; i < paragraph.childNodes.length; i += 1) {
+						const node = paragraph.childNodes[i]!;
+						if (node !== titleSpan) {
+							rawValue += node.textContent ?? '';
+						}
+					}
+					const val = normalizeWhitespace(rawValue);
 					if (!val) continue;
 
 					const existing = metadata.get(key);
@@ -189,8 +196,11 @@ function normalizeWhitespace(value: string): string {
 
 function extractOwnText(element: Element | null | undefined): string {
 	if (!element) return '';
-	return [...element.childNodes]
-		.filter((node) => node.nodeType === 3)
-		.map((node) => node.textContent ?? '')
-		.join('');
+	let text = '';
+	for (const node of element.childNodes) {
+		if (node.nodeType === 3) {
+			text += node.textContent ?? '';
+		}
+	}
+	return text;
 }

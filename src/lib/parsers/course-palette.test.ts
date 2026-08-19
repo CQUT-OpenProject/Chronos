@@ -30,6 +30,8 @@ describe('defaultPaletteSlot', () => {
 	it('returns the default-palette index, case-insensitively', () => {
 		expect(defaultPaletteSlot('#EADDFF')).toBe(0);
 		expect(defaultPaletteSlot('#f6e1b0')).toBe(5);
+		expect(defaultPaletteSlot('#a9f0e4')).toBe(6);
+		expect(defaultPaletteSlot('#DCE9A1')).toBe(7);
 	});
 
 	it('returns null for a custom hex', () => {
@@ -39,8 +41,11 @@ describe('defaultPaletteSlot', () => {
 
 describe('persistSwatchSelection', () => {
 	it('stores the identity hex for a display-palette index, never the display hex', () => {
+		expect(COURSE_PALETTE_ENTRIES).toHaveLength(8);
 		expect(persistSwatchSelection(0)).toEqual(COURSE_PALETTE_ENTRIES[0]);
 		expect(persistSwatchSelection(5)).toEqual(COURSE_PALETTE_ENTRIES[5]);
+		expect(persistSwatchSelection(6)).toEqual(COURSE_PALETTE_ENTRIES[6]);
+		expect(persistSwatchSelection(7)).toEqual(COURSE_PALETTE_ENTRIES[7]);
 		expect(persistSwatchSelection(0).background).not.toBe(
 			EASTER_EGG_PALETTE_ENTRIES[0]?.background
 		);

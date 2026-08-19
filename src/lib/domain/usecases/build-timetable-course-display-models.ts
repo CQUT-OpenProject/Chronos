@@ -5,24 +5,30 @@ import { AcademicCalendarService } from '../services/academic-calendar';
 import { courseSlotKey } from '$lib/timetable/slot-key';
 
 export class BuildTimetableCourseDisplayModelsUseCase {
-	constructor(private readonly academicCalendarService = new AcademicCalendarService()) {}
+	constructor(private readonly _academicCalendarService = new AcademicCalendarService()) {}
 
 	invoke(
 		timetable: Timetable,
 		visibleDayOfWeeks: Set<number>,
 		displayedWeek: number,
-		today: string
+		_today: string
 	): TimetableCourseDisplayModel[] {
-		const visibleCourses = timetable.courses
-			.map((course, originalIndex) => ({ course, originalIndex }))
-			.filter(({ course }) => visibleDayOfWeeks.has(course.dayOfWeek));
+		const currentEntries: TimetableCourseDisplayModel[] = [];
+		const nonCurrentCandidates: Array<{ course: Course; originalIndex: number }> = [];
 
-		const currentEntries = visibleCourses
-			.filter(({ course }) => course.weeks.length === 0 || course.weeks.includes(displayedWeek))
-			.map(({ course }) => ({
-				course: { ...course, weeks: [...course.weeks] },
-				isInDisplayedWeek: true
-			}));
+		for (let i = 0; i < timetable.courses.length; i += 1) {
+			const course = timetable.courses[i]!;
+			if (!visibleDayOfWeeks.has(course.dayOfWeek)) continue;
+
+			if (course.weeks.length === 0 || course.weeks.includes(displayedWeek)) {
+				currentEntries.push({
+					course: { ...course, weeks: [...course.weeks] },
+					isInDisplayedWeek: true
+				});
+			} else {
+				nonCurrentCandidates.push({ course, originalIndex: i });
+			}
+		}
 
 		if (!timetable.viewPrefs.showNonCurrentWeekCourses) {
 			return currentEntries;
@@ -31,25 +37,21 @@ export class BuildTimetableCourseDisplayModelsUseCase {
 		const occupiedSlots = new Set(currentEntries.map((entry) => courseSlotKey(entry.course)));
 		const futureCandidatesBySlot = new Map<string, FutureCourseCandidate>();
 
-		for (const { course, originalIndex } of visibleCourses) {
-			if (course.weeks.length === 0 || course.weeks.includes(displayedWeek)) continue;
-
-			const nextWeek = course.weeks
-				.filter((week) => week >= displayedWeek)
-				.sort((a, b) => a - b)[0];
-			if (nextWeek == null) continue;
+		for (const { course, originalIndex } of nonCurrentCandidates) {
+			let nextWeek = Number.POSITIVE_INFINITY;
+			for (const week of course.weeks) {
+				if (week >= displayedWeek && week < nextWeek) {
+					nextWeek = week;
+				}
+			}
+			if (!Number.isFinite(nextWeek)) continue;
 
 			const key = courseSlotKey(course);
 			if (occupiedSlots.has(key)) continue;
 
 			const candidate: FutureCourseCandidate = {
 				course,
-				nextOccurrenceDate: this.academicCalendarService.resolveCourseDate(
-					timetable.academicConfig,
-					nextWeek,
-					course.dayOfWeek,
-					today
-				),
+				nextWeek,
 				originalIndex
 			};
 
@@ -60,11 +62,7 @@ export class BuildTimetableCourseDisplayModelsUseCase {
 		}
 
 		const futureEntries = [...futureCandidatesBySlot.values()]
-			.sort((left, right) =>
-				left.originalIndex === right.originalIndex
-					? left.nextOccurrenceDate.localeCompare(right.nextOccurrenceDate)
-					: left.originalIndex - right.originalIndex
-			)
+			.sort((left, right) => left.originalIndex - right.originalIndex)
 			.map((candidate) => ({
 				course: { ...candidate.course, weeks: [...candidate.course.weeks] },
 				isInDisplayedWeek: false
@@ -76,15 +74,16 @@ export class BuildTimetableCourseDisplayModelsUseCase {
 
 interface FutureCourseCandidate {
 	course: Course;
-	nextOccurrenceDate: string;
+	nextWeek: number;
 	originalIndex: number;
 }
+
 function isBetterFutureCandidate(
 	left: FutureCourseCandidate,
 	right: FutureCourseCandidate
 ): boolean {
-	if (left.nextOccurrenceDate !== right.nextOccurrenceDate) {
-		return left.nextOccurrenceDate < right.nextOccurrenceDate;
+	if (left.nextWeek !== right.nextWeek) {
+		return left.nextWeek < right.nextWeek;
 	}
 	return left.originalIndex < right.originalIndex;
 }
