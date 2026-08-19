@@ -245,14 +245,16 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 		};
 	});
 
-	const splitBuildingIndices = encodedCourses
-		.filter((course) => course.isSplitLocation && course.buildingIdx !== NO_BUILDING)
-		.map((course) => course.buildingIdx);
-	const singleBuildingIdx =
-		splitBuildingIndices.length > 0 &&
-		splitBuildingIndices.every((index) => index === splitBuildingIndices[0])
-			? splitBuildingIndices[0]!
-			: -1;
+	let singleBuildingIdx = -1;
+	for (const course of encodedCourses) {
+		if (!course.isSplitLocation || course.buildingIdx === NO_BUILDING) continue;
+		if (singleBuildingIdx === -1) {
+			singleBuildingIdx = course.buildingIdx;
+		} else if (singleBuildingIdx !== course.buildingIdx) {
+			singleBuildingIdx = -1;
+			break;
+		}
+	}
 	const flags =
 		(hasRemarks ? FLAG_HAS_REMARKS : 0) |
 		(endWeek !== DEFAULT_END_WEEK ? FLAG_CUSTOM_END_WEEK : 0) |
@@ -335,49 +337,50 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 	const { table: teacherTable, nextOffset: teacherEnd } = TeacherTable.read(bytes, offset);
 	offset = teacherEnd;
 
-	const nameIndices = readByteColumn(bytes, offset, courseCount);
+	const nameColOffset = offset;
 	offset += courseCount;
-	const dayPeriods = readByteColumn(bytes, offset, courseCount);
+	const dayPeriodColOffset = offset;
 	offset += courseCount;
-	const endTeachers = readByteColumn(bytes, offset, courseCount);
+	const endTeacherColOffset = offset;
 	offset += courseCount;
+
 	const hasSingleBuilding = (flags & FLAG_SINGLE_BUILDING) !== 0;
-	const buildingIndices = hasSingleBuilding ? [] : readByteColumn(bytes, offset, courseCount);
+	const buildingColOffset = offset;
 	if (!hasSingleBuilding) offset += courseCount;
+
 	const roomColumnOffset = offset;
 	offset += courseCount * ROOM_BYTE_LENGTH;
+
 	const hasGlobalWeekMask = (flags & FLAG_GLOBAL_WEEK_MASK) !== 0;
-	const weekMaskIndices = hasGlobalWeekMask ? [] : readByteColumn(bytes, offset, courseCount);
+	const weekMaskColOffset = offset;
 	if (!hasGlobalWeekMask) offset += courseCount;
 	const globalWeekMaskIdx = hasGlobalWeekMask ? 0 : -1;
-	const remarkIndices =
-		(flags & FLAG_HAS_REMARKS) !== 0 ? readByteColumn(bytes, offset, courseCount) : [];
+
+	const hasRemarks = (flags & FLAG_HAS_REMARKS) !== 0;
+	const remarkColOffset = offset;
+	if (hasRemarks) offset += courseCount;
+
+	if (bytes.length < offset) {
+		throw new ShareBinaryDecodeError('truncated course columns');
+	}
 
 	const timetableName = normalizeTimetableName(strings[0] ?? '');
 	const courses: Course[] = [];
 
 	for (let index = 0; index < courseCount; index += 1) {
-		const nameIdx = nameIndices[index];
-		const dayPeriod = dayPeriods[index];
-		const endTeacher = endTeachers[index];
-		const buildingIdx = hasSingleBuilding ? singleBuildingIdx : buildingIndices[index];
-		const weekMaskIdx = globalWeekMaskIdx >= 0 ? globalWeekMaskIdx : weekMaskIndices[index];
-		if (
-			nameIdx === undefined ||
-			dayPeriod === undefined ||
-			endTeacher === undefined ||
-			buildingIdx === undefined ||
-			weekMaskIdx === undefined
-		) {
-			throw new ShareBinaryDecodeError('truncated course columns');
-		}
+		const nameIdx = bytes[nameColOffset + index]!;
+		const dayPeriod = bytes[dayPeriodColOffset + index]!;
+		const endTeacher = bytes[endTeacherColOffset + index]!;
+		const buildingIdx = hasSingleBuilding ? singleBuildingIdx : bytes[buildingColOffset + index]!;
+		const weekMaskIdx =
+			globalWeekMaskIdx >= 0 ? globalWeekMaskIdx : bytes[weekMaskColOffset + index]!;
+		const remarkIdx = hasRemarks ? (bytes[remarkColOffset + index] ?? 0) : 0;
 
 		const room = readRoomBytes(bytes, roomColumnOffset + index * ROOM_BYTE_LENGTH);
 		const { dayOfWeek, startPeriod } = unpackDayPeriod(dayPeriod);
 		const { endPeriod, teacherSlot } = unpackEndTeacher(endTeacher);
 		const name = strings[nameIdx];
 		if (!name) throw new ShareBinaryDecodeError('invalid course name index');
-		const remarkIdx = remarkIndices[index] ?? 0;
 
 		const [color, textColor] = coursePalette(name);
 		courses.push({
@@ -432,16 +435,6 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 		...baseTimetable,
 		...campusFields
 	};
-}
-
-function readByteColumn(bytes: Uint8Array, offset: number, count: number): number[] {
-	const values: number[] = [];
-	for (let index = 0; index < count; index += 1) {
-		const value = bytes[offset + index];
-		if (value === undefined) throw new ShareBinaryDecodeError('truncated course columns');
-		values.push(value);
-	}
-	return values;
 }
 
 export { ShareBinaryDecodeError } from './share-binary-decode-error';
