@@ -1,0 +1,25 @@
+{
+	"version": 1,
+	"updatedAt": 1771344000000,
+	"plugins": [
+		{
+			"id": "theme-nord",
+			"name": {
+				"zh-CN": "Nord 极光主题",
+				"en": "Nord Theme"
+			},
+			"version": "1.0.0",
+			"description": {
+				"zh-CN": "源自北极的冷色调极光色彩风格",
+				"en": "An arctic, north-bluish clean color palette"
+			},
+			"author": "Chronos Community",
+			"type": "theme",
+			"bundleFormat": "iife",
+			"minEngineVersion": "1.0.0",
+			"bundleUrl": "/marketplace/bundles/theme-nord.bundle.js",
+			"sha256": "9f19aa352754cbb769fa7747d12b6d8dd13921257f5a75c97d39eb6e571e279d",
+			"capabilities": []
+		}
+	]
+}
