@@ -6,14 +6,12 @@ import { courseToRow, summaryFromRow, timetableFromRow, timetableToRow } from '.
 
 export async function getTimetableSummaries(): Promise<TimetableSummary[]> {
 	const rows = await db.timetables.orderBy('updatedAt').reverse().toArray();
-	const summaries: TimetableSummary[] = [];
-
-	for (const row of rows) {
-		const courseCount = await db.courses.where('timetableId').equals(row.id).count();
-		summaries.push(summaryFromRow(row, courseCount));
-	}
-
-	return summaries;
+	return Promise.all(
+		rows.map(async (row) => {
+			const courseCount = await db.courses.where('timetableId').equals(row.id).count();
+			return summaryFromRow(row, courseCount);
+		})
+	);
 }
 
 export async function getTimetable(id: string): Promise<Timetable | null> {
