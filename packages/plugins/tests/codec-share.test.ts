@@ -84,29 +84,30 @@ describe('shareCodecPlugin', () => {
 		expect(parsed.courses[0]?.name).toBe('操作系统');
 	});
 
-	it('loads plugin and registers share-json source and exporter', async () => {
+	it('loads plugin and registers import.source.tab and export.action slots', async () => {
 		const env = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 
 		const handle = await engine.loadPlugin(shareCodecPlugin);
 
-		const source = engine.slots.getSource('share-json');
-		expect(source).toBeDefined();
+		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'share-json');
+		expect(sourceSlot).toBeDefined();
 
-		const exporter = engine.slots.getExporter('share-json');
-		expect(exporter).toBeDefined();
+		const exportSlot = engine.slots.getSlotItem('export.action', 'share-json');
+		expect(exportSlot).toBeDefined();
 
-		const exported = await exporter!.export(sampleTimetable);
+		const ctx = engine.getPluginContext('codec-share');
+		const exported = await exportSlot!.export(sampleTimetable, ctx);
 		expect(exported.filename).toBe('计算机课表.json');
 		expect(exported.mimeType).toBe('application/json');
 
-		const imported = await source!.fetchSchedule({ fileContent: exported.content as string });
+		const imported = await sourceSlot!.executeImport({ file: exported.content as string }, ctx);
 		expect(imported.name).toBe('计算机课表');
 		expect(imported.courses[0]?.name).toBe('操作系统');
 
 		handle.dispose();
-		expect(engine.slots.getSource('share-json')).toBeUndefined();
-		expect(engine.slots.getExporter('share-json')).toBeUndefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'share-json')).toBeUndefined();
+		expect(engine.slots.getSlotItem('export.action', 'share-json')).toBeUndefined();
 	});
 });

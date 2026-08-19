@@ -4,9 +4,107 @@ import type {
 	Timetable,
 	Course,
 	PeriodTime,
-	AcademicConfig
+	AcademicConfig,
+	ConfigSchema,
+	HttpRequestOptions,
+	HttpResponse
 } from '@chronos/core';
-import { createCourse, createTimetable } from '@chronos/core';
+import { defineSchema, createCourse, createTimetable, IHttpService } from '@chronos/core';
+
+export type CqutCampusId = 'huaxi' | 'liangjiang';
+
+export interface CqutPluginConfig {
+	campusId: CqutCampusId;
+	autoSyncOnLaunch: boolean;
+	customAuthUrl: string;
+}
+
+export interface CqutImportForm {
+	username?: string;
+	password?: string;
+	campusId: CqutCampusId;
+	saveCredentials?: boolean;
+}
+
+export const CQUT_DEFAULT_CAMPUS_PERIOD_TIMES: Record<CqutCampusId, PeriodTime[]> = {
+	huaxi: [
+		{ index: 1, startTime: '08:00', endTime: '08:45' },
+		{ index: 2, startTime: '08:55', endTime: '09:40' },
+		{ index: 3, startTime: '10:00', endTime: '10:45' },
+		{ index: 4, startTime: '10:55', endTime: '11:40' },
+		{ index: 5, startTime: '14:00', endTime: '14:45' },
+		{ index: 6, startTime: '14:55', endTime: '15:40' },
+		{ index: 7, startTime: '16:00', endTime: '16:45' },
+		{ index: 8, startTime: '16:55', endTime: '17:40' },
+		{ index: 9, startTime: '19:00', endTime: '19:45' },
+		{ index: 10, startTime: '19:55', endTime: '20:40' },
+		{ index: 11, startTime: '20:50', endTime: '21:35' }
+	],
+	liangjiang: [
+		{ index: 1, startTime: '08:30', endTime: '09:15' },
+		{ index: 2, startTime: '09:25', endTime: '10:10' },
+		{ index: 3, startTime: '10:30', endTime: '11:15' },
+		{ index: 4, startTime: '11:25', endTime: '12:10' },
+		{ index: 5, startTime: '14:00', endTime: '14:45' },
+		{ index: 6, startTime: '14:55', endTime: '15:40' },
+		{ index: 7, startTime: '16:00', endTime: '16:45' },
+		{ index: 8, startTime: '16:55', endTime: '17:40' },
+		{ index: 9, startTime: '19:00', endTime: '19:45' },
+		{ index: 10, startTime: '19:55', endTime: '20:40' },
+		{ index: 11, startTime: '20:50', endTime: '21:35' }
+	]
+};
+
+export const cqutConfigSchema = defineSchema<CqutPluginConfig>({
+	campusId: {
+		type: 'select',
+		title: () => '就读校区',
+		default: 'huaxi',
+		options: [
+			{ label: () => '花溪校区', value: 'huaxi' },
+			{ label: () => '两江校区', value: 'liangjiang' }
+		]
+	},
+	autoSyncOnLaunch: {
+		type: 'boolean',
+		title: () => '启动时自动同步课表',
+		default: false
+	},
+	customAuthUrl: {
+		type: 'string',
+		title: () => '统一身份认证地址',
+		default: 'https://authserver.cqut.edu.cn/authserver/login'
+	}
+});
+
+export const cqutImportSchema = defineSchema<CqutImportForm>({
+	username: {
+		type: 'string',
+		title: () => '学号 / 账号',
+		placeholder: () => '请输入 CQUT 学号',
+		required: true
+	},
+	password: {
+		type: 'password',
+		title: () => '统一认证密码',
+		placeholder: () => '请输入统一身份认证密码',
+		required: true
+	},
+	campusId: {
+		type: 'select',
+		title: () => '所在校区',
+		default: 'huaxi',
+		options: [
+			{ label: () => '花溪校区', value: 'huaxi' },
+			{ label: () => '两江校区', value: 'liangjiang' }
+		]
+	},
+	saveCredentials: {
+		type: 'boolean',
+		title: () => '在当前设备保存认证凭据',
+		default: false
+	}
+});
 
 export interface CqutCampusScheduleMetadata {
 	campusId?: string;
@@ -104,7 +202,11 @@ function inferCqutTermStartDate(payload: {
 	return `${y}-${m}-${d}`;
 }
 
-export function parseCqutScheduleData(rawData: CqutScheduleRawInput, studentId = ''): Timetable {
+export function parseCqutScheduleData(
+	rawData: CqutScheduleRawInput,
+	studentId = '',
+	fallbackCampusId: CqutCampusId = 'huaxi'
+): Timetable {
 	let courses: Course[] = [];
 	let termStartDate = rawData.termStartDate ?? '';
 	let timetableName = rawData.studentName
@@ -164,19 +266,18 @@ export function parseCqutScheduleData(rawData: CqutScheduleRawInput, studentId =
 		);
 	}
 
-	const customMetadata: Record<string, unknown> = {};
-	if (rawData.campusId || rawData.campusPeriodTimes || studentId) {
-		customMetadata['source-cqut'] = {
-			campusId: rawData.campusId,
-			campusPeriodTimes: rawData.campusPeriodTimes,
-			studentId
-		} satisfies CqutCampusScheduleMetadata;
-	}
-
+	const resolvedCampusId = (rawData.campusId as CqutCampusId) || fallbackCampusId;
+	const campusPeriodTimes = rawData.campusPeriodTimes || CQUT_DEFAULT_CAMPUS_PERIOD_TIMES;
 	const activePeriodTimes =
-		rawData.campusId && rawData.campusPeriodTimes?.[rawData.campusId]
-			? rawData.campusPeriodTimes[rawData.campusId]
-			: [];
+		campusPeriodTimes[resolvedCampusId] ?? CQUT_DEFAULT_CAMPUS_PERIOD_TIMES.huaxi;
+
+	const customMetadata: Record<string, unknown> = {
+		'source-cqut': {
+			campusId: resolvedCampusId,
+			campusPeriodTimes,
+			studentId
+		} satisfies CqutCampusScheduleMetadata
+	};
 
 	const maxWeek = Math.max(20, ...courses.flatMap((c) => c.weeks));
 
@@ -184,7 +285,7 @@ export function parseCqutScheduleData(rawData: CqutScheduleRawInput, studentId =
 		termStartDate,
 		startWeek: 1,
 		endWeek: maxWeek,
-		periodTimes: activePeriodTimes ?? []
+		periodTimes: activePeriodTimes
 	};
 
 	return createTimetable({
@@ -196,33 +297,58 @@ export function parseCqutScheduleData(rawData: CqutScheduleRawInput, studentId =
 	});
 }
 
-export const cqutPlugin: ChronosPlugin = {
+export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 	id: 'source-cqut',
-	name: () => '重庆理工大学教务适配器',
+	name: () => '重庆理工大学教务',
 	version: '1.0.0',
-	description: () => '支持 CQUT 统一身份认证与在线自动同步课表',
+	description: () => '提供 CQUT 统一身份认证在线课表同步与多校区作息映射',
+	permissions: ['network', 'storage'],
+	allowedDomains: ['authserver.cqut.edu.cn', 'uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'],
+	configSchema: cqutConfigSchema,
+	defaultConfig: {
+		campusId: 'huaxi',
+		autoSyncOnLaunch: false,
+		customAuthUrl: 'https://authserver.cqut.edu.cn/authserver/login'
+	},
 
-	apply(ctx: ChronosContext) {
-		ctx.registerSource({
+	apply(ctx: ChronosContext<CqutPluginConfig>) {
+		// Register import source tab slot
+		ctx.registerSlot('import.source.tab', {
 			id: 'cqut-online',
-			title: () => '重庆理工大学 (CQUT)',
-			authType: 'password',
-			async fetchSchedule({ username, password }: { username?: string; password?: string }) {
+			title: () => '知行理工',
+			order: 10,
+			inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+			defaultInput: {
+				campusId: ctx.config.campusId || 'huaxi',
+				saveCredentials: false
+			},
+			async executeImport(inputs: Record<string, unknown>) {
+				const form = inputs as unknown as CqutImportForm;
+				const { username, password, campusId } = form;
+
 				if (!username || !password) {
 					throw new Error('请输入学号与密码');
 				}
 
-				const response = await ctx.env.http.request(
-					'https://authserver.cqut.edu.cn/authserver/login',
-					{
-						method: 'POST',
-						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-						body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
-						useSession: true,
-						sessionId: `cqut-${username}`,
-						bypassCors: true
-					}
-				);
+				ctx.actions.notify('正在连接知行理工...', 'info');
+
+				let http: { request: (url: string, opts?: HttpRequestOptions) => Promise<HttpResponse> };
+				try {
+					http = ctx.service(IHttpService);
+				} catch {
+					http = ctx.env.http;
+				}
+
+				const authUrl =
+					ctx.config.customAuthUrl || 'https://authserver.cqut.edu.cn/authserver/login';
+				const response = await http.request(authUrl, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+					useSession: true,
+					sessionId: `cqut-${username}`,
+					bypassCors: true
+				});
 
 				if (!response.ok) {
 					let errorMsg = '教务认证失败，请检查学号与密码';
@@ -244,17 +370,13 @@ export const cqutPlugin: ChronosPlugin = {
 					parsedJson = {};
 				}
 
-				return parseCqutScheduleData(parsedJson, username);
+				const timetable = parseCqutScheduleData(
+					parsedJson,
+					username,
+					campusId || ctx.config.campusId
+				);
+				return timetable;
 			}
 		});
-
-		ctx.on(
-			'import:after',
-			async ({ sourceId, timetable }: { sourceId: string; timetable: Timetable }) => {
-				if (sourceId === 'cqut-online') {
-					ctx.actions.notify(`成功同步《${timetable.name}》，已自动匹配校区作息。`);
-				}
-			}
-		);
 	}
 };

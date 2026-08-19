@@ -1,8 +1,22 @@
-import type { ChronosPlugin, ChronosContext, Timetable, Course } from '@chronos/core';
-import { createCourse, createTimetable } from '@chronos/core';
+import type { ChronosPlugin, ChronosContext, Timetable, Course, ConfigSchema } from '@chronos/core';
+import { createCourse, createTimetable, defineSchema } from '@chronos/core';
 
 const WHITESPACE_REGEX = /\s+/g;
 type WeekParity = 'ALL' | 'ODD' | 'EVEN';
+
+export interface HtmlImportForm {
+	file?: string;
+}
+
+export const htmlImportSchema = defineSchema<HtmlImportForm>({
+	file: {
+		type: 'file',
+		title: () => '选择 HTML 文件',
+		description: () => '请选择从教务系统导出的 HTML 课表文件',
+		accept: '.html,.htm,text/html',
+		required: true
+	}
+});
 
 function parseHtmlDoc(html: string): Document {
 	if (typeof DOMParser !== 'undefined') {
@@ -176,13 +190,16 @@ export const htmlParserPlugin: ChronosPlugin = {
 	description: () => '解析国内高校教务系统导出的 HTML 课表文件',
 
 	apply(ctx: ChronosContext) {
-		ctx.registerSource({
+		ctx.registerSlot('import.source.tab', {
 			id: 'edu-html',
-			title: () => '教务 HTML 课表',
-			authType: 'file',
-			async fetchSchedule({ fileContent }: { fileContent?: string }) {
+			title: () => 'HTML 文件',
+			order: 30,
+			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+			async executeImport(inputs: Record<string, unknown>) {
+				const fileContent =
+					(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
 				if (!fileContent || typeof fileContent !== 'string') {
-					throw new Error('HTML 文件内容不能为空');
+					throw new Error('请选择有效的 HTML 课表文件');
 				}
 				return parseHtmlTimetable(fileContent);
 			}

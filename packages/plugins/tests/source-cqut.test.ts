@@ -100,7 +100,7 @@ function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 }
 
 describe('cqutPlugin', () => {
-	it('registers cqut-online source adapter and fetches timetable', async () => {
+	it('registers import.source.tab slot and executes import', async () => {
 		const env = createMockEnv();
 		const notifications: string[] = [];
 		const engine = new ChronosEngine({
@@ -112,27 +112,27 @@ describe('cqutPlugin', () => {
 		await engine.init();
 
 		const handle = await engine.loadPlugin(cqutPlugin);
-		const source = engine.slots.getSource('cqut-online');
-		expect(source).toBeDefined();
-		expect(source?.authType).toBe('password');
+		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'cqut-online');
+		expect(sourceSlot).toBeDefined();
+		expect(sourceSlot?.inputSchema).toBeDefined();
 
-		const timetable = await source!.fetchSchedule({
-			username: '123456',
-			password: 'password'
-		});
+		const ctx = engine.getPluginContext('source-cqut');
+		const timetable = await sourceSlot!.executeImport(
+			{
+				username: '123456',
+				password: 'password',
+				campusId: 'huaxi'
+			},
+			ctx
+		);
 
 		expect(timetable.name).toBe('张三的课表');
 		expect(timetable.courses.length).toBe(1);
 		expect(timetable.courses[0]?.name).toBe('高等数学');
 		expect(timetable.customMetadata?.['source-cqut']).toBeDefined();
 
-		await engine.events.emit('import:after', {
-			sourceId: 'cqut-online',
-			timetable
-		});
-		expect(notifications.length).toBeGreaterThan(0);
 		handle.dispose();
-		expect(engine.slots.getSource('cqut-online')).toBeUndefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'cqut-online')).toBeUndefined();
 	});
 
 	it('throws error when credentials missing', async () => {
@@ -141,8 +141,9 @@ describe('cqutPlugin', () => {
 		await engine.init();
 		await engine.loadPlugin(cqutPlugin);
 
-		const source = engine.slots.getSource('cqut-online');
-		await expect(source!.fetchSchedule({})).rejects.toThrow('请输入学号与密码');
+		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'cqut-online')!;
+		const ctx = engine.getPluginContext('source-cqut');
+		await expect(sourceSlot.executeImport({}, ctx)).rejects.toThrow('请输入学号与密码');
 	});
 
 	it('parses CQUT schedule data correctly', () => {

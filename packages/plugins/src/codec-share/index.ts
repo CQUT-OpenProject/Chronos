@@ -1,5 +1,31 @@
-import type { ChronosPlugin, ChronosContext, Timetable, ExportResult } from '@chronos/core';
-import { createTimetable } from '@chronos/core';
+import type {
+	ChronosPlugin,
+	ChronosContext,
+	Timetable,
+	ExportResult,
+	ConfigSchema
+} from '@chronos/core';
+import { createTimetable, defineSchema } from '@chronos/core';
+
+export interface ShareImportForm {
+	content?: string;
+	file?: string;
+}
+
+export const shareImportSchema = defineSchema<ShareImportForm>({
+	content: {
+		type: 'string',
+		title: () => '粘贴 JSON 数据',
+		placeholder: () => '在此粘贴课表 JSON 备份数据',
+		required: false
+	},
+	file: {
+		type: 'file',
+		title: () => '或上传 JSON 备份文件',
+		accept: '.json,application/json',
+		required: false
+	}
+});
 
 export function exportTimetableToJson(timetable: Timetable): string {
 	return JSON.stringify(timetable, null, 2);
@@ -20,21 +46,30 @@ export const shareCodecPlugin: ChronosPlugin = {
 	description: () => '支持 Chronos 课表 JSON 备份文件的导入与导出',
 
 	apply(ctx: ChronosContext) {
-		ctx.registerSource({
+		// 1. Register import tab slot for JSON backup / pasted data
+		ctx.registerSlot('import.source.tab', {
 			id: 'share-json',
-			title: () => 'JSON 课表备份',
-			authType: 'file',
-			async fetchSchedule({ fileContent }: { fileContent?: string }) {
-				if (!fileContent || typeof fileContent !== 'string') {
-					throw new Error('文件内容不能为空');
+			title: () => 'JSON 备份',
+			order: 20,
+			inputSchema: shareImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+			async executeImport(inputs: Record<string, unknown>) {
+				const rawContent =
+					(inputs.file as string | undefined) ??
+					(inputs.content as string | undefined) ??
+					(inputs.fileContent as string | undefined);
+
+				if (!rawContent || typeof rawContent !== 'string' || !rawContent.trim()) {
+					throw new Error('请输入或上传有效的 JSON 课表数据');
 				}
-				return parseTimetableFromJson(fileContent);
+				return parseTimetableFromJson(rawContent.trim());
 			}
 		});
 
-		ctx.registerExporter({
+		// 2. Register export action slot for JSON download
+		ctx.registerSlot('export.action', {
 			id: 'share-json',
-			title: () => 'JSON 课表备份',
+			title: () => 'JSON 结构化备份',
+			order: 10,
 			async export(timetable: Timetable): Promise<ExportResult> {
 				const content = exportTimetableToJson(timetable);
 				return {

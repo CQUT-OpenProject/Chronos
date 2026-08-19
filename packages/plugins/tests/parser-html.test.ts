@@ -91,15 +91,15 @@ describe('htmlParserPlugin', () => {
 		expect(course.weeks).toEqual([1, 3, 5, 7, 9, 11, 13, 15]);
 	});
 
-	it('loads plugin and registers edu-html source adapter', async () => {
+	it('loads plugin and registers import.source.tab slot', async () => {
 		const env = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 
 		const handle = await engine.loadPlugin(htmlParserPlugin);
-		const source = engine.slots.getSource('edu-html');
-		expect(source).toBeDefined();
-		expect(source?.authType).toBe('file');
+		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'edu-html');
+		expect(sourceSlot).toBeDefined();
+		expect(sourceSlot?.inputSchema).toBeDefined();
 
 		// Provide custom parser globally in test environment
 		Object.defineProperty(globalThis, 'DOMParser', {
@@ -112,10 +112,11 @@ describe('htmlParserPlugin', () => {
 			writable: true
 		});
 
-		const timetable = await source!.fetchSchedule({ fileContent: sampleHtml });
+		const ctx = engine.getPluginContext('parser-html');
+		const timetable = await sourceSlot!.executeImport({ file: sampleHtml }, ctx);
 		expect(timetable.name).toBe('王五的课表');
 
 		handle.dispose();
-		expect(engine.slots.getSource('edu-html')).toBeUndefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'edu-html')).toBeUndefined();
 	});
 });

@@ -7,4 +7,9 @@ export * from './source-cqut/index';
 export * from './parser-html/index';
 export * from './codec-share/index';
 
-export const builtinPlugins: ChronosPlugin[] = [cqutPlugin, htmlParserPlugin, shareCodecPlugin];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const builtinPlugins: Array<ChronosPlugin<any>> = [
+	cqutPlugin,
+	htmlParserPlugin,
+	shareCodecPlugin
+];
