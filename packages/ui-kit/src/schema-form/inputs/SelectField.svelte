@@ -18,7 +18,7 @@
 		id,
 		label,
 		options = [],
-		value = $bindable(''),
+		value = $bindable(),
 		disabled = false,
 		required = false,
 		description = ''
@@ -40,7 +40,8 @@
 		id={inputId}
 		{disabled}
 		{required}
-		bind:value
+		value={value ?? options[0]?.value ?? ''}
+		onchange={(e) => (value = e.currentTarget.value)}
 		class="w-full rounded-xl border border-outline/30 bg-surface-container px-3.5 py-2.5 text-sm text-on-surface transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
 	>
 		{#each options as opt (opt.value)}

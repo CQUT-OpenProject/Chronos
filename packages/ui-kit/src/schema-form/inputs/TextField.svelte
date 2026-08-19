@@ -15,7 +15,7 @@
 		type = 'text',
 		label,
 		placeholder = '',
-		value = $bindable(''),
+		value = $bindable(),
 		disabled = false,
 		required = false,
 		description = ''
@@ -39,7 +39,8 @@
 		{placeholder}
 		{disabled}
 		{required}
-		bind:value
+		value={value ?? ''}
+		oninput={(e) => (value = e.currentTarget.value)}
 		class="w-full rounded-xl border border-outline/30 bg-surface-container px-3.5 py-2.5 text-sm text-on-surface transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
 	/>
 

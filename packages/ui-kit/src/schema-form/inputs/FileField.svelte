@@ -17,7 +17,7 @@
 		disabled = false,
 		required = false,
 		description = '',
-		value = $bindable(undefined),
+		value = $bindable(),
 		onFileSelect
 	}: Props = $props();
 
