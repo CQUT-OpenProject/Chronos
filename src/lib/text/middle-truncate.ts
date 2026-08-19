@@ -31,11 +31,23 @@ export function cutBoundaryIndices(text: string, graphemes: string[]): number[] 
 
 	const segmenter = getWordSegmenter();
 	if (segmenter) {
+		const charToGrapheme = new Uint32Array(text.length + 1);
+		let charOffset = 0;
+		for (let gIndex = 0; gIndex < length; gIndex += 1) {
+			const gLen = graphemes[gIndex]!.length;
+			for (let c = 0; c < gLen; c += 1) {
+				charToGrapheme[charOffset + c] = gIndex;
+			}
+			charOffset += gLen;
+		}
+		charToGrapheme[charOffset] = length;
+
 		for (const part of segmenter.segment(text)) {
 			if (!part.isWordLike) continue;
-			const start = toGraphemes(text.slice(0, part.index)).length;
+			const start = charToGrapheme[part.index] ?? length;
+			const end = charToGrapheme[part.index + part.segment.length] ?? length;
 			boundaries.add(start);
-			boundaries.add(start + toGraphemes(part.segment).length);
+			boundaries.add(end);
 		}
 	}
 

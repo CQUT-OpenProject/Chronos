@@ -338,6 +338,9 @@ export function applyCapsuleCornerRounding<T extends CorneredItem>(items: T[]): 
 				if (isFlushRightOf(otherRight, left)) leftExposed = false;
 				if (isFlushRightOf(right, otherLeft)) rightExposed = false;
 			}
+			if (!topExposed && !bottomExposed && !leftExposed && !rightExposed) {
+				break;
+			}
 		}
 
 		item.corners = {
@@ -420,9 +423,12 @@ export function buildSlotGroups(
 	const byDay = new Map<number, TimetableCourseDisplayModel[]>();
 	for (const model of courseDisplayModels) {
 		const day = model.course.dayOfWeek;
-		const list = byDay.get(day) ?? [];
-		list.push(model);
-		byDay.set(day, list);
+		const list = byDay.get(day);
+		if (list) {
+			list.push(model);
+		} else {
+			byDay.set(day, [model]);
+		}
 	}
 
 	return [...byDay.entries()]
@@ -509,26 +515,27 @@ function buildDaySlotGroups(sortedCourses: TimetableCourseDisplayModel[]): Cours
 			current.push(displayModel);
 			currentEndPeriod = Math.max(currentEndPeriod, course.endPeriod);
 		} else {
-			groups.push(toCourseSlotGroup(current));
+			groups.push(toCourseSlotGroup(current, currentEndPeriod));
 			current = [displayModel];
 			currentEndPeriod = course.endPeriod;
 		}
 	}
 
 	if (current.length > 0) {
-		groups.push(toCourseSlotGroup(current));
+		groups.push(toCourseSlotGroup(current, currentEndPeriod));
 	}
 
 	return groups;
 }
 
-function toCourseSlotGroup(courses: TimetableCourseDisplayModel[]): CourseSlotGroup {
-	const dayOfWeek = courses[0]!.course.dayOfWeek;
-	const startPeriod = Math.min(...courses.map((entry) => entry.course.startPeriod));
-	const endPeriod = Math.max(...courses.map((entry) => entry.course.endPeriod));
+function toCourseSlotGroup(
+	courses: TimetableCourseDisplayModel[],
+	endPeriod: number
+): CourseSlotGroup {
+	const first = courses[0]!;
 	return {
-		dayOfWeek,
-		startPeriod,
+		dayOfWeek: first.course.dayOfWeek,
+		startPeriod: first.course.startPeriod,
 		endPeriod,
 		courses
 	};

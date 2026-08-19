@@ -14,13 +14,11 @@ export function buildWeekGridModels(
 	if (!timetable) return new Map();
 
 	const { startWeek, endWeek } = timetable.academicConfig;
-	const requiredWeeks = range(
-		displayedWeek - WEEK_GRID_CACHE_RADIUS,
-		displayedWeek + WEEK_GRID_CACHE_RADIUS
-	).filter((week) => week >= startWeek && week <= endWeek);
+	const minWeek = Math.max(startWeek, displayedWeek - WEEK_GRID_CACHE_RADIUS);
+	const maxWeek = Math.min(endWeek, displayedWeek + WEEK_GRID_CACHE_RADIUS);
 
 	const resultMap = new Map(existingWeekGridModels);
-	for (const week of requiredWeeks) {
+	for (let week = minWeek; week <= maxWeek; week += 1) {
 		if (!resultMap.has(week)) {
 			resultMap.set(week, buildGrid(today, week, timetable));
 		}
@@ -44,17 +42,19 @@ export function buildWeekCourseDisplayModels(
 	if (!timetable) return new Map();
 
 	const { startWeek, endWeek } = timetable.academicConfig;
-	const requiredWeeks = range(
-		displayedWeek - WEEK_GRID_CACHE_RADIUS,
-		displayedWeek + WEEK_GRID_CACHE_RADIUS
-	).filter((week) => week >= startWeek && week <= endWeek);
+	const minWeek = Math.max(startWeek, displayedWeek - WEEK_GRID_CACHE_RADIUS);
+	const maxWeek = Math.min(endWeek, displayedWeek + WEEK_GRID_CACHE_RADIUS);
 
 	const resultMap = new Map(existingWeekCourseDisplayModels);
-	for (const week of requiredWeeks) {
+	for (let week = minWeek; week <= maxWeek; week += 1) {
 		if (!resultMap.has(week)) {
-			const visibleDayOfWeeks = new Set(
-				weekGridModels.get(week)?.visibleDays.map((day) => day.dayOfWeek) ?? []
-			);
+			const visibleDays = weekGridModels.get(week)?.visibleDays;
+			const visibleDayOfWeeks = new Set<number>();
+			if (visibleDays) {
+				for (const day of visibleDays) {
+					visibleDayOfWeeks.add(day.dayOfWeek);
+				}
+			}
 			resultMap.set(week, buildDisplayModels(timetable, visibleDayOfWeeks, week, today));
 		}
 	}
@@ -68,12 +68,4 @@ export function computeDelayUntilNextMidnightMillis(
 	const nextMidnight = new Date(now);
 	nextMidnight.setHours(24, 0, 0, 0);
 	return Math.max(nextMidnight.getTime() - now.getTime(), minimumDelayMillis);
-}
-
-function range(start: number, end: number): number[] {
-	const result: number[] = [];
-	for (let value = start; value <= end; value += 1) {
-		result.push(value);
-	}
-	return result;
 }

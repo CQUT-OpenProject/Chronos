@@ -9,7 +9,7 @@ export interface ParsedPeriodRange {
 }
 
 export function parsePeriodRanges(periods: PeriodTime[]): ParsedPeriodRange[] {
-	return [...periods]
+	return periods
 		.map((period) => ({
 			index: period.index,
 			startMinutes: parseTimeMinutes(period.startTime),
@@ -22,15 +22,17 @@ export function findCurrentPeriodIndex(
 	periods: ParsedPeriodRange[],
 	nowMinutes: number
 ): number | null {
-	const active = periods.find(
-		(period) => nowMinutes >= period.startMinutes && nowMinutes <= period.endMinutes
-	);
-	if (active) return active.index;
+	let upcomingIndex: number | null = null;
+	for (const period of periods) {
+		if (nowMinutes >= period.startMinutes && nowMinutes <= period.endMinutes) {
+			return period.index;
+		}
+		if (upcomingIndex == null && nowMinutes < period.startMinutes) {
+			upcomingIndex = period.index;
+		}
+	}
 
-	const upcoming = periods.find((period) => nowMinutes < period.startMinutes);
-	if (upcoming) return upcoming.index;
-
-	return periods.at(-1)?.index ?? null;
+	return upcomingIndex ?? periods.at(-1)?.index ?? null;
 }
 
 export function computeDelayUntilNextCurrentTimeRefreshMillis(
@@ -39,16 +41,17 @@ export function computeDelayUntilNextCurrentTimeRefreshMillis(
 	minimumDelayMillis = MIN_TIME_REFRESH_DELAY_MILLIS
 ): number {
 	const nowMinutes = currentTimeMinutes(now);
-	const nextBoundaryToday = periods.reduce<number | null>((found, period) => {
-		if (found != null) return found;
+	let nextBoundaryToday: number | null = null;
+	for (const period of periods) {
 		if (nowMinutes >= period.startMinutes && nowMinutes <= period.endMinutes) {
-			return period.endMinutes;
+			nextBoundaryToday = period.endMinutes;
+			break;
 		}
 		if (nowMinutes < period.startMinutes) {
-			return period.startMinutes;
+			nextBoundaryToday = period.startMinutes;
+			break;
 		}
-		return null;
-	}, null);
+	}
 
 	const nextBoundary =
 		nextBoundaryToday != null
