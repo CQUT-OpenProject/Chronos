@@ -7,12 +7,7 @@ interface RateLimitBucket {
 
 const buckets = new Map<string, RateLimitBucket>();
 
-let lastPruneAt = 0;
-const PRUNE_INTERVAL_MS = 60_000;
-
-function maybePruneExpiredBuckets(now: number): void {
-	if (now - lastPruneAt < PRUNE_INTERVAL_MS) return;
-	lastPruneAt = now;
+function pruneExpiredBuckets(now: number): void {
 	for (const [key, bucket] of buckets) {
 		if (bucket.resetAt <= now) {
 			buckets.delete(key);
@@ -24,7 +19,7 @@ export function checkPreviewRateLimit(
 	ip: string,
 	now = Date.now()
 ): { allowed: true } | { allowed: false; retryAfterSeconds: number } {
-	maybePruneExpiredBuckets(now);
+	pruneExpiredBuckets(now);
 
 	const bucket = buckets.get(ip);
 	if (!bucket || bucket.resetAt <= now) {
@@ -46,5 +41,4 @@ export function checkPreviewRateLimit(
 /** Visible for tests only. */
 export function resetPreviewRateLimitForTests(): void {
 	buckets.clear();
-	lastPruneAt = 0;
 }

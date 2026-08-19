@@ -156,7 +156,11 @@ async function fetchWeekEvents(
 }
 
 function buildJsonObject(entries: Record<string, string | null>): string {
-	return JSON.stringify(entries, (_key, value) => value ?? undefined);
+	const objectValue: Record<string, string> = {};
+	for (const [key, value] of Object.entries(entries)) {
+		if (value !== null) objectValue[key] = value;
+	}
+	return JSON.stringify(objectValue);
 }
 
 function parsePayloadObject(raw: string): AppResult<Record<string, unknown>> {
