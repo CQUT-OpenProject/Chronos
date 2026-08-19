@@ -62,44 +62,56 @@ export class DexieStorageProvider implements IStorageService {
 	}
 
 	async getTimetable(id: string): Promise<Timetable | null> {
-		const row = await this.database.timetables.get(id);
-		if (!row) return null;
-		const courses = await this.database.courses.where('timetableId').equals(id).toArray();
-		return timetableFromRow(row, courses);
+		try {
+			const row = await this.database.timetables.get(id);
+			if (!row) return null;
+			const courses = await this.database.courses.where('timetableId').equals(id).toArray();
+			return timetableFromRow(row, courses);
+		} catch {
+			return null;
+		}
 	}
 
 	async listTimetables(): Promise<Array<{ id: string; name: string; updatedAt: number }>> {
-		const rows = await this.database.timetables.orderBy('updatedAt').reverse().toArray();
-		return rows.map((r) => ({ id: r.id, name: r.name, updatedAt: r.updatedAt }));
+		try {
+			const rows = await this.database.timetables.orderBy('updatedAt').reverse().toArray();
+			return rows.map((r) => ({ id: r.id, name: r.name, updatedAt: r.updatedAt }));
+		} catch {
+			return [];
+		}
 	}
 
 	async saveTimetable(timetable: Timetable): Promise<void> {
-		const row = timetableToRow(timetable);
-		const courseRows = timetable.courses.map((course) => courseToRow(course, timetable.id));
+		try {
+			const row = timetableToRow(timetable);
+			const courseRows = timetable.courses.map((course) => courseToRow(course, timetable.id));
 
-		await this.database.transaction(
-			'rw',
-			this.database.timetables,
-			this.database.courses,
-			async () => {
-				await this.database.timetables.put(row);
+			await this.database.transaction(
+				'rw',
+				this.database.timetables,
+				this.database.courses,
+				async () => {
+					await this.database.timetables.put(row);
 
-				const persistedIds = new Set(
-					await this.database.courses.where('timetableId').equals(timetable.id).primaryKeys()
-				);
-				const incomingIds = new Set(courseRows.map((course) => course.id));
-				const removedIds = [...persistedIds].filter((id) => !incomingIds.has(String(id)));
+					const persistedIds = new Set(
+						await this.database.courses.where('timetableId').equals(timetable.id).primaryKeys()
+					);
+					const incomingIds = new Set(courseRows.map((course) => course.id));
+					const removedIds = [...persistedIds].filter((id) => !incomingIds.has(String(id)));
 
-				if (removedIds.length > 0) {
-					await this.database.courses.bulkDelete(removedIds);
+					if (removedIds.length > 0) {
+						await this.database.courses.bulkDelete(removedIds);
+					}
+					if (courseRows.length > 0) {
+						await this.database.courses.bulkPut(courseRows);
+					}
 				}
-				if (courseRows.length > 0) {
-					await this.database.courses.bulkPut(courseRows);
-				}
-			}
-		);
+			);
 
-		this.notifyChange({ type: 'timetable', key: timetable.id });
+			this.notifyChange({ type: 'timetable', key: timetable.id });
+		} catch (err) {
+			console.warn('[DexieStorageProvider] Failed to save timetable:', err);
+		}
 	}
 
 	async patchTimetable(id: string, patch: Partial<Timetable>): Promise<void> {
@@ -116,17 +128,21 @@ export class DexieStorageProvider implements IStorageService {
 	}
 
 	async deleteTimetable(id: string): Promise<void> {
-		await this.database.transaction(
-			'rw',
-			this.database.timetables,
-			this.database.courses,
-			async () => {
-				await this.database.courses.where('timetableId').equals(id).delete();
-				await this.database.timetables.delete(id);
-			}
-		);
+		try {
+			await this.database.transaction(
+				'rw',
+				this.database.timetables,
+				this.database.courses,
+				async () => {
+					await this.database.courses.where('timetableId').equals(id).delete();
+					await this.database.timetables.delete(id);
+				}
+			);
 
-		this.notifyChange({ type: 'timetable', key: id });
+			this.notifyChange({ type: 'timetable', key: id });
+		} catch (err) {
+			console.warn('[DexieStorageProvider] Failed to delete timetable:', err);
+		}
 	}
 
 	async getActiveTimetableId(): Promise<string | null> {
@@ -200,31 +216,39 @@ export class DexieStorageProvider implements IStorageService {
 	}
 
 	async getWallpaper(): Promise<Uint8Array | null> {
-		const row = await this.database.wallpapers.get(WALLPAPER_ID);
-		if (!row?.blob) return null;
-		const buffer = await row.blob.arrayBuffer();
-		return new Uint8Array(buffer);
+		try {
+			const row = await this.database.wallpapers.get(WALLPAPER_ID);
+			if (!row?.blob) return null;
+			const buffer = await row.blob.arrayBuffer();
+			return new Uint8Array(buffer);
+		} catch {
+			return null;
+		}
 	}
 
 	async setWallpaper(wallpaper: Uint8Array | null): Promise<void> {
-		if (wallpaper) {
-			const blob = new Blob([wallpaper as unknown as Uint8Array<ArrayBuffer>]);
-			await this.database.wallpapers.put({
-				id: WALLPAPER_ID,
-				blob,
-				updatedAt: Date.now()
-			});
-		} else {
-			await this.database.wallpapers.delete(WALLPAPER_ID);
+		try {
+			if (wallpaper) {
+				const blob = new Blob([wallpaper as unknown as Uint8Array<ArrayBuffer>]);
+				await this.database.wallpapers.put({
+					id: WALLPAPER_ID,
+					blob,
+					updatedAt: Date.now()
+				});
+			} else {
+				await this.database.wallpapers.delete(WALLPAPER_ID);
+			}
+			this.notifyChange({ type: 'preferences', key: 'wallpaper' });
+		} catch (err) {
+			console.warn('[DexieStorageProvider] Failed to set wallpaper:', err);
 		}
-		this.notifyChange({ type: 'preferences', key: 'wallpaper' });
 	}
 
 	async getPluginData<T>(pluginId: string, key: string): Promise<T | null> {
 		const id = `${pluginId}:${key}`;
-		const row = await this.database.pluginData.get(id);
-		if (!row?.valueJson) return null;
 		try {
+			const row = await this.database.pluginData.get(id);
+			if (!row?.valueJson) return null;
 			return JSON.parse(row.valueJson) as T;
 		} catch {
 			return null;
@@ -233,20 +257,28 @@ export class DexieStorageProvider implements IStorageService {
 
 	async setPluginData<T>(pluginId: string, key: string, value: T): Promise<void> {
 		const id = `${pluginId}:${key}`;
-		await this.database.pluginData.put({
-			id,
-			pluginId,
-			key,
-			valueJson: JSON.stringify(value),
-			updatedAt: Date.now()
-		});
-		this.notifyChange({ type: 'pluginData', key: id });
+		try {
+			await this.database.pluginData.put({
+				id,
+				pluginId,
+				key,
+				valueJson: JSON.stringify(value),
+				updatedAt: Date.now()
+			});
+			this.notifyChange({ type: 'pluginData', key: id });
+		} catch (err) {
+			console.warn(`[DexieStorageProvider] Failed to set plugin data for ${id}:`, err);
+		}
 	}
 
 	async deletePluginData(pluginId: string, key: string): Promise<void> {
 		const id = `${pluginId}:${key}`;
-		await this.database.pluginData.delete(id);
-		this.notifyChange({ type: 'pluginData', key: id });
+		try {
+			await this.database.pluginData.delete(id);
+			this.notifyChange({ type: 'pluginData', key: id });
+		} catch (err) {
+			console.warn(`[DexieStorageProvider] Failed to delete plugin data for ${id}:`, err);
+		}
 	}
 
 	dispose(): void {
