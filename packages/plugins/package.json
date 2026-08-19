@@ -1,0 +1,33 @@
+{
+	"name": "@chronos/plugins",
+	"version": "0.1.0",
+	"type": "module",
+	"main": "./src/index.ts",
+	"module": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"import": "./src/index.ts",
+			"default": "./src/index.ts"
+		},
+		"./source-cqut": {
+			"types": "./src/source-cqut/index.ts",
+			"import": "./src/source-cqut/index.ts",
+			"default": "./src/source-cqut/index.ts"
+		},
+		"./parser-html": {
+			"types": "./src/parser-html/index.ts",
+			"import": "./src/parser-html/index.ts",
+			"default": "./src/parser-html/index.ts"
+		},
+		"./codec-share": {
+			"types": "./src/codec-share/index.ts",
+			"import": "./src/codec-share/index.ts",
+			"default": "./src/codec-share/index.ts"
+		}
+	},
+	"dependencies": {
+		"@chronos/core": "workspace:*"
+	}
+}
