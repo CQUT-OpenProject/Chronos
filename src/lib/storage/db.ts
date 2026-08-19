@@ -29,17 +29,27 @@ export interface WallpaperRow {
 	updatedAt: number;
 }
 
+export interface PluginDataRow {
+	id: string;
+	pluginId: string;
+	key: string;
+	valueJson: string;
+	updatedAt: number;
+}
+
 export class ChronosDB extends Dexie {
 	timetables!: Table<TimetableRow, string>;
 	courses!: Table<CourseRow, string>;
 	wallpapers!: Table<WallpaperRow, string>;
+	pluginData!: Table<PluginDataRow, string>;
 
 	constructor(name = 'chronos') {
 		super(name);
 		this.version(1).stores({
 			timetables: 'id, updatedAt',
 			courses: 'id, timetableId, [timetableId+dayOfWeek]',
-			wallpapers: 'id'
+			wallpapers: 'id',
+			pluginData: 'id, pluginId, key, updatedAt'
 		});
 	}
 }

@@ -7,6 +7,7 @@ describe('ChronosDB schema', () => {
 		expect(db.verno).toBe(1);
 		expect(db.tables.map((table) => table.name).sort()).toEqual([
 			'courses',
+			'pluginData',
 			'timetables',
 			'wallpapers'
 		]);
