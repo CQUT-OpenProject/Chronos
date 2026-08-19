@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { functionsMixins } from 'vite-plugin-functions-mixins';
@@ -33,6 +34,11 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), 'PUBLIC_');
 
 	return {
+		resolve: {
+			alias: {
+				'@chronos/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url))
+			}
+		},
 		define: {
 			__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
 			__ONLINE_IMPORT_ENABLED__: JSON.stringify(!isPagesBuild),
@@ -279,6 +285,9 @@ export default defineConfig(({ mode }) => {
 			functionsMixins(),
 			tailwindcss(),
 			sveltekit({
+				alias: {
+					'@chronos/core': './packages/core/src/index.ts'
+				},
 				compilerOptions: {
 					// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
 					runes: ({ filename }) =>
@@ -366,7 +375,7 @@ export default defineConfig(({ mode }) => {
 		test: {
 			expect: { requireAssertions: true },
 			environment: 'node',
-			include: ['src/**/*.{test,spec}.{js,ts}'],
+			include: ['src/**/*.{test,spec}.{js,ts}', 'packages/**/*.{test,spec}.{js,ts}'],
 			exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
 		}
 	};
