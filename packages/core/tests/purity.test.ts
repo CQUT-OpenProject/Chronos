@@ -11,6 +11,13 @@ describe('@chronos/core ECMAScript Purity', () => {
 		expect(Core.calculateTimetableGrid).toBeTypeOf('function');
 		expect(Core.buildTimetableCourseDisplayModels).toBeTypeOf('function');
 		expect(Core.COURSE_PALETTE_ENTRIES).toBeInstanceOf(Array);
+		expect(Core.EventBus).toBeTypeOf('function');
+		expect(Core.Pipeline).toBeTypeOf('function');
+		expect(Core.SlotRegistry).toBeTypeOf('function');
+		expect(Core.ThemeRegistry).toBeTypeOf('function');
+		expect(Core.BadgeManager).toBeTypeOf('function');
+		expect(Core.ScopedContext).toBeTypeOf('function');
+		expect(Core.ChronosEngine).toBeTypeOf('function');
 	});
 
 	it('operates purely on standard ECMAScript data types without DOM globals', () => {

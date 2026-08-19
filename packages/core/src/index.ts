@@ -17,3 +17,12 @@ export * from './types/env';
 export * from './types/context';
 export * from './types/contributions';
 export * from './types/marketplace';
+
+// Runtime
+export * from './runtime/event-bus';
+export * from './runtime/pipeline';
+export * from './runtime/slot-registry';
+export * from './runtime/theme-registry';
+export * from './runtime/badge-manager';
+export * from './runtime/scoped-context';
+export * from './runtime/engine';

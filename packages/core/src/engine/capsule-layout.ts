@@ -219,9 +219,9 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		});
 	}
 
-	if (capsuleCornerStyle === 'sharp' || capsuleCornerStyle === 'MERGE') {
+	if (capsuleCornerStyle === 'rounded' || capsuleCornerStyle === 'MERGE') {
 		applyCapsuleCornerRounding(items);
-	} else if (capsuleCornerStyle === 'square' || capsuleCornerStyle === 'SQUARE') {
+	} else if (capsuleCornerStyle === 'sharp' || capsuleCornerStyle === 'SQUARE') {
 		applyCapsuleSquareCorners(items);
 	}
 	return items;

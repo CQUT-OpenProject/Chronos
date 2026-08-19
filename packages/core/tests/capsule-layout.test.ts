@@ -1,175 +1,631 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 import {
-	createCourse,
-	placeCapsules,
-	resolveCapsuleTypeScale,
-	parseLocationParts,
-	locationDisplayLines,
 	applyCapsuleCornerRounding,
 	applyCapsuleSquareCorners,
+	buildSlotGroups,
+	locationDisplayLines,
+	parseLocationParts,
+	periodSlotKey,
+	placeCapsules,
+	resolveCapsuleTypeScale,
+	resolveLocationBlockMetrics,
+	shouldShowLocationCampus,
+	EASTER_EGG_PALETTE_ENTRIES,
+	type CapsuleCorners,
 	type PlacedCourseCapsule,
-	type PlacedOverlapPlaceholder
+	type PlacedItem
 } from '../src/index';
 
-describe('Capsule Layout Engine in @chronos/core', () => {
-	it('parses location parts into campus, building, room', () => {
-		const parts = parseLocationParts('花溪校区 弘远楼A0213');
-		expect(parts.campus).toBe('花溪校区');
-		expect(parts.building).toBe('弘远楼');
-		expect(parts.room).toBe('A0213');
-
-		const linesWithCampus = locationDisplayLines('花溪校区 弘远楼A0213', { includeCampus: true });
-		expect(linesWithCampus).toEqual(['花溪校区', '弘远楼', 'A0213']);
-
-		const linesNoCampus = locationDisplayLines('花溪校区 弘远楼A0213', { includeCampus: false });
-		expect(linesNoCampus).toEqual(['弘远楼', 'A0213']);
+describe('resolveCapsuleTypeScale', () => {
+	it('uses the wide-column tier at effective >= 110', () => {
+		const scale = resolveCapsuleTypeScale(110);
+		expect(scale.titlePx).toBe(17);
+		expect(scale.detailPx).toBe(12);
+		expect(scale.badgePx).toBe(12);
 	});
 
-	it('resolves capsule type scale based on column width', () => {
-		const wideScale = resolveCapsuleTypeScale(100, 1, false);
-		const narrowScale = resolveCapsuleTypeScale(60, 1, false);
-		const compactScale = resolveCapsuleTypeScale(100, 1, true);
-
-		expect(wideScale.titlePx).toBeGreaterThan(narrowScale.titlePx);
-		expect(compactScale.titlePx).toBeLessThan(wideScale.titlePx);
+	it('uses the narrow-column tier near 70px', () => {
+		const scale = resolveCapsuleTypeScale(70);
+		expect(scale.titlePx).toBe(14);
+		expect(scale.detailPx).toBe(10);
+		expect(scale.badgePx).toBe(9);
 	});
 
-	it('places non-overlapping courses with full width', () => {
-		const course = createCourse({
-			id: 'c1',
-			name: '大学物理',
-			teacher: '李老师',
-			location: '第一教学楼101',
-			dayOfWeek: 1,
-			startPeriod: 1,
-			endPeriod: 2,
-			weeks: [1]
+	it('interpolates between anchors', () => {
+		const scale = resolveCapsuleTypeScale(85);
+		expect(scale.titlePx).toBe(15);
+		expect(scale.detailPx).toBe(11);
+		expect(scale.badgePx).toBe(10);
+	});
+
+	it('clamps below the lowest anchor', () => {
+		const scale = resolveCapsuleTypeScale(40);
+		expect(scale.titlePx).toBe(12);
+		expect(scale.detailPx).toBe(8);
+		expect(scale.badgePx).toBe(8);
+		expect(scale.placeholderPx).toBe(11);
+	});
+
+	it('shrinks when overlap splits the column', () => {
+		const single = resolveCapsuleTypeScale(140, 1);
+		const overlapped = resolveCapsuleTypeScale(140, 2);
+		expect(overlapped.titlePx).toBeLessThan(single.titlePx);
+		expect(overlapped.detailPx).toBeLessThanOrEqual(single.detailPx);
+	});
+
+	it('wide 7-column layout outsizes a narrow 5-column layout', () => {
+		const wideSeven = resolveCapsuleTypeScale(770 / 7, 1);
+		const narrowFive = resolveCapsuleTypeScale(320 / 5, 1);
+		expect(wideSeven.titlePx).toBeGreaterThan(narrowFive.titlePx);
+		expect(wideSeven.detailPx).toBeGreaterThan(narrowFive.detailPx);
+	});
+
+	it('compact shrinks one fixed tier', () => {
+		const scroll = resolveCapsuleTypeScale(110);
+		const fit = resolveCapsuleTypeScale(110, 1, true);
+		expect(fit.titlePx).toBe(15);
+		expect(fit.detailPx).toBe(11);
+		expect(fit.badgePx).toBe(11);
+		expect(fit.titlePx).toBeLessThan(scroll.titlePx);
+		expect(fit.detailPx).toBeLessThan(scroll.detailPx);
+	});
+
+	it('compact clamps at the smallest tier floors', () => {
+		const floor = resolveCapsuleTypeScale(50, 1, true);
+		expect(floor.titlePx).toBe(12);
+		expect(floor.detailPx).toBe(8);
+		expect(floor.badgePx).toBe(8);
+	});
+
+	it('hides campus below the 70px threshold', () => {
+		expect(shouldShowLocationCampus(70, 1)).toBe(true);
+		expect(shouldShowLocationCampus(69, 1)).toBe(false);
+		expect(shouldShowLocationCampus(120, 2)).toBe(false);
+	});
+
+	it('keeps a 3-line location slot and bumps font when campus is hidden', () => {
+		const withCampus = resolveLocationBlockMetrics(10, true, 3);
+		const withoutCampus = resolveLocationBlockMetrics(10, false, 2);
+		expect(withoutCampus.heightPx).toBe(withCampus.heightPx);
+		expect(withoutCampus.fontPx).toBeGreaterThan(withCampus.fontPx);
+	});
+});
+
+describe('slot and location helpers', () => {
+	it('buildSlotGroups groups overlapping courses on the same day', () => {
+		const groups = buildSlotGroups([
+			courseModel('a', 1, 1, 2),
+			courseModel('b', 1, 2, 3),
+			courseModel('c', 2, 1, 2)
+		]);
+
+		expect(groups).toHaveLength(2);
+		expect(groups[0]?.courses.map((entry) => entry.course.id)).toEqual(['a', 'b']);
+		expect(groups[1]?.courses.map((entry) => entry.course.id)).toEqual(['c']);
+	});
+
+	it('parseLocationParts splits campus, building, and room', () => {
+		expect(parseLocationParts('两江校区 弘远楼A0213')).toEqual({
+			campus: '两江校区',
+			building: '弘远楼',
+			room: 'A0213'
 		});
+		expect(parseLocationParts('弘远楼B0216')).toEqual({
+			campus: '',
+			building: '弘远楼',
+			room: 'B0216'
+		});
+		expect(parseLocationParts('第一教学楼 A101')).toEqual({
+			campus: '',
+			building: '第一教学楼',
+			room: 'A101'
+		});
+		expect(parseLocationParts('B201')).toEqual({
+			campus: '',
+			building: '',
+			room: 'B201'
+		});
+		expect(locationDisplayLines('两江校区 弘远楼A0213')).toEqual(['两江校区', '弘远楼', 'A0213']);
+		expect(locationDisplayLines('两江校区 弘远楼A0213', { includeCampus: false })).toEqual([
+			'弘远楼',
+			'A0213'
+		]);
+	});
+});
 
+describe('placeCapsules', () => {
+	const visibleDays = [{ dayOfWeek: 1 }, { dayOfWeek: 2 }, { dayOfWeek: 3 }];
+
+	it('places a single course with full-column geometry', () => {
 		const items = placeCapsules({
-			courseDisplayModels: [{ course, isInDisplayedWeek: true }],
-			visibleDays: [
-				{ dayOfWeek: 1 },
-				{ dayOfWeek: 2 },
-				{ dayOfWeek: 3 },
-				{ dayOfWeek: 4 },
-				{ dayOfWeek: 5 }
-			],
-			columnWidthPx: 70,
+			courseDisplayModels: [courseModel('a', 1, 2, 3, { location: '两江校区 弘远楼A0213' })],
+			visibleDays,
+			columnWidthPx: 110,
 			expandedSlotKeys: new Set()
 		});
 
-		expect(items.length).toBe(1);
-		const placed = items[0] as PlacedCourseCapsule;
-		expect(placed.kind).toBe('course');
-		expect(placed.course.id).toBe('c1');
-		expect(placed.geometry.widthPercent).toBe(20); // 100 / 5 = 20%
-		expect(placed.geometry.startPeriod).toBe(1);
-		expect(placed.geometry.endPeriod).toBe(2);
-		expect(placed.corners.topLeft).toBe(true);
+		expect(items).toHaveLength(1);
+		const item = items[0]!;
+		expect(item.kind).toBe('course');
+		if (item.kind !== 'course') return;
+		expect(item.geometry).toEqual({
+			leftPercent: 0,
+			widthPercent: 100 / 3,
+			startPeriod: 2,
+			endPeriod: 3
+		});
+		expect(item.locationLines).toEqual(['两江校区', '弘远楼', 'A0213']);
+		expect(item.scale.titlePx).toBe(17);
+		expect(item.badgeLabel).toBeNull();
+		expect(item.colors.background).toBe('#EADDFF');
 	});
 
-	it('creates overlap placeholder when slot is collapsed', () => {
-		const c1 = createCourse({
-			id: 'c1',
-			name: '课程A',
-			teacher: 'A',
-			location: 'L1',
-			dayOfWeek: 1,
-			startPeriod: 1,
-			endPeriod: 2,
-			weeks: [1]
+	it('remaps default palette colors when a custom course palette is passed', () => {
+		const off = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set()
 		});
-		const c2 = createCourse({
-			id: 'c2',
-			name: '课程B',
-			teacher: 'B',
-			location: 'L2',
-			dayOfWeek: 1,
-			startPeriod: 1,
-			endPeriod: 2,
-			weeks: [1]
+		const on = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
 		});
-
-		const items = placeCapsules({
-			courseDisplayModels: [
-				{ course: c1, isInDisplayedWeek: true },
-				{ course: c2, isInDisplayedWeek: true }
-			],
-			visibleDays: [{ dayOfWeek: 1 }, { dayOfWeek: 2 }],
-			columnWidthPx: 100,
-			expandedSlotKeys: new Set() // not expanded
-		});
-
-		expect(items.length).toBe(1);
-		const placeholder = items[0] as PlacedOverlapPlaceholder;
-		expect(placeholder.kind).toBe('overlap-placeholder');
-		expect(placeholder.count).toBe(2);
+		expect(off[0]?.kind).toBe('course');
+		expect(on[0]?.kind).toBe('course');
+		if (off[0]?.kind !== 'course' || on[0]?.kind !== 'course') return;
+		expect(off[0].colors.background).toBe('#EADDFF');
+		expect(on[0].colors.background).toBe('#FFEE55');
+		expect(on[0].colors.text).toBe('#1a1a1a');
 	});
 
-	it('expands overlapping courses side-by-side when slot is expanded', () => {
-		const c1 = createCourse({
-			id: 'c1',
-			name: '课程A',
-			teacher: 'A',
-			location: 'L1',
-			dayOfWeek: 1,
-			startPeriod: 1,
-			endPeriod: 2,
-			weeks: [1]
-		});
-		const c2 = createCourse({
-			id: 'c2',
-			name: '课程B',
-			teacher: 'B',
-			location: 'L2',
-			dayOfWeek: 1,
-			startPeriod: 1,
-			endPeriod: 2,
-			weeks: [1]
-		});
-
-		const items = placeCapsules({
-			courseDisplayModels: [
-				{ course: c1, isInDisplayedWeek: true },
-				{ course: c2, isInDisplayedWeek: true }
-			],
-			visibleDays: [{ dayOfWeek: 1 }, { dayOfWeek: 2 }],
-			columnWidthPx: 100,
-			expandedSlotKeys: new Set(['1-1-2']) // expanded
-		});
-
-		expect(items.length).toBe(2);
-		const p1 = items[0] as PlacedCourseCapsule;
-		const p2 = items[1] as PlacedCourseCapsule;
-		expect(p1.kind).toBe('course');
-		expect(p2.kind).toBe('course');
-		expect(p1.geometry.widthPercent).toBe(25); // 50% / 2 = 25%
-		expect(p2.geometry.widthPercent).toBe(25);
-		expect(p2.geometry.leftPercent).toBe(25);
-	});
-
-	it('calculates adjacent corner rounding and square corners', () => {
-		const items = [
-			{
-				geometry: { leftPercent: 0, widthPercent: 20, startPeriod: 1, endPeriod: 2 },
-				corners: { topLeft: true, topRight: true, bottomLeft: true, bottomRight: true }
-			},
-			{
-				geometry: { leftPercent: 0, widthPercent: 20, startPeriod: 3, endPeriod: 4 },
-				corners: { topLeft: true, topRight: true, bottomLeft: true, bottomRight: true }
-			}
+	it('spreads colliding default-palette courses across unused display colors', () => {
+		const models = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1)
 		];
+		const items = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(backgrounds).toHaveLength(3);
+		expect(new Set(backgrounds).size).toBe(3);
+		expect(
+			backgrounds.every((hex) =>
+				EASTER_EGG_PALETTE_ENTRIES.some((entry) => entry.background === hex)
+			)
+		).toBe(true);
+	});
 
-		applyCapsuleCornerRounding(items);
-		// Bottom of item 0 touches top of item 1
-		expect(items[0]?.corners.bottomLeft).toBe(false);
-		expect(items[0]?.corners.bottomRight).toBe(false);
-		expect(items[1]?.corners.topLeft).toBe(false);
-		expect(items[1]?.corners.topRight).toBe(false);
+	it('spreads unique automatic courses across all display colors', () => {
+		const models = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1),
+			courseModel('d', 2, 3, 3),
+			courseModel('e', 3, 1, 1),
+			courseModel('f', 3, 3, 3)
+		];
+		const items = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(new Set(backgrounds)).toEqual(
+			new Set(EASTER_EGG_PALETTE_ENTRIES.map((entry) => entry.background))
+		);
+	});
 
-		applyCapsuleSquareCorners(items);
-		expect(items[0]?.corners.topLeft).toBe(false);
-		expect(items[0]?.corners.topRight).toBe(false);
+	it('maps each default-palette slot onto the matching display-palette entry', () => {
+		const models = [
+			courseModel('a', 1, 1, 1, { color: '#EADDFF' }),
+			courseModel('b', 1, 3, 3, { color: '#FFDBC9' }),
+			courseModel('c', 2, 1, 1, { color: '#C4EED0' }),
+			courseModel('d', 2, 3, 3, { color: '#D3E3FD' }),
+			courseModel('e', 3, 1, 1, { color: '#FFD8E4' }),
+			courseModel('f', 3, 3, 3, { color: '#F6E1B0' })
+		];
+		const items = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		const backgrounds = items
+			.filter((item) => item.kind === 'course')
+			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
+		expect(backgrounds).toEqual(['#FFEE55', '#FFBBCC', '#4477CC', '#9977CC', '#EE5577', '#4D5B4C']);
+	});
+
+	it('keeps a course color stable when the visible week is a subset', () => {
+		const all = [
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1),
+			courseModel('d', 2, 3, 3),
+			courseModel('e', 3, 1, 1)
+		];
+		const paletteCourses = all.map((model) => model.course);
+		const full = placeCapsules({
+			courseDisplayModels: all,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
+			paletteCourses
+		});
+		const week = placeCapsules({
+			courseDisplayModels: [courseModel('e', 3, 1, 1)],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
+			paletteCourses
+		});
+		const fromFull = full.find((item) => item.kind === 'course' && item.course.name === 'e');
+		expect(fromFull?.kind).toBe('course');
+		expect(week[0]?.kind).toBe('course');
+		if (fromFull?.kind !== 'course' || week[0]?.kind !== 'course') return;
+		expect(week[0].colors.background).toBe(fromFull.colors.background);
+	});
+
+	it('leaves custom course colors unchanged when a custom course palette is passed', () => {
+		const [item] = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1, { color: '#123456' })],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set(),
+			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+		});
+		expect(item?.kind).toBe('course');
+		if (item?.kind !== 'course') return;
+		expect(item.colors.background).toBe('#123456');
+	});
+
+	it('emits an overlap placeholder until the slot is expanded', () => {
+		const models = [courseModel('a', 1, 1, 2), courseModel('b', 1, 2, 3)];
+		const key = periodSlotKey(1, 1, 3);
+
+		const collapsed = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set()
+		});
+		expect(collapsed).toHaveLength(1);
+		expect(collapsed[0]).toMatchObject({
+			kind: 'overlap-placeholder',
+			key,
+			count: 2
+		});
+
+		const expanded = placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set([key])
+		});
+		expect(expanded).toHaveLength(2);
+		expect(expanded.every((item) => item.kind === 'course')).toBe(true);
+		if (expanded[0]?.kind !== 'course' || expanded[1]?.kind !== 'course') return;
+		expect(expanded[0].geometry.widthPercent).toBeCloseTo(100 / 3 / 2);
+		expect(expanded[1].geometry.leftPercent).toBeCloseTo(expanded[0].geometry.widthPercent);
+		expect(expanded[0].overlapCount).toBe(2);
+	});
+
+	it('hides campus lines when the column is narrow', () => {
+		const [item] = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1, { location: '两江校区 弘远楼A0213' })],
+			visibleDays,
+			columnWidthPx: 69,
+			expandedSlotKeys: new Set()
+		});
+		expect(item?.kind).toBe('course');
+		if (item?.kind !== 'course') return;
+		expect(item.locationLines).toEqual(['弘远楼', 'A0213']);
+	});
+
+	it('sets badgeLabel when the course is outside the displayed week', () => {
+		const [item] = placeCapsules({
+			courseDisplayModels: [courseModel('a', 1, 1, 1, { isInDisplayedWeek: false })],
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: new Set()
+		});
+		expect(item?.kind).toBe('course');
+		if (item?.kind !== 'course') return;
+		expect(item.badgeLabel).toBe('非本周');
 	});
 });
+
+describe('capsule corner rounding', () => {
+	const visibleDays = [{ dayOfWeek: 1 }, { dayOfWeek: 2 }, { dayOfWeek: 3 }];
+
+	const allRounded: CapsuleCorners = {
+		topLeft: true,
+		topRight: true,
+		bottomLeft: true,
+		bottomRight: true
+	};
+
+	const allSquare: CapsuleCorners = {
+		topLeft: false,
+		topRight: false,
+		bottomLeft: false,
+		bottomRight: false
+	};
+
+	function findCourse(items: PlacedItem[], id: string): PlacedCourseCapsule {
+		const item = items.find((entry) => entry.kind === 'course' && entry.course.id === id);
+		expect(item?.kind).toBe('course');
+		if (item?.kind !== 'course') throw new Error(`missing course ${id}`);
+		return item;
+	}
+
+	function place(
+		models: ReturnType<typeof courseModel>[],
+		expanded = false,
+		capsuleCornerStyle: 'rounded' | 'sharp' | 'pill' = 'rounded'
+	) {
+		const slotKeys = new Set<string>();
+		if (expanded) {
+			for (const group of buildSlotGroups(models)) {
+				slotKeys.add(periodSlotKey(group.dayOfWeek, group.startPeriod, group.endPeriod));
+			}
+		}
+		return placeCapsules({
+			courseDisplayModels: models,
+			visibleDays,
+			columnWidthPx: 110,
+			expandedSlotKeys: slotKeys,
+			capsuleCornerStyle
+		});
+	}
+
+	it('keeps every corner rounded in pill style even when adjacent', () => {
+		const items = place([courseModel('a', 2, 1, 1), courseModel('b', 2, 2, 2)], false, 'pill');
+		expect(findCourse(items, 'a').corners).toEqual(allRounded);
+		expect(findCourse(items, 'b').corners).toEqual(allRounded);
+	});
+
+	it('squares every corner in sharp style even for isolated capsule', () => {
+		const items = place([courseModel('a', 2, 2, 2)], false, 'sharp');
+		expect(findCourse(items, 'a').corners).toEqual(allSquare);
+	});
+
+	it('keeps every corner rounded for an isolated capsule in pill style', () => {
+		const items = place([courseModel('a', 2, 2, 2)], false, 'pill');
+		expect(findCourse(items, 'a').corners).toEqual(allRounded);
+	});
+
+	it('squares the touching corners of vertically adjacent capsules', () => {
+		const items = place([courseModel('a', 2, 1, 1), courseModel('b', 2, 2, 2)]);
+		expect(findCourse(items, 'a').corners).toEqual({
+			topLeft: true,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'b').corners).toEqual({
+			topLeft: false,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: true
+		});
+	});
+
+	it('squares the touching corners of horizontally adjacent capsules', () => {
+		const items = place([courseModel('a', 1, 1, 1), courseModel('b', 2, 1, 1)]);
+		expect(findCourse(items, 'a').corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'b').corners).toEqual({
+			topLeft: false,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: true
+		});
+	});
+
+	it('squares every corner of a fully sandwiched capsule', () => {
+		const items = place([
+			courseModel('above', 2, 1, 1),
+			courseModel('center', 2, 2, 2),
+			courseModel('below', 2, 3, 3),
+			courseModel('left', 1, 2, 2),
+			courseModel('right', 3, 2, 2)
+		]);
+		expect(findCourse(items, 'center').corners).toEqual({
+			topLeft: false,
+			topRight: false,
+			bottomLeft: false,
+			bottomRight: false
+		});
+	});
+
+	it('squares the side corners of expanded overlap siblings', () => {
+		const items = place([courseModel('a', 1, 1, 2), courseModel('b', 1, 2, 3)], true);
+		expect(findCourse(items, 'a').corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'b').corners).toEqual({
+			topLeft: false,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: true
+		});
+	});
+
+	it('keeps rounding on the gap side when a row is empty', () => {
+		const items = place([courseModel('a', 2, 1, 1), courseModel('c', 2, 3, 3)]);
+		expect(findCourse(items, 'a').corners).toEqual(allRounded);
+		expect(findCourse(items, 'c').corners).toEqual(allRounded);
+	});
+
+	it('squares the side corners of an overlap placeholder next to a course', () => {
+		const items = place([
+			courseModel('a', 1, 1, 2),
+			courseModel('b', 1, 2, 3),
+			courseModel('c', 2, 1, 3)
+		]);
+		const placeholder = items.find((item) => item.kind === 'overlap-placeholder');
+		expect(placeholder?.kind).toBe('overlap-placeholder');
+		if (placeholder?.kind !== 'overlap-placeholder') return;
+		expect(placeholder.corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+	});
+
+	it('handles adjacent capsules that only partially overlap in period range', () => {
+		const items = place([courseModel('a', 1, 1, 2), courseModel('b', 2, 2, 3)]);
+		expect(findCourse(items, 'a').corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'b').corners).toEqual({
+			topLeft: false,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: true
+		});
+	});
+
+	it('never treats an expanded subcolumn as a vertical neighbor of the adjacent day', () => {
+		const items = place(
+			[courseModel('mon-1', 1, 2, 3), courseModel('mon-2', 1, 2, 3), courseModel('tue-1', 2, 1, 1)],
+			true
+		);
+		expect(findCourse(items, 'mon-2').corners.topRight).toBe(true);
+		expect(findCourse(items, 'tue-1').corners.bottomLeft).toBe(true);
+		expect(findCourse(items, 'tue-1').corners.bottomRight).toBe(true);
+	});
+
+	it('squares subcolumn corners against a full-width course above in the same day', () => {
+		const items = place(
+			[courseModel('above', 1, 1, 1), courseModel('mon-a', 1, 2, 3), courseModel('mon-b', 1, 2, 3)],
+			true
+		);
+		expect(findCourse(items, 'above').corners).toEqual({
+			topLeft: true,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'mon-a').corners).toEqual({
+			topLeft: false,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(findCourse(items, 'mon-b').corners).toEqual({
+			topLeft: false,
+			topRight: false,
+			bottomLeft: false,
+			bottomRight: true
+		});
+	});
+
+	it('works when called directly on raw geometries', () => {
+		const items: PlacedItem[] = [
+			{
+				kind: 'course',
+				key: 'x',
+				course: courseModel('x', 1, 1, 1).course,
+				displayModel: courseModel('x', 1, 1, 1),
+				geometry: { leftPercent: 0, widthPercent: 50, startPeriod: 1, endPeriod: 1 },
+				colors: { background: '#EADDFF', text: '#21005D' },
+				scale: resolveCapsuleTypeScale(110),
+				locationLines: [],
+				locationMetrics: { fontPx: 10, heightPx: 30 },
+				teacher: '',
+				badgeLabel: null,
+				overlapCount: 1,
+				corners: allRounded
+			},
+			{
+				kind: 'course',
+				key: 'y',
+				course: courseModel('y', 1, 1, 1).course,
+				displayModel: courseModel('y', 1, 1, 1),
+				geometry: { leftPercent: 50, widthPercent: 50, startPeriod: 1, endPeriod: 1 },
+				colors: { background: '#EADDFF', text: '#21005D' },
+				scale: resolveCapsuleTypeScale(110),
+				locationLines: [],
+				locationMetrics: { fontPx: 10, heightPx: 30 },
+				teacher: '',
+				badgeLabel: null,
+				overlapCount: 1,
+				corners: allRounded
+			}
+		];
+		applyCapsuleCornerRounding(items);
+		expect(items[0]!.corners).toEqual({
+			topLeft: true,
+			topRight: false,
+			bottomLeft: true,
+			bottomRight: false
+		});
+		expect(items[1]!.corners).toEqual({
+			topLeft: false,
+			topRight: true,
+			bottomLeft: false,
+			bottomRight: true
+		});
+
+		applyCapsuleSquareCorners(items);
+		expect(items[0]!.corners).toEqual(allSquare);
+		expect(items[1]!.corners).toEqual(allSquare);
+	});
+});
+
+function courseModel(
+	id: string,
+	dayOfWeek: number,
+	startPeriod: number,
+	endPeriod: number,
+	options?: { location?: string; isInDisplayedWeek?: boolean; color?: string }
+) {
+	return {
+		course: {
+			id,
+			name: id,
+			teacher: '老师',
+			location: options?.location ?? 'A101',
+			dayOfWeek,
+			startPeriod,
+			endPeriod,
+			color: options?.color ?? '#EADDFF',
+			textColor: '#21005D',
+			weeks: [1],
+			remark: ''
+		},
+		isInDisplayedWeek: options?.isInDisplayedWeek ?? true
+	};
+}
