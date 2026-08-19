@@ -99,6 +99,8 @@ describe('ReactiveChronosController', () => {
 		expect(controller.activeWeek).toBe(1);
 		expect(controller.activeThemeId).toBe('m3-default');
 		expect(controller.userPreferences).toBeDefined();
+		expect(controller.currentLocale).toBe('zh-cn');
+		expect(controller.slotVersion).toBeGreaterThanOrEqual(1);
 		expect(controller.sources).toEqual([]);
 		expect(controller.exporters).toEqual([]);
 		expect(controller.courseActions).toEqual([]);
@@ -147,43 +149,63 @@ describe('ReactiveChronosController', () => {
 		controller.dispose();
 	});
 
-	it('synchronizes dynamic slots when plugins are loaded or registered', async () => {
+	it('synchronizes dynamic slots and tracks slotVersion', async () => {
 		const controller = new ReactiveChronosController(engine);
+		const initialVersion = controller.slotVersion;
 
 		const testPlugin = {
 			id: 'test-plugin',
 			name: 'Test Plugin',
 			version: '1.0.0',
 			apply(ctx: ChronosContext) {
-				ctx.registerSource({
-					id: 'test-source',
-					title: 'Test Source',
-					authType: 'none',
-					fetchSchedule: async () => createTimetable({ id: 'imported', name: 'Imported' })
+				ctx.registerSlot('import.source.tab', {
+					id: 'test-tab',
+					title: () => 'Tab 1',
+					order: 10,
+					executeImport: async () => createTimetable({ id: 'imported', name: 'Imported' })
 				});
-				ctx.registerExporter({
-					id: 'test-exporter',
-					title: 'Test Exporter',
-					export: async () => ({ filename: 'test.txt', mimeType: 'text/plain', content: 'test' })
+				ctx.registerSlot('mine.section', {
+					id: 'sec-1',
+					title: 'Section 1',
+					order: 5
 				});
-				ctx.registerCourseAction({
-					id: 'test-action',
-					label: 'Test Action',
-					onExecute: async () => {}
+				ctx.registerSlot('shell.route.screen', {
+					id: 'screen-1',
+					title: 'Screen 1'
 				});
 			}
 		};
 
 		const pluginHandle = await engine.loadPlugin(testPlugin);
-		expect(controller.sources.length).toBe(1);
-		expect(controller.sources[0]?.id).toBe('test-source');
-		expect(controller.exporters.length).toBe(1);
-		expect(controller.courseActions.length).toBe(1);
+		expect(controller.slotVersion).toBeGreaterThan(initialVersion);
 
+		const tabs = controller.getSlots('import.source.tab');
+		expect(tabs.length).toBe(1);
+		expect(tabs[0]?.id).toBe('test-tab');
+
+		const sections = controller.getSlots('mine.section');
+		expect(sections.length).toBe(1);
+		expect(sections[0]?.id).toBe('sec-1');
+
+		const screen = controller.getSlotItem('shell.route.screen', 'screen-1');
+		expect(screen).toBeDefined();
+		expect(screen?.id).toBe('screen-1');
+
+		const preUnloadVersion = controller.slotVersion;
 		pluginHandle.dispose();
-		expect(controller.sources.length).toBe(0);
-		expect(controller.exporters.length).toBe(0);
-		expect(controller.courseActions.length).toBe(0);
+		expect(controller.slotVersion).toBeGreaterThan(preUnloadVersion);
+		expect(controller.getSlots('import.source.tab').length).toBe(0);
+
+		controller.dispose();
+	});
+
+	it('bumps slotVersion on locale change', () => {
+		const controller = new ReactiveChronosController(engine);
+		const prevVersion = controller.slotVersion;
+
+		engine.setLocale('en');
+		expect(controller.currentLocale).toBe('en');
+		expect(controller.slotVersion).toBeGreaterThan(prevVersion);
 
 		controller.dispose();
 	});
