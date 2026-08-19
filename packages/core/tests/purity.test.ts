@@ -1,0 +1,53 @@
+import { describe, it, expect } from 'vite-plus/test';
+import * as Core from '../src/index';
+
+describe('@chronos/core ECMAScript Purity', () => {
+	it('exports all expected core domain, engine, and types modules', () => {
+		expect(Core.createCourse).toBeTypeOf('function');
+		expect(Core.createTimetable).toBeTypeOf('function');
+		expect(Core.AcademicCalendarService).toBeTypeOf('function');
+		expect(Core.placeCapsules).toBeTypeOf('function');
+		expect(Core.parseIsoDate).toBeTypeOf('function');
+		expect(Core.calculateTimetableGrid).toBeTypeOf('function');
+		expect(Core.buildTimetableCourseDisplayModels).toBeTypeOf('function');
+		expect(Core.COURSE_PALETTE_ENTRIES).toBeInstanceOf(Array);
+	});
+
+	it('operates purely on standard ECMAScript data types without DOM globals', () => {
+		// Verify that all core algorithms work even if DOM globals are undefined
+		const course = Core.createCourse({
+			id: 'c1',
+			name: '计算机网络',
+			teacher: '王老师',
+			location: '花溪校区 弘远楼B204',
+			dayOfWeek: 2,
+			startPeriod: 3,
+			endPeriod: 4,
+			weeks: [1, 2, 3]
+		});
+
+		const timetable = Core.createTimetable({
+			id: 't1',
+			name: '计算机学院课表',
+			courses: [course]
+		});
+
+		const grid = Core.calculateTimetableGrid('2026-03-03', 1, timetable);
+		expect(grid.visibleDays.length).toBe(7);
+
+		const displayModels = Core.buildTimetableCourseDisplayModels(
+			timetable,
+			new Set([1, 2, 3, 4, 5, 6, 7]),
+			1
+		);
+		expect(displayModels.length).toBe(1);
+
+		const capsules = Core.placeCapsules({
+			courseDisplayModels: displayModels,
+			visibleDays: grid.visibleDays,
+			columnWidthPx: 80,
+			expandedSlotKeys: new Set()
+		});
+		expect(capsules.length).toBe(1);
+	});
+});
