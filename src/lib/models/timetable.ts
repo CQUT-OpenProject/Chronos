@@ -55,9 +55,13 @@ export const timetableConfigSchema = z.object({
 
 export type TimetableConfig = z.infer<typeof timetableConfigSchema>;
 
-import { CURRENT_TIMETABLE_SCHEMA_VERSION } from '@chronos/core';
+import {
+	CURRENT_TIMETABLE_SCHEMA_VERSION,
+	DEFAULT_TIMETABLE_NAME,
+	normalizeTimetableName
+} from '@chronos/core';
 
-export { CURRENT_TIMETABLE_SCHEMA_VERSION };
+export { CURRENT_TIMETABLE_SCHEMA_VERSION, DEFAULT_TIMETABLE_NAME, normalizeTimetableName };
 
 export interface Timetable {
 	schemaVersion: number;
@@ -70,13 +74,6 @@ export interface Timetable {
 	importMetadata: TimetableImportMetadata;
 	viewPrefs: TimetableViewPrefs;
 	customMetadata?: Record<string, unknown>;
-}
-
-export const DEFAULT_TIMETABLE_NAME = '未命名课表';
-
-export function normalizeTimetableName(name: string): string {
-	const trimmed = name.trim();
-	return trimmed.length > 0 ? trimmed : DEFAULT_TIMETABLE_NAME;
 }
 
 export function createTimetable(

@@ -34,7 +34,7 @@ export interface Timetable {
 	customMetadata?: Record<string, unknown>;
 }
 
-export const DEFAULT_TIMETABLE_NAME = 'Untitled Timetable';
+export const DEFAULT_TIMETABLE_NAME = '未命名课表';
 
 export function normalizeTimetableName(name: string): string {
 	const trimmed = name.trim();
