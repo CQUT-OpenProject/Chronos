@@ -3,7 +3,7 @@ export interface AuthSnapshot {
 	password: string;
 }
 
-export type SavedCredentialMode = 'account_only' | 'prf';
+export type SavedCredentialMode = 'account_only' | 'vault';
 
 export interface SavedCredentialState {
 	account: string | null;

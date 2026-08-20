@@ -12,9 +12,15 @@ export interface AccountOnlyOnlineCredentialRecord {
 	account: string;
 }
 
+export interface VaultBackedOnlineCredentialRecord {
+	mode: 'vault';
+	account: string;
+}
+
 export type OnlineCredentialRecord =
 	| EncryptedOnlineCredentialRecord
-	| AccountOnlyOnlineCredentialRecord;
+	| AccountOnlyOnlineCredentialRecord
+	| VaultBackedOnlineCredentialRecord;
 
 const STORAGE_KEY = 'chronos:online-credential-v1';
 
@@ -25,7 +31,9 @@ export function readOnlineCredentialRecord(
 	const raw = storage.getItem(STORAGE_KEY);
 	if (!raw) return null;
 	try {
-		return JSON.parse(raw) as OnlineCredentialRecord;
+		const parsed = JSON.parse(raw) as OnlineCredentialRecord;
+		if (!parsed?.account || !parsed.mode) return null;
+		return parsed;
 	} catch {
 		return null;
 	}

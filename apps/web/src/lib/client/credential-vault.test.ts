@@ -4,9 +4,7 @@ import {
 	readOnlineCredentialRecord,
 	writeOnlineCredentialRecord
 } from '$lib/storage/online-credential-record';
-import * as prfCrypto from '$lib/client/webauthn/prf-crypto';
-import { bytesToBase64 } from '$lib/client/webauthn/binary';
-import { WebAuthnCredentialUnavailableError } from '$lib/client/webauthn/prf-coordinator';
+import { MemoryVaultProvider } from '$lib/providers/memory-vault';
 
 const mockCredentialEnvironment = vi.hoisted(() => ({
 	prfAvailable: false,
@@ -45,109 +43,52 @@ describe('CredentialVault', () => {
 		mockCredentialEnvironment.ready = true;
 		mockCredentialEnvironment.init.mockClear();
 		mockCredentialEnvironment.subscribe.mockClear();
-		vi.restoreAllMocks();
 	});
 
-	it('saves account-only credential when PRF is unavailable', async () => {
-		mockCredentialEnvironment.prfAvailable = false;
-		const vault = createCredentialVault({ storage });
+	it('saves account-only credential when vault cannot store secrets', async () => {
+		const vaultPort = new MemoryVaultProvider();
+		vi.spyOn(vaultPort, 'isSupported').mockResolvedValue(false);
+		const vault = createCredentialVault({ storage, vault: vaultPort });
 
 		const result = await vault.save('20240101', 'password123');
 		expect(result.ok).toBe(true);
 
 		const record = readOnlineCredentialRecord(storage);
 		expect(record).toEqual({ mode: 'account_only', account: '20240101' });
-
-		let observedAccount: string | null = null;
-		vault.subscribe((state) => {
-			observedAccount = state.account;
-		});
-		expect(observedAccount).toBe('20240101');
+		expect(await vaultPort.getSecret('cqut-online-password')).toBeNull();
 	});
 
-	it('saves encrypted credential when PRF is available', async () => {
-		mockCredentialEnvironment.prfAvailable = true;
-		vi.spyOn(prfCrypto, 'deriveAesKey').mockResolvedValue({} as CryptoKey);
-		vi.spyOn(prfCrypto, 'encryptPayload').mockResolvedValue({
-			iv: 'iv',
-			ciphertext: 'ciphertext'
-		});
+	it('stores password on IVaultService when supported', async () => {
+		const vaultPort = new MemoryVaultProvider();
+		const vault = createCredentialVault({ storage, vault: vaultPort });
 
-		const createPrf = vi.fn().mockResolvedValue({
-			credentialId: 'cred-123',
-			prfOutput: bytesToBase64(new Uint8Array([1, 2, 3, 4]))
-		});
-
-		const vault = createCredentialVault({ storage, createPrf });
 		const saveResult = await vault.save('20240101', 'secret');
 		expect(saveResult.ok).toBe(true);
+		expect(readOnlineCredentialRecord(storage)).toEqual({ mode: 'vault', account: '20240101' });
+		expect(await vaultPort.getSecret('cqut-online-password')).toBe('secret');
 
-		const record = readOnlineCredentialRecord(storage);
-		expect(record).toMatchObject({
-			mode: 'prf',
-			account: '20240101',
-			credentialId: 'cred-123',
-			iv: 'iv',
-			ciphertext: 'ciphertext'
-		});
-	});
-
-	it('unlocks encrypted credential with PRF output', async () => {
-		writeOnlineCredentialRecord(
-			{
-				mode: 'prf',
-				account: '20240101',
-				credentialId: 'cred-123',
-				salt: bytesToBase64(new Uint8Array(32)),
-				iv: 'iv',
-				ciphertext: 'ciphertext'
-			},
-			storage
-		);
-
-		mockCredentialEnvironment.prfAvailable = true;
-		vi.spyOn(prfCrypto, 'deriveAesKey').mockResolvedValue({} as CryptoKey);
-		vi.spyOn(prfCrypto, 'decryptPayload').mockResolvedValue(new TextEncoder().encode('secret'));
-
-		const getPrf = vi.fn().mockResolvedValue(bytesToBase64(new Uint8Array([9, 8, 7])));
-
-		const vault = createCredentialVault({ storage, getPrf });
 		const unlock = await vault.unlock();
-
 		expect(unlock.ok).toBe(true);
 		if (unlock.ok) {
 			expect(unlock.value).toEqual({ account: '20240101', password: 'secret' });
 		}
 	});
 
-	it('automatically clears credential when WebAuthn credential is unavailable', async () => {
-		writeOnlineCredentialRecord(
-			{
-				mode: 'prf',
-				account: '20240101',
-				credentialId: 'cred-invalid',
-				salt: bytesToBase64(new Uint8Array(32)),
-				iv: 'iv',
-				ciphertext: 'ciphertext'
-			},
-			storage
-		);
-
-		const getPrf = vi.fn().mockRejectedValue(new WebAuthnCredentialUnavailableError());
-
-		const vault = createCredentialVault({ storage, getPrf });
-		const unlock = await vault.unlock();
-
-		expect(unlock.ok).toBe(false);
-		expect(readOnlineCredentialRecord(storage)).toBeNull();
-	});
-
-	it('clears stored credential', async () => {
-		writeOnlineCredentialRecord({ mode: 'account_only', account: '20240101' }, storage);
-		const vault = createCredentialVault({ storage });
+	it('clears stored credential and vault secret', async () => {
+		const vaultPort = new MemoryVaultProvider();
+		const vault = createCredentialVault({ storage, vault: vaultPort });
+		await vault.save('20240101', 'secret');
 
 		const result = await vault.clear();
 		expect(result.ok).toBe(true);
 		expect(readOnlineCredentialRecord(storage)).toBeNull();
+		expect(await vaultPort.getSecret('cqut-online-password')).toBeNull();
+	});
+
+	it('treats leftover account-only records as unlock failures', async () => {
+		writeOnlineCredentialRecord({ mode: 'account_only', account: '20240101' }, storage);
+		const vault = createCredentialVault({ storage, vault: new MemoryVaultProvider() });
+		const unlock = await vault.unlock();
+		expect(unlock.ok).toBe(false);
 	});
 });

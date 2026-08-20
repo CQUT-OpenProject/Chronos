@@ -8,6 +8,7 @@ import {
 } from '@chronos/core';
 import type { ChronosDB } from '$lib/storage/db';
 import { DexieStorageProvider } from './dexie-storage';
+import { MemoryVaultProvider } from './memory-vault';
 import { WebAuthnVaultProvider } from './webauthn-vault';
 import { WebHttpProxyProvider } from './web-http';
 import { WebRuntimeProvider } from './web-runtime';
@@ -16,6 +17,7 @@ import { WebAnalyticsProvider } from './web-analytics';
 export {
 	DexieStorageProvider,
 	WebAuthnVaultProvider,
+	MemoryVaultProvider,
 	WebHttpProxyProvider,
 	WebRuntimeProvider,
 	WebAnalyticsProvider

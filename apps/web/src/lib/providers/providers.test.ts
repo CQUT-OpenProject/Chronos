@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import {
 	DexieStorageProvider,
 	WebAuthnVaultProvider,
+	MemoryVaultProvider,
 	WebHttpProxyProvider,
 	WebRuntimeProvider,
 	WebAnalyticsProvider,
@@ -129,6 +130,19 @@ describe('Web Providers', () => {
 		localStorage = new MockStorage();
 	});
 
+	it('DexieStorageProvider maps legacy preference keys', async () => {
+		localStorage.setItem('chronos_preferences:theme_mode', 'system');
+		localStorage.setItem('chronos_preferences:timetable_layout_mode', 'fit');
+		localStorage.setItem('chronos_preferences:palette_mode', 'random');
+		localStorage.setItem('chronos_preferences:capsule_corner_style', 'merge');
+		const storage = new DexieStorageProvider(db, localStorage);
+		const prefs = await storage.getPreferences();
+		expect(prefs.themeMode).toBe('auto');
+		expect(prefs.timetableLayoutMode).toBe('compact');
+		expect(prefs.paletteMode).toBe('random');
+		expect(prefs.capsuleCornerStyle).toBe('pill');
+	});
+
 	it('DexieStorageProvider persists timetables, courses, and plugin data', async () => {
 		const storage = new DexieStorageProvider(db, localStorage);
 
@@ -164,15 +178,23 @@ describe('Web Providers', () => {
 		storage.dispose();
 	});
 
-	it('WebAuthnVaultProvider manages secrets', async () => {
-		const vault = new WebAuthnVaultProvider(localStorage);
-		expect(typeof (await vault.isSupported())).toBe('boolean');
-
+	it('MemoryVaultProvider round-trips secrets', async () => {
+		const vault = new MemoryVaultProvider();
 		await vault.storeSecret('api-token', 'sec-999');
 		expect(await vault.getSecret('api-token')).toBe('sec-999');
-
 		await vault.removeSecret('api-token');
 		expect(await vault.getSecret('api-token')).toBeNull();
+	});
+
+	it('WebAuthnVaultProvider does not persist plaintext secrets', async () => {
+		const vault = new WebAuthnVaultProvider(localStorage, {
+			isSupported: async () => false
+		});
+		await expect(vault.storeSecret('api-token', 'sec-999')).rejects.toThrow(
+			'WebAuthn PRF vault is not available'
+		);
+		expect(localStorage.getItem('chronos_vault:api-token')).toBeNull();
+		expect(localStorage.getItem('chronos_vault_enc:api-token')).toBeNull();
 	});
 
 	it('WebHttpProxyProvider enforces SSRF and domain whitelist protection', async () => {
