@@ -14,7 +14,10 @@ export default defineConfig({
 				)
 			),
 			'$app/paths': fileURLToPath(
-				new URL('./node_modules/@sveltejs/kit/src/runtime/app/paths/index.js', import.meta.url)
+				new URL('./apps/web/src/lib/test-mocks/app-paths.ts', import.meta.url)
+			),
+			'virtual:pwa-register': fileURLToPath(
+				new URL('./apps/web/src/lib/test-mocks/pwa-register.ts', import.meta.url)
 			),
 			'$app/navigation': fileURLToPath(
 				new URL('./node_modules/@sveltejs/kit/src/runtime/app/navigation.js', import.meta.url)
@@ -41,6 +44,12 @@ export default defineConfig({
 			),
 			'@chronos/plugin-codec-share': fileURLToPath(
 				new URL('./packages/plugins/codec-share/src/index.ts', import.meta.url)
+			),
+			'@chronos/plugin-codec-share/share-link': fileURLToPath(
+				new URL('./packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
+			),
+			'@chronos/plugin-source-cqut/week-merge': fileURLToPath(
+				new URL('./packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
 			)
 		}
 	},

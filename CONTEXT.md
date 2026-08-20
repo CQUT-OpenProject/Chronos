@@ -37,7 +37,7 @@ CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live onl
 ## CredentialVault vs IVaultService
 
 - **IVaultService**: encrypt/decrypt secrets.
-- **CredentialVault**: teaching-admin account module on that port. Password → `storeSecret` / `getSecret`. Account-only mode stays on a non-secret record. Transfer UI talks to CredentialVault; construction takes the engine vault.
+- **CredentialVault**: teaching-admin account module on that port. Password → `storeSecret` / `getSecret`. Account-only mode stays on a non-secret record. `source-cqut` may save credentials directly via `IVaultService` during slot import.
 
 ## EventPipeline
 
@@ -45,10 +45,25 @@ Single event + hook runtime (`emit` / `on`, `serial` guards, `waterfall`). Engin
 
 **Removed:** `EventBus` and `Pipeline` (`DataPipeline`). Do not reintroduce them.
 
-## Transfer ingest (`IIngestCoordinator`)
+## Transfer ingest (`IImportSessionCoordinator`)
 
-Coordinator strategy table: `share` \| `json-slot` \| `html` \| `online`. Built-in plugins register import slots; missing slot is a failure (no HTML parser / `/api/cqut/preview` fork). Persist via `Engine.actions.importTimetable` (serial + waterfall → `saveTimetable` + activate). Coordinator must not write `env.storage`.
+Import UI executes `import.source.tab` slots directly. Session coordinator only handles preview persistence + `confirmImport` → `Engine.actions.importTimetable`. Share-link codec lives in `@chronos/plugin-codec-share` only (no web copy). Export uses `export.action` slots; clipboard write happens in UI, not a second coordinator call.
+
+## Plugin activation (intentional dual-track)
+
+- **Builtin plugins** (profile): `ProfileManager` → in-process `plugin.apply(ScopedContext)`.
+- **Marketplace plugins**: `WorkerPluginBridge` → sandbox Worker runtime.
+
+Both tracks share slot RPC protocol; do not merge into a single activation path.
+
+## Core shell (`core-shell`)
+
+Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile.
 
 ## Sandbox
 
 `InProcessSandboxAdapter` implements `Worker` and runs the same RPC as the real worker runtime (apply plugin, round-trip slot calls). Tests may inject a mock `Worker`. No Worker and no injected adapter → throw. Empty `postMessage` stubs are not a sandbox.
+
+## Share-link codec
+
+Canonical implementation: `@chronos/plugin-codec-share/share-link`. Slots: `import.source.tab` (`share-link`, `share-json`), `export.action` (`share-link`, `share-json`).
