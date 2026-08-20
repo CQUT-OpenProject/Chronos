@@ -7,6 +7,8 @@
 	"scripts": {
 		"dev": "vp -C apps/web dev",
 		"build": "vp -C apps/web build",
+		"build:cqut": "CHRONOS_PROFILE=chronos-cqut vp -C apps/web build",
+		"build:default": "CHRONOS_PROFILE=chronos-default vp -C apps/web build",
 		"build:pages": "CHRONOS_DEPLOY_TARGET=pages vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html",
 		"preview": "vp -C apps/web preview",
 		"prepare": "vp config && (cd apps/web && svelte-kit sync || echo '')",

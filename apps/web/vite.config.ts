@@ -48,12 +48,18 @@ export default defineConfig(({ mode }) => {
 				),
 				'@chronos/plugin-codec-share': fileURLToPath(
 					new URL('../../packages/plugins/codec-share/src/index.ts', import.meta.url)
+				),
+				'@chronos/plugin-codec-share/share-link': fileURLToPath(
+					new URL('../../packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
 				)
 			}
 		},
 		define: {
 			__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
 			__ONLINE_IMPORT_ENABLED__: JSON.stringify(!isPagesBuild),
+			__CHRONOS_PROFILE__: JSON.stringify(
+				process.env.CHRONOS_PROFILE ?? (isPagesBuild ? 'chronos-default' : 'chronos-cqut')
+			),
 			__ANALYTICS_ENABLED__: JSON.stringify(
 				mode === 'test' || Boolean(env.PUBLIC_POSTHOG_KEY?.trim())
 			)
@@ -91,7 +97,9 @@ export default defineConfig(({ mode }) => {
 					'@chronos/ui-kit': '../../packages/ui-kit/src/index.ts',
 					'@chronos/plugin-source-cqut': '../../packages/plugins/source-cqut/src/index.ts',
 					'@chronos/plugin-parser-html': '../../packages/plugins/parser-html/src/index.ts',
-					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts'
+					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
+					'@chronos/plugin-codec-share/share-link':
+						'../../packages/plugins/codec-share/src/share-link/index.ts'
 				},
 				compilerOptions: {
 					runes: ({ filename }) =>
