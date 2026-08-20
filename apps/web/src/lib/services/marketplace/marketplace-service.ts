@@ -1,4 +1,5 @@
 import type { ChronosEngine, Disposable, MarketplaceRegistry, PluginManifest } from '@chronos/core';
+import { IHttpService, IRuntimeService } from '@chronos/core';
 import { WorkerPluginBridge } from './worker-plugin-bridge';
 
 const MARKETPLACE_STORAGE_KEY = 'installed_plugins';
@@ -56,7 +57,7 @@ export class MarketplaceService implements Disposable {
 	}
 
 	private async loadInstalledFromStorage(): Promise<InstalledPluginRecord[]> {
-		const data = await this.engine.env.storage.getPluginData<InstalledPluginRecord[]>(
+		const data = await this.engine.storage.getPluginData<InstalledPluginRecord[]>(
 			MARKETPLACE_PLUGIN_ID,
 			MARKETPLACE_STORAGE_KEY
 		);
@@ -64,7 +65,7 @@ export class MarketplaceService implements Disposable {
 	}
 
 	private async saveInstalledToStorage(): Promise<void> {
-		await this.engine.env.storage.setPluginData(
+		await this.engine.storage.setPluginData(
 			MARKETPLACE_PLUGIN_ID,
 			MARKETPLACE_STORAGE_KEY,
 			this.installedCache
@@ -73,7 +74,7 @@ export class MarketplaceService implements Disposable {
 	}
 
 	async fetchRegistry(registryUrl = '/marketplace/registry.json'): Promise<MarketplaceRegistry> {
-		const response = await this.engine.env.http.request(registryUrl, {
+		const response = await this.engine.services.get(IHttpService).request(registryUrl, {
 			method: 'GET'
 		});
 
@@ -93,7 +94,7 @@ export class MarketplaceService implements Disposable {
 
 	async install(manifest: PluginManifest, bundleUrlOverride?: string): Promise<void> {
 		const targetUrl = bundleUrlOverride || manifest.bundleUrl;
-		const response = await this.engine.env.http.request(targetUrl, {
+		const response = await this.engine.services.get(IHttpService).request(targetUrl, {
 			method: 'GET'
 		});
 
@@ -104,7 +105,7 @@ export class MarketplaceService implements Disposable {
 		const code = await response.text();
 
 		// SHA-256 integrity hash verification
-		const computedHash = await this.engine.env.runtime.sha256(code);
+		const computedHash = await this.engine.services.get(IRuntimeService).sha256(code);
 		if (manifest.sha256 && computedHash.toLowerCase() !== manifest.sha256.toLowerCase()) {
 			throw new Error(
 				`Plugin integrity check failed for "${manifest.id}". Expected SHA-256 ${manifest.sha256}, got ${computedHash}`
@@ -163,7 +164,7 @@ export class MarketplaceService implements Disposable {
 	}
 
 	async getPluginConfig<T extends Record<string, unknown>>(pluginId: string): Promise<T | null> {
-		return this.engine.env.storage.getPluginData<T>(pluginId, '__config__');
+		return this.engine.storage.getPluginData<T>(pluginId, '__config__');
 	}
 
 	async updatePluginConfig<T extends Record<string, unknown>>(
@@ -172,7 +173,7 @@ export class MarketplaceService implements Disposable {
 	): Promise<void> {
 		const current = (await this.getPluginConfig<T>(pluginId)) || ({} as T);
 		const updated = { ...current, ...patch };
-		await this.engine.env.storage.setPluginData(pluginId, '__config__', updated);
+		await this.engine.storage.setPluginData(pluginId, '__config__', updated);
 		this.engine.events.emit('config:changed', { pluginId, config: updated });
 		this.engine.actions.notify('插件设置已保存', 'info');
 	}

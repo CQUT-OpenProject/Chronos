@@ -72,35 +72,12 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		this._config = (initialConfig ?? {}) as Config;
 
 		this.storage = {
-			get: <T = unknown>(key: string) => {
-				if (this.host.services.has(IStorageService)) {
-					return this.host.services.get(IStorageService).getPluginData<T>(this.pluginId, key);
-				}
-				if (this.host.env?.storage) {
-					return this.host.env.storage.getPluginData<T>(this.pluginId, key);
-				}
-				return Promise.resolve(null);
-			},
-			set: <T = unknown>(key: string, value: T) => {
-				if (this.host.services.has(IStorageService)) {
-					return this.host.services
-						.get(IStorageService)
-						.setPluginData<T>(this.pluginId, key, value);
-				}
-				if (this.host.env?.storage) {
-					return this.host.env.storage.setPluginData<T>(this.pluginId, key, value);
-				}
-				return Promise.resolve();
-			},
-			delete: (key: string) => {
-				if (this.host.services.has(IStorageService)) {
-					return this.host.services.get(IStorageService).deletePluginData(this.pluginId, key);
-				}
-				if (this.host.env?.storage) {
-					return this.host.env.storage.deletePluginData(this.pluginId, key);
-				}
-				return Promise.resolve();
-			}
+			get: <T = unknown>(key: string) =>
+				this.host.services.get(IStorageService).getPluginData<T>(this.pluginId, key),
+			set: <T = unknown>(key: string, value: T) =>
+				this.host.services.get(IStorageService).setPluginData<T>(this.pluginId, key, value),
+			delete: (key: string) =>
+				this.host.services.get(IStorageService).deletePluginData(this.pluginId, key)
 		};
 
 		this.i18n = {
