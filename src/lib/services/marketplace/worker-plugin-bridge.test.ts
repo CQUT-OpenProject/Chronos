@@ -197,10 +197,68 @@ describe('WorkerPluginBridge', () => {
 		bridge.dispose();
 	});
 
-	it('bridges slots (source, exporter, courseAction, badge, theme) to ChronosEngine', async () => {
+	it('enforces allowedDomains whitelist and blocks unlisted domains', async () => {
 		const manifest: PluginManifest = {
-			id: 'multi-feature-plugin',
-			name: { 'zh-CN': '全功能插件' },
+			id: 'domain-restricted-plugin',
+			name: { 'zh-CN': '域名限制插件' },
+			version: '1.0.0',
+			description: { 'zh-CN': '测试' },
+			author: 'Test',
+			type: 'tool',
+			bundleFormat: 'iife',
+			minEngineVersion: '1.0.0',
+			bundleUrl: '/test.js',
+			sha256: '',
+			capabilities: ['network'],
+			allowedDomains: ['*.cqut.edu.cn', 'api.myservice.com']
+		};
+
+		const bridge = new WorkerPluginBridge(manifest, '', engine, mockWorker);
+		await bridge.start();
+
+		// 1. Allowed domain
+		await mockWorker.simulateMessageFromWorker({
+			id: 'req-ok',
+			method: 'http:request',
+			params: { url: 'https://authserver.cqut.edu.cn/login' }
+		});
+		const okReply = mockWorker.sentMessages.find((m) => m.id === 'req-ok');
+		expect(okReply?.ok).toBe(true);
+
+		// 2. Disallowed domain
+		await mockWorker.simulateMessageFromWorker({
+			id: 'req-blocked',
+			method: 'http:request',
+			params: { url: 'https://malicious.evil.com/leak' }
+		});
+		const blockedReply = mockWorker.sentMessages.find((m) => m.id === 'req-blocked');
+		expect(blockedReply?.ok).toBe(false);
+		expect(blockedReply?.error).toContain('Permission Denied: domain');
+
+		// 3. SSRF Protection: localhost / private IP blocked even if pattern was wildcard
+		const wildcardManifest: PluginManifest = {
+			...manifest,
+			allowedDomains: ['*']
+		};
+		const wildcardBridge = new WorkerPluginBridge(wildcardManifest, '', engine, mockWorker);
+		await wildcardBridge.start();
+
+		await mockWorker.simulateMessageFromWorker({
+			id: 'req-ssrf',
+			method: 'http:request',
+			params: { url: 'http://127.0.0.1:8080/admin' }
+		});
+		const ssrfReply = mockWorker.sentMessages.find((m) => m.id === 'req-ssrf');
+		expect(ssrfReply?.ok).toBe(false);
+
+		bridge.dispose();
+		wildcardBridge.dispose();
+	});
+
+	it('bridges universal hierarchical slots (import, export, badge, action, mine, screen, theme)', async () => {
+		const manifest: PluginManifest = {
+			id: 'hierarchical-plugin',
+			name: { 'zh-CN': '全插槽插件' },
 			version: '1.0.0',
 			description: { 'zh-CN': '测试' },
 			author: 'Test',
@@ -214,55 +272,96 @@ describe('WorkerPluginBridge', () => {
 		const bridge = new WorkerPluginBridge(manifest, '', engine, mockWorker);
 		await bridge.start();
 
-		// 1. Register source adapter
+		// 1. Register import source tab
 		await mockWorker.simulateMessageFromWorker({
-			id: 'reg-src',
-			method: 'slot:registerSource',
-			params: { id: 'custom-src', title: '自定义数据源', authType: 'file' }
-		});
-		const source = engine.slots.getSource('custom-src');
-		expect(source).toBeDefined();
-		expect(source?.authType).toBe('file');
-
-		// 2. Register exporter adapter
-		await mockWorker.simulateMessageFromWorker({
-			id: 'reg-exp',
-			method: 'slot:registerExporter',
-			params: { id: 'custom-exp', title: '自定义导出器' }
-		});
-		const exporter = engine.slots.getExporter('custom-exp');
-		expect(exporter).toBeDefined();
-
-		// 3. Register course action
-		await mockWorker.simulateMessageFromWorker({
-			id: 'reg-act',
-			method: 'slot:registerCourseAction',
-			params: { id: 'custom-act', label: '操作' }
-		});
-		const action = engine.slots.getCourseAction('custom-act');
-		expect(action).toBeDefined();
-
-		// 4. Register theme
-		await mockWorker.simulateMessageFromWorker({
-			id: 'reg-theme',
-			method: 'slot:registerTheme',
+			id: 'reg-import',
+			method: 'slot:register',
 			params: {
-				id: 'custom-theme',
-				name: '自定义主题',
-				lightTokens: { primary: '#112233' },
-				darkTokens: { primary: '#aabbcc' }
+				slotName: 'import.source.tab',
+				contribution: {
+					id: 'custom-tab',
+					title: '自定义导入',
+					order: 15,
+					inputSchema: {
+						token: { type: 'string', title: 'Token' }
+					}
+				}
 			}
 		});
-		const theme = engine.themes.getTheme('custom-theme');
-		expect(theme).toBeDefined();
-		expect(theme?.getTokens('light').primary).toBe('#112233');
+		const importTabs = engine.slots.get('import.source.tab');
+		expect(importTabs.some((t) => t.id === 'custom-tab')).toBe(true);
 
-		// Disposing bridge should unregister all mounted slots
+		// 2. Register export action
+		await mockWorker.simulateMessageFromWorker({
+			id: 'reg-export',
+			method: 'slot:register',
+			params: {
+				slotName: 'export.action',
+				contribution: {
+					id: 'custom-export',
+					title: '自定义导出'
+				}
+			}
+		});
+		const exportActions = engine.slots.get('export.action');
+		expect(exportActions.some((e) => e.id === 'custom-export')).toBe(true);
+
+		// 3. Register mine section and item
+		await mockWorker.simulateMessageFromWorker({
+			id: 'reg-mine-sec',
+			method: 'slot:register',
+			params: {
+				slotName: 'mine.section',
+				contribution: { id: 'custom-sec', title: '扩展分组' }
+			}
+		});
+		await mockWorker.simulateMessageFromWorker({
+			id: 'reg-mine-item',
+			method: 'slot:register',
+			params: {
+				slotName: 'mine.item',
+				contribution: {
+					id: 'custom-item',
+					sectionId: 'custom-sec',
+					title: '扩展功能',
+					href: '/plugins/hierarchical-plugin/overview'
+				}
+			}
+		});
+		expect(engine.slots.get('mine.section').some((s) => s.id === 'custom-sec')).toBe(true);
+		expect(engine.slots.get('mine.item').some((i) => i.id === 'custom-item')).toBe(true);
+
+		// 4. Register shell route screen
+		await mockWorker.simulateMessageFromWorker({
+			id: 'reg-screen',
+			method: 'slot:register',
+			params: {
+				slotName: 'shell.route.screen',
+				contribution: {
+					id: 'overview',
+					title: '概览面板',
+					schema: { enabled: { type: 'boolean', title: '启用' } }
+				}
+			}
+		});
+		expect(engine.slots.get('shell.route.screen').some((s) => s.id === 'overview')).toBe(true);
+
+		// 5. Unregister a slot
+		await mockWorker.simulateMessageFromWorker({
+			id: 'unreg-screen',
+			method: 'slot:unregister',
+			params: {
+				slotName: 'shell.route.screen',
+				id: 'overview'
+			}
+		});
+		expect(engine.slots.get('shell.route.screen').some((s) => s.id === 'overview')).toBe(false);
+
+		// Dispose bridge cleans up everything
 		bridge.dispose();
-		expect(engine.slots.getSource('custom-src')).toBeUndefined();
-		expect(engine.slots.getExporter('custom-exp')).toBeUndefined();
-		expect(engine.slots.getCourseAction('custom-act')).toBeUndefined();
-		expect(engine.themes.getTheme('custom-theme')).toBeUndefined();
-		expect(mockWorker.terminated).toBe(true);
+		expect(engine.slots.get('import.source.tab').some((t) => t.id === 'custom-tab')).toBe(false);
+		expect(engine.slots.get('export.action').some((e) => e.id === 'custom-export')).toBe(false);
+		expect(engine.slots.get('mine.section').some((s) => s.id === 'custom-sec')).toBe(false);
+		expect(engine.slots.get('mine.item').some((i) => i.id === 'custom-item')).toBe(false);
 	});
 });

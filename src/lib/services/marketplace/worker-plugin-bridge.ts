@@ -7,7 +7,12 @@ import type {
 	Course,
 	CourseBadge,
 	ExportResult,
-	HttpRequestOptions
+	HttpRequestOptions,
+	StandardSlotMap,
+	AcademicConfig,
+	UserPreferences,
+	ConfigSchema,
+	ThemeContribution
 } from '@chronos/core';
 
 export interface WorkerRpcMessage {
@@ -19,6 +24,45 @@ export interface WorkerRpcMessage {
 	ok?: boolean;
 	event?: string;
 	payload?: unknown;
+}
+
+export function isAllowedDomain(targetUrl: string, allowedDomains?: string[]): boolean {
+	let hostname: string;
+	try {
+		const parsed = new URL(targetUrl, 'https://localhost');
+		hostname = parsed.hostname.toLowerCase();
+	} catch {
+		return false;
+	}
+
+	// SSRF Protection: Deny localhost and private network addresses
+	if (
+		hostname === 'localhost' ||
+		hostname === '127.0.0.1' ||
+		hostname === '::1' ||
+		hostname === '0.0.0.0' ||
+		hostname.startsWith('10.') ||
+		hostname.startsWith('192.168.') ||
+		/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||
+		hostname.endsWith('.local') ||
+		hostname.endsWith('.internal')
+	) {
+		return false;
+	}
+
+	if (!allowedDomains || allowedDomains.length === 0) {
+		return false;
+	}
+
+	return allowedDomains.some((pattern) => {
+		const clean = pattern.trim().toLowerCase();
+		if (clean === '*' || clean === '*.*') return true;
+		if (clean.startsWith('*.')) {
+			const suffix = clean.slice(2);
+			return hostname === suffix || hostname.endsWith('.' + suffix);
+		}
+		return hostname === clean;
+	});
 }
 
 class HeadlessSandboxWorker implements Worker {
@@ -176,26 +220,37 @@ export class WorkerPluginBridge implements Disposable {
 		};
 	}
 
+	private getPermissions(): string[] {
+		return (this.manifest.permissions ?? this.manifest.capabilities ?? []).map(String);
+	}
+
 	private async dispatchHostMethod(
 		method: string,
 		params: Record<string, unknown>
 	): Promise<unknown> {
-		// Permission gateway: Network access check
+		const perms = this.getPermissions();
+
+		// Permission gateway: Network access check + allowedDomains whitelist + SSRF protection
 		if (method.startsWith('http:')) {
-			if (!this.manifest.capabilities?.includes('network')) {
+			if (!perms.includes('network')) {
 				throw new Error('Permission Denied: network capability required');
 			}
 			if (method === 'http:request') {
-				return this.engine.env.http.request(
-					params.url as string,
-					params.options as HttpRequestOptions | undefined
-				);
+				const url = params.url as string;
+				if (this.manifest.allowedDomains && this.manifest.allowedDomains.length > 0) {
+					if (!isAllowedDomain(url, this.manifest.allowedDomains)) {
+						throw new Error(
+							`Permission Denied: domain "${url}" is not in allowedDomains whitelist`
+						);
+					}
+				}
+				return this.engine.env.http.request(url, params.options as HttpRequestOptions | undefined);
 			}
 		}
 
 		// Permission gateway: Storage capability and scoped prefix enforcement
 		if (method.startsWith('storage:')) {
-			if (!this.manifest.capabilities?.includes('storage')) {
+			if (!perms.includes('storage')) {
 				throw new Error('Permission Denied: storage capability required');
 			}
 			const key = params.key as string;
@@ -209,7 +264,33 @@ export class WorkerPluginBridge implements Disposable {
 			}
 		}
 
-		// Permission gateway: Notification capability
+		// Config synchronization
+		if (method === 'config:update') {
+			const patch = (params.patch as Record<string, unknown>) || {};
+			const current =
+				(await this.engine.env.storage.getPluginData<Record<string, unknown>>(
+					this.manifest.id,
+					'__config__'
+				)) || {};
+			const updated = { ...current, ...patch };
+			await this.engine.env.storage.setPluginData(this.manifest.id, '__config__', updated);
+			void this.engine.events.emit('config:changed', {
+				pluginId: this.manifest.id,
+				config: updated
+			});
+			return;
+		}
+
+		if (method === 'config:get') {
+			return (
+				(await this.engine.env.storage.getPluginData<Record<string, unknown>>(
+					this.manifest.id,
+					'__config__'
+				)) || {}
+			);
+		}
+
+		// Actions dispatchers
 		if (method === 'actions:notify') {
 			this.engine.actions.notify(
 				params.message as string,
@@ -223,6 +304,44 @@ export class WorkerPluginBridge implements Disposable {
 			return;
 		}
 
+		if (method === 'actions:createTimetable') {
+			return this.engine.actions.createTimetable(
+				params.name as string,
+				params.config as Partial<AcademicConfig> | undefined
+			);
+		}
+
+		if (method === 'actions:switchTimetable') {
+			return this.engine.actions.switchTimetable(params.timetableId as string);
+		}
+
+		if (method === 'actions:deleteTimetable') {
+			return this.engine.actions.deleteTimetable(params.timetableId as string);
+		}
+
+		if (method === 'actions:saveCurrentTimetableDetails') {
+			return this.engine.actions.saveCurrentTimetableDetails(params.patch as Partial<Timetable>);
+		}
+
+		if (method === 'actions:saveCourse') {
+			return this.engine.actions.saveCourse(params.course as Course);
+		}
+
+		if (method === 'actions:updateCourse') {
+			return this.engine.actions.updateCourse(
+				params.courseId as string,
+				params.patch as Partial<Course>
+			);
+		}
+
+		if (method === 'actions:deleteCourse') {
+			return this.engine.actions.deleteCourse(params.courseId as string);
+		}
+
+		if (method === 'actions:updatePreferences') {
+			return this.engine.actions.updatePreferences(params.patch as Partial<UserPreferences>);
+		}
+
 		// Event subscription proxy
 		if (method === 'event:subscribe') {
 			const eventName = params.event as string;
@@ -233,7 +352,175 @@ export class WorkerPluginBridge implements Disposable {
 			return;
 		}
 
-		// Extension point slot registration proxies
+		// --- Universal Hierarchical Slot Registration ---
+		if (method === 'slot:register') {
+			const slotName = params.slotName as keyof StandardSlotMap;
+			const contribution = (params.contribution as Record<string, unknown>) || {};
+			const id = typeof contribution.id === 'string' ? contribution.id : '';
+
+			let sub: Disposable;
+
+			if (slotName === 'import.source.tab') {
+				const proxy: StandardSlotMap['import.source.tab'] & { id: string } = {
+					id,
+					title: () => (contribution.title as string) || id,
+					order: contribution.order as number | undefined,
+					icon: contribution.icon as string | undefined,
+					supportingText: contribution.supportingText
+						? () => contribution.supportingText as string
+						: undefined,
+					inputSchema: contribution.inputSchema as
+						| ConfigSchema<Record<string, unknown>>
+						| undefined,
+					defaultInput: contribution.defaultInput as Record<string, unknown> | undefined,
+					fetchSchedule: async (inputs: Record<string, unknown>) => {
+						return this.callWorker<Timetable>('slot:executeImport', {
+							slotName,
+							id,
+							inputs
+						});
+					},
+					executeImport: async (inputs: Record<string, unknown>) => {
+						return this.callWorker<Timetable>('slot:executeImport', {
+							slotName,
+							id,
+							inputs
+						});
+					}
+				};
+				sub = this.engine.slots.register('import.source.tab', proxy);
+			} else if (slotName === 'export.action') {
+				const proxy: StandardSlotMap['export.action'] & { id: string } = {
+					id,
+					title: () => (contribution.title as string) || id,
+					order: contribution.order as number | undefined,
+					icon: contribution.icon as string | undefined,
+					export: async (timetable: Timetable) => {
+						return this.callWorker<ExportResult>('slot:export', {
+							slotName,
+							id,
+							timetable
+						});
+					}
+				};
+				sub = this.engine.slots.register('export.action', proxy);
+			} else if (slotName === 'course.detail.action') {
+				const proxy: StandardSlotMap['course.detail.action'] & { id: string } = {
+					id,
+					label: () => (contribution.label as string) || (contribution.title as string) || id,
+					icon: contribution.icon as string | undefined,
+					order: contribution.order as number | undefined,
+					onExecute: async (course: Course) => {
+						await this.callWorker('slot:courseAction', {
+							slotName,
+							id,
+							course
+						});
+					}
+				};
+				sub = this.engine.slots.register('course.detail.action', proxy);
+			} else if (slotName === 'timetable.cell.badge') {
+				sub = this.engine.badges.registerCourseBadge({
+					id,
+					projectBadges: contribution.hasProjectBadges
+						? async (courses: Course[]) => {
+								return this.callWorker<Record<string, CourseBadge[]>>('slot:projectBadges', {
+									slotName,
+									id,
+									courses
+								});
+							}
+						: undefined
+				});
+			} else if (slotName === 'mine.section') {
+				const proxy: StandardSlotMap['mine.section'] & { id: string } = {
+					id,
+					title: () => (contribution.title as string) || id,
+					order: contribution.order as number | undefined
+				};
+				sub = this.engine.slots.register('mine.section', proxy);
+			} else if (slotName === 'mine.item') {
+				const proxy: StandardSlotMap['mine.item'] & { id: string } = {
+					id,
+					sectionId: (contribution.sectionId as string) || 'app-support',
+					title: () => (contribution.title as string) || id,
+					supporting: contribution.supporting ? () => contribution.supporting as string : undefined,
+					icon: contribution.icon as string | undefined,
+					iconTone: contribution.iconTone as
+						| 'primary'
+						| 'secondary'
+						| 'tertiary'
+						| 'neutral'
+						| undefined,
+					order: contribution.order as number | undefined,
+					href: contribution.href as string | undefined,
+					onClick: contribution.hasOnClick
+						? async () => {
+								await this.callWorker('slot:mineItemClick', {
+									slotName,
+									id
+								});
+							}
+						: undefined
+				};
+				sub = this.engine.slots.register('mine.item', proxy);
+			} else if (slotName === 'shell.route.screen') {
+				const proxy: StandardSlotMap['shell.route.screen'] & { id: string } = {
+					id,
+					title: () => (contribution.title as string) || id,
+					schema: contribution.schema as ConfigSchema<Record<string, unknown>> | undefined
+				};
+				sub = this.engine.slots.register('shell.route.screen', proxy);
+			} else if (slotName === 'theme.definition') {
+				const proxy: ThemeContribution = {
+					id,
+					name: () => (contribution.name as string) || (contribution.title as string) || id,
+					supportsDynamicColor: Boolean(contribution.supportsDynamicColor),
+					getTokens: (mode: 'light' | 'dark') => {
+						const tokens =
+							mode === 'dark'
+								? (contribution.darkTokens as Record<string, string>)
+								: (contribution.lightTokens as Record<string, string>);
+						return {
+							surface: tokens?.surface ?? '#ffffff',
+							onSurface: tokens?.onSurface ?? '#000000',
+							primary: tokens?.primary ?? '#0068b7',
+							onPrimary: tokens?.onPrimary ?? '#ffffff',
+							surfaceVariant: tokens?.surfaceVariant ?? '#f0f0f0',
+							outline: tokens?.outline ?? '#cccccc',
+							...tokens
+						};
+					},
+					resolveCoursePaint: contribution.hasResolveCoursePaint
+						? (_course: Course, paletteIndex: number, mode: 'light' | 'dark') => {
+								const isDark = mode === 'dark';
+								const defaultColors = isDark
+									? [
+											{ background: '#f38ba8', foreground: '#11111b' },
+											{ background: '#fab387', foreground: '#11111b' },
+											{ background: '#a6e3a1', foreground: '#11111b' },
+											{ background: '#89b4fa', foreground: '#11111b' }
+										]
+									: [
+											{ background: '#d20f39', foreground: '#ffffff' },
+											{ background: '#fe640b', foreground: '#ffffff' },
+											{ background: '#40a02b', foreground: '#ffffff' },
+											{ background: '#1e66f5', foreground: '#ffffff' }
+										];
+								return defaultColors[Math.abs(paletteIndex) % defaultColors.length]!;
+							}
+						: undefined
+				};
+				sub = this.engine.themes.registerTheme(proxy);
+			} else {
+				sub = this.engine.slots.register(slotName, contribution as never);
+			}
+
+			this.registerSlotDisposable(`slot:${slotName}:${id}`, sub);
+			return;
+		}
+
+		// Backward compatibility slot registration proxies
 		if (method === 'slot:registerSource') {
 			const id = params.id as string;
 			const sub = this.engine.slots.registerSource({
@@ -247,7 +534,7 @@ export class WorkerPluginBridge implements Disposable {
 					});
 				}
 			});
-			this.registerSlotDisposable(`source:${id}`, sub);
+			this.registerSlotDisposable(`slot:import.source.tab:${id}`, sub);
 			return;
 		}
 
@@ -263,7 +550,7 @@ export class WorkerPluginBridge implements Disposable {
 					});
 				}
 			});
-			this.registerSlotDisposable(`exporter:${id}`, sub);
+			this.registerSlotDisposable(`slot:export.action:${id}`, sub);
 			return;
 		}
 
@@ -277,7 +564,7 @@ export class WorkerPluginBridge implements Disposable {
 					await this.callWorker('action:execute', { actionId: id, course });
 				}
 			});
-			this.registerSlotDisposable(`action:${id}`, sub);
+			this.registerSlotDisposable(`slot:course.detail.action:${id}`, sub);
 			return;
 		}
 
@@ -294,7 +581,7 @@ export class WorkerPluginBridge implements Disposable {
 						}
 					: undefined
 			});
-			this.registerSlotDisposable(`badge:${id}`, sub);
+			this.registerSlotDisposable(`slot:timetable.cell.badge:${id}`, sub);
 			return;
 		}
 
@@ -320,8 +607,7 @@ export class WorkerPluginBridge implements Disposable {
 					};
 				},
 				resolveCoursePaint: params.hasResolveCoursePaint
-					? (course: Course, paletteIndex: number, mode: 'light' | 'dark') => {
-							// Static palette fallback calculation or worker delegation
+					? (_course: Course, paletteIndex: number, mode: 'light' | 'dark') => {
 							const isDark = mode === 'dark';
 							const defaultColors = isDark
 								? [
@@ -340,12 +626,14 @@ export class WorkerPluginBridge implements Disposable {
 						}
 					: undefined
 			});
-			this.registerSlotDisposable(`theme:${id}`, sub);
+			this.registerSlotDisposable(`slot:theme.definition:${id}`, sub);
 			return;
 		}
 
 		if (method === 'slot:unregister') {
-			const key = `${String(params.type)}:${String(params.id)}`;
+			const slotName = (params.slotName as string) || (params.type as string);
+			const id = String(params.id);
+			const key = `slot:${slotName}:${id}`;
 			const sub = this.slotDisposables.get(key);
 			if (sub) {
 				sub.dispose();
