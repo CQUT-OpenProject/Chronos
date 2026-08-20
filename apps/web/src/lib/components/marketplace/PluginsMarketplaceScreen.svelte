@@ -220,10 +220,10 @@
 
 	{#if activeTab === 'installed'}
 		<div class="flex flex-col gap-5">
-			<!-- 内置官方插件 -->
+			<!-- 内置插件 -->
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="m3-section-title">内置官方插件</h2>
+					<h2 class="m3-section-title">Chronos 内置插件</h2>
 					<span class="m3-label-small text-on-surface-variant">{builtinPlugins.length} 个</span>
 				</div>
 
@@ -271,7 +271,7 @@
 									<span
 										class="m3-label-small rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface-variant/80"
 									>
-										内置启用
+										默认启用
 									</span>
 								{/if}
 							</div>
@@ -280,10 +280,10 @@
 				</div>
 			</section>
 
-			<!-- 第三方已安装插件 -->
+			<!-- 已安装插件 -->
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="m3-section-title">第三方已安装插件</h2>
+					<h2 class="m3-section-title">已安装插件</h2>
 					<span class="m3-label-small text-on-surface-variant">{installedRecords.length} 个</span>
 				</div>
 

@@ -23,30 +23,44 @@
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
 
 	const colorSchemeOptions = $derived.by(() => {
+		void shell.controller.slotVersion;
+
 		const builtin = [
 			{
 				id: BUILTIN_COLOR_SCHEME_VIBRANT,
 				label: '默认',
 				description: '使用 Chronos 品牌配色',
 				disabled: false
-			},
-			{
-				id: BUILTIN_COLOR_SCHEME_WALLPAPER,
-				label: '壁纸',
-				description: hasWallpaper ? '从当前壁纸提取配色' : '请先设置壁纸后再使用',
-				disabled: !hasWallpaper
 			}
 		];
 
 		const pluginThemes = getAppEngine()
 			.themes.getThemes()
 			.filter((theme) => theme.id !== 'm3-default')
-			.map((theme) => ({
-				id: theme.id,
-				label: theme.name(),
-				description: undefined as string | undefined,
-				disabled: false
-			}));
+			.map((theme) => {
+				const isDynamicWallpaper = theme.supportsDynamicColor && theme.id === 'wallpaper';
+				const isDisabled = isDynamicWallpaper
+					? !hasWallpaper
+					: typeof theme.disabled === 'function'
+						? theme.disabled()
+						: Boolean(theme.disabled);
+				const defaultDesc = isDynamicWallpaper
+					? hasWallpaper
+						? '从当前壁纸提取配色'
+						: '请先设置壁纸后再使用'
+					: undefined;
+				const desc =
+					typeof theme.description === 'function'
+						? theme.description()
+						: (theme.description ?? defaultDesc);
+
+				return {
+					id: theme.id,
+					label: typeof theme.name === 'function' ? theme.name() : theme.name,
+					description: desc,
+					disabled: isDisabled
+				};
+			});
 
 		return [...builtin, ...pluginThemes];
 	});

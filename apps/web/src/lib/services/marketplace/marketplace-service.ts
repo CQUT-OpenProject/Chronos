@@ -1,10 +1,6 @@
 import type { ChronosEngine, Disposable, MarketplaceRegistry, PluginManifest } from '@chronos/core';
 import { IHttpService, IRuntimeService } from '@chronos/core';
-import {
-	BUILTIN_COLOR_SCHEME_VIBRANT,
-	buildColorSchemePatch,
-	resolveColorSchemeId
-} from '$lib/appearance/color-scheme';
+import { BUILTIN_COLOR_SCHEME_VIBRANT, buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { WorkerPluginBridge } from './worker-plugin-bridge';
 
 const MARKETPLACE_STORAGE_KEY = 'installed_plugins';
@@ -198,28 +194,28 @@ export class MarketplaceService implements Disposable {
 		return bridge;
 	}
 
-	private revertThemeIfNeeded(manifest?: PluginManifest): void {
-		if (!manifest || manifest.type !== 'theme') return;
-
+	private revertThemeIfNeeded(_manifest?: PluginManifest): void {
 		const prefs = this.engine.state.userPreferences;
-		const schemeId = resolveColorSchemeId(prefs.paletteMode, prefs.visualThemeId);
-		const themeId = this.resolveThemeIdForManifest(manifest);
-		if (!themeId || schemeId !== themeId) return;
+		const activeThemeId = this.engine.state.activeThemeId;
 
-		const patch = buildColorSchemePatch(BUILTIN_COLOR_SCHEME_VIBRANT);
-		this.engine.actions.setTheme(patch.themeId);
-		void this.engine.actions.updatePreferences({
-			paletteMode: patch.paletteMode,
-			visualThemeId: patch.visualThemeId
-		});
-	}
-
-	private resolveThemeIdForManifest(manifest: PluginManifest): string | null {
-		if (manifest.type !== 'theme') return null;
-		if (manifest.id.startsWith('theme-')) {
-			return manifest.id.slice('theme-'.length);
+		if (activeThemeId !== 'm3-default' && !this.engine.themes.getTheme(activeThemeId)) {
+			const patch = buildColorSchemePatch(BUILTIN_COLOR_SCHEME_VIBRANT);
+			this.engine.actions.setTheme(patch.themeId);
+			void this.engine.actions.updatePreferences({
+				paletteMode: patch.paletteMode,
+				visualThemeId: patch.visualThemeId
+			});
+			return;
 		}
-		return manifest.id;
+
+		if (prefs.paletteMode === 'wallpaper' && !this.engine.themes.getTheme('wallpaper')) {
+			const patch = buildColorSchemePatch(BUILTIN_COLOR_SCHEME_VIBRANT);
+			this.engine.actions.setTheme(patch.themeId);
+			void this.engine.actions.updatePreferences({
+				paletteMode: patch.paletteMode,
+				visualThemeId: patch.visualThemeId
+			});
+		}
 	}
 
 	private async unloadPluginInstance(pluginId: string): Promise<void> {
@@ -229,7 +225,7 @@ export class MarketplaceService implements Disposable {
 			handle.dispose();
 			this.activeHandles.delete(pluginId);
 		}
-		if (record?.manifest.type === 'theme') {
+		if (record?.manifest) {
 			this.revertThemeIfNeeded(record.manifest);
 		}
 	}
