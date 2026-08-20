@@ -1,5 +1,5 @@
 import type { ChronosPlugin, ChronosContext, Timetable, ExportResult } from '@chronos/core';
-import { createTimetable } from '@chronos/core';
+import { createTimetable, defineSchema } from '@chronos/core';
 import {
 	decodeSharePayload,
 	encodeShareLink,
@@ -8,6 +8,20 @@ import {
 	extractSharePayloadFromText,
 	formatShareClipboardText
 } from './share-link';
+
+export interface ShareLinkImportForm {
+	content?: string;
+}
+
+export const shareLinkImportSchema = defineSchema<ShareLinkImportForm>({
+	content: {
+		type: 'string',
+		title: () => '分享链接或口令',
+		placeholder: () => '粘贴课表分享链接或口令文本',
+		description: () => '支持直接粘贴完整链接或口令文本',
+		required: true
+	}
+});
 
 export function exportTimetableToJson(timetable: Timetable): string {
 	return JSON.stringify(timetable, null, 2);
@@ -48,6 +62,7 @@ export const shareCodecPlugin: ChronosPlugin = {
 			id: 'share-link',
 			title: () => '分享链接',
 			order: 15,
+			inputSchema: shareLinkImportSchema,
 			async executeImport(inputs: Record<string, unknown>) {
 				const content =
 					(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);

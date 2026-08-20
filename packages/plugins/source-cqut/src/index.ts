@@ -264,9 +264,9 @@ export function parseCqutScheduleData(
 
 export const cqutPlugin: ChronosPlugin = {
 	id: 'source-cqut',
-	name: () => 'CQUT Schedule',
+	name: () => 'CQUT-Timetable',
 	version: '1.0.0',
-	description: () => '知行理工课表导入与校区作息适配',
+	description: () => '从「知行理工」导入课表',
 	category: 'source',
 	order: 10,
 	author: 'CQUT OpenProject',

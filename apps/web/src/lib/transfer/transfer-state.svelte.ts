@@ -11,7 +11,6 @@ import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import { onlineImportEnabled } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
-import { parseHtmlTimetable } from '@chronos/plugin-source-cqut';
 
 export type { TransferImportSource };
 
@@ -175,7 +174,12 @@ export function createTransferState(engine?: ChronosEngine) {
 		clearMessages();
 		try {
 			const fileContent = await file.text();
-			const timetable = parseHtmlTimetable(fileContent);
+			const timetable = await executeSlotImport('edu-html', {
+				file: fileContent,
+				fileContent,
+				campusId: 'huaxi',
+				termStartDate: timeProvider.today()
+			});
 			preview = timetable;
 			previewSource = 'HTML';
 			htmlImportTermStartDate = null;
