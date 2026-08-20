@@ -51,34 +51,113 @@ export interface SchemaValidationResult<T> {
 	readonly values: T;
 }
 
+export function extractDefaultValues<T extends object>(schema: ConfigSchema<T>): T {
+	const result = {} as Record<string, unknown>;
+
+	for (const [key, field] of Object.entries(schema) as Array<[string, SchemaField<unknown>]>) {
+		if (field.default !== undefined) {
+			result[key] = field.default;
+		} else {
+			switch (field.type) {
+				case 'boolean':
+					result[key] = false;
+					break;
+				case 'number':
+					result[key] = 0;
+					break;
+				case 'select':
+					result[key] = field.options?.[0]?.value ?? '';
+					break;
+				case 'string':
+				case 'password':
+				case 'file':
+				default:
+					result[key] = '';
+					break;
+			}
+		}
+	}
+
+	return result as T;
+}
+
 /**
  * Validate an input object against a declarative ConfigSchema,
- * applying default values and running custom validators.
+ * applying default values, type checks, and custom validators.
  */
 export function validateConfig<T extends object>(
 	input: unknown,
 	schema: ConfigSchema<T>
 ): SchemaValidationResult<T> {
-	const raw = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>;
 	const errors: Record<string, string> = {};
-	const values = {} as Record<string, unknown>;
+	const raw =
+		input && typeof input === 'object' && !Array.isArray(input)
+			? (input as Record<string, unknown>)
+			: {};
+
+	const defaults = extractDefaultValues(schema);
+	const values = { ...defaults, ...raw } as Record<string, unknown>;
 
 	for (const [key, field] of Object.entries(schema) as Array<[string, SchemaField<unknown>]>) {
-		const val = raw[key] !== undefined ? raw[key] : field.default;
+		const val = values[key];
 
-		if (field.required && (val === undefined || val === null || val === '')) {
-			errors[key] = 'Field is required';
-			continue;
-		}
-
-		if (val !== undefined && field.validate) {
-			const errorMsg = field.validate(val);
-			if (errorMsg) {
-				errors[key] = errorMsg;
+		// 1. Required field check
+		if (field.required) {
+			if (val === undefined || val === null || val === '') {
+				errors[key] = 'Field is required';
+				continue;
 			}
 		}
 
-		values[key] = val;
+		if (val === undefined || val === null || val === '') {
+			continue;
+		}
+
+		// 2. Type validation
+		switch (field.type) {
+			case 'boolean':
+				if (typeof val !== 'boolean') {
+					errors[key] = 'Value must be a boolean';
+				}
+				break;
+			case 'number':
+				if (typeof val !== 'number' || Number.isNaN(val)) {
+					const parsed = Number(val);
+					if (Number.isNaN(parsed)) {
+						errors[key] = 'Value must be a valid number';
+					} else {
+						values[key] = parsed;
+					}
+				}
+				break;
+			case 'select':
+				if (field.options && field.options.length > 0) {
+					const validValues = field.options.map((opt) => opt.value);
+					if (!validValues.includes(val as string | number)) {
+						errors[key] = 'Selected option is not in the allowed list';
+					}
+				}
+				break;
+			case 'string':
+			case 'password':
+			case 'file':
+				if (typeof val !== 'string') {
+					errors[key] = 'Value must be a string';
+				}
+				break;
+		}
+
+		// 3. Custom validator execution
+		if (!errors[key] && field.validate) {
+			try {
+				const errorMsg = field.validate(values[key] as never);
+				if (errorMsg) {
+					errors[key] = errorMsg;
+				}
+			} catch (err: unknown) {
+				errors[key] = err instanceof Error ? err.message : 'Validation failed';
+			}
+		}
 	}
 
 	return {

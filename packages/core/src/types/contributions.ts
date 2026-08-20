@@ -1,4 +1,5 @@
 import type { Course } from '../domain/course';
+import type { CoursePaletteEntry } from '../engine/palette';
 import type { LocalizedText } from './context';
 import type { DesignTokens, CoursePaint, CourseBadge } from './slots';
 
@@ -11,6 +12,13 @@ export interface ThemeContribution {
 	readonly description?: LocalizedText;
 	readonly disabled?: boolean | (() => boolean);
 	readonly supportsDynamicColor?: boolean;
+	readonly className?: string;
+	readonly customCssVars?:
+		| Record<string, string>
+		| ((mode: 'light' | 'dark') => Record<string, string>);
+	readonly paletteEntries?:
+		| readonly CoursePaletteEntry[]
+		| ((mode: 'light' | 'dark') => readonly CoursePaletteEntry[]);
 	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
 	/**
 	 * Compute course card colors dynamically.

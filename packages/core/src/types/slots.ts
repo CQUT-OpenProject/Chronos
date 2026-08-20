@@ -1,4 +1,5 @@
 import type { Course } from '../domain/course';
+import type { CoursePaletteEntry } from '../engine/palette';
 import type { Timetable } from '../domain/timetable';
 import type { ChronosContext } from './context';
 import type { ConfigSchema } from '../schema/schema';
@@ -106,6 +107,11 @@ export interface ThemeSlotContribution {
 	description?: LocalizedText;
 	disabled?: boolean | (() => boolean);
 	supportsDynamicColor?: boolean;
+	className?: string;
+	customCssVars?: Record<string, string> | ((mode: 'light' | 'dark') => Record<string, string>);
+	paletteEntries?:
+		| readonly CoursePaletteEntry[]
+		| ((mode: 'light' | 'dark') => readonly CoursePaletteEntry[]);
 	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
 	resolveCoursePaint?(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint;
 }

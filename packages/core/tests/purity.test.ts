@@ -18,7 +18,7 @@ describe('@chronos/core ECMAScript Purity', () => {
 		expect(Core.ServiceContainer).toBeTypeOf('function');
 		expect(Core.createServiceIdentifier).toBeTypeOf('function');
 		expect(Core.defineSchema).toBeTypeOf('function');
-		expect(Core.validateSchema).toBeTypeOf('function');
+		expect(Core.validateConfig).toBeTypeOf('function');
 		expect(Core.extractDefaultValues).toBeTypeOf('function');
 		expect(Core.ThemeRegistry).toBeTypeOf('function');
 		expect(Core.BadgeManager).toBeTypeOf('function');

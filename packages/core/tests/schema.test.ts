@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { defineSchema, extractDefaultValues, validateSchema, type ConfigSchema } from '../src';
+import { defineSchema, extractDefaultValues, validateConfig, type ConfigSchema } from '../src';
 
 describe('ConfigSchema & Validator in @chronos/core', () => {
 	interface TestConfig {
@@ -63,13 +63,13 @@ describe('ConfigSchema & Validator in @chronos/core', () => {
 			syncInterval: 15
 		};
 
-		const result = validateSchema(testSchema, input);
+		const result = validateConfig(input, testSchema);
 		expect(result.valid).toBe(true);
 		expect(result.errors).toEqual({});
-		expect(result.data.username).toBe('12023001');
-		expect(result.data.campus).toBe('liangjiang');
-		expect(result.data.autoSync).toBe(false);
-		expect(result.data.syncInterval).toBe(15);
+		expect(result.values.username).toBe('12023001');
+		expect(result.values.campus).toBe('liangjiang');
+		expect(result.values.autoSync).toBe(false);
+		expect(result.values.syncInterval).toBe(15);
 	});
 
 	it('reports errors for missing required fields and invalid values', () => {
@@ -79,9 +79,9 @@ describe('ConfigSchema & Validator in @chronos/core', () => {
 			syncInterval: 2 // triggers custom validation (< 5)
 		};
 
-		const result = validateSchema(testSchema, invalidInput);
+		const result = validateConfig(invalidInput, testSchema);
 		expect(result.valid).toBe(false);
-		expect(result.errors.username).toBe('This field is required');
+		expect(result.errors.username).toBe('Field is required');
 		expect(result.errors.campus).toBe('Selected option is not in the allowed list');
 		expect(result.errors.syncInterval).toBe('Interval must be at least 5 minutes');
 	});

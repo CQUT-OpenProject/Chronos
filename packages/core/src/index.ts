@@ -16,7 +16,6 @@ export * from './engine/period-clock';
 
 // Schema
 export * from './schema/schema';
-export * from './schema/validator';
 
 // Types
 export * from './types/services';
