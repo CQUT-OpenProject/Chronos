@@ -342,9 +342,6 @@
 										{/if}
 									</div>
 									<div class="flex shrink-0 items-center gap-2">
-										{#if record.manifest.type === 'theme'}
-											<span class="m3-caption text-[10px] text-on-surface-variant">启用插件</span>
-										{/if}
 										<Switch
 											checked={record.enabled}
 											disabled={isBusy}
