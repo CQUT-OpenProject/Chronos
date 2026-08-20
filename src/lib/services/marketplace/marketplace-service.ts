@@ -14,6 +14,7 @@ export interface InstalledPluginRecord {
 export class MarketplaceService implements Disposable {
 	private activeHandles = new Map<string, Disposable>();
 	private installedCache: InstalledPluginRecord[] = [];
+	private changeListeners = new Set<() => void>();
 	private initialized = false;
 
 	constructor(private engine: ChronosEngine) {}
@@ -32,6 +33,26 @@ export class MarketplaceService implements Disposable {
 			}
 		}
 		this.initialized = true;
+		this.notify();
+	}
+
+	onChanged(listener: () => void): Disposable {
+		this.changeListeners.add(listener);
+		return {
+			dispose: () => {
+				this.changeListeners.delete(listener);
+			}
+		};
+	}
+
+	private notify(): void {
+		for (const listener of this.changeListeners) {
+			try {
+				listener();
+			} catch (err) {
+				console.error('[MarketplaceService] Error in change listener:', err);
+			}
+		}
 	}
 
 	private async loadInstalledFromStorage(): Promise<InstalledPluginRecord[]> {
@@ -48,6 +69,7 @@ export class MarketplaceService implements Disposable {
 			MARKETPLACE_STORAGE_KEY,
 			this.installedCache
 		);
+		this.notify();
 	}
 
 	async fetchRegistry(registryUrl = '/marketplace/registry.json'): Promise<MarketplaceRegistry> {
@@ -140,6 +162,21 @@ export class MarketplaceService implements Disposable {
 		this.engine.actions.notify(`已停用插件《${pluginId}》`, 'info');
 	}
 
+	async getPluginConfig<T extends Record<string, unknown>>(pluginId: string): Promise<T | null> {
+		return this.engine.env.storage.getPluginData<T>(pluginId, '__config__');
+	}
+
+	async updatePluginConfig<T extends Record<string, unknown>>(
+		pluginId: string,
+		patch: Partial<T>
+	): Promise<void> {
+		const current = (await this.getPluginConfig<T>(pluginId)) || ({} as T);
+		const updated = { ...current, ...patch };
+		await this.engine.env.storage.setPluginData(pluginId, '__config__', updated);
+		void this.engine.events.emit('config:changed', { pluginId, config: updated });
+		this.engine.actions.notify('插件设置已保存', 'info');
+	}
+
 	private async loadPluginInstance(manifest: PluginManifest, code: string): Promise<Disposable> {
 		await this.unloadPluginInstance(manifest.id);
 
@@ -176,5 +213,6 @@ export class MarketplaceService implements Disposable {
 			handle.dispose();
 		}
 		this.activeHandles.clear();
+		this.changeListeners.clear();
 	}
 }

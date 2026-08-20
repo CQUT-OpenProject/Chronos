@@ -158,20 +158,33 @@ describe('Native Host Baseline (iOS JSCore / Android QuickJS)', () => {
 		const cqutHandle = await engine.loadPlugin(cqutPlugin);
 		const htmlHandle = await engine.loadPlugin(htmlParserPlugin);
 
+		expect(engine.slots.get('import.source.tab').length).toBeGreaterThanOrEqual(3);
+		expect(engine.slots.get('export.action').length).toBeGreaterThanOrEqual(1);
+
 		expect(engine.slots.getSource('share-json')).toBeDefined();
 		expect(engine.slots.getSource('cqut-online')).toBeDefined();
 		expect(engine.slots.getSource('edu-html')).toBeDefined();
 		expect(engine.slots.getExporter('share-json')).toBeDefined();
 
-		// 5. Verify JSON export
-		const exporter = engine.slots.getExporter('share-json')!;
-		const exported = await exporter.export(engine.state.currentTimetable!);
+		// 5. Verify JSON export via standard slot
+		const exportSlot = engine.slots.getSlotItem('export.action', 'share-json');
+		expect(exportSlot).toBeDefined();
+		const exported = await exportSlot!.export(engine.state.currentTimetable!);
 		expect(exported.filename).toBe('原生宿主课表.json');
 		expect(exported.content).toContain('高级移动应用开发');
+
+		// 6. Verify config update in native host environment
+		const cqutCtx = engine.getPluginContext('source-cqut');
+		await cqutCtx.updateConfig({ campusId: 'liangjiang' });
+		expect(cqutCtx.config.campusId).toBe('liangjiang');
 
 		shareHandle.dispose();
 		cqutHandle.dispose();
 		htmlHandle.dispose();
+
+		expect(engine.slots.get('import.source.tab').length).toBe(0);
+		expect(engine.slots.get('export.action').length).toBe(0);
+
 		engine.dispose();
 	});
 });
