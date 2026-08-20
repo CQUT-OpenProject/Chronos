@@ -6,7 +6,12 @@ import {
 	type Timetable,
 	type UserPreferences
 } from '@chronos/core';
-import { cqutPlugin, parseCqutScheduleData, type CqutCampusScheduleMetadata } from '../src/index';
+import {
+	cqutPlugin,
+	parseCqutScheduleData,
+	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
+	type CqutCampusScheduleMetadata
+} from '../src/index';
 
 function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 	const timetables = new Map<string, Timetable>();
@@ -96,6 +101,12 @@ function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 }
 
 describe('cqutPlugin', () => {
+	it('owns the ten-period campus clocks used by web', () => {
+		expect(CQUT_DEFAULT_CAMPUS_PERIOD_TIMES.huaxi).toHaveLength(10);
+		expect(CQUT_DEFAULT_CAMPUS_PERIOD_TIMES.liangjiang).toHaveLength(10);
+		expect(CQUT_DEFAULT_CAMPUS_PERIOD_TIMES.huaxi[0]?.startTime).toBe('08:20');
+		expect(CQUT_DEFAULT_CAMPUS_PERIOD_TIMES.liangjiang[4]?.startTime).toBe('14:20');
+	});
 	it('registers import.source.tab slot and executes import', async () => {
 		const env = createMockEnv();
 		const notifications: string[] = [];
