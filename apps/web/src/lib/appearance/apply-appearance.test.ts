@@ -69,7 +69,7 @@ describe('applyAppearance', () => {
 		expect(result.coursePalette).toBe(COURSE_PALETTE_ENTRIES);
 	});
 
-	it('returns the YUMEMITA course palette when YUMEMITA theme is active', async () => {
+	it('returns the custom theme course palette when themePaletteEntries is provided', async () => {
 		const target = createFakeElement();
 		const { wallpaper, clearWallpaperTheme } = createWallpaperAdapter();
 
@@ -78,7 +78,8 @@ describe('applyAppearance', () => {
 				paletteMode: 'vibrant',
 				isDark: true,
 				wallpaperUri: null,
-				activeThemeId: YUMEMITA_THEME_ID
+				activeThemeId: YUMEMITA_THEME_ID,
+				themePaletteEntries: YUMEMITA_PALETTE_ENTRIES
 			},
 			{ target, wallpaper }
 		);
@@ -89,7 +90,7 @@ describe('applyAppearance', () => {
 		expect(result.coursePalette).toBe(YUMEMITA_PALETTE_ENTRIES);
 	});
 
-	it('prefers wallpaper palette over active YUMEMITA theme id', async () => {
+	it('prefers wallpaper palette over active theme palette entries', async () => {
 		const target = createFakeElement();
 		const customPalette = [{ background: '#fedcba', foreground: '#111' }];
 		const extractWallpaperSeed = vi.fn().mockResolvedValue({
@@ -105,7 +106,8 @@ describe('applyAppearance', () => {
 				paletteMode: 'wallpaper',
 				isDark: false,
 				wallpaperUri: 'blob:wallpaper',
-				activeThemeId: YUMEMITA_THEME_ID
+				activeThemeId: YUMEMITA_THEME_ID,
+				themePaletteEntries: YUMEMITA_PALETTE_ENTRIES
 			},
 			{ target, wallpaper }
 		);

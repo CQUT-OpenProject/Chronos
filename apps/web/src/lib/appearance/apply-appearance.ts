@@ -1,6 +1,5 @@
-import type { PaletteMode } from '@chronos/core';
-import { resolveCoursePalette, type CoursePaletteEntry } from '@chronos/core';
-import { YUMEMITA_PALETTE_ENTRIES, YUMEMITA_THEME_ID } from '@chronos/plugin-theme-yumemita';
+import type { PaletteMode, CoursePaletteEntry } from '@chronos/core';
+import { resolveCoursePalette } from '@chronos/core';
 
 export interface WallpaperThemeAdapter {
 	extractWallpaperSeed(uri: string): Promise<{
@@ -16,6 +15,7 @@ export type ApplyAppearanceInput = {
 	isDark: boolean;
 	wallpaperUri: string | null;
 	activeThemeId: string;
+	themePaletteEntries?: readonly CoursePaletteEntry[] | null;
 };
 
 function abortIfNeeded(signal: AbortSignal | undefined) {
@@ -32,7 +32,7 @@ export async function applyAppearance(
 ): Promise<{ coursePalette: readonly CoursePaletteEntry[] }> {
 	const target =
 		options.target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
-	const { paletteMode, isDark, wallpaperUri, activeThemeId } = input;
+	const { paletteMode, isDark, wallpaperUri, themePaletteEntries } = input;
 	const { wallpaper, signal } = options;
 
 	if (target) {
@@ -57,9 +57,9 @@ export async function applyAppearance(
 		}
 	}
 
-	if (activeThemeId === YUMEMITA_THEME_ID) {
+	if (themePaletteEntries && themePaletteEntries.length > 0) {
 		wallpaper?.clearWallpaperTheme(target);
-		return { coursePalette: YUMEMITA_PALETTE_ENTRIES };
+		return { coursePalette: themePaletteEntries };
 	}
 
 	wallpaper?.clearWallpaperTheme(target);

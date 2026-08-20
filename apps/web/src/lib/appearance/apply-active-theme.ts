@@ -1,15 +1,27 @@
 import type { ChronosEngine, PaletteMode } from '@chronos/core';
-import {
-	YUMEMITA_THEME_ID,
-	YUMEMITA_PRIMARY,
-	YUMEMITA_SECONDARY
-} from '@chronos/plugin-theme-yumemita';
 import { applyThemeTokens } from '@chronos/ui-kit';
 import { M3_DEFAULT_THEME_ID } from '$lib/appearance/color-scheme';
 
-function clearThemeInlineVars(target: HTMLElement) {
-	for (const prop of target.style) {
-		if (prop.startsWith('--color-') || prop === '--ee-primary' || prop === '--ee-secondary') {
+let previouslyAppliedThemeClass: string | null = null;
+let previouslyAppliedCustomVarKeys: string[] = [];
+
+function clearCustomThemeStyles(target: HTMLElement) {
+	for (const key of previouslyAppliedCustomVarKeys) {
+		target.style.removeProperty(key);
+	}
+	previouslyAppliedCustomVarKeys = [];
+
+	if (previouslyAppliedThemeClass) {
+		target.classList.remove(previouslyAppliedThemeClass);
+		previouslyAppliedThemeClass = null;
+	}
+
+	for (const prop of Array.from(target.style)) {
+		if (
+			prop.startsWith('--color-') ||
+			prop.startsWith('--period-') ||
+			prop.startsWith('--leading-')
+		) {
 			target.style.removeProperty(prop);
 		}
 	}
@@ -28,26 +40,31 @@ export function applyActiveTheme(
 	const effectiveThemeId =
 		options?.paletteMode === 'wallpaper' ? M3_DEFAULT_THEME_ID : activeThemeId;
 
-	el.classList.toggle('theme-yumemita', effectiveThemeId === YUMEMITA_THEME_ID);
+	clearCustomThemeStyles(el);
 
 	if (effectiveThemeId === M3_DEFAULT_THEME_ID) {
-		clearThemeInlineVars(el);
 		return;
 	}
 
 	const theme = engine.themes.getTheme(effectiveThemeId);
 	if (!theme) {
-		clearThemeInlineVars(el);
 		return;
 	}
 
-	applyThemeTokens(theme.getTokens(isDark ? 'dark' : 'light'), el);
+	if (theme.className) {
+		el.classList.add(theme.className);
+		previouslyAppliedThemeClass = theme.className;
+	}
 
-	if (effectiveThemeId === YUMEMITA_THEME_ID) {
-		el.style.setProperty('--ee-primary', YUMEMITA_PRIMARY);
-		el.style.setProperty('--ee-secondary', YUMEMITA_SECONDARY);
-	} else {
-		el.style.removeProperty('--ee-primary');
-		el.style.removeProperty('--ee-secondary');
+	const mode = isDark ? 'dark' : 'light';
+	applyThemeTokens(theme.getTokens(mode), el);
+
+	if (theme.customCssVars) {
+		const vars =
+			typeof theme.customCssVars === 'function' ? theme.customCssVars(mode) : theme.customCssVars;
+		for (const [key, value] of Object.entries(vars)) {
+			el.style.setProperty(key, value);
+			previouslyAppliedCustomVarKeys.push(key);
+		}
 	}
 }

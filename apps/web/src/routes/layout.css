@@ -51,29 +51,9 @@
 		--color-border-subtle: #2e3038;
 	}
 
-	.theme-yumemita {
-		--ee-primary: #2288dd;
-		--ee-secondary: #ff7788;
-		--color-primary: var(--ee-primary);
-		--color-primary-dim: var(--ee-primary);
-		--color-on-primary: #fff;
-		--color-primary-container: var(--ee-primary);
-		--color-on-primary-container: #fff;
-		--color-inverse-primary: var(--ee-primary);
-		--color-on-on-primary: var(--ee-primary);
-		--color-primary-container-subtle: var(--ee-primary);
-		--color-on-primary-container-subtle: #fff;
-		--color-secondary: var(--ee-secondary);
-		--color-secondary-dim: var(--ee-secondary);
-		--color-on-secondary: #fff;
-		--color-secondary-container: var(--ee-secondary);
-		--color-on-secondary-container: #fff;
-		--color-secondary-container-subtle: var(--ee-secondary);
-		--color-on-secondary-container-subtle: #fff;
-	}
-
 	.period-active {
-		background-color: var(--color-brand);
+		background-color: var(--period-active-bg, var(--color-brand));
+		background-image: var(--period-active-bg-image, none);
 		color: var(--color-on-primary);
 	}
 
@@ -88,11 +68,6 @@
 		background-color: color-mix(in srgb, var(--capsule) 42%, var(--color-surface));
 		color: color-mix(in srgb, var(--capsule) 18%, var(--color-on-surface));
 		border-color: color-mix(in srgb, currentColor 18%, transparent);
-	}
-
-	.theme-yumemita .period-active {
-		background-color: transparent;
-		background-image: linear-gradient(to bottom, var(--ee-secondary), var(--ee-primary));
 	}
 }
 
@@ -170,12 +145,4 @@
 		@apply flex min-h-[var(--top-bar-height)] shrink-0 items-center px-3 pb-0 sm:px-4;
 		padding-top: var(--topbar-safe);
 	}
-}
-
-.theme-yumemita .m3-leading-icon.tone-primary,
-.theme-yumemita .m3-leading-icon.tone-secondary,
-.theme-yumemita .m3-leading-icon.tone-tertiary,
-.theme-yumemita .m3-leading-icon.tone-neutral {
-	background-color: color-mix(in srgb, var(--color-secondary-container) 75%, transparent);
-	color: var(--color-on-secondary-container);
 }

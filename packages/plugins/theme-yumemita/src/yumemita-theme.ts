@@ -67,6 +67,16 @@ export const yumemitaThemeContribution: ThemeContribution = {
 	id: YUMEMITA_THEME_ID,
 	name: () => 'YUMEMITA',
 	supportsDynamicColor: false,
+	className: 'theme-yumemita',
+	customCssVars: {
+		'--ee-primary': YUMEMITA_PRIMARY,
+		'--ee-secondary': YUMEMITA_SECONDARY,
+		'--period-active-bg': 'transparent',
+		'--period-active-bg-image': `linear-gradient(to bottom, ${YUMEMITA_SECONDARY}, ${YUMEMITA_PRIMARY})`,
+		'--leading-icon-bg': `color-mix(in srgb, ${YUMEMITA_SECONDARY} 75%, transparent)`,
+		'--leading-icon-color': '#fff'
+	},
+	paletteEntries: YUMEMITA_PALETTE_ENTRIES,
 	getTokens: buildYumemitaThemeTokens,
 	resolveCoursePaint(course: Course, paletteIndex: number, _mode: 'light' | 'dark'): CoursePaint {
 		if (course.color && course.textColor) {
