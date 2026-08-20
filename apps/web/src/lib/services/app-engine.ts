@@ -1,6 +1,7 @@
 import { ChronosEngine, ProfileManager } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
+import { CORE_SHELL_PLUGIN_ID, registerCoreShellSlots } from '$lib/boot/core-shell';
 import { availablePlugins, resolveActiveProfile } from '$lib/boot/profile-registry';
 import { MarketplaceService } from '$lib/services/marketplace/marketplace-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
@@ -42,6 +43,7 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 
 async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	engine.themes.registerTheme(m3DefaultTheme);
+	registerCoreShellSlots(engine.getPluginContext(CORE_SHELL_PLUGIN_ID));
 
 	profileManager = new ProfileManager(engine);
 	const profile = resolveActiveProfile();
@@ -56,18 +58,20 @@ async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 export async function ensureEngineReady(options?: WebProviderOptions): Promise<ChronosEngine> {
 	if (!sharedEngine) {
 		sharedEngine = createEngine(options);
+	}
+	if (!engineInitPromise) {
 		engineInitPromise = bootstrapEngine(sharedEngine)
 			.then(() => sharedEngine!.init())
 			.then(() => sharedEngine!);
 	}
-	return engineInitPromise!;
+	return engineInitPromise;
 }
 
 export function getAppEngine(options?: WebProviderOptions): ChronosEngine {
 	if (!sharedEngine) {
 		sharedEngine = createEngine(options);
-		void ensureEngineReady(options);
 	}
+	void ensureEngineReady(options);
 	return sharedEngine;
 }
 

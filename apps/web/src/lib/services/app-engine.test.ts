@@ -65,6 +65,21 @@ describe('app-engine bootstrap', () => {
 		resetAppEngine();
 	});
 
+	it('registers shell slots when getAppController is called before bootstrap completes', async () => {
+		const mockDb = createMockDb();
+		const mockStore = new MockLocalStorage();
+		const opts = { database: mockDb, localStorage: mockStore };
+
+		const controller = getAppController(opts);
+		expect(controller.getSlots('shell.bottom-bar.tab').map((tab) => tab.id)).toEqual([
+			'timetable',
+			'mine'
+		]);
+		expect(controller.getSlots('mine.section').length).toBeGreaterThan(0);
+
+		await ensureEngineReady(opts);
+	});
+
 	it('initializes shared ChronosEngine and ReactiveChronosController with builtin plugins and m3 theme', async () => {
 		const mockDb = createMockDb();
 		const mockStore = new MockLocalStorage();
@@ -78,6 +93,12 @@ describe('app-engine bootstrap', () => {
 		expect(controller).toBeDefined();
 		expect(controller.getSlots('import.source.tab').length).toBeGreaterThan(0);
 		expect(controller.getSlots('export.action').length).toBeGreaterThan(0);
+		expect(controller.getSlots('shell.bottom-bar.tab').map((tab) => tab.id)).toEqual([
+			'timetable',
+			'mine'
+		]);
+		expect(controller.getSlots('mine.section').length).toBeGreaterThan(0);
+		expect(controller.getSlots('mine.item').length).toBeGreaterThan(0);
 		expect(engine.themes.getThemes().length).toBeGreaterThan(0);
 	});
 });

@@ -3,7 +3,7 @@ import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 
 export const CORE_SHELL_PLUGIN_ID = 'core-shell';
 
-function registerCoreShellSlots(ctx: ChronosContext): void {
+export function registerCoreShellSlots(ctx: ChronosContext): void {
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'timetable',
 		label: () => '课表',

@@ -48,10 +48,10 @@
 		return MINE_ITEM_KEYWORDS[itemId] ? CodeFill : undefined;
 	}
 
-	const pluginSections = $derived(controller.getSlots('mine.section'));
-	const pluginItems = $derived(controller.getSlots('mine.item'));
-
 	const sections = $derived.by(() => {
+		void controller.slotVersion;
+		const pluginSections = controller.getSlots('mine.section');
+		const pluginItems = controller.getSlots('mine.item');
 		const sectionMap: Record<string, SettingSection> = {};
 
 		for (const pSec of pluginSections) {
@@ -135,23 +135,29 @@
 		<SearchField bind:value={searchQuery} placeholder="搜索设置..." ariaLabel="搜索设置" />
 	</div>
 
-	{#each filteredSections as section (section.id)}
-		<MineSection title={section.title}>
-			{#each section.items as item (item.id)}
-				<MineRow
-					title={item.title}
-					supporting={item.supporting}
-					href={item.href}
-					onclick={item.onClick}
-					icon={item.icon}
-					iconTone={item.iconTone}
-				/>
-			{/each}
-		</MineSection>
-	{:else}
+	{#if sections.length === 0}
+		<div class="flex flex-col items-center justify-center py-12 text-center">
+			<p class="m3-body-medium text-on-surface-variant">暂无设置项</p>
+		</div>
+	{:else if filteredSections.length === 0}
 		<div class="flex flex-col items-center justify-center py-12 text-center">
 			<p class="m3-body-medium text-on-surface-variant">未找到“{searchQuery}”相关设置</p>
 			<Button variant="text" class="mt-2" onclick={() => (searchQuery = '')}>清空搜索词</Button>
 		</div>
-	{/each}
+	{:else}
+		{#each filteredSections as section (section.id)}
+			<MineSection title={section.title}>
+				{#each section.items as item (item.id)}
+					<MineRow
+						title={item.title}
+						supporting={item.supporting}
+						href={item.href}
+						onclick={item.onClick}
+						icon={item.icon}
+						iconTone={item.iconTone}
+					/>
+				{/each}
+			</MineSection>
+		{/each}
+	{/if}
 </div>

@@ -11,8 +11,11 @@
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
 	const controller = getAppController();
 
-	const rawTabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
-	const sortedTabs = $derived([...rawTabs].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)));
+	const sortedTabs = $derived.by(() => {
+		void controller.slotVersion;
+		const rawTabs = controller.getSlots('shell.bottom-bar.tab');
+		return [...rawTabs].sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
+	});
 
 	const appPathname = $derived(toAppPathname(page.url.pathname));
 
