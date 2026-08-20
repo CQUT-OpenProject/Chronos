@@ -87,6 +87,17 @@
 					{disabled}
 					bind:value={value[key]}
 				/>
+			{:else if field.type === 'date'}
+				<TextField
+					id="field-{key}"
+					type="date"
+					label={resolveText(field.title)}
+					placeholder={resolveText(field.placeholder)}
+					description={resolveText(field.description)}
+					required={field.required}
+					{disabled}
+					bind:value={value[key] as string}
+				/>
 			{/if}
 		{/if}
 	{/each}

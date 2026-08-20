@@ -8,6 +8,8 @@ export type { DesignTokens, CoursePaint, CourseBadge, ExportResult } from './slo
 export interface ThemeContribution {
 	readonly id: string;
 	readonly name: LocalizedText;
+	readonly description?: LocalizedText;
+	readonly disabled?: boolean | (() => boolean);
 	readonly supportsDynamicColor?: boolean;
 	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
 	/**

@@ -103,6 +103,8 @@ export interface CoursePaint {
 export interface ThemeSlotContribution {
 	id: string;
 	name: LocalizedText;
+	description?: LocalizedText;
+	disabled?: boolean | (() => boolean);
 	supportsDynamicColor?: boolean;
 	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
 	resolveCoursePaint?(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint;
