@@ -25,6 +25,19 @@ module.exports = {
 			id: 'tool-wallpaper',
 			title: function () {
 				return '设置课表壁纸';
+			},
+			schema: {
+				wallpaper: {
+					type: 'file',
+					title: function () {
+						return '选择壁纸图片';
+					},
+					description: function () {
+						return '支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩';
+					},
+					accept: 'image/*',
+					required: false
+				}
 			}
 		});
 

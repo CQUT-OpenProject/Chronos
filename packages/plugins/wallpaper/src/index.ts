@@ -1,7 +1,18 @@
 import type { ChronosPlugin, ChronosContext, ThemeContribution } from '@chronos/core';
+import { defineSchema } from '@chronos/core';
 
 export const WALLPAPER_PLUGIN_ID = 'tool-wallpaper';
 export const WALLPAPER_THEME_ID = 'wallpaper';
+
+export const wallpaperScreenSchema = defineSchema({
+	wallpaper: {
+		type: 'file',
+		title: () => '选择壁纸图片',
+		description: () => '支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩',
+		accept: 'image/*',
+		required: false
+	}
+});
 
 export const wallpaperThemeContribution: ThemeContribution = {
 	id: WALLPAPER_THEME_ID,
@@ -43,7 +54,8 @@ export const wallpaperPlugin: ChronosPlugin = {
 
 		ctx.registerSlot('shell.route.screen', {
 			id: 'tool-wallpaper',
-			title: () => '设置课表壁纸'
+			title: () => '设置课表壁纸',
+			schema: wallpaperScreenSchema
 		});
 
 		ctx.registerSlot('theme.definition', wallpaperThemeContribution);

@@ -31,9 +31,22 @@
 		if (!file) return;
 
 		selectedFileName = file.name;
-		const text = await file.text();
-		value = text;
-		onFileSelect?.(text);
+		const isImageOrBinary =
+			accept.includes('image') ||
+			accept.includes('.png') ||
+			accept.includes('.jpg') ||
+			accept.includes('.jpeg') ||
+			accept.includes('.webp');
+
+		if (isImageOrBinary) {
+			const buffer = await file.arrayBuffer();
+			value = new Uint8Array(buffer);
+			onFileSelect?.(file.name);
+		} else {
+			const text = await file.text();
+			value = text;
+			onFileSelect?.(text);
+		}
 	}
 </script>
 
