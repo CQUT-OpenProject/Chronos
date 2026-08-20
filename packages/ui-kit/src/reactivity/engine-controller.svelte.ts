@@ -5,10 +5,6 @@ import type {
 	UserPreferences,
 	Disposable,
 	StandardSlotMap,
-	TimetableSourceAdapter,
-	TimetableExporterAdapter,
-	CourseActionContribution,
-	ThemeContribution,
 	CourseBadge,
 	Course,
 	AcademicConfig
@@ -32,12 +28,6 @@ export class ReactiveChronosController implements Disposable {
 
 	// Slot reactivity version signal (increments on slot changes or locale switches)
 	slotVersion = $state<number>(0);
-
-	// Legacy slot and badge reactive proxies
-	themes = $state<ReadonlyArray<ThemeContribution>>([]);
-	sources = $state<ReadonlyArray<TimetableSourceAdapter>>([]);
-	exporters = $state<ReadonlyArray<TimetableExporterAdapter>>([]);
-	courseActions = $state<ReadonlyArray<CourseActionContribution>>([]);
 	courseBadges = $state<Record<string, CourseBadge[]>>({});
 
 	constructor(engine: ChronosEngine) {
@@ -74,18 +64,15 @@ export class ReactiveChronosController implements Disposable {
 			}),
 			this.engine.on('slots:updated', () => {
 				this.slotVersion++;
-				this.syncSlots();
 			}),
 			this.engine.on('badges:updated', ({ badges }: { badges: Record<string, CourseBadge[]> }) => {
 				this.courseBadges = badges;
 			}),
 			this.engine.on('plugin:loaded', () => {
 				this.slotVersion++;
-				this.syncSlots();
 			}),
 			this.engine.on('plugin:unloaded', () => {
 				this.slotVersion++;
-				this.syncSlots();
 			})
 		);
 	}
@@ -123,14 +110,6 @@ export class ReactiveChronosController implements Disposable {
 		this.currentLocale = this.engine.locale;
 		this.courseBadges = this.engine.badges.getAll();
 		this.slotVersion++;
-		this.syncSlots();
-	}
-
-	private syncSlots(): void {
-		this.themes = this.engine.themes.getThemes();
-		this.sources = this.engine.slots.getSources();
-		this.exporters = this.engine.slots.getExporters();
-		this.courseActions = this.engine.slots.getCourseActions();
 	}
 
 	// Action proxies

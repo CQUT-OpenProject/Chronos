@@ -21,7 +21,7 @@
 
 	let remarkExpanded = $state(true);
 	const controller = getAppController();
-	const courseActions = $derived(controller.courseActions);
+	const courseActions = $derived(controller.getSlots('course.detail.action'));
 
 	const course = $derived(
 		courseId
@@ -98,7 +98,7 @@
 					<Button
 						variant="tonal"
 						onclick={() => {
-							const ctx = controller.rawEngine.scopedContext;
+							const ctx = controller.rawEngine.getPluginContext(action.id);
 							void action.onExecute(course, ctx);
 						}}
 					>

@@ -125,6 +125,15 @@ export function createTransferState(
 		clearMessages();
 	}
 
+	function setDirectPreview(t: Timetable, source: TransferImportSource = 'SHARE_LINK') {
+		clearMessages();
+		preview = t;
+		previewSource = source;
+		htmlImportTermStartDate = null;
+		htmlImportCampusId = null;
+		return true;
+	}
+
 	async function previewFromClipboard() {
 		clearMessages();
 		const result = await coordinator.previewFromClipboard();
@@ -300,6 +309,7 @@ export function createTransferState(
 		setHtmlImportTermStartDate,
 		setHtmlImportCampusId,
 		clearPreview,
+		setDirectPreview,
 		previewFromClipboard,
 		previewFromHtmlFile,
 		previewOnline,

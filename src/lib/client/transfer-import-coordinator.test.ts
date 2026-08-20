@@ -214,12 +214,15 @@ describe('createTransferImportCoordinator', () => {
 			}
 		});
 
-		const fetchScheduleMock = vi.fn().mockResolvedValue(mockTimetable);
+		const executeImportMock = vi.fn().mockResolvedValue(mockTimetable);
 		const mockEngine = {
 			slots: {
-				getSource: (id: string) =>
-					id === 'cqut-online' ? { fetchSchedule: fetchScheduleMock } : undefined
-			}
+				getSlotItem: (slotName: string, id: string) =>
+					slotName === 'import.source.tab' && id === 'cqut-online'
+						? { executeImport: executeImportMock }
+						: undefined
+			},
+			getPluginContext: vi.fn().mockReturnValue({})
 		} as unknown as ChronosEngine;
 
 		const coordinator = createTransferImportCoordinator({
@@ -240,9 +243,13 @@ describe('createTransferImportCoordinator', () => {
 			source: 'ONLINE',
 			statusMessage: undefined
 		});
-		expect(fetchScheduleMock).toHaveBeenCalledWith({
-			username: '123456',
-			password: 'password'
-		});
+		expect(executeImportMock).toHaveBeenCalledWith(
+			{
+				username: '123456',
+				account: '123456',
+				password: 'password'
+			},
+			expect.anything()
+		);
 	});
 });

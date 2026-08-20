@@ -101,31 +101,14 @@ export function createTransferImportCoordinator({
 			}
 
 			// 2. Decode JSON backup source if slot available
-			const jsonSource = getEngine().slots.getSource('share-json');
+			const jsonSource = getEngine().slots.getSlotItem('import.source.tab', 'share-json');
 			if (jsonSource) {
 				try {
-					let timetable: Timetable;
-					if (
-						typeof (jsonSource as unknown as { executeImport?: unknown }).executeImport ===
-						'function'
-					) {
-						const ctx = getEngine().getPluginContext('codec-share');
-						timetable = (await (
-							jsonSource as unknown as {
-								executeImport: (
-									inputs: Record<string, unknown>,
-									ctx?: unknown
-								) => Promise<Timetable>;
-							}
-						).executeImport(
-							{ file: trimmed, content: trimmed, fileContent: trimmed },
-							ctx
-						)) as unknown as Timetable;
-					} else {
-						timetable = (await jsonSource.fetchSchedule({
-							fileContent: trimmed
-						})) as unknown as Timetable;
-					}
+					const ctx = getEngine().getPluginContext('codec-share');
+					const timetable = (await jsonSource.executeImport(
+						{ file: trimmed, content: trimmed, fileContent: trimmed },
+						ctx
+					)) as unknown as Timetable;
 					if (timetable && timetable.courses?.length > 0) {
 						return { ok: true, preview: timetable, source: 'SHARE_LINK' };
 					}
@@ -144,26 +127,16 @@ export function createTransferImportCoordinator({
 		try {
 			const text = await file.text();
 			const htmlSource =
-				getEngine().slots.getSource('edu-html') || getEngine().slots.getSource('html-parser');
+				getEngine().slots.getSlotItem('import.source.tab', 'edu-html') ||
+				getEngine().slots.getSlotItem('import.source.tab', 'html-parser');
 			let timetable: Timetable;
 
 			if (htmlSource) {
-				if (
-					typeof (htmlSource as unknown as { executeImport?: unknown }).executeImport === 'function'
-				) {
-					const ctx = getEngine().getPluginContext('parser-html');
-					timetable = (await (
-						htmlSource as unknown as {
-							executeImport: (inputs: Record<string, unknown>, ctx?: unknown) => Promise<Timetable>;
-						}
-					).executeImport({ file: text, fileContent: text }, ctx)) as unknown as Timetable;
-				} else if (typeof htmlSource.fetchSchedule === 'function') {
-					timetable = (await htmlSource.fetchSchedule({
-						fileContent: text
-					})) as unknown as Timetable;
-				} else {
-					timetable = parseHtmlTimetable(text) as unknown as Timetable;
-				}
+				const ctx = getEngine().getPluginContext('parser-html');
+				timetable = (await htmlSource.executeImport(
+					{ file: text, fileContent: text },
+					ctx
+				)) as unknown as Timetable;
 			} else {
 				timetable = parseHtmlTimetable(text) as unknown as Timetable;
 			}
@@ -234,52 +207,19 @@ export function createTransferImportCoordinator({
 		}
 
 		try {
-			const source = getEngine().slots.getSource('cqut-online');
+			const source = getEngine().slots.getSlotItem('import.source.tab', 'cqut-online');
 			let timetable: Timetable;
 
 			if (source) {
-				if (typeof source.fetchSchedule === 'function') {
-					timetable = (await source.fetchSchedule({
+				const ctx = getEngine().getPluginContext('source-cqut');
+				timetable = (await source.executeImport(
+					{
 						username: trimmedAccount,
+						account: trimmedAccount,
 						password
-					})) as unknown as Timetable;
-				} else if (
-					typeof (source as unknown as { executeImport?: unknown }).executeImport === 'function'
-				) {
-					const ctx = getEngine().getPluginContext('source-cqut');
-					timetable = (await (
-						source as unknown as {
-							executeImport: (inputs: Record<string, unknown>, ctx?: unknown) => Promise<Timetable>;
-						}
-					).executeImport(
-						{
-							username: trimmedAccount,
-							account: trimmedAccount,
-							password
-						},
-						ctx
-					)) as unknown as Timetable;
-				} else {
-					const res = await fetch('/api/cqut/preview', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ account: trimmedAccount, password })
-					});
-					const data = (await res.json()) as {
-						ok: boolean;
-						payload?: unknown;
-						value?: Timetable;
-						error?: { message: string };
-					};
-					if (!data.ok) {
-						return {
-							ok: false,
-							errorMessage: data.error?.message || '获取课表失败，请检查账号密码'
-						};
-					}
-					timetable = (data.value ??
-						parseCqutScheduleData(data.payload as never, trimmedAccount)) as Timetable;
-				}
+					},
+					ctx
+				)) as unknown as Timetable;
 			} else {
 				const res = await fetch('/api/cqut/preview', {
 					method: 'POST',
@@ -293,7 +233,10 @@ export function createTransferImportCoordinator({
 					error?: { message: string };
 				};
 				if (!data.ok) {
-					return { ok: false, errorMessage: data.error?.message || '获取课表失败，请检查账号密码' };
+					return {
+						ok: false,
+						errorMessage: data.error?.message || '获取课表失败，请检查账号密码'
+					};
 				}
 				timetable = (data.value ??
 					parseCqutScheduleData(data.payload as never, trimmedAccount)) as Timetable;

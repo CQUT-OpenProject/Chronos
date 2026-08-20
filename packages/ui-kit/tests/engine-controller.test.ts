@@ -101,9 +101,9 @@ describe('ReactiveChronosController', () => {
 		expect(controller.userPreferences).toBeDefined();
 		expect(controller.currentLocale).toBe('zh-cn');
 		expect(controller.slotVersion).toBeGreaterThanOrEqual(1);
-		expect(controller.sources).toEqual([]);
-		expect(controller.exporters).toEqual([]);
-		expect(controller.courseActions).toEqual([]);
+		expect(controller.getSlots('import.source.tab')).toEqual([]);
+		expect(controller.getSlots('export.action')).toEqual([]);
+		expect(controller.getSlots('course.detail.action')).toEqual([]);
 		expect(controller.courseBadges).toEqual({});
 
 		controller.dispose();

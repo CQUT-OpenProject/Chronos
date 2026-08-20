@@ -77,8 +77,8 @@ describe('app-engine bootstrap', () => {
 
 		const controller = getAppController({ database: mockDb, localStorage: mockStore });
 		expect(controller).toBeDefined();
-		expect(controller.sources.length).toBeGreaterThan(0);
-		expect(controller.exporters.length).toBeGreaterThan(0);
-		expect(controller.themes.length).toBeGreaterThan(0);
+		expect(controller.getSlots('import.source.tab').length).toBeGreaterThan(0);
+		expect(controller.getSlots('export.action').length).toBeGreaterThan(0);
+		expect(engine.themes.getThemes().length).toBeGreaterThan(0);
 	});
 });

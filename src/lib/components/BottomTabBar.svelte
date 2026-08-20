@@ -1,45 +1,59 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { getContext } from 'svelte';
+	import { getContext, type Component } from 'svelte';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { toAppPathname } from '$lib/navigation/app-pathname';
-	import { CalendarMonth, CalendarMonthFill, Person, PersonFill } from '$lib/icons';
+	import { getAppController } from '$lib/services/app-engine';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
+	const controller = getAppController();
 
-	const tabs = [
-		{ href: '/', label: '课表', Icon: CalendarMonth, IconFill: CalendarMonthFill },
-		{ href: '/mine', label: '我的', Icon: Person, IconFill: PersonFill }
-	] as const;
+	const rawTabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
+	const sortedTabs = $derived([...rawTabs].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)));
 
 	const appPathname = $derived(toAppPathname(page.url.pathname));
-	const activeTabHref = $derived(appPathname === '/mine' ? '/mine' : '/');
 
 	function isActive(href: string) {
-		return activeTabHref === href;
+		if (href === '/') return appPathname === '/';
+		return appPathname.startsWith(href);
 	}
 
-	function onTimetableTabClick(event: MouseEvent) {
+	function resolveText(text: string | (() => string) | undefined): string {
+		if (!text) return '';
+		return typeof text === 'function' ? text() : text;
+	}
+
+	function handleTabClick(event: MouseEvent, tab: (typeof sortedTabs)[number]) {
 		haptic.light();
-		timetableScreen.jumpToCurrentWeek();
-		if (appPathname === '/') {
-			event.preventDefault();
+		if (tab.onClick) {
+			const ctx = controller.rawEngine.getPluginContext(tab.id);
+			void tab.onClick(event, ctx);
+			return;
+		}
+		if (tab.href === '/' && timetableScreen) {
+			timetableScreen.jumpToCurrentWeek();
+			if (appPathname === '/') {
+				event.preventDefault();
+			}
 		}
 	}
 </script>
 
 <div class="bottom-bar w-full flex-col justify-center">
 	<nav aria-label="主导航" class="flex h-full w-full max-w-md items-center justify-around">
-		{#each tabs as tab (tab.href)}
+		{#each sortedTabs as tab (tab.id)}
 			{@const active = isActive(tab.href)}
+			{@const Icon = (active ? (tab.iconFill ?? tab.icon) : tab.icon) as Component<{
+				class?: string;
+			}>}
 			<a
-				href={resolve(tab.href)}
+				href={resolve(tab.href as any)}
 				data-sveltekit-preload-data="off"
 				aria-current={active ? 'page' : undefined}
 				class="flex h-full min-h-0 flex-1 cursor-pointer flex-col items-center justify-center gap-0.5 py-0.5 text-on-surface-variant transition-colors hover:text-on-surface sm:gap-1 sm:py-1"
-				onclick={tab.href === '/' ? onTimetableTabClick : () => haptic.light()}
+				onclick={(e) => handleTabClick(e, tab)}
 			>
 				<span
 					aria-hidden="true"
@@ -47,10 +61,8 @@
 						? 'bg-primary-container text-on-primary-container'
 						: ''}"
 				>
-					{#if active}
-						<tab.IconFill class="size-[22px] sm:size-6" />
-					{:else}
-						<tab.Icon class="size-[22px] sm:size-6" />
+					{#if Icon}
+						<Icon class="size-[22px] sm:size-6" />
 					{/if}
 				</span>
 				<span
@@ -58,7 +70,7 @@
 						? 'text-on-surface'
 						: 'text-on-surface-variant'}"
 				>
-					{tab.label}
+					{resolveText(tab.label)}
 				</span>
 			</a>
 		{/each}
