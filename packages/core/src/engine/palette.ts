@@ -51,13 +51,18 @@ export function persistSwatchSelection(displayIndex: number): CoursePaletteEntry
 }
 
 export function resolveCoursePaint(
-	stored: { color?: string; textColor?: string },
+	stored: { name?: string; color?: string; textColor?: string },
 	displayPalette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
 ): { background: string; foreground: string } {
-	const color = stored.color ?? '';
+	const name = stored.name ? normalizedCourseName(stored.name) : '';
+	const color = stored.color || (name ? coursePalette(name)[0] : '');
 	const slot = defaultPaletteSlot(color);
 	if (slot == null || displayPalette.length === 0) {
-		return { background: color || '#EADDFF', foreground: stored.textColor || '#21005D' };
+		if (name) {
+			const [bg, fg] = coursePalette(name);
+			return { background: stored.color || bg, foreground: stored.textColor || fg };
+		}
+		return { background: stored.color || '#EADDFF', foreground: stored.textColor || '#21005D' };
 	}
 	return displayPalette[slot % displayPalette.length]!;
 }
@@ -88,10 +93,10 @@ export function assignCourseDisplayColors(
 
 	const preferredMap = new Map<string, CourseSlotPreference>();
 	for (const course of courses) {
-		const color = course.color ?? '';
+		const name = normalizedCourseName(course.name);
+		const color = course.color || coursePalette(name)[0];
 		const slot = defaultPaletteSlot(color);
 		if (slot == null) continue;
-		const name = normalizedCourseName(course.name);
 		if (!preferredMap.has(name)) {
 			preferredMap.set(name, {
 				name,

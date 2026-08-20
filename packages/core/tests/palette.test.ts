@@ -56,4 +56,17 @@ describe('Palette Algorithm in @chronos/core', () => {
 		expect(assigned.get('线性代数')).toBeDefined();
 		expect(assigned.get('大学物理')).toBeDefined();
 	});
+
+	it('assigns course display colors across palette when color is omitted', () => {
+		const courses = [{ name: '高等数学' }, { name: '线性代数' }, { name: '大学物理' }];
+
+		const assigned = assignCourseDisplayColors(courses);
+		expect(assigned.size).toBe(3);
+		expect(assigned.get('高等数学')).toBeDefined();
+		expect(assigned.get('线性代数')).toBeDefined();
+		expect(assigned.get('大学物理')).toBeDefined();
+		// Ensure different courses receive different palette entries
+		const backgrounds = new Set([...assigned.values()].map((e) => e.background));
+		expect(backgrounds.size).toBe(3);
+	});
 });

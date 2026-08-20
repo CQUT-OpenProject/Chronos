@@ -32,6 +32,21 @@ describe('Domain Models in @chronos/core', () => {
 		expect(COURSE_REMARK_MAX_LENGTH).toBe(200);
 	});
 
+	it('assigns palette color and textColor automatically when color is omitted in createCourse', () => {
+		const course = createCourse({
+			id: 'c2',
+			name: '大学物理',
+			dayOfWeek: 2,
+			startPeriod: 1,
+			endPeriod: 2
+		});
+
+		expect(course.color).toBeDefined();
+		expect(course.textColor).toBeDefined();
+		expect(course.color?.startsWith('#')).toBe(true);
+		expect(course.textColor?.startsWith('#')).toBe(true);
+	});
+
 	it('normalizes timetable name', () => {
 		expect(normalizeTimetableName('  ')).toBe(DEFAULT_TIMETABLE_NAME);
 		expect(normalizeTimetableName(' 2026春课表 ')).toBe('2026春课表');

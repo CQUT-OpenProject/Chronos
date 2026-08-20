@@ -1,3 +1,5 @@
+import { coursePalette, normalizedCourseName } from '../engine/palette';
+
 export const COURSE_REMARK_MAX_LENGTH = 200;
 
 export interface Course {
@@ -20,11 +22,15 @@ export function createCourse(
 	partial: Omit<Course, 'weeks' | 'teacher' | 'location'> &
 		Partial<Pick<Course, 'weeks' | 'teacher' | 'location'>>
 ): Course {
+	const name = partial.name ? normalizedCourseName(partial.name) : '';
+	const [defaultColor, defaultTextColor] = name ? coursePalette(name) : ['#EADDFF', '#21005D'];
 	return {
 		teacher: '',
 		location: '',
 		weeks: [],
 		remark: '',
+		color: partial.color || defaultColor,
+		textColor: partial.textColor || (partial.color ? undefined : defaultTextColor),
 		...partial
 	};
 }

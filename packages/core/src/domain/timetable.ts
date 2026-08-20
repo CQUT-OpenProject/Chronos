@@ -68,11 +68,12 @@ export function createTimetable(
 ): Timetable {
 	const now = Date.now();
 	const importMetadata = normalizeImportMetadata(partial.importMetadata);
+	const courses = partial.courses ?? [];
 	return {
 		schemaVersion: partial.schemaVersion ?? CURRENT_TIMETABLE_SCHEMA_VERSION,
 		id: partial.id,
 		name: normalizeTimetableName(partial.name),
-		courses: partial.courses ?? [],
+		courses,
 		academicConfig: {
 			termStartDate: partial.academicConfig?.termStartDate ?? '',
 			startWeek: partial.academicConfig?.startWeek ?? 1,
