@@ -2,16 +2,37 @@ import type { Course } from '../domain/course';
 import type { AcademicConfig, Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
 import type { Disposable, ServiceIdentifier } from './services';
-import type { StandardSlotMap, LocalizedText, CourseBadge, ExportResult } from './slots';
+import type { ChronosSlotMap, LocalizedText, CourseBadge, ExportResult } from './slots';
 import type { ConfigSchema } from '../schema/schema';
 
 export type { LocalizedText } from './slots';
+
+/** Plugin category classification */
+export type PluginCategory = 'source' | 'parser' | 'codec' | 'theme' | 'tool';
+
+/**
+ * Custom event map extension point for module augmentation.
+ * Plugins can extend this interface via `declare module '@chronos/core'`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface CustomChronosEvents {}
 
 export interface ChronosPlugin<Config extends object = Record<string, unknown>> {
 	readonly id: string;
 	readonly name: LocalizedText;
 	readonly version: string;
+	/** Concise one-sentence description (<= 60 chars) */
 	readonly description?: LocalizedText;
+	/** Domain category of the plugin */
+	readonly category?: PluginCategory;
+	/** Display and initialization priority (built-in sources: 10-90, user extensions: 100+) */
+	readonly order?: number;
+	/** Author or maintainer information */
+	readonly author?: string;
+	/** Homepage or repository URL */
+	readonly homepage?: string;
+	/** Rich documentation or usage guide (supports Markdown & multi-lingual text) */
+	readonly readme?: LocalizedText;
 	readonly configSchema?: ConfigSchema<Config>;
 	readonly defaultConfig?: Config;
 	/** Declared service dependencies (plugin remains pending until all dependencies are satisfied) */
@@ -84,15 +105,15 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 	};
 
 	/** Declarative hierarchical slot registration (auto-tracked and revoked on unload) */
-	registerSlot<K extends keyof StandardSlotMap>(
+	registerSlot<K extends keyof ChronosSlotMap>(
 		slotName: K,
-		contribution: StandardSlotMap[K] & { id: string }
+		contribution: ChronosSlotMap[K] & { id: string }
 	): Disposable;
 
 	/** Event bus listener (auto-tracked and revoked on unload) */
-	on<E extends keyof ChronosEvents>(
+	on<E extends keyof (ChronosEvents & CustomChronosEvents)>(
 		event: E,
-		handler: (payload: ChronosEvents[E]) => void | Promise<void>
+		handler: (payload: (ChronosEvents & CustomChronosEvents)[E]) => void | Promise<void>
 	): Disposable;
 
 	/** Data pipeline transformation interceptor */

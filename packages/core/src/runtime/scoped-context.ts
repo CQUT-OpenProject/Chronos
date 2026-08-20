@@ -4,8 +4,8 @@ import type { UserPreferences } from '../domain/preferences';
 import type { ChronosEnv } from '../types/env';
 import type { Disposable, ServiceIdentifier } from '../types/services';
 import { IStorageService } from '../types/services';
-import type { ChronosContext, ChronosEvents } from '../types/context';
-import type { StandardSlotMap } from '../types/slots';
+import type { ChronosContext, ChronosEvents, CustomChronosEvents } from '../types/context';
+import type { ChronosSlotMap } from '../types/slots';
 import type { EventPipeline } from './event-pipeline';
 import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import type { ServiceContainer } from './service-container';
@@ -156,16 +156,16 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		this.subscriptions.push(disposable);
 	}
 
-	registerSlot<K extends keyof StandardSlotMap>(
+	registerSlot<K extends keyof ChronosSlotMap>(
 		slotName: K,
-		contribution: StandardSlotMap[K] & { id: string }
+		contribution: ChronosSlotMap[K] & { id: string }
 	): Disposable {
 		return this.track(this.host.slots.register(slotName, contribution));
 	}
 
-	on<E extends keyof ChronosEvents>(
+	on<E extends keyof (ChronosEvents & CustomChronosEvents)>(
 		event: E,
-		handler: (payload: ChronosEvents[E]) => void | Promise<void>
+		handler: (payload: (ChronosEvents & CustomChronosEvents)[E]) => void | Promise<void>
 	): Disposable {
 		return this.track(this.host.events.on(event, handler));
 	}

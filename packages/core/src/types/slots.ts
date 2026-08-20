@@ -133,3 +133,13 @@ export interface StandardSlotMap {
 	'theme.definition': ThemeSlotContribution;
 	[customSlotName: string]: unknown;
 }
+
+/**
+ * Custom slot map extension point for module augmentation.
+ * Plugins can extend this interface via `declare module '@chronos/core'`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface CustomSlotMap {}
+
+/** Complete slot contract map combining standard and custom slots */
+export type ChronosSlotMap = StandardSlotMap & CustomSlotMap;

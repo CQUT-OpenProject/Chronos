@@ -1,5 +1,5 @@
 import type { Disposable } from '../types/services';
-import type { StandardSlotMap } from '../types/slots';
+import type { ChronosSlotMap } from '../types/slots';
 
 export class HierarchicalSlotRegistry implements Disposable {
 	private slots = new Map<string, Map<string, unknown>>();
@@ -7,9 +7,9 @@ export class HierarchicalSlotRegistry implements Disposable {
 
 	constructor(private onSlotsChangedCallback?: () => void) {}
 
-	register<K extends keyof StandardSlotMap>(
+	register<K extends keyof ChronosSlotMap>(
 		slotName: K,
-		contribution: StandardSlotMap[K] & { id: string }
+		contribution: ChronosSlotMap[K] & { id: string }
 	): Disposable {
 		const key = String(slotName);
 		if (!this.slots.has(key)) {
@@ -29,18 +29,18 @@ export class HierarchicalSlotRegistry implements Disposable {
 		};
 	}
 
-	get<K extends keyof StandardSlotMap>(slotName: K): Array<StandardSlotMap[K]> {
+	get<K extends keyof ChronosSlotMap>(slotName: K): Array<ChronosSlotMap[K]> {
 		const group = this.slots.get(String(slotName));
 		if (!group) return [];
-		const list = Array.from(group.values()) as Array<StandardSlotMap[K] & { order?: number }>;
+		const list = Array.from(group.values()) as Array<ChronosSlotMap[K] & { order?: number }>;
 		return list.sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
 	}
 
-	getSlotItem<K extends keyof StandardSlotMap>(
+	getSlotItem<K extends keyof ChronosSlotMap>(
 		slotName: K,
 		id: string
-	): StandardSlotMap[K] | undefined {
-		return this.slots.get(String(slotName))?.get(id) as StandardSlotMap[K] | undefined;
+	): ChronosSlotMap[K] | undefined {
+		return this.slots.get(String(slotName))?.get(id) as ChronosSlotMap[K] | undefined;
 	}
 
 	onChanged(listener: () => void): Disposable {

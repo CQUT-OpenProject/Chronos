@@ -44,6 +44,10 @@ export const shareCodecPlugin: ChronosPlugin = {
 	name: () => '课表 JSON 备份与分享编解码器',
 	version: '1.0.0',
 	description: () => '支持 Chronos 课表 JSON 备份文件的导入与导出',
+	category: 'codec',
+	order: 30,
+	author: 'CQUT OpenProject',
+	homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 
 	apply(ctx: ChronosContext) {
 		async function doImport(inputs: Record<string, unknown>): Promise<Timetable> {

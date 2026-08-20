@@ -188,6 +188,10 @@ export const htmlParserPlugin: ChronosPlugin = {
 	name: () => '通用教务 HTML 解析器',
 	version: '1.0.0',
 	description: () => '解析国内高校教务系统导出的 HTML 课表文件',
+	category: 'parser',
+	order: 20,
+	author: 'CQUT OpenProject',
+	homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 
 	apply(ctx: ChronosContext) {
 		async function doImport(inputs: Record<string, unknown>): Promise<Timetable> {
