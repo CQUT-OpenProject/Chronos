@@ -1,10 +1,11 @@
 import type { AppShellController } from '$lib/app/app-shell.svelte';
+import { DEFAULT_CQUT_CAMPUS_ID, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import { currentWeekMonday, defaultPeriodTimes } from '$lib/models/defaults';
-import type { Timetable } from '$lib/models/timetable';
+import { TimetableImportSource, type Timetable } from '$lib/models/timetable';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import { trackEvent } from '$lib/client/analytics';
-import { toSettingsDraft } from '$lib/timetable/timetable-mappers';
+import { applyCampusPeriodTimes, toSettingsDraft } from '$lib/timetable/timetable-mappers';
 import { getAppController } from '$lib/services/app-engine';
 
 const timeProvider = new SystemTimeProvider();
@@ -36,6 +37,16 @@ export class TimetableDetailsEditor {
 		return Boolean(this.draft);
 	}
 
+	get selectedCampus(): CqutCampusId | null {
+		return this.draft?.importMetadata.campusId ?? null;
+	}
+
+	selectCampus = (campusId: CqutCampusId) => {
+		if (!this.draft) return;
+		const applied = applyCampusPeriodTimes(this.draft, campusId);
+		this.missingCampusMessage = applied ? null : '请重新导入课表以获取该校区节次时间';
+	};
+
 	save = async () => {
 		const timetable = this.shell.state.appState.currentTimetable;
 		if (!timetable || !this.draft) return;
@@ -43,7 +54,13 @@ export class TimetableDetailsEditor {
 		await controller.saveCurrentTimetableDetails({
 			name: this.draft.name,
 			academicConfig: this.draft.academicConfig,
-			viewPrefs: this.draft.viewPrefs
+			viewPrefs: this.draft.viewPrefs,
+			importMetadata: this.draft.importMetadata?.source
+				? {
+						source: this.draft.importMetadata.source,
+						campusId: this.draft.importMetadata.campusId
+					}
+				: undefined
 		});
 		trackEvent('timetable_details_save');
 		this.onDone();
@@ -67,6 +84,15 @@ export class TimetableDetailsEditor {
 			showSunday: true,
 			showNonCurrentWeekCourses: true
 		};
+
+		if (this.draft.importMetadata.source === TimetableImportSource.ONLINE_EDU) {
+			const applied = applyCampusPeriodTimes(this.draft, DEFAULT_CQUT_CAMPUS_ID);
+			this.missingCampusMessage = applied ? null : '请重新导入课表以获取该校区节次时间';
+			if (!applied) {
+				this.resetAcademicConfigToDefaults(today);
+			}
+			return;
+		}
 
 		this.resetAcademicConfigToDefaults(today);
 	};

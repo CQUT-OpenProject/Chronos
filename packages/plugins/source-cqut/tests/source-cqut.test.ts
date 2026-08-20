@@ -127,19 +127,80 @@ describe('cqutPlugin', () => {
 		const timetable = await sourceSlot!.executeImport(
 			{
 				username: '123456',
-				password: 'password',
-				campusId: 'huaxi'
+				password: 'password'
 			},
 			ctx
 		);
 
+		expect(env.http.request).toHaveBeenCalledWith(
+			'https://authserver.cqut.edu.cn/authserver/login',
+			expect.objectContaining({
+				method: 'POST',
+				bypassCors: true,
+				body: expect.stringContaining('username=123456')
+			})
+		);
 		expect(timetable.name).toBe('张三的课表');
 		expect(timetable.courses.length).toBe(1);
 		expect(timetable.courses[0]?.name).toBe('高等数学');
+		expect(timetable.importMetadata?.source).toBe('ONLINE_EDU');
+		expect(timetable.importMetadata?.campusId).toBe('huaxi');
 		expect(timetable.customMetadata?.['source-cqut']).toBeDefined();
 
 		handle.dispose();
 		expect(engine.slots.getSlotItem('import.source.tab', 'cqut-online')).toBeUndefined();
+	});
+
+	it('executes import with adapter-unwrapped online schedule payload', async () => {
+		const adapterPayload = {
+			campusId: 'huaxi',
+			campusPeriodTimes: {
+				huaxi: [{ index: 1, startTime: '08:30', endTime: '09:15' }]
+			},
+			payload: {
+				yearTerm: '2025-2026-2',
+				weekNum: '1',
+				termStartDate: null,
+				weekDayList: [{ weekDay: '1', weekDate: '03/02' }],
+				eventList: [
+					{
+						eventName: '高等数学A',
+						memberName: '王教授',
+						address: '花溪校区 第三教学楼301',
+						weekDay: '1',
+						sessionStart: '1',
+						sessionLast: '2',
+						weekList: ['1', '2', '3', '4']
+					}
+				]
+			}
+		};
+		const httpResponse: HttpResponse = {
+			status: 200,
+			statusText: 'OK',
+			ok: true,
+			headers: {},
+			text: async () => JSON.stringify(adapterPayload),
+			json: async <T = unknown>() => adapterPayload as T,
+			bytes: async () => new Uint8Array()
+		};
+		const env = createMockEnv(httpResponse);
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+		await engine.loadPlugin(cqutPlugin);
+
+		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'cqut-online')!;
+		const ctx = engine.getPluginContext('source-cqut');
+		const timetable = await sourceSlot.executeImport(
+			{ username: '2024002', password: 'secret' },
+			ctx
+		);
+
+		expect(timetable.courses.length).toBe(1);
+		expect(timetable.courses[0]?.name).toBe('高等数学A');
+		expect(timetable.academicConfig.termStartDate).toBe('2026-03-02');
+		expect(timetable.importMetadata?.source).toBe('ONLINE_EDU');
+		expect(timetable.importMetadata?.campusId).toBe('huaxi');
 	});
 
 	it('throws error when credentials missing', async () => {
@@ -217,11 +278,15 @@ describe('cqutPlugin', () => {
 		expect(timetable.academicConfig.termStartDate).toBe('2026-03-02');
 		expect(timetable.courses.length).toBe(1);
 		expect(timetable.courses[0]?.name).toBe('高等数学A');
+		expect(timetable.courses[0]?.color).toBeDefined();
+		expect(timetable.courses[0]?.textColor).toBeDefined();
 		expect(timetable.courses[0]?.teacher).toBe('王教授');
 		expect(timetable.courses[0]?.location).toBe('花溪校区 第三教学楼301');
 		expect(timetable.courses[0]?.dayOfWeek).toBe(1);
 		expect(timetable.courses[0]?.startPeriod).toBe(1);
 		expect(timetable.courses[0]?.endPeriod).toBe(2);
 		expect(timetable.courses[0]?.weeks).toEqual([1, 2, 3, 4]);
+		expect(timetable.viewPrefs.showSaturday).toBe(false);
+		expect(timetable.viewPrefs.showSunday).toBe(false);
 	});
 });

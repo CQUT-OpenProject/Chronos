@@ -12,10 +12,7 @@
 		},
 		{
 			"id": "source-cqut",
-			"enabled": true,
-			"config": {
-				"campusId": "liangjiang"
-			}
+			"enabled": true
 		},
 		{
 			"id": "codec-share",

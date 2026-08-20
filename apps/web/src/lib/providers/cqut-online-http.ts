@@ -20,6 +20,22 @@ function extractCredentials(body: HttpRequestOptions['body']): {
 	if (typeof body !== 'string') {
 		return { account: '', password: '' };
 	}
+	const trimmed = body.trim();
+	if (trimmed.startsWith('{')) {
+		try {
+			const json = JSON.parse(trimmed) as {
+				username?: string;
+				account?: string;
+				password?: string;
+			};
+			return {
+				account: (json.username || json.account || '').trim(),
+				password: json.password ?? ''
+			};
+		} catch {
+			return { account: '', password: '' };
+		}
+	}
 	const searchParams = new URLSearchParams(body);
 	return {
 		account: searchParams.get('username') || searchParams.get('account') || '',

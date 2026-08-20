@@ -1,5 +1,11 @@
 import type { Timetable, Course } from '@chronos/core';
-import { createCourse, createTimetable, defineSchema } from '@chronos/core';
+import {
+	createCourse,
+	createTimetable,
+	defineSchema,
+	coursePalette,
+	normalizedCourseName
+} from '@chronos/core';
 import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from './campus-period-times';
 
 const WHITESPACE_REGEX = /\s+/g;
@@ -159,15 +165,20 @@ export function parseHtmlTimetable(
 				metadata.set(key, existing ? `${existing}, ${val}` : val);
 			});
 
+			const normalizedName = normalizedCourseName(rawTitle);
+			const [color, textColor] = coursePalette(normalizedName);
+
 			courses.push(
 				createCourse({
 					id: `html-${dayOfWeek}-${startPeriod}-${endPeriod}-${blockIndex}-${courses.length}`,
-					name: rawTitle,
+					name: normalizedName,
 					teacher: metadata.get('教师') ?? '',
 					location: metadata.get('上课地点') ?? '',
 					dayOfWeek,
 					startPeriod,
 					endPeriod,
+					color,
+					textColor,
 					weeks: parseWeeks(metadata.get('节/周') ?? '')
 				})
 			);

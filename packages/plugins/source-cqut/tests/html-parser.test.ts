@@ -84,12 +84,16 @@ describe('cqut html parser', () => {
 
 		const course = timetable.courses[0]!;
 		expect(course.name).toBe('线性代数');
+		expect(course.color).toBeDefined();
+		expect(course.textColor).toBeDefined();
 		expect(course.teacher).toBe('赵老师');
 		expect(course.location).toBe('二教302');
 		expect(course.dayOfWeek).toBe(1);
 		expect(course.startPeriod).toBe(1);
 		expect(course.endPeriod).toBe(2);
 		expect(course.weeks).toEqual([1, 3, 5, 7, 9, 11, 13, 15]);
+		expect(timetable.viewPrefs.showSaturday).toBe(false);
+		expect(timetable.viewPrefs.showSunday).toBe(false);
 	});
 
 	it('loads cqut plugin and registers edu-html import tab', async () => {

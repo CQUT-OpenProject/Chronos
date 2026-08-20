@@ -22,7 +22,9 @@ export interface IImportSessionCoordinator {
 	confirmImport(
 		preview: Timetable,
 		previewSource: TransferImportSource,
-		importMode: ImportMode
+		importMode: ImportMode,
+		htmlImportTermStartDate?: string | null,
+		htmlImportCampusId?: CqutCampusId | null
 	): Promise<ImportOutcome>;
 	getExportMetadata(): Promise<{ timetableName: string | null; longLinkWarning: boolean }>;
 }

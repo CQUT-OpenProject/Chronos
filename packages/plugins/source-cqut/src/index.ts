@@ -11,6 +11,8 @@ import {
 	defineSchema,
 	createCourse,
 	createTimetable,
+	coursePalette,
+	normalizedCourseName,
 	IHttpService,
 	IVaultService
 } from '@chronos/core';
@@ -23,41 +25,12 @@ export { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES } from './campus-period-times';
 const CQUT_PASSWORD_SECRET_KEY = 'source-cqut:password';
 const CQUT_USERNAME_STORAGE_KEY = 'source-cqut:username';
 
-export interface CqutPluginConfig {
-	campusId: CqutCampusId;
-	autoSyncOnLaunch: boolean;
-	customAuthUrl: string;
-}
-
 export interface CqutImportForm {
 	username?: string;
 	account?: string;
 	password?: string;
-	campusId: CqutCampusId;
 	saveCredentials?: boolean;
 }
-
-export const cqutConfigSchema = defineSchema<CqutPluginConfig>({
-	campusId: {
-		type: 'select',
-		title: () => '就读校区',
-		default: 'huaxi',
-		options: [
-			{ label: () => '花溪校区', value: 'huaxi' },
-			{ label: () => '两江校区', value: 'liangjiang' }
-		]
-	},
-	autoSyncOnLaunch: {
-		type: 'boolean',
-		title: () => '启动时自动同步课表',
-		default: false
-	},
-	customAuthUrl: {
-		type: 'string',
-		title: () => '统一身份认证地址',
-		default: 'https://authserver.cqut.edu.cn/authserver/login'
-	}
-});
 
 export const cqutImportSchema = defineSchema<CqutImportForm>({
 	username: {
@@ -71,15 +44,6 @@ export const cqutImportSchema = defineSchema<CqutImportForm>({
 		title: () => '统一认证密码',
 		placeholder: () => '请输入统一身份认证密码',
 		required: true
-	},
-	campusId: {
-		type: 'select',
-		title: () => '所在校区',
-		default: 'huaxi',
-		options: [
-			{ label: () => '花溪校区', value: 'huaxi' },
-			{ label: () => '两江校区', value: 'liangjiang' }
-		]
 	},
 	saveCredentials: {
 		type: 'boolean',
@@ -219,33 +183,43 @@ export function parseCqutScheduleData(
 					...new Set((event.weekList || []).map((w) => Number(w)).filter((w) => !Number.isNaN(w)))
 				].sort((a, b) => a - b);
 
+				const eventName = event.eventName.trim();
+				const normalizedName = normalizedCourseName(eventName);
+				const [color, textColor] = coursePalette(normalizedName);
+
 				return createCourse({
 					id: event.eventID?.trim() || `cqut-${dayOfWeek}-${startPeriod}-${endPeriod}-${idx}`,
-					name: event.eventName.trim(),
+					name: normalizedName,
 					teacher: event.memberName?.trim() ?? '',
 					location: event.address?.trim() ?? '',
 					dayOfWeek,
 					startPeriod,
 					endPeriod: Math.max(startPeriod, endPeriod),
+					color,
+					textColor,
 					weeks,
 					remark: event.remark?.trim() ?? ''
 				});
 			})
 			.filter((c): c is Course => c !== null);
 	} else if (rawData.courses && Array.isArray(rawData.courses)) {
-		courses = rawData.courses.map((item, idx) =>
-			createCourse({
+		courses = rawData.courses.map((item, idx) => {
+			const normalizedName = normalizedCourseName(item.courseName);
+			const [color, textColor] = coursePalette(normalizedName);
+			return createCourse({
 				id: `cqut-${item.dayOfWeek}-${item.startPeriod}-${item.endPeriod}-${idx}`,
-				name: item.courseName,
+				name: normalizedName,
 				teacher: item.teacherName ?? '',
 				location: item.roomName ?? '',
 				dayOfWeek: item.dayOfWeek,
 				startPeriod: item.startPeriod,
 				endPeriod: item.endPeriod,
+				color,
+				textColor,
 				weeks: item.weeks,
 				remark: item.remark ?? ''
-			})
-		);
+			});
+		});
 	}
 
 	const resolvedCampusId = (rawData.campusId as CqutCampusId) || fallbackCampusId;
@@ -275,29 +249,32 @@ export function parseCqutScheduleData(
 		name: timetableName,
 		courses,
 		academicConfig,
+		viewPrefs: {
+			showSaturday: courses.some((c) => c.dayOfWeek === 6),
+			showSunday: courses.some((c) => c.dayOfWeek === 7),
+			showNonCurrentWeekCourses: false
+		},
+		importMetadata: {
+			source: 'ONLINE_EDU',
+			campusId: resolvedCampusId
+		},
 		customMetadata
 	});
 }
 
-export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
+export const cqutPlugin: ChronosPlugin = {
 	id: 'source-cqut',
-	name: () => '重庆理工大学教务',
+	name: () => 'CQUT Schedule',
 	version: '1.0.0',
-	description: () => '从知行理工在线导入课表，并适配各校区上课时间',
+	description: () => '知行理工课表导入与校区作息适配',
 	category: 'source',
 	order: 10,
 	author: 'CQUT OpenProject',
 	homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 	permissions: ['network', 'storage'],
 	allowedDomains: ['authserver.cqut.edu.cn', 'uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'],
-	configSchema: cqutConfigSchema,
-	defaultConfig: {
-		campusId: 'huaxi',
-		autoSyncOnLaunch: false,
-		customAuthUrl: 'https://authserver.cqut.edu.cn/authserver/login'
-	},
 
-	apply(ctx: ChronosContext<CqutPluginConfig>) {
+	apply(ctx: ChronosContext) {
 		async function saveCredentialsIfRequested(
 			username: string,
 			password: string,
@@ -322,7 +299,6 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			const form = inputs as unknown as CqutImportForm;
 			const username = (form.username || form.account)?.trim();
 			const password = form.password;
-			const campusId = form.campusId;
 
 			if (!username || !password?.trim()) {
 				throw new Error('请输入学号与密码');
@@ -331,15 +307,12 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			activeCtx.actions.notify('正在连接知行理工...', 'info');
 
 			const http = activeCtx.service(IHttpService);
-			const configObj = activeCtx.config as unknown as CqutPluginConfig | undefined;
-			const response = await http.request('/api/cqut/preview', {
+			const response = await http.request('https://authserver.cqut.edu.cn/authserver/login', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					username,
-					password,
-					campusId: campusId || configObj?.campusId || 'huaxi'
-				}),
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+				useSession: true,
+				sessionId: `cqut-${username}`,
 				bypassCors: true
 			});
 
@@ -357,11 +330,7 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			}
 
 			const parsedJson = (await response.json()) as CqutScheduleRawInput;
-			const timetable = parseCqutScheduleData(
-				parsedJson,
-				username,
-				campusId || configObj?.campusId || 'huaxi'
-			);
+			const timetable = parseCqutScheduleData(parsedJson, username, 'huaxi');
 			await saveCredentialsIfRequested(username, password, form.saveCredentials, activeCtx);
 			return timetable;
 		}
@@ -390,7 +359,6 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			order: 10,
 			inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 			defaultInput: {
-				campusId: ctx.config.campusId || 'huaxi',
 				saveCredentials: false
 			},
 			executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
@@ -403,7 +371,7 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			order: 30,
 			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 			defaultInput: {
-				campusId: ctx.config.campusId || 'huaxi'
+				campusId: 'huaxi'
 			},
 			executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
 		});

@@ -4,6 +4,7 @@ import { checkPreviewRateLimit } from '$lib/server/cqut-online/preview-rate-limi
 
 interface PreviewRequestBody {
 	account?: string;
+	username?: string;
 	password?: string;
 	encryptedPassword?: string;
 	weekNum?: string | null;
@@ -38,7 +39,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		);
 	}
 
-	const account = body.account?.trim() ?? '';
+	const account = (body.account ?? body.username)?.trim() ?? '';
 	const password = (body.password ?? body.encryptedPassword)?.trim() ?? '';
 	if (!account || !password) {
 		return json(

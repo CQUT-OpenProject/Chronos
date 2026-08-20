@@ -51,7 +51,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 					const wallpaperUri = deps.shell.state.appState.wallpaperUri;
 					const activeThemeId = deps.shell.controller.activeThemeId;
 
-					applyActiveTheme(getAppEngine(), activeThemeId, isDark);
+					applyActiveTheme(getAppEngine(), activeThemeId, isDark, { paletteMode });
 
 					const ac = new AbortController();
 					void deps.shell.appearance.apply(

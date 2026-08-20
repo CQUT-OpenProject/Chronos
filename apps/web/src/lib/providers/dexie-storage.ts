@@ -15,7 +15,8 @@ const SETTINGS_KEYS = {
 	timetableLayoutMode: 'chronos_preferences:timetable_layout_mode',
 	paletteMode: 'chronos_preferences:palette_mode',
 	capsuleCornerStyle: 'chronos_preferences:capsule_corner_style',
-	hapticFeedbackEnabled: 'chronos_preferences:haptic_feedback_enabled'
+	hapticFeedbackEnabled: 'chronos_preferences:haptic_feedback_enabled',
+	visualThemeId: 'chronos_preferences:visual_theme_id'
 } as const;
 
 const WALLPAPER_ID = 'default';
@@ -206,6 +207,8 @@ export class DexieStorageProvider implements IStorageService {
 		);
 		const hapticRaw = this.localStore.getItem(SETTINGS_KEYS.hapticFeedbackEnabled);
 		const hapticFeedbackEnabled = hapticRaw !== '0' && hapticRaw !== 'false';
+		const visualThemeId =
+			this.localStore.getItem(SETTINGS_KEYS.visualThemeId)?.trim() || 'm3-default';
 
 		return {
 			schemaVersion: CURRENT_PREFERENCES_SCHEMA_VERSION,
@@ -213,7 +216,8 @@ export class DexieStorageProvider implements IStorageService {
 			paletteMode,
 			timetableLayoutMode,
 			capsuleCornerStyle,
-			hapticFeedbackEnabled
+			hapticFeedbackEnabled,
+			visualThemeId
 		};
 	}
 
@@ -237,6 +241,9 @@ export class DexieStorageProvider implements IStorageService {
 				SETTINGS_KEYS.hapticFeedbackEnabled,
 				patch.hapticFeedbackEnabled ? '1' : '0'
 			);
+		}
+		if (patch.visualThemeId !== undefined) {
+			this.localStore.setItem(SETTINGS_KEYS.visualThemeId, patch.visualThemeId);
 		}
 
 		this.notifyChange({ type: 'preferences', key: 'preferences' });

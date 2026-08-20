@@ -244,6 +244,68 @@ describe('Web Providers', () => {
 		}).not.toThrow();
 	});
 
+	it('CqutOnlineHttpAdapter unwraps preview API envelope for cqut.edu.cn requests', async () => {
+		const inner = new WebHttpProxyProvider();
+		const adapter = new CqutOnlineHttpAdapter(inner);
+		const fetchPayload = {
+			payload: {
+				eventList: [{ eventName: '测试课程' }]
+			},
+			campusId: 'huaxi',
+			campusPeriodTimes: { huaxi: [] }
+		};
+		const fetchMock = vi.fn(async () => ({
+			ok: true,
+			status: 200,
+			json: async () => ({ ok: true, payload: fetchPayload })
+		}));
+		vi.stubGlobal('window', {});
+		vi.stubGlobal('fetch', fetchMock);
+
+		const response = await adapter.request('https://authserver.cqut.edu.cn/authserver/login', {
+			method: 'POST',
+			bypassCors: true,
+			body: 'username=stu001&password=pass123'
+		});
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			'/api/cqut/preview',
+			expect.objectContaining({
+				method: 'POST',
+				body: JSON.stringify({ account: 'stu001', password: 'pass123' })
+			})
+		);
+		const json = await response.json();
+		expect(json).toEqual(fetchPayload);
+		vi.unstubAllGlobals();
+	});
+
+	it('CqutOnlineHttpAdapter extracts credentials from JSON body', async () => {
+		const inner = new WebHttpProxyProvider();
+		const adapter = new CqutOnlineHttpAdapter(inner);
+		const fetchMock = vi.fn(async () => ({
+			ok: true,
+			status: 200,
+			json: async () => ({ ok: true, payload: {} })
+		}));
+		vi.stubGlobal('window', {});
+		vi.stubGlobal('fetch', fetchMock);
+
+		await adapter.request('https://uis.cqut.edu.cn/api', {
+			method: 'POST',
+			bypassCors: true,
+			body: JSON.stringify({ username: 'json-user', password: 'json-pass' })
+		});
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			'/api/cqut/preview',
+			expect.objectContaining({
+				body: JSON.stringify({ account: 'json-user', password: 'json-pass' })
+			})
+		);
+		vi.unstubAllGlobals();
+	});
+
 	it('createWebProviders instantiates all web providers', () => {
 		const providers = createWebProviders({ database: db, localStorage, enableCqutProxy: true });
 		expect(providers.storage).toBeInstanceOf(DexieStorageProvider);
