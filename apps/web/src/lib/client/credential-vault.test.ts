@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { createWebAuthnSecureCredentialStore } from '$lib/client/webauthn-secure-credential-store';
+import { createCredentialVault } from '$lib/client/credential-vault';
 import {
 	readOnlineCredentialRecord,
 	writeOnlineCredentialRecord
 } from '$lib/storage/online-credential-record';
 import * as prfCrypto from '$lib/client/webauthn/prf-crypto';
 import { bytesToBase64 } from '$lib/client/webauthn/binary';
+import { WebAuthnCredentialUnavailableError } from '$lib/client/webauthn/prf-coordinator';
 
 const mockCredentialEnvironment = vi.hoisted(() => ({
 	prfAvailable: false,
@@ -35,7 +36,7 @@ function createMemoryStorage(): Storage {
 	} as Storage;
 }
 
-describe('WebAuthnSecureCredentialStore', () => {
+describe('CredentialVault', () => {
 	let storage: Storage;
 
 	beforeEach(() => {
@@ -49,22 +50,22 @@ describe('WebAuthnSecureCredentialStore', () => {
 
 	it('saves account-only credential when PRF is unavailable', async () => {
 		mockCredentialEnvironment.prfAvailable = false;
-		const store = createWebAuthnSecureCredentialStore(storage);
+		const vault = createCredentialVault({ storage });
 
-		const result = await store.saveCredential('20240101', '', '');
+		const result = await vault.save('20240101', 'password123');
 		expect(result.ok).toBe(true);
 
 		const record = readOnlineCredentialRecord(storage);
 		expect(record).toEqual({ mode: 'account_only', account: '20240101' });
 
 		let observedAccount: string | null = null;
-		store.subscribeSavedCredentialState((state) => {
+		vault.subscribe((state) => {
 			observedAccount = state.account;
 		});
 		expect(observedAccount).toBe('20240101');
 	});
 
-	it('saves encrypted credential when PRF unlock token is provided', async () => {
+	it('saves encrypted credential when PRF is available', async () => {
 		mockCredentialEnvironment.prfAvailable = true;
 		vi.spyOn(prfCrypto, 'deriveAesKey').mockResolvedValue({} as CryptoKey);
 		vi.spyOn(prfCrypto, 'encryptPayload').mockResolvedValue({
@@ -72,35 +73,32 @@ describe('WebAuthnSecureCredentialStore', () => {
 			ciphertext: 'ciphertext'
 		});
 
-		const store = createWebAuthnSecureCredentialStore(storage);
-		const prepare = await store.prepareSave();
-		expect(prepare.ok).toBe(true);
+		const createPrf = vi.fn().mockResolvedValue({
+			credentialId: 'cred-123',
+			prfOutput: bytesToBase64(new Uint8Array([1, 2, 3, 4]))
+		});
 
-		const prfToken = bytesToBase64(new Uint8Array([1, 2, 3, 4]));
-		const saveResult = await store.saveCredential(
-			'20240101',
-			'secret',
-			JSON.stringify({ prf: prfToken, credentialId: 'credential-id' })
-		);
+		const vault = createCredentialVault({ storage, createPrf });
+		const saveResult = await vault.save('20240101', 'secret');
 		expect(saveResult.ok).toBe(true);
 
 		const record = readOnlineCredentialRecord(storage);
 		expect(record).toMatchObject({
 			mode: 'prf',
 			account: '20240101',
-			credentialId: 'credential-id',
+			credentialId: 'cred-123',
 			iv: 'iv',
 			ciphertext: 'ciphertext'
 		});
 	});
 
-	it('unlocks encrypted credential with PRF token', async () => {
+	it('unlocks encrypted credential with PRF output', async () => {
 		writeOnlineCredentialRecord(
 			{
 				mode: 'prf',
 				account: '20240101',
-				credentialId: 'credential-id',
-				salt: 'salt',
+				credentialId: 'cred-123',
+				salt: bytesToBase64(new Uint8Array(32)),
 				iv: 'iv',
 				ciphertext: 'ciphertext'
 			},
@@ -111,10 +109,10 @@ describe('WebAuthnSecureCredentialStore', () => {
 		vi.spyOn(prfCrypto, 'deriveAesKey').mockResolvedValue({} as CryptoKey);
 		vi.spyOn(prfCrypto, 'decryptPayload').mockResolvedValue(new TextEncoder().encode('secret'));
 
-		const store = createWebAuthnSecureCredentialStore(storage);
-		const unlock = await store.unlockCredential(
-			JSON.stringify({ prf: bytesToBase64(new Uint8Array([9, 8, 7])) })
-		);
+		const getPrf = vi.fn().mockResolvedValue(bytesToBase64(new Uint8Array([9, 8, 7])));
+
+		const vault = createCredentialVault({ storage, getPrf });
+		const unlock = await vault.unlock();
 
 		expect(unlock.ok).toBe(true);
 		if (unlock.ok) {
@@ -122,11 +120,33 @@ describe('WebAuthnSecureCredentialStore', () => {
 		}
 	});
 
+	it('automatically clears credential when WebAuthn credential is unavailable', async () => {
+		writeOnlineCredentialRecord(
+			{
+				mode: 'prf',
+				account: '20240101',
+				credentialId: 'cred-invalid',
+				salt: bytesToBase64(new Uint8Array(32)),
+				iv: 'iv',
+				ciphertext: 'ciphertext'
+			},
+			storage
+		);
+
+		const getPrf = vi.fn().mockRejectedValue(new WebAuthnCredentialUnavailableError());
+
+		const vault = createCredentialVault({ storage, getPrf });
+		const unlock = await vault.unlock();
+
+		expect(unlock.ok).toBe(false);
+		expect(readOnlineCredentialRecord(storage)).toBeNull();
+	});
+
 	it('clears stored credential', async () => {
 		writeOnlineCredentialRecord({ mode: 'account_only', account: '20240101' }, storage);
-		const store = createWebAuthnSecureCredentialStore(storage);
+		const vault = createCredentialVault({ storage });
 
-		const result = await store.clearCredential();
+		const result = await vault.clear();
 		expect(result.ok).toBe(true);
 		expect(readOnlineCredentialRecord(storage)).toBeNull();
 	});

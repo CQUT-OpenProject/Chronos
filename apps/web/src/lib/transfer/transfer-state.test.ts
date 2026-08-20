@@ -5,8 +5,7 @@ import {
 	saveCredentialsLabel
 } from './transfer-state.svelte';
 import type { SavedCredentialState } from '$lib/models/auth';
-import type { CredentialServices } from '$lib/client/credential-services';
-import type { SecureCredentialStore } from '$lib/client/webauthn-secure-credential-store';
+import type { CredentialVault } from '$lib/client/credential-vault';
 
 describe('createTransferState', () => {
 	let mockStorage: Record<string, string> = {};
@@ -25,13 +24,23 @@ describe('createTransferState', () => {
 	});
 
 	it('clears preview from memory and sessionStorage when clearPreview is called', () => {
-		const mockCredentialServices = {
-			secureCredentialStore: {
-				subscribeSavedCredentialState: () => () => {}
-			} as unknown as SecureCredentialStore
-		} satisfies CredentialServices;
+		const mockVault = {
+			subscribe: () => () => {},
+			save: async () => ({ ok: true, value: undefined }),
+			unlock: async () => ({ ok: true, value: { account: 'test', password: 'pwd' } }),
+			clear: async () => ({ ok: true, value: undefined }),
+			get state() {
+				return {
+					account: null,
+					hasSavedCredential: false,
+					protectionAvailable: false,
+					capabilitiesReady: true,
+					savedMode: null
+				};
+			}
+		} as unknown as CredentialVault;
 
-		const controller = createTransferState(mockCredentialServices);
+		const controller = createTransferState(mockVault);
 
 		mockStorage['chronos:import-preview'] = JSON.stringify({ name: 'Test' });
 		mockStorage['chronos:import-preview-source'] = 'SHARE_LINK';
@@ -46,13 +55,23 @@ describe('createTransferState', () => {
 	});
 
 	it('clears sessionStorage when clearPersistedPreview is called', () => {
-		const mockCredentialServices = {
-			secureCredentialStore: {
-				subscribeSavedCredentialState: () => () => {}
-			} as unknown as SecureCredentialStore
-		} satisfies CredentialServices;
+		const mockVault = {
+			subscribe: () => () => {},
+			save: async () => ({ ok: true, value: undefined }),
+			unlock: async () => ({ ok: true, value: { account: 'test', password: 'pwd' } }),
+			clear: async () => ({ ok: true, value: undefined }),
+			get state() {
+				return {
+					account: null,
+					hasSavedCredential: false,
+					protectionAvailable: false,
+					capabilitiesReady: true,
+					savedMode: null
+				};
+			}
+		} as unknown as CredentialVault;
 
-		const controller = createTransferState(mockCredentialServices);
+		const controller = createTransferState(mockVault);
 
 		mockStorage['chronos:import-preview'] = JSON.stringify({ name: 'Test' });
 		mockStorage['chronos:import-preview-source'] = 'SHARE_LINK';

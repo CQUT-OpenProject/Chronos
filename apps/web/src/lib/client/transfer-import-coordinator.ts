@@ -4,12 +4,6 @@ import type { CqutCampusId } from '$lib/models/cqut-campus';
 import { getCampusDefaultPeriodTimes } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import {
-	createPrfCredential,
-	getPrfOutput,
-	WebAuthnCredentialUnavailableError
-} from '$lib/client/webauthn/prf-coordinator';
-import { base64ToBytes } from '$lib/client/webauthn/binary';
-import {
 	createSessionPreviewPersistence,
 	type PreviewPersistence,
 	type PreviewSnapshot,
@@ -19,10 +13,7 @@ import { getAppEngine } from '$lib/services/app-engine';
 import { ChronosTimetableShareLinkCodec } from '$lib/parsers/share-link/chronos-timetable-share-link-codec';
 import { parseHtmlTimetable } from '@chronos/plugin-parser-html';
 import { parseCqutScheduleData } from '@chronos/plugin-source-cqut';
-import {
-	type SecureCredentialStore,
-	WebAuthnSecureCredentialStore
-} from './webauthn-secure-credential-store';
+import { type CredentialVault, createCredentialVault } from './credential-vault';
 import { SHARE_LINK_WARNING_LENGTH } from '$lib/parsers/share-link/chronos-share-link-codec';
 import type { ChronosEngine } from '@chronos/core';
 
@@ -38,11 +29,6 @@ export function createNavigatorClipboardGateway(): ClipboardGateway {
 		readText: () => navigator.clipboard.readText(),
 		writeText: (text) => navigator.clipboard.writeText(text)
 	};
-}
-
-interface UnlockPreparePayload {
-	salt: string;
-	credentialId: string;
 }
 
 export type PreviewOutcome =
@@ -71,7 +57,7 @@ export type ClearCredentialOutcome =
 	| { ok: false; errorMessage: string };
 
 export interface TransferImportCoordinatorDeps {
-	secureCredentialStore?: SecureCredentialStore;
+	credentialVault?: CredentialVault;
 	previewPersistence?: PreviewPersistence;
 	clipboard?: ClipboardGateway;
 	shareLinkCodec?: ChronosTimetableShareLinkCodec;
@@ -79,7 +65,7 @@ export interface TransferImportCoordinatorDeps {
 }
 
 export function createTransferImportCoordinator({
-	secureCredentialStore = new WebAuthnSecureCredentialStore(),
+	credentialVault = createCredentialVault(),
 	previewPersistence = createSessionPreviewPersistence(),
 	clipboard = createNavigatorClipboardGateway(),
 	shareLinkCodec = new ChronosTimetableShareLinkCodec(),
@@ -156,42 +142,14 @@ export function createTransferImportCoordinator({
 	async function saveCredentialsIfNeeded(
 		trimmedAccount: string,
 		currentPassword: string,
-		saveCredentials: boolean,
-		savedCredentialState: SavedCredentialState
+		saveCredentials: boolean
 	): Promise<string | null> {
 		if (!saveCredentials) return null;
-
-		if (savedCredentialState.protectionAvailable) {
-			const prepareResult = await secureCredentialStore.prepareSave();
-			if (!prepareResult.ok) {
-				return prepareResult.error.message;
-			}
-
-			try {
-				const created = await createPrfCredential(base64ToBytes(prepareResult.value));
-				const saveResult = await secureCredentialStore.saveCredential(
-					trimmedAccount,
-					currentPassword,
-					JSON.stringify({
-						prf: created.prfOutput,
-						credentialId: created.credentialId
-					})
-				);
-				if (!saveResult.ok) {
-					return saveResult.error.message;
-				}
-			} catch (error) {
-				const message = error instanceof Error ? error.message : '已取消设备验证';
-				return message === 'WebAuthn verification was cancelled' ||
-					message === 'WebAuthn registration was cancelled'
-					? '已获取预览，未保存凭据'
-					: message;
-			}
-			return null;
-		}
-		const saveResult = await secureCredentialStore.saveCredential(trimmedAccount, '', '');
-		if (!saveResult.ok) {
-			return saveResult.error.message;
+		const result = await credentialVault.save(trimmedAccount, currentPassword);
+		if (!result.ok) {
+			return result.error.message === '已取消设备验证'
+				? '已获取预览，未保存凭据'
+				: result.error.message;
 		}
 		return null;
 	}
@@ -199,8 +157,7 @@ export function createTransferImportCoordinator({
 	async function previewOnline(
 		account: string,
 		password: string,
-		saveCredentials: boolean,
-		savedCredentialState: SavedCredentialState
+		saveCredentials: boolean
 	): Promise<OnlinePreviewOutcome> {
 		const trimmedAccount = account.trim();
 		if (!trimmedAccount || !password.trim()) {
@@ -250,8 +207,7 @@ export function createTransferImportCoordinator({
 			const statusMessage = await saveCredentialsIfNeeded(
 				trimmedAccount,
 				password,
-				saveCredentials,
-				savedCredentialState
+				saveCredentials
 			);
 
 			return {
@@ -273,54 +229,29 @@ export function createTransferImportCoordinator({
 			return { ok: false, errorMessage: '当前没有可用的已保存凭据' };
 		}
 
-		const prepareResult = await secureCredentialStore.prepareUnlock();
-		if (!prepareResult.ok) {
-			return { ok: false, errorMessage: prepareResult.error.message };
+		const unlockResult = await credentialVault.unlock();
+		if (!unlockResult.ok) {
+			return { ok: false, errorMessage: unlockResult.error.message };
 		}
 
-		try {
-			const payload = JSON.parse(prepareResult.value) as UnlockPreparePayload;
-			const prfOutput = await getPrfOutput(payload.salt, payload.credentialId);
-			const unlockResult = await secureCredentialStore.unlockCredential(
-				JSON.stringify({ prf: prfOutput })
-			);
-			if (!unlockResult.ok) {
-				return { ok: false, errorMessage: unlockResult.error.message };
-			}
-
-			const previewResult = await previewOnline(
-				unlockResult.value.account,
-				unlockResult.value.password,
-				false,
-				savedCredentialState
-			);
-			if (!previewResult.ok) {
-				return previewResult;
-			}
-
-			return {
-				...previewResult,
-				account: unlockResult.value.account,
-				password: unlockResult.value.password
-			};
-		} catch (error) {
-			if (error instanceof WebAuthnCredentialUnavailableError) {
-				await secureCredentialStore.clearCredential();
-				return {
-					ok: false,
-					errorMessage: '已保存凭据已失效，请重新录入账号和密码'
-				};
-			}
-			const message = error instanceof Error ? error.message : '已取消设备验证';
-			return {
-				ok: false,
-				errorMessage: message === 'WebAuthn verification was cancelled' ? '已取消设备验证' : message
-			};
+		const previewResult = await previewOnline(
+			unlockResult.value.account,
+			unlockResult.value.password,
+			false
+		);
+		if (!previewResult.ok) {
+			return previewResult;
 		}
+
+		return {
+			...previewResult,
+			account: unlockResult.value.account,
+			password: unlockResult.value.password
+		};
 	}
 
 	async function clearSavedCredential(): Promise<ClearCredentialOutcome> {
-		const result = await secureCredentialStore.clearCredential();
+		const result = await credentialVault.clear();
 		if (!result.ok) {
 			return { ok: false, errorMessage: result.error.message };
 		}

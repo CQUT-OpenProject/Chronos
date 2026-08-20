@@ -229,13 +229,7 @@ describe('createTransferImportCoordinator', () => {
 			engine: mockEngine
 		});
 
-		const result = await coordinator.previewOnline('123456', 'password', false, {
-			account: '123456',
-			capabilitiesReady: true,
-			hasSavedCredential: false,
-			protectionAvailable: false,
-			savedMode: null
-		});
+		const result = await coordinator.previewOnline('123456', 'password', false);
 
 		expect(result).toEqual({
 			ok: true,

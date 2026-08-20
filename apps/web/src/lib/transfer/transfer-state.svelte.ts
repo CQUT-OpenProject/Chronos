@@ -1,5 +1,4 @@
-import type { CredentialServices } from '$lib/client/credential-services';
-import { createCredentialServices } from '$lib/client/credential-services';
+import { type CredentialVault, createCredentialVault } from '$lib/client/credential-vault';
 import { createTransferImportCoordinator } from '$lib/client/transfer-import-coordinator';
 import type { TransferImportSource } from '$lib/client/preview-persistence';
 import type { SavedCredentialState } from '$lib/models/auth';
@@ -29,9 +28,7 @@ export interface TransferPreviewState {
 	statusMessage: string | null;
 }
 
-export function createTransferState(
-	credentialServices: CredentialServices = createCredentialServices()
-) {
+export function createTransferState(credentialVault: CredentialVault = createCredentialVault()) {
 	let selectedSource = $state<TransferImportSource>(onlineImportEnabled ? 'ONLINE' : 'SHARE_LINK');
 	let preview = $state<Timetable | null>(null);
 	let previewSource = $state<TransferImportSource | null>(null);
@@ -55,11 +52,11 @@ export function createTransferState(
 	const timeProvider = new SystemTimeProvider();
 
 	const coordinator = createTransferImportCoordinator({
-		secureCredentialStore: credentialServices.secureCredentialStore
+		credentialVault
 	});
 
 	$effect(() => {
-		return credentialServices.secureCredentialStore.subscribeSavedCredentialState((state) => {
+		return credentialVault.subscribe((state) => {
 			savedCredentialState = state;
 			if (state.account && account.trim() === '') {
 				account = state.account;
@@ -164,12 +161,7 @@ export function createTransferState(
 
 	async function previewOnline() {
 		clearMessages();
-		const result = await coordinator.previewOnline(
-			account,
-			password,
-			saveCredentials,
-			savedCredentialState
-		);
+		const result = await coordinator.previewOnline(account, password, saveCredentials);
 		if (!result.ok) {
 			errorMessage = result.errorMessage;
 			return false;
