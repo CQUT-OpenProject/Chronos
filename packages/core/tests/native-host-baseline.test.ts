@@ -162,15 +162,16 @@ describe('Native Host Baseline (iOS JSCore / Android QuickJS)', () => {
 		expect(engine.slots.getSlotItem('import.source.tab', 'share-link')).toBeDefined();
 		expect(engine.slots.getSlotItem('import.source.tab', 'cqut-online')).toBeDefined();
 		expect(engine.slots.getSlotItem('import.source.tab', 'edu-html')).toBeDefined();
-		expect(engine.slots.getSlotItem('import.source.tab', 'share-json')).toBeUndefined();
-		expect(engine.slots.getSlotItem('export.action', 'share-json')).toBeDefined();
+		expect(engine.slots.getSlotItem('export.action', 'share-link')).toBeDefined();
+		expect(engine.slots.getSlotItem('export.action', 'share-json')).toBeUndefined();
 
-		// 5. Verify JSON export via standard slot
-		const exportSlot = engine.slots.getSlotItem('export.action', 'share-json');
+		// 5. Verify share-link export via standard slot
+		const exportSlot = engine.slots.getSlotItem('export.action', 'share-link');
 		expect(exportSlot).toBeDefined();
 		const exported = await exportSlot!.export(engine.state.currentTimetable!);
-		expect(exported.filename).toBe('原生宿主课表.json');
-		expect(exported.content).toContain('高级移动应用开发');
+		expect(exported.filename).toBe('share-link.txt');
+		expect(exported.mimeType).toBe('application/x-chronos-share-link');
+		expect(exported.content).toContain('原生宿主课表');
 
 		// 6. Verify config update in native host environment
 		const cqutCtx = engine.getPluginContext('source-cqut');

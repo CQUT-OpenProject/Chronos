@@ -6,7 +6,7 @@ import {
 	type ChronosEnv,
 	type UserPreferences
 } from '@chronos/core';
-import { shareCodecPlugin, exportTimetableToJson, parseTimetableFromJson } from '../src/index';
+import { shareCodecPlugin } from '../src/index';
 
 function createMockEnv(): ChronosEnv {
 	return {
@@ -53,6 +53,12 @@ describe('shareCodecPlugin', () => {
 	const sampleTimetable = createTimetable({
 		id: 't1',
 		name: '计算机课表',
+		academicConfig: {
+			termStartDate: '2026-03-02',
+			startWeek: 1,
+			endWeek: 20,
+			periodTimes: []
+		},
 		courses: [
 			createCourse({
 				id: 'c1',
@@ -67,19 +73,6 @@ describe('shareCodecPlugin', () => {
 		]
 	});
 
-	it('exports and parses JSON timetable', () => {
-		const jsonStr = exportTimetableToJson(sampleTimetable);
-		expect(typeof jsonStr).toBe('string');
-		expect(jsonStr).toContain('计算机课表');
-		expect(jsonStr).toContain('操作系统');
-
-		const parsed = parseTimetableFromJson(jsonStr);
-		expect(parsed.id).toBe('t1');
-		expect(parsed.name).toBe('计算机课表');
-		expect(parsed.courses.length).toBe(1);
-		expect(parsed.courses[0]?.name).toBe('操作系统');
-	});
-
 	it('loads plugin and registers import.source.tab and export.action slots', async () => {
 		const env = createMockEnv();
 		const engine = new ChronosEngine({ env });
@@ -91,16 +84,23 @@ describe('shareCodecPlugin', () => {
 		expect(sourceSlot).toBeDefined();
 		expect(engine.slots.getSlotItem('import.source.tab', 'share-json')).toBeUndefined();
 
-		const exportSlot = engine.slots.getSlotItem('export.action', 'share-json');
+		const exportSlot = engine.slots.getSlotItem('export.action', 'share-link');
 		expect(exportSlot).toBeDefined();
+		expect(engine.slots.getSlotItem('export.action', 'share-json')).toBeUndefined();
 
 		const ctx = engine.getPluginContext('codec-share');
 		const exported = await exportSlot!.export(sampleTimetable, ctx);
-		expect(exported.filename).toBe('计算机课表.json');
-		expect(exported.mimeType).toBe('application/json');
+		expect(exported.filename).toBe('share-link.txt');
+		expect(exported.mimeType).toBe('application/x-chronos-share-link');
+		expect(exported.content).toContain('计算机课表');
+
+		const imported = await sourceSlot!.executeImport({ content: exported.content as string }, ctx);
+		expect(imported.name).toBe('计算机课表');
+		expect(imported.courses.length).toBe(1);
+		expect(imported.courses[0]?.name).toBe('操作系统');
 
 		handle.dispose();
 		expect(engine.slots.getSlotItem('import.source.tab', 'share-link')).toBeUndefined();
-		expect(engine.slots.getSlotItem('export.action', 'share-json')).toBeUndefined();
+		expect(engine.slots.getSlotItem('export.action', 'share-link')).toBeUndefined();
 	});
 });

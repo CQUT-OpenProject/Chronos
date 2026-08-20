@@ -263,7 +263,10 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 		(globalWeekMask ? FLAG_GLOBAL_WEEK_MASK : 0) |
 		(singleBuildingIdx >= 0 ? FLAG_SINGLE_BUILDING : 0);
 	const campusIdx = campusIdToShareIndex(
-		resolveShareCampusId(normalized.importMetadata.campusId, normalized.courses)
+		resolveShareCampusId(
+			normalized.importMetadata?.campusId as ShareCampusId | undefined,
+			normalized.courses
+		)
 	);
 
 	const bytes: number[] = [...MAGIC, VERSION, flags];

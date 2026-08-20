@@ -66,4 +66,4 @@ Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded fir
 
 ## Share-link codec
 
-Canonical implementation: `@chronos/plugin-codec-share/share-link`. Slots: `import.source.tab` (`share-link`, `share-json`), `export.action` (`share-link`, `share-json`).
+Canonical implementation: `@chronos/plugin-codec-share/share-link`. Slots: `import.source.tab` (`share-link`), `export.action` (`share-link`).

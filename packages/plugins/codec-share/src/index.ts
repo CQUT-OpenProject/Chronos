@@ -1,5 +1,5 @@
 import type { ChronosPlugin, ChronosContext, Timetable, ExportResult } from '@chronos/core';
-import { createTimetable, defineSchema } from '@chronos/core';
+import { defineSchema } from '@chronos/core';
 import {
 	decodeSharePayload,
 	encodeShareLink,
@@ -23,33 +23,13 @@ export const shareLinkImportSchema = defineSchema<ShareLinkImportForm>({
 	}
 });
 
-export function exportTimetableToJson(timetable: Timetable): string {
-	return JSON.stringify(timetable, null, 2);
-}
-
-export function parseTimetableFromJson(jsonStr: string): Timetable {
-	const raw = JSON.parse(jsonStr);
-	if (!raw || typeof raw !== 'object') {
-		throw new Error('无效的 JSON 课表数据');
-	}
-	const timetable = createTimetable(raw);
-	if (!raw.viewPrefs) {
-		timetable.viewPrefs = {
-			showSaturday: timetable.courses.some((c) => c.dayOfWeek === 6),
-			showSunday: timetable.courses.some((c) => c.dayOfWeek === 7),
-			showNonCurrentWeekCourses: false
-		};
-	}
-	return timetable;
-}
-
 const shareLinkCodec = { estimatePayloadLength: estimateShareLinkLength };
 
 export const shareCodecPlugin: ChronosPlugin = {
 	id: 'codec-share',
-	name: () => 'Share & Backup Codec',
+	name: () => 'Share Codec',
 	version: '1.0.0',
-	description: () => '课表分享短链与 JSON 备份',
+	description: () => '课表分享短链编解码',
 	category: 'codec',
 	order: 30,
 	author: 'CQUT OpenProject',
@@ -78,20 +58,6 @@ export const shareCodecPlugin: ChronosPlugin = {
 					throw new Error(result.errorMessage);
 				}
 				return result.value;
-			}
-		});
-
-		ctx.registerSlot('export.action', {
-			id: 'share-json',
-			title: () => 'JSON 结构化备份',
-			order: 10,
-			async export(timetable: Timetable): Promise<ExportResult> {
-				const content = exportTimetableToJson(timetable);
-				return {
-					filename: `${timetable.name || 'timetable'}.json`,
-					mimeType: 'application/json',
-					content
-				};
 			}
 		});
 
