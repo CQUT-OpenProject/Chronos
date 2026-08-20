@@ -11,8 +11,7 @@ describe('@chronos/core ECMAScript Purity', () => {
 		expect(Core.calculateTimetableGrid).toBeTypeOf('function');
 		expect(Core.buildTimetableCourseDisplayModels).toBeTypeOf('function');
 		expect(Core.COURSE_PALETTE_ENTRIES).toBeInstanceOf(Array);
-		expect(Core.EventBus).toBeTypeOf('function');
-		expect(Core.Pipeline).toBeTypeOf('function');
+		expect(Core.EventPipeline).toBeTypeOf('function');
 		expect(Core.SlotRegistry).toBeTypeOf('function');
 		expect(Core.HierarchicalSlotRegistry).toBeTypeOf('function');
 		expect(Core.ServiceContainer).toBeTypeOf('function');

@@ -30,8 +30,6 @@ export * from './types/sandbox';
 export * from './runtime/service-container';
 export * from './runtime/hierarchical-slot-registry';
 export { HierarchicalSlotRegistry as SlotRegistry } from './runtime/hierarchical-slot-registry';
-export * from './runtime/event-bus';
-export * from './runtime/pipeline';
 export * from './runtime/event-pipeline';
 export * from './runtime/theme-registry';
 export * from './runtime/badge-manager';
