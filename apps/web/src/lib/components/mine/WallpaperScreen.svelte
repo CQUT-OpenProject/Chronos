@@ -2,10 +2,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import TimetableGrid from '$lib/components/timetable/TimetableGrid.svelte';
-	import {
-		buildTimetableWeekPreview,
-		invokeCalculateAcademicWeek
-	} from '$lib/timetable/timetable-preview';
+	import { AcademicCalendarService, computeTimetableWeekLayout } from '@chronos/core';
 	import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -19,18 +16,27 @@
 	} = $props();
 
 	const timeProvider = new SystemTimeProvider();
+	const calendarService = new AcademicCalendarService();
 
 	const appState = $derived(shell.state.appState);
 	const hasWallpaper = $derived(shell.state.hasWallpaper);
 	const coursePalette = $derived(shell.appearance.coursePalette);
 	const timetable = $derived(appState.currentTimetable);
 	const today = $derived(timeProvider.today());
-	const academicWeek = $derived(invokeCalculateAcademicWeek(today, timetable?.academicConfig));
-	const preview = $derived(
-		timetable ? buildTimetableWeekPreview(timetable, today, academicWeek) : null
+	const academicWeek = $derived(
+		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
 	);
-	const gridModel = $derived(preview?.gridModel ?? null);
-	const courseDisplayModels = $derived(preview?.courseDisplayModels ?? []);
+	const layoutResult = $derived(
+		timetable
+			? computeTimetableWeekLayout({
+					timetable: timetable as unknown as import('@chronos/core').Timetable,
+					displayedWeek: academicWeek,
+					todayIso: today
+				})
+			: null
+	);
+	const gridModel = $derived(layoutResult?.gridModel ?? null);
+	const courseDisplayModels = $derived(layoutResult?.courseDisplayModels ?? []);
 
 	let fileInput: HTMLInputElement | undefined = $state();
 

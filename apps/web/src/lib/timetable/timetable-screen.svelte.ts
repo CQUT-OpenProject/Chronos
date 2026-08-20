@@ -1,20 +1,17 @@
 import { untrack } from 'svelte';
-import { SvelteMap } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { trackEvent } from '$lib/client/analytics';
 import { emptyAppState, type AppState } from '$lib/models/app-state';
-import type { TimetableCourseDisplayModel, TimetableGridModel } from '@chronos/core';
+import {
+	AcademicCalendarService,
+	computeTimetableWeekLayout,
+	formatWeekDateRange,
+	type TimetableCourseDisplayModel,
+	type TimetableGridModel,
+	type TimetableWeekLayoutResult
+} from '@chronos/core';
 import type { AppShellController } from '$lib/app/app-shell.svelte';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
-import {
-	invokeBuildTimetableCourseDisplayModels,
-	invokeBuildVisibleTimetableGrid,
-	invokeCalculateAcademicWeek
-} from './timetable-preview';
-import {
-	buildWeekCourseDisplayModels,
-	buildWeekGridModels,
-	computeDelayUntilNextMidnightMillis
-} from './timetable-screen-logic';
 import {
 	academicBounds,
 	buildWeekList,
@@ -23,13 +20,26 @@ import {
 	slideIndexFromWeek,
 	weekFromSlideIndex
 } from './week-navigation';
+import {
+	computeDelayUntilNextCurrentTimeRefreshMillis,
+	currentTimeMinutes,
+	findCurrentPeriodIndex,
+	parsePeriodRanges
+} from './period-clock';
 
 const timeProvider = new SystemTimeProvider();
+const calendarService = new AcademicCalendarService();
 
 let displayedWeekMemory = 1;
 let displayedWeekTimetableIdMemory: string | null = null;
 
 let sharedTimetableScreen: TimetableScreenController | null = null;
+
+function computeDelayUntilNextMidnightMillis(now = new Date()): number {
+	const nextMidnight = new Date(now);
+	nextMidnight.setHours(24, 0, 0, 0);
+	return Math.max(nextMidnight.getTime() - now.getTime(), 1_000);
+}
 
 export interface TimetableScreenState {
 	appState: AppState;
@@ -42,8 +52,13 @@ export interface TimetableScreenState {
 	endWeek: number;
 	weeks: number[];
 	slideIndex: number;
+	weekRangeText: string;
+	isCurrentWeek: boolean;
+	currentPeriodIndex: number | null;
+	expandedSlots: ReadonlySet<string>;
 	weekGridModels: Map<number, TimetableGridModel>;
 	weekCourseDisplayModels: Map<number, TimetableCourseDisplayModel[]>;
+	weekLayouts: Map<number, TimetableWeekLayoutResult>;
 }
 
 export function getTimetableScreen(): TimetableScreenController {
@@ -54,7 +69,11 @@ export function getTimetableScreen(): TimetableScreenController {
 function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
 	let today = $state(timeProvider.today());
+	let now = $state(new Date());
 	let revision = $state(0);
+	let expandedSlots = $state(new SvelteSet<string>());
+
+	let weekLayouts = $state.raw<Map<number, TimetableWeekLayoutResult>>(new SvelteMap());
 	let weekGridModels = $state.raw<Map<number, TimetableGridModel>>(new SvelteMap());
 	let weekCourseDisplayModels = $state.raw<Map<number, TimetableCourseDisplayModel[]>>(
 		new SvelteMap()
@@ -62,10 +81,10 @@ function createTimetableScreen() {
 
 	let cachedTimetable: AppState['currentTimetable'] = null;
 	let cachedToday = '';
-	const cachedWeekGridModels = new SvelteMap<number, TimetableGridModel>();
-	const cachedWeekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
+	const cachedWeekLayouts = new SvelteMap<number, TimetableWeekLayoutResult>();
 
 	let todayTimer: ReturnType<typeof setTimeout> | null = null;
+	let periodTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function currentAppState(): AppState {
 		return shellRef?.state.appState ?? emptyAppState();
@@ -89,7 +108,7 @@ function createTimetableScreen() {
 
 	function recompute() {
 		const timetable = currentAppState().currentTimetable;
-		const academicWeek = invokeCalculateAcademicWeek(today, timetable?.academicConfig);
+		const academicWeek = calendarService.calculateAcademicWeek(today, timetable?.academicConfig);
 		const resolvedWeek = resolveDisplayedWeek(
 			timetable,
 			displayedWeekMemory,
@@ -105,43 +124,40 @@ function createTimetableScreen() {
 			timetable != null && timetable === cachedTimetable && today === cachedToday;
 
 		if (!canReuseCache) {
-			cachedWeekGridModels.clear();
-			cachedWeekCourseDisplayModels.clear();
+			cachedWeekLayouts.clear();
 		}
 
-		const nextWeekGridModels = buildWeekGridModels(
-			timetable,
-			today,
-			displayedWeekMemory,
-			cachedWeekGridModels,
-			(todayValue, week, currentTimetable) =>
-				invokeBuildVisibleTimetableGrid(todayValue, week, currentTimetable)
-		);
+		const nextWeekLayouts = new SvelteMap<number, TimetableWeekLayoutResult>();
+		const nextWeekGridModels = new SvelteMap<number, TimetableGridModel>();
+		const nextWeekCourseDisplayModels = new SvelteMap<number, TimetableCourseDisplayModel[]>();
 
-		const nextWeekCourseDisplayModels = buildWeekCourseDisplayModels(
-			timetable,
-			today,
-			displayedWeekMemory,
-			nextWeekGridModels,
-			cachedWeekCourseDisplayModels,
-			(currentTimetable, visibleDayOfWeeks, week, todayValue) =>
-				invokeBuildTimetableCourseDisplayModels(
-					currentTimetable,
-					visibleDayOfWeeks,
-					week,
-					todayValue
-				)
-		);
+		if (timetable) {
+			const { startWeek, endWeek } = timetable.academicConfig;
+			const radius = 1;
+			const minWeek = Math.max(startWeek, displayedWeekMemory - radius);
+			const maxWeek = Math.min(endWeek, displayedWeekMemory + radius);
 
-		for (const [week, model] of nextWeekGridModels) {
-			cachedWeekGridModels.set(week, model);
-		}
-		for (const [week, models] of nextWeekCourseDisplayModels) {
-			cachedWeekCourseDisplayModels.set(week, models);
+			for (let week = minWeek; week <= maxWeek; week += 1) {
+				let layout = cachedWeekLayouts.get(week);
+				if (!layout) {
+					layout = computeTimetableWeekLayout({
+						timetable: timetable as unknown as import('@chronos/core').Timetable,
+						displayedWeek: week,
+						todayIso: today,
+						expandedSlotKeys: expandedSlots,
+						academicCalendarService: calendarService
+					});
+					cachedWeekLayouts.set(week, layout);
+				}
+				nextWeekLayouts.set(week, layout);
+				nextWeekGridModels.set(week, layout.gridModel);
+				nextWeekCourseDisplayModels.set(week, layout.courseDisplayModels);
+			}
 		}
 
 		cachedTimetable = timetable;
 		cachedToday = today;
+		weekLayouts = nextWeekLayouts;
 		weekGridModels = nextWeekGridModels;
 		weekCourseDisplayModels = nextWeekCourseDisplayModels;
 	}
@@ -151,9 +167,23 @@ function createTimetableScreen() {
 		const delay = computeDelayUntilNextMidnightMillis(new Date());
 		todayTimer = setTimeout(() => {
 			today = timeProvider.today();
+			now = new Date();
 			recompute();
 			notify();
 			scheduleTodayRefresh();
+		}, delay);
+	}
+
+	function schedulePeriodRefresh() {
+		if (periodTimer) clearTimeout(periodTimer);
+		const timetable = currentAppState().currentTimetable;
+		const periods = timetable?.academicConfig.periodTimes ?? [];
+		const parsed = parsePeriodRanges(periods);
+		const delay = computeDelayUntilNextCurrentTimeRefreshMillis(new Date(), parsed);
+		periodTimer = setTimeout(() => {
+			now = new Date();
+			notify();
+			schedulePeriodRefresh();
 		}, delay);
 	}
 
@@ -161,6 +191,7 @@ function createTimetableScreen() {
 		if (shellRef) return;
 		shellRef = shell;
 		scheduleTodayRefresh();
+		schedulePeriodRefresh();
 	}
 
 	function refresh() {
@@ -171,7 +202,9 @@ function createTimetableScreen() {
 	function destroy() {
 		shellRef = null;
 		if (todayTimer) clearTimeout(todayTimer);
+		if (periodTimer) clearTimeout(periodTimer);
 		todayTimer = null;
+		periodTimer = null;
 	}
 
 	function setDisplayedWeek(week: number) {
@@ -188,7 +221,7 @@ function createTimetableScreen() {
 		const timetable = currentAppState().currentTimetable;
 		if (!timetable) return;
 		trackEvent('timetable_week_jump_current');
-		const academicWeek = invokeCalculateAcademicWeek(today, timetable.academicConfig);
+		const academicWeek = calendarService.calculateAcademicWeek(today, timetable.academicConfig);
 		const { startWeek, endWeek } = academicBounds(timetable);
 		displayedWeekMemory = clampDisplayedWeek(academicWeek, startWeek, endWeek);
 		displayedWeekTimetableIdMemory = timetable.id;
@@ -203,21 +236,57 @@ function createTimetableScreen() {
 		setDisplayedWeek(weekFromSlideIndex(startWeek, slideIndex));
 	}
 
+	function expandSlot(slotKey: string) {
+		if (!expandedSlots.has(slotKey)) {
+			expandedSlots.add(slotKey);
+			cachedWeekLayouts.clear();
+			recompute();
+			notify();
+		}
+	}
+
+	function collapseSlot(slotKey: string) {
+		if (expandedSlots.has(slotKey)) {
+			expandedSlots.delete(slotKey);
+			cachedWeekLayouts.clear();
+			recompute();
+			notify();
+		}
+	}
+
+	function isSlotExpanded(slotKey: string): boolean {
+		return expandedSlots.has(slotKey);
+	}
+
 	const state = $derived.by(() => {
 		void revision;
+		void now;
 		const appState = currentAppState();
 		const hasLoadedAppState = shellRef?.state.initialized ?? false;
 		const timetable = appState.currentTimetable;
-		const academicWeek = invokeCalculateAcademicWeek(today, timetable?.academicConfig);
+		const academicWeek = calendarService.calculateAcademicWeek(today, timetable?.academicConfig);
 		const displayedWeek = resolveDisplayedWeek(
 			timetable,
 			displayedWeekMemory,
 			displayedWeekTimetableIdMemory,
 			academicWeek
 		);
+		const isCurrentWeek = displayedWeek === academicWeek;
 		const { startWeek, endWeek } = academicBounds(timetable);
 		const weeks = buildWeekList(startWeek, endWeek);
 		const slideIndex = slideIndexFromWeek(startWeek, displayedWeek, weeks.length);
+
+		const weekRangeText = formatWeekDateRange(
+			timetable?.academicConfig,
+			displayedWeek,
+			today,
+			timetable?.viewPrefs,
+			calendarService
+		);
+
+		const periods = timetable?.academicConfig.periodTimes ?? [];
+		const parsedPeriods = parsePeriodRanges(periods);
+		const currentPeriodIndex = findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now));
 
 		return {
 			appState,
@@ -230,8 +299,13 @@ function createTimetableScreen() {
 			endWeek,
 			weeks,
 			slideIndex,
+			weekRangeText,
+			isCurrentWeek,
+			currentPeriodIndex,
+			expandedSlots,
 			weekGridModels,
-			weekCourseDisplayModels
+			weekCourseDisplayModels,
+			weekLayouts
 		} satisfies TimetableScreenState;
 	});
 
@@ -244,7 +318,10 @@ function createTimetableScreen() {
 		destroy,
 		setDisplayedWeek,
 		jumpToCurrentWeek,
-		settlePagerAtSlide
+		settlePagerAtSlide,
+		expandSlot,
+		collapseSlot,
+		isSlotExpanded
 	};
 }
 

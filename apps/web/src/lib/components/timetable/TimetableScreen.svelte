@@ -3,7 +3,7 @@
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
-	import { formatWeekDateRange } from '$lib/timetable/timetable-preview';
+	import { formatWeekDateRange } from '@chronos/core';
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';

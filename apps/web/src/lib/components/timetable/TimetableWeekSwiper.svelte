@@ -98,6 +98,9 @@
 				<TimetableGrid
 					displayedWeek={week}
 					isCurrentWeek={week === screenState.academicWeek}
+					currentPeriodIndex={screenState.currentPeriodIndex}
+					expandedSlots={screenState.expandedSlots}
+					onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
 					{gridModel}
 					courseDisplayModels={courseModels}
 					{hasWallpaper}

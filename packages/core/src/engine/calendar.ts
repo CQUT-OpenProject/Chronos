@@ -83,3 +83,32 @@ export class AcademicCalendarService {
 		return formatIsoDate(addDays(weekStart, dayOfWeek - 1));
 	}
 }
+
+const fallbackAcademicConfig: AcademicConfig = {
+	termStartDate: '',
+	startWeek: 1,
+	endWeek: 20,
+	periodTimes: []
+};
+
+export function formatShortDate(iso: string): string {
+	const [, month, day] = iso.split('-');
+	return `${Number(month)}/${Number(day)}`;
+}
+
+export function formatWeekDateRange(
+	academicConfig: AcademicConfig | undefined | null,
+	week: number,
+	today: string,
+	viewPrefs?: { showSaturday?: boolean; showSunday?: boolean } | null,
+	calendarService: AcademicCalendarService = new AcademicCalendarService()
+): string {
+	const config = academicConfig ?? fallbackAcademicConfig;
+	const startIso = calendarService.resolveWeekStart(config, week, today);
+	let days = 5;
+	if (viewPrefs?.showSunday) days = 7;
+	else if (viewPrefs?.showSaturday) days = 6;
+	const startDate = parseIsoDate(startIso);
+	const endDate = addDays(startDate, days - 1);
+	return `${formatShortDate(startIso)} - ${formatShortDate(formatIsoDate(endDate))}`;
+}

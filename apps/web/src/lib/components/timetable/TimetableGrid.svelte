@@ -37,6 +37,9 @@
 	interface Props {
 		displayedWeek: number;
 		isCurrentWeek: boolean;
+		currentPeriodIndex?: number | null;
+		expandedSlots?: ReadonlySet<string>;
+		onExpandSlot?: (slotKey: string) => void;
 		gridModel: TimetableGridModel;
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasWallpaper: boolean;
@@ -51,6 +54,9 @@
 	let {
 		displayedWeek,
 		isCurrentWeek,
+		currentPeriodIndex: propCurrentPeriodIndex,
+		expandedSlots: propExpandedSlots,
+		onExpandSlot,
 		gridModel,
 		courseDisplayModels,
 		hasWallpaper,
@@ -68,9 +74,10 @@
 	let bodyViewportHeight = $state(0);
 	let gridBodyWidth = $state(0);
 	let centeredFor = $state<string | null>(null);
-	let expandedSlots = $state(new Set<string>());
+	let internalExpandedSlots = $state(new Set<string>());
 	let now = $state(new Date());
 
+	const effectiveExpandedSlots = $derived(propExpandedSlots ?? internalExpandedSlots);
 	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
@@ -86,7 +93,7 @@
 			courseDisplayModels,
 			visibleDays: gridModel.visibleDays,
 			columnWidthPx,
-			expandedSlotKeys: expandedSlots,
+			expandedSlotKeys: effectiveExpandedSlots,
 			coursePalette,
 			paletteCourses,
 			layoutMode,
@@ -95,7 +102,9 @@
 	);
 
 	const currentPeriodIndex = $derived(
-		findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
+		propCurrentPeriodIndex !== undefined
+			? propCurrentPeriodIndex
+			: findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
 	);
 
 	const solidBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
@@ -247,7 +256,11 @@
 
 	function expandSlot(key: string) {
 		mediator.handleOverlapExpand(key);
-		expandedSlots = new Set([...expandedSlots, key]);
+		if (onExpandSlot) {
+			onExpandSlot(key);
+		} else {
+			internalExpandedSlots = new Set([...internalExpandedSlots, key]);
+		}
 	}
 
 	function cornerClasses(corners: CapsuleCorners): string {
