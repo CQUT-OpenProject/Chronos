@@ -141,7 +141,7 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		slotName: K,
 		contribution: ChronosSlotMap[K] & { id: string }
 	): Disposable {
-		return this.track(this.host.slots.register(slotName, contribution));
+		return this.track(this.host.slots.register(slotName, contribution, this.pluginId));
 	}
 
 	on<E extends keyof (ChronosEvents & CustomChronosEvents)>(

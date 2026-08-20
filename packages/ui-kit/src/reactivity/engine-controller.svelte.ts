@@ -7,7 +7,8 @@ import type {
 	StandardSlotMap,
 	CourseBadge,
 	Course,
-	AcademicConfig
+	AcademicConfig,
+	ChronosContext
 } from '@chronos/core';
 
 /**
@@ -91,8 +92,20 @@ export class ReactiveChronosController implements Disposable {
 		);
 	}
 
+	/** @deprecated Use typed controller methods instead of accessing the engine directly. */
 	get rawEngine(): ChronosEngine {
 		return this.engine;
+	}
+
+	getPluginContext(pluginId: string): ChronosContext {
+		return this.engine.getPluginContext(pluginId);
+	}
+
+	getPluginContextForSlot<K extends keyof StandardSlotMap>(
+		slotName: K,
+		slotId: string
+	): ChronosContext {
+		return this.engine.getPluginContextForSlot(slotName, slotId);
 	}
 
 	/**

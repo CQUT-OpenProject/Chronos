@@ -30,15 +30,19 @@ describe('HierarchicalSlotRegistry in @chronos/core', () => {
 			executeImport: vi.fn()
 		};
 
-		registry.register('import.source.tab', tab1);
-		registry.register('import.source.tab', tab2);
-		registry.register('import.source.tab', tab3);
+		registry.register('import.source.tab', tab1, 'plugin-cqut');
+		registry.register('import.source.tab', tab2, 'plugin-html');
+		registry.register('import.source.tab', tab3, 'plugin-share');
 
 		const allTabs = registry.get('import.source.tab');
 		expect(allTabs.map((t) => t.id)).toEqual(['source-html', 'source-cqut', 'source-share']);
 
 		const singleItem = registry.getSlotItem('import.source.tab', 'source-cqut');
 		expect(singleItem).toBe(tab1);
+
+		expect(registry.resolveOwner('import.source.tab', 'source-cqut')).toBe('plugin-cqut');
+		expect(registry.resolveOwner('import.source.tab', 'source-html')).toBe('plugin-html');
+		expect(registry.resolveOwner('import.source.tab', 'missing')).toBeUndefined();
 	});
 
 	it('triggers change listener and supports dynamic disposal', () => {

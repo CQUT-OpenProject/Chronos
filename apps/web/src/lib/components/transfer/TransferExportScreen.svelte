@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { trackEvent } from '$lib/client/analytics';
-	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 	import type { ExportResult, ExportActionSlotContribution } from '@chronos/core';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
@@ -11,11 +10,9 @@
 	import { DEFAULT_TIMETABLE_NAME, normalizeTimetableName } from '$lib/models/timetable';
 
 	let {
-		transfer,
 		currentTimetableName,
 		longLinkWarning = false
 	}: {
-		transfer: TransferStateController;
 		currentTimetableName: string | null;
 		longLinkWarning?: boolean;
 	} = $props();
@@ -56,20 +53,17 @@
 		loading = true;
 		trackEvent('export_slot_execute_attempt', { actionId: action.id });
 		try {
-			const ctx = controller.rawEngine.getPluginContext('codec-share');
+			const ctx = controller.getPluginContextForSlot('export.action', action.id);
 			const result = await action.export(current, ctx);
 
 			if (result.mimeType === 'application/x-chronos-share-link') {
-				const ok = await transfer.exportToClipboard();
-				if (ok) {
-					trackEvent('export_copy_link');
-					snackbar('已复制课表链接');
-					if (longLinkWarning) {
-						trackEvent('export_long_link_warning_shown');
-						snackbar('课表较大，部分应用可能截断链接内容，请注意核对导入结果');
-					}
-				} else if (transfer.state.errorMessage) {
-					snackbar(transfer.state.errorMessage);
+				const text = typeof result.content === 'string' ? result.content : '';
+				await navigator.clipboard.writeText(text);
+				trackEvent('export_copy_link');
+				snackbar('已复制课表链接');
+				if (longLinkWarning) {
+					trackEvent('export_long_link_warning_shown');
+					snackbar('课表较大，部分应用可能截断链接内容，请注意核对导入结果');
 				}
 				return;
 			}

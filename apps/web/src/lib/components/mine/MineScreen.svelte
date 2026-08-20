@@ -76,14 +76,15 @@
 				sectionMap[targetSectionId] = section;
 			}
 
-			const pluginId = item.id.includes('.') ? item.id.split('.')[0]! : 'codec-share';
-			const context = controller.rawEngine.getPluginContext(pluginId);
+			const context = item.onClick
+				? controller.getPluginContextForSlot('mine.item', item.id)
+				: undefined;
 			section.items.push({
 				id: item.id,
 				title: resolveText(item.title),
 				supporting: resolveText(item.supporting),
 				href: item.href,
-				onClick: item.onClick ? () => item.onClick!(context) : undefined,
+				onClick: item.onClick && context ? () => item.onClick!(context) : undefined,
 				icon: resolveIcon(item.icon, item.id),
 				iconTone: item.iconTone ?? 'neutral',
 				order: item.order ?? 50,

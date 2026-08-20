@@ -29,7 +29,7 @@
 	function handleTabClick(event: MouseEvent, tab: (typeof sortedTabs)[number]) {
 		haptic.light();
 		if (tab.onClick) {
-			const ctx = controller.rawEngine.getPluginContext(tab.id);
+			const ctx = controller.getPluginContextForSlot('shell.bottom-bar.tab', tab.id);
 			void tab.onClick(event, ctx);
 			return;
 		}

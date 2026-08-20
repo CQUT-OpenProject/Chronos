@@ -3,13 +3,15 @@ import type { ChronosSlotMap } from '../types/slots';
 
 export class HierarchicalSlotRegistry implements Disposable {
 	private slots = new Map<string, Map<string, unknown>>();
+	private owners = new Map<string, Map<string, string>>();
 	private listeners = new Set<() => void>();
 
 	constructor(private onSlotsChangedCallback?: () => void) {}
 
 	register<K extends keyof ChronosSlotMap>(
 		slotName: K,
-		contribution: ChronosSlotMap[K] & { id: string }
+		contribution: ChronosSlotMap[K] & { id: string },
+		ownerPluginId?: string
 	): Disposable {
 		const key = String(slotName);
 		if (!this.slots.has(key)) {
@@ -17,16 +19,27 @@ export class HierarchicalSlotRegistry implements Disposable {
 		}
 		const group = this.slots.get(key)!;
 		group.set(contribution.id, contribution);
+		if (ownerPluginId) {
+			if (!this.owners.has(key)) {
+				this.owners.set(key, new Map());
+			}
+			this.owners.get(key)!.set(contribution.id, ownerPluginId);
+		}
 		this.notify();
 
 		return {
 			dispose: () => {
 				if (group.get(contribution.id) === contribution) {
 					group.delete(contribution.id);
+					this.owners.get(key)?.delete(contribution.id);
 					this.notify();
 				}
 			}
 		};
+	}
+
+	resolveOwner<K extends keyof ChronosSlotMap>(slotName: K, slotId: string): string | undefined {
+		return this.owners.get(String(slotName))?.get(slotId);
 	}
 
 	get<K extends keyof ChronosSlotMap>(slotName: K): Array<ChronosSlotMap[K]> {
@@ -54,6 +67,7 @@ export class HierarchicalSlotRegistry implements Disposable {
 
 	clear(): void {
 		this.slots.clear();
+		this.owners.clear();
 		this.notify();
 	}
 
@@ -70,6 +84,7 @@ export class HierarchicalSlotRegistry implements Disposable {
 
 	dispose(): void {
 		this.slots.clear();
+		this.owners.clear();
 		this.listeners.clear();
 	}
 }

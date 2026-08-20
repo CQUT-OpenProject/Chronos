@@ -98,7 +98,7 @@
 					<Button
 						variant="tonal"
 						onclick={() => {
-							const ctx = controller.rawEngine.getPluginContext(action.id);
+							const ctx = controller.getPluginContextForSlot('course.detail.action', action.id);
 							void action.onExecute(course, ctx);
 						}}
 					>

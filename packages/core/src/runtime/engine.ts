@@ -5,6 +5,7 @@ import type { ChronosEnv, StorageChangeEvent } from '../types/env';
 import type { Disposable } from '../types/services';
 import { IHttpService, IStorageService, IVaultService, IRuntimeService } from '../types/services';
 import type { ChronosEvents, ChronosPlugin } from '../types/context';
+import type { ChronosSlotMap } from '../types/slots';
 import { EventPipeline } from './event-pipeline';
 import { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import { ServiceContainer } from './service-container';
@@ -565,6 +566,21 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			return entry.context;
 		}
 		return new ScopedContext<Record<string, unknown>>(pluginId, this);
+	}
+
+	getPluginContextForSlot<K extends keyof ChronosSlotMap>(
+		slotName: K,
+		slotId: string
+	): ScopedContext<Record<string, unknown>> {
+		const ownerPluginId = this.slots.resolveOwner(slotName, slotId);
+		if (!ownerPluginId) {
+			throw new Error(`No owner plugin registered for slot ${String(slotName)}/${slotId}`);
+		}
+		const entry = this.loadedPlugins.get(ownerPluginId);
+		if (!entry) {
+			throw new Error(`Owner plugin "${ownerPluginId}" is not loaded`);
+		}
+		return entry.context;
 	}
 
 	isPluginLoaded(pluginId: string): boolean {

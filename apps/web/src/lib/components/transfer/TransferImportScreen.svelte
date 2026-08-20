@@ -52,7 +52,7 @@
 		loading = true;
 		trackEvent('import_slot_execute_attempt', { sourceId: activeTab.id });
 		try {
-			const ctx = controller.rawEngine.getPluginContext(activeTab.id);
+			const ctx = controller.getPluginContextForSlot('import.source.tab', activeTab.id);
 			const timetable = await activeTab.executeImport(formValues, ctx);
 			if (!timetable || !timetable.courses || timetable.courses.length === 0) {
 				throw new Error('未识别到任何有效课程数据');
