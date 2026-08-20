@@ -85,9 +85,23 @@ describe('createTransferImportCoordinator', () => {
 			}
 		});
 
-		const result = await coordinator.confirmImport(preview, 'HTML', ImportMode.AS_NEW);
+		const result = await coordinator.confirmImport(
+			preview,
+			'HTML',
+			ImportMode.AS_NEW,
+			'2026-02-23',
+			'huaxi'
+		);
 
 		expect(result).toEqual({ ok: true });
-		expect(importTimetable).toHaveBeenCalledWith(preview, { overwriteActive: false });
+		expect(importTimetable).toHaveBeenCalledWith(
+			expect.objectContaining({
+				academicConfig: expect.objectContaining({
+					termStartDate: '2026-02-23'
+				}),
+				importMetadata: expect.objectContaining({ campusId: 'huaxi' })
+			}),
+			{ overwriteActive: false }
+		);
 	});
 });

@@ -1,4 +1,6 @@
 import { ImportMode } from '$lib/domain/import-mode';
+import type { CqutCampusId } from '$lib/models/cqut-campus';
+import { getCampusDefaultPeriodTimes } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import {
 	createSessionPreviewPersistence,
@@ -56,11 +58,36 @@ export function createTransferImportCoordinator({
 
 	async function confirmImport(
 		preview: Timetable,
-		_previewSource: TransferImportSource,
-		importMode: ImportMode
+		previewSource: TransferImportSource,
+		importMode: ImportMode,
+		htmlImportTermStartDate: string | null,
+		htmlImportCampusId: CqutCampusId | null
 	): Promise<ImportOutcome> {
+		let finalPreview = preview;
+		if (previewSource === 'HTML') {
+			if (!htmlImportTermStartDate) {
+				return { ok: false, errorMessage: '请选择学期起始日期' };
+			}
+			if (!htmlImportCampusId) {
+				return { ok: false, errorMessage: '请选择校区' };
+			}
+			const periodTimes = getCampusDefaultPeriodTimes(htmlImportCampusId);
+			finalPreview = {
+				...preview,
+				academicConfig: {
+					...preview.academicConfig,
+					termStartDate: htmlImportTermStartDate,
+					periodTimes
+				},
+				importMetadata: {
+					...preview.importMetadata,
+					campusId: htmlImportCampusId
+				}
+			};
+		}
+
 		try {
-			await getEngine().actions.importTimetable(preview, {
+			await getEngine().actions.importTimetable(finalPreview, {
 				overwriteActive: importMode === ImportMode.OVERWRITE_CURRENT
 			});
 			return { ok: true };
