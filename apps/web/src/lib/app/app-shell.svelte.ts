@@ -1,6 +1,8 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { type AppState } from '$lib/models/app-state';
-import { getAppController } from '$lib/services/app-engine';
+import { getAppController, getAppEngine } from '$lib/services/app-engine';
+import { createCredentialVault } from '$lib/client/credential-vault';
+import { IVaultService } from '@chronos/core';
 import type {
 	CapsuleCornerStyle,
 	PaletteMode,
@@ -111,6 +113,11 @@ export function createAppShell() {
 	}
 
 	async function clearAllData() {
+		const engine = getAppEngine();
+		const credentialVault = createCredentialVault({
+			vault: engine.services.get(IVaultService)
+		});
+		await credentialVault.clear();
 		await controller.clearAllData();
 	}
 

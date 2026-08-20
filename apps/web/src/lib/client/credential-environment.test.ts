@@ -78,7 +78,7 @@ describe('CredentialEnvironmentController', () => {
 		expect(readOnlineCredentialRecord()).toBeNull();
 	});
 
-	it('keeps PRF credentials when PRF remains available (no WebAuthn probe at startup)', async () => {
+	it('clears legacy PRF credential records during migration', async () => {
 		writeOnlineCredentialRecord(
 			{
 				mode: 'prf',
@@ -95,6 +95,6 @@ describe('CredentialEnvironmentController', () => {
 		const environment = new CredentialEnvironmentController();
 		await environment.init();
 
-		expect(readOnlineCredentialRecord()).not.toBeNull();
+		expect(readOnlineCredentialRecord()).toBeNull();
 	});
 });

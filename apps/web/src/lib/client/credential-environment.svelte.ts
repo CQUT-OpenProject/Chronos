@@ -3,6 +3,7 @@ import {
 	readOnlineCredentialRecord,
 	writeOnlineCredentialRecord
 } from '$lib/storage/online-credential-record';
+import { runCredentialMigration } from '$lib/client/credential-migration';
 
 async function sanitizeOnlineCredentialAtStartup(
 	prfAvailable: boolean,
@@ -42,6 +43,7 @@ export class CredentialEnvironmentController {
 		this.initialized = true;
 
 		this.prfAvailable = await isPrfProtectionAvailable();
+		await runCredentialMigration();
 		await sanitizeOnlineCredentialAtStartup(this.prfAvailable);
 		this.ready = true;
 		this.notify();

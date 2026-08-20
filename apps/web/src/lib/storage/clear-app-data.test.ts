@@ -1,6 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 import {
-	clearAllAppData,
 	estimateStorageBytes,
 	formatAppDataSize,
 	removeStorageKeysWithPrefix
@@ -20,27 +19,6 @@ function createMemoryStorage(initial: Record<string, string> = {}): Storage {
 	} as Storage;
 }
 
-const { mockTimetablesClear, mockCoursesClear, mockWallpapersClear, mockPluginDataClear } =
-	vi.hoisted(() => ({
-		mockTimetablesClear: vi.fn(async () => undefined),
-		mockCoursesClear: vi.fn(async () => undefined),
-		mockWallpapersClear: vi.fn(async () => undefined),
-		mockPluginDataClear: vi.fn(async () => undefined)
-	}));
-
-vi.mock('./db', () => ({
-	db: {
-		transaction: vi.fn(async (...args: unknown[]) => {
-			const callback = args.at(-1) as () => Promise<void>;
-			await callback();
-		}),
-		timetables: { clear: mockTimetablesClear },
-		courses: { clear: mockCoursesClear },
-		wallpapers: { clear: mockWallpapersClear },
-		pluginData: { clear: mockPluginDataClear }
-	}
-}));
-
 describe('removeStorageKeysWithPrefix', () => {
 	it('removes only keys with the given prefix', () => {
 		const storage = createMemoryStorage({
@@ -54,25 +32,6 @@ describe('removeStorageKeysWithPrefix', () => {
 		expect(storage.getItem('chronos:preview')).toBeNull();
 		expect(storage.getItem('chronos_preferences:theme_mode')).toBeNull();
 		expect(storage.getItem('other:key')).toBe('keep');
-	});
-});
-
-describe('clearAllAppData', () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		vi.stubGlobal('localStorage', createMemoryStorage({ 'chronos:credential': 'x' }));
-		vi.stubGlobal('sessionStorage', createMemoryStorage({ 'chronos:import-preview': 'y' }));
-	});
-
-	it('clears indexeddb tables and chronos storage keys', async () => {
-		await clearAllAppData();
-
-		expect(mockTimetablesClear).toHaveBeenCalledOnce();
-		expect(mockCoursesClear).toHaveBeenCalledOnce();
-		expect(mockWallpapersClear).toHaveBeenCalledOnce();
-		expect(mockPluginDataClear).toHaveBeenCalledOnce();
-		expect(localStorage.getItem('chronos:credential')).toBeNull();
-		expect(sessionStorage.getItem('chronos:import-preview')).toBeNull();
 	});
 });
 

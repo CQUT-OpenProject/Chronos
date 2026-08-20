@@ -1,7 +1,7 @@
 import { db } from './db';
 import type { CourseRow, TimetableRow, WallpaperRow } from './db';
 
-const CHRONOS_STORAGE_PREFIX = 'chronos';
+export const CHRONOS_STORAGE_PREFIX = 'chronos';
 const textEncoder = new TextEncoder();
 
 function listStorageKeysWithPrefix(
@@ -82,20 +82,4 @@ export function formatAppDataSize(bytes: number): string {
 	if (bytes < 1024) return `${bytes} B`;
 	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-export async function clearAllAppData(): Promise<void> {
-	await db.transaction('rw', db.timetables, db.courses, db.wallpapers, db.pluginData, async () => {
-		await db.timetables.clear();
-		await db.courses.clear();
-		await db.wallpapers.clear();
-		await db.pluginData.clear();
-	});
-
-	if (typeof localStorage !== 'undefined') {
-		removeStorageKeysWithPrefix(localStorage, CHRONOS_STORAGE_PREFIX);
-	}
-	if (typeof sessionStorage !== 'undefined') {
-		removeStorageKeysWithPrefix(sessionStorage, CHRONOS_STORAGE_PREFIX);
-	}
 }
