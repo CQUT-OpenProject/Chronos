@@ -12,8 +12,7 @@ import {
 	ensureShareLinkBrotliReady,
 	estimateShareLinkLength,
 	extractSharePayloadFromText,
-	formatShareClipboardText,
-	SHARE_LINK_WARNING_LENGTH
+	formatShareClipboardText
 } from './share-link';
 
 export interface ShareImportForm {
@@ -138,3 +137,13 @@ export const shareCodecPlugin: ChronosPlugin = {
 		void shareLinkCodec;
 	}
 };
+
+export {
+	decodeSharePayload,
+	encodeShareLink,
+	estimateShareLinkLength,
+	extractSharePayloadFromLocation,
+	extractSharePayloadFromText,
+	formatShareClipboardText,
+	SHARE_LINK_WARNING_LENGTH
+} from './share-link';
