@@ -1,5 +1,5 @@
 export type ThemeMode = 'light' | 'dark' | 'auto';
-export type PaletteMode = 'monochrome' | 'vibrant' | 'wallpaper';
+export type PaletteMode = 'vibrant' | 'random' | 'wallpaper';
 export type TimetableLayoutMode = 'fixed' | 'compact';
 export type CapsuleCornerStyle = 'rounded' | 'sharp' | 'pill';
 

@@ -64,7 +64,7 @@ describe('timetable-mappers', () => {
 				source: TimetableImportSource.ONLINE_EDU,
 				campusPeriodTimes: {
 					liangjiang: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
-					huaxi: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
+					huaxi: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
 				}
 			},
 			viewPrefs: {
@@ -76,7 +76,47 @@ describe('timetable-mappers', () => {
 
 		expect(applyCampusPeriodTimes(draft, 'huaxi')).toBe(true);
 		expect(draft.importMetadata.campusId).toBe('huaxi');
-		expect(draft.academicConfig.periodTimes[0]?.startTime).toBe('08:00');
+		expect(draft.academicConfig.periodTimes[0]?.startTime).toBe('08:20');
+	});
+
+	it('toSettingsDraft reads campus period times from source-cqut metadata', () => {
+		const draft = toSettingsDraft(
+			sampleTimetable({
+				termStartDate: '2026-03-02',
+				courses: []
+			})
+		);
+		expect(draft.importMetadata.campusPeriodTimes).toBeUndefined();
+
+		const withMeta = createTimetable({
+			id: 'timetable',
+			name: '课表',
+			courses: [],
+			createdAt: 0,
+			updatedAt: 0,
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: []
+			},
+			importMetadata: { source: TimetableImportSource.ONLINE_EDU, campusId: 'huaxi' },
+			viewPrefs: {
+				showSaturday: true,
+				showSunday: true,
+				showNonCurrentWeekCourses: true
+			},
+			customMetadata: {
+				'source-cqut': {
+					campusPeriodTimes: {
+						huaxi: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
+					}
+				}
+			}
+		});
+		expect(toSettingsDraft(withMeta).importMetadata.campusPeriodTimes?.huaxi?.[0]?.startTime).toBe(
+			'08:20'
+		);
 	});
 });
 

@@ -7,7 +7,7 @@
 	import { trackEvent } from '$lib/client/analytics';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import { onlineImportEnabled } from '$lib/config/features';
-	import { TimetableLayoutMode } from '$lib/models/app-state';
+	import type { TimetableLayoutMode } from '@chronos/core';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Radio from '$lib/components/ui/Radio.svelte';
@@ -33,12 +33,12 @@
 
 	const layoutOptions = [
 		{
-			mode: TimetableLayoutMode.SCROLL,
+			mode: 'fixed' as const,
 			label: '滚动查看',
 			description: '上下滚动查看全天课程，字体更大'
 		},
 		{
-			mode: TimetableLayoutMode.FIT,
+			mode: 'compact' as const,
 			label: '一屏显示',
 			description: '一屏展示全天课程，无需滚动'
 		}

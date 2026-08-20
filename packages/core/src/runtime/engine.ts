@@ -13,6 +13,11 @@ import { BadgeManager } from './badge-manager';
 import { ScopedContext, type EngineContextHost } from './scoped-context';
 import { AcademicCalendarService } from '../engine/calendar';
 import { formatIsoDate } from '../engine/date';
+import {
+	currentTimeMinutes,
+	findCurrentPeriodIndex,
+	parsePeriodRanges
+} from '../engine/period-clock';
 
 export interface ChronosEngineOptions {
 	env?: ChronosEnv;
@@ -320,22 +325,14 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			? this.calendarService.calculateAcademicWeek(todayIso, academicConfig)
 			: 1;
 
-		let currentPeriod: number | null = null;
-		if (academicConfig?.periodTimes && academicConfig.periodTimes.length > 0) {
-			const currentMinutes = now.getHours() * 60 + now.getMinutes();
-			for (const period of academicConfig.periodTimes) {
-				const [sH, sM] = period.startTime.split(':').map((v) => Number.parseInt(v, 10));
-				const [eH, eM] = period.endTime.split(':').map((v) => Number.parseInt(v, 10));
-				if (sH !== undefined && sM !== undefined && eH !== undefined && eM !== undefined) {
-					const startMinutes = sH * 60 + sM;
-					const endMinutes = eH * 60 + eM;
-					if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
-						currentPeriod = period.index;
-						break;
-					}
-				}
-			}
-		}
+		const currentPeriod =
+			academicConfig?.periodTimes && academicConfig.periodTimes.length > 0
+				? findCurrentPeriodIndex(
+						parsePeriodRanges(academicConfig.periodTimes),
+						currentTimeMinutes(now),
+						'none'
+					)
+				: null;
 
 		const changed = currentWeek !== this._activeWeek || currentPeriod !== this._currentPeriodIndex;
 

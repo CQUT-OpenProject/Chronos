@@ -1,5 +1,6 @@
 import {
 	academicConfigSchema,
+	slimImportMetadata,
 	timetableConfigSchema,
 	timetableImportMetadataSchema,
 	timetableViewPrefsSchema,
@@ -14,13 +15,15 @@ export const SCHEMA_VERSION = 1;
 export function encodeTimetableConfig(
 	academicConfig: AcademicConfig,
 	importMetadata: TimetableImportMetadata,
-	viewPrefs: TimetableViewPrefs
+	viewPrefs: TimetableViewPrefs,
+	customMetadata?: Record<string, unknown>
 ): string {
-	const config: TimetableConfig = {
+	const config = {
 		schemaVersion: SCHEMA_VERSION,
 		academicConfig,
 		importMetadata,
-		viewPrefs
+		viewPrefs,
+		...(customMetadata ? { customMetadata } : {})
 	};
 	return JSON.stringify(config);
 }
@@ -28,11 +31,25 @@ export function encodeTimetableConfig(
 export function decodeTimetableConfig(configJson: string, timetableId?: string): TimetableConfig {
 	try {
 		const parsed = timetableConfigSchema.parse(JSON.parse(configJson));
+		const storedMeta = timetableImportMetadataSchema.parse(parsed.importMetadata);
+		const importMetadata = slimImportMetadata(storedMeta);
+		const migratedCqut =
+			storedMeta.campusPeriodTimes && !parsed.customMetadata?.['source-cqut']
+				? {
+						'source-cqut': {
+							campusId: importMetadata.campusId,
+							campusPeriodTimes: storedMeta.campusPeriodTimes
+						}
+					}
+				: undefined;
 		return {
 			schemaVersion: parsed.schemaVersion,
 			academicConfig: academicConfigSchema.parse(parsed.academicConfig),
-			importMetadata: timetableImportMetadataSchema.parse(parsed.importMetadata),
-			viewPrefs: timetableViewPrefsSchema.parse(parsed.viewPrefs)
+			importMetadata,
+			viewPrefs: timetableViewPrefsSchema.parse(parsed.viewPrefs),
+			customMetadata: migratedCqut
+				? { ...parsed.customMetadata, ...migratedCqut }
+				: parsed.customMetadata
 		};
 	} catch (error) {
 		if (timetableId) {
@@ -41,6 +58,13 @@ export function decodeTimetableConfig(configJson: string, timetableId?: string):
 				error
 			);
 		}
-		return timetableConfigSchema.parse({});
+		const fallback = timetableConfigSchema.parse({});
+		return {
+			schemaVersion: fallback.schemaVersion,
+			academicConfig: fallback.academicConfig,
+			importMetadata: slimImportMetadata(fallback.importMetadata),
+			viewPrefs: fallback.viewPrefs,
+			customMetadata: fallback.customMetadata
+		};
 	}
 }

@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { getTimetableScreen } from './timetable-screen.svelte';
 import { createTimetable, createCourse } from '@chronos/core';
-import {
-	ThemeMode,
-	TimetableLayoutMode,
-	PaletteMode,
-	CapsuleCornerStyle
-} from '$lib/models/app-state';
 import type { AppShellController } from '$lib/app/app-shell.svelte';
 
 describe('TimetableScreenController', () => {
@@ -48,10 +42,10 @@ describe('TimetableScreenController', () => {
 				currentTimetableId: 'tt-test',
 				wallpaperUri: null,
 				currentTimetable: sampleTimetable,
-				themeMode: ThemeMode.SYSTEM,
-				timetableLayoutMode: TimetableLayoutMode.SCROLL,
-				paletteMode: PaletteMode.DEFAULT,
-				capsuleCornerStyle: CapsuleCornerStyle.ROUNDED,
+				themeMode: 'auto',
+				timetableLayoutMode: 'fixed',
+				paletteMode: 'vibrant',
+				capsuleCornerStyle: 'rounded',
 				hapticFeedbackEnabled: true
 			},
 			initialized: true,

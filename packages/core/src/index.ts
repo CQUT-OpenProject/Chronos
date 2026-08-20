@@ -12,6 +12,7 @@ export * from './engine/display-models';
 export * from './engine/capsule-layout';
 export * from './engine/palette';
 export * from './engine/timetable-layout';
+export * from './engine/period-clock';
 
 // Schema
 export * from './schema/schema';

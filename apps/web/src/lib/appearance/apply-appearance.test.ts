@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { PaletteMode } from '$lib/models/app-state';
 import {
 	COURSE_PALETTE_ENTRIES,
 	EASTER_EGG_PALETTE_ENTRIES,
@@ -58,7 +57,7 @@ describe('applyAppearance', () => {
 		const { wallpaper, clearWallpaperTheme } = createWallpaperAdapter();
 
 		const result = await applyAppearance(
-			{ paletteMode: PaletteMode.DEFAULT, isDark: false, wallpaperUri: null },
+			{ paletteMode: 'vibrant', isDark: false, wallpaperUri: null },
 			{ target, wallpaper }
 		);
 
@@ -74,7 +73,7 @@ describe('applyAppearance', () => {
 		const { wallpaper, clearWallpaperTheme } = createWallpaperAdapter();
 
 		const result = await applyAppearance(
-			{ paletteMode: PaletteMode.RANDOM, isDark: true, wallpaperUri: null },
+			{ paletteMode: 'random', isDark: true, wallpaperUri: null },
 			{ target, wallpaper }
 		);
 
@@ -96,7 +95,7 @@ describe('applyAppearance', () => {
 
 		const result = await applyAppearance(
 			{
-				paletteMode: PaletteMode.WALLPAPER,
+				paletteMode: 'wallpaper',
 				isDark: false,
 				wallpaperUri: 'blob:wallpaper'
 			},
@@ -114,7 +113,7 @@ describe('applyAppearance', () => {
 			createWallpaperAdapter();
 
 		const result = await applyAppearance(
-			{ paletteMode: PaletteMode.WALLPAPER, isDark: false, wallpaperUri: null },
+			{ paletteMode: 'wallpaper', isDark: false, wallpaperUri: null },
 			{ target, wallpaper }
 		);
 
@@ -133,7 +132,7 @@ describe('applyAppearance', () => {
 
 		const result = await applyAppearance(
 			{
-				paletteMode: PaletteMode.WALLPAPER,
+				paletteMode: 'wallpaper',
 				isDark: true,
 				wallpaperUri: 'blob:broken'
 			},
@@ -160,7 +159,7 @@ describe('applyAppearance', () => {
 		await expect(
 			applyAppearance(
 				{
-					paletteMode: PaletteMode.WALLPAPER,
+					paletteMode: 'wallpaper',
 					isDark: false,
 					wallpaperUri: 'blob:wallpaper'
 				},

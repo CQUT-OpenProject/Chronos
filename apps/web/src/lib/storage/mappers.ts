@@ -67,7 +67,12 @@ export function timetableToRow(
 		name: normalizeTimetableName(timetable.name),
 		createdAt: timetable.createdAt,
 		updatedAt: timetable.updatedAt,
-		configJson: encodeTimetableConfig(timetable.academicConfig, importMetadata, timetable.viewPrefs)
+		configJson: encodeTimetableConfig(
+			timetable.academicConfig,
+			importMetadata,
+			timetable.viewPrefs,
+			timetable.customMetadata
+		)
 	};
 }
 
@@ -82,7 +87,8 @@ export function timetableFromRow(row: TimetableRow, courses: CourseRow[]): Timet
 		courses: courses.map(courseFromRow),
 		academicConfig: config.academicConfig,
 		importMetadata: config.importMetadata,
-		viewPrefs: config.viewPrefs
+		viewPrefs: config.viewPrefs,
+		...(config.customMetadata ? { customMetadata: config.customMetadata } : {})
 	};
 }
 
@@ -105,17 +111,10 @@ export function copyForStateBoundary(timetable: Timetable): Timetable {
 			...timetable.academicConfig,
 			periodTimes: timetable.academicConfig.periodTimes.map((period) => ({ ...period }))
 		},
-		importMetadata: {
-			...timetable.importMetadata,
-			campusPeriodTimes: timetable.importMetadata.campusPeriodTimes
-				? (Object.fromEntries(
-						Object.entries(timetable.importMetadata.campusPeriodTimes).map(([campus, periods]) => [
-							campus,
-							periods.map((period) => ({ ...period }))
-						])
-					) as import('$lib/models/timetable').TimetableImportMetadata['campusPeriodTimes'])
-				: undefined
-		},
-		viewPrefs: { ...timetable.viewPrefs }
+		importMetadata: timetable.importMetadata
+			? { ...timetable.importMetadata }
+			: { source: TimetableImportSource.UNKNOWN },
+		viewPrefs: { ...timetable.viewPrefs },
+		...(timetable.customMetadata ? { customMetadata: { ...timetable.customMetadata } } : {})
 	};
 }

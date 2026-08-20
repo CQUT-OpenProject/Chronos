@@ -8,7 +8,7 @@
 		type TimetableCourseDisplayModel,
 		type TimetableGridModel
 	} from '@chronos/core';
-	import { CapsuleCornerStyle, TimetableLayoutMode } from '$lib/models/app-state';
+	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
 	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
@@ -62,8 +62,8 @@
 		hasWallpaper,
 		coursePalette,
 		paletteCourses,
-		layoutMode = TimetableLayoutMode.SCROLL,
-		capsuleCornerStyle = CapsuleCornerStyle.ROUNDED,
+		layoutMode = 'fixed',
+		capsuleCornerStyle = 'rounded',
 		onCourseClick,
 		onCourseLongClick
 	}: Props = $props();
@@ -108,7 +108,7 @@
 	);
 
 	const solidBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
-	const isFitLayout = $derived(layoutMode === TimetableLayoutMode.FIT);
+	const isFitLayout = $derived(layoutMode === 'compact');
 	const rowHeightCss = $derived.by(() => {
 		if (!isFitLayout || bodyViewportHeight <= 0 || gridModel.displayedPeriodCount <= 0) {
 			return SCROLL_ROW_HEIGHT;

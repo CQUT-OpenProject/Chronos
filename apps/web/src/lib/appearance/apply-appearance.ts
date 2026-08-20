@@ -1,4 +1,4 @@
-import { PaletteMode } from '$lib/models/app-state';
+import type { PaletteMode } from '@chronos/core';
 import { resolveCoursePalette, type CoursePaletteEntry } from '@chronos/core';
 
 export interface WallpaperThemeAdapter {
@@ -35,13 +35,13 @@ export async function applyAppearance(
 
 	if (target) {
 		target.classList.toggle('dark', isDark);
-		target.classList.toggle('theme-random', paletteMode === PaletteMode.RANDOM);
+		target.classList.toggle('theme-random', paletteMode === 'random');
 		target.style.colorScheme = isDark ? 'dark' : 'light';
 	}
 
 	abortIfNeeded(signal);
 
-	if (paletteMode === PaletteMode.WALLPAPER && wallpaperUri && wallpaper) {
+	if (paletteMode === 'wallpaper' && wallpaperUri && wallpaper) {
 		try {
 			const { seed, coursePalette: wallpaperPalette } =
 				await wallpaper.extractWallpaperSeed(wallpaperUri);
@@ -52,7 +52,7 @@ export async function applyAppearance(
 		} catch (error) {
 			if (signal?.aborted) throw error;
 			wallpaper.clearWallpaperTheme(target);
-			return { coursePalette: resolveCoursePalette(PaletteMode.DEFAULT, null) };
+			return { coursePalette: resolveCoursePalette('vibrant', null) };
 		}
 	}
 

@@ -3,7 +3,7 @@
 	import { register } from 'swiper/element/bundle';
 	import type { SwiperContainer } from 'swiper/element/bundle';
 	import { trackEvent } from '$lib/client/analytics';
-	import { CapsuleCornerStyle, type TimetableLayoutMode } from '$lib/models/app-state';
+	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { CoursePaletteEntry } from '@chronos/core';
 	import TimetableGrid from './TimetableGrid.svelte';
 
@@ -14,7 +14,7 @@
 		hasWallpaper,
 		coursePalette,
 		layoutMode,
-		capsuleCornerStyle = CapsuleCornerStyle.ROUNDED,
+		capsuleCornerStyle = 'rounded',
 		onCourseClick,
 		onCourseLongClick
 	}: {

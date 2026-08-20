@@ -141,7 +141,7 @@ function createTimetableScreen() {
 				let layout = cachedWeekLayouts.get(week);
 				if (!layout) {
 					layout = computeTimetableWeekLayout({
-						timetable: timetable as unknown as import('@chronos/core').Timetable,
+						timetable,
 						displayedWeek: week,
 						todayIso: today,
 						expandedSlotKeys: expandedSlots,

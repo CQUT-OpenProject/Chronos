@@ -25,4 +25,37 @@ describe('TimetableConfigJsonCodec', () => {
 		expect(decoded.viewPrefs).toEqual(viewPrefs);
 		expect(decoded.schemaVersion).toBe(1);
 	});
+
+	it('migrates legacy campusPeriodTimes off importMetadata', () => {
+		const encoded = JSON.stringify({
+			schemaVersion: 1,
+			academicConfig: {
+				termStartDate: '2026-02-23',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
+			},
+			importMetadata: {
+				source: TimetableImportSource.ONLINE_EDU,
+				campusId: 'huaxi',
+				campusPeriodTimes: {
+					huaxi: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
+				}
+			},
+			viewPrefs: {
+				showSaturday: true,
+				showSunday: true,
+				showNonCurrentWeekCourses: false
+			}
+		});
+		const decoded = decodeTimetableConfig(encoded);
+		expect(decoded.importMetadata).toEqual({
+			source: TimetableImportSource.ONLINE_EDU,
+			campusId: 'huaxi'
+		});
+		expect(
+			(decoded.customMetadata?.['source-cqut'] as { campusPeriodTimes?: { huaxi?: unknown } })
+				?.campusPeriodTimes?.huaxi
+		).toEqual([{ index: 1, startTime: '08:20', endTime: '09:05' }]);
+	});
 });

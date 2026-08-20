@@ -15,7 +15,7 @@ export interface AcademicConfigDraft {
 }
 
 export interface TimetableImportMetadataDraft {
-	source: TimetableImportSource;
+	source: TimetableImportSource | string;
 	campusId?: CqutCampusId;
 	campusPeriodTimes?: Partial<Record<CqutCampusId, PeriodTime[]>>;
 }

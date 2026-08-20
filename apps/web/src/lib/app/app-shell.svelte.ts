@@ -1,27 +1,17 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
-import {
+import { type AppState } from '$lib/models/app-state';
+import { getAppController } from '$lib/services/app-engine';
+import type {
 	CapsuleCornerStyle,
 	PaletteMode,
 	ThemeMode,
 	TimetableLayoutMode,
-	type AppState,
-	type UserPreferences,
-	themeModeFromStorage,
-	timetableLayoutModeFromStorage,
-	paletteModeFromStorage,
-	capsuleCornerStyleFromStorage
-} from '$lib/models/app-state';
-import { getAppController } from '$lib/services/app-engine';
-import type {
-	ThemeMode as CoreThemeMode,
-	PaletteMode as CorePaletteMode,
-	TimetableLayoutMode as CoreLayoutMode,
-	CapsuleCornerStyle as CoreCornerStyle
+	UserPreferences
 } from '@chronos/core';
 
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
-	if (themeMode === ThemeMode.DARK) return true;
-	if (themeMode === ThemeMode.LIGHT) return false;
+	if (themeMode === 'dark') return true;
+	if (themeMode === 'light') return false;
 	return systemPrefersDark;
 }
 
@@ -31,20 +21,10 @@ export function createAppShell() {
 	const appearance = createAppearance();
 	const controller = getAppController();
 
-	const themeMode = $derived(themeModeFromStorage(controller.userPreferences?.themeMode));
-	const timetableLayoutMode = $derived(
-		timetableLayoutModeFromStorage(
-			controller.userPreferences?.timetableLayoutMode === 'compact' ? 'fit' : 'scroll'
-		)
-	);
-	const paletteMode = $derived(
-		paletteModeFromStorage(
-			controller.userPreferences?.paletteMode === 'wallpaper' ? 'wallpaper' : 'default'
-		)
-	);
-	const capsuleCornerStyle = $derived(
-		capsuleCornerStyleFromStorage(controller.userPreferences?.capsuleCornerStyle)
-	);
+	const themeMode = $derived(controller.userPreferences?.themeMode ?? 'auto');
+	const timetableLayoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const paletteMode = $derived(controller.userPreferences?.paletteMode ?? 'vibrant');
+	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'rounded');
 	const hapticFeedbackEnabled = $derived(controller.userPreferences?.hapticFeedbackEnabled ?? true);
 
 	const isDark = $derived(resolveDark(themeMode, systemPrefersDark));
@@ -60,9 +40,7 @@ export function createAppShell() {
 		})),
 		currentTimetableId: controller.currentTimetable?.id ?? null,
 		wallpaperUri: controller.wallpaperUri,
-		currentTimetable: controller.currentTimetable as unknown as
-			| import('$lib/models/timetable').Timetable
-			| null,
+		currentTimetable: controller.currentTimetable,
 		themeMode,
 		timetableLayoutMode,
 		paletteMode,
@@ -97,39 +75,7 @@ export function createAppShell() {
 	}
 
 	async function updatePreferences(patch: Partial<UserPreferences>) {
-		const corePatch: Partial<import('@chronos/core').UserPreferences> = {};
-		if (patch.themeMode !== undefined) {
-			corePatch.themeMode = (
-				patch.themeMode === ThemeMode.DARK
-					? 'dark'
-					: patch.themeMode === ThemeMode.LIGHT
-						? 'light'
-						: 'auto'
-			) as CoreThemeMode;
-		}
-		if (patch.timetableLayoutMode !== undefined) {
-			corePatch.timetableLayoutMode = (
-				patch.timetableLayoutMode === TimetableLayoutMode.FIT ? 'compact' : 'fixed'
-			) as CoreLayoutMode;
-		}
-		if (patch.paletteMode !== undefined) {
-			corePatch.paletteMode = (
-				patch.paletteMode === PaletteMode.WALLPAPER ? 'wallpaper' : 'vibrant'
-			) as CorePaletteMode;
-		}
-		if (patch.capsuleCornerStyle !== undefined) {
-			corePatch.capsuleCornerStyle = (
-				patch.capsuleCornerStyle === CapsuleCornerStyle.SQUARE
-					? 'sharp'
-					: patch.capsuleCornerStyle === CapsuleCornerStyle.MERGE
-						? 'pill'
-						: 'rounded'
-			) as CoreCornerStyle;
-		}
-		if (patch.hapticFeedbackEnabled !== undefined) {
-			corePatch.hapticFeedbackEnabled = patch.hapticFeedbackEnabled;
-		}
-		await controller.updatePreferences(corePatch);
+		await controller.updatePreferences(patch);
 	}
 
 	async function setThemeMode(mode: ThemeMode) {

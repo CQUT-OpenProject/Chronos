@@ -1,5 +1,5 @@
 import { getCampusDefaultPeriodTimes, DEFAULT_CQUT_CAMPUS_ID } from './cqut-campus';
-import type { PeriodTime } from './timetable';
+import type { PeriodTime } from '@chronos/core';
 
 export { currentWeekMonday } from '@chronos/core';
 

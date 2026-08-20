@@ -1,13 +1,25 @@
 import { z } from 'zod';
-import { CQUT_CAMPUS_IDS } from './cqut-campus';
-import { defaultPeriodTimes } from './defaults';
 import {
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	DEFAULT_TIMETABLE_NAME,
-	normalizeTimetableName
+	normalizeTimetableName,
+	createTimetable,
+	type AcademicConfig,
+	type ImportMetadata,
+	type PeriodTime,
+	type Timetable,
+	type TimetableViewPrefs
 } from '@chronos/core';
+import { defaultPeriodTimes } from './defaults';
 
-export { CURRENT_TIMETABLE_SCHEMA_VERSION, DEFAULT_TIMETABLE_NAME, normalizeTimetableName };
+export {
+	CURRENT_TIMETABLE_SCHEMA_VERSION,
+	DEFAULT_TIMETABLE_NAME,
+	normalizeTimetableName,
+	createTimetable
+};
+export type { AcademicConfig, PeriodTime, Timetable, TimetableViewPrefs };
+export type TimetableImportMetadata = ImportMetadata;
 
 export enum TimetableImportSource {
 	UNKNOWN = 'UNKNOWN',
@@ -22,8 +34,6 @@ export const periodTimeSchema = z.object({
 	endTime: z.string()
 });
 
-export type PeriodTime = z.infer<typeof periodTimeSchema>;
-
 export const academicConfigSchema = z.object({
 	termStartDate: z.string().default(''),
 	startWeek: z.number().int().default(1),
@@ -31,25 +41,19 @@ export const academicConfigSchema = z.object({
 	periodTimes: z.array(periodTimeSchema).default(defaultPeriodTimes())
 });
 
-export type AcademicConfig = z.infer<typeof academicConfigSchema>;
-
-const cqutCampusIdSchema = z.enum(CQUT_CAMPUS_IDS);
-
-export const timetableImportMetadataSchema = z.object({
-	source: z.nativeEnum(TimetableImportSource).default(TimetableImportSource.UNKNOWN),
-	campusId: cqutCampusIdSchema.optional(),
-	campusPeriodTimes: z.record(cqutCampusIdSchema, z.array(periodTimeSchema)).optional()
-});
-
-export type TimetableImportMetadata = z.infer<typeof timetableImportMetadataSchema>;
-
 export const timetableViewPrefsSchema = z.object({
 	showSaturday: z.boolean().default(true),
 	showSunday: z.boolean().default(true),
 	showNonCurrentWeekCourses: z.boolean().default(false)
 });
 
-export type TimetableViewPrefs = z.infer<typeof timetableViewPrefsSchema>;
+const campusPeriodTimesSchema = z.record(z.string(), z.array(periodTimeSchema)).optional();
+
+export const timetableImportMetadataSchema = z.object({
+	source: z.string().default(TimetableImportSource.UNKNOWN),
+	campusId: z.string().optional(),
+	campusPeriodTimes: campusPeriodTimesSchema
+});
 
 export const timetableConfigSchema = z.object({
 	schemaVersion: z.number().int().default(1),
@@ -57,37 +61,22 @@ export const timetableConfigSchema = z.object({
 	importMetadata: timetableImportMetadataSchema
 		.optional()
 		.default(() => timetableImportMetadataSchema.parse({})),
-	viewPrefs: timetableViewPrefsSchema.optional().default(() => timetableViewPrefsSchema.parse({}))
+	viewPrefs: timetableViewPrefsSchema.optional().default(() => timetableViewPrefsSchema.parse({})),
+	customMetadata: z.record(z.unknown()).optional()
 });
 
-export type TimetableConfig = z.infer<typeof timetableConfigSchema>;
+export type StoredTimetableImportMetadata = z.infer<typeof timetableImportMetadataSchema>;
 
-export interface Timetable {
+export type TimetableConfig = {
 	schemaVersion: number;
-	id: string;
-	name: string;
-	courses: import('@chronos/core').Course[];
-	createdAt: number;
-	updatedAt: number;
 	academicConfig: AcademicConfig;
-	importMetadata: TimetableImportMetadata;
+	importMetadata: ImportMetadata;
 	viewPrefs: TimetableViewPrefs;
 	customMetadata?: Record<string, unknown>;
-}
+};
 
-export function createTimetable(
-	partial: Omit<Timetable, 'schemaVersion' | 'academicConfig' | 'importMetadata' | 'viewPrefs'> &
-		Partial<Pick<Timetable, 'schemaVersion' | 'academicConfig' | 'importMetadata' | 'viewPrefs'>>
-): Timetable {
-	const timetable = {
-		schemaVersion: CURRENT_TIMETABLE_SCHEMA_VERSION,
-		academicConfig: academicConfigSchema.parse({}),
-		importMetadata: timetableImportMetadataSchema.parse({}),
-		viewPrefs: timetableViewPrefsSchema.parse({}),
-		...partial
-	};
-	return {
-		...timetable,
-		name: normalizeTimetableName(timetable.name)
-	};
+export function slimImportMetadata(raw: StoredTimetableImportMetadata): ImportMetadata {
+	const source = raw.source.trim() || TimetableImportSource.UNKNOWN;
+	const campusId = raw.campusId?.trim();
+	return campusId ? { source, campusId } : { source };
 }

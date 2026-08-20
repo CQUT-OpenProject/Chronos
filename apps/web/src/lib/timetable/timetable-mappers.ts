@@ -8,6 +8,16 @@ import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 const academicCalendarService = new AcademicCalendarService();
 const timeProvider = new SystemTimeProvider();
 
+function readCampusPeriodTimes(
+	timetable: Timetable
+): Partial<Record<CqutCampusId, PeriodTimeDraft[]>> | undefined {
+	const cqut = timetable.customMetadata?.['source-cqut'] as
+		| { campusPeriodTimes?: Record<string, PeriodTimeDraft[]> }
+		| undefined;
+	if (!cqut?.campusPeriodTimes) return undefined;
+	return { ...cqut.campusPeriodTimes } as Partial<Record<CqutCampusId, PeriodTimeDraft[]>>;
+}
+
 export function courseToDraft(course: Course): CourseDraft {
 	return {
 		id: course.id,
@@ -43,16 +53,7 @@ export function toSettingsDraft(timetable: Timetable): TimetableSettingsDraft {
 		importMetadata: {
 			source: timetable.importMetadata?.source ?? TimetableImportSource.UNKNOWN,
 			campusId: timetable.importMetadata?.campusId as CqutCampusId | undefined,
-			campusPeriodTimes: (timetable.importMetadata?.campusPeriodTimes as
-				| Record<CqutCampusId, PeriodTimeDraft[]>
-				| undefined)
-				? {
-						...(timetable.importMetadata?.campusPeriodTimes as Record<
-							CqutCampusId,
-							PeriodTimeDraft[]
-						>)
-					}
-				: undefined
+			campusPeriodTimes: readCampusPeriodTimes(timetable)
 		},
 		viewPrefs: {
 			showSaturday: timetable.viewPrefs?.showSaturday ?? true,

@@ -20,6 +20,32 @@ const SETTINGS_KEYS = {
 
 const WALLPAPER_ID = 'default';
 
+function normalizeThemeMode(raw: string | null): import('@chronos/core').ThemeMode {
+	const value = raw?.trim().toLowerCase();
+	if (value === 'light' || value === 'dark') return value;
+	return 'auto';
+}
+
+function normalizeLayoutMode(raw: string | null): import('@chronos/core').TimetableLayoutMode {
+	const value = raw?.trim().toLowerCase();
+	if (value === 'compact' || value === 'fit') return 'compact';
+	return 'fixed';
+}
+
+function normalizePaletteMode(raw: string | null): import('@chronos/core').PaletteMode {
+	const value = raw?.trim().toLowerCase();
+	if (value === 'wallpaper') return 'wallpaper';
+	if (value === 'random' || value === 'monochrome') return 'random';
+	return 'vibrant';
+}
+
+function normalizeCornerStyle(raw: string | null): import('@chronos/core').CapsuleCornerStyle {
+	const value = raw?.trim().toLowerCase();
+	if (value === 'sharp' || value === 'square') return 'sharp';
+	if (value === 'pill' || value === 'merge') return 'pill';
+	return 'rounded';
+}
+
 /**
  * DexieStorageProvider implements the core IStorageService contract
  * using Dexie (IndexedDB) for structured records and localStorage for user preferences.
@@ -171,21 +197,15 @@ export class DexieStorageProvider implements IStorageService {
 	async getPreferences(): Promise<UserPreferences> {
 		if (!this.localStore) return { ...DEFAULT_USER_PREFERENCES };
 
-		const themeModeRaw = this.localStore.getItem(SETTINGS_KEYS.themeMode)?.toLowerCase();
-		const layoutModeRaw = this.localStore.getItem(SETTINGS_KEYS.timetableLayoutMode)?.toLowerCase();
-		const paletteModeRaw = this.localStore.getItem(SETTINGS_KEYS.paletteMode)?.toLowerCase();
-		const cornerStyleRaw = this.localStore.getItem(SETTINGS_KEYS.capsuleCornerStyle)?.toLowerCase();
+		const themeMode = normalizeThemeMode(this.localStore.getItem(SETTINGS_KEYS.themeMode));
+		const timetableLayoutMode = normalizeLayoutMode(
+			this.localStore.getItem(SETTINGS_KEYS.timetableLayoutMode)
+		);
+		const paletteMode = normalizePaletteMode(this.localStore.getItem(SETTINGS_KEYS.paletteMode));
+		const capsuleCornerStyle = normalizeCornerStyle(
+			this.localStore.getItem(SETTINGS_KEYS.capsuleCornerStyle)
+		);
 		const hapticRaw = this.localStore.getItem(SETTINGS_KEYS.hapticFeedbackEnabled);
-
-		const themeMode = themeModeRaw === 'light' || themeModeRaw === 'dark' ? themeModeRaw : 'auto';
-		const timetableLayoutMode =
-			layoutModeRaw === 'compact' || layoutModeRaw === 'fit' ? 'compact' : 'fixed';
-		const paletteMode =
-			paletteModeRaw === 'monochrome' || paletteModeRaw === 'wallpaper'
-				? paletteModeRaw
-				: 'vibrant';
-		const capsuleCornerStyle =
-			cornerStyleRaw === 'sharp' || cornerStyleRaw === 'pill' ? cornerStyleRaw : 'rounded';
 		const hapticFeedbackEnabled = hapticRaw !== '0' && hapticRaw !== 'false';
 
 		return {

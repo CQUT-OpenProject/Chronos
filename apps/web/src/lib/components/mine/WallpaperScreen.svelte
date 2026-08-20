@@ -29,7 +29,7 @@
 	const layoutResult = $derived(
 		timetable
 			? computeTimetableWeekLayout({
-					timetable: timetable as unknown as import('@chronos/core').Timetable,
+					timetable: timetable,
 					displayedWeek: academicWeek,
 					todayIso: today
 				})

@@ -21,6 +21,11 @@ export interface TimetableViewPrefs {
 	showNonCurrentWeekCourses: boolean;
 }
 
+export interface ImportMetadata {
+	source: string;
+	campusId?: string;
+}
+
 export interface Timetable {
 	schemaVersion: number; // Explicit schema version identifier (currently 1)
 	id: string;
@@ -30,6 +35,7 @@ export interface Timetable {
 	viewPrefs: TimetableViewPrefs;
 	createdAt: number;
 	updatedAt: number;
+	importMetadata?: ImportMetadata;
 	/** Timetable-level plugin metadata keyed by plugin ID or core system ID */
 	customMetadata?: Record<string, unknown>;
 }
@@ -39,6 +45,13 @@ export const DEFAULT_TIMETABLE_NAME = '未命名课表';
 export function normalizeTimetableName(name: string): string {
 	const trimmed = name.trim();
 	return trimmed.length > 0 ? trimmed : DEFAULT_TIMETABLE_NAME;
+}
+
+export function normalizeImportMetadata(meta?: ImportMetadata | null): ImportMetadata | undefined {
+	if (!meta) return undefined;
+	const source = meta.source.trim() || 'UNKNOWN';
+	const campusId = meta.campusId?.trim();
+	return campusId ? { source, campusId } : { source };
 }
 
 export function createTimetable(
@@ -54,6 +67,7 @@ export function createTimetable(
 		>
 ): Timetable {
 	const now = Date.now();
+	const importMetadata = normalizeImportMetadata(partial.importMetadata);
 	return {
 		schemaVersion: partial.schemaVersion ?? CURRENT_TIMETABLE_SCHEMA_VERSION,
 		id: partial.id,
@@ -72,6 +86,7 @@ export function createTimetable(
 		},
 		createdAt: partial.createdAt ?? now,
 		updatedAt: partial.updatedAt ?? now,
+		...(importMetadata ? { importMetadata } : {}),
 		...(partial.customMetadata ? { customMetadata: { ...partial.customMetadata } } : {})
 	};
 }

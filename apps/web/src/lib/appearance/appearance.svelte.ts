@@ -1,4 +1,3 @@
-import { PaletteMode } from '$lib/models/app-state';
 import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from '@chronos/core';
 import {
 	applyAppearance,
@@ -13,7 +12,7 @@ export function createAppearance() {
 	async function apply(input: ApplyAppearanceInput, signal?: AbortSignal) {
 		if (typeof document === 'undefined') return;
 
-		if (input.paletteMode === PaletteMode.WALLPAPER) {
+		if (input.paletteMode === 'wallpaper') {
 			wallpaperModule ??= await import('$lib/m3/apply-wallpaper-theme');
 		}
 
