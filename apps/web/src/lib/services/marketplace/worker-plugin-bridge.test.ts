@@ -6,7 +6,11 @@ import {
 	type PluginManifest,
 	type UserPreferences
 } from '@chronos/core';
-import { WorkerPluginBridge, type WorkerRpcMessage } from './worker-plugin-bridge';
+import {
+	WorkerPluginBridge,
+	InProcessSandboxAdapter,
+	type WorkerRpcMessage
+} from './worker-plugin-bridge';
 
 class MockWorker implements Worker {
 	onmessage: ((this: Worker, ev: MessageEvent<WorkerRpcMessage>) => unknown) | null = null;
@@ -363,5 +367,41 @@ describe('WorkerPluginBridge', () => {
 		expect(engine.slots.get('export.action').some((e) => e.id === 'custom-export')).toBe(false);
 		expect(engine.slots.get('mine.section').some((s) => s.id === 'custom-sec')).toBe(false);
 		expect(engine.slots.get('mine.item').some((i) => i.id === 'custom-item')).toBe(false);
+	});
+
+	it('applies plugin code in-process and round-trips slot registration', async () => {
+		const manifest: PluginManifest = {
+			id: 'in-process-plugin',
+			name: { 'zh-CN': '进程内' },
+			version: '1.0.0',
+			description: { 'zh-CN': '测试' },
+			author: 'Test',
+			type: 'tool',
+			bundleFormat: 'iife',
+			minEngineVersion: '1.0.0',
+			bundleUrl: '/in-process.js',
+			sha256: '',
+			capabilities: ['storage']
+		};
+		const code = `
+			exports.default = {
+				apply(ctx) {
+					ctx.registerSlot('mine.item', {
+						id: 'hello-item',
+						sectionId: 'app-support',
+						title: function() { return 'Hello'; }
+					});
+				}
+			};
+		`;
+		const adapter = new InProcessSandboxAdapter(manifest, code);
+		const bridge = new WorkerPluginBridge(manifest, code, engine, adapter);
+		await bridge.start();
+
+		await vi.waitFor(() => {
+			expect(engine.slots.get('mine.item').some((item) => item.id === 'hello-item')).toBe(true);
+		});
+
+		bridge.dispose();
 	});
 });

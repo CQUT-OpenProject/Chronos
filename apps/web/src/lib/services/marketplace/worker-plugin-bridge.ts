@@ -14,6 +14,8 @@ import type {
 	ConfigSchema,
 	ThemeContribution
 } from '@chronos/core';
+import { IHttpService, IStorageService } from '@chronos/core';
+import { InProcessSandboxAdapter } from './in-process-sandbox-adapter';
 
 export interface WorkerRpcMessage {
 	id?: string;
@@ -65,61 +67,7 @@ export function isAllowedDomain(targetUrl: string, allowedDomains?: string[]): b
 	});
 }
 
-class HeadlessSandboxWorker implements Worker {
-	onmessage: ((this: Worker, ev: MessageEvent<WorkerRpcMessage>) => unknown) | null = null;
-	onmessageerror: ((this: Worker, ev: MessageEvent) => unknown) | null = null;
-	onerror: ((this: AbstractWorker, ev: ErrorEvent) => unknown) | null = null;
-	private terminated = false;
-
-	constructor(manifest: PluginManifest, code: string) {
-		queueMicrotask(() => {
-			if (this.terminated) return;
-			try {
-				const fn = new Function('module', 'exports', 'ctx', code);
-				const moduleObj: { exports: Record<string, unknown> } = { exports: {} };
-				const res = fn(moduleObj, moduleObj.exports, {});
-				const plugin =
-					(moduleObj.exports.default as { apply?: unknown }) ||
-					(moduleObj.exports.plugin as { apply?: unknown }) ||
-					(moduleObj.exports as { apply?: unknown }) ||
-					(res as { apply?: unknown });
-				if (plugin && typeof plugin.apply === 'function') {
-					// Plugin executed
-				}
-				this.emitToHost({
-					method: 'plugin:initialized',
-					params: { pluginId: manifest.id },
-					ok: true
-				});
-			} catch (err: unknown) {
-				const error = err instanceof Error ? err.message : String(err);
-				this.emitToHost({
-					method: 'plugin:initError',
-					params: { pluginId: manifest.id, error },
-					ok: false
-				});
-			}
-		});
-	}
-
-	postMessage(_message: WorkerRpcMessage): void {
-		// Host to Worker
-	}
-
-	private emitToHost(data: WorkerRpcMessage): void {
-		if (this.onmessage) {
-			this.onmessage.call(this, { data } as MessageEvent<WorkerRpcMessage>);
-		}
-	}
-
-	terminate(): void {
-		this.terminated = true;
-	}
-
-	addEventListener = () => {};
-	removeEventListener = () => {};
-	dispatchEvent = () => true;
-}
+export { InProcessSandboxAdapter } from './in-process-sandbox-adapter';
 
 export class WorkerPluginBridge implements Disposable {
 	private worker: Worker | null = null;
@@ -163,7 +111,7 @@ export class WorkerPluginBridge implements Disposable {
 			this.worker = new Worker(workerUrl);
 			URL.revokeObjectURL(workerUrl);
 		} else {
-			this.worker = new HeadlessSandboxWorker(this.manifest, this.code);
+			this.worker = new InProcessSandboxAdapter(this.manifest, this.code);
 		}
 
 		if (!this.worker) {
@@ -244,7 +192,9 @@ export class WorkerPluginBridge implements Disposable {
 						);
 					}
 				}
-				return this.engine.env.http.request(url, params.options as HttpRequestOptions | undefined);
+				return this.engine.services
+					.get(IHttpService)
+					.request(url, params.options as HttpRequestOptions | undefined);
 			}
 		}
 
@@ -253,14 +203,15 @@ export class WorkerPluginBridge implements Disposable {
 			if (!perms.includes('storage')) {
 				throw new Error('Permission Denied: storage capability required');
 			}
+			const storage = this.engine.services.get(IStorageService);
 			const key = params.key as string;
 			switch (method) {
 				case 'storage:get':
-					return this.engine.env.storage.getPluginData(this.manifest.id, key);
+					return storage.getPluginData(this.manifest.id, key);
 				case 'storage:set':
-					return this.engine.env.storage.setPluginData(this.manifest.id, key, params.value);
+					return storage.setPluginData(this.manifest.id, key, params.value);
 				case 'storage:delete':
-					return this.engine.env.storage.deletePluginData(this.manifest.id, key);
+					return storage.deletePluginData(this.manifest.id, key);
 			}
 		}
 
@@ -268,12 +219,12 @@ export class WorkerPluginBridge implements Disposable {
 		if (method === 'config:update') {
 			const patch = (params.patch as Record<string, unknown>) || {};
 			const current =
-				(await this.engine.env.storage.getPluginData<Record<string, unknown>>(
+				(await this.engine.storage.getPluginData<Record<string, unknown>>(
 					this.manifest.id,
 					'__config__'
 				)) || {};
 			const updated = { ...current, ...patch };
-			await this.engine.env.storage.setPluginData(this.manifest.id, '__config__', updated);
+			await this.engine.storage.setPluginData(this.manifest.id, '__config__', updated);
 			this.engine.events.emit('config:changed', {
 				pluginId: this.manifest.id,
 				config: updated
@@ -283,7 +234,7 @@ export class WorkerPluginBridge implements Disposable {
 
 		if (method === 'config:get') {
 			return (
-				(await this.engine.env.storage.getPluginData<Record<string, unknown>>(
+				(await this.engine.storage.getPluginData<Record<string, unknown>>(
 					this.manifest.id,
 					'__config__'
 				)) || {}
