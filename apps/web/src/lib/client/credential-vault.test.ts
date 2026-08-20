@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { createCredentialVault } from '$lib/client/credential-vault';
+import { CQUT_PASSWORD_SECRET_KEY, createCredentialVault } from '$lib/client/credential-vault';
 import {
 	readOnlineCredentialRecord,
 	writeOnlineCredentialRecord
@@ -55,7 +55,7 @@ describe('CredentialVault', () => {
 
 		const record = readOnlineCredentialRecord(storage);
 		expect(record).toEqual({ mode: 'account_only', account: '20240101' });
-		expect(await vaultPort.getSecret('cqut-online-password')).toBeNull();
+		expect(await vaultPort.getSecret(CQUT_PASSWORD_SECRET_KEY)).toBeNull();
 	});
 
 	it('stores password on IVaultService when supported', async () => {
@@ -65,7 +65,7 @@ describe('CredentialVault', () => {
 		const saveResult = await vault.save('20240101', 'secret');
 		expect(saveResult.ok).toBe(true);
 		expect(readOnlineCredentialRecord(storage)).toEqual({ mode: 'vault', account: '20240101' });
-		expect(await vaultPort.getSecret('cqut-online-password')).toBe('secret');
+		expect(await vaultPort.getSecret(CQUT_PASSWORD_SECRET_KEY)).toBe('secret');
 
 		const unlock = await vault.unlock();
 		expect(unlock.ok).toBe(true);
@@ -82,7 +82,7 @@ describe('CredentialVault', () => {
 		const result = await vault.clear();
 		expect(result.ok).toBe(true);
 		expect(readOnlineCredentialRecord(storage)).toBeNull();
-		expect(await vaultPort.getSecret('cqut-online-password')).toBeNull();
+		expect(await vaultPort.getSecret(CQUT_PASSWORD_SECRET_KEY)).toBeNull();
 	});
 
 	it('treats leftover account-only records as unlock failures', async () => {

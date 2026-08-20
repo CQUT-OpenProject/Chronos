@@ -4,6 +4,7 @@ import {
 	WebAuthnVaultProvider,
 	MemoryVaultProvider,
 	WebHttpProxyProvider,
+	CqutOnlineHttpAdapter,
 	WebRuntimeProvider,
 	WebAnalyticsProvider,
 	createWebProviders,
@@ -198,7 +199,7 @@ describe('Web Providers', () => {
 	});
 
 	it('WebHttpProxyProvider enforces SSRF and domain whitelist protection', async () => {
-		const http = new WebHttpProxyProvider(['authserver.cqut.edu.cn', '*.cqut.edu.cn']);
+		const http = new WebHttpProxyProvider(['allowed.example.com']);
 
 		// SSRF attack: loopback
 		await expect(http.request('http://127.0.0.1:8080/admin', { bypassCors: true })).rejects.toThrow(
@@ -247,7 +248,7 @@ describe('Web Providers', () => {
 		const providers = createWebProviders({ database: db, localStorage });
 		expect(providers.storage).toBeInstanceOf(DexieStorageProvider);
 		expect(providers.vault).toBeInstanceOf(WebAuthnVaultProvider);
-		expect(providers.http).toBeInstanceOf(WebHttpProxyProvider);
+		expect(providers.http).toBeInstanceOf(CqutOnlineHttpAdapter);
 		expect(providers.runtime).toBeInstanceOf(WebRuntimeProvider);
 		expect(providers.analytics).toBeInstanceOf(WebAnalyticsProvider);
 	});

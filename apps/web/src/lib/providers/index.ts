@@ -11,6 +11,7 @@ import { DexieStorageProvider } from './dexie-storage';
 import { MemoryVaultProvider } from './memory-vault';
 import { WebAuthnVaultProvider } from './webauthn-vault';
 import { WebHttpProxyProvider } from './web-http';
+import { CqutOnlineHttpAdapter } from './cqut-online-http';
 import { WebRuntimeProvider } from './web-runtime';
 import { WebAnalyticsProvider } from './web-analytics';
 
@@ -19,6 +20,7 @@ export {
 	WebAuthnVaultProvider,
 	MemoryVaultProvider,
 	WebHttpProxyProvider,
+	CqutOnlineHttpAdapter,
 	WebRuntimeProvider,
 	WebAnalyticsProvider
 };
@@ -36,7 +38,7 @@ export function createWebProviders(options?: WebProviderOptions) {
 	return {
 		storage: new DexieStorageProvider(options?.database, options?.localStorage),
 		vault: new WebAuthnVaultProvider(options?.localStorage),
-		http: new WebHttpProxyProvider(options?.allowedDomains),
+		http: new CqutOnlineHttpAdapter(new WebHttpProxyProvider(options?.allowedDomains)),
 		runtime: new WebRuntimeProvider(),
 		analytics: new WebAnalyticsProvider()
 	};
