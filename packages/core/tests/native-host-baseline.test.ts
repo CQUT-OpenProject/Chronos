@@ -159,9 +159,10 @@ describe('Native Host Baseline (iOS JSCore / Android QuickJS)', () => {
 		expect(engine.slots.get('import.source.tab').length).toBeGreaterThanOrEqual(3);
 		expect(engine.slots.get('export.action').length).toBeGreaterThanOrEqual(1);
 
-		expect(engine.slots.getSlotItem('import.source.tab', 'share-json')).toBeDefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'share-link')).toBeDefined();
 		expect(engine.slots.getSlotItem('import.source.tab', 'cqut-online')).toBeDefined();
 		expect(engine.slots.getSlotItem('import.source.tab', 'edu-html')).toBeDefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'share-json')).toBeUndefined();
 		expect(engine.slots.getSlotItem('export.action', 'share-json')).toBeDefined();
 
 		// 5. Verify JSON export via standard slot

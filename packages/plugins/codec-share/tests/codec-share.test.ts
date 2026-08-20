@@ -87,8 +87,9 @@ describe('shareCodecPlugin', () => {
 
 		const handle = await engine.loadPlugin(shareCodecPlugin);
 
-		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'share-json');
+		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'share-link');
 		expect(sourceSlot).toBeDefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'share-json')).toBeUndefined();
 
 		const exportSlot = engine.slots.getSlotItem('export.action', 'share-json');
 		expect(exportSlot).toBeDefined();
@@ -98,12 +99,8 @@ describe('shareCodecPlugin', () => {
 		expect(exported.filename).toBe('计算机课表.json');
 		expect(exported.mimeType).toBe('application/json');
 
-		const imported = await sourceSlot!.executeImport({ file: exported.content as string }, ctx);
-		expect(imported.name).toBe('计算机课表');
-		expect(imported.courses[0]?.name).toBe('操作系统');
-
 		handle.dispose();
-		expect(engine.slots.getSlotItem('import.source.tab', 'share-json')).toBeUndefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'share-link')).toBeUndefined();
 		expect(engine.slots.getSlotItem('export.action', 'share-json')).toBeUndefined();
 	});
 });
