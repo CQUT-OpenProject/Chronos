@@ -1,12 +1,11 @@
-import type { ChronosEngine } from '@chronos/core';
+import type { ChronosEngine, PaletteMode } from '@chronos/core';
 import {
 	YUMEMITA_THEME_ID,
 	YUMEMITA_PRIMARY,
 	YUMEMITA_SECONDARY
 } from '@chronos/plugin-theme-yumemita';
 import { applyThemeTokens } from '@chronos/ui-kit';
-
-const M3_DEFAULT_THEME_ID = 'm3-default';
+import { M3_DEFAULT_THEME_ID } from '$lib/appearance/color-scheme';
 
 function clearThemeInlineVars(target: HTMLElement) {
 	for (const prop of target.style) {
@@ -20,19 +19,23 @@ export function applyActiveTheme(
 	engine: ChronosEngine,
 	activeThemeId: string,
 	isDark: boolean,
-	target?: HTMLElement
+	options?: { paletteMode?: PaletteMode; target?: HTMLElement }
 ): void {
-	const el = target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
+	const el =
+		options?.target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
 	if (!el) return;
 
-	el.classList.toggle('theme-yumemita', activeThemeId === YUMEMITA_THEME_ID);
+	const effectiveThemeId =
+		options?.paletteMode === 'wallpaper' ? M3_DEFAULT_THEME_ID : activeThemeId;
 
-	if (activeThemeId === M3_DEFAULT_THEME_ID) {
+	el.classList.toggle('theme-yumemita', effectiveThemeId === YUMEMITA_THEME_ID);
+
+	if (effectiveThemeId === M3_DEFAULT_THEME_ID) {
 		clearThemeInlineVars(el);
 		return;
 	}
 
-	const theme = engine.themes.getTheme(activeThemeId);
+	const theme = engine.themes.getTheme(effectiveThemeId);
 	if (!theme) {
 		clearThemeInlineVars(el);
 		return;
@@ -40,7 +43,7 @@ export function applyActiveTheme(
 
 	applyThemeTokens(theme.getTokens(isDark ? 'dark' : 'light'), el);
 
-	if (activeThemeId === YUMEMITA_THEME_ID) {
+	if (effectiveThemeId === YUMEMITA_THEME_ID) {
 		el.style.setProperty('--ee-primary', YUMEMITA_PRIMARY);
 		el.style.setProperty('--ee-secondary', YUMEMITA_SECONDARY);
 	} else {

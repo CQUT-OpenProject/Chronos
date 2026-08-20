@@ -89,6 +89,33 @@ describe('applyAppearance', () => {
 		expect(result.coursePalette).toBe(EASTER_EGG_PALETTE_ENTRIES);
 	});
 
+	it('prefers wallpaper palette over active YUMEMITA theme id', async () => {
+		const target = createFakeElement();
+		const customPalette = [{ background: '#fedcba', foreground: '#111' }];
+		const extractWallpaperSeed = vi.fn().mockResolvedValue({
+			seed: 7,
+			coursePalette: customPalette
+		});
+		const { wallpaper, paintWallpaperTheme, clearWallpaperTheme } = createWallpaperAdapter({
+			extractWallpaperSeed
+		});
+
+		const result = await applyAppearance(
+			{
+				paletteMode: 'wallpaper',
+				isDark: false,
+				wallpaperUri: 'blob:wallpaper',
+				activeThemeId: YUMEMITA_THEME_ID
+			},
+			{ target, wallpaper }
+		);
+
+		expect(extractWallpaperSeed).toHaveBeenCalledWith('blob:wallpaper');
+		expect(paintWallpaperTheme).toHaveBeenCalledWith(7, false, target);
+		expect(clearWallpaperTheme).not.toHaveBeenCalledWith(target);
+		expect(result.coursePalette).toBe(customPalette);
+	});
+
 	it('extracts and paints wallpaper theme when WALLPAPER has a uri', async () => {
 		const target = createFakeElement();
 		const customPalette = [{ background: '#fedcba', foreground: '#111' }];

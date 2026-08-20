@@ -1,4 +1,5 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
+import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { type AppState } from '$lib/models/app-state';
 import { getAppController, getAppEngine } from '$lib/services/app-engine';
 import { createCredentialVault } from '$lib/client/credential-vault';
@@ -80,6 +81,20 @@ export function createAppShell() {
 		await controller.updatePreferences(patch);
 	}
 
+	async function setColorScheme(schemeId: string) {
+		const patch = buildColorSchemePatch(schemeId);
+		controller.setTheme(patch.themeId);
+		await updatePreferences({
+			paletteMode: patch.paletteMode,
+			visualThemeId: patch.visualThemeId
+		});
+	}
+
+	async function setVisualTheme(themeId: string) {
+		controller.setTheme(themeId);
+		await updatePreferences({ visualThemeId: themeId });
+	}
+
 	async function setThemeMode(mode: ThemeMode) {
 		await updatePreferences({ themeMode: mode });
 	}
@@ -140,6 +155,8 @@ export function createAppShell() {
 		destroy,
 		updatePreferences,
 		setThemeMode,
+		setColorScheme,
+		setVisualTheme,
 		setTimetableLayoutMode,
 		setPaletteMode,
 		setCapsuleCornerStyle,

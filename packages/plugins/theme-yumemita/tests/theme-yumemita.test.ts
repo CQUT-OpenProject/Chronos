@@ -76,12 +76,12 @@ describe('@chronos/plugin-theme-yumemita', () => {
 		expect(paint.background).toBe(EASTER_EGG_PALETTE_ENTRIES[0]!.background);
 	});
 
-	it('apply registers theme slot and sets active theme', async () => {
+	it('apply registers theme slot without auto-selecting theme', async () => {
 		const engine = new ChronosEngine({ env: createMockEnv() });
 		const ctx = engine.getPluginContext(YUMEMITA_PLUGIN_ID);
 		await yumemitaThemePlugin.apply(ctx);
 		expect(engine.slots.get('theme.definition').some((t) => t.id === YUMEMITA_THEME_ID)).toBe(true);
-		expect(engine.state.activeThemeId).toBe(YUMEMITA_THEME_ID);
+		expect(engine.state.activeThemeId).toBe('m3-default');
 		engine.dispose();
 	});
 });

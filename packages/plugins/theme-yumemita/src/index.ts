@@ -29,6 +29,5 @@ export const yumemitaThemePlugin: ChronosPlugin = {
 
 	apply(ctx: ChronosContext) {
 		ctx.registerSlot('theme.definition', yumemitaThemeContribution);
-		ctx.actions.setTheme(YUMEMITA_THEME_ID);
 	}
 };

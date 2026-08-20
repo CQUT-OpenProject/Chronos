@@ -60,6 +60,7 @@ describe('TimetableScreenController', () => {
 		setThemeMode: async () => {},
 		setTimetableLayoutMode: async () => {},
 		setPaletteMode: async () => {},
+		setColorScheme: async () => {},
 		setCapsuleCornerStyle: async () => {},
 		setHapticFeedbackEnabled: async () => {},
 		setWallpaper: async () => {},

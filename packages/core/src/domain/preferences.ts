@@ -12,6 +12,8 @@ export interface UserPreferences {
 	timetableLayoutMode: TimetableLayoutMode;
 	capsuleCornerStyle: CapsuleCornerStyle;
 	hapticFeedbackEnabled: boolean;
+	/** Active visual theme id (e.g. m3-default, yumemita). */
+	visualThemeId?: string;
 	customMetadata?: Record<string, unknown>;
 }
 
@@ -21,5 +23,6 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
 	paletteMode: 'vibrant',
 	timetableLayoutMode: 'fixed',
 	capsuleCornerStyle: 'rounded',
-	hapticFeedbackEnabled: true
+	hapticFeedbackEnabled: true,
+	visualThemeId: 'm3-default'
 };

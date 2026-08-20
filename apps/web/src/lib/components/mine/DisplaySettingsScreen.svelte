@@ -1,22 +1,16 @@
 <script lang="ts">
-	import type {
-		CapsuleCornerStyle,
-		PaletteMode,
-		ThemeMode,
-		TimetableLayoutMode
-	} from '@chronos/core';
+	import type { CapsuleCornerStyle, ThemeMode, TimetableLayoutMode } from '@chronos/core';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
+	import { getAppEngine } from '$lib/services/app-engine';
+	import {
+		BUILTIN_COLOR_SCHEME_VIBRANT,
+		BUILTIN_COLOR_SCHEME_WALLPAPER,
+		resolveColorSchemeId
+	} from '$lib/appearance/color-scheme';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
-	import {
-		AutoModeFill,
-		DarkModeFill,
-		LightModeFill,
-		PaletteFill,
-		WallpaperFill
-	} from '$lib/icons';
 	import { haptic } from '$lib/haptic/haptic';
 
 	let { shell }: { shell: AppShellController } = $props();
@@ -24,42 +18,51 @@
 	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
 	const paletteMode = $derived(shell.state.appState.paletteMode);
 	const capsuleCornerStyle = $derived(shell.state.appState.capsuleCornerStyle);
+	const hasWallpaper = $derived(shell.state.hasWallpaper);
+	const visualThemeId = $derived(shell.controller.activeThemeId);
+	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
+
+	const colorSchemeOptions = $derived.by(() => {
+		const builtin = [
+			{
+				id: BUILTIN_COLOR_SCHEME_VIBRANT,
+				label: '默认',
+				description: '使用 Chronos 品牌配色',
+				disabled: false
+			},
+			{
+				id: BUILTIN_COLOR_SCHEME_WALLPAPER,
+				label: '壁纸',
+				description: hasWallpaper ? '从当前壁纸提取配色' : '请先设置壁纸后再使用',
+				disabled: !hasWallpaper
+			}
+		];
+
+		const pluginThemes = getAppEngine()
+			.themes.getThemes()
+			.filter((theme) => theme.id !== 'm3-default')
+			.map((theme) => ({
+				id: theme.id,
+				label: theme.name(),
+				description: undefined as string | undefined,
+				disabled: false
+			}));
+
+		return [...builtin, ...pluginThemes];
+	});
 
 	const themeOptions = [
 		{
 			mode: 'light' as const,
-			label: '亮色主题',
-			Icon: LightModeFill,
-			iconTone: 'primary' as const
+			label: '亮色主题'
 		},
 		{
 			mode: 'dark' as const,
-			label: '暗色主题',
-			Icon: DarkModeFill,
-			iconTone: 'primary' as const
+			label: '暗色主题'
 		},
 		{
 			mode: 'auto' as const,
-			label: '跟随系统',
-			Icon: AutoModeFill,
-			iconTone: 'primary' as const
-		}
-	] as const;
-
-	const paletteOptions = [
-		{
-			mode: 'vibrant' as const,
-			label: '默认',
-			description: '使用 Chronos 品牌配色',
-			Icon: PaletteFill,
-			iconTone: 'primary' as const
-		},
-		{
-			mode: 'wallpaper' as const,
-			label: '壁纸',
-			description: '从当前壁纸提取配色',
-			Icon: WallpaperFill,
-			iconTone: 'primary' as const
+			label: '跟随系统'
 		}
 	] as const;
 
@@ -94,16 +97,18 @@
 		}
 	] as const;
 
+	async function selectColorScheme(schemeId: string) {
+		const option = colorSchemeOptions.find((entry) => entry.id === schemeId);
+		if (!option || option.disabled) return;
+		haptic.light();
+		trackEvent('settings_color_scheme_change', { schemeId });
+		await shell.setColorScheme(schemeId);
+	}
+
 	async function selectThemeMode(mode: ThemeMode) {
 		haptic.light();
 		trackEvent('settings_theme_change', { mode });
 		await shell.setThemeMode(mode);
-	}
-
-	async function selectPaletteMode(mode: PaletteMode) {
-		haptic.light();
-		trackEvent('settings_color_scheme_change', { mode });
-		await shell.setPaletteMode(mode);
 	}
 
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
@@ -123,13 +128,7 @@
 	<MineSection title="主题模式">
 		{#each themeOptions as option (option.mode)}
 			{@const selected = themeMode === option.mode}
-			<MineRow
-				label={true}
-				title={option.label}
-				icon={option.Icon}
-				iconTone={option.iconTone}
-				onclick={() => selectThemeMode(option.mode)}
-			>
+			<MineRow label={true} title={option.label} onclick={() => selectThemeMode(option.mode)}>
 				{#snippet trailing()}
 					<Radio
 						name="theme-mode"
@@ -142,21 +141,20 @@
 	</MineSection>
 
 	<MineSection title="配色方案">
-		{#each paletteOptions as option (option.mode)}
-			{@const selected = paletteMode === option.mode}
+		{#each colorSchemeOptions as option (option.id)}
+			{@const selected = activeColorSchemeId === option.id}
 			<MineRow
 				label={true}
 				title={option.label}
 				supporting={option.description}
-				icon={option.Icon}
-				iconTone={option.iconTone}
-				onclick={() => selectPaletteMode(option.mode)}
+				onclick={() => !option.disabled && selectColorScheme(option.id)}
 			>
 				{#snippet trailing()}
 					<Radio
-						name="palette-mode"
+						name="color-scheme"
 						checked={selected}
-						onchange={() => selectPaletteMode(option.mode)}
+						disabled={option.disabled}
+						onchange={() => selectColorScheme(option.id)}
 					/>
 				{/snippet}
 			</MineRow>

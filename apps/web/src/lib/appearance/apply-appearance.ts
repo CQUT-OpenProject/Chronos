@@ -42,11 +42,6 @@ export async function applyAppearance(
 
 	abortIfNeeded(signal);
 
-	if (activeThemeId === YUMEMITA_THEME_ID) {
-		wallpaper?.clearWallpaperTheme(target);
-		return { coursePalette: EASTER_EGG_PALETTE_ENTRIES };
-	}
-
 	if (paletteMode === 'wallpaper' && wallpaperUri && wallpaper) {
 		try {
 			const { seed, coursePalette: wallpaperPalette } =
@@ -60,6 +55,11 @@ export async function applyAppearance(
 			wallpaper.clearWallpaperTheme(target);
 			return { coursePalette: resolveCoursePalette('vibrant', null) };
 		}
+	}
+
+	if (activeThemeId === YUMEMITA_THEME_ID) {
+		wallpaper?.clearWallpaperTheme(target);
+		return { coursePalette: EASTER_EGG_PALETTE_ENTRIES };
 	}
 
 	wallpaper?.clearWallpaperTheme(target);
