@@ -2,10 +2,16 @@ import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { cqutPlugin } from '@chronos/plugin-source-cqut';
 import { htmlParserPlugin } from '@chronos/plugin-parser-html';
 import { shareCodecPlugin } from '@chronos/plugin-codec-share';
+import { coreShellPlugin } from '$lib/boot/core-shell';
 
 declare const __CHRONOS_PROFILE__: string;
 
-export const availablePlugins: ChronosPlugin[] = [cqutPlugin, htmlParserPlugin, shareCodecPlugin];
+export const availablePlugins: ChronosPlugin[] = [
+	coreShellPlugin,
+	cqutPlugin,
+	htmlParserPlugin,
+	shareCodecPlugin
+];
 
 const defaultProfile: ChronosProfile = {
 	profileId: 'chronos-default',
@@ -14,6 +20,7 @@ const defaultProfile: ChronosProfile = {
 	description: '包含标准 HTML 课表导入、分享短链与标准备份能力',
 	defaultTheme: 'm3-default',
 	plugins: [
+		{ id: 'core-shell', enabled: true },
 		{ id: 'parser-html', enabled: true },
 		{ id: 'codec-share', enabled: true }
 	],
@@ -31,6 +38,7 @@ const cqutProfile: ChronosProfile = {
 	description: '专为重庆理工大学定制，内置知行理工教务直连与校区专属节次',
 	defaultTheme: 'm3-default',
 	plugins: [
+		{ id: 'core-shell', enabled: true },
 		{
 			id: 'source-cqut',
 			enabled: true,

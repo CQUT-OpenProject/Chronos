@@ -2,7 +2,6 @@ import { ChronosEngine, ProfileManager } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
 import { availablePlugins, resolveActiveProfile } from '$lib/boot/profile-registry';
-import { registerCoreShellSlots } from '$lib/boot/core-shell';
 import { MarketplaceService } from '$lib/services/marketplace/marketplace-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
 import * as m from '$lib/paraglide/messages.js';
@@ -15,7 +14,11 @@ let engineInitPromise: Promise<ChronosEngine> | null = null;
 let profileManager: ProfileManager | null = null;
 
 function createEngine(options?: WebProviderOptions): ChronosEngine {
-	const env = createWebChronosEnv(options);
+	const profile = resolveActiveProfile();
+	const enableCqutProxy = profile.plugins.some(
+		(entry) => entry.id === 'source-cqut' && entry.enabled !== false
+	);
+	const env = createWebChronosEnv({ ...options, enableCqutProxy });
 	return new ChronosEngine({
 		env,
 		initialLocale: baseLocale ?? 'zh-cn',
@@ -39,7 +42,6 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 
 async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	engine.themes.registerTheme(m3DefaultTheme);
-	registerCoreShellSlots(engine);
 
 	profileManager = new ProfileManager(engine);
 	const profile = resolveActiveProfile();

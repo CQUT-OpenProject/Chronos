@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { getAppEngine, getAppController, resetAppEngine, ensureEngineReady } from './app-engine';
+import { getAppController, resetAppEngine, ensureEngineReady } from './app-engine';
 import type { ChronosDB } from '$lib/storage/db';
 
 class MockLocalStorage implements Storage {

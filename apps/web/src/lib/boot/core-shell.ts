@@ -1,48 +1,48 @@
-import type { ChronosEngine } from '@chronos/core';
+import type { ChronosPlugin, ChronosContext } from '@chronos/core';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 
 export const CORE_SHELL_PLUGIN_ID = 'core-shell';
 
-export function registerCoreShellSlots(engine: ChronosEngine): void {
-	engine.slots.register('shell.bottom-bar.tab', {
+function registerCoreShellSlots(ctx: ChronosContext): void {
+	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'timetable',
 		label: () => '课表',
 		href: '/',
 		order: 10
 	});
 
-	engine.slots.register('shell.bottom-bar.tab', {
+	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'mine',
 		label: () => '我的',
 		href: '/mine',
 		order: 20
 	});
 
-	engine.slots.register('mine.section', {
+	ctx.registerSlot('mine.section', {
 		id: 'timetable-management',
 		title: () => '课表管理',
 		order: 10
 	});
 
-	engine.slots.register('mine.section', {
+	ctx.registerSlot('mine.section', {
 		id: 'data-sync',
 		title: () => '数据与分享',
 		order: 20
 	});
 
-	engine.slots.register('mine.section', {
+	ctx.registerSlot('mine.section', {
 		id: 'appearance-feedback',
 		title: () => '个性化',
 		order: 30
 	});
 
-	engine.slots.register('mine.section', {
+	ctx.registerSlot('mine.section', {
 		id: 'app-support',
 		title: () => '应用与支持',
 		order: 40
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'manage-timetables',
 		sectionId: 'timetable-management',
 		title: () => '管理课程表',
@@ -52,7 +52,7 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 10
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'import',
 		sectionId: 'data-sync',
 		title: () => '导入课程表',
@@ -62,7 +62,7 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 10
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'export',
 		sectionId: 'data-sync',
 		title: () => '分享课程表',
@@ -72,7 +72,7 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 20
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'display',
 		sectionId: 'appearance-feedback',
 		title: () => '显示设置',
@@ -82,7 +82,7 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 10
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'feedback',
 		sectionId: 'appearance-feedback',
 		title: () => '反馈设置',
@@ -92,7 +92,7 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 20
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'wallpaper',
 		sectionId: 'appearance-feedback',
 		title: () => '设置课表壁纸',
@@ -102,7 +102,7 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 30
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'plugins',
 		sectionId: 'app-support',
 		title: () => '插件中心',
@@ -113,7 +113,7 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 5
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'install',
 		sectionId: 'app-support',
 		title: () => '安装 Chronos',
@@ -129,7 +129,7 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 10
 	});
 
-	engine.slots.register('mine.item', {
+	ctx.registerSlot('mine.item', {
 		id: 'about',
 		sectionId: 'app-support',
 		title: () => '关于 Chronos',
@@ -139,3 +139,15 @@ export function registerCoreShellSlots(engine: ChronosEngine): void {
 		order: 20
 	});
 }
+
+export const coreShellPlugin: ChronosPlugin = {
+	id: CORE_SHELL_PLUGIN_ID,
+	name: () => '核心外壳',
+	version: '1.0.0',
+	description: () => '底部导航与「我的」页基础插槽',
+	category: 'tool',
+	order: 0,
+	apply(ctx) {
+		registerCoreShellSlots(ctx);
+	}
+};
