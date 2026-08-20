@@ -152,6 +152,16 @@
 			order: 40,
 			items: [
 				{
+					id: 'plugins',
+					title: '插件中心',
+					supporting: '管理已安装插件与在线市场',
+					href: resolve('/plugins'),
+					icon: CodeFill,
+					iconTone: 'secondary',
+					keywords: ['插件', '市场', '扩展', 'plugin', 'marketplace', '主题', '工具', '同步'],
+					order: 5
+				},
+				{
 					id: 'install',
 					title: '安装 Chronos',
 					supporting: pwaInstallController.isStandalone
