@@ -10,9 +10,9 @@ import {
 	type Timetable,
 	type HttpResponse
 } from '../src/index';
-import { cqutPlugin } from '../../plugins/src/source-cqut/index';
-import { htmlParserPlugin } from '../../plugins/src/parser-html/index';
-import { shareCodecPlugin } from '../../plugins/src/codec-share/index';
+import { cqutPlugin } from '../../plugins/source-cqut/src/index';
+import { htmlParserPlugin } from '../../plugins/parser-html/src/index';
+import { shareCodecPlugin } from '../../plugins/codec-share/src/index';
 
 /**
  * Native host environment factory (simulates environment capabilities injected by iOS Swift JSCore and Android Kotlin QuickJS).
