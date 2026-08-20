@@ -20,7 +20,20 @@ import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from './campus-pe
 import { htmlImportSchema, parseHtmlTimetable } from './html-parser';
 
 export type { CqutCampusId } from './campus-period-times';
-export { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES } from './campus-period-times';
+export {
+	CQUT_CAMPUSES,
+	CQUT_CAMPUS_IDS,
+	DEFAULT_CQUT_CAMPUS_ID,
+	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
+	getCampusApiName,
+	getCampusDefaultPeriodTimes,
+	isCqutCampusId,
+	resolveCampusIdFromApiName,
+	inferCampusIdFromCourses,
+	campusIdToShareIndex,
+	shareIndexToCampusId,
+	resolveShareCampusId
+} from './campus-period-times';
 
 const CQUT_PASSWORD_SECRET_KEY = 'source-cqut:password';
 const CQUT_USERNAME_STORAGE_KEY = 'source-cqut:username';
