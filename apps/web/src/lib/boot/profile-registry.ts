@@ -16,12 +16,7 @@ const defaultProfile: ChronosProfile = {
 	plugins: [
 		{ id: 'core-shell', enabled: true },
 		{ id: 'codec-share', enabled: true }
-	],
-	preferences: {
-		showNonCurrentWeekCourses: false,
-		showSaturday: true,
-		showSunday: true
-	}
+	]
 };
 
 const cqutProfile: ChronosProfile = {
@@ -37,12 +32,7 @@ const cqutProfile: ChronosProfile = {
 			enabled: true
 		},
 		{ id: 'codec-share', enabled: true }
-	],
-	preferences: {
-		showNonCurrentWeekCourses: false,
-		showSaturday: true,
-		showSunday: true
-	}
+	]
 };
 
 const profileMap: Record<string, ChronosProfile> = {

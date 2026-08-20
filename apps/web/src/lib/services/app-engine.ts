@@ -20,7 +20,7 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 		(entry) => entry.id === 'source-cqut' && entry.enabled !== false
 	);
 	const env = createWebChronosEnv({ ...options, enableCqutProxy });
-	return new ChronosEngine({
+	const engine = new ChronosEngine({
 		env,
 		initialLocale: baseLocale ?? 'zh-cn',
 		i18nHandler: (key, params) => {
@@ -39,12 +39,14 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 			}
 		}
 	});
-}
 
-async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	engine.themes.registerTheme(m3DefaultTheme);
 	registerCoreShellSlots(engine.getPluginContext(CORE_SHELL_PLUGIN_ID));
 
+	return engine;
+}
+
+async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	profileManager = new ProfileManager(engine);
 	const profile = resolveActiveProfile();
 	await profileManager.applyProfile(profile, availablePlugins);
@@ -68,8 +70,9 @@ export async function ensureEngineReady(options?: WebProviderOptions): Promise<C
 		sharedEngine = createEngine(options);
 	}
 	if (!engineInitPromise) {
-		engineInitPromise = bootstrapEngine(sharedEngine)
-			.then(() => sharedEngine!.init())
+		engineInitPromise = sharedEngine!
+			.init()
+			.then(() => bootstrapEngine(sharedEngine!))
 			.then(() => sharedEngine!);
 	}
 	return engineInitPromise;

@@ -18,10 +18,5 @@
 			"id": "codec-share",
 			"enabled": true
 		}
-	],
-	"preferences": {
-		"showNonCurrentWeekCourses": false,
-		"showSaturday": true,
-		"showSunday": true
-	}
+	]
 }
