@@ -13,14 +13,6 @@
 		{
 			"id": "codec-share",
 			"enabled": true
-		},
-		{
-			"id": "export-ics",
-			"enabled": true
-		},
-		{
-			"id": "theme-catppuccin",
-			"enabled": true
 		}
 	],
 	"preferences": {
