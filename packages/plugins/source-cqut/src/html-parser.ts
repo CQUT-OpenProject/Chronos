@@ -1,6 +1,6 @@
-import type { ChronosPlugin, ChronosContext, Timetable, Course, ConfigSchema } from '@chronos/core';
+import type { Timetable, Course } from '@chronos/core';
 import { createCourse, createTimetable, defineSchema } from '@chronos/core';
-import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from '@chronos/plugin-source-cqut';
+import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from './campus-period-times';
 
 const WHITESPACE_REGEX = /\s+/g;
 type WeekParity = 'ALL' | 'ODD' | 'EVEN';
@@ -15,7 +15,7 @@ export const htmlImportSchema = defineSchema<HtmlImportForm>({
 	file: {
 		type: 'file',
 		title: () => '选择 HTML 文件',
-		description: () => '请选择从教务系统导出的 HTML 课表文件',
+		description: () => '请选择从 CQUT 教务系统导出的 HTML 课表文件',
 		accept: '.html,.htm,text/html',
 		required: true
 	},
@@ -213,44 +213,3 @@ export function parseHtmlTimetable(
 		}
 	});
 }
-
-export const htmlParserPlugin: ChronosPlugin = {
-	id: 'parser-html',
-	name: () => '通用教务 HTML 解析器',
-	version: '1.0.0',
-	description: () => '解析国内高校教务系统导出的 HTML 课表文件',
-	category: 'parser',
-	order: 20,
-	author: 'CQUT OpenProject',
-	homepage: 'https://github.com/CQUT-OpenProject/Chronos',
-
-	apply(ctx: ChronosContext) {
-		async function doImport(inputs: Record<string, unknown>): Promise<Timetable> {
-			const fileContent =
-				(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
-			if (!fileContent || typeof fileContent !== 'string') {
-				throw new Error('请选择有效的 HTML 课表文件');
-			}
-			const termStartDate = inputs.termStartDate as string | undefined;
-			const campusId = inputs.campusId as CqutCampusId | undefined;
-			if (!termStartDate?.trim()) {
-				throw new Error('请选择学期起始日期');
-			}
-			if (!campusId) {
-				throw new Error('请选择校区');
-			}
-			return parseHtmlTimetable(fileContent, { termStartDate, campusId });
-		}
-
-		ctx.registerSlot('import.source.tab', {
-			id: 'edu-html',
-			title: () => 'HTML 文件',
-			order: 30,
-			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			defaultInput: {
-				campusId: 'huaxi'
-			},
-			executeImport: (inputs: Record<string, unknown>) => doImport(inputs)
-		});
-	}
-};

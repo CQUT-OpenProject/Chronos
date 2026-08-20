@@ -11,7 +11,6 @@ import {
 	type HttpResponse
 } from '../src/index';
 import { cqutPlugin } from '../../plugins/source-cqut/src/index';
-import { htmlParserPlugin } from '../../plugins/parser-html/src/index';
 import { shareCodecPlugin } from '../../plugins/codec-share/src/index';
 
 /**
@@ -156,7 +155,6 @@ describe('Native Host Baseline (iOS JSCore / Android QuickJS)', () => {
 		// 4. Load official plugins in native host environment
 		const shareHandle = await engine.loadPlugin(shareCodecPlugin);
 		const cqutHandle = await engine.loadPlugin(cqutPlugin);
-		const htmlHandle = await engine.loadPlugin(htmlParserPlugin);
 
 		expect(engine.slots.get('import.source.tab').length).toBeGreaterThanOrEqual(3);
 		expect(engine.slots.get('export.action').length).toBeGreaterThanOrEqual(1);
@@ -180,7 +178,6 @@ describe('Native Host Baseline (iOS JSCore / Android QuickJS)', () => {
 
 		shareHandle.dispose();
 		cqutHandle.dispose();
-		htmlHandle.dispose();
 
 		expect(engine.slots.get('import.source.tab').length).toBe(0);
 		expect(engine.slots.get('export.action').length).toBe(0);

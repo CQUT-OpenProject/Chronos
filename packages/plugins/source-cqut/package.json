@@ -19,5 +19,8 @@
 	},
 	"dependencies": {
 		"@chronos/core": "workspace:*"
+	},
+	"devDependencies": {
+		"linkedom": "^0.18.13"
 	}
 }

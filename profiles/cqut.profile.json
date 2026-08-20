@@ -3,19 +3,19 @@
 	"profileId": "chronos-cqut",
 	"name": "重庆理工大学定制版",
 	"version": "0.3.0",
-	"description": "专为重庆理工大学定制，内置知行理工教务直连与校区专属节次",
+	"description": "专为重庆理工大学定制，内置知行理工教务直连、HTML 导入与校区专属节次",
 	"defaultTheme": "m3-default",
 	"plugins": [
+		{
+			"id": "core-shell",
+			"enabled": true
+		},
 		{
 			"id": "source-cqut",
 			"enabled": true,
 			"config": {
 				"campusId": "liangjiang"
 			}
-		},
-		{
-			"id": "parser-html",
-			"enabled": true
 		},
 		{
 			"id": "codec-share",

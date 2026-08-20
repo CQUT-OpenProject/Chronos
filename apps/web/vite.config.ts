@@ -46,9 +46,6 @@ export default defineConfig(({ mode }) => {
 				'@chronos/plugin-source-cqut/week-merge': fileURLToPath(
 					new URL('../../packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
 				),
-				'@chronos/plugin-parser-html': fileURLToPath(
-					new URL('../../packages/plugins/parser-html/src/index.ts', import.meta.url)
-				),
 				'@chronos/plugin-codec-share': fileURLToPath(
 					new URL('../../packages/plugins/codec-share/src/index.ts', import.meta.url)
 				),
@@ -101,7 +98,6 @@ export default defineConfig(({ mode }) => {
 					'@chronos/plugin-source-cqut': '../../packages/plugins/source-cqut/src/index.ts',
 					'@chronos/plugin-source-cqut/week-merge':
 						'../../packages/plugins/source-cqut/src/week-merge.ts',
-					'@chronos/plugin-parser-html': '../../packages/plugins/parser-html/src/index.ts',
 					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
 					'@chronos/plugin-codec-share/share-link':
 						'../../packages/plugins/codec-share/src/share-link/index.ts'

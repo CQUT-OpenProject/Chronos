@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { ChronosEngine, type ChronosEnv, type UserPreferences } from '@chronos/core';
 import { parseHTML } from 'linkedom';
-import { htmlParserPlugin, parseHtmlTimetable } from '../src/index';
+import { cqutPlugin } from '../src/index';
+import { parseHtmlTimetable } from '../src/html-parser';
 
 function customDocParser(html: string): Document {
 	const { document } = parseHTML(html);
@@ -75,7 +76,7 @@ const sampleHtml = `
 </html>
 `;
 
-describe('htmlParserPlugin', () => {
+describe('cqut html parser', () => {
 	it('parses educational HTML timetable structure', () => {
 		const timetable = parseHtmlTimetable(sampleHtml, { customDocParser });
 		expect(timetable.name).toBe('王五的课表');
@@ -91,17 +92,16 @@ describe('htmlParserPlugin', () => {
 		expect(course.weeks).toEqual([1, 3, 5, 7, 9, 11, 13, 15]);
 	});
 
-	it('loads plugin and registers import.source.tab slot', async () => {
+	it('loads cqut plugin and registers edu-html import tab', async () => {
 		const env = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 
-		const handle = await engine.loadPlugin(htmlParserPlugin);
+		const handle = await engine.loadPlugin(cqutPlugin);
 		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'edu-html');
 		expect(sourceSlot).toBeDefined();
 		expect(sourceSlot?.inputSchema).toBeDefined();
 
-		// Provide custom parser globally in test environment
 		Object.defineProperty(globalThis, 'DOMParser', {
 			value: class {
 				parseFromString(str: string) {
@@ -112,7 +112,7 @@ describe('htmlParserPlugin', () => {
 			writable: true
 		});
 
-		const ctx = engine.getPluginContext('parser-html');
+		const ctx = engine.getPluginContext('source-cqut');
 		const timetable = await sourceSlot!.executeImport(
 			{
 				file: sampleHtml,

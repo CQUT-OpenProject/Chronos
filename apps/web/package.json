@@ -17,7 +17,6 @@
 		"@chronos/core": "workspace:*",
 		"@chronos/ui-kit": "workspace:*",
 		"@chronos/plugin-source-cqut": "workspace:*",
-		"@chronos/plugin-parser-html": "workspace:*",
 		"@chronos/plugin-codec-share": "workspace:*",
 		"@cqut-openproject/cas-sdk": "github:CQUT-OpenProject/CAS-SDK#1.0.0",
 		"@internationalized/date": "^3.12.3",

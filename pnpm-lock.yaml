@@ -51,9 +51,6 @@ importers:
       '@chronos/plugin-codec-share':
         specifier: workspace:*
         version: link:../../packages/plugins/codec-share
-      '@chronos/plugin-parser-html':
-        specifier: workspace:*
-        version: link:../../packages/plugins/parser-html
       '@chronos/plugin-source-cqut':
         specifier: workspace:*
         version: link:../../packages/plugins/source-cqut
@@ -181,24 +178,15 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
 
-  packages/plugins/parser-html:
-    dependencies:
-      '@chronos/core':
-        specifier: workspace:*
-        version: link:../../core
-      '@chronos/plugin-source-cqut':
-        specifier: workspace:*
-        version: link:../source-cqut
-    devDependencies:
-      linkedom:
-        specifier: ^0.18.13
-        version: 0.18.13
-
   packages/plugins/source-cqut:
     dependencies:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
+    devDependencies:
+      linkedom:
+        specifier: ^0.18.13
+        version: 0.18.13
 
   packages/ui-kit:
     dependencies:

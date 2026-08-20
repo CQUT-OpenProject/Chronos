@@ -39,9 +39,6 @@ export default defineConfig({
 			'@chronos/plugin-source-cqut': fileURLToPath(
 				new URL('./packages/plugins/source-cqut/src/index.ts', import.meta.url)
 			),
-			'@chronos/plugin-parser-html': fileURLToPath(
-				new URL('./packages/plugins/parser-html/src/index.ts', import.meta.url)
-			),
 			'@chronos/plugin-codec-share': fileURLToPath(
 				new URL('./packages/plugins/codec-share/src/index.ts', import.meta.url)
 			),

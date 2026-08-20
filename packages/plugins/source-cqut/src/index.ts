@@ -14,8 +14,11 @@ import {
 	IHttpService,
 	IVaultService
 } from '@chronos/core';
+import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from './campus-period-times';
+import { htmlImportSchema, parseHtmlTimetable } from './html-parser';
 
-export type CqutCampusId = 'huaxi' | 'liangjiang';
+export type { CqutCampusId } from './campus-period-times';
+export { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES } from './campus-period-times';
 
 const CQUT_PASSWORD_SECRET_KEY = 'source-cqut:password';
 const CQUT_USERNAME_STORAGE_KEY = 'source-cqut:username';
@@ -33,33 +36,6 @@ export interface CqutImportForm {
 	campusId: CqutCampusId;
 	saveCredentials?: boolean;
 }
-
-export const CQUT_DEFAULT_CAMPUS_PERIOD_TIMES: Record<CqutCampusId, PeriodTime[]> = {
-	huaxi: [
-		{ index: 1, startTime: '08:20', endTime: '09:05' },
-		{ index: 2, startTime: '09:15', endTime: '10:00' },
-		{ index: 3, startTime: '10:20', endTime: '11:05' },
-		{ index: 4, startTime: '11:15', endTime: '12:00' },
-		{ index: 5, startTime: '14:00', endTime: '14:45' },
-		{ index: 6, startTime: '14:55', endTime: '15:40' },
-		{ index: 7, startTime: '16:00', endTime: '16:45' },
-		{ index: 8, startTime: '16:55', endTime: '17:40' },
-		{ index: 9, startTime: '19:00', endTime: '19:45' },
-		{ index: 10, startTime: '19:50', endTime: '20:35' }
-	],
-	liangjiang: [
-		{ index: 1, startTime: '08:30', endTime: '09:15' },
-		{ index: 2, startTime: '09:25', endTime: '10:10' },
-		{ index: 3, startTime: '10:30', endTime: '11:15' },
-		{ index: 4, startTime: '11:25', endTime: '12:10' },
-		{ index: 5, startTime: '14:20', endTime: '15:05' },
-		{ index: 6, startTime: '15:15', endTime: '16:00' },
-		{ index: 7, startTime: '16:20', endTime: '17:05' },
-		{ index: 8, startTime: '17:15', endTime: '18:00' },
-		{ index: 9, startTime: '19:00', endTime: '19:45' },
-		{ index: 10, startTime: '19:50', endTime: '20:35' }
-	]
-};
 
 export const cqutConfigSchema = defineSchema<CqutPluginConfig>({
 	campusId: {
@@ -390,6 +366,23 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			return timetable;
 		}
 
+		async function doHtmlImport(inputs: Record<string, unknown>): Promise<Timetable> {
+			const fileContent =
+				(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
+			if (!fileContent || typeof fileContent !== 'string') {
+				throw new Error('请选择有效的 HTML 课表文件');
+			}
+			const termStartDate = inputs.termStartDate as string | undefined;
+			const campusId = inputs.campusId as CqutCampusId | undefined;
+			if (!termStartDate?.trim()) {
+				throw new Error('请选择学期起始日期');
+			}
+			if (!campusId) {
+				throw new Error('请选择校区');
+			}
+			return parseHtmlTimetable(fileContent, { termStartDate, campusId });
+		}
+
 		// Register import source tab slot
 		ctx.registerSlot('import.source.tab', {
 			id: 'cqut-online',
@@ -403,6 +396,17 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
 				doImport(inputs, context)
 		});
+
+		ctx.registerSlot('import.source.tab', {
+			id: 'edu-html',
+			title: () => 'HTML 文件',
+			order: 30,
+			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+			defaultInput: {
+				campusId: ctx.config.campusId || 'huaxi'
+			},
+			executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
+		});
 	}
 };
 
@@ -412,3 +416,5 @@ export type {
 	OnlineSchedulePayload,
 	OnlineScheduleWeekDay
 } from './week-merge';
+export { htmlImportSchema, parseHtmlTimetable } from './html-parser';
+export type { HtmlImportForm } from './html-parser';

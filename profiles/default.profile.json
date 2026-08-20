@@ -3,11 +3,11 @@
 	"profileId": "chronos-default",
 	"name": "Chronos 标准开源版",
 	"version": "0.3.0",
-	"description": "包含标准 HTML 课表导入、分享短链与标准备份能力",
+	"description": "包含分享短链与标准备份能力",
 	"defaultTheme": "m3-default",
 	"plugins": [
 		{
-			"id": "parser-html",
+			"id": "core-shell",
 			"enabled": true
 		},
 		{
