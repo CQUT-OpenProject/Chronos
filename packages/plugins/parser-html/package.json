@@ -13,7 +13,8 @@
 		}
 	},
 	"dependencies": {
-		"@chronos/core": "workspace:*"
+		"@chronos/core": "workspace:*",
+		"@chronos/plugin-source-cqut": "workspace:*"
 	},
 	"devDependencies": {
 		"linkedom": "^0.18.13"

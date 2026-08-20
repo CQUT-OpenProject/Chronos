@@ -77,7 +77,7 @@ const sampleHtml = `
 
 describe('htmlParserPlugin', () => {
 	it('parses educational HTML timetable structure', () => {
-		const timetable = parseHtmlTimetable(sampleHtml, customDocParser);
+		const timetable = parseHtmlTimetable(sampleHtml, { customDocParser });
 		expect(timetable.name).toBe('王五的课表');
 		expect(timetable.courses.length).toBe(1);
 
@@ -113,10 +113,28 @@ describe('htmlParserPlugin', () => {
 		});
 
 		const ctx = engine.getPluginContext('parser-html');
-		const timetable = await sourceSlot!.executeImport({ file: sampleHtml }, ctx);
+		const timetable = await sourceSlot!.executeImport(
+			{
+				file: sampleHtml,
+				termStartDate: '2025-02-24',
+				campusId: 'huaxi'
+			},
+			ctx
+		);
 		expect(timetable.name).toBe('王五的课表');
 
 		handle.dispose();
 		expect(engine.slots.getSlotItem('import.source.tab', 'edu-html')).toBeUndefined();
+	});
+
+	it('applies campus period times and term start date', () => {
+		const timetable = parseHtmlTimetable(sampleHtml, {
+			customDocParser,
+			termStartDate: '2025-02-24',
+			campusId: 'huaxi'
+		});
+		expect(timetable.academicConfig.termStartDate).toBe('2025-02-24');
+		expect(timetable.academicConfig.periodTimes).toHaveLength(10);
+		expect(timetable.importMetadata?.campusId).toBe('huaxi');
 	});
 });

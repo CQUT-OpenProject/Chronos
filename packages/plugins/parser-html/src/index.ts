@@ -1,11 +1,14 @@
 import type { ChronosPlugin, ChronosContext, Timetable, Course, ConfigSchema } from '@chronos/core';
 import { createCourse, createTimetable, defineSchema } from '@chronos/core';
+import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from '@chronos/plugin-source-cqut';
 
 const WHITESPACE_REGEX = /\s+/g;
 type WeekParity = 'ALL' | 'ODD' | 'EVEN';
 
 export interface HtmlImportForm {
 	file?: string;
+	termStartDate?: string;
+	campusId?: CqutCampusId;
 }
 
 export const htmlImportSchema = defineSchema<HtmlImportForm>({
@@ -14,6 +17,22 @@ export const htmlImportSchema = defineSchema<HtmlImportForm>({
 		title: () => '选择 HTML 文件',
 		description: () => '请选择从教务系统导出的 HTML 课表文件',
 		accept: '.html,.htm,text/html',
+		required: true
+	},
+	termStartDate: {
+		type: 'date',
+		title: () => '学期起始日期',
+		description: () => '用于计算当前教学周',
+		required: true
+	},
+	campusId: {
+		type: 'select',
+		title: () => '所在校区',
+		default: 'huaxi',
+		options: [
+			{ label: () => '花溪校区', value: 'huaxi' },
+			{ label: () => '两江校区', value: 'liangjiang' }
+		],
 		required: true
 	}
 });
@@ -80,9 +99,13 @@ function parseWeeks(raw: string): number[] {
 
 export function parseHtmlTimetable(
 	html: string,
-	customDocParser?: (html: string) => Document
+	options?: {
+		customDocParser?: (html: string) => Document;
+		termStartDate?: string;
+		campusId?: CqutCampusId;
+	}
 ): Timetable {
-	const doc = customDocParser ? customDocParser(html) : parseHtmlDoc(html);
+	const doc = options?.customDocParser ? options.customDocParser(html) : parseHtmlDoc(html);
 	const table =
 		doc.querySelector('#kbgrid_table_0') ??
 		doc.querySelector('table.timetable1') ??
@@ -167,18 +190,26 @@ export function parseHtmlTimetable(
 		name: studentName ? `${studentName}的课表` : term || '导入的 HTML 课表',
 		courses,
 		academicConfig: {
-			termStartDate: '',
+			termStartDate: options?.termStartDate ?? '',
 			startWeek: 1,
 			endWeek: maxWeek,
-			periodTimes: []
+			periodTimes: options?.campusId
+				? CQUT_DEFAULT_CAMPUS_PERIOD_TIMES[options.campusId].map((period) => ({ ...period }))
+				: []
 		},
 		viewPrefs: {
 			showSaturday: courses.some((c) => c.dayOfWeek === 6),
 			showSunday: courses.some((c) => c.dayOfWeek === 7),
 			showNonCurrentWeekCourses: false
 		},
+		importMetadata: options?.campusId
+			? { source: 'FILE_HTML', campusId: options.campusId }
+			: undefined,
 		customMetadata: {
-			'core.import': { source: 'FILE_HTML' }
+			'core.import': {
+				source: 'FILE_HTML',
+				...(options?.campusId ? { campusId: options.campusId } : {})
+			}
 		}
 	});
 }
@@ -200,7 +231,15 @@ export const htmlParserPlugin: ChronosPlugin = {
 			if (!fileContent || typeof fileContent !== 'string') {
 				throw new Error('请选择有效的 HTML 课表文件');
 			}
-			return parseHtmlTimetable(fileContent);
+			const termStartDate = inputs.termStartDate as string | undefined;
+			const campusId = inputs.campusId as CqutCampusId | undefined;
+			if (!termStartDate?.trim()) {
+				throw new Error('请选择学期起始日期');
+			}
+			if (!campusId) {
+				throw new Error('请选择校区');
+			}
+			return parseHtmlTimetable(fileContent, { termStartDate, campusId });
 		}
 
 		ctx.registerSlot('import.source.tab', {
@@ -208,6 +247,9 @@ export const htmlParserPlugin: ChronosPlugin = {
 			title: () => 'HTML 文件',
 			order: 30,
 			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+			defaultInput: {
+				campusId: 'huaxi'
+			},
 			executeImport: (inputs: Record<string, unknown>) => doImport(inputs)
 		});
 	}

@@ -4,17 +4,12 @@
 	import { resolve } from '$app/paths';
 	import { getAppController, getAppEngine } from '$lib/services/app-engine';
 	import { ImportMode } from '$lib/domain/import-mode';
-	import { createCredentialVault } from '$lib/client/credential-vault';
-	import { IVaultService } from '@chronos/core';
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TransferImportConfirmScreen from '$lib/components/transfer/TransferImportConfirmScreen.svelte';
 
 	const engine = getAppEngine();
-	const transfer = createTransferState(
-		createCredentialVault({ vault: engine.services.get(IVaultService) }),
-		engine
-	);
+	const transfer = createTransferState(engine);
 	const controller = getAppController();
 	let currentTimetableName = $state<string | null>(null);
 	let ready = $state(false);

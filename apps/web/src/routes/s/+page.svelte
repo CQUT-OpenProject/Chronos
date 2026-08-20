@@ -7,10 +7,8 @@
 	import { ImportMode } from '$lib/domain/import-mode';
 	import { createSessionPreviewPersistence } from '$lib/client/preview-persistence';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-	import {
-		decodeSharePayload,
-		extractSharePayloadFromLocation
-	} from '$lib/parsers/share-link/chronos-share-link-codec';
+	import { ensureEngineReady } from '$lib/services/app-engine';
+	import { extractSharePayloadFromLocation } from '@chronos/plugin-codec-share';
 
 	let status = $state<'loading' | 'error'>('loading');
 
@@ -27,26 +25,39 @@
 				return;
 			}
 
-			const result = await decodeSharePayload(payload);
-			if (!result.ok) {
+			try {
+				const engine = await ensureEngineReady();
+				const shareLinkSlot = engine.slots.getSlotItem('import.source.tab', 'share-link');
+				if (!shareLinkSlot) {
+					throw new Error('分享链接导入不可用');
+				}
+				const ctx = engine.getPluginContextForSlot('import.source.tab', 'share-link');
+				const timetable = await shareLinkSlot.executeImport(
+					{ content: payload, fileContent: payload },
+					ctx
+				);
+				if (!timetable?.courses?.length) {
+					throw new Error('分享链接中未找到有效课表数据');
+				}
+
+				trackEvent('share_link_decode_success');
+
+				createSessionPreviewPersistence().save({
+					preview: timetable,
+					previewSource: 'SHARE_LINK',
+					importMode: ImportMode.AS_NEW,
+					htmlImportTermStartDate: null,
+					htmlImportCampusId: null
+				});
+
+				window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
+				goto(resolve('/transfer/import/confirm'));
+			} catch (err) {
 				trackEvent('share_link_decode_fail');
 				status = 'error';
-				snackbar(result.error.message);
-				return;
+				const message = err instanceof Error ? err.message : '无法解析分享链接';
+				snackbar(message);
 			}
-
-			trackEvent('share_link_decode_success');
-
-			createSessionPreviewPersistence().save({
-				preview: result.value,
-				previewSource: 'SHARE_LINK',
-				importMode: ImportMode.AS_NEW,
-				htmlImportTermStartDate: null,
-				htmlImportCampusId: null
-			});
-
-			window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
-			goto(resolve('/transfer/import/confirm'));
 		})();
 	});
 </script>

@@ -7,9 +7,18 @@ import type {
 	AcademicConfig,
 	ConfigSchema
 } from '@chronos/core';
-import { defineSchema, createCourse, createTimetable, IHttpService } from '@chronos/core';
+import {
+	defineSchema,
+	createCourse,
+	createTimetable,
+	IHttpService,
+	IVaultService
+} from '@chronos/core';
 
 export type CqutCampusId = 'huaxi' | 'liangjiang';
+
+const CQUT_PASSWORD_SECRET_KEY = 'source-cqut:password';
+const CQUT_USERNAME_STORAGE_KEY = 'source-cqut:username';
 
 export interface CqutPluginConfig {
 	campusId: CqutCampusId;
@@ -313,37 +322,48 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 	},
 
 	apply(ctx: ChronosContext<CqutPluginConfig>) {
+		async function saveCredentialsIfRequested(
+			username: string,
+			password: string,
+			saveCredentials: boolean | undefined,
+			activeCtx: ChronosContext
+		): Promise<void> {
+			if (!saveCredentials) return;
+			const vault = activeCtx.service(IVaultService);
+			if (vault && (await vault.isSupported())) {
+				await vault.storeSecret(CQUT_PASSWORD_SECRET_KEY, password);
+			}
+			if (typeof localStorage !== 'undefined') {
+				localStorage.setItem(CQUT_USERNAME_STORAGE_KEY, username);
+			}
+		}
+
 		async function doImport(
 			inputs: Record<string, unknown>,
 			context?: ChronosContext
 		): Promise<Timetable> {
 			const activeCtx = context ?? ctx;
-			const form = inputs as unknown as {
-				username?: string;
-				account?: string;
-				password?: string;
-				campusId?: CqutCampusId;
-			};
-			const username = form.username || form.account;
+			const form = inputs as unknown as CqutImportForm;
+			const username = (form.username || form.account)?.trim();
 			const password = form.password;
 			const campusId = form.campusId;
 
-			if (!username || !password) {
+			if (!username || !password?.trim()) {
 				throw new Error('请输入学号与密码');
 			}
 
 			activeCtx.actions.notify('正在连接知行理工...', 'info');
 
 			const http = activeCtx.service(IHttpService);
-
 			const configObj = activeCtx.config as unknown as CqutPluginConfig | undefined;
-			const authUrl = configObj?.customAuthUrl || 'https://authserver.cqut.edu.cn/authserver/login';
-			const response = await http.request(authUrl, {
+			const response = await http.request('/api/cqut/preview', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
-				useSession: true,
-				sessionId: `cqut-${username}`,
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					username,
+					password,
+					campusId: campusId || configObj?.campusId || 'huaxi'
+				}),
 				bypassCors: true
 			});
 
@@ -360,18 +380,13 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 				throw new Error(errorMsg);
 			}
 
-			let parsedJson: CqutScheduleRawInput;
-			try {
-				parsedJson = (await response.json()) as CqutScheduleRawInput;
-			} catch {
-				parsedJson = {};
-			}
-
+			const parsedJson = (await response.json()) as CqutScheduleRawInput;
 			const timetable = parseCqutScheduleData(
 				parsedJson,
 				username,
 				campusId || configObj?.campusId || 'huaxi'
 			);
+			await saveCredentialsIfRequested(username, password, form.saveCredentials, activeCtx);
 			return timetable;
 		}
 
@@ -390,3 +405,10 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 		});
 	}
 };
+
+export { mergeWeekPayloads, resolveWeeksToFetch } from './week-merge';
+export type {
+	OnlineScheduleEvent,
+	OnlineSchedulePayload,
+	OnlineScheduleWeekDay
+} from './week-merge';
