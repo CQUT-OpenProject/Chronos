@@ -1,4 +1,4 @@
-import { type CredentialVault, createCredentialVault } from '$lib/client/credential-vault';
+import { type CredentialVault } from '$lib/client/credential-vault';
 import { createTransferImportCoordinator } from '$lib/client/transfer-import-coordinator';
 import type { TransferImportSource } from '$lib/client/preview-persistence';
 import type { SavedCredentialState } from '$lib/models/auth';
@@ -6,7 +6,7 @@ import type { CqutCampusId } from '$lib/models/cqut-campus';
 import { inferCampusIdFromCourses } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
-import { AcademicCalendarService } from '@chronos/core';
+import { AcademicCalendarService, type ChronosEngine } from '@chronos/core';
 import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import { onlineImportEnabled } from '$lib/config/features';
@@ -28,7 +28,7 @@ export interface TransferPreviewState {
 	statusMessage: string | null;
 }
 
-export function createTransferState(credentialVault: CredentialVault = createCredentialVault()) {
+export function createTransferState(credentialVault: CredentialVault, engine?: ChronosEngine) {
 	let selectedSource = $state<TransferImportSource>(onlineImportEnabled ? 'ONLINE' : 'SHARE_LINK');
 	let preview = $state<Timetable | null>(null);
 	let previewSource = $state<TransferImportSource | null>(null);
@@ -52,7 +52,8 @@ export function createTransferState(credentialVault: CredentialVault = createCre
 	const timeProvider = new SystemTimeProvider();
 
 	const coordinator = createTransferImportCoordinator({
-		credentialVault
+		credentialVault,
+		engine
 	});
 
 	$effect(() => {

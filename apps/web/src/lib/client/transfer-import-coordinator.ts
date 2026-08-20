@@ -3,21 +3,21 @@ import type { SavedCredentialState } from '$lib/models/auth';
 import type { CqutCampusId } from '$lib/models/cqut-campus';
 import { getCampusDefaultPeriodTimes } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
+import { TimetableImportSource } from '$lib/models/timetable';
 import {
 	createSessionPreviewPersistence,
 	type PreviewPersistence,
 	type PreviewSnapshot,
 	type TransferImportSource
 } from './preview-persistence';
-import { getAppEngine } from '$lib/services/app-engine';
 import { ChronosTimetableShareLinkCodec } from '$lib/parsers/share-link/chronos-timetable-share-link-codec';
-import { parseHtmlTimetable } from '@chronos/plugin-parser-html';
-import { parseCqutScheduleData } from '@chronos/plugin-source-cqut';
-import { type CredentialVault, createCredentialVault } from './credential-vault';
+import { type CredentialVault } from './credential-vault';
 import { SHARE_LINK_WARNING_LENGTH } from '$lib/parsers/share-link/chronos-share-link-codec';
 import type { ChronosEngine } from '@chronos/core';
 
 export type { TransferImportSource };
+
+export type IngestStrategy = 'share' | 'json-slot' | 'html' | 'online';
 
 export interface ClipboardGateway {
 	readText(): Promise<string>;
@@ -56,22 +56,87 @@ export type ClearCredentialOutcome =
 	| { ok: true; statusMessage: string }
 	| { ok: false; errorMessage: string };
 
+export interface IIngestCoordinator {
+	previewFromClipboard(): Promise<PreviewOutcome>;
+	previewFromHtmlFile(file: File): Promise<PreviewOutcome>;
+	previewOnline(
+		account: string,
+		password: string,
+		saveCredentials: boolean
+	): Promise<OnlinePreviewOutcome>;
+	previewWithSavedCredential(
+		savedCredentialState: SavedCredentialState
+	): Promise<OnlinePreviewOutcome>;
+	clearSavedCredential(): Promise<ClearCredentialOutcome>;
+	persistPreview(snapshot: PreviewSnapshot): boolean;
+	loadPersistedPreview(): PreviewSnapshot | null;
+	clearPersistedPreview(): void;
+	confirmImport(
+		preview: Timetable,
+		previewSource: TransferImportSource,
+		importMode: ImportMode,
+		htmlImportTermStartDate: string | null,
+		htmlImportCampusId: CqutCampusId | null
+	): Promise<ImportOutcome>;
+	exportToClipboard(): Promise<ExportOutcome>;
+	getExportMetadata(): Promise<{ timetableName: string | null; longLinkWarning: boolean }>;
+}
+
 export interface TransferImportCoordinatorDeps {
-	credentialVault?: CredentialVault;
+	credentialVault: CredentialVault;
 	previewPersistence?: PreviewPersistence;
 	clipboard?: ClipboardGateway;
 	shareLinkCodec?: ChronosTimetableShareLinkCodec;
 	engine?: ChronosEngine;
 }
 
+const SLOT_IDS: Record<Exclude<IngestStrategy, 'share'>, string> = {
+	'json-slot': 'share-json',
+	html: 'edu-html',
+	online: 'cqut-online'
+};
+
+function asTimetable(value: unknown): Timetable | null {
+	if (!value || typeof value !== 'object') return null;
+	const timetable = value as Timetable;
+	if (!Array.isArray(timetable.courses)) return null;
+	return timetable;
+}
+
 export function createTransferImportCoordinator({
-	credentialVault = createCredentialVault(),
+	credentialVault,
 	previewPersistence = createSessionPreviewPersistence(),
 	clipboard = createNavigatorClipboardGateway(),
 	shareLinkCodec = new ChronosTimetableShareLinkCodec(),
 	engine
-}: TransferImportCoordinatorDeps = {}) {
-	const getEngine = () => engine ?? getAppEngine();
+}: TransferImportCoordinatorDeps): IIngestCoordinator {
+	const getEngine = () => {
+		if (!engine) {
+			throw new Error('ChronosEngine is required for ingest');
+		}
+		return engine;
+	};
+
+	function getImportSlot(strategy: Exclude<IngestStrategy, 'share'>) {
+		return getEngine().slots.getSlotItem('import.source.tab', SLOT_IDS[strategy]);
+	}
+
+	async function executeSlotImport(
+		strategy: Exclude<IngestStrategy, 'share'>,
+		pluginId: string,
+		inputs: Record<string, unknown>
+	): Promise<Timetable> {
+		const source = getImportSlot(strategy);
+		if (!source) {
+			throw new Error(`缺少导入槽位：${SLOT_IDS[strategy]}`);
+		}
+		const ctx = getEngine().getPluginContext(pluginId);
+		const timetable = asTimetable(await source.executeImport(inputs, ctx));
+		if (!timetable) {
+			throw new Error('导入结果不是有效课表');
+		}
+		return timetable;
+	}
 
 	async function previewFromClipboard(): Promise<PreviewOutcome> {
 		try {
@@ -81,57 +146,47 @@ export function createTransferImportCoordinator({
 				return { ok: false, errorMessage: '剪贴板内容为空' };
 			}
 
-			// 1. Decode share link
 			const result = await shareLinkCodec.decode(trimmed);
 			if (result.ok) {
 				return { ok: true, preview: result.value, source: 'SHARE_LINK' };
 			}
 
-			// 2. Decode JSON backup source if slot available
-			const jsonSource = getEngine().slots.getSlotItem('import.source.tab', 'share-json');
-			if (jsonSource) {
-				try {
-					const ctx = getEngine().getPluginContext('codec-share');
-					const timetable = (await jsonSource.executeImport(
-						{ file: trimmed, content: trimmed, fileContent: trimmed },
-						ctx
-					)) as unknown as Timetable;
-					if (timetable && timetable.courses?.length > 0) {
-						return { ok: true, preview: timetable, source: 'SHARE_LINK' };
-					}
-				} catch {
-					// Fall through to error
-				}
+			if (!getImportSlot('json-slot')) {
+				return { ok: false, errorMessage: result.error.message || '无效的课表分享内容' };
+			}
+
+			const timetable = await executeSlotImport('json-slot', 'codec-share', {
+				file: trimmed,
+				content: trimmed,
+				fileContent: trimmed
+			});
+			if (timetable.courses.length > 0) {
+				return { ok: true, preview: timetable, source: 'SHARE_LINK' };
 			}
 
 			return { ok: false, errorMessage: result.error.message || '无效的课表分享内容' };
-		} catch {
-			return { ok: false, errorMessage: '无法读取剪贴板，请检查浏览器权限' };
+		} catch (err) {
+			const message = err instanceof Error ? err.message : '无法读取剪贴板，请检查浏览器权限';
+			if (message.startsWith('缺少导入槽位')) {
+				return { ok: false, errorMessage: message };
+			}
+			if (message === '无法读取剪贴板，请检查浏览器权限' || message.includes('clipboard')) {
+				return { ok: false, errorMessage: '无法读取剪贴板，请检查浏览器权限' };
+			}
+			return { ok: false, errorMessage: message };
 		}
 	}
 
 	async function previewFromHtmlFile(file: File): Promise<PreviewOutcome> {
 		try {
 			const text = await file.text();
-			const htmlSource =
-				getEngine().slots.getSlotItem('import.source.tab', 'edu-html') ||
-				getEngine().slots.getSlotItem('import.source.tab', 'html-parser');
-			let timetable: Timetable;
-
-			if (htmlSource) {
-				const ctx = getEngine().getPluginContext('parser-html');
-				timetable = (await htmlSource.executeImport(
-					{ file: text, fileContent: text },
-					ctx
-				)) as unknown as Timetable;
-			} else {
-				timetable = parseHtmlTimetable(text) as unknown as Timetable;
-			}
-
-			if (!timetable || timetable.courses.length === 0) {
+			const timetable = await executeSlotImport('html', 'parser-html', {
+				file: text,
+				fileContent: text
+			});
+			if (timetable.courses.length === 0) {
 				return { ok: false, errorMessage: 'HTML 文件中未识别到任何有效课程' };
 			}
-
 			return { ok: true, preview: timetable, source: 'HTML' };
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : '解析 HTML 课表失败';
@@ -165,42 +220,12 @@ export function createTransferImportCoordinator({
 		}
 
 		try {
-			const source = getEngine().slots.getSlotItem('import.source.tab', 'cqut-online');
-			let timetable: Timetable;
-
-			if (source) {
-				const ctx = getEngine().getPluginContext('source-cqut');
-				timetable = (await source.executeImport(
-					{
-						username: trimmedAccount,
-						account: trimmedAccount,
-						password
-					},
-					ctx
-				)) as unknown as Timetable;
-			} else {
-				const res = await fetch('/api/cqut/preview', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ account: trimmedAccount, password })
-				});
-				const data = (await res.json()) as {
-					ok: boolean;
-					payload?: unknown;
-					value?: Timetable;
-					error?: { message: string };
-				};
-				if (!data.ok) {
-					return {
-						ok: false,
-						errorMessage: data.error?.message || '获取课表失败，请检查账号密码'
-					};
-				}
-				timetable = (data.value ??
-					parseCqutScheduleData(data.payload as never, trimmedAccount)) as Timetable;
-			}
-
-			if (!timetable || timetable.courses.length === 0) {
+			const timetable = await executeSlotImport('online', 'source-cqut', {
+				username: trimmedAccount,
+				account: trimmedAccount,
+				password
+			});
+			if (timetable.courses.length === 0) {
 				return { ok: false, errorMessage: '未能获取到有效课程数据，请检查学号与密码' };
 			}
 
@@ -295,7 +320,7 @@ export function createTransferImportCoordinator({
 					periodTimes
 				},
 				importMetadata: {
-					...preview.importMetadata,
+					source: preview.importMetadata?.source ?? TimetableImportSource.FILE_HTML,
 					campusId: htmlImportCampusId
 				},
 				customMetadata: {
@@ -309,15 +334,9 @@ export function createTransferImportCoordinator({
 		}
 
 		try {
-			const env = getEngine().env;
-			if (importMode === ImportMode.OVERWRITE_CURRENT) {
-				const activeId = await env.storage.getActiveTimetableId();
-				if (activeId) {
-					finalPreview = { ...finalPreview, id: activeId };
-				}
-			}
-			await env.storage.saveTimetable(finalPreview as unknown as import('@chronos/core').Timetable);
-			await env.storage.setActiveTimetableId(finalPreview.id);
+			await getEngine().actions.importTimetable(finalPreview, {
+				overwriteActive: importMode === ImportMode.OVERWRITE_CURRENT
+			});
 			return { ok: true };
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : '保存课表失败';
@@ -326,12 +345,11 @@ export function createTransferImportCoordinator({
 	}
 
 	async function exportToClipboard(): Promise<ExportOutcome> {
-		const engine = getEngine();
-		const current = engine.state.currentTimetable;
+		const current = getEngine().state.currentTimetable;
 		if (!current) {
 			return { ok: false, errorMessage: '当前没有可导出的课表' };
 		}
-		const result = await shareLinkCodec.encode(current as unknown as Timetable);
+		const result = await shareLinkCodec.encode(current);
 		if (!result.ok) {
 			return { ok: false, errorMessage: result.error.message };
 		}
@@ -344,12 +362,11 @@ export function createTransferImportCoordinator({
 	}
 
 	async function getExportMetadata() {
-		const engine = getEngine();
-		const current = engine.state.currentTimetable;
+		const current = getEngine().state.currentTimetable;
 		if (!current) {
 			return { timetableName: null, longLinkWarning: false };
 		}
-		const encoded = await shareLinkCodec.encode(current as unknown as Timetable);
+		const encoded = await shareLinkCodec.encode(current);
 		const length = encoded.ok ? encoded.value.length : 0;
 		return {
 			timetableName: current.name,
@@ -372,4 +389,4 @@ export function createTransferImportCoordinator({
 	};
 }
 
-export type TransferImportCoordinator = ReturnType<typeof createTransferImportCoordinator>;
+export type TransferImportCoordinator = IIngestCoordinator;

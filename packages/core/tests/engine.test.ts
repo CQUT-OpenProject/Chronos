@@ -238,4 +238,41 @@ describe('ChronosEngine in @chronos/core', () => {
 		engine.dispose();
 		expect(pluginDispose).toHaveBeenCalled();
 	});
+
+	it('importTimetable saves, activates, and can overwrite the active id', async () => {
+		const { env, timetables } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		const existing = createTimetable({
+			id: 'active-1',
+			name: '现有课表',
+			courses: []
+		});
+		await env.storage.saveTimetable(existing);
+		await env.storage.setActiveTimetableId('active-1');
+		await engine.init();
+
+		const incoming = createTimetable({
+			id: 'preview',
+			name: '导入课表',
+			courses: [
+				createCourse({
+					id: 'c1',
+					name: '课程',
+					dayOfWeek: 1,
+					startPeriod: 1,
+					endPeriod: 1,
+					weeks: [1]
+				})
+			],
+			importMetadata: { source: 'FILE_HTML', campusId: 'huaxi' }
+		});
+
+		const saved = await engine.actions.importTimetable(incoming, { overwriteActive: true });
+		expect(saved.id).toBe('active-1');
+		expect(timetables.get('active-1')?.name).toBe('导入课表');
+		expect(engine.state.currentTimetable?.id).toBe('active-1');
+		expect(await env.storage.getActiveTimetableId()).toBe('active-1');
+	});
 });

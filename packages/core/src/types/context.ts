@@ -91,6 +91,10 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 	/** Domain action dispatcher */
 	readonly actions: {
 		createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable>;
+		importTimetable(
+			timetable: Timetable,
+			options?: { overwriteActive?: boolean }
+		): Promise<Timetable>;
 		switchTimetable(timetableId: string): Promise<void>;
 		deleteTimetable(timetableId: string): Promise<void>;
 		saveCurrentTimetableDetails(patch: Partial<Timetable>): Promise<void>;

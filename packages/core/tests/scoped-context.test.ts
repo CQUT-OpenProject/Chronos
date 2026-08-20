@@ -83,6 +83,7 @@ function createMockHost() {
 		},
 		actions: {
 			createTimetable: vi.fn(),
+			importTimetable: vi.fn(),
 			switchTimetable: vi.fn(),
 			deleteTimetable: vi.fn(),
 			saveCurrentTimetableDetails: vi.fn(),

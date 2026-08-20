@@ -225,6 +225,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	get actions() {
 		return {
 			createTimetable: this.createTimetable.bind(this),
+			importTimetable: this.importTimetable.bind(this),
 			switchTimetable: this.switchTimetable.bind(this),
 			deleteTimetable: this.deleteTimetable.bind(this),
 			saveCurrentTimetableDetails: this.saveCurrentTimetableDetails.bind(this),
@@ -374,6 +375,35 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				}
 
 				return timetable;
+			}
+		);
+	}
+
+	async importTimetable(
+		timetable: Timetable,
+		options: { overwriteActive?: boolean } = {}
+	): Promise<Timetable> {
+		const allowed = await this.pipeline.serial('guard:importTimetable', { timetable, options });
+		if (!allowed) {
+			throw new Error('[ChronosEngine] importTimetable action was rejected by guard');
+		}
+
+		return this.pipeline.waterfall(
+			'action:importTimetable',
+			{ timetable, options },
+			async ({ timetable: incoming, options: finalOptions }) => {
+				let toSave = incoming;
+				if (finalOptions.overwriteActive) {
+					const activeId = await this.storage.getActiveTimetableId();
+					if (activeId) {
+						toSave = { ...incoming, id: activeId };
+					}
+				}
+
+				await this.storage.saveTimetable(toSave);
+				await this.refreshTimetables();
+				await this.switchTimetable(toSave.id);
+				return toSave;
 			}
 		);
 	}

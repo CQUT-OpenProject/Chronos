@@ -2,13 +2,19 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { getAppController } from '$lib/services/app-engine';
+	import { getAppController, getAppEngine } from '$lib/services/app-engine';
 	import { ImportMode } from '$lib/domain/import-mode';
+	import { createCredentialVault } from '$lib/client/credential-vault';
+	import { IVaultService } from '@chronos/core';
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TransferImportConfirmScreen from '$lib/components/transfer/TransferImportConfirmScreen.svelte';
 
-	const transfer = createTransferState();
+	const engine = getAppEngine();
+	const transfer = createTransferState(
+		createCredentialVault({ vault: engine.services.get(IVaultService) }),
+		engine
+	);
 	const controller = getAppController();
 	let currentTimetableName = $state<string | null>(null);
 	let ready = $state(false);

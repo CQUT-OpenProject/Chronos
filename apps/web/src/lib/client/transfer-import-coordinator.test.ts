@@ -7,6 +7,25 @@ import { createTransferImportCoordinator } from './transfer-import-coordinator';
 import { formatShareClipboardText } from '$lib/parsers/share-link/chronos-share-link-codec';
 import { success } from '$lib/domain/result/app-result';
 import type { ChronosTimetableShareLinkCodec } from '$lib/parsers/share-link/chronos-timetable-share-link-codec';
+import type { CredentialVault } from './credential-vault';
+
+function stubVault(): CredentialVault {
+	return {
+		save: vi.fn(),
+		unlock: vi.fn(),
+		clear: vi.fn(),
+		subscribe: () => () => {},
+		get state() {
+			return {
+				account: null,
+				hasSavedCredential: false,
+				protectionAvailable: false,
+				capabilitiesReady: true,
+				savedMode: null
+			};
+		}
+	};
+}
 
 describe('createTransferImportCoordinator', () => {
 	it('persists and loads preview snapshot via preview persistence', () => {
@@ -22,6 +41,7 @@ describe('createTransferImportCoordinator', () => {
 		};
 
 		const coordinator = createTransferImportCoordinator({
+			credentialVault: stubVault(),
 			previewPersistence: createSessionPreviewPersistence(mockStorage)
 		});
 
@@ -46,21 +66,14 @@ describe('createTransferImportCoordinator', () => {
 		expect(coordinator.loadPersistedPreview()).toBeNull();
 	});
 
-	it('applies campus period times when confirming HTML import', async () => {
-		const saveTimetableMock = vi.fn().mockResolvedValue(undefined);
-		const setActiveTimetableIdMock = vi.fn().mockResolvedValue(undefined);
-
+	it('imports via Engine.importTimetable and applies campus periods for HTML', async () => {
+		const importTimetable = vi.fn().mockResolvedValue(undefined);
 		const mockEngine = {
-			env: {
-				storage: {
-					saveTimetable: saveTimetableMock,
-					setActiveTimetableId: setActiveTimetableIdMock,
-					getActiveTimetableId: vi.fn().mockResolvedValue('active-1')
-				}
-			}
+			actions: { importTimetable }
 		} as unknown as ChronosEngine;
 
 		const coordinator = createTransferImportCoordinator({
+			credentialVault: stubVault(),
 			engine: mockEngine
 		});
 
@@ -104,7 +117,7 @@ describe('createTransferImportCoordinator', () => {
 		);
 
 		expect(result).toEqual({ ok: true });
-		expect(saveTimetableMock).toHaveBeenCalledWith(
+		expect(importTimetable).toHaveBeenCalledWith(
 			expect.objectContaining({
 				academicConfig: expect.objectContaining({
 					termStartDate: '2026-02-23'
@@ -112,9 +125,72 @@ describe('createTransferImportCoordinator', () => {
 				importMetadata: expect.objectContaining({
 					campusId: 'huaxi'
 				})
-			})
+			}),
+			{ overwriteActive: false }
 		);
-		expect(setActiveTimetableIdMock).toHaveBeenCalledWith('preview');
+	});
+
+	it('fails HTML preview when the parser slot is missing', async () => {
+		const mockEngine = {
+			slots: { getSlotItem: () => undefined },
+			getPluginContext: vi.fn()
+		} as unknown as ChronosEngine;
+
+		const coordinator = createTransferImportCoordinator({
+			credentialVault: stubVault(),
+			engine: mockEngine
+		});
+
+		const result = await coordinator.previewFromHtmlFile(
+			new File(['<html></html>'], 'kb.html', { type: 'text/html' })
+		);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.errorMessage).toContain('edu-html');
+		}
+	});
+
+	it('previews JSON backup through the share-json slot when share decode fails', async () => {
+		const timetable = createTimetable({
+			id: 'json-1',
+			name: 'JSON 课表',
+			courses: [
+				createCourse({
+					id: 'c1',
+					name: '课程',
+					dayOfWeek: 1,
+					startPeriod: 1,
+					endPeriod: 1,
+					weeks: [1]
+				})
+			]
+		});
+		const executeImport = vi.fn().mockResolvedValue(timetable);
+		const mockEngine = {
+			slots: {
+				getSlotItem: (_slot: string, id: string) =>
+					id === 'share-json' ? { executeImport } : undefined
+			},
+			getPluginContext: vi.fn().mockReturnValue({})
+		} as unknown as ChronosEngine;
+		const mockShareLinkCodec = {
+			decode: vi.fn().mockResolvedValue({ ok: false, error: { message: 'not a share link' } }),
+			encode: vi.fn()
+		} as unknown as ChronosTimetableShareLinkCodec;
+
+		const coordinator = createTransferImportCoordinator({
+			credentialVault: stubVault(),
+			engine: mockEngine,
+			shareLinkCodec: mockShareLinkCodec,
+			clipboard: {
+				readText: async () => '{"name":"JSON 课表"}',
+				writeText: async () => {}
+			}
+		});
+
+		const result = await coordinator.previewFromClipboard();
+		expect(result).toEqual({ ok: true, preview: timetable, source: 'SHARE_LINK' });
+		expect(executeImport).toHaveBeenCalled();
 	});
 
 	it('reads clipboard and previews share link text', async () => {
@@ -127,6 +203,7 @@ describe('createTransferImportCoordinator', () => {
 		} as unknown as ChronosTimetableShareLinkCodec;
 
 		const coordinator = createTransferImportCoordinator({
+			credentialVault: stubVault(),
 			shareLinkCodec: mockShareLinkCodec,
 			previewPersistence: createSessionPreviewPersistence({
 				getItem: (key) => mockStorage[key] ?? null,
@@ -168,6 +245,7 @@ describe('createTransferImportCoordinator', () => {
 		} as unknown as ChronosEngine;
 
 		const coordinator = createTransferImportCoordinator({
+			credentialVault: stubVault(),
 			shareLinkCodec: mockShareLinkCodec,
 			engine: mockEngine,
 			clipboard: {
@@ -226,6 +304,7 @@ describe('createTransferImportCoordinator', () => {
 		} as unknown as ChronosEngine;
 
 		const coordinator = createTransferImportCoordinator({
+			credentialVault: stubVault(),
 			engine: mockEngine
 		});
 
