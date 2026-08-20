@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from '@chronos/core';
-import { EASTER_EGG_PALETTE_ENTRIES, YUMEMITA_THEME_ID } from '@chronos/plugin-theme-yumemita';
+import { YUMEMITA_PALETTE_ENTRIES, YUMEMITA_THEME_ID } from '@chronos/plugin-theme-yumemita';
 import { applyAppearance, type WallpaperThemeAdapter } from './apply-appearance';
 
 function createFakeElement() {
@@ -69,7 +69,7 @@ describe('applyAppearance', () => {
 		expect(result.coursePalette).toBe(COURSE_PALETTE_ENTRIES);
 	});
 
-	it('returns the easter-egg course palette when YUMEMITA theme is active', async () => {
+	it('returns the YUMEMITA course palette when YUMEMITA theme is active', async () => {
 		const target = createFakeElement();
 		const { wallpaper, clearWallpaperTheme } = createWallpaperAdapter();
 
@@ -86,7 +86,7 @@ describe('applyAppearance', () => {
 		expect(target.classList.contains('dark')).toBe(true);
 		expect(target.style.colorScheme).toBe('dark');
 		expect(clearWallpaperTheme).toHaveBeenCalledWith(target);
-		expect(result.coursePalette).toBe(EASTER_EGG_PALETTE_ENTRIES);
+		expect(result.coursePalette).toBe(YUMEMITA_PALETTE_ENTRIES);
 	});
 
 	it('prefers wallpaper palette over active YUMEMITA theme id', async () => {

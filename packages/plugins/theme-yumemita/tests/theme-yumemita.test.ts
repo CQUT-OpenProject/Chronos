@@ -5,7 +5,7 @@ import {
 	YUMEMITA_PLUGIN_ID,
 	YUMEMITA_THEME_ID,
 	buildYumemitaThemeTokens,
-	EASTER_EGG_PALETTE_ENTRIES,
+	YUMEMITA_PALETTE_ENTRIES,
 	YUMEMITA_PRIMARY,
 	YUMEMITA_SECONDARY,
 	yumemitaThemeContribution
@@ -53,9 +53,9 @@ function createMockEnv(): ChronosEnv {
 }
 
 describe('@chronos/plugin-theme-yumemita', () => {
-	it('exports six easter-egg course palette entries', () => {
-		expect(EASTER_EGG_PALETTE_ENTRIES.length).toBe(6);
-		expect(EASTER_EGG_PALETTE_ENTRIES[0]?.background).toBe('#FFEE55');
+	it('exports six YUMEMITA theme course palette entries', () => {
+		expect(YUMEMITA_PALETTE_ENTRIES.length).toBe(6);
+		expect(YUMEMITA_PALETTE_ENTRIES[0]?.background).toBe('#FFEE55');
 	});
 
 	it('buildYumemitaThemeTokens uses fixed primary and secondary colors', () => {
@@ -67,13 +67,13 @@ describe('@chronos/plugin-theme-yumemita', () => {
 		expect(dark.secondary).toBe(YUMEMITA_SECONDARY);
 	});
 
-	it('resolveCoursePaint returns easter-egg colors for auto courses', () => {
+	it('resolveCoursePaint returns theme palette colors for auto courses', () => {
 		const paint = yumemitaThemeContribution.resolveCoursePaint!(
 			{ id: 'c1', name: 'Math', dayOfWeek: 1, startPeriod: 1, endPeriod: 2, weeks: [1] },
 			0,
 			'light'
 		);
-		expect(paint.background).toBe(EASTER_EGG_PALETTE_ENTRIES[0]!.background);
+		expect(paint.background).toBe(YUMEMITA_PALETTE_ENTRIES[0]!.background);
 	});
 
 	it('apply registers theme slot without auto-selecting theme', async () => {

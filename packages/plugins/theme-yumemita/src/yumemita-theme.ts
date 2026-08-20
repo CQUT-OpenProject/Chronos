@@ -6,7 +6,7 @@ export const YUMEMITA_PRIMARY = '#2288dd';
 export const YUMEMITA_SECONDARY = '#ff7788';
 export const YUMEMITA_ON_ACCENT = '#fff';
 
-const EASTER_EGG_COURSE_BACKGROUNDS = [
+const YUMEMITA_COURSE_BACKGROUNDS = [
 	'#FFEE55',
 	'#FFBBCC',
 	'#4477CC',
@@ -30,7 +30,7 @@ function onColorForBackground(hex: string): string {
 
 export type CoursePaletteEntry = { background: string; foreground: string };
 
-export const EASTER_EGG_PALETTE_ENTRIES: CoursePaletteEntry[] = EASTER_EGG_COURSE_BACKGROUNDS.map(
+export const YUMEMITA_PALETTE_ENTRIES: CoursePaletteEntry[] = YUMEMITA_COURSE_BACKGROUNDS.map(
 	(background) => ({ background, foreground: onColorForBackground(background) })
 );
 
@@ -73,7 +73,7 @@ export const yumemitaThemeContribution: ThemeContribution = {
 			return { background: course.color, foreground: course.textColor };
 		}
 		const entry =
-			EASTER_EGG_PALETTE_ENTRIES[Math.abs(paletteIndex) % EASTER_EGG_PALETTE_ENTRIES.length]!;
+			YUMEMITA_PALETTE_ENTRIES[Math.abs(paletteIndex) % YUMEMITA_PALETTE_ENTRIES.length]!;
 		return { background: entry.background, foreground: entry.foreground };
 	}
 };

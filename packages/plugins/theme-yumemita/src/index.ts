@@ -3,7 +3,7 @@ import {
 	YUMEMITA_THEME_ID,
 	yumemitaThemeContribution,
 	buildYumemitaThemeTokens,
-	EASTER_EGG_PALETTE_ENTRIES,
+	YUMEMITA_PALETTE_ENTRIES,
 	YUMEMITA_PRIMARY,
 	YUMEMITA_SECONDARY
 } from './yumemita-theme';
@@ -14,16 +14,16 @@ export {
 	YUMEMITA_THEME_ID,
 	yumemitaThemeContribution,
 	buildYumemitaThemeTokens,
-	EASTER_EGG_PALETTE_ENTRIES,
+	YUMEMITA_PALETTE_ENTRIES,
 	YUMEMITA_PRIMARY,
 	YUMEMITA_SECONDARY
 };
 
 export const yumemitaThemePlugin: ChronosPlugin = {
 	id: YUMEMITA_PLUGIN_ID,
-	name: () => 'YUMEMITA',
+	name: () => 'YUME∞MITA',
 	version: '1.0.0',
-	description: () => 'YUMEMITA 主题',
+	description: () => 'YUME∞MITA 主题',
 	category: 'theme',
 	author: 'Chronos Community',
 

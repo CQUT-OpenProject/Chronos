@@ -16,7 +16,7 @@ import {
 	type PlacedItem
 } from '../src/index';
 
-const EASTER_EGG_PALETTE_ENTRIES: CoursePaletteEntry[] = [
+const TEST_PALETTE_ENTRIES: CoursePaletteEntry[] = [
 	{ background: '#FFEE55', foreground: '#1a1a1a' },
 	{ background: '#FFBBCC', foreground: '#1a1a1a' },
 	{ background: '#4477CC', foreground: '#fff' },
@@ -181,7 +181,7 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+			coursePalette: TEST_PALETTE_ENTRIES
 		});
 		expect(off[0]?.kind).toBe('course');
 		expect(on[0]?.kind).toBe('course');
@@ -202,7 +202,7 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+			coursePalette: TEST_PALETTE_ENTRIES
 		});
 		const backgrounds = items
 			.filter((item) => item.kind === 'course')
@@ -210,9 +210,7 @@ describe('placeCapsules', () => {
 		expect(backgrounds).toHaveLength(3);
 		expect(new Set(backgrounds).size).toBe(3);
 		expect(
-			backgrounds.every((hex) =>
-				EASTER_EGG_PALETTE_ENTRIES.some((entry) => entry.background === hex)
-			)
+			backgrounds.every((hex) => TEST_PALETTE_ENTRIES.some((entry) => entry.background === hex))
 		).toBe(true);
 	});
 
@@ -230,13 +228,13 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+			coursePalette: TEST_PALETTE_ENTRIES
 		});
 		const backgrounds = items
 			.filter((item) => item.kind === 'course')
 			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
 		expect(new Set(backgrounds)).toEqual(
-			new Set(EASTER_EGG_PALETTE_ENTRIES.map((entry) => entry.background))
+			new Set(TEST_PALETTE_ENTRIES.map((entry) => entry.background))
 		);
 	});
 
@@ -254,7 +252,7 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+			coursePalette: TEST_PALETTE_ENTRIES
 		});
 		const backgrounds = items
 			.filter((item) => item.kind === 'course')
@@ -276,7 +274,7 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
+			coursePalette: TEST_PALETTE_ENTRIES,
 			paletteCourses
 		});
 		const week = placeCapsules({
@@ -284,7 +282,7 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES,
+			coursePalette: TEST_PALETTE_ENTRIES,
 			paletteCourses
 		});
 		const fromFull = full.find((item) => item.kind === 'course' && item.course.name === 'e');
@@ -300,7 +298,7 @@ describe('placeCapsules', () => {
 			visibleDays,
 			columnWidthPx: 110,
 			expandedSlotKeys: new Set(),
-			coursePalette: EASTER_EGG_PALETTE_ENTRIES
+			coursePalette: TEST_PALETTE_ENTRIES
 		});
 		expect(item?.kind).toBe('course');
 		if (item?.kind !== 'course') return;

@@ -1,6 +1,6 @@
 import type { PaletteMode } from '@chronos/core';
 import { resolveCoursePalette, type CoursePaletteEntry } from '@chronos/core';
-import { EASTER_EGG_PALETTE_ENTRIES, YUMEMITA_THEME_ID } from '@chronos/plugin-theme-yumemita';
+import { YUMEMITA_PALETTE_ENTRIES, YUMEMITA_THEME_ID } from '@chronos/plugin-theme-yumemita';
 
 export interface WallpaperThemeAdapter {
 	extractWallpaperSeed(uri: string): Promise<{
@@ -59,7 +59,7 @@ export async function applyAppearance(
 
 	if (activeThemeId === YUMEMITA_THEME_ID) {
 		wallpaper?.clearWallpaperTheme(target);
-		return { coursePalette: EASTER_EGG_PALETTE_ENTRIES };
+		return { coursePalette: YUMEMITA_PALETTE_ENTRIES };
 	}
 
 	wallpaper?.clearWallpaperTheme(target);
