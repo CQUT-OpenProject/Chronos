@@ -50,12 +50,20 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 					const paletteMode = deps.shell.state.appState.paletteMode;
 					const wallpaperUri = deps.shell.state.appState.wallpaperUri;
 					const activeThemeId = deps.shell.controller.activeThemeId;
+					const engine = getAppEngine();
 
-					applyActiveTheme(getAppEngine(), activeThemeId, isDark, { paletteMode });
+					applyActiveTheme(engine, activeThemeId, isDark, { paletteMode });
+
+					const theme = engine.themes.getTheme(activeThemeId);
+					const mode = isDark ? 'dark' : 'light';
+					const themePaletteEntries =
+						typeof theme?.paletteEntries === 'function'
+							? theme.paletteEntries(mode)
+							: (theme?.paletteEntries ?? null);
 
 					const ac = new AbortController();
 					void deps.shell.appearance.apply(
-						{ isDark, paletteMode, wallpaperUri, activeThemeId },
+						{ isDark, paletteMode, wallpaperUri, activeThemeId, themePaletteEntries },
 						ac.signal
 					);
 					return () => ac.abort();

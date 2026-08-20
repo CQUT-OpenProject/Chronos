@@ -5,20 +5,11 @@ import {
 	applyCampusPeriodTimes,
 	mapCampusTimeInfoToPeriodTimes,
 	shouldUseOnlineCampusPeriodTimes,
-	shouldShowAcademicWeekRangeSettings,
-	shouldShowNonCurrentWeekCourseSetting,
-	shouldShowTermStartDateSetting,
 	toSettingsDraft
 } from './timetable-mappers';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
 
 describe('timetable-mappers', () => {
-	it('settings visibility depends on import source', () => {
-		expect(shouldShowNonCurrentWeekCourseSetting(TimetableImportSource.ONLINE_EDU)).toBe(true);
-		expect(shouldShowTermStartDateSetting(TimetableImportSource.FILE_HTML)).toBe(true);
-		expect(shouldShowAcademicWeekRangeSettings(TimetableImportSource.SHARED_JSON)).toBe(true);
-	});
-
 	it('toSettingsDraft normalizes non monday term start date', () => {
 		const draft = toSettingsDraft(
 			sampleTimetable({

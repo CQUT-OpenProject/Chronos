@@ -5,9 +5,6 @@
 	import {
 		removePeriodAt,
 		reindexPeriodTimes,
-		shouldShowAcademicWeekRangeSettings,
-		shouldShowNonCurrentWeekCourseSetting,
-		shouldShowTermStartDateSetting,
 		shouldUseOnlineCampusPeriodTimes
 	} from '$lib/timetable/timetable-mappers';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -31,15 +28,9 @@
 
 	const draft = $derived(editor.draft);
 
-	const showTermStart = $derived(
-		draft ? shouldShowTermStartDateSetting(draft.importMetadata?.source) : false
-	);
-	const showWeekRange = $derived(
-		draft ? shouldShowAcademicWeekRangeSettings(draft.importMetadata?.source) : false
-	);
-	const showNonCurrentWeek = $derived(
-		draft ? shouldShowNonCurrentWeekCourseSetting(draft.importMetadata?.source) : false
-	);
+	const showTermStart = $derived(Boolean(draft));
+	const showWeekRange = $derived(Boolean(draft));
+	const showNonCurrentWeek = $derived(Boolean(draft));
 	const useOnlineCampusPeriods = $derived(
 		draft ? shouldUseOnlineCampusPeriodTimes(draft.importMetadata?.source) : false
 	);

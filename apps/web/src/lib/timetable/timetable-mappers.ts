@@ -100,22 +100,6 @@ export function resolveUserCampusId(value: string | null | undefined): CqutCampu
 	return resolveCampusIdFromApiName(value);
 }
 
-export function shouldShowNonCurrentWeekCourseSetting(
-	_importSource?: TimetableImportSource
-): boolean {
-	return true;
-}
-
-export function shouldShowTermStartDateSetting(_importSource?: TimetableImportSource): boolean {
-	return true;
-}
-
-export function shouldShowAcademicWeekRangeSettings(
-	_importSource?: TimetableImportSource
-): boolean {
-	return true;
-}
-
 export function removePeriodAt(periodTimes: PeriodTimeDraft[], index: number): PeriodTimeDraft[] {
 	return periodTimes.filter((_, currentIndex) => currentIndex !== index);
 }

@@ -1,9 +1,11 @@
-import { createTransferImportCoordinator } from '$lib/client/transfer-import-coordinator';
 import { createCredentialVault } from '$lib/client/credential-vault';
-import type { TransferImportSource } from '$lib/client/preview-persistence';
+import {
+	createSessionPreviewPersistence,
+	type TransferImportSource
+} from '$lib/client/preview-persistence';
 import type { SavedCredentialState } from '$lib/models/auth';
 import type { CqutCampusId } from '$lib/models/cqut-campus';
-import { inferCampusIdFromCourses } from '$lib/models/cqut-campus';
+import { getCampusDefaultPeriodTimes, inferCampusIdFromCourses } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
 import { AcademicCalendarService, IVaultService, type ChronosEngine } from '@chronos/core';
@@ -11,6 +13,7 @@ import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import { onlineImportEnabled } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
+import { estimateShareLinkLength, SHARE_LINK_WARNING_LENGTH } from '@chronos/plugin-codec-share';
 
 export type { TransferImportSource };
 
@@ -56,11 +59,10 @@ export function createTransferState(engine?: ChronosEngine) {
 
 	const academicCalendarService = new AcademicCalendarService();
 	const timeProvider = new SystemTimeProvider();
+	const persistence = createSessionPreviewPersistence();
 	const credentialVault = engine
 		? createCredentialVault({ vault: engine.services.get(IVaultService) })
 		: null;
-
-	const coordinator = createTransferImportCoordinator({ engine });
 
 	$effect(() => {
 		if (!credentialVault) return;
@@ -126,7 +128,7 @@ export function createTransferState(engine?: ChronosEngine) {
 		previewSource = null;
 		htmlImportTermStartDate = null;
 		htmlImportCampusId = null;
-		coordinator.clearPersistedPreview();
+		persistence.clear();
 		clearMessages();
 	}
 
@@ -152,6 +154,29 @@ export function createTransferState(engine?: ChronosEngine) {
 			throw new Error('未识别到任何有效课程数据');
 		}
 		return timetable;
+	}
+
+	async function previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean> {
+		clearMessages();
+		try {
+			const timetable = await executeSlotImport(tabId, inputs);
+			preview = timetable;
+			previewSource =
+				tabId === 'cqut-online' ? 'ONLINE' : tabId === 'edu-html' ? 'HTML' : 'SHARE_LINK';
+			if (tabId === 'edu-html' && timetable.academicConfig?.termStartDate) {
+				htmlImportTermStartDate = timetable.academicConfig.termStartDate;
+				htmlImportCampusId =
+					(timetable.importMetadata?.campusId as CqutCampusId) ??
+					inferCampusIdFromCourses(timetable.courses);
+			} else {
+				htmlImportTermStartDate = null;
+				htmlImportCampusId = null;
+			}
+			return true;
+		} catch (err) {
+			errorMessage = err instanceof Error ? err.message : '获取课表失败';
+			return false;
+		}
 	}
 
 	async function previewFromClipboard() {
@@ -266,17 +291,18 @@ export function createTransferState(engine?: ChronosEngine) {
 
 	function persistPreview() {
 		if (!preview || !previewSource) return false;
-		return coordinator.persistPreview({
+		persistence.save({
 			preview,
 			previewSource,
 			importMode,
 			htmlImportTermStartDate,
 			htmlImportCampusId
 		});
+		return true;
 	}
 
 	function loadPersistedPreview(): boolean {
-		const snapshot = coordinator.loadPersistedPreview();
+		const snapshot = persistence.load();
 		if (!snapshot) return false;
 		preview = snapshot.preview;
 		previewSource = snapshot.previewSource;
@@ -287,7 +313,7 @@ export function createTransferState(engine?: ChronosEngine) {
 	}
 
 	function clearPersistedPreview() {
-		coordinator.clearPersistedPreview();
+		persistence.clear();
 	}
 
 	async function confirmImport() {
@@ -297,25 +323,59 @@ export function createTransferState(engine?: ChronosEngine) {
 			return false;
 		}
 
-		const result = await coordinator.confirmImport(
-			preview,
-			previewSource,
-			importMode,
-			htmlImportTermStartDate,
-			htmlImportCampusId
-		);
-
-		if (!result.ok) {
-			errorMessage = result.errorMessage;
-			return false;
+		let finalPreview = preview;
+		if (previewSource === 'HTML') {
+			if (!htmlImportTermStartDate) {
+				errorMessage = '请选择学期起始日期';
+				return false;
+			}
+			if (!htmlImportCampusId) {
+				errorMessage = '请选择校区';
+				return false;
+			}
+			const periodTimes = getCampusDefaultPeriodTimes(htmlImportCampusId);
+			finalPreview = {
+				...preview,
+				academicConfig: {
+					...preview.academicConfig,
+					termStartDate: htmlImportTermStartDate,
+					periodTimes
+				},
+				importMetadata: {
+					...preview.importMetadata,
+					campusId: htmlImportCampusId
+				}
+			};
 		}
 
-		clearPreview();
-		return true;
+		try {
+			if (!engine) {
+				throw new Error('ChronosEngine is required for ingest');
+			}
+			await engine.actions.importTimetable(finalPreview, {
+				overwriteActive: importMode === ImportMode.OVERWRITE_CURRENT
+			});
+			clearPreview();
+			return true;
+		} catch (err) {
+			errorMessage = err instanceof Error ? err.message : '保存课表失败';
+			return false;
+		}
 	}
 
 	async function getExportMetadata() {
-		return await coordinator.getExportMetadata();
+		if (!engine) {
+			return { timetableName: null, longLinkWarning: false };
+		}
+		const current = engine.state.currentTimetable;
+		if (!current) {
+			return { timetableName: null, longLinkWarning: false };
+		}
+		const length = await estimateShareLinkLength(current);
+		return {
+			timetableName: current.name,
+			longLinkWarning: length > SHARE_LINK_WARNING_LENGTH
+		};
 	}
 
 	return {
@@ -349,6 +409,8 @@ export function createTransferState(engine?: ChronosEngine) {
 		previewOnline,
 		previewWithSavedCredential,
 		clearSavedCredential,
+		previewWithSlot,
+		executeSlotImport,
 		persistPreview,
 		loadPersistedPreview,
 		clearPersistedPreview,
