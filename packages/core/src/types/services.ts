@@ -51,7 +51,9 @@ export interface StorageChangeEvent {
 export interface IStorageService {
 	// Timetable persistence
 	getTimetable(id: string): Promise<Timetable | null>;
-	listTimetables(): Promise<Array<{ id: string; name: string; updatedAt: number }>>;
+	listTimetables(): Promise<
+		Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>
+	>;
 	saveTimetable(timetable: Timetable): Promise<void>;
 	patchTimetable(id: string, patch: Partial<Timetable>): Promise<void>;
 	deleteTimetable(id: string): Promise<void>;
@@ -63,6 +65,7 @@ export interface IStorageService {
 	savePreferences(patch: Partial<UserPreferences>): Promise<void>;
 	getWallpaper?(): Promise<Uint8Array | null>;
 	setWallpaper?(wallpaper: Uint8Array | null): Promise<void>;
+	clearAllData?(): Promise<void>;
 
 	// Key-value store (namespaced automatically by pluginId)
 	getPluginData<T>(pluginId: string, key: string): Promise<T | null>;

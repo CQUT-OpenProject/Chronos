@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
-import { getSharedSettings } from '$lib/client/repository';
+
+const HAPTIC_STORAGE_KEY = 'chronos_preferences:haptic_feedback_enabled';
 
 /**
  * Check if the current browser/runtime supports the Vibration API.
@@ -14,7 +15,9 @@ export function isVibrationSupported(): boolean {
 export function isHapticFeedbackEnabled(): boolean {
 	if (!browser) return false;
 	try {
-		return getSharedSettings().getSnapshot().hapticFeedbackEnabled;
+		if (typeof localStorage === 'undefined') return true;
+		const raw = localStorage.getItem(HAPTIC_STORAGE_KEY);
+		return raw !== '0' && raw !== 'false';
 	} catch {
 		return true;
 	}

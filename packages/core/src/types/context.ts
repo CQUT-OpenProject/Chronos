@@ -149,6 +149,10 @@ export interface ChronosEvents {
 	'timetable:loaded': { timetable: Timetable };
 	'timetable:switched': { previousId: string | null; currentId: string; timetable: Timetable };
 	'timetable:updated': { timetable: Timetable };
+	'timetables:updated': {
+		timetables: Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>;
+	};
+	'wallpaper:updated': { wallpaperUri: string | null };
 	'preferences:updated': { preferences: UserPreferences };
 	'time:tick': { currentWeek: number; currentPeriod: number | null };
 	'theme:changed': { themeId: string };

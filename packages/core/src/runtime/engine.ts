@@ -36,6 +36,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	private _onNotification?: (message: string, type: 'info' | 'warn' | 'error') => void;
 
 	private _currentTimetable: Timetable | null = null;
+	private _timetables: Array<{
+		id: string;
+		name: string;
+		courseCount?: number;
+		updatedAt: number;
+	}> = [];
 	private _activeWeek = 1;
 	private _currentPeriodIndex: number | null = null;
 	private _activeThemeId = 'm3-default';
@@ -203,6 +209,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	get state() {
 		return {
 			currentTimetable: this._currentTimetable,
+			timetables: this._timetables,
 			activeWeek: this._activeWeek,
 			currentPeriodIndex: this._currentPeriodIndex,
 			activeThemeId: this._activeThemeId,
@@ -221,19 +228,25 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			deleteCourse: this.deleteCourse.bind(this),
 			setTheme: this.setTheme.bind(this),
 			updatePreferences: this.updatePreferences.bind(this),
+			clearAllData: this.clearAllData.bind(this),
 			notify: this.notify.bind(this)
 		};
+	}
+
+	async refreshTimetables(): Promise<void> {
+		this._timetables = await this.storage.listTimetables();
+		this.events.emit('timetables:updated', { timetables: this._timetables });
 	}
 
 	async init(): Promise<void> {
 		const storage = this.storage;
 		this._userPreferences = await storage.getPreferences();
+		this._timetables = await storage.listTimetables();
 
 		let activeId = await storage.getActiveTimetableId();
 		if (!activeId) {
-			const list = await storage.listTimetables();
-			if (list.length > 0) {
-				activeId = list[0]!.id;
+			if (this._timetables.length > 0 && this._timetables[0]) {
+				activeId = this._timetables[0].id;
 				await storage.setActiveTimetableId(activeId);
 			}
 		}
@@ -248,6 +261,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			await this.badges.recalculate(this._currentTimetable.courses);
 			this.events.emit('timetable:loaded', { timetable: this._currentTimetable });
 		}
+		this.events.emit('timetables:updated', { timetables: this._timetables });
 
 		if (storage.onChanged) {
 			this.storageSubscription = storage.onChanged(this.handleStorageChange.bind(this));
@@ -260,6 +274,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			this._userPreferences = await storage.getPreferences();
 			this.events.emit('preferences:updated', { preferences: this._userPreferences });
 		} else if (event.type === 'timetable') {
+			await this.refreshTimetables();
 			const activeId = await storage.getActiveTimetableId();
 			if (activeId) {
 				const updated = await storage.getTimetable(activeId);
@@ -269,8 +284,32 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 					await this.badges.recalculate(updated.courses);
 					this.events.emit('timetable:updated', { timetable: updated });
 				}
+			} else if (this._timetables.length === 0) {
+				this._currentTimetable = null;
+				this.events.emit('timetable:updated', { timetable: null as unknown as Timetable });
 			}
 		}
+	}
+
+	async clearAllData(): Promise<void> {
+		if (this.storage.clearAllData) {
+			await this.storage.clearAllData();
+		} else {
+			const list = await this.storage.listTimetables();
+			for (const t of list) {
+				await this.storage.deleteTimetable(t.id);
+			}
+			await this.storage.setActiveTimetableId('');
+			if (this.storage.setWallpaper) {
+				await this.storage.setWallpaper(null);
+			}
+		}
+		this._currentTimetable = null;
+		this._timetables = [];
+		this._userPreferences = { ...DEFAULT_USER_PREFERENCES };
+		this.events.emit('timetables:updated', { timetables: [] });
+		this.events.emit('timetable:updated', { timetable: null as unknown as Timetable });
+		this.events.emit('preferences:updated', { preferences: this._userPreferences });
 	}
 
 	updateTime(now = new Date()): void {
@@ -331,6 +370,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				});
 
 				await this.storage.saveTimetable(timetable);
+				await this.refreshTimetables();
 
 				if (!this._currentTimetable) {
 					await this.switchTimetable(timetable.id);
@@ -382,6 +422,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			{ timetableId },
 			async ({ timetableId: targetId }) => {
 				await this.storage.deleteTimetable(targetId);
+				await this.refreshTimetables();
 
 				if (this._currentTimetable?.id === targetId) {
 					const remaining = await this.storage.listTimetables();
@@ -390,6 +431,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 					} else {
 						this._currentTimetable = null;
 						await this.storage.setActiveTimetableId('');
+						this.events.emit('timetable:updated', { timetable: null as unknown as Timetable });
 					}
 				}
 			}
@@ -409,6 +451,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 
 		await this.storage.saveTimetable(updated);
 		this._currentTimetable = updated;
+		await this.refreshTimetables();
 		this.updateTime();
 		await this.badges.recalculate(updated.courses);
 		this.events.emit('timetable:updated', { timetable: updated });

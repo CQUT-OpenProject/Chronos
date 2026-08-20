@@ -3,7 +3,6 @@ import {
 	defineSchema,
 	validateConfig,
 	type ChronosPlugin,
-	type ChronosContext,
 	HierarchicalSlotRegistry
 } from '../src/index';
 

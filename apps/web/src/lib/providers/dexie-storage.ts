@@ -72,10 +72,18 @@ export class DexieStorageProvider implements IStorageService {
 		}
 	}
 
-	async listTimetables(): Promise<Array<{ id: string; name: string; updatedAt: number }>> {
+	async listTimetables(): Promise<
+		Array<{ id: string; name: string; courseCount: number; updatedAt: number }>
+	> {
 		try {
 			const rows = await this.database.timetables.orderBy('updatedAt').reverse().toArray();
-			return rows.map((r) => ({ id: r.id, name: r.name, updatedAt: r.updatedAt }));
+			const results = await Promise.all(
+				rows.map(async (r) => {
+					const count = await this.database.courses.where('timetableId').equals(r.id).count();
+					return { id: r.id, name: r.name, courseCount: count, updatedAt: r.updatedAt };
+				})
+			);
+			return results;
 		} catch {
 			return [];
 		}
@@ -278,6 +286,52 @@ export class DexieStorageProvider implements IStorageService {
 			this.notifyChange({ type: 'pluginData', key: id });
 		} catch (err) {
 			console.warn(`[DexieStorageProvider] Failed to delete plugin data for ${id}:`, err);
+		}
+	}
+
+	async clearAllData(): Promise<void> {
+		try {
+			await this.database.transaction(
+				'rw',
+				this.database.timetables,
+				this.database.courses,
+				this.database.wallpapers,
+				this.database.pluginData,
+				async () => {
+					await this.database.timetables.clear();
+					await this.database.courses.clear();
+					await this.database.wallpapers.clear();
+					await this.database.pluginData.clear();
+				}
+			);
+			if (this.localStore) {
+				const keysToRemove: string[] = [];
+				for (let i = 0; i < this.localStore.length; i++) {
+					const k = this.localStore.key(i);
+					if (k?.startsWith('chronos')) {
+						keysToRemove.push(k);
+					}
+				}
+				for (const k of keysToRemove) {
+					this.localStore.removeItem(k);
+				}
+			}
+			if (typeof sessionStorage !== 'undefined') {
+				const keysToRemove: string[] = [];
+				for (let i = 0; i < sessionStorage.length; i++) {
+					const k = sessionStorage.key(i);
+					if (k?.startsWith('chronos')) {
+						keysToRemove.push(k);
+					}
+				}
+				for (const k of keysToRemove) {
+					sessionStorage.removeItem(k);
+				}
+			}
+			this.notifyChange({ type: 'preferences', key: 'clearAllData' });
+			this.notifyChange({ type: 'timetable', key: 'clearAllData' });
+		} catch (err) {
+			console.warn('[DexieStorageProvider] Failed to clear all data:', err);
 		}
 	}
 

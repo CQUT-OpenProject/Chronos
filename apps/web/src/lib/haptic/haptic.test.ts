@@ -5,21 +5,16 @@ vi.mock('$app/environment', () => ({
 	browser: true
 }));
 
-const mockGetSnapshot = vi.fn(() => ({
-	hapticFeedbackEnabled: true
-}));
-
-vi.mock('$lib/client/repository', () => ({
-	getSharedSettings: () => ({
-		getSnapshot: mockGetSnapshot
-	})
-}));
+const mockLocalStorage = new Map<string, string>();
 
 describe('haptic feedback service', () => {
 	beforeEach(() => {
 		vi.restoreAllMocks();
-		mockGetSnapshot.mockReturnValue({
-			hapticFeedbackEnabled: true
+		mockLocalStorage.clear();
+		vi.stubGlobal('localStorage', {
+			getItem: (k: string) => mockLocalStorage.get(k) ?? null,
+			setItem: (k: string, v: string) => mockLocalStorage.set(k, v),
+			removeItem: (k: string) => mockLocalStorage.delete(k)
 		});
 	});
 
@@ -39,11 +34,11 @@ describe('haptic feedback service', () => {
 		expect(isVibrationSupported()).toBe(false);
 	});
 
-	it('returns enabled state from shared settings', () => {
-		mockGetSnapshot.mockReturnValue({ hapticFeedbackEnabled: true });
+	it('returns enabled state from storage', () => {
+		mockLocalStorage.set('chronos_preferences:haptic_feedback_enabled', '1');
 		expect(isHapticFeedbackEnabled()).toBe(true);
 
-		mockGetSnapshot.mockReturnValue({ hapticFeedbackEnabled: false });
+		mockLocalStorage.set('chronos_preferences:haptic_feedback_enabled', '0');
 		expect(isHapticFeedbackEnabled()).toBe(false);
 	});
 
@@ -54,7 +49,7 @@ describe('haptic feedback service', () => {
 			writable: true,
 			configurable: true
 		});
-		mockGetSnapshot.mockReturnValue({ hapticFeedbackEnabled: true });
+		mockLocalStorage.set('chronos_preferences:haptic_feedback_enabled', '1');
 
 		const result = triggerVibrate(10);
 		expect(result).toBe(true);
@@ -68,7 +63,7 @@ describe('haptic feedback service', () => {
 			writable: true,
 			configurable: true
 		});
-		mockGetSnapshot.mockReturnValue({ hapticFeedbackEnabled: false });
+		mockLocalStorage.set('chronos_preferences:haptic_feedback_enabled', '0');
 
 		const result = triggerVibrate(10);
 		expect(result).toBe(false);
@@ -82,7 +77,7 @@ describe('haptic feedback service', () => {
 			writable: true,
 			configurable: true
 		});
-		mockGetSnapshot.mockReturnValue({ hapticFeedbackEnabled: true });
+		mockLocalStorage.set('chronos_preferences:haptic_feedback_enabled', '1');
 
 		haptic.light();
 		expect(mockVibrate).toHaveBeenLastCalledWith(20);

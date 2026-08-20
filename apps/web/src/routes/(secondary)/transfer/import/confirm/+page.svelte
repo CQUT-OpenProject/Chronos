@@ -2,13 +2,14 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { getRepository } from '$lib/client/repository';
+	import { getAppController } from '$lib/services/app-engine';
 	import { ImportMode } from '$lib/domain/import-mode';
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TransferImportConfirmScreen from '$lib/components/transfer/TransferImportConfirmScreen.svelte';
 
 	const transfer = createTransferState();
+	const controller = getAppController();
 	let currentTimetableName = $state<string | null>(null);
 	let ready = $state(false);
 
@@ -18,8 +19,7 @@
 			goto(resolve('/transfer/import'));
 			return;
 		}
-		const snapshot = await getRepository().getAppStateSnapshot();
-		currentTimetableName = snapshot.currentTimetable?.name ?? null;
+		currentTimetableName = controller.currentTimetable?.name ?? null;
 		if (!currentTimetableName && transfer.state.importMode === ImportMode.OVERWRITE_CURRENT) {
 			transfer.setImportMode(ImportMode.AS_NEW);
 		}

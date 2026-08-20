@@ -1,7 +1,5 @@
 import { db } from './db';
 import type { CourseRow, TimetableRow, WallpaperRow } from './db';
-import { invalidateWallpaperDisplayUrl, refreshRegisteredAppState } from './offline-repository';
-import type { SettingsRepo } from './settings-repo';
 
 const CHRONOS_STORAGE_PREFIX = 'chronos';
 const textEncoder = new TextEncoder();
@@ -86,13 +84,12 @@ export function formatAppDataSize(bytes: number): string {
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export async function clearAllAppData(settings: SettingsRepo): Promise<void> {
-	invalidateWallpaperDisplayUrl();
-
-	await db.transaction('rw', db.timetables, db.courses, db.wallpapers, async () => {
+export async function clearAllAppData(): Promise<void> {
+	await db.transaction('rw', db.timetables, db.courses, db.wallpapers, db.pluginData, async () => {
 		await db.timetables.clear();
 		await db.courses.clear();
 		await db.wallpapers.clear();
+		await db.pluginData.clear();
 	});
 
 	if (typeof localStorage !== 'undefined') {
@@ -101,7 +98,4 @@ export async function clearAllAppData(settings: SettingsRepo): Promise<void> {
 	if (typeof sessionStorage !== 'undefined') {
 		removeStorageKeysWithPrefix(sessionStorage, CHRONOS_STORAGE_PREFIX);
 	}
-
-	settings.reloadFromStorage();
-	await refreshRegisteredAppState();
 }

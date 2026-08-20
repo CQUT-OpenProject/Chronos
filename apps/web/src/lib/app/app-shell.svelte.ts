@@ -6,10 +6,18 @@ import {
 	TimetableLayoutMode,
 	type AppState,
 	type UserPreferences,
-	emptyAppState
+	themeModeFromStorage,
+	timetableLayoutModeFromStorage,
+	paletteModeFromStorage,
+	capsuleCornerStyleFromStorage
 } from '$lib/models/app-state';
-import { getRepository, getPreferencesRepository, clearAllAppData } from '$lib/client/repository';
 import { getAppController } from '$lib/services/app-engine';
+import type {
+	ThemeMode as CoreThemeMode,
+	PaletteMode as CorePaletteMode,
+	TimetableLayoutMode as CoreLayoutMode,
+	CapsuleCornerStyle as CoreCornerStyle
+} from '@chronos/core';
 
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
 	if (themeMode === ThemeMode.DARK) return true;
@@ -18,21 +26,60 @@ function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean 
 }
 
 export function createAppShell() {
-	let appState = $state<AppState>(emptyAppState());
-	let initialized = $state(false);
 	let systemPrefersDark = $state(false);
-	let unsubscribe: (() => void) | null = null;
 	let mediaQueryCleanup: (() => void) | null = null;
 	const appearance = createAppearance();
 	const controller = getAppController();
 
-	const isDark = $derived(resolveDark(appState.themeMode, systemPrefersDark));
-	const hasWallpaper = $derived(Boolean(appState.wallpaperUri));
+	const themeMode = $derived(themeModeFromStorage(controller.userPreferences?.themeMode));
+	const timetableLayoutMode = $derived(
+		timetableLayoutModeFromStorage(
+			controller.userPreferences?.timetableLayoutMode === 'compact' ? 'fit' : 'scroll'
+		)
+	);
+	const paletteMode = $derived(
+		paletteModeFromStorage(
+			controller.userPreferences?.paletteMode === 'wallpaper' ? 'wallpaper' : 'default'
+		)
+	);
+	const capsuleCornerStyle = $derived(
+		capsuleCornerStyleFromStorage(controller.userPreferences?.capsuleCornerStyle)
+	);
+	const hapticFeedbackEnabled = $derived(controller.userPreferences?.hapticFeedbackEnabled ?? true);
+
+	const isDark = $derived(resolveDark(themeMode, systemPrefersDark));
+	const hasWallpaper = $derived(Boolean(controller.wallpaperUri));
+
+	const appState = $derived<AppState>({
+		timetables: controller.timetables.map((t) => ({
+			id: t.id,
+			name: t.name,
+			courseCount: t.courseCount ?? 0,
+			createdAt: 0,
+			updatedAt: t.updatedAt
+		})),
+		currentTimetableId: controller.currentTimetable?.id ?? null,
+		wallpaperUri: controller.wallpaperUri,
+		currentTimetable: controller.currentTimetable as unknown as
+			| import('$lib/models/timetable').Timetable
+			| null,
+		themeMode,
+		timetableLayoutMode,
+		paletteMode,
+		capsuleCornerStyle,
+		hapticFeedbackEnabled
+	});
+
+	const initialized = $derived(
+		Boolean(
+			controller.userPreferences !== null ||
+			controller.currentTimetable !== null ||
+			controller.timetables.length > 0
+		)
+	);
 
 	function init() {
-		if (unsubscribe) return;
-
-		if (typeof window !== 'undefined') {
+		if (typeof window !== 'undefined' && !mediaQueryCleanup) {
 			const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 			systemPrefersDark = mediaQuery.matches;
 			const onChange = (event: MediaQueryListEvent) => {
@@ -41,23 +88,48 @@ export function createAppShell() {
 			mediaQuery.addEventListener('change', onChange);
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
-
-		const repo = getRepository();
-		unsubscribe = repo.subscribeAppState((state) => {
-			appState = state;
-			initialized = true;
-		});
+		void controller.loadWallpaper();
 	}
 
 	function destroy() {
-		unsubscribe?.();
-		unsubscribe = null;
 		mediaQueryCleanup?.();
 		mediaQueryCleanup = null;
 	}
 
 	async function updatePreferences(patch: Partial<UserPreferences>) {
-		await getPreferencesRepository().update(patch);
+		const corePatch: Partial<import('@chronos/core').UserPreferences> = {};
+		if (patch.themeMode !== undefined) {
+			corePatch.themeMode = (
+				patch.themeMode === ThemeMode.DARK
+					? 'dark'
+					: patch.themeMode === ThemeMode.LIGHT
+						? 'light'
+						: 'auto'
+			) as CoreThemeMode;
+		}
+		if (patch.timetableLayoutMode !== undefined) {
+			corePatch.timetableLayoutMode = (
+				patch.timetableLayoutMode === TimetableLayoutMode.FIT ? 'compact' : 'fixed'
+			) as CoreLayoutMode;
+		}
+		if (patch.paletteMode !== undefined) {
+			corePatch.paletteMode = (
+				patch.paletteMode === PaletteMode.WALLPAPER ? 'wallpaper' : 'vibrant'
+			) as CorePaletteMode;
+		}
+		if (patch.capsuleCornerStyle !== undefined) {
+			corePatch.capsuleCornerStyle = (
+				patch.capsuleCornerStyle === CapsuleCornerStyle.SQUARE
+					? 'sharp'
+					: patch.capsuleCornerStyle === CapsuleCornerStyle.MERGE
+						? 'pill'
+						: 'rounded'
+			) as CoreCornerStyle;
+		}
+		if (patch.hapticFeedbackEnabled !== undefined) {
+			corePatch.hapticFeedbackEnabled = patch.hapticFeedbackEnabled;
+		}
+		await controller.updatePreferences(corePatch);
 	}
 
 	async function setThemeMode(mode: ThemeMode) {
@@ -81,11 +153,7 @@ export function createAppShell() {
 	}
 
 	async function setWallpaper(wallpaper: Blob | null) {
-		const env = controller.rawEngine.env;
-		if (env.storage.setWallpaper) {
-			const bytes = wallpaper ? new Uint8Array(await wallpaper.arrayBuffer()) : null;
-			await env.storage.setWallpaper(bytes);
-		}
+		await controller.setWallpaper(wallpaper);
 	}
 
 	async function switchTimetable(id: string) {
@@ -97,7 +165,7 @@ export function createAppShell() {
 	}
 
 	async function clearAllData() {
-		await clearAllAppData();
+		await controller.clearAllData();
 	}
 
 	return {

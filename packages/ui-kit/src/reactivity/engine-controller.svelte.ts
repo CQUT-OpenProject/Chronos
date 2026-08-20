@@ -20,11 +20,15 @@ export class ReactiveChronosController implements Disposable {
 
 	// Svelte 5 Runes reactive core state
 	currentTimetable = $state<Timetable | null>(null);
+	timetables = $state<Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>>(
+		[]
+	);
 	activeWeek = $state<number>(1);
 	currentPeriodIndex = $state<number | null>(null);
 	activeThemeId = $state<string>('m3-default');
 	userPreferences = $state<UserPreferences | null>(null);
 	currentLocale = $state<string>('zh-cn');
+	wallpaperUri = $state<string | null>(null);
 
 	// Slot reactivity version signal (increments on slot changes or locale switches)
 	slotVersion = $state<number>(0);
@@ -45,6 +49,16 @@ export class ReactiveChronosController implements Disposable {
 			this.engine.on('timetable:updated', ({ timetable }: { timetable: Timetable }) => {
 				this.currentTimetable = timetable;
 			}),
+			this.engine.on(
+				'timetables:updated',
+				({
+					timetables
+				}: {
+					timetables: Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>;
+				}) => {
+					this.timetables = timetables;
+				}
+			),
 			this.engine.on('preferences:updated', ({ preferences }: { preferences: UserPreferences }) => {
 				this.userPreferences = preferences;
 			}),
@@ -103,6 +117,7 @@ export class ReactiveChronosController implements Disposable {
 
 	private syncAllState(): void {
 		this.currentTimetable = this.engine.state.currentTimetable;
+		this.timetables = this.engine.state.timetables ?? [];
 		this.activeWeek = this.engine.state.activeWeek;
 		this.currentPeriodIndex = this.engine.state.currentPeriodIndex;
 		this.activeThemeId = this.engine.state.activeThemeId;
@@ -110,6 +125,45 @@ export class ReactiveChronosController implements Disposable {
 		this.currentLocale = this.engine.locale;
 		this.courseBadges = this.engine.badges.getAll();
 		this.slotVersion++;
+	}
+
+	async loadWallpaper(): Promise<string | null> {
+		if (typeof window === 'undefined') return null;
+		const storage = this.engine.env.storage;
+		if (!storage.getWallpaper) return null;
+		try {
+			const bytes = await storage.getWallpaper();
+			if (!bytes || bytes.byteLength === 0) {
+				if (this.wallpaperUri) {
+					URL.revokeObjectURL(this.wallpaperUri);
+					this.wallpaperUri = null;
+				}
+				return null;
+			}
+			const blob = new Blob([bytes as unknown as BlobPart]);
+			if (this.wallpaperUri) {
+				URL.revokeObjectURL(this.wallpaperUri);
+			}
+			this.wallpaperUri = URL.createObjectURL(blob);
+			return this.wallpaperUri;
+		} catch {
+			return null;
+		}
+	}
+
+	async setWallpaper(wallpaper: Blob | null): Promise<void> {
+		if (this.wallpaperUri && typeof window !== 'undefined') {
+			URL.revokeObjectURL(this.wallpaperUri);
+			this.wallpaperUri = null;
+		}
+		const storage = this.engine.env.storage;
+		if (storage.setWallpaper) {
+			const bytes = wallpaper ? new Uint8Array(await wallpaper.arrayBuffer()) : null;
+			await storage.setWallpaper(bytes);
+		}
+		if (wallpaper && typeof window !== 'undefined') {
+			this.wallpaperUri = URL.createObjectURL(wallpaper);
+		}
 	}
 
 	// Action proxies
@@ -149,6 +203,15 @@ export class ReactiveChronosController implements Disposable {
 		return this.engine.actions.updatePreferences(patch);
 	}
 
+	async clearAllData(): Promise<void> {
+		if (this.wallpaperUri && typeof window !== 'undefined') {
+			URL.revokeObjectURL(this.wallpaperUri);
+			this.wallpaperUri = null;
+		}
+		await this.engine.actions.clearAllData();
+		this.syncAllState();
+	}
+
 	notify(message: string, type: 'info' | 'warn' | 'error' = 'info'): void {
 		this.engine.actions.notify(message, type);
 	}
@@ -158,6 +221,10 @@ export class ReactiveChronosController implements Disposable {
 	}
 
 	dispose(): void {
+		if (this.wallpaperUri && typeof window !== 'undefined') {
+			URL.revokeObjectURL(this.wallpaperUri);
+			this.wallpaperUri = null;
+		}
 		for (const d of this.disposables) {
 			d.dispose();
 		}

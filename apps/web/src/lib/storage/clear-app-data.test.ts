@@ -1,17 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import {
-	CapsuleCornerStyle,
-	PaletteMode,
-	ThemeMode,
-	TimetableLayoutMode
-} from '$lib/models/app-state';
-import {
 	clearAllAppData,
 	estimateStorageBytes,
 	formatAppDataSize,
 	removeStorageKeysWithPrefix
 } from './clear-app-data';
-import type { SettingsRepo } from './settings-repo';
 
 function createMemoryStorage(initial: Record<string, string> = {}): Storage {
 	const map = new Map(Object.entries(initial));
@@ -27,19 +20,13 @@ function createMemoryStorage(initial: Record<string, string> = {}): Storage {
 	} as Storage;
 }
 
-const {
-	mockTimetablesClear,
-	mockCoursesClear,
-	mockWallpapersClear,
-	mockInvalidateWallpaperDisplayUrl,
-	mockRefreshRegisteredAppState
-} = vi.hoisted(() => ({
-	mockTimetablesClear: vi.fn(async () => undefined),
-	mockCoursesClear: vi.fn(async () => undefined),
-	mockWallpapersClear: vi.fn(async () => undefined),
-	mockInvalidateWallpaperDisplayUrl: vi.fn(),
-	mockRefreshRegisteredAppState: vi.fn(async () => undefined)
-}));
+const { mockTimetablesClear, mockCoursesClear, mockWallpapersClear, mockPluginDataClear } =
+	vi.hoisted(() => ({
+		mockTimetablesClear: vi.fn(async () => undefined),
+		mockCoursesClear: vi.fn(async () => undefined),
+		mockWallpapersClear: vi.fn(async () => undefined),
+		mockPluginDataClear: vi.fn(async () => undefined)
+	}));
 
 vi.mock('./db', () => ({
 	db: {
@@ -49,13 +36,9 @@ vi.mock('./db', () => ({
 		}),
 		timetables: { clear: mockTimetablesClear },
 		courses: { clear: mockCoursesClear },
-		wallpapers: { clear: mockWallpapersClear }
+		wallpapers: { clear: mockWallpapersClear },
+		pluginData: { clear: mockPluginDataClear }
 	}
-}));
-
-vi.mock('./offline-repository', () => ({
-	invalidateWallpaperDisplayUrl: mockInvalidateWallpaperDisplayUrl,
-	refreshRegisteredAppState: mockRefreshRegisteredAppState
 }));
 
 describe('removeStorageKeysWithPrefix', () => {
@@ -75,48 +58,21 @@ describe('removeStorageKeysWithPrefix', () => {
 });
 
 describe('clearAllAppData', () => {
-	let reloadFromStorageCalls = 0;
-	let settings: SettingsRepo;
-
 	beforeEach(() => {
 		vi.clearAllMocks();
-		reloadFromStorageCalls = 0;
-		settings = {
-			subscribe: vi.fn(() => () => undefined),
-			getSnapshot: vi.fn(() => ({
-				currentTimetableId: null,
-				themeMode: ThemeMode.SYSTEM,
-				timetableLayoutMode: TimetableLayoutMode.SCROLL,
-				paletteMode: PaletteMode.DEFAULT,
-				capsuleCornerStyle: CapsuleCornerStyle.ROUNDED,
-				hapticFeedbackEnabled: true
-			})),
-			reloadFromStorage() {
-				reloadFromStorageCalls += 1;
-			},
-			update: vi.fn(),
-			setCurrentTimetableId: vi.fn(),
-			setThemeMode: vi.fn(),
-			setTimetableLayoutMode: vi.fn(),
-			setPaletteMode: vi.fn(),
-			setCapsuleCornerStyle: vi.fn(),
-			setHapticFeedbackEnabled: vi.fn()
-		};
 		vi.stubGlobal('localStorage', createMemoryStorage({ 'chronos:credential': 'x' }));
 		vi.stubGlobal('sessionStorage', createMemoryStorage({ 'chronos:import-preview': 'y' }));
 	});
 
-	it('clears indexeddb tables, chronos storage keys, and refreshes app state', async () => {
-		await clearAllAppData(settings);
+	it('clears indexeddb tables and chronos storage keys', async () => {
+		await clearAllAppData();
 
-		expect(mockInvalidateWallpaperDisplayUrl).toHaveBeenCalledOnce();
 		expect(mockTimetablesClear).toHaveBeenCalledOnce();
 		expect(mockCoursesClear).toHaveBeenCalledOnce();
 		expect(mockWallpapersClear).toHaveBeenCalledOnce();
+		expect(mockPluginDataClear).toHaveBeenCalledOnce();
 		expect(localStorage.getItem('chronos:credential')).toBeNull();
 		expect(sessionStorage.getItem('chronos:import-preview')).toBeNull();
-		expect(reloadFromStorageCalls).toBe(1);
-		expect(mockRefreshRegisteredAppState).toHaveBeenCalledOnce();
 	});
 });
 
