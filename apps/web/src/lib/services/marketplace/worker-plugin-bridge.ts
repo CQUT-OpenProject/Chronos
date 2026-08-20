@@ -110,8 +110,12 @@ export class WorkerPluginBridge implements Disposable {
 			const workerUrl = URL.createObjectURL(blob);
 			this.worker = new Worker(workerUrl);
 			URL.revokeObjectURL(workerUrl);
-		} else {
+		} else if (import.meta.env.MODE === 'test') {
 			this.worker = new InProcessSandboxAdapter(this.manifest, this.code);
+		} else {
+			throw new Error(
+				'Web Worker runtime is not available; third-party plugins cannot be loaded in this environment'
+			);
 		}
 
 		if (!this.worker) {

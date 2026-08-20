@@ -44,6 +44,11 @@ async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	profileManager = new ProfileManager(engine);
 	const profile = resolveActiveProfile();
 	await profileManager.applyProfile(profile, availablePlugins);
+
+	if (!sharedMarketplace) {
+		sharedMarketplace = new MarketplaceService(engine);
+	}
+	await sharedMarketplace.init();
 }
 
 export async function ensureEngineReady(options?: WebProviderOptions): Promise<ChronosEngine> {

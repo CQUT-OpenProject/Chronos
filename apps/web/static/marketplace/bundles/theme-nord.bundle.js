@@ -8,7 +8,7 @@ module.exports = {
 		return '北极深蓝与极光色调主题';
 	},
 	apply: function (ctx) {
-		ctx.registerTheme({
+		ctx.registerSlot('theme.definition', {
 			id: 'nord',
 			name: function () {
 				return 'Nord';
