@@ -69,6 +69,15 @@ export function isAllowedDomain(targetUrl: string, allowedDomains?: string[]): b
 
 export { InProcessSandboxAdapter } from './in-process-sandbox-adapter';
 
+export function resolveWorkerRuntimeUrl(): string {
+	if (typeof window === 'undefined') {
+		return '/worker-runtime.js';
+	}
+	const base = import.meta.env.BASE_URL ?? '/';
+	const path = `${base.endsWith('/') ? base : `${base}/`}worker-runtime.js`;
+	return new URL(path, window.location.href).href;
+}
+
 export class WorkerPluginBridge implements Disposable {
 	private worker: Worker | null = null;
 	private disposables: Disposable[] = [];
@@ -91,6 +100,7 @@ export class WorkerPluginBridge implements Disposable {
 		if (this.customWorker) {
 			this.worker = this.customWorker;
 		} else if (typeof Worker !== 'undefined' && typeof Blob !== 'undefined') {
+			const runtimeUrl = resolveWorkerRuntimeUrl();
 			const workerScript = `
 				(function() {
 					const noop = () => { throw new Error('Direct I/O is disabled inside sandbox'); };
@@ -102,7 +112,7 @@ export class WorkerPluginBridge implements Disposable {
 						self.indexedDB = undefined;
 					} catch(e) {}
 
-					importScripts('/worker-runtime.js');
+					importScripts(${JSON.stringify(runtimeUrl)});
 					self.initSandboxPlugin(${JSON.stringify(this.manifest)}, ${JSON.stringify(this.code)});
 				})();
 			`;

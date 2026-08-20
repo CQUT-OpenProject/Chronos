@@ -9,6 +9,7 @@ import {
 import {
 	WorkerPluginBridge,
 	InProcessSandboxAdapter,
+	resolveWorkerRuntimeUrl,
 	type WorkerRpcMessage
 } from './worker-plugin-bridge';
 
@@ -403,5 +404,12 @@ describe('WorkerPluginBridge', () => {
 		});
 
 		bridge.dispose();
+	});
+});
+
+describe('resolveWorkerRuntimeUrl', () => {
+	it('returns a path ending with worker-runtime.js', () => {
+		const url = resolveWorkerRuntimeUrl();
+		expect(url).toMatch(/worker-runtime\.js$/);
 	});
 });
