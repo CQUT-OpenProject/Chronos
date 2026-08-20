@@ -1,5 +1,10 @@
 import type { ChronosEngine, Disposable, MarketplaceRegistry, PluginManifest } from '@chronos/core';
 import { IHttpService, IRuntimeService } from '@chronos/core';
+import {
+	BUILTIN_COLOR_SCHEME_VIBRANT,
+	buildColorSchemePatch,
+	resolveColorSchemeId
+} from '$lib/appearance/color-scheme';
 import { WorkerPluginBridge } from './worker-plugin-bridge';
 
 const MARKETPLACE_STORAGE_KEY = 'installed_plugins';
@@ -129,7 +134,11 @@ export class MarketplaceService implements Disposable {
 
 		await this.saveInstalledToStorage();
 		await this.loadPluginInstance(manifest, code);
-		this.engine.actions.notify(`插件「${manifest.id}」已安装并启用`, 'info');
+		if (manifest.type === 'theme') {
+			this.engine.actions.notify('插件已安装并启用，可在「显示设置」中选择此外观主题', 'info');
+		} else {
+			this.engine.actions.notify(`插件「${manifest.id}」已安装并启用`, 'info');
+		}
 	}
 
 	async uninstall(pluginId: string): Promise<void> {
@@ -189,12 +198,28 @@ export class MarketplaceService implements Disposable {
 		return bridge;
 	}
 
-	private revertThemeIfNeeded(): void {
-		const activeId = this.engine.state.activeThemeId;
-		if (activeId === 'm3-default') return;
-		if (!this.engine.themes.getTheme(activeId)) {
-			this.engine.actions.setTheme('m3-default');
+	private revertThemeIfNeeded(manifest?: PluginManifest): void {
+		if (!manifest || manifest.type !== 'theme') return;
+
+		const prefs = this.engine.state.userPreferences;
+		const schemeId = resolveColorSchemeId(prefs.paletteMode, prefs.visualThemeId);
+		const themeId = this.resolveThemeIdForManifest(manifest);
+		if (!themeId || schemeId !== themeId) return;
+
+		const patch = buildColorSchemePatch(BUILTIN_COLOR_SCHEME_VIBRANT);
+		this.engine.actions.setTheme(patch.themeId);
+		void this.engine.actions.updatePreferences({
+			paletteMode: patch.paletteMode,
+			visualThemeId: patch.visualThemeId
+		});
+	}
+
+	private resolveThemeIdForManifest(manifest: PluginManifest): string | null {
+		if (manifest.type !== 'theme') return null;
+		if (manifest.id.startsWith('theme-')) {
+			return manifest.id.slice('theme-'.length);
 		}
+		return manifest.id;
 	}
 
 	private async unloadPluginInstance(pluginId: string): Promise<void> {
@@ -205,7 +230,7 @@ export class MarketplaceService implements Disposable {
 			this.activeHandles.delete(pluginId);
 		}
 		if (record?.manifest.type === 'theme') {
-			this.revertThemeIfNeeded();
+			this.revertThemeIfNeeded(record.manifest);
 		}
 	}
 

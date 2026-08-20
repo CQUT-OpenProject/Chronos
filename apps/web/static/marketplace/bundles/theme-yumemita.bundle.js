@@ -77,6 +77,5 @@ module.exports = {
 				return palette[Math.abs(paletteIndex) % palette.length];
 			}
 		});
-		ctx.actions.setTheme('yumemita');
 	}
 };

@@ -53,6 +53,14 @@ async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 		sharedMarketplace = new MarketplaceService(engine);
 	}
 	await sharedMarketplace.init();
+
+	const prefs = await engine.storage.getPreferences();
+	const visualThemeId = prefs?.visualThemeId ?? 'm3-default';
+	if (engine.themes.getTheme(visualThemeId)) {
+		engine.actions.setTheme(visualThemeId);
+	} else if (engine.themes.getTheme('m3-default')) {
+		engine.actions.setTheme('m3-default');
+	}
 }
 
 export async function ensureEngineReady(options?: WebProviderOptions): Promise<ChronosEngine> {

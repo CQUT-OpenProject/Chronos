@@ -46,3 +46,6 @@ export {
 	MobileVibrate,
 	MobileVibrateFill
 } from '@material-symbols-svg/svelte/icons/mobile-vibrate';
+export { Settings, SettingsFill } from '@material-symbols-svg/svelte/icons/settings';
+export { Tune, TuneFill } from '@material-symbols-svg/svelte/icons/tune';
+export { Extension, ExtensionFill } from '@material-symbols-svg/svelte/icons/extension';
