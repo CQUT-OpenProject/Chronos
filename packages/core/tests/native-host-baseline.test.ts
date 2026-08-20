@@ -161,10 +161,10 @@ describe('Native Host Baseline (iOS JSCore / Android QuickJS)', () => {
 		expect(engine.slots.get('import.source.tab').length).toBeGreaterThanOrEqual(3);
 		expect(engine.slots.get('export.action').length).toBeGreaterThanOrEqual(1);
 
-		expect(engine.slots.getSource('share-json')).toBeDefined();
-		expect(engine.slots.getSource('cqut-online')).toBeDefined();
-		expect(engine.slots.getSource('edu-html')).toBeDefined();
-		expect(engine.slots.getExporter('share-json')).toBeDefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'share-json')).toBeDefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'cqut-online')).toBeDefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'edu-html')).toBeDefined();
+		expect(engine.slots.getSlotItem('export.action', 'share-json')).toBeDefined();
 
 		// 5. Verify JSON export via standard slot
 		const exportSlot = engine.slots.getSlotItem('export.action', 'share-json');
@@ -184,6 +184,58 @@ describe('Native Host Baseline (iOS JSCore / Android QuickJS)', () => {
 
 		expect(engine.slots.get('import.source.tab').length).toBe(0);
 		expect(engine.slots.get('export.action').length).toBe(0);
+
+		engine.dispose();
+	});
+
+	it('interoperates seamlessly with NativeHostBridge protocol', async () => {
+		const nativeStorage = new Map<string, Timetable>();
+		const nativeCalls: Array<{ capability: string; method: string; params: unknown }> = [];
+
+		const bridge: import('../src/index').NativeHostBridge = {
+			async callNative<T = unknown, R = unknown>(
+				capability: import('../src/index').NativeHostCapability,
+				method: string,
+				params?: T
+			): Promise<R> {
+				nativeCalls.push({ capability, method, params });
+				const p = params as Record<string, unknown> | undefined;
+				if (capability === 'storage') {
+					if (method === 'getPreferences')
+						return { schemaVersion: 1, themeMode: 'dark' } as unknown as R;
+					if (method === 'savePreferences') return undefined as unknown as R;
+					if (method === 'getActiveTimetableId') return null as unknown as R;
+					if (method === 'listTimetables')
+						return Array.from(nativeStorage.values()) as unknown as R;
+					if (method === 'saveTimetable' && p) {
+						const tt = p as unknown as Timetable;
+						nativeStorage.set(tt.id, tt);
+						return undefined as unknown as R;
+					}
+					if (method === 'getTimetable' && p && typeof p.id === 'string') {
+						return (nativeStorage.get(p.id) ?? null) as unknown as R;
+					}
+					if (method === 'getPluginData') return null as unknown as R;
+					if (method === 'setPluginData') return undefined as unknown as R;
+				}
+				if (capability === 'vault') {
+					if (method === 'isSupported') return true as unknown as R;
+					if (method === 'getSecret') return 'bridge-secret' as unknown as R;
+				}
+				return null as unknown as R;
+			}
+		};
+
+		const env = (await import('../src/index')).createNativeHostEnv(bridge, 'ios');
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		const tt = await engine.createTimetable('Bridge Timetable');
+		expect(tt.name).toBe('Bridge Timetable');
+
+		expect(
+			nativeCalls.some((c) => c.capability === 'storage' && c.method === 'saveTimetable')
+		).toBe(true);
 
 		engine.dispose();
 	});
