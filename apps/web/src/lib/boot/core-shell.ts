@@ -93,16 +93,6 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 	});
 
 	ctx.registerSlot('mine.item', {
-		id: 'wallpaper',
-		sectionId: 'appearance-feedback',
-		title: () => '设置课表壁纸',
-		href: '/wallpaper',
-		icon: 'wallpaper',
-		iconTone: 'primary',
-		order: 30
-	});
-
-	ctx.registerSlot('mine.item', {
 		id: 'plugins',
 		sectionId: 'app-support',
 		title: () => '插件中心',

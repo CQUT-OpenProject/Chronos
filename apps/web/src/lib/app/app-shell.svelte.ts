@@ -31,7 +31,13 @@ export function createAppShell() {
 	const hapticFeedbackEnabled = $derived(controller.userPreferences?.hapticFeedbackEnabled ?? true);
 
 	const isDark = $derived(resolveDark(themeMode, systemPrefersDark));
-	const hasWallpaper = $derived(Boolean(controller.wallpaperUri));
+
+	const hasWallpaperSlot = $derived.by(() => {
+		void controller.slotVersion;
+		return controller.getSlots('mine.item').some((s) => s.id === 'wallpaper');
+	});
+	const effectiveWallpaperUri = $derived(hasWallpaperSlot ? controller.wallpaperUri : null);
+	const hasWallpaper = $derived(Boolean(effectiveWallpaperUri));
 
 	const appState = $derived<AppState>({
 		timetables: controller.timetables.map((t) => ({
@@ -42,7 +48,7 @@ export function createAppShell() {
 			updatedAt: t.updatedAt
 		})),
 		currentTimetableId: controller.currentTimetable?.id ?? null,
-		wallpaperUri: controller.wallpaperUri,
+		wallpaperUri: effectiveWallpaperUri,
 		currentTimetable: controller.currentTimetable,
 		themeMode,
 		timetableLayoutMode,

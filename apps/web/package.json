@@ -19,6 +19,7 @@
 		"@chronos/plugin-source-cqut": "workspace:*",
 		"@chronos/plugin-codec-share": "workspace:*",
 		"@chronos/plugin-theme-yumemita": "workspace:*",
+		"@chronos/plugin-wallpaper": "workspace:*",
 		"@cqut-openproject/cas-sdk": "github:CQUT-OpenProject/CAS-SDK#1.0.0",
 		"@internationalized/date": "^3.12.3",
 		"@ktibow/material-color-utilities-nightly": "^0.4.1772748028000",

@@ -20,6 +20,25 @@
 			"bundleUrl": "/marketplace/bundles/theme-yumemita.bundle.js",
 			"sha256": "614a4dc089e8e8177ba1710cda9d0c3b78a49e21264f32b16eaa84bf8f5a6936",
 			"capabilities": []
+		},
+		{
+			"id": "tool-wallpaper",
+			"name": {
+				"zh-CN": "课表壁纸",
+				"en": "Timetable Wallpaper"
+			},
+			"version": "1.0.0",
+			"description": {
+				"zh-CN": "自定义课表背景壁纸与主题取色",
+				"en": "Customize timetable background wallpaper and theme palette"
+			},
+			"author": "Chronos Community",
+			"type": "tool",
+			"bundleFormat": "iife",
+			"minEngineVersion": "1.0.0",
+			"bundleUrl": "/marketplace/bundles/tool-wallpaper.bundle.js",
+			"sha256": "2e9db309ec617141d294acfb8fda99982f61f409710fdff62a32381653cdeaa3",
+			"capabilities": []
 		}
 	]
 }

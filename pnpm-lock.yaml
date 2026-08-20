@@ -57,6 +57,9 @@ importers:
       '@chronos/plugin-theme-yumemita':
         specifier: workspace:*
         version: link:../../packages/plugins/theme-yumemita
+      '@chronos/plugin-wallpaper':
+        specifier: workspace:*
+        version: link:../../packages/plugins/wallpaper
       '@chronos/ui-kit':
         specifier: workspace:*
         version: link:../../packages/ui-kit
@@ -192,6 +195,12 @@ importers:
         version: 0.18.13
 
   packages/plugins/theme-yumemita:
+    dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../core
+
+  packages/plugins/wallpaper:
     dependencies:
       '@chronos/core':
         specifier: workspace:*

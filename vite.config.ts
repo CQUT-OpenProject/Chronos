@@ -47,6 +47,12 @@ export default defineConfig({
 			),
 			'@chronos/plugin-source-cqut/week-merge': fileURLToPath(
 				new URL('./packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
+			),
+			'@chronos/plugin-theme-yumemita': fileURLToPath(
+				new URL('./packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
+			),
+			'@chronos/plugin-wallpaper': fileURLToPath(
+				new URL('./packages/plugins/wallpaper/src/index.ts', import.meta.url)
 			)
 		}
 	},

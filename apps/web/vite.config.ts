@@ -54,6 +54,9 @@ export default defineConfig(({ mode }) => {
 				),
 				'@chronos/plugin-theme-yumemita': fileURLToPath(
 					new URL('../../packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
+				),
+				'@chronos/plugin-wallpaper': fileURLToPath(
+					new URL('../../packages/plugins/wallpaper/src/index.ts', import.meta.url)
 				)
 			}
 		},
@@ -104,7 +107,8 @@ export default defineConfig(({ mode }) => {
 					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
 					'@chronos/plugin-codec-share/share-link':
 						'../../packages/plugins/codec-share/src/share-link/index.ts',
-					'@chronos/plugin-theme-yumemita': '../../packages/plugins/theme-yumemita/src/index.ts'
+					'@chronos/plugin-theme-yumemita': '../../packages/plugins/theme-yumemita/src/index.ts',
+					'@chronos/plugin-wallpaper': '../../packages/plugins/wallpaper/src/index.ts'
 				},
 				compilerOptions: {
 					runes: ({ filename }) =>
