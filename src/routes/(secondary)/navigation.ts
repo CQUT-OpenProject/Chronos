@@ -5,6 +5,7 @@ export const secondaryRouteRoots = [
 	'/display-settings',
 	'/feedback-settings',
 	'/wallpaper',
+	'/plugins',
 	'/about',
 	'/legal',
 	'/open-source-licenses',

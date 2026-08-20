@@ -25,6 +25,9 @@ describe('navigation routes', () => {
 		expect(isSecondaryRoute('/about/releases/v0.1.0')).toBe(true);
 		expect(isSecondaryRoute('/transfer/import/confirm')).toBe(true);
 		expect(isSecondaryRoute('/open-source-licenses/project')).toBe(true);
+		expect(isSecondaryRoute('/plugins')).toBe(true);
+		expect(isSecondaryRoute('/plugins/cqut-online')).toBe(true);
+		expect(isSecondaryRoute('/plugins/cqut-online/view')).toBe(true);
 	});
 
 	it('does not treat unknown routes as secondary', () => {

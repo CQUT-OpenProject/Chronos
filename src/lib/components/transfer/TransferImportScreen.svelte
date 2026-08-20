@@ -5,7 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
-	import SchemaForm from '@chronos/ui-kit/schema-form/SchemaForm.svelte';
+	import { SchemaForm } from '@chronos/ui-kit';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 	let {
