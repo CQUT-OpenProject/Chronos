@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { getAppEngine, getAppController, resetAppEngine } from './app-engine';
+import { getAppEngine, getAppController, resetAppEngine, ensureEngineReady } from './app-engine';
 import type { ChronosDB } from '$lib/storage/db';
 
 class MockLocalStorage implements Storage {
@@ -69,8 +69,7 @@ describe('app-engine bootstrap', () => {
 		const mockDb = createMockDb();
 		const mockStore = new MockLocalStorage();
 
-		const engine = getAppEngine({ database: mockDb, localStorage: mockStore });
-		await engine.init();
+		const engine = await ensureEngineReady({ database: mockDb, localStorage: mockStore });
 
 		expect(engine).toBeDefined();
 		expect(engine.themes.getTheme('m3-default')).toBeDefined();

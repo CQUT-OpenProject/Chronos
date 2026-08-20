@@ -50,8 +50,8 @@ vi.mock('$lib/client/analytics', () => ({
 	initAnalytics: mocks.initAnalytics
 }));
 
-vi.mock('$lib/parsers/share-link/share-link-brotli', () => ({
-	ensureShareLinkBrotliReady: mocks.ensureShareLinkBrotliReady
+vi.mock('$lib/services/app-engine', () => ({
+	ensureEngineReady: vi.fn().mockResolvedValue({})
 }));
 
 vi.mock('$lib/platform/offline-ux.svelte', () => ({
@@ -96,19 +96,21 @@ describe('createPlatformBootstrap', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('runs startup sequence in order', () => {
+	it('runs startup sequence in order', async () => {
 		const platform = createPlatformBootstrap(deps);
 		const teardown = platform.init('/');
+
+		await vi.waitFor(() => {
+			expect(shell.init).toHaveBeenCalled();
+		});
 
 		expect(mocks.initNavigationStack).toHaveBeenCalledWith('/');
 		expect(mocks.connectivityInit).toHaveBeenCalled();
 		expect(mocks.credentialEnvironmentInit).toHaveBeenCalled();
-		expect(shell.init).toHaveBeenCalled();
 		expect(timetableScreen.init).toHaveBeenCalledWith(shell);
 		expect(mocks.pwaInstallInit).toHaveBeenCalled();
 		expect(mocks.initWebVitals).toHaveBeenCalled();
 		expect(mocks.initAnalytics).toHaveBeenCalled();
-		expect(mocks.ensureShareLinkBrotliReady).toHaveBeenCalled();
 		expect(mocks.setInstallPromptGate).toHaveBeenCalled();
 		expect(mocks.attachOfflineUx).toHaveBeenCalled();
 		expect(window.__chronosHideBootFallback).toHaveBeenCalled();

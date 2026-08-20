@@ -16,6 +16,13 @@ import { CalendarMonth, CalendarMonthFill, Person, PersonFill } from '$lib/icons
 let sharedEngine: ChronosEngine | null = null;
 let sharedController: ReactiveChronosController | null = null;
 let sharedMarketplace: MarketplaceService | null = null;
+let engineInitPromise: Promise<ChronosEngine> | null = null;
+
+export async function ensureEngineReady(options?: WebProviderOptions): Promise<ChronosEngine> {
+	const engine = getAppEngine(options);
+	engineInitPromise ??= engine.init().then(() => engine);
+	return engineInitPromise;
+}
 
 export function getAppEngine(options?: WebProviderOptions): ChronosEngine {
 	if (!sharedEngine) {
@@ -42,7 +49,6 @@ export function getAppEngine(options?: WebProviderOptions): ChronosEngine {
 
 		sharedEngine.themes.registerTheme(m3DefaultTheme);
 
-		// Register core shell bottom bar navigation tabs
 		sharedEngine.slots.register('shell.bottom-bar.tab', {
 			id: 'timetable',
 			label: () => '课表',
@@ -91,4 +97,5 @@ export function resetAppEngine(): void {
 	sharedController = null;
 	sharedEngine?.dispose();
 	sharedEngine = null;
+	engineInitPromise = null;
 }

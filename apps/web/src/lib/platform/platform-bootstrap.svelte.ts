@@ -7,7 +7,7 @@ import { initAnalytics } from '$lib/client/analytics';
 import { initWebVitals } from '$lib/client/web-vitals';
 import { initNavigationStack } from '$lib/navigation/navigation-direction';
 import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
-import { ensureShareLinkBrotliReady } from '$lib/parsers/share-link/share-link-brotli';
+import { ensureEngineReady } from '$lib/services/app-engine';
 import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 
 export type PlatformBootstrapDeps = {
@@ -31,45 +31,47 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		initNavigationStack(pathname);
 		connectivity.init();
 		void credentialEnvironment.init();
-		deps.shell.init();
-		deps.timetableScreen.init(deps.shell);
-		void pwaInstallController.init();
-		initWebVitals();
-		initAnalytics();
-		void ensureShareLinkBrotliReady();
-		window.__chronosHideBootFallback?.();
 
-		pwaInstallController.setInstallPromptGate(() => onboardingController.open);
-		disposeOfflineUx = attachOfflineUx(connectivity);
+		void ensureEngineReady().then(() => {
+			deps.shell.init();
+			deps.timetableScreen.init(deps.shell);
+			void pwaInstallController.init();
+			initWebVitals();
+			initAnalytics();
+			window.__chronosHideBootFallback?.();
 
-		disposeEffects = $effect.root(() => {
-			$effect(() => {
-				const isDark = deps.shell.state.isDark;
-				const paletteMode = deps.shell.state.appState.paletteMode;
-				const wallpaperUri = deps.shell.state.appState.wallpaperUri;
+			pwaInstallController.setInstallPromptGate(() => onboardingController.open);
+			disposeOfflineUx = attachOfflineUx(connectivity);
 
-				const ac = new AbortController();
-				void deps.shell.appearance.apply({ isDark, paletteMode, wallpaperUri }, ac.signal);
-				return () => ac.abort();
-			});
+			disposeEffects = $effect.root(() => {
+				$effect(() => {
+					const isDark = deps.shell.state.isDark;
+					const paletteMode = deps.shell.state.appState.paletteMode;
+					const wallpaperUri = deps.shell.state.appState.wallpaperUri;
 
-			$effect(() => {
-				if (deps.timetableScreen.state.hasLoadedAppState) {
-					onboardingController.maybeShow(
-						Boolean(deps.timetableScreen.state.appState.currentTimetable)
-					);
-				}
-			});
+					const ac = new AbortController();
+					void deps.shell.appearance.apply({ isDark, paletteMode, wallpaperUri }, ac.signal);
+					return () => ac.abort();
+				});
 
-			$effect(() => {
-				if (!onboardingController.open) return;
-				pwaInstallController.cancelScheduledDialog();
-				pwaInstallController.dismiss({ track: false });
-			});
+				$effect(() => {
+					if (deps.timetableScreen.state.hasLoadedAppState) {
+						onboardingController.maybeShow(
+							Boolean(deps.timetableScreen.state.appState.currentTimetable)
+						);
+					}
+				});
 
-			$effect(() => {
-				if (onboardingController.open) return;
-				pwaInstallController.tryScheduleInstallDialog();
+				$effect(() => {
+					if (!onboardingController.open) return;
+					pwaInstallController.cancelScheduledDialog();
+					pwaInstallController.dismiss({ track: false });
+				});
+
+				$effect(() => {
+					if (onboardingController.open) return;
+					pwaInstallController.tryScheduleInstallDialog();
+				});
 			});
 		});
 
