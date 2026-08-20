@@ -1,0 +1,31 @@
+{
+	"$schema": "https://chronos.app/schemas/profile.schema.json",
+	"profileId": "chronos-default",
+	"name": "Chronos 标准开源版",
+	"version": "0.3.0",
+	"description": "包含标准 HTML 课表导入、分享短链与标准备份能力",
+	"defaultTheme": "m3-default",
+	"plugins": [
+		{
+			"id": "parser-html",
+			"enabled": true
+		},
+		{
+			"id": "codec-share",
+			"enabled": true
+		},
+		{
+			"id": "export-ics",
+			"enabled": true
+		},
+		{
+			"id": "theme-catppuccin",
+			"enabled": true
+		}
+	],
+	"preferences": {
+		"showNonCurrentWeekCourses": false,
+		"showSaturday": true,
+		"showSunday": true
+	}
+}
