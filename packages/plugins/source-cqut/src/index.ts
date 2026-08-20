@@ -283,7 +283,7 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 	id: 'source-cqut',
 	name: () => '重庆理工大学教务',
 	version: '1.0.0',
-	description: () => '提供 CQUT 统一身份认证在线课表同步与多校区作息映射',
+	description: () => '从知行理工在线导入课表，并适配各校区上课时间',
 	category: 'source',
 	order: 10,
 	author: 'CQUT OpenProject',

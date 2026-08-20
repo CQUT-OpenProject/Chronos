@@ -144,7 +144,7 @@ export const coreShellPlugin: ChronosPlugin = {
 	id: CORE_SHELL_PLUGIN_ID,
 	name: () => '核心外壳',
 	version: '1.0.0',
-	description: () => '底部导航与「我的」页基础插槽',
+	description: () => '底部标签栏和「我的」页面的基础功能',
 	category: 'tool',
 	order: 0,
 	apply(ctx) {
