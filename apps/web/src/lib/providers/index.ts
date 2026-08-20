@@ -29,16 +29,20 @@ export interface WebProviderOptions {
 	database?: ChronosDB;
 	localStorage?: Storage | null;
 	allowedDomains?: string[];
+	enableCqutProxy?: boolean;
 }
 
 /**
  * Creates an instance of all Web standard providers.
  */
 export function createWebProviders(options?: WebProviderOptions) {
+	const baseHttp = new WebHttpProxyProvider(options?.allowedDomains);
+	const http = options?.enableCqutProxy === true ? new CqutOnlineHttpAdapter(baseHttp) : baseHttp;
+
 	return {
 		storage: new DexieStorageProvider(options?.database, options?.localStorage),
 		vault: new WebAuthnVaultProvider(options?.localStorage),
-		http: new CqutOnlineHttpAdapter(new WebHttpProxyProvider(options?.allowedDomains)),
+		http,
 		runtime: new WebRuntimeProvider(),
 		analytics: new WebAnalyticsProvider()
 	};

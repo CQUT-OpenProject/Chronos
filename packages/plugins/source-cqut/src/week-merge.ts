@@ -1,4 +1,38 @@
-import type { OnlineScheduleEvent, OnlineSchedulePayload } from '$lib/models/online-schedule';
+export interface OnlineScheduleWeekDay {
+	weekDay: string;
+	weekDate: string;
+	today: boolean;
+}
+
+export interface OnlineScheduleEvent {
+	weekNum: string;
+	weekDay: string;
+	weekList: string[];
+	weekCover: string;
+	sessionList: string[];
+	sessionStart: string;
+	sessionLast: string;
+	eventName: string;
+	address: string;
+	memberName: string;
+	remark: string;
+	duplicateGroupType: string;
+	duplicateGroup: number;
+	eventType: string;
+	eventID: string;
+}
+
+export interface OnlineSchedulePayload {
+	yearTerm: string;
+	weekNum: string;
+	nowMonth: string;
+	importSource: string;
+	termStartDate: string | null;
+	yearTermList: string[];
+	weekList: string[];
+	weekDayList: OnlineScheduleWeekDay[];
+	eventList: OnlineScheduleEvent[];
+}
 
 export function resolveWeeksToFetch(
 	initialPayload: OnlineSchedulePayload,

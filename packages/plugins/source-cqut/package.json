@@ -10,6 +10,11 @@
 			"types": "./src/index.ts",
 			"import": "./src/index.ts",
 			"default": "./src/index.ts"
+		},
+		"./week-merge": {
+			"types": "./src/week-merge.ts",
+			"import": "./src/week-merge.ts",
+			"default": "./src/week-merge.ts"
 		}
 	},
 	"dependencies": {

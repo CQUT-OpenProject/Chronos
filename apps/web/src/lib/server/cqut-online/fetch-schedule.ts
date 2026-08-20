@@ -4,7 +4,7 @@ import type { CqutCampusId } from '$lib/models/cqut-campus';
 import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
 import type { PeriodTime } from '$lib/models/timetable';
 import { onlineSchedulePayloadSchema } from '$lib/models/online-schedule-schema';
-import { mergeWeekPayloads, resolveWeeksToFetch } from '$lib/parsers/cqut-online/cqut-week-merge';
+import { mergeWeekPayloads, resolveWeeksToFetch } from '@chronos/plugin-source-cqut';
 import { fetchCampusTimesForImport } from './fetch-campus-time';
 import { loginCas } from './cas-auth';
 import {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 import type { OnlineScheduleEvent, OnlineSchedulePayload } from '$lib/models/online-schedule';
-import { mergeWeekPayloads, resolveWeeksToFetch } from './cqut-week-merge';
+import { mergeWeekPayloads, resolveWeeksToFetch } from '@chronos/plugin-source-cqut';
 
 function basePayload(
 	weekNum: string,

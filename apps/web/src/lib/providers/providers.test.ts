@@ -245,12 +245,18 @@ describe('Web Providers', () => {
 	});
 
 	it('createWebProviders instantiates all web providers', () => {
-		const providers = createWebProviders({ database: db, localStorage });
+		const providers = createWebProviders({ database: db, localStorage, enableCqutProxy: true });
 		expect(providers.storage).toBeInstanceOf(DexieStorageProvider);
 		expect(providers.vault).toBeInstanceOf(WebAuthnVaultProvider);
 		expect(providers.http).toBeInstanceOf(CqutOnlineHttpAdapter);
 		expect(providers.runtime).toBeInstanceOf(WebRuntimeProvider);
 		expect(providers.analytics).toBeInstanceOf(WebAnalyticsProvider);
+	});
+
+	it('createWebProviders uses plain HTTP when CQUT proxy disabled', () => {
+		const providers = createWebProviders({ database: db, localStorage, enableCqutProxy: false });
+		expect(providers.http).toBeInstanceOf(WebHttpProxyProvider);
+		expect(providers.http).not.toBeInstanceOf(CqutOnlineHttpAdapter);
 	});
 
 	it('registerWebProviders populates ServiceContainer correctly', () => {
