@@ -142,9 +142,9 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 
 export const coreShellPlugin: ChronosPlugin = {
 	id: CORE_SHELL_PLUGIN_ID,
-	name: () => '核心外壳',
+	name: () => 'Chronos UI Core',
 	version: '1.0.0',
-	description: () => '底部标签栏和「我的」页面的基础功能',
+	description: () => '核心导航与基础界面框架',
 	category: 'tool',
 	order: 0,
 	apply(ctx) {

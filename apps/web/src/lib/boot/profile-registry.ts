@@ -34,8 +34,7 @@ const cqutProfile: ChronosProfile = {
 		{ id: 'core-shell', enabled: true },
 		{
 			id: 'source-cqut',
-			enabled: true,
-			config: { campusId: 'liangjiang' }
+			enabled: true
 		},
 		{ id: 'codec-share', enabled: true }
 	],

@@ -18,16 +18,24 @@ export function parseTimetableFromJson(jsonStr: string): Timetable {
 	if (!raw || typeof raw !== 'object') {
 		throw new Error('无效的 JSON 课表数据');
 	}
-	return createTimetable(raw);
+	const timetable = createTimetable(raw);
+	if (!raw.viewPrefs) {
+		timetable.viewPrefs = {
+			showSaturday: timetable.courses.some((c) => c.dayOfWeek === 6),
+			showSunday: timetable.courses.some((c) => c.dayOfWeek === 7),
+			showNonCurrentWeekCourses: false
+		};
+	}
+	return timetable;
 }
 
 const shareLinkCodec = { estimatePayloadLength: estimateShareLinkLength };
 
 export const shareCodecPlugin: ChronosPlugin = {
 	id: 'codec-share',
-	name: () => '课表 JSON 备份与分享编解码器',
+	name: () => 'Share & Backup Codec',
 	version: '1.0.0',
-	description: () => '导出课表备份，生成分享链接给他人导入',
+	description: () => '课表分享短链与 JSON 备份',
 	category: 'codec',
 	order: 30,
 	author: 'CQUT OpenProject',
