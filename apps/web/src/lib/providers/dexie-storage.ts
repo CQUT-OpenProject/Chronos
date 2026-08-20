@@ -35,7 +35,6 @@ function normalizeLayoutMode(raw: string | null): import('@chronos/core').Timeta
 function normalizePaletteMode(raw: string | null): import('@chronos/core').PaletteMode {
 	const value = raw?.trim().toLowerCase();
 	if (value === 'wallpaper') return 'wallpaper';
-	if (value === 'random' || value === 'monochrome') return 'random';
 	return 'vibrant';
 }
 

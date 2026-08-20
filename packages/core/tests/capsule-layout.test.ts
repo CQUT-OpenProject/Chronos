@@ -10,11 +10,20 @@ import {
 	resolveCapsuleTypeScale,
 	resolveLocationBlockMetrics,
 	shouldShowLocationCampus,
-	EASTER_EGG_PALETTE_ENTRIES,
 	type CapsuleCorners,
+	type CoursePaletteEntry,
 	type PlacedCourseCapsule,
 	type PlacedItem
 } from '../src/index';
+
+const EASTER_EGG_PALETTE_ENTRIES: CoursePaletteEntry[] = [
+	{ background: '#FFEE55', foreground: '#1a1a1a' },
+	{ background: '#FFBBCC', foreground: '#1a1a1a' },
+	{ background: '#4477CC', foreground: '#fff' },
+	{ background: '#9977CC', foreground: '#fff' },
+	{ background: '#EE5577', foreground: '#fff' },
+	{ background: '#4D5B4C', foreground: '#fff' }
+];
 
 describe('resolveCapsuleTypeScale', () => {
 	it('uses the wide-column tier at effective >= 110', () => {

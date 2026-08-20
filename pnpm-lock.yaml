@@ -54,6 +54,9 @@ importers:
       '@chronos/plugin-source-cqut':
         specifier: workspace:*
         version: link:../../packages/plugins/source-cqut
+      '@chronos/plugin-theme-yumemita':
+        specifier: workspace:*
+        version: link:../../packages/plugins/theme-yumemita
       '@chronos/ui-kit':
         specifier: workspace:*
         version: link:../../packages/ui-kit
@@ -187,6 +190,12 @@ importers:
       linkedom:
         specifier: ^0.18.13
         version: 0.18.13
+
+  packages/plugins/theme-yumemita:
+    dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../core
 
   packages/ui-kit:
     dependencies:

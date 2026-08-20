@@ -12,7 +12,6 @@
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import {
 		AutoModeFill,
-		CasinoFill,
 		DarkModeFill,
 		LightModeFill,
 		PaletteFill,
@@ -60,13 +59,6 @@
 			label: '壁纸',
 			description: '从当前壁纸提取配色',
 			Icon: WallpaperFill,
-			iconTone: 'primary' as const
-		},
-		{
-			mode: 'random' as const,
-			label: '随机',
-			description: '随机生成的配色方案，不定时变更',
-			Icon: CasinoFill,
 			iconTone: 'primary' as const
 		}
 	] as const;

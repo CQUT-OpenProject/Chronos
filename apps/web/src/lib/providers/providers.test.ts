@@ -140,7 +140,7 @@ describe('Web Providers', () => {
 		const prefs = await storage.getPreferences();
 		expect(prefs.themeMode).toBe('auto');
 		expect(prefs.timetableLayoutMode).toBe('compact');
-		expect(prefs.paletteMode).toBe('random');
+		expect(prefs.paletteMode).toBe('vibrant');
 		expect(prefs.capsuleCornerStyle).toBe('pill');
 	});
 

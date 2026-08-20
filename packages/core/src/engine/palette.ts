@@ -11,15 +11,6 @@ const COURSE_PALETTE: [string, string][] = [
 	['#DCE9A1', '#181E00']
 ];
 
-const EASTER_EGG_COURSE_BACKGROUNDS = [
-	'#FFEE55',
-	'#FFBBCC',
-	'#4477CC',
-	'#9977CC',
-	'#EE5577',
-	'#4D5B4C'
-] as const;
-
 export const COURSE_PALETTE_ENTRIES: CoursePaletteEntry[] = COURSE_PALETTE.map(
 	([background, foreground]) => ({ background, foreground })
 );
@@ -46,23 +37,6 @@ export function coursePalette(name: string): [string, string] {
 	const index = Math.abs(kotlinStringHashCode(name) % COURSE_PALETTE.length);
 	return COURSE_PALETTE[index] ?? COURSE_PALETTE[0]!;
 }
-
-function onColorForBackground(hex: string): string {
-	return relativeLuminance(hex) > 0.55 ? '#1a1a1a' : '#fff';
-}
-
-function relativeLuminance(hex: string): number {
-	const value = Number.parseInt(hex.slice(1), 16);
-	const channel = (shift: number) => {
-		const srgb = ((value >> shift) & 255) / 255;
-		return srgb <= 0.03928 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
-	};
-	return 0.2126 * channel(16) + 0.7152 * channel(8) + 0.0722 * channel(0);
-}
-
-export const EASTER_EGG_PALETTE_ENTRIES: CoursePaletteEntry[] = EASTER_EGG_COURSE_BACKGROUNDS.map(
-	(background) => ({ background, foreground: onColorForBackground(background) })
-);
 
 const PALETTE_SLOT_MAP = new Map<string, number>(
 	COURSE_PALETTE_ENTRIES.map((entry, index) => [entry.background.toLowerCase(), index])
@@ -93,9 +67,6 @@ export function resolveCoursePalette(
 	wallpaperPalette: readonly CoursePaletteEntry[] | null
 ): readonly CoursePaletteEntry[] {
 	const normalized = (mode || '').toLowerCase();
-	if (normalized === 'random') {
-		return EASTER_EGG_PALETTE_ENTRIES;
-	}
 	if (normalized === 'wallpaper' && wallpaperPalette && wallpaperPalette.length > 0) {
 		return wallpaperPalette;
 	}

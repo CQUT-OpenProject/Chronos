@@ -51,7 +51,11 @@ vi.mock('$lib/client/analytics', () => ({
 }));
 
 vi.mock('$lib/services/app-engine', () => ({
-	ensureEngineReady: vi.fn().mockResolvedValue({})
+	ensureEngineReady: vi.fn().mockResolvedValue({}),
+	getAppEngine: vi.fn(() => ({
+		themes: { getTheme: vi.fn() },
+		state: { activeThemeId: 'm3-default' }
+	}))
 }));
 
 vi.mock('$lib/platform/offline-ux.svelte', () => ({
@@ -76,6 +80,7 @@ describe('createPlatformBootstrap', () => {
 	const shell = {
 		init: vi.fn(),
 		appearance,
+		controller: { activeThemeId: 'm3-default' },
 		state: { isDark: false, appState: {}, initialized: false, hasWallpaper: false }
 	};
 	const timetableScreen = {

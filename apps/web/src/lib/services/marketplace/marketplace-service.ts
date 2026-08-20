@@ -129,14 +129,14 @@ export class MarketplaceService implements Disposable {
 
 		await this.saveInstalledToStorage();
 		await this.loadPluginInstance(manifest, code);
-		this.engine.actions.notify(`插件《${manifest.id}》已安装并启用`, 'info');
+		this.engine.actions.notify(`插件「${manifest.id}」已安装并启用`, 'info');
 	}
 
 	async uninstall(pluginId: string): Promise<void> {
 		await this.unloadPluginInstance(pluginId);
 		this.installedCache = this.installedCache.filter((p) => p.manifest.id !== pluginId);
 		await this.saveInstalledToStorage();
-		this.engine.actions.notify(`插件《${pluginId}》已卸载`, 'info');
+		this.engine.actions.notify(`插件「${pluginId}」已卸载`, 'info');
 	}
 
 	async enable(pluginId: string): Promise<void> {
@@ -149,7 +149,7 @@ export class MarketplaceService implements Disposable {
 		record.enabled = true;
 		await this.saveInstalledToStorage();
 		await this.loadPluginInstance(record.manifest, record.code);
-		this.engine.actions.notify(`已启用插件《${pluginId}》`, 'info');
+		this.engine.actions.notify(`已启用插件「${pluginId}」`, 'info');
 	}
 
 	async disable(pluginId: string): Promise<void> {
@@ -160,7 +160,7 @@ export class MarketplaceService implements Disposable {
 		record.enabled = false;
 		await this.saveInstalledToStorage();
 		await this.unloadPluginInstance(pluginId);
-		this.engine.actions.notify(`已停用插件《${pluginId}》`, 'info');
+		this.engine.actions.notify(`已停用插件「${pluginId}」`, 'info');
 	}
 
 	async getPluginConfig<T extends Record<string, unknown>>(pluginId: string): Promise<T | null> {
@@ -189,11 +189,23 @@ export class MarketplaceService implements Disposable {
 		return bridge;
 	}
 
+	private revertThemeIfNeeded(): void {
+		const activeId = this.engine.state.activeThemeId;
+		if (activeId === 'm3-default') return;
+		if (!this.engine.themes.getTheme(activeId)) {
+			this.engine.actions.setTheme('m3-default');
+		}
+	}
+
 	private async unloadPluginInstance(pluginId: string): Promise<void> {
+		const record = this.installedCache.find((p) => p.manifest.id === pluginId);
 		const handle = this.activeHandles.get(pluginId);
 		if (handle) {
 			handle.dispose();
 			this.activeHandles.delete(pluginId);
+		}
+		if (record?.manifest.type === 'theme') {
+			this.revertThemeIfNeeded();
 		}
 	}
 

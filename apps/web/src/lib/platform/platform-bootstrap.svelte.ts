@@ -7,7 +7,8 @@ import { initAnalytics } from '$lib/client/analytics';
 import { initWebVitals } from '$lib/client/web-vitals';
 import { initNavigationStack } from '$lib/navigation/navigation-direction';
 import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
-import { ensureEngineReady } from '$lib/services/app-engine';
+import { applyActiveTheme } from '$lib/appearance/apply-active-theme';
+import { ensureEngineReady, getAppEngine } from '$lib/services/app-engine';
 import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 
 export type PlatformBootstrapDeps = {
@@ -48,9 +49,15 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 					const isDark = deps.shell.state.isDark;
 					const paletteMode = deps.shell.state.appState.paletteMode;
 					const wallpaperUri = deps.shell.state.appState.wallpaperUri;
+					const activeThemeId = deps.shell.controller.activeThemeId;
+
+					applyActiveTheme(getAppEngine(), activeThemeId, isDark);
 
 					const ac = new AbortController();
-					void deps.shell.appearance.apply({ isDark, paletteMode, wallpaperUri }, ac.signal);
+					void deps.shell.appearance.apply(
+						{ isDark, paletteMode, wallpaperUri, activeThemeId },
+						ac.signal
+					);
 					return () => ac.abort();
 				});
 

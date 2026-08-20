@@ -51,6 +51,9 @@ export default defineConfig(({ mode }) => {
 				),
 				'@chronos/plugin-codec-share/share-link': fileURLToPath(
 					new URL('../../packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
+				),
+				'@chronos/plugin-theme-yumemita': fileURLToPath(
+					new URL('../../packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
 				)
 			}
 		},
@@ -100,7 +103,8 @@ export default defineConfig(({ mode }) => {
 						'../../packages/plugins/source-cqut/src/week-merge.ts',
 					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
 					'@chronos/plugin-codec-share/share-link':
-						'../../packages/plugins/codec-share/src/share-link/index.ts'
+						'../../packages/plugins/codec-share/src/share-link/index.ts',
+					'@chronos/plugin-theme-yumemita': '../../packages/plugins/theme-yumemita/src/index.ts'
 				},
 				compilerOptions: {
 					runes: ({ filename }) =>

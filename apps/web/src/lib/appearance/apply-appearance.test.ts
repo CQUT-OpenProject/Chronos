@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import {
-	COURSE_PALETTE_ENTRIES,
-	EASTER_EGG_PALETTE_ENTRIES,
-	type CoursePaletteEntry
-} from '@chronos/core';
+import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from '@chronos/core';
+import { EASTER_EGG_PALETTE_ENTRIES, YUMEMITA_THEME_ID } from '@chronos/plugin-theme-yumemita';
 import { applyAppearance, type WallpaperThemeAdapter } from './apply-appearance';
 
 function createFakeElement() {
@@ -57,28 +54,36 @@ describe('applyAppearance', () => {
 		const { wallpaper, clearWallpaperTheme } = createWallpaperAdapter();
 
 		const result = await applyAppearance(
-			{ paletteMode: 'vibrant', isDark: false, wallpaperUri: null },
+			{
+				paletteMode: 'vibrant',
+				isDark: false,
+				wallpaperUri: null,
+				activeThemeId: 'm3-default'
+			},
 			{ target, wallpaper }
 		);
 
 		expect(target.classList.contains('dark')).toBe(false);
-		expect(target.classList.contains('theme-random')).toBe(false);
 		expect(target.style.colorScheme).toBe('light');
 		expect(clearWallpaperTheme).toHaveBeenCalledWith(target);
 		expect(result.coursePalette).toBe(COURSE_PALETTE_ENTRIES);
 	});
 
-	it('applies RANDOM chrome and returns the easter-egg course palette', async () => {
+	it('returns the easter-egg course palette when YUMEMITA theme is active', async () => {
 		const target = createFakeElement();
 		const { wallpaper, clearWallpaperTheme } = createWallpaperAdapter();
 
 		const result = await applyAppearance(
-			{ paletteMode: 'random', isDark: true, wallpaperUri: null },
+			{
+				paletteMode: 'vibrant',
+				isDark: true,
+				wallpaperUri: null,
+				activeThemeId: YUMEMITA_THEME_ID
+			},
 			{ target, wallpaper }
 		);
 
 		expect(target.classList.contains('dark')).toBe(true);
-		expect(target.classList.contains('theme-random')).toBe(true);
 		expect(target.style.colorScheme).toBe('dark');
 		expect(clearWallpaperTheme).toHaveBeenCalledWith(target);
 		expect(result.coursePalette).toBe(EASTER_EGG_PALETTE_ENTRIES);
@@ -97,7 +102,8 @@ describe('applyAppearance', () => {
 			{
 				paletteMode: 'wallpaper',
 				isDark: false,
-				wallpaperUri: 'blob:wallpaper'
+				wallpaperUri: 'blob:wallpaper',
+				activeThemeId: 'm3-default'
 			},
 			{ target, wallpaper }
 		);
@@ -113,7 +119,12 @@ describe('applyAppearance', () => {
 			createWallpaperAdapter();
 
 		const result = await applyAppearance(
-			{ paletteMode: 'wallpaper', isDark: false, wallpaperUri: null },
+			{
+				paletteMode: 'wallpaper',
+				isDark: false,
+				wallpaperUri: null,
+				activeThemeId: 'm3-default'
+			},
 			{ target, wallpaper }
 		);
 
@@ -134,7 +145,8 @@ describe('applyAppearance', () => {
 			{
 				paletteMode: 'wallpaper',
 				isDark: true,
-				wallpaperUri: 'blob:broken'
+				wallpaperUri: 'blob:broken',
+				activeThemeId: 'm3-default'
 			},
 			{ target, wallpaper }
 		);
@@ -161,7 +173,8 @@ describe('applyAppearance', () => {
 				{
 					paletteMode: 'wallpaper',
 					isDark: false,
-					wallpaperUri: 'blob:wallpaper'
+					wallpaperUri: 'blob:wallpaper',
+					activeThemeId: 'm3-default'
 				},
 				{ target, wallpaper, signal: controller.signal }
 			)

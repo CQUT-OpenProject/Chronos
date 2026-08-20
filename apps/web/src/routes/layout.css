@@ -51,7 +51,7 @@
 		--color-border-subtle: #2e3038;
 	}
 
-	.theme-random {
+	.theme-yumemita {
 		--ee-primary: #2288dd;
 		--ee-secondary: #ff7788;
 		--color-primary: var(--ee-primary);
@@ -90,7 +90,7 @@
 		border-color: color-mix(in srgb, currentColor 18%, transparent);
 	}
 
-	.theme-random .period-active {
+	.theme-yumemita .period-active {
 		background-color: transparent;
 		background-image: linear-gradient(to bottom, var(--ee-secondary), var(--ee-primary));
 	}
@@ -172,10 +172,10 @@
 	}
 }
 
-.theme-random .m3-leading-icon.tone-primary,
-.theme-random .m3-leading-icon.tone-secondary,
-.theme-random .m3-leading-icon.tone-tertiary,
-.theme-random .m3-leading-icon.tone-neutral {
+.theme-yumemita .m3-leading-icon.tone-primary,
+.theme-yumemita .m3-leading-icon.tone-secondary,
+.theme-yumemita .m3-leading-icon.tone-tertiary,
+.theme-yumemita .m3-leading-icon.tone-neutral {
 	background-color: color-mix(in srgb, var(--color-secondary-container) 75%, transparent);
 	color: var(--color-on-secondary-container);
 }
