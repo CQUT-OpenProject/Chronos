@@ -160,6 +160,10 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(engine.state.userPreferences.themeMode).toBe('dark');
 		expect(onPrefUpdated).toHaveBeenCalled();
 
+		await engine.actions.updatePreferences({ timetableLayoutMode: 'compact' });
+		expect(engine.state.userPreferences.timetableLayoutMode).toBe('compact');
+		expect(engine.state.userPreferences.themeMode).toBe('dark');
+
 		engine.actions.setTheme('catppuccin');
 		expect(engine.state.activeThemeId).toBe('catppuccin');
 		expect(onThemeChanged).toHaveBeenCalledWith({ themeId: 'catppuccin' });

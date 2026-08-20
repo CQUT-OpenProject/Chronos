@@ -552,7 +552,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			...this._userPreferences,
 			...patch
 		};
-		await this.storage.savePreferences(this._userPreferences);
+		await this.storage.savePreferences(patch);
 		this.events.emit('preferences:updated', { preferences: this._userPreferences });
 	}
 

@@ -144,6 +144,18 @@ describe('Web Providers', () => {
 		expect(prefs.capsuleCornerStyle).toBe('pill');
 	});
 
+	it('DexieStorageProvider preserves timetableLayoutMode on partial preferences update', async () => {
+		const storage = new DexieStorageProvider(db, localStorage);
+		await storage.savePreferences({ timetableLayoutMode: 'compact' });
+		expect((await storage.getPreferences()).timetableLayoutMode).toBe('compact');
+
+		// Partial update of another preference should not reset layout mode
+		await storage.savePreferences({ themeMode: 'dark' });
+		const prefs = await storage.getPreferences();
+		expect(prefs.themeMode).toBe('dark');
+		expect(prefs.timetableLayoutMode).toBe('compact');
+	});
+
 	it('DexieStorageProvider persists timetables, courses, and plugin data', async () => {
 		const storage = new DexieStorageProvider(db, localStorage);
 
