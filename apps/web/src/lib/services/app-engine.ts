@@ -2,12 +2,11 @@ import { ChronosEngine, ProfileManager } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
 import { availablePlugins, resolveActiveProfile } from '$lib/boot/profile-registry';
+import { registerCoreShellSlots } from '$lib/boot/core-shell';
 import { MarketplaceService } from '$lib/services/marketplace/marketplace-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
 import * as m from '$lib/paraglide/messages.js';
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-
-import { CalendarMonth, CalendarMonthFill, Person, PersonFill } from '$lib/icons';
 
 let sharedEngine: ChronosEngine | null = null;
 let sharedController: ReactiveChronosController | null = null;
@@ -40,24 +39,7 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 
 async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	engine.themes.registerTheme(m3DefaultTheme);
-
-	engine.slots.register('shell.bottom-bar.tab', {
-		id: 'timetable',
-		label: () => '课表',
-		href: '/',
-		order: 10,
-		icon: CalendarMonth,
-		iconFill: CalendarMonthFill
-	});
-
-	engine.slots.register('shell.bottom-bar.tab', {
-		id: 'mine',
-		label: () => '我的',
-		href: '/mine',
-		order: 20,
-		icon: Person,
-		iconFill: PersonFill
-	});
+	registerCoreShellSlots(engine);
 
 	profileManager = new ProfileManager(engine);
 	const profile = resolveActiveProfile();

@@ -5,6 +5,7 @@
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { toAppPathname } from '$lib/navigation/app-pathname';
 	import { getAppController } from '$lib/services/app-engine';
+	import { BOTTOM_TAB_ICON_MAP } from '$lib/boot/mine-icons';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
@@ -45,7 +46,12 @@
 	<nav aria-label="主导航" class="flex h-full w-full max-w-md items-center justify-around">
 		{#each sortedTabs as tab (tab.id)}
 			{@const active = isActive(tab.href)}
-			{@const Icon = (active ? (tab.iconFill ?? tab.icon) : tab.icon) as Component<{
+			{@const mappedIcons = BOTTOM_TAB_ICON_MAP[tab.id]}
+			{@const Icon = (
+				active
+					? (tab.iconFill ?? tab.icon ?? mappedIcons?.iconFill)
+					: (tab.icon ?? mappedIcons?.icon)
+			) as Component<{
 				class?: string;
 			}>}
 			<a

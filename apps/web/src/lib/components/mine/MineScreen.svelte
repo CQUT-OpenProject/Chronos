@@ -1,24 +1,13 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow, { type MineIconTone } from '$lib/components/mine/MineRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchField from '$lib/components/ui/SearchField.svelte';
-	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { getAppController } from '$lib/services/app-engine';
+	import { MINE_ITEM_ICON_MAP, MINE_ITEM_KEYWORDS } from '$lib/boot/mine-icons';
+	import { CodeFill } from '$lib/icons';
 	import type { Component } from 'svelte';
-	import {
-		AddHomeFill,
-		DownloadFill,
-		InfoFill,
-		IosShareFill,
-		ListAltFill,
-		MobileVibrateFill,
-		PaletteFill,
-		WallpaperFill,
-		CodeFill
-	} from '$lib/icons';
 
 	let { shell }: { shell: AppShellController } = $props();
 
@@ -49,165 +38,29 @@
 		return typeof text === 'function' ? text() : text;
 	}
 
+	function resolveIcon(
+		iconKey: string | undefined,
+		itemId: string
+	): Component<{ class?: string }> | undefined {
+		if (iconKey && iconKey in MINE_ITEM_ICON_MAP) {
+			return MINE_ITEM_ICON_MAP[iconKey as keyof typeof MINE_ITEM_ICON_MAP];
+		}
+		return MINE_ITEM_KEYWORDS[itemId] ? CodeFill : undefined;
+	}
+
 	const pluginSections = $derived(controller.getSlots('mine.section'));
 	const pluginItems = $derived(controller.getSlots('mine.item'));
 
-	const baseSections: SettingSection[] = [
-		{
-			id: 'timetable-management',
-			title: '课表管理',
-			order: 10,
-			items: [
-				{
-					id: 'manage-timetables',
-					title: '管理课程表',
-					href: resolve('/manage-timetables'),
-					icon: ListAltFill,
-					iconTone: 'primary',
-					keywords: ['课表', '管理', '切换', '编辑', '课程'],
-					order: 10
-				}
-			]
-		},
-		{
-			id: 'data-sync',
-			title: '数据与分享',
-			order: 20,
-			items: [
-				{
-					id: 'import',
-					title: '导入课程表',
-					href: resolve('/transfer/import'),
-					icon: DownloadFill,
-					iconTone: 'secondary',
-					keywords: ['导入', '数据', '共享', '文件', '扫码', '课表'],
-					order: 10
-				},
-				{
-					id: 'export',
-					title: '分享课程表',
-					href: resolve('/transfer/export'),
-					icon: IosShareFill,
-					iconTone: 'tertiary',
-					keywords: ['导出', '分享', '备份', '数据', '链接', '二维码'],
-					order: 20
-				}
-			]
-		},
-		{
-			id: 'appearance-feedback',
-			title: '个性化',
-			order: 30,
-			items: [
-				{
-					id: 'display',
-					title: '显示设置',
-					href: resolve('/display-settings'),
-					icon: PaletteFill,
-					iconTone: 'secondary',
-					keywords: [
-						'主题',
-						'显示',
-						'外观',
-						'深色',
-						'夜间',
-						'亮色',
-						'白天',
-						'模式',
-						'颜色',
-						'跟随系统',
-						'滚动',
-						'一屏',
-						'布局',
-						'课表',
-						'配色',
-						'配色方案',
-						'随机'
-					],
-					order: 10
-				},
-				{
-					id: 'feedback',
-					title: '反馈设置',
-					href: resolve('/feedback-settings'),
-					icon: MobileVibrateFill,
-					iconTone: 'tertiary',
-					keywords: ['反馈', '震动', '振动', '触感', '马达', '声音', '音效', 'haptic', 'feedback'],
-					order: 20
-				},
-				{
-					id: 'wallpaper',
-					title: '设置课表壁纸',
-					href: resolve('/wallpaper'),
-					icon: WallpaperFill,
-					iconTone: 'primary',
-					keywords: ['壁纸', '背景', '图片', '自定义', '封面'],
-					order: 30
-				}
-			]
-		},
-		{
-			id: 'app-support',
-			title: '应用与支持',
-			order: 40,
-			items: [
-				{
-					id: 'plugins',
-					title: '插件中心',
-					supporting: '管理已安装插件与在线市场',
-					href: resolve('/plugins'),
-					icon: CodeFill,
-					iconTone: 'secondary',
-					keywords: ['插件', '市场', '扩展', 'plugin', 'marketplace', '主题', '工具', '同步'],
-					order: 5
-				},
-				{
-					id: 'install',
-					title: '安装 Chronos',
-					supporting: pwaInstallController.isStandalone
-						? '已安装为桌面应用'
-						: pwaInstallController.isInstalledLocally
-							? '已安装，可在应用中打开'
-							: '添加到主屏幕，快捷打开应用',
-					href: resolve('/about/install'),
-					icon: AddHomeFill,
-					iconTone: 'primary',
-					keywords: ['安装', 'PWA', '桌面', '应用', '主屏幕', '快捷', '下载'],
-					order: 10
-				},
-				{
-					id: 'about',
-					title: '关于 Chronos',
-					href: resolve('/about'),
-					icon: InfoFill,
-					iconTone: 'tertiary',
-					keywords: ['关于', '版本', '开源', '协议', '许可', '开发者', '更新', '说明'],
-					order: 20
-				}
-			]
-		}
-	];
-
 	const sections = $derived.by(() => {
 		const sectionMap: Record<string, SettingSection> = {};
-		for (const sec of baseSections) {
-			sectionMap[sec.id] = {
-				id: sec.id,
-				title: sec.title,
-				order: sec.order ?? 50,
-				items: [...sec.items]
-			};
-		}
 
 		for (const pSec of pluginSections) {
-			if (!sectionMap[pSec.id]) {
-				sectionMap[pSec.id] = {
-					id: pSec.id,
-					title: resolveText(pSec.title),
-					order: pSec.order ?? 50,
-					items: []
-				};
-			}
+			sectionMap[pSec.id] = {
+				id: pSec.id,
+				title: resolveText(pSec.title),
+				order: pSec.order ?? 50,
+				items: []
+			};
 		}
 
 		for (const item of pluginItems) {
@@ -223,17 +76,21 @@
 				sectionMap[targetSectionId] = section;
 			}
 
-			const context = controller.rawEngine.getPluginContext(item.id);
+			const pluginId = item.id.includes('.') ? item.id.split('.')[0]! : 'codec-share';
+			const context = controller.rawEngine.getPluginContext(pluginId);
 			section.items.push({
 				id: item.id,
 				title: resolveText(item.title),
 				supporting: resolveText(item.supporting),
 				href: item.href,
 				onClick: item.onClick ? () => item.onClick!(context) : undefined,
-				icon: CodeFill,
+				icon: resolveIcon(item.icon, item.id),
 				iconTone: item.iconTone ?? 'neutral',
 				order: item.order ?? 50,
-				keywords: [resolveText(item.title), resolveText(item.supporting)]
+				keywords: MINE_ITEM_KEYWORDS[item.id] ?? [
+					resolveText(item.title),
+					resolveText(item.supporting)
+				]
 			});
 		}
 
