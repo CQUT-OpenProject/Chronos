@@ -204,7 +204,6 @@ export const htmlParserPlugin: ChronosPlugin = {
 			title: () => 'HTML 文件',
 			order: 30,
 			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			fetchSchedule: (inputs: Record<string, unknown>) => doImport(inputs),
 			executeImport: (inputs: Record<string, unknown>) => doImport(inputs)
 		});
 	}

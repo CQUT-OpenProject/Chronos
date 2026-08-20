@@ -173,7 +173,7 @@ export class MarketplaceService implements Disposable {
 		const current = (await this.getPluginConfig<T>(pluginId)) || ({} as T);
 		const updated = { ...current, ...patch };
 		await this.engine.env.storage.setPluginData(pluginId, '__config__', updated);
-		void this.engine.events.emit('config:changed', { pluginId, config: updated });
+		this.engine.events.emit('config:changed', { pluginId, config: updated });
 		this.engine.actions.notify('插件设置已保存', 'info');
 	}
 

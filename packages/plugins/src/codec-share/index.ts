@@ -64,7 +64,6 @@ export const shareCodecPlugin: ChronosPlugin = {
 			title: () => 'JSON 备份',
 			order: 20,
 			inputSchema: shareImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			fetchSchedule: (inputs: Record<string, unknown>) => doImport(inputs),
 			executeImport: (inputs: Record<string, unknown>) => doImport(inputs)
 		});
 

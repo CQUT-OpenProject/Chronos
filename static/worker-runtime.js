@@ -374,56 +374,6 @@
 
 			addDisposable: function (disposable) {
 				subscriptions.push(disposable);
-			},
-
-			// === Backward Compatibility Transition Methods ===
-			env: {
-				platform: 'web',
-				http: {
-					request: function (url, options) {
-						return callHost('http:request', { url: url, options: options });
-					}
-				}
-			},
-			registerSource: function (adapter) {
-				return ctx.registerSlot('import.source.tab', {
-					id: adapter.id,
-					title: adapter.title,
-					authType: adapter.authType,
-					fetchSchedule: adapter.fetchSchedule,
-					executeImport: adapter.fetchSchedule
-				});
-			},
-			registerExporter: function (adapter) {
-				return ctx.registerSlot('export.action', {
-					id: adapter.id,
-					title: adapter.title,
-					export: adapter.export
-				});
-			},
-			registerCourseAction: function (action) {
-				return ctx.registerSlot('course.detail.action', {
-					id: action.id,
-					label: action.label,
-					icon: action.icon,
-					onExecute: action.onExecute
-				});
-			},
-			registerCourseBadge: function (badge) {
-				return ctx.registerSlot('timetable.cell.badge', {
-					id: badge.id,
-					getBadge: badge.getBadge,
-					projectBadges: badge.projectBadges
-				});
-			},
-			registerTheme: function (theme) {
-				return ctx.registerSlot('theme.definition', {
-					id: theme.id,
-					name: theme.name,
-					supportsDynamicColor: theme.supportsDynamicColor,
-					getTokens: theme.getTokens,
-					resolveCoursePaint: theme.resolveCoursePaint
-				});
 			}
 		};
 

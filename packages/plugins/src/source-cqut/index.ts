@@ -5,9 +5,7 @@ import type {
 	Course,
 	PeriodTime,
 	AcademicConfig,
-	ConfigSchema,
-	HttpRequestOptions,
-	HttpResponse
+	ConfigSchema
 } from '@chronos/core';
 import { defineSchema, createCourse, createTimetable, IHttpService } from '@chronos/core';
 
@@ -334,12 +332,7 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 
 			activeCtx.actions.notify('正在连接知行理工...', 'info');
 
-			let http: { request: (url: string, opts?: HttpRequestOptions) => Promise<HttpResponse> };
-			try {
-				http = activeCtx.service(IHttpService);
-			} catch {
-				http = activeCtx.env.http;
-			}
+			const http = activeCtx.service(IHttpService);
 
 			const configObj = activeCtx.config as unknown as CqutPluginConfig | undefined;
 			const authUrl = configObj?.customAuthUrl || 'https://authserver.cqut.edu.cn/authserver/login';
@@ -390,7 +383,6 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 				campusId: ctx.config.campusId || 'huaxi',
 				saveCredentials: false
 			},
-			fetchSchedule: (inputs: Record<string, unknown>) => doImport(inputs, ctx),
 			executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
 				doImport(inputs, context)
 		});

@@ -274,7 +274,7 @@ export class WorkerPluginBridge implements Disposable {
 				)) || {};
 			const updated = { ...current, ...patch };
 			await this.engine.env.storage.setPluginData(this.manifest.id, '__config__', updated);
-			void this.engine.events.emit('config:changed', {
+			this.engine.events.emit('config:changed', {
 				pluginId: this.manifest.id,
 				config: updated
 			});
@@ -373,13 +373,6 @@ export class WorkerPluginBridge implements Disposable {
 						| ConfigSchema<Record<string, unknown>>
 						| undefined,
 					defaultInput: contribution.defaultInput as Record<string, unknown> | undefined,
-					fetchSchedule: async (inputs: Record<string, unknown>) => {
-						return this.callWorker<Timetable>('slot:executeImport', {
-							slotName,
-							id,
-							inputs
-						});
-					},
 					executeImport: async (inputs: Record<string, unknown>) => {
 						return this.callWorker<Timetable>('slot:executeImport', {
 							slotName,
@@ -517,116 +510,6 @@ export class WorkerPluginBridge implements Disposable {
 			}
 
 			this.registerSlotDisposable(`slot:${slotName}:${id}`, sub);
-			return;
-		}
-
-		// Backward compatibility slot registration proxies
-		if (method === 'slot:registerSource') {
-			const id = params.id as string;
-			const sub = this.engine.slots.registerSource({
-				id,
-				title: () => (params.title as string) || id,
-				authType: (params.authType as 'none' | 'password' | 'file') || 'none',
-				fetchSchedule: async (fetchParams) => {
-					return this.callWorker<Timetable>('source:fetchSchedule', {
-						sourceId: id,
-						params: fetchParams
-					});
-				}
-			});
-			this.registerSlotDisposable(`slot:import.source.tab:${id}`, sub);
-			return;
-		}
-
-		if (method === 'slot:registerExporter') {
-			const id = params.id as string;
-			const sub = this.engine.slots.registerExporter({
-				id,
-				title: () => (params.title as string) || id,
-				export: async (timetable) => {
-					return this.callWorker<ExportResult>('exporter:export', {
-						exporterId: id,
-						timetable
-					});
-				}
-			});
-			this.registerSlotDisposable(`slot:export.action:${id}`, sub);
-			return;
-		}
-
-		if (method === 'slot:registerCourseAction') {
-			const id = params.id as string;
-			const sub = this.engine.slots.registerCourseAction({
-				id,
-				label: () => (params.label as string) || id,
-				icon: params.icon as string | undefined,
-				onExecute: async (course) => {
-					await this.callWorker('action:execute', { actionId: id, course });
-				}
-			});
-			this.registerSlotDisposable(`slot:course.detail.action:${id}`, sub);
-			return;
-		}
-
-		if (method === 'slot:registerCourseBadge') {
-			const id = params.id as string;
-			const sub = this.engine.badges.registerCourseBadge({
-				id,
-				projectBadges: params.hasProjectBadges
-					? async (courses) => {
-							return this.callWorker<Record<string, CourseBadge[]>>('badge:projectBadges', {
-								badgeId: id,
-								courses
-							});
-						}
-					: undefined
-			});
-			this.registerSlotDisposable(`slot:timetable.cell.badge:${id}`, sub);
-			return;
-		}
-
-		if (method === 'slot:registerTheme') {
-			const id = params.id as string;
-			const sub = this.engine.themes.registerTheme({
-				id,
-				name: () => (params.name as string) || id,
-				supportsDynamicColor: Boolean(params.supportsDynamicColor),
-				getTokens: (mode) => {
-					const tokens =
-						mode === 'dark'
-							? (params.darkTokens as Record<string, string>)
-							: (params.lightTokens as Record<string, string>);
-					return {
-						surface: tokens?.surface ?? '#ffffff',
-						onSurface: tokens?.onSurface ?? '#000000',
-						primary: tokens?.primary ?? '#0068b7',
-						onPrimary: tokens?.onPrimary ?? '#ffffff',
-						surfaceVariant: tokens?.surfaceVariant ?? '#f0f0f0',
-						outline: tokens?.outline ?? '#cccccc',
-						...tokens
-					};
-				},
-				resolveCoursePaint: params.hasResolveCoursePaint
-					? (_course: Course, paletteIndex: number, mode: 'light' | 'dark') => {
-							const isDark = mode === 'dark';
-							const defaultColors = isDark
-								? [
-										{ background: '#f38ba8', foreground: '#11111b' },
-										{ background: '#fab387', foreground: '#11111b' },
-										{ background: '#a6e3a1', foreground: '#11111b' },
-										{ background: '#89b4fa', foreground: '#11111b' }
-									]
-								: [
-										{ background: '#d20f39', foreground: '#ffffff' },
-										{ background: '#fe640b', foreground: '#ffffff' },
-										{ background: '#40a02b', foreground: '#ffffff' },
-										{ background: '#1e66f5', foreground: '#ffffff' }
-									];
-							return defaultColors[Math.abs(paletteIndex) % defaultColors.length]!;
-						}
-					: undefined
-			});
-			this.registerSlotDisposable(`slot:theme.definition:${id}`, sub);
 			return;
 		}
 
