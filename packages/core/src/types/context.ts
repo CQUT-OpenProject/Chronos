@@ -110,6 +110,16 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 		handler: (payload: T) => Promise<boolean | void> | boolean | void
 	): Disposable;
 
+	/**
+	 * Conditionally activate logic when all specified optional services
+	 * become available. The callback is invoked once dependencies are met
+	 * and automatically disposed when any dependency is unregistered.
+	 */
+	inject(
+		deps: ReadonlyArray<ServiceIdentifier<unknown> | string>,
+		callback: (ctx: ChronosContext<Config>) => Disposable | void
+	): Disposable;
+
 	/** Manually register disposable resources to be cleaned up on unload */
 	addDisposable(disposable: Disposable): void;
 }

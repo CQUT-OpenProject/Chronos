@@ -193,6 +193,52 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		return this.track(this.host.pipeline.registerSerial(event, handler));
 	}
 
+	inject(
+		deps: ReadonlyArray<ServiceIdentifier<unknown> | string>,
+		callback: (ctx: ChronosContext<Config>) => Disposable | void
+	): Disposable {
+		const keys = deps.map((d) => (typeof d === 'string' ? d : d.key));
+		let callbackDisposable: Disposable | void;
+		let activated = false;
+
+		const tryActivate = () => {
+			if (activated) return;
+			if (keys.every((k) => this.host.services.hasKey(k))) {
+				activated = true;
+				callbackDisposable = callback(this);
+			}
+		};
+
+		const deactivate = () => {
+			if (!activated) return;
+			activated = false;
+			callbackDisposable?.dispose();
+			callbackDisposable = undefined;
+		};
+
+		const regSub = this.host.services.onServiceRegistered((key) => {
+			if (keys.includes(key)) tryActivate();
+		});
+
+		const unregSub = this.host.services.onServiceUnregistered((key) => {
+			if (keys.includes(key)) deactivate();
+		});
+
+		// Check if all deps are already satisfied at registration time
+		tryActivate();
+
+		const handle: Disposable = {
+			dispose: () => {
+				deactivate();
+				regSub.dispose();
+				unregSub.dispose();
+			}
+		};
+
+		this.subscriptions.push(handle);
+		return handle;
+	}
+
 	dispose(): void {
 		// Revoke all registrations and effects in reverse order (LIFO)
 		for (let i = this.subscriptions.length - 1; i >= 0; i--) {

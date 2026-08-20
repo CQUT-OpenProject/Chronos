@@ -28,3 +28,35 @@ export interface MarketplaceRegistry {
 	updatedAt: number;
 	plugins: PluginManifest[];
 }
+
+// ── Runtime bundle loader ────────────────────────────────────────────
+
+/** A successfully fetched and verified plugin bundle ready for execution. */
+export interface LoadedBundle {
+	readonly pluginId: string;
+	readonly code: string;
+	readonly manifest: PluginManifest;
+	readonly loadedAt: number;
+}
+
+/**
+ * Runtime loader responsible for fetching plugin bundles from a
+ * marketplace registry, verifying integrity (sha256 / Ed25519 signature),
+ * and managing a local bundle cache.
+ */
+export interface MarketplaceLoader {
+	/** Fetch the remote plugin registry index. */
+	fetchRegistry(url: string): Promise<MarketplaceRegistry>;
+
+	/** Download, verify, and return a ready-to-execute bundle. */
+	loadBundle(manifest: PluginManifest): Promise<LoadedBundle>;
+
+	/** Verify bundle integrity against the manifest's sha256 and optional signature. */
+	verifyIntegrity(manifest: PluginManifest, code: ArrayBuffer): Promise<boolean>;
+
+	/** Retrieve a previously cached bundle, or `null` if not cached. */
+	getCachedBundle(pluginId: string): Promise<LoadedBundle | null>;
+
+	/** Clear cached bundles. Pass `pluginId` to clear a single entry, omit to clear all. */
+	clearCache(pluginId?: string): Promise<void>;
+}

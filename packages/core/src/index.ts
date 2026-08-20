@@ -23,6 +23,7 @@ export type { ThemeContribution, CourseBadgeContribution } from './types/contrib
 export type { PlatformType, ChronosEnv } from './types/env';
 export * from './types/context';
 export * from './types/marketplace';
+export * from './types/sandbox';
 
 // Runtime
 export * from './runtime/service-container';
