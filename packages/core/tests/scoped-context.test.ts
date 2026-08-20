@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { ScopedContext } from '../src/runtime/scoped-context';
-import { EventBus } from '../src/runtime/event-bus';
-import { Pipeline } from '../src/runtime/pipeline';
+import { EventPipeline } from '../src/runtime/event-pipeline';
 import { HierarchicalSlotRegistry } from '../src/runtime/hierarchical-slot-registry';
 import { ServiceContainer } from '../src/runtime/service-container';
 import { ThemeRegistry } from '../src/runtime/theme-registry';
@@ -41,8 +40,7 @@ function createMockHost() {
 	services.register(IStorageService, storageService);
 	services.register(IHttpService, httpService);
 
-	const events = new EventBus();
-	const pipeline = new Pipeline();
+	const eventPipeline = new EventPipeline();
 	const slots = new HierarchicalSlotRegistry();
 	const themes = new ThemeRegistry();
 	const badges = new BadgeManager();
@@ -58,19 +56,19 @@ function createMockHost() {
 			removeSecret: vi.fn()
 		},
 		runtime: {
-			setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms) as unknown as number,
-			clearTimeout: (h: number) => clearTimeout(h),
-			sha256: async () => 'hash',
-			encodeUtf8: (s: string) => new TextEncoder().encode(s),
-			decodeUtf8: (b: Uint8Array) => new TextDecoder().decode(b)
+			setTimeout: (h, ms) => setTimeout(h, ms) as unknown as number,
+			clearTimeout: (h) => clearTimeout(h),
+			sha256: async () => '',
+			encodeUtf8: (s) => new TextEncoder().encode(s),
+			decodeUtf8: (b) => new TextDecoder().decode(b)
 		}
 	};
 
 	return {
 		env,
 		services,
-		events,
-		pipeline,
+		events: eventPipeline,
+		pipeline: eventPipeline,
 		slots,
 		themes,
 		badges,

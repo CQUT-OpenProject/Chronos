@@ -19,13 +19,7 @@ export * from './schema/validator';
 // Types
 export * from './types/services';
 export * from './types/slots';
-export type {
-	ThemeContribution,
-	CourseBadgeContribution,
-	CourseActionContribution,
-	TimetableSourceAdapter,
-	TimetableExporterAdapter
-} from './types/contributions';
+export type { ThemeContribution, CourseBadgeContribution } from './types/contributions';
 export type { PlatformType, ChronosEnv } from './types/env';
 export * from './types/context';
 export * from './types/marketplace';
@@ -36,7 +30,16 @@ export * from './runtime/hierarchical-slot-registry';
 export { HierarchicalSlotRegistry as SlotRegistry } from './runtime/hierarchical-slot-registry';
 export * from './runtime/event-bus';
 export * from './runtime/pipeline';
+export * from './runtime/event-pipeline';
 export * from './runtime/theme-registry';
 export * from './runtime/badge-manager';
 export * from './runtime/scoped-context';
 export * from './runtime/engine';
+
+// Profile
+// Profile
+export * from './profile/profile';
+export * from './profile/profile-manager';
+
+// Hosts
+export * from './hosts/native-protocol';

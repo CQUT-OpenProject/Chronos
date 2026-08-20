@@ -1,22 +1,8 @@
 import type { Course } from '../domain/course';
 import type { AcademicConfig, Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
-import type { ChronosEnv } from './env';
 import type { Disposable, ServiceIdentifier } from './services';
-import type {
-	StandardSlotMap,
-	LocalizedText,
-	CourseBadge,
-	ExportResult,
-	ThemeSlotContribution
-} from './slots';
-import type {
-	CourseActionContribution,
-	CourseBadgeContribution,
-	ThemeContribution,
-	TimetableExporterAdapter,
-	TimetableSourceAdapter
-} from './contributions';
+import type { StandardSlotMap, LocalizedText, CourseBadge, ExportResult } from './slots';
 import type { ConfigSchema } from '../schema/schema';
 
 export type { LocalizedText } from './slots';
@@ -28,6 +14,8 @@ export interface ChronosPlugin<Config extends object = Record<string, unknown>> 
 	readonly description?: LocalizedText;
 	readonly configSchema?: ConfigSchema<Config>;
 	readonly defaultConfig?: Config;
+	/** Declared service dependencies (plugin remains pending until all dependencies are satisfied) */
+	readonly inject?: ReadonlyArray<ServiceIdentifier<unknown> | string>;
 	/** Declared permissions required by the plugin (for sandbox permission gate, e.g. ['network', 'storage']) */
 	readonly permissions?: Array<'network' | 'storage' | 'vault' | 'notifications'>;
 	/** Allowed domain whitelist for network requests */
@@ -110,18 +98,20 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 	/** Data pipeline transformation interceptor */
 	registerPipelineHook(hook: (context: unknown) => void | Promise<void>): Disposable;
 
+	/** Waterfall onion middleware hook */
+	registerWaterfallHook<T = unknown, R = unknown>(
+		event: string,
+		handler: (payload: T, next: () => Promise<R> | R) => Promise<R> | R
+	): Disposable;
+
+	/** Serial decision / guard hook (return false to short-circuit) */
+	registerSerialHook<T = unknown>(
+		event: string,
+		handler: (payload: T) => Promise<boolean | void> | boolean | void
+	): Disposable;
+
 	/** Manually register disposable resources to be cleaned up on unload */
 	addDisposable(disposable: Disposable): void;
-
-	// === Backward Compatibility Transition Adapters ===
-	readonly env: Readonly<ChronosEnv>;
-	readonly subscriptions: Disposable[];
-	registerExportTransform(hook: ExportTransformHook): Disposable;
-	registerSource(adapter: TimetableSourceAdapter): Disposable;
-	registerExporter(adapter: TimetableExporterAdapter): Disposable;
-	registerCourseAction(action: CourseActionContribution): Disposable;
-	registerCourseBadge(badge: CourseBadgeContribution): Disposable;
-	registerTheme(theme: ThemeContribution | ThemeSlotContribution): Disposable;
 }
 
 export interface ChronosEvents {

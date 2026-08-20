@@ -1,10 +1,5 @@
 import type { Disposable } from '../types/services';
 import type { StandardSlotMap } from '../types/slots';
-import type {
-	CourseActionContribution,
-	TimetableExporterAdapter,
-	TimetableSourceAdapter
-} from '../types/contributions';
 
 export class HierarchicalSlotRegistry implements Disposable {
 	private slots = new Map<string, Map<string, unknown>>();
@@ -60,89 +55,6 @@ export class HierarchicalSlotRegistry implements Disposable {
 	clear(): void {
 		this.slots.clear();
 		this.notify();
-	}
-
-	// === Backward Compatibility Adapters ===
-	registerSource(adapter: TimetableSourceAdapter): Disposable {
-		const contribution = {
-			...adapter,
-			executeImport: (inputs: Record<string, unknown>) =>
-				adapter.fetchSchedule({
-					username: inputs.username as string | undefined,
-					password: inputs.password as string | undefined,
-					fileContent: inputs.fileContent as string | undefined
-				})
-		};
-		return this.register(
-			'import.source.tab',
-			contribution as unknown as StandardSlotMap['import.source.tab'] & { id: string }
-		);
-	}
-
-	getSource(id: string): TimetableSourceAdapter | undefined {
-		const item = this.getSlotItem('import.source.tab', id);
-		if (!item) return undefined;
-		const raw = item as unknown as Record<string, unknown>;
-		if (typeof raw.fetchSchedule === 'function') {
-			return item as unknown as TimetableSourceAdapter;
-		}
-		if (typeof raw.executeImport === 'function') {
-			return {
-				...item,
-				fetchSchedule: (inputs: Record<string, unknown>) =>
-					(
-						raw.executeImport as (
-							inputs: Record<string, unknown>,
-							ctx?: unknown
-						) => Promise<import('../domain/timetable').Timetable>
-					)(inputs)
-			} as unknown as TimetableSourceAdapter;
-		}
-		return item as unknown as TimetableSourceAdapter;
-	}
-
-	getSources(): ReadonlyArray<TimetableSourceAdapter> {
-		return this.get('import.source.tab') as unknown as ReadonlyArray<TimetableSourceAdapter>;
-	}
-
-	registerExporter(adapter: TimetableExporterAdapter): Disposable {
-		const contribution = {
-			...adapter,
-			export: (timetable: import('../domain/timetable').Timetable) => adapter.export(timetable)
-		};
-		return this.register(
-			'export.action',
-			contribution as unknown as StandardSlotMap['export.action'] & { id: string }
-		);
-	}
-
-	getExporter(id: string): TimetableExporterAdapter | undefined {
-		const item = this.getSlotItem('export.action', id);
-		if (!item) return undefined;
-		const raw = item as unknown as Record<string, unknown>;
-		if (typeof raw.export === 'function') {
-			return item as unknown as TimetableExporterAdapter;
-		}
-		return item as unknown as TimetableExporterAdapter;
-	}
-
-	getExporters(): ReadonlyArray<TimetableExporterAdapter> {
-		return this.get('export.action') as unknown as ReadonlyArray<TimetableExporterAdapter>;
-	}
-
-	registerCourseAction(action: CourseActionContribution): Disposable {
-		return this.register(
-			'course.detail.action',
-			action as unknown as StandardSlotMap['course.detail.action'] & { id: string }
-		);
-	}
-
-	getCourseAction(id: string): CourseActionContribution | undefined {
-		return this.getSlotItem('course.detail.action', id) as CourseActionContribution | undefined;
-	}
-
-	getCourseActions(): ReadonlyArray<CourseActionContribution> {
-		return this.get('course.detail.action') as unknown as ReadonlyArray<CourseActionContribution>;
 	}
 
 	private notify(): void {

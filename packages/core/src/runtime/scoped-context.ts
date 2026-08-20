@@ -4,17 +4,9 @@ import type { UserPreferences } from '../domain/preferences';
 import type { ChronosEnv } from '../types/env';
 import type { Disposable, ServiceIdentifier } from '../types/services';
 import { IStorageService } from '../types/services';
-import type { ChronosContext, ChronosEvents, ExportTransformHook } from '../types/context';
-import type { StandardSlotMap, ThemeSlotContribution } from '../types/slots';
-import type {
-	CourseActionContribution,
-	CourseBadgeContribution,
-	ThemeContribution,
-	TimetableExporterAdapter,
-	TimetableSourceAdapter
-} from '../types/contributions';
-import type { EventBus } from './event-bus';
-import type { Pipeline } from './pipeline';
+import type { ChronosContext, ChronosEvents } from '../types/context';
+import type { StandardSlotMap } from '../types/slots';
+import type { EventPipeline } from './event-pipeline';
 import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import type { ServiceContainer } from './service-container';
 import type { ThemeRegistry } from './theme-registry';
@@ -22,8 +14,8 @@ import type { BadgeManager } from './badge-manager';
 
 export interface EngineContextHost {
 	readonly services: ServiceContainer;
-	readonly events: EventBus;
-	readonly pipeline: Pipeline;
+	readonly events: EventPipeline;
+	readonly pipeline: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes?: ThemeRegistry;
 	readonly badges?: BadgeManager;
@@ -129,7 +121,7 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 			...patch
 		};
 		await this.storage.set('__config__', this._config);
-		void this.host.events.emit('config:changed', {
+		this.host.events.emit('config:changed', {
 			pluginId: this.pluginId,
 			config: this._config as Record<string, unknown>
 		});
@@ -179,45 +171,26 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 	}
 
 	registerPipelineHook(hook: (context: unknown) => void | Promise<void>): Disposable {
-		return this.track(this.host.pipeline.registerExportTransform(hook as ExportTransformHook));
-	}
-
-	// === Backward Compatibility Transition Adapters ===
-	registerExportTransform(hook: ExportTransformHook): Disposable {
-		return this.track(this.host.pipeline.registerExportTransform(hook));
-	}
-
-	registerSource(adapter: TimetableSourceAdapter): Disposable {
-		return this.track(this.host.slots.registerSource(adapter));
-	}
-
-	registerExporter(adapter: TimetableExporterAdapter): Disposable {
-		return this.track(this.host.slots.registerExporter(adapter));
-	}
-
-	registerCourseAction(action: CourseActionContribution): Disposable {
-		return this.track(this.host.slots.registerCourseAction(action));
-	}
-
-	registerCourseBadge(badge: CourseBadgeContribution): Disposable {
-		if (this.host.badges) {
-			return this.track(this.host.badges.registerCourseBadge(badge));
-		}
 		return this.track(
-			this.host.slots.register('timetable.cell.badge', {
-				id: badge.id,
-				getBadge: (course) => (badge.getBadge ? badge.getBadge(course) : null)
+			this.host.pipeline.registerWaterfall('pipeline:exportTransform', async (ctx, next) => {
+				await hook(ctx);
+				return next();
 			})
 		);
 	}
 
-	registerTheme(theme: ThemeContribution | ThemeSlotContribution): Disposable {
-		if (this.host.themes && 'supportsDynamicColor' in theme) {
-			return this.track(this.host.themes.registerTheme(theme as ThemeContribution));
-		}
-		return this.track(
-			this.host.slots.register('theme.definition', theme as ThemeSlotContribution & { id: string })
-		);
+	registerWaterfallHook<T = unknown, R = unknown>(
+		event: string,
+		handler: (payload: T, next: () => Promise<R> | R) => Promise<R> | R
+	): Disposable {
+		return this.track(this.host.pipeline.registerWaterfall(event, handler));
+	}
+
+	registerSerialHook<T = unknown>(
+		event: string,
+		handler: (payload: T) => Promise<boolean | void> | boolean | void
+	): Disposable {
+		return this.track(this.host.pipeline.registerSerial(event, handler));
 	}
 
 	dispose(): void {

@@ -5,8 +5,7 @@ import type { ChronosEnv, StorageChangeEvent } from '../types/env';
 import type { Disposable } from '../types/services';
 import { IHttpService, IStorageService, IVaultService, IRuntimeService } from '../types/services';
 import type { ChronosEvents, ChronosPlugin } from '../types/context';
-import { EventBus } from './event-bus';
-import { Pipeline } from './pipeline';
+import { EventPipeline } from './event-pipeline';
 import { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import { ServiceContainer } from './service-container';
 import { ThemeRegistry } from './theme-registry';
@@ -26,8 +25,8 @@ export interface ChronosEngineOptions {
 export class ChronosEngine implements EngineContextHost, Disposable {
 	readonly env: ChronosEnv;
 	readonly services: ServiceContainer;
-	readonly events: EventBus;
-	readonly pipeline: Pipeline;
+	readonly events: EventPipeline;
+	readonly pipeline: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes: ThemeRegistry;
 	readonly badges: BadgeManager;
@@ -49,6 +48,14 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			context: ScopedContext<Record<string, unknown>>;
 		}
 	>();
+	private pendingPlugins = new Map<
+		string,
+		{
+			plugin: ChronosPlugin<Record<string, unknown>>;
+			missingDeps: Set<string>;
+		}
+	>();
+	private serviceSubscriptions: Disposable[] = [];
 	private storageSubscription?: Disposable;
 	private calendarService = new AcademicCalendarService();
 
@@ -58,15 +65,25 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this._i18nHandler = options.i18nHandler;
 		this._onNotification = options.onNotification;
 
-		this.events = new EventBus();
-		this.pipeline = new Pipeline();
+		this.events = new EventPipeline();
+		this.pipeline = this.events;
 		this.slots = new HierarchicalSlotRegistry(() => {
-			void this.events.emit('slots:updated', undefined);
+			this.events.emit('slots:updated', undefined);
 		});
 		this.themes = new ThemeRegistry();
 		this.badges = new BadgeManager((badges) => {
-			void this.events.emit('badges:updated', { badges });
+			this.events.emit('badges:updated', { badges });
 		});
+
+		// Listen to service registrations for topological dependency activation
+		this.serviceSubscriptions.push(
+			this.services.onServiceRegistered((key) => {
+				void this.handleServiceRegistered(key);
+			}),
+			this.services.onServiceUnregistered((key) => {
+				void this.handleServiceUnregistered(key);
+			})
+		);
 
 		// If env is provided, register standard service providers into ServiceContainer
 		if (options.env) {
@@ -170,7 +187,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 
 	setLocale(locale: string): void {
 		this._locale = locale;
-		void this.events.emit('i18n:localeChanged', { locale });
+		this.events.emit('i18n:localeChanged', { locale });
 	}
 
 	t(key: string, params?: Record<string, unknown>): string {
@@ -229,7 +246,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 
 		if (this._currentTimetable) {
 			await this.badges.recalculate(this._currentTimetable.courses);
-			await this.events.emit('timetable:loaded', { timetable: this._currentTimetable });
+			this.events.emit('timetable:loaded', { timetable: this._currentTimetable });
 		}
 
 		if (storage.onChanged) {
@@ -241,7 +258,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		const storage = this.storage;
 		if (event.type === 'preferences') {
 			this._userPreferences = await storage.getPreferences();
-			await this.events.emit('preferences:updated', { preferences: this._userPreferences });
+			this.events.emit('preferences:updated', { preferences: this._userPreferences });
 		} else if (event.type === 'timetable') {
 			const activeId = await storage.getActiveTimetableId();
 			if (activeId) {
@@ -250,7 +267,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 					this._currentTimetable = updated;
 					this.updateTime();
 					await this.badges.recalculate(updated.courses);
-					await this.events.emit('timetable:updated', { timetable: updated });
+					this.events.emit('timetable:updated', { timetable: updated });
 				}
 			}
 		}
@@ -287,63 +304,96 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this._currentPeriodIndex = currentPeriod;
 
 		if (changed) {
-			void this.events.emit('time:tick', { currentWeek, currentPeriod });
+			this.events.emit('time:tick', { currentWeek, currentPeriod });
 		}
 	}
 
 	async createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable> {
-		const id = `tt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-		const timetable = createTimetable({
-			id,
-			name,
-			academicConfig: {
-				termStartDate: config?.termStartDate ?? '',
-				startWeek: config?.startWeek ?? 1,
-				endWeek: config?.endWeek ?? 20,
-				periodTimes: config?.periodTimes ?? []
-			}
-		});
-
-		await this.storage.saveTimetable(timetable);
-
-		if (!this._currentTimetable) {
-			await this.switchTimetable(timetable.id);
+		const allowed = await this.pipeline.serial('guard:createTimetable', { name, config });
+		if (!allowed) {
+			throw new Error('[ChronosEngine] createTimetable action was rejected by guard');
 		}
 
-		return timetable;
+		return this.pipeline.waterfall(
+			'action:createTimetable',
+			{ name, config },
+			async ({ name: finalName, config: finalConfig }) => {
+				const id = `tt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+				const timetable = createTimetable({
+					id,
+					name: finalName,
+					academicConfig: {
+						termStartDate: finalConfig?.termStartDate ?? '',
+						startWeek: finalConfig?.startWeek ?? 1,
+						endWeek: finalConfig?.endWeek ?? 20,
+						periodTimes: finalConfig?.periodTimes ?? []
+					}
+				});
+
+				await this.storage.saveTimetable(timetable);
+
+				if (!this._currentTimetable) {
+					await this.switchTimetable(timetable.id);
+				}
+
+				return timetable;
+			}
+		);
 	}
 
 	async switchTimetable(timetableId: string): Promise<void> {
-		const previousId = this._currentTimetable?.id ?? null;
-		const timetable = await this.storage.getTimetable(timetableId);
-		if (!timetable) {
-			throw new Error(`Timetable not found: ${timetableId}`);
+		const allowed = await this.pipeline.serial('guard:switchTimetable', { timetableId });
+		if (!allowed) {
+			throw new Error('[ChronosEngine] switchTimetable action was rejected by guard');
 		}
 
-		await this.storage.setActiveTimetableId(timetableId);
-		this._currentTimetable = timetable;
-		this.updateTime();
-		await this.badges.recalculate(timetable.courses);
+		return this.pipeline.waterfall(
+			'action:switchTimetable',
+			{ timetableId },
+			async ({ timetableId: targetId }) => {
+				const previousId = this._currentTimetable?.id ?? null;
+				const timetable = await this.storage.getTimetable(targetId);
+				if (!timetable) {
+					throw new Error(`Timetable not found: ${targetId}`);
+				}
 
-		await this.events.emit('timetable:switched', {
-			previousId,
-			currentId: timetableId,
-			timetable
-		});
+				await this.storage.setActiveTimetableId(targetId);
+				this._currentTimetable = timetable;
+				this.updateTime();
+				await this.badges.recalculate(timetable.courses);
+
+				this.events.emit('timetable:switched', {
+					previousId,
+					currentId: targetId,
+					timetable
+				});
+			}
+		);
 	}
 
 	async deleteTimetable(timetableId: string): Promise<void> {
-		await this.storage.deleteTimetable(timetableId);
-
-		if (this._currentTimetable?.id === timetableId) {
-			const remaining = await this.storage.listTimetables();
-			if (remaining.length > 0 && remaining[0]) {
-				await this.switchTimetable(remaining[0].id);
-			} else {
-				this._currentTimetable = null;
-				await this.storage.setActiveTimetableId('');
-			}
+		const allowed = await this.pipeline.serial('guard:deleteTimetable', { timetableId });
+		if (!allowed) {
+			throw new Error('[ChronosEngine] deleteTimetable action was rejected by guard');
 		}
+
+		return this.pipeline.waterfall(
+			'action:deleteTimetable',
+			{ timetableId },
+			async ({ timetableId: targetId }) => {
+				await this.storage.deleteTimetable(targetId);
+
+				if (this._currentTimetable?.id === targetId) {
+					const remaining = await this.storage.listTimetables();
+					if (remaining.length > 0 && remaining[0]) {
+						await this.switchTimetable(remaining[0].id);
+					} else {
+						this._currentTimetable = null;
+						await this.storage.setActiveTimetableId('');
+					}
+				}
+			}
+		);
 	}
 
 	async saveCurrentTimetableDetails(patch: Partial<Timetable>): Promise<void> {
@@ -361,23 +411,33 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this._currentTimetable = updated;
 		this.updateTime();
 		await this.badges.recalculate(updated.courses);
-		await this.events.emit('timetable:updated', { timetable: updated });
+		this.events.emit('timetable:updated', { timetable: updated });
 	}
 
 	async saveCourse(course: Course): Promise<void> {
 		if (!this._currentTimetable) {
 			throw new Error('No active timetable to save course');
 		}
-
-		const courses = [...this._currentTimetable.courses];
-		const index = courses.findIndex((c) => c.id === course.id);
-		if (index >= 0) {
-			courses[index] = course;
-		} else {
-			courses.push(course);
+		const allowed = await this.pipeline.serial('guard:saveCourse', { course });
+		if (!allowed) {
+			throw new Error('[ChronosEngine] saveCourse action was rejected by guard');
 		}
 
-		await this.saveCurrentTimetableDetails({ courses });
+		return this.pipeline.waterfall(
+			'action:saveCourse',
+			{ course },
+			async ({ course: targetCourse }) => {
+				const courses = [...this._currentTimetable!.courses];
+				const index = courses.findIndex((c) => c.id === targetCourse.id);
+				if (index >= 0) {
+					courses[index] = targetCourse;
+				} else {
+					courses.push(targetCourse);
+				}
+
+				await this.saveCurrentTimetableDetails({ courses });
+			}
+		);
 	}
 
 	async updateCourse(courseId: string, patch: Partial<Course>): Promise<void> {
@@ -396,14 +456,24 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		if (!this._currentTimetable) {
 			throw new Error('No active timetable to delete course');
 		}
+		const allowed = await this.pipeline.serial('guard:deleteCourse', { courseId });
+		if (!allowed) {
+			throw new Error('[ChronosEngine] deleteCourse action was rejected by guard');
+		}
 
-		const courses = this._currentTimetable.courses.filter((c) => c.id !== courseId);
-		await this.saveCurrentTimetableDetails({ courses });
+		return this.pipeline.waterfall(
+			'action:deleteCourse',
+			{ courseId },
+			async ({ courseId: targetId }) => {
+				const courses = this._currentTimetable!.courses.filter((c) => c.id !== targetId);
+				await this.saveCurrentTimetableDetails({ courses });
+			}
+		);
 	}
 
 	setTheme(themeId: string): void {
 		this._activeThemeId = themeId;
-		void this.events.emit('theme:changed', { themeId });
+		this.events.emit('theme:changed', { themeId });
 	}
 
 	async updatePreferences(patch: Partial<UserPreferences>): Promise<void> {
@@ -412,7 +482,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			...patch
 		};
 		await this.storage.savePreferences(this._userPreferences);
-		await this.events.emit('preferences:updated', { preferences: this._userPreferences });
+		this.events.emit('preferences:updated', { preferences: this._userPreferences });
 	}
 
 	notify(message: string, type: 'info' | 'warn' | 'error' = 'info'): void {
@@ -427,16 +497,62 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		return new ScopedContext<Record<string, unknown>>(pluginId, this);
 	}
 
+	isPluginLoaded(pluginId: string): boolean {
+		return this.loadedPlugins.has(pluginId);
+	}
+
+	isPluginPending(pluginId: string): boolean {
+		return this.pendingPlugins.has(pluginId);
+	}
+
 	async loadPlugin<Config extends object = Record<string, unknown>>(
 		plugin: ChronosPlugin<Config>
 	): Promise<Disposable> {
 		if (this.loadedPlugins.has(plugin.id)) {
 			await this.unloadPlugin(plugin.id);
 		}
+		this.pendingPlugins.delete(plugin.id);
 
-		let initialConfig: Config = { ...(plugin.defaultConfig ?? ({} as Config)) };
+		const missingDeps = new Set<string>();
+		if (plugin.inject) {
+			for (const dep of plugin.inject) {
+				const key = typeof dep === 'string' ? dep : dep.key;
+				if (!this.services.hasKey(key)) {
+					missingDeps.add(key);
+				}
+			}
+		}
+
+		if (missingDeps.size > 0) {
+			this.pendingPlugins.set(plugin.id, {
+				plugin: plugin as unknown as ChronosPlugin<Record<string, unknown>>,
+				missingDeps
+			});
+			return {
+				dispose: () => {
+					this.pendingPlugins.delete(plugin.id);
+					void this.unloadPlugin(plugin.id);
+				}
+			};
+		}
+
+		await this.activatePlugin(plugin as unknown as ChronosPlugin<Record<string, unknown>>);
+
+		return {
+			dispose: () => {
+				this.pendingPlugins.delete(plugin.id);
+				void this.unloadPlugin(plugin.id);
+			}
+		};
+	}
+
+	private async activatePlugin(plugin: ChronosPlugin<Record<string, unknown>>): Promise<void> {
+		let initialConfig: Record<string, unknown> = { ...plugin.defaultConfig };
 		try {
-			const savedConfig = await this.storage.getPluginData<Config>(plugin.id, '__config__');
+			const savedConfig = await this.storage.getPluginData<Record<string, unknown>>(
+				plugin.id,
+				'__config__'
+			);
 			if (savedConfig) {
 				initialConfig = { ...initialConfig, ...savedConfig };
 			}
@@ -444,20 +560,43 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			console.warn(`[ChronosEngine] Failed to load saved config for plugin "${plugin.id}":`, err);
 		}
 
-		const context = new ScopedContext<Config>(plugin.id, this, initialConfig);
+		const context = new ScopedContext(plugin.id, this, initialConfig);
 		await plugin.apply(context);
 		this.loadedPlugins.set(plugin.id, {
-			plugin: plugin as unknown as ChronosPlugin<Record<string, unknown>>,
-			context: context as unknown as ScopedContext<Record<string, unknown>>
+			plugin,
+			context
 		});
 
-		await this.events.emit('plugin:loaded', { pluginId: plugin.id });
+		this.events.emit('plugin:loaded', { pluginId: plugin.id });
+	}
 
-		return {
-			dispose: () => {
-				void this.unloadPlugin(plugin.id);
+	private async handleServiceRegistered(key: string): Promise<void> {
+		for (const [pluginId, pending] of Array.from(this.pendingPlugins.entries())) {
+			if (pending.missingDeps.has(key)) {
+				pending.missingDeps.delete(key);
+				if (pending.missingDeps.size === 0) {
+					this.pendingPlugins.delete(pluginId);
+					await this.activatePlugin(pending.plugin);
+				}
 			}
-		};
+		}
+	}
+
+	private async handleServiceUnregistered(key: string): Promise<void> {
+		for (const [pluginId, entry] of Array.from(this.loadedPlugins.entries())) {
+			const injects = entry.plugin.inject;
+			if (injects && injects.some((dep) => (typeof dep === 'string' ? dep : dep.key) === key)) {
+				const missing = new Set<string>([key]);
+				for (const dep of injects) {
+					const depKey = typeof dep === 'string' ? dep : dep.key;
+					if (!this.services.hasKey(depKey)) {
+						missing.add(depKey);
+					}
+				}
+				await this.unloadPlugin(pluginId);
+				this.pendingPlugins.set(pluginId, { plugin: entry.plugin, missingDeps: missing });
+			}
+		}
 	}
 
 	async unloadPlugin(pluginId: string): Promise<void> {
@@ -472,7 +611,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			console.error(`[ChronosEngine] Error in plugin "${pluginId}" dispose hook:`, error);
 		}
 
-		await this.events.emit('plugin:unloaded', { pluginId });
+		this.events.emit('plugin:unloaded', { pluginId });
 	}
 
 	on<E extends keyof ChronosEvents>(
@@ -483,6 +622,11 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	dispose(): void {
+		for (const sub of this.serviceSubscriptions) {
+			sub.dispose();
+		}
+		this.serviceSubscriptions.length = 0;
+
 		for (const [pluginId, entry] of this.loadedPlugins) {
 			try {
 				entry.context.dispose();
@@ -492,12 +636,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			}
 		}
 		this.loadedPlugins.clear();
+		this.pendingPlugins.clear();
 
 		this.storageSubscription?.dispose();
 		this.storageSubscription = undefined;
 
 		this.events.dispose();
-		this.pipeline.dispose();
 		this.slots.dispose();
 		this.themes.dispose();
 		this.badges.dispose();

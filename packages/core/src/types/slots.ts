@@ -17,7 +17,6 @@ export interface ImportTabSlotContribution<
 	/** Declare input fields required by the import source (credentials, captcha, campus select, HTML file, etc.) */
 	inputSchema?: ConfigSchema<FormState>;
 	defaultInput?: FormState;
-	fetchSchedule?(inputs: FormState): Promise<Timetable>;
 	/** Execute import action handler */
 	executeImport(inputs: FormState, ctx?: ChronosContext): Promise<Timetable>;
 }
@@ -109,6 +108,18 @@ export interface ThemeSlotContribution {
 	resolveCoursePaint?(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint;
 }
 
+// 7. Shell bottom bar navigation tab slot contribution specification
+export interface BottomTabSlotContribution {
+	id: string;
+	label: LocalizedText;
+	href: string;
+	order?: number;
+	icon?: unknown;
+	iconFill?: unknown;
+	badge?: LocalizedText | (() => number | string | null);
+	onClick?(event: MouseEvent, ctx?: ChronosContext): void | Promise<void>;
+}
+
 /** Standard slot contract map */
 export interface StandardSlotMap {
 	'import.source.tab': ImportTabSlotContribution<Record<string, unknown>>;
@@ -116,6 +127,7 @@ export interface StandardSlotMap {
 	'mine.section': MineSectionSlotContribution;
 	'mine.item': MineItemSlotContribution;
 	'shell.route.screen': PluginScreenSlotContribution;
+	'shell.bottom-bar.tab': BottomTabSlotContribution;
 	'timetable.cell.badge': CourseBadgeSlotContribution;
 	'course.detail.action': CourseActionSlotContribution;
 	'theme.definition': ThemeSlotContribution;
