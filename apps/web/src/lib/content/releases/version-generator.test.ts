@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { getLatestReleaseFromEntries } from './version-generator';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 describe('version-generator', () => {
 	it('reads entries from folder and gets latest release', () => {
-		const entriesDir = resolve(process.cwd(), 'src/lib/content/releases/entries');
+		const entriesDir = resolve(dirname(fileURLToPath(import.meta.url)), './entries');
 		const latest = getLatestReleaseFromEntries(entriesDir);
 		expect(latest).not.toBeNull();
 		if (latest) {

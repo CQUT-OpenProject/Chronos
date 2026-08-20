@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getAppEngine, getMarketplaceService, getAppController } from '$lib/services/app-engine';
-	import type { InstalledPluginRecord } from '$lib/services/marketplace/marketplace-service';
-	import type { PluginManifest, ConfigSchema } from '@chronos/core';
-	import { builtinPlugins } from '@chronos/plugins';
+	import {
+		getAppEngine,
+		getMarketplaceService,
+		getAppController,
+		builtinPlugins
+	} from '$lib/services/app-engine';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import Card from '$lib/components/ui/Card.svelte';

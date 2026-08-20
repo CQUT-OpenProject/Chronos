@@ -1,7 +1,11 @@
 import { ChronosEngine } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
-import { builtinPlugins } from '@chronos/plugins';
+import { cqutPlugin } from '@chronos/plugin-source-cqut';
+import { htmlParserPlugin } from '@chronos/plugin-parser-html';
+import { shareCodecPlugin } from '@chronos/plugin-codec-share';
+
+export const builtinPlugins = [cqutPlugin, htmlParserPlugin, shareCodecPlugin];
 import { MarketplaceService } from '$lib/services/marketplace/marketplace-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
 import * as m from '$lib/paraglide/messages.js';

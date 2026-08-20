@@ -17,7 +17,8 @@ import {
 } from './preview-persistence';
 import { getAppEngine } from '$lib/services/app-engine';
 import { ChronosTimetableShareLinkCodec } from '$lib/parsers/share-link/chronos-timetable-share-link-codec';
-import { parseHtmlTimetable, parseCqutScheduleData } from '@chronos/plugins';
+import { parseHtmlTimetable } from '@chronos/plugin-parser-html';
+import { parseCqutScheduleData } from '@chronos/plugin-source-cqut';
 import {
 	type SecureCredentialStore,
 	WebAuthnSecureCredentialStore

@@ -1,39 +1,60 @@
+# Dependencies
 node_modules
+**/node_modules
 
-# Output
+# Output & Build
 .output
+**/.output
 .vercel
+**/.vercel
 .netlify
+**/.netlify
 .wrangler
-/.svelte-kit
-/build
+**/.wrangler
+.svelte-kit
+**/.svelte-kit
+build
+**/build
+dist
+**/dist
 dev-dist
+**/dev-dist
 
 # OS
 .DS_Store
+**/.DS_Store
 Thumbs.db
+**/Thumbs.db
 
 # Env
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
 !.env.test
 
-# Vite
+# Vite & Tooling
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-# Paraglide
-src/lib/paraglide
-project.inlang/cache/
-# SQLite
+**/vite.config.js.timestamp-*
+**/vite.config.ts.timestamp-*
+
+# Paraglide / Inlang
+**/paraglide
+**/project.inlang/cache/
+
+# Databases
 *.db
+**/*.db
+
+# IDE & Editor
 !.vscode/
 !.vscode/settings.json
 !.vscode/extensions.json
-
-# Agents
 .cursor/
+**/.cursor/
 
 # Generated
-/static/version.json
-
+**/static/version.json
+static/version.json

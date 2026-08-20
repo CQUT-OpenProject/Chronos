@@ -17,7 +17,49 @@ overrides:
 importers:
 
   .:
+    devDependencies:
+      '@sveltejs/kit':
+        specifier: ^2.63.0
+        version: 2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0))(typescript@7.0.2)
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^7.3.0
+        version: 7.3.0(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0))
+      '@types/node':
+        specifier: ^24
+        version: 24.13.3
+      svelte:
+        specifier: ^5.56.9
+        version: 5.56.9(@typescript-eslint/types@8.66.0)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: npm:@voidzero-dev/vite-plus-core@0.2.9
+        version: '@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2)'
+      vite-plus:
+        specifier: 'catalog:'
+        version: 0.2.9(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(esbuild@0.28.1)(jiti@2.7.0)(svelte@5.56.9(@typescript-eslint/types@8.66.0))(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2)
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))
+
+  apps/web:
     dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@chronos/plugin-codec-share':
+        specifier: workspace:*
+        version: link:../../packages/plugins/codec-share
+      '@chronos/plugin-parser-html':
+        specifier: workspace:*
+        version: link:../../packages/plugins/parser-html
+      '@chronos/plugin-source-cqut':
+        specifier: workspace:*
+        version: link:../../packages/plugins/source-cqut
+      '@chronos/ui-kit':
+        specifier: workspace:*
+        version: link:../../packages/ui-kit
       '@cqut-openproject/cas-sdk':
         specifier: github:CQUT-OpenProject/CAS-SDK#1.0.0
         version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f
@@ -130,11 +172,27 @@ importers:
 
   packages/core: {}
 
-  packages/plugins:
+  packages/plugins/codec-share:
     dependencies:
       '@chronos/core':
         specifier: workspace:*
-        version: link:../core
+        version: link:../../core
+
+  packages/plugins/parser-html:
+    dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      linkedom:
+        specifier: ^0.18.13
+        version: 0.18.13
+
+  packages/plugins/source-cqut:
+    dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../core
 
   packages/ui-kit:
     dependencies:
@@ -1546,11 +1604,6 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
-
-  '@sveltejs/acorn-typescript@1.0.11':
-    resolution: {integrity: sha512-LFuZUkjJ9iF7JZye/aG5XM0SFcQ5VyL0oVX4WJ9dc0Va3R3s0OauX1BESVCb+YN/ol8TAfqGDDAQsTG627Y5kw==}
-    peerDependencies:
-      acorn: ^8.9.0
 
   '@sveltejs/acorn-typescript@1.0.13':
     resolution: {integrity: sha512-wgKggnhZVL9Bfx1OaKKTrYY9BFRk6C8UAkQNUcIv1+llzYrIqy+RZm5HPKzn0NpEBvTVhTqB4kQyllZywsRBRQ==}
@@ -5308,10 +5361,6 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@sveltejs/acorn-typescript@1.0.11(acorn@8.18.0)':
-    dependencies:
-      acorn: 8.18.0
-
   '@sveltejs/acorn-typescript@1.0.13(acorn@8.18.0)':
     dependencies:
       acorn: 8.18.0
@@ -5333,7 +5382,7 @@ snapshots:
   '@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0))(typescript@7.0.2)':
     dependencies:
       '@standard-schema/spec': 1.1.0
-      '@sveltejs/acorn-typescript': 1.0.11(acorn@8.18.0)
+      '@sveltejs/acorn-typescript': 1.0.13(acorn@8.18.0)
       '@sveltejs/vite-plugin-svelte': 7.3.0(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0))
       '@types/cookie': 0.6.0
       acorn: 8.18.0

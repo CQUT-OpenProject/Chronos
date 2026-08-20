@@ -3,14 +3,14 @@ import { execFileSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import zlib from 'node:zlib';
 import type { Course } from '../packages/core/src/index.ts';
-import { TimetableImportSource, createTimetable } from '../src/lib/models/timetable.ts';
-import { encodeTimetableToBinary } from '../src/lib/parsers/share-link/chronos-share-binary.ts';
-import { appendCrc32 } from '../src/lib/parsers/share-link/crc32.ts';
+import { TimetableImportSource, createTimetable } from '../apps/web/src/lib/models/timetable.ts';
+import { encodeTimetableToBinary } from '../apps/web/src/lib/parsers/share-link/chronos-share-binary.ts';
+import { appendCrc32 } from '../apps/web/src/lib/parsers/share-link/crc32.ts';
 import {
 	brotliCompressShare,
 	brotliDecompressShare,
 	ensureShareLinkBrotliReady
-} from '../src/lib/parsers/share-link/share-link-brotli.ts';
+} from '../apps/web/src/lib/parsers/share-link/share-link-brotli.ts';
 import { deflateSync, inflateSync } from 'fflate';
 
 interface BenchmarkCase {
