@@ -21,7 +21,12 @@
 	} = $props();
 
 	const controller = getAppController();
-	const exportActions = $derived(controller.getSlots('export.action'));
+	const exportActions = $derived(
+		controller
+			.getSlots('export.action')
+			.slice()
+			.sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
+	);
 
 	let loading = $state(false);
 
@@ -42,26 +47,6 @@
 		URL.revokeObjectURL(url);
 	}
 
-	async function handleShareLinkExport() {
-		loading = true;
-		try {
-			const ok = await transfer.exportToClipboard();
-			if (ok) {
-				trackEvent('export_copy_link');
-				snackbar('已复制课表链接');
-				if (longLinkWarning) {
-					trackEvent('export_long_link_warning_shown');
-					snackbar('课表较大，部分应用可能截断链接内容，请注意核对导入结果');
-				}
-				return;
-			}
-			const message = transfer.state.errorMessage;
-			if (message) snackbar(message);
-		} finally {
-			loading = false;
-		}
-	}
-
 	async function handleActionExport(action: ExportActionSlotContribution) {
 		const current = controller.currentTimetable;
 		if (!current) {
@@ -71,8 +56,24 @@
 		loading = true;
 		trackEvent('export_slot_execute_attempt', { actionId: action.id });
 		try {
-			const ctx = controller.rawEngine.getPluginContext(action.id);
+			const ctx = controller.rawEngine.getPluginContext('codec-share');
 			const result = await action.export(current, ctx);
+
+			if (result.mimeType === 'application/x-chronos-share-link') {
+				const ok = await transfer.exportToClipboard();
+				if (ok) {
+					trackEvent('export_copy_link');
+					snackbar('已复制课表链接');
+					if (longLinkWarning) {
+						trackEvent('export_long_link_warning_shown');
+						snackbar('课表较大，部分应用可能截断链接内容，请注意核对导入结果');
+					}
+				} else if (transfer.state.errorMessage) {
+					snackbar(transfer.state.errorMessage);
+				}
+				return;
+			}
+
 			if (result) {
 				downloadExportResult(result);
 				trackEvent('export_slot_execute_success', { actionId: action.id });
@@ -89,15 +90,17 @@
 </script>
 
 {#snippet footer()}
-	<Button
-		variant="filled"
-		class="w-full"
-		disabled={loading || !currentTimetableName}
-		onclick={handleShareLinkExport}
-	>
-		<IosShareFill class="size-5" />
-		{loading ? '导出中…' : '复制课表分享链接'}
-	</Button>
+	{#if exportActions[0]}
+		<Button
+			variant="filled"
+			class="w-full"
+			disabled={loading || !currentTimetableName}
+			onclick={() => handleActionExport(exportActions[0]!)}
+		>
+			<IosShareFill class="size-5" />
+			{loading ? '导出中…' : resolveText(exportActions[0]!.title)}
+		</Button>
+	{/if}
 {/snippet}
 
 <FormScreenLayout {footer}>
@@ -116,11 +119,11 @@
 			{/if}
 		</div>
 
-		{#if exportActions.length > 0}
+		{#if exportActions.length > 1}
 			<section class="flex flex-col gap-3">
-				<h3 class="m3-title-medium px-1 text-on-surface">扩展导出格式</h3>
+				<h3 class="m3-title-medium px-1 text-on-surface">更多导出格式</h3>
 				<div class="flex flex-col gap-2.5">
-					{#each exportActions as action (action.id)}
+					{#each exportActions.slice(1) as action (action.id)}
 						<Card variant="outlined">
 							<div class="flex items-center justify-between p-3.5">
 								<div class="flex flex-col">

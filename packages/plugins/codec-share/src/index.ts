@@ -6,6 +6,15 @@ import type {
 	ConfigSchema
 } from '@chronos/core';
 import { createTimetable, defineSchema } from '@chronos/core';
+import {
+	decodeSharePayload,
+	encodeShareLink,
+	ensureShareLinkBrotliReady,
+	estimateShareLinkLength,
+	extractSharePayloadFromText,
+	formatShareClipboardText,
+	SHARE_LINK_WARNING_LENGTH
+} from './share-link';
 
 export interface ShareImportForm {
 	content?: string;
@@ -39,17 +48,21 @@ export function parseTimetableFromJson(jsonStr: string): Timetable {
 	return createTimetable(raw);
 }
 
+const shareLinkCodec = { estimatePayloadLength: estimateShareLinkLength };
+
 export const shareCodecPlugin: ChronosPlugin = {
 	id: 'codec-share',
 	name: () => '课表 JSON 备份与分享编解码器',
 	version: '1.0.0',
-	description: () => '支持 Chronos 课表 JSON 备份文件的导入与导出',
+	description: () => '支持 Chronos 课表 JSON 备份与压缩分享链接',
 	category: 'codec',
 	order: 30,
 	author: 'CQUT OpenProject',
 	homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 
-	apply(ctx: ChronosContext) {
+	async apply(ctx: ChronosContext) {
+		await ensureShareLinkBrotliReady();
+
 		async function doImport(inputs: Record<string, unknown>): Promise<Timetable> {
 			const rawContent =
 				(inputs.file as string | undefined) ??
@@ -62,7 +75,6 @@ export const shareCodecPlugin: ChronosPlugin = {
 			return parseTimetableFromJson(rawContent.trim());
 		}
 
-		// 1. Register import tab slot for JSON backup / pasted data
 		ctx.registerSlot('import.source.tab', {
 			id: 'share-json',
 			title: () => 'JSON 备份',
@@ -71,7 +83,28 @@ export const shareCodecPlugin: ChronosPlugin = {
 			executeImport: (inputs: Record<string, unknown>) => doImport(inputs)
 		});
 
-		// 2. Register export action slot for JSON download
+		ctx.registerSlot('import.source.tab', {
+			id: 'share-link',
+			title: () => '分享链接',
+			order: 15,
+			async executeImport(inputs: Record<string, unknown>) {
+				const content =
+					(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
+				if (!content?.trim()) {
+					throw new Error('未识别到有效的课表分享链接');
+				}
+				const payload = extractSharePayloadFromText(content);
+				if (!payload) {
+					throw new Error('未识别到有效的课表分享链接');
+				}
+				const result = await decodeSharePayload(payload);
+				if (!result.ok) {
+					throw new Error(result.errorMessage);
+				}
+				return result.value;
+			}
+		});
+
 		ctx.registerSlot('export.action', {
 			id: 'share-json',
 			title: () => 'JSON 结构化备份',
@@ -85,5 +118,23 @@ export const shareCodecPlugin: ChronosPlugin = {
 				};
 			}
 		});
+
+		ctx.registerSlot('export.action', {
+			id: 'share-link',
+			title: () => '复制课表分享链接',
+			order: 5,
+			async export(timetable: Timetable): Promise<ExportResult> {
+				const link = await encodeShareLink(timetable);
+				const clipboardText = formatShareClipboardText(timetable.name, link);
+				void shareLinkCodec.estimatePayloadLength(timetable);
+				return {
+					filename: 'share-link.txt',
+					mimeType: 'application/x-chronos-share-link',
+					content: clipboardText
+				};
+			}
+		});
+
+		void shareLinkCodec;
 	}
 };

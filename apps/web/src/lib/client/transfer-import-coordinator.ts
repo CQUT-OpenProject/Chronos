@@ -17,7 +17,7 @@ import type { ChronosEngine } from '@chronos/core';
 
 export type { TransferImportSource };
 
-export type IngestStrategy = 'share' | 'json-slot' | 'html' | 'online';
+export type IngestStrategy = 'share-link' | 'json-slot' | 'html' | 'online';
 
 export interface ClipboardGateway {
 	readText(): Promise<string>;
@@ -90,7 +90,8 @@ export interface TransferImportCoordinatorDeps {
 	engine?: ChronosEngine;
 }
 
-const SLOT_IDS: Record<Exclude<IngestStrategy, 'share'>, string> = {
+const SLOT_IDS: Record<IngestStrategy, string> = {
+	'share-link': 'share-link',
 	'json-slot': 'share-json',
 	html: 'edu-html',
 	online: 'cqut-online'
@@ -117,12 +118,12 @@ export function createTransferImportCoordinator({
 		return engine;
 	};
 
-	function getImportSlot(strategy: Exclude<IngestStrategy, 'share'>) {
+	function getImportSlot(strategy: IngestStrategy) {
 		return getEngine().slots.getSlotItem('import.source.tab', SLOT_IDS[strategy]);
 	}
 
 	async function executeSlotImport(
-		strategy: Exclude<IngestStrategy, 'share'>,
+		strategy: IngestStrategy,
 		pluginId: string,
 		inputs: Record<string, unknown>
 	): Promise<Timetable> {
@@ -146,13 +147,20 @@ export function createTransferImportCoordinator({
 				return { ok: false, errorMessage: '剪贴板内容为空' };
 			}
 
-			const result = await shareLinkCodec.decode(trimmed);
-			if (result.ok) {
-				return { ok: true, preview: result.value, source: 'SHARE_LINK' };
+			if (getImportSlot('share-link')) {
+				try {
+					const timetable = await executeSlotImport('share-link', 'codec-share', {
+						content: trimmed,
+						fileContent: trimmed
+					});
+					return { ok: true, preview: timetable, source: 'SHARE_LINK' };
+				} catch {
+					// fall through to JSON backup slot
+				}
 			}
 
 			if (!getImportSlot('json-slot')) {
-				return { ok: false, errorMessage: result.error.message || '无效的课表分享内容' };
+				return { ok: false, errorMessage: '无效的课表分享内容' };
 			}
 
 			const timetable = await executeSlotImport('json-slot', 'codec-share', {
@@ -164,7 +172,7 @@ export function createTransferImportCoordinator({
 				return { ok: true, preview: timetable, source: 'SHARE_LINK' };
 			}
 
-			return { ok: false, errorMessage: result.error.message || '无效的课表分享内容' };
+			return { ok: false, errorMessage: '无效的课表分享内容' };
 		} catch (err) {
 			const message = err instanceof Error ? err.message : '无法读取剪贴板，请检查浏览器权限';
 			if (message.startsWith('缺少导入槽位')) {
@@ -349,15 +357,19 @@ export function createTransferImportCoordinator({
 		if (!current) {
 			return { ok: false, errorMessage: '当前没有可导出的课表' };
 		}
-		const result = await shareLinkCodec.encode(current);
-		if (!result.ok) {
-			return { ok: false, errorMessage: result.error.message };
+		const exportSlot = getEngine().slots.getSlotItem('export.action', 'share-link');
+		if (!exportSlot) {
+			return { ok: false, errorMessage: '分享链接导出不可用' };
 		}
 		try {
-			await clipboard.writeText(result.value);
+			const ctx = getEngine().getPluginContext('codec-share');
+			const result = await exportSlot.export(current, ctx);
+			const text = typeof result.content === 'string' ? result.content : '';
+			await clipboard.writeText(text);
 			return { ok: true, statusMessage: '已复制课表链接' };
-		} catch {
-			return { ok: false, errorMessage: '无法写入剪贴板，请检查浏览器权限' };
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : '课表导出失败';
+			return { ok: false, errorMessage: msg };
 		}
 	}
 
@@ -366,8 +378,7 @@ export function createTransferImportCoordinator({
 		if (!current) {
 			return { timetableName: null, longLinkWarning: false };
 		}
-		const encoded = await shareLinkCodec.encode(current);
-		const length = encoded.ok ? encoded.value.length : 0;
+		const length = await shareLinkCodec.estimatePayloadLength(current);
 		return {
 			timetableName: current.name,
 			longLinkWarning: length > SHARE_LINK_WARNING_LENGTH

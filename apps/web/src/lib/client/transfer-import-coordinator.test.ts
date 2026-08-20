@@ -195,16 +195,24 @@ describe('createTransferImportCoordinator', () => {
 
 	it('reads clipboard and previews share link text', async () => {
 		const mockStorage: Record<string, string> = {};
-		const decodeMock = vi.fn().mockResolvedValue(success({ name: 'From Share Link' }));
-		const encodeMock = vi.fn();
-		const mockShareLinkCodec = {
-			decode: decodeMock,
-			encode: encodeMock
-		} as unknown as ChronosTimetableShareLinkCodec;
+		const timetable = createTimetable({ name: 'From Share Link', courses: [createCourse()] });
+		const mockEngine = {
+			slots: {
+				getSlotItem: vi.fn((slot: string, id: string) => {
+					if (slot === 'import.source.tab' && id === 'share-link') {
+						return {
+							executeImport: vi.fn().mockResolvedValue(timetable)
+						};
+					}
+					return undefined;
+				})
+			},
+			getPluginContext: vi.fn()
+		} as unknown as ChronosEngine;
 
 		const coordinator = createTransferImportCoordinator({
 			credentialVault: stubVault(),
-			shareLinkCodec: mockShareLinkCodec,
+			engine: mockEngine,
 			previewPersistence: createSessionPreviewPersistence({
 				getItem: (key) => mockStorage[key] ?? null,
 				setItem: (key, value) => {
@@ -223,30 +231,39 @@ describe('createTransferImportCoordinator', () => {
 		const result = await coordinator.previewFromClipboard();
 		expect(result).toEqual({
 			ok: true,
-			preview: { name: 'From Share Link' },
+			preview: timetable,
 			source: 'SHARE_LINK'
 		});
-		expect(decodeMock).toHaveBeenCalledWith('https://chronos.test/s#1.abc');
 	});
 
 	it('exports share link to clipboard', async () => {
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		const clipboardText = formatShareClipboardText('知行理工', 'https://chronos.test/s#1.abc');
-		const encodeMock = vi.fn().mockResolvedValue(success(clipboardText));
-		const mockShareLinkCodec = {
-			decode: vi.fn(),
-			encode: encodeMock
-		} as unknown as ChronosTimetableShareLinkCodec;
+		const currentTimetable = createTimetable({ name: '知行理工', courses: [createCourse()] });
 
 		const mockEngine = {
 			state: {
-				currentTimetable: { name: '知行理工' }
-			}
+				currentTimetable
+			},
+			slots: {
+				getSlotItem: vi.fn((slot: string, id: string) => {
+					if (slot === 'export.action' && id === 'share-link') {
+						return {
+							export: vi.fn().mockResolvedValue({
+								filename: 'share-link.txt',
+								mimeType: 'application/x-chronos-share-link',
+								content: clipboardText
+							})
+						};
+					}
+					return undefined;
+				})
+			},
+			getPluginContext: vi.fn()
 		} as unknown as ChronosEngine;
 
 		const coordinator = createTransferImportCoordinator({
 			credentialVault: stubVault(),
-			shareLinkCodec: mockShareLinkCodec,
 			engine: mockEngine,
 			clipboard: {
 				readText: async () => '',

@@ -10,9 +10,15 @@
 			"types": "./src/index.ts",
 			"import": "./src/index.ts",
 			"default": "./src/index.ts"
+		},
+		"./share-link": {
+			"types": "./src/share-link/index.ts",
+			"import": "./src/share-link/index.ts",
+			"default": "./src/share-link/index.ts"
 		}
 	},
 	"dependencies": {
-		"@chronos/core": "workspace:*"
+		"@chronos/core": "workspace:*",
+		"brotli-wasm": "^3.0.1"
 	}
 }

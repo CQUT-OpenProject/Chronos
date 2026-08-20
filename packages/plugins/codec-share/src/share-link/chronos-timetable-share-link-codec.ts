@@ -7,7 +7,7 @@ import {
 	estimateShareLinkLength,
 	extractSharePayloadFromText,
 	formatShareClipboardText
-} from '../../../../../../packages/plugins/codec-share/src/share-link/index.ts';
+} from './chronos-share-link-codec';
 
 export class ChronosTimetableShareLinkCodec {
 	async decode(content: string): Promise<AppResult<Timetable>> {
