@@ -109,6 +109,20 @@ describe('ReactiveChronosController', () => {
 		controller.dispose();
 	});
 
+	it('updates controller userPreferences when engine.init() completes after controller instantiation', async () => {
+		const uninitEngine = new ChronosEngine({ env });
+		await env.storage.savePreferences({ timetableLayoutMode: 'compact' });
+
+		const controller = new ReactiveChronosController(uninitEngine);
+		expect(controller.userPreferences?.timetableLayoutMode).toBe('fixed');
+
+		await uninitEngine.init();
+		expect(controller.userPreferences?.timetableLayoutMode).toBe('compact');
+
+		controller.dispose();
+		uninitEngine.dispose();
+	});
+
 	it('reactively tracks timetable changes and action dispatch', async () => {
 		const controller = new ReactiveChronosController(engine);
 

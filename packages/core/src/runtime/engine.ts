@@ -269,6 +269,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			this.events.emit('timetable:loaded', { timetable: this._currentTimetable });
 		}
 		this.events.emit('timetables:updated', { timetables: this._timetables });
+		this.events.emit('preferences:updated', { preferences: this._userPreferences });
 
 		if (storage.onChanged) {
 			this.storageSubscription = storage.onChanged(this.handleStorageChange.bind(this));

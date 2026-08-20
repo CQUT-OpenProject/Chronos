@@ -85,20 +85,27 @@ function createMockEnv() {
 }
 
 describe('ChronosEngine in @chronos/core', () => {
-	it('initializes and loads active timetable from storage', async () => {
+	it('initializes and loads active timetable and preferences from storage', async () => {
 		const { env, timetables } = createMockEnv();
 		const tt = createTimetable({ id: 't1', name: '我的课表' });
 		timetables.set('t1', tt);
 		await env.storage.setActiveTimetableId('t1');
+		await env.storage.savePreferences({ timetableLayoutMode: 'compact' });
 
 		const engine = new ChronosEngine({ env });
 		const onLoaded = vi.fn();
+		const onPrefUpdated = vi.fn();
 		engine.on('timetable:loaded', onLoaded);
+		engine.on('preferences:updated', onPrefUpdated);
 
 		await engine.init();
 
 		expect(engine.state.currentTimetable?.id).toBe('t1');
+		expect(engine.state.userPreferences.timetableLayoutMode).toBe('compact');
 		expect(onLoaded).toHaveBeenCalledWith({ timetable: tt });
+		expect(onPrefUpdated).toHaveBeenCalledWith({
+			preferences: expect.objectContaining({ timetableLayoutMode: 'compact' })
+		});
 	});
 
 	it('creates and switches timetable', async () => {
