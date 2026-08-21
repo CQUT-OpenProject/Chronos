@@ -1,9 +1,15 @@
 import type { Course } from '../domain/course';
 import type { CoursePaletteEntry } from '../engine/palette';
 import type { LocalizedText } from './context';
-import type { DesignTokens, CoursePaint, CourseBadge } from './slots';
+import type { DesignTokens, CoursePaint } from './slots';
 
-export type { DesignTokens, CoursePaint, CourseBadge, ExportResult } from './slots';
+export type {
+	DesignTokens,
+	CoursePaint,
+	CourseBadge,
+	CourseBadgeSlotContribution,
+	ExportResult
+} from './slots';
 
 // 1. Theme Contribution
 export interface ThemeContribution {
@@ -25,13 +31,4 @@ export interface ThemeContribution {
 	 * Profile plugins can implement this directly; online-installed plugins should provide static palette arrays.
 	 */
 	resolveCoursePaint?(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint;
-}
-
-// 2. Course Badge Contribution
-export interface CourseBadgeContribution {
-	readonly id: string;
-	/** Synchronously generate badge (in-process plugins) */
-	getBadge?(course: Course): CourseBadge | CourseBadge[] | null;
-	/** Asynchronously project badges for batch processing (online-installed plugins) */
-	projectBadges?(courses: Course[]): Promise<Record<string, CourseBadge[]>>;
 }

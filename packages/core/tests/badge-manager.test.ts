@@ -1,15 +1,15 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { BadgeManager } from '../src/runtime/badge-manager';
 import { createCourse } from '../src/domain/course';
-import type { CourseBadge, CourseBadgeContribution } from '../src/types/contributions';
+import type { CourseBadgeSlotContribution } from '../src/types/slots';
 
 describe('BadgeManager in @chronos/core', () => {
-	it('calculates sync badges and async projected badges', async () => {
+	it('calculates badges from registered slot contributions', async () => {
 		const onUpdated = vi.fn();
 		const manager = new BadgeManager(onUpdated);
 
-		const syncBadgeProvider: CourseBadgeContribution = {
-			id: 'sync-badge',
+		const labBadgeProvider: CourseBadgeSlotContribution = {
+			id: 'lab-badge',
 			getBadge(course) {
 				if (course.name.includes('实验')) {
 					return { id: 'lab', text: '实验课', colorScheme: 'warning' };
@@ -18,21 +18,18 @@ describe('BadgeManager in @chronos/core', () => {
 			}
 		};
 
-		const asyncBadgeProvider: CourseBadgeContribution = {
-			id: 'async-badge',
-			async projectBadges(courses) {
-				const result: Record<string, CourseBadge[]> = {};
-				for (const c of courses) {
-					if (c.teacher.includes('教授')) {
-						result[c.id] = [{ id: 'prof', text: '教授授课', colorScheme: 'primary' }];
-					}
+		const profBadgeProvider: CourseBadgeSlotContribution = {
+			id: 'prof-badge',
+			getBadge(course) {
+				if (course.teacher.includes('教授')) {
+					return { id: 'prof', text: '教授授课', colorScheme: 'primary' };
 				}
-				return result;
+				return null;
 			}
 		};
 
-		manager.registerCourseBadge(syncBadgeProvider);
-		manager.registerCourseBadge(asyncBadgeProvider);
+		manager.registerCourseBadge(labBadgeProvider);
+		manager.registerCourseBadge(profBadgeProvider);
 
 		const courses = [
 			createCourse({
@@ -71,7 +68,7 @@ describe('BadgeManager in @chronos/core', () => {
 
 	it('unregisters badge provider', async () => {
 		const manager = new BadgeManager();
-		const provider: CourseBadgeContribution = {
+		const provider: CourseBadgeSlotContribution = {
 			id: 'temp',
 			getBadge: () => ({ id: 't', text: '临时' })
 		};

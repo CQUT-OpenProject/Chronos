@@ -178,4 +178,22 @@ describe('ScopedContext in @chronos/core', () => {
 		expect(host.slots.get('mine.item').length).toBe(0);
 		expect(callOrder).toEqual(['last-registered', 'first-registered']);
 	});
+
+	it('routes timetable.cell.badge slot registration to BadgeManager and unregisters upon disposal', () => {
+		const host = createMockHost();
+		const ctx = new ScopedContext('plugin-a', host);
+
+		const handle = ctx.registerSlot('timetable.cell.badge', {
+			id: 'badge-test',
+			getBadge: () => ({ id: 'b1', text: 'Badge 1' })
+		});
+
+		expect(host.slots.get('timetable.cell.badge').length).toBe(1);
+		expect(host.badges.getBadges().length).toBe(1);
+
+		handle.dispose();
+
+		expect(host.slots.get('timetable.cell.badge').length).toBe(0);
+		expect(host.badges.getBadges().length).toBe(0);
+	});
 });

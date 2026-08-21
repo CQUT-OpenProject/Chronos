@@ -151,6 +151,18 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 				}
 			});
 		}
+		if (slotName === 'timetable.cell.badge' && this.host.badges) {
+			const badgeDisp = this.host.badges.registerCourseBadge(
+				contribution as unknown as import('../types/slots').CourseBadgeSlotContribution,
+				this
+			);
+			return this.track({
+				dispose: () => {
+					badgeDisp.dispose();
+					slotDisp.dispose();
+				}
+			});
+		}
 		return this.track(slotDisp);
 	}
 

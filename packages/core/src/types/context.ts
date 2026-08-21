@@ -175,7 +175,4 @@ export interface ChronosEvents {
 	'export:after': { exporterId: string; result: ExportResult };
 	'plugin:loaded': { pluginId: string };
 	'plugin:unloaded': { pluginId: string };
-	'wallpaper:set': { blob: Blob | null };
-	'wallpaper:changed': { uri: string | null };
-	'wallpaper:hydrate': void;
 }
