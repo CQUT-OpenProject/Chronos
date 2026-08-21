@@ -8,6 +8,7 @@
 		description?: string;
 		value?: unknown;
 		onFileSelect?: (content: string) => void;
+		onValueChange?: (val: unknown) => void;
 	}
 
 	let {
@@ -18,7 +19,8 @@
 		required = false,
 		description = '',
 		value = $bindable(),
-		onFileSelect
+		onFileSelect,
+		onValueChange
 	}: Props = $props();
 
 	const fallbackId = `input-file-${Math.random().toString(36).slice(2, 9)}`;
@@ -40,12 +42,15 @@
 
 		if (isImageOrBinary) {
 			const buffer = await file.arrayBuffer();
-			value = new Uint8Array(buffer);
+			const bytes = new Uint8Array(buffer);
+			value = bytes;
 			onFileSelect?.(file.name);
+			onValueChange?.(bytes);
 		} else {
 			const text = await file.text();
 			value = text;
 			onFileSelect?.(text);
+			onValueChange?.(text);
 		}
 	}
 </script>

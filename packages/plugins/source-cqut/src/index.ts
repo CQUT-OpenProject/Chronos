@@ -48,14 +48,14 @@ export interface CqutImportForm {
 export const cqutImportSchema = defineSchema<CqutImportForm>({
 	username: {
 		type: 'string',
-		title: () => '学号 / 账号',
-		placeholder: () => '请输入 CQUT 学号',
+		title: () => '账号',
+		placeholder: () => '请输入工号 / 学号',
 		required: true
 	},
 	password: {
 		type: 'password',
-		title: () => '统一认证密码',
-		placeholder: () => '请输入统一身份认证密码',
+		title: () => '密码',
+		placeholder: () => '请输入密码',
 		required: true
 	},
 	saveCredentials: {

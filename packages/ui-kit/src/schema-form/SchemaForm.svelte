@@ -19,6 +19,13 @@
 	}
 
 	const entries = $derived(Object.entries(schema) as Array<[string, SchemaField<unknown>]>);
+
+	function updateField(key: string, nextValue: unknown) {
+		value = {
+			...value,
+			[key]: nextValue
+		};
+	}
 </script>
 
 <div class="flex flex-col gap-4">
@@ -32,7 +39,8 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					bind:value={value[key] as string}
+					value={value[key] as string}
+					oninput={(e) => updateField(key, e.currentTarget.value)}
 				/>
 			{:else if field.type === 'password'}
 				<TextField
@@ -43,7 +51,8 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					bind:value={value[key] as string}
+					value={value[key] as string}
+					oninput={(e) => updateField(key, e.currentTarget.value)}
 				/>
 			{:else if field.type === 'number'}
 				<TextField
@@ -54,7 +63,8 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					bind:value={value[key] as number}
+					value={value[key] as number}
+					oninput={(e) => updateField(key, Number(e.currentTarget.value))}
 				/>
 			{:else if field.type === 'boolean'}
 				<Checkbox
@@ -62,7 +72,8 @@
 					label={resolveText(field.title)}
 					description={resolveText(field.description)}
 					{disabled}
-					bind:checked={value[key] as boolean}
+					checked={Boolean(value[key])}
+					onchange={(e) => updateField(key, e.currentTarget.checked)}
 				/>
 			{:else if field.type === 'select'}
 				<SelectField
@@ -75,7 +86,8 @@
 						value: opt.value
 					}))}
 					{disabled}
-					bind:value={value[key] as string | number}
+					value={value[key] as string | number}
+					onchange={(e) => updateField(key, e.currentTarget.value)}
 				/>
 			{:else if field.type === 'file'}
 				<FileField
@@ -85,7 +97,8 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					bind:value={value[key]}
+					value={value[key]}
+					onValueChange={(val) => updateField(key, val)}
 				/>
 			{:else if field.type === 'date'}
 				<TextField
@@ -96,7 +109,8 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					bind:value={value[key] as string}
+					value={value[key] as string}
+					oninput={(e) => updateField(key, e.currentTarget.value)}
 				/>
 			{/if}
 		{/if}

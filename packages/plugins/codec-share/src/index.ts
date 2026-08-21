@@ -17,8 +17,7 @@ export const shareLinkImportSchema = defineSchema<ShareLinkImportForm>({
 	content: {
 		type: 'string',
 		title: () => '分享链接或口令',
-		placeholder: () => '粘贴课表分享链接或口令文本',
-		description: () => '支持直接粘贴完整链接或口令文本',
+		placeholder: () => '粘贴课表分享链接或完整口令',
 		required: true
 	}
 });

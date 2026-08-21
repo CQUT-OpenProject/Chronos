@@ -5,9 +5,17 @@
 		description?: string;
 		checked?: boolean;
 		disabled?: boolean;
+		onchange?: (e: Event & { currentTarget: HTMLInputElement }) => void;
 	}
 
-	let { id, label, description = '', checked = $bindable(), disabled = false }: Props = $props();
+	let {
+		id,
+		label,
+		description = '',
+		checked = $bindable(),
+		disabled = false,
+		onchange
+	}: Props = $props();
 
 	const fallbackId = `input-check-${Math.random().toString(36).slice(2, 9)}`;
 	const inputId = $derived(id || fallbackId);
@@ -19,7 +27,10 @@
 		type="checkbox"
 		{disabled}
 		checked={Boolean(checked)}
-		onchange={(e) => (checked = e.currentTarget.checked)}
+		onchange={(e) => {
+			checked = e.currentTarget.checked;
+			onchange?.(e);
+		}}
 		class="mt-1 size-4.5 rounded border-outline/40 text-primary accent-primary transition focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
 	/>
 	<div class="flex flex-col">
