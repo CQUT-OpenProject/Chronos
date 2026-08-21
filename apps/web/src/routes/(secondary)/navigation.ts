@@ -2,6 +2,7 @@ export const secondaryRouteRoots = [
 	'/timetable',
 	'/manage-timetables',
 	'/transfer',
+	'/wallpaper',
 	'/display-settings',
 	'/feedback-settings',
 	'/plugins',

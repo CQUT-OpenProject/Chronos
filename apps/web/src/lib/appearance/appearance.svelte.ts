@@ -1,4 +1,5 @@
 import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from '@chronos/core';
+import { getAppEngine } from '$lib/services/app-engine';
 import {
 	applyAppearance,
 	type ApplyAppearanceInput,
@@ -9,17 +10,27 @@ export function createAppearance() {
 	let coursePalette = $state.raw<readonly CoursePaletteEntry[]>(COURSE_PALETTE_ENTRIES);
 	let wallpaperModule: WallpaperThemeAdapter | null = null;
 
+	async function resolveWallpaperModule(): Promise<WallpaperThemeAdapter | null> {
+		const engine = getAppEngine();
+		if (!engine.themes.getTheme('wallpaper')) {
+			return null;
+		}
+		wallpaperModule ??= await import('@chronos/plugin-wallpaper/wallpaper-theme');
+		return wallpaperModule;
+	}
+
 	async function apply(input: ApplyAppearanceInput, signal?: AbortSignal) {
 		if (typeof document === 'undefined') return;
 
-		if (input.paletteMode === 'wallpaper' || input.activeThemeId === 'wallpaper') {
-			wallpaperModule ??= await import('@chronos/plugin-wallpaper/wallpaper-theme');
-		}
+		const wallpaper =
+			input.paletteMode === 'wallpaper' || input.activeThemeId === 'wallpaper'
+				? await resolveWallpaperModule()
+				: null;
 
 		try {
 			const result = await applyAppearance(input, {
 				target: document.documentElement,
-				wallpaper: wallpaperModule ?? undefined,
+				wallpaper: wallpaper ?? undefined,
 				signal
 			});
 			if (signal?.aborted) return;
@@ -30,8 +41,7 @@ export function createAppearance() {
 		}
 	}
 
-	function reset() {
-		coursePalette = COURSE_PALETTE_ENTRIES;
+	function destroy() {
 		if (typeof document !== 'undefined') {
 			wallpaperModule?.clearWallpaperTheme(document.documentElement);
 		}
@@ -42,8 +52,6 @@ export function createAppearance() {
 			return coursePalette;
 		},
 		apply,
-		reset
+		destroy
 	};
 }
-
-export type AppearanceController = ReturnType<typeof createAppearance>;

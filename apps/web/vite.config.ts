@@ -82,7 +82,13 @@ export default defineConfig(({ mode }) => {
 					)
 				},
 				{
-					find: '@chronos/plugin-wallpaper',
+					find: '@chronos/plugin-wallpaper/wallpaper-theme',
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/wallpaper/src/wallpaper-theme.ts', import.meta.url)
+					)
+				},
+				{
+					find: /^@chronos\/plugin-wallpaper$/,
 					replacement: fileURLToPath(
 						new URL('../../packages/plugins/wallpaper/src/index.ts', import.meta.url)
 					)
@@ -139,6 +145,8 @@ export default defineConfig(({ mode }) => {
 						'../../packages/plugins/codec-share/src/share-link/index.ts',
 					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
 					'@chronos/plugin-theme-yumemita': '../../packages/plugins/theme-yumemita/src/index.ts',
+					'@chronos/plugin-wallpaper/wallpaper-theme':
+						'../../packages/plugins/wallpaper/src/wallpaper-theme.ts',
 					'@chronos/plugin-wallpaper': '../../packages/plugins/wallpaper/src/index.ts'
 				},
 				compilerOptions: {

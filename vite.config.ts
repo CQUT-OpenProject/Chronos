@@ -54,6 +54,9 @@ export default defineConfig({
 			'@chronos/plugin-theme-yumemita': fileURLToPath(
 				new URL('./packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
 			),
+			'@chronos/plugin-wallpaper/wallpaper-theme': fileURLToPath(
+				new URL('./packages/plugins/wallpaper/src/wallpaper-theme.ts', import.meta.url)
+			),
 			'@chronos/plugin-wallpaper': fileURLToPath(
 				new URL('./packages/plugins/wallpaper/src/index.ts', import.meta.url)
 			)

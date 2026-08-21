@@ -10,7 +10,7 @@ type WallpaperChangeListener = (uri: string | null) => void;
 
 let storageRef: IStorageService | null = null;
 let wallpaperUri = $state<string | null>(null);
-let changeEmitter: WallpaperChangeListener | null = null;
+let changeHandler: WallpaperChangeListener | null = null;
 const listeners = new Set<WallpaperChangeListener>();
 
 function notify(uri: string | null) {
@@ -22,17 +22,14 @@ function notify(uri: string | null) {
 			console.error('[WallpaperRuntime] listener error:', err);
 		}
 	}
-	changeEmitter?.(uri);
+	changeHandler?.(uri);
 }
 
-export function bindWallpaperChangeEmitter(emitter: WallpaperChangeListener | null): void {
-	changeEmitter = emitter;
-}
-
-export function subscribeWallpaperUri(listener: WallpaperChangeListener): () => void {
-	listeners.add(listener);
-	listener(wallpaperUri);
-	return () => listeners.delete(listener);
+export function setWallpaperChangeHandler(handler: WallpaperChangeListener | null): void {
+	changeHandler = handler;
+	if (handler) {
+		handler(wallpaperUri);
+	}
 }
 
 export function getWallpaperRuntime() {
@@ -78,5 +75,6 @@ export function initWallpaperRuntime(storage: IStorageService): void {
 
 export function resetWallpaperRuntime(): void {
 	storageRef = null;
+	changeHandler = null;
 	notify(null);
 }

@@ -1,6 +1,5 @@
 import { ChronosEngine, ProfileManager } from '@chronos/core';
 import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
-import { bindWallpaperChangeEmitter } from '@chronos/plugin-wallpaper';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
 import {
@@ -48,10 +47,6 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 	});
 
 	engine.themes.registerTheme(m3DefaultTheme);
-
-	bindWallpaperChangeEmitter((uri) => {
-		engine.events.emit('wallpaper:changed', { uri });
-	});
 
 	return engine;
 }

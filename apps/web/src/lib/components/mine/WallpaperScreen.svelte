@@ -1,30 +1,25 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import { TimetablePreviewGrid, TimetableWallpaperLayer } from '@chronos/ui-kit';
-	import {
-		AcademicCalendarService,
-		computeTimetableWeekLayout,
-		COURSE_PALETTE_ENTRIES,
-		resolveCoursePalette,
-		todayIsoDate
-	} from '@chronos/core';
-	import { getWallpaperRuntime } from './runtime.svelte';
+	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { trackEvent } from '$lib/client/analytics';
+	import TimetableGrid from '$lib/components/timetable/TimetableGrid.svelte';
+	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import { LayersClearFill, PhotoLibraryFill } from '$lib/icons';
+	import { AcademicCalendarService, computeTimetableWeekLayout, todayIsoDate } from '@chronos/core';
 
-	interface Props {
-		controller: ReactiveChronosController;
-		pluginId?: string;
-	}
+	let {
+		shell
+	}: {
+		shell: AppShellController;
+	} = $props();
 
-	let { controller }: Props = $props();
-
-	const runtime = getWallpaperRuntime();
 	const calendarService = new AcademicCalendarService();
 
-	const timetable = $derived(controller.currentTimetable);
-	const wallpaperUri = $derived(runtime.uri);
-	const hasWallpaper = $derived(runtime.hasWallpaper);
-	const paletteMode = $derived(controller.userPreferences?.paletteMode ?? 'vibrant');
-	const coursePalette = $derived(resolveCoursePalette(paletteMode, COURSE_PALETTE_ENTRIES));
+	const hasWallpaper = $derived(shell.state.hasWallpaper);
+	const wallpaperUri = $derived(shell.state.wallpaperUri);
+	const coursePalette = $derived(shell.appearance.coursePalette);
+	const timetable = $derived(shell.controller.currentTimetable);
 	const today = $derived(todayIsoDate());
 	const academicWeek = $derived(
 		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
@@ -35,7 +30,8 @@
 					timetable,
 					displayedWeek: academicWeek,
 					todayIso: today,
-					academicCalendarService: calendarService
+					academicCalendarService: calendarService,
+					coursePalette
 				})
 			: null
 	);
@@ -43,7 +39,6 @@
 	const courseDisplayModels = $derived(preview?.courseDisplayModels ?? []);
 
 	let fileInput: HTMLInputElement | undefined = $state();
-	let errorMessage = $state<string | null>(null);
 
 	function onPickWallpaper() {
 		fileInput?.click();
@@ -53,11 +48,11 @@
 		const input = event.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
-		errorMessage = null;
+		trackEvent('wallpaper_set');
 		try {
-			await runtime.setWallpaper(file);
+			await shell.setWallpaper(file);
 		} catch (error) {
-			errorMessage = resolveWallpaperImportError(error);
+			snackbar(resolveWallpaperImportError(error));
 		} finally {
 			input.value = '';
 		}
@@ -71,8 +66,8 @@
 	}
 
 	async function clearWallpaper() {
-		errorMessage = null;
-		await runtime.setWallpaper(null);
+		trackEvent('wallpaper_clear');
+		await shell.setWallpaper(null);
 	}
 </script>
 
@@ -86,16 +81,23 @@
 	/>
 
 	{#if hasWallpaper && timetable && gridModel}
-		<div class="min-h-0 flex-1">
-			<TimetableWallpaperLayer {wallpaperUri}>
-				<TimetablePreviewGrid
+		<div
+			class="relative min-h-0 flex-1 overflow-hidden"
+			style:background-image={wallpaperUri ? `url('${wallpaperUri}')` : undefined}
+			style:background-size="cover"
+			style:background-position="center"
+		>
+			<div class="absolute inset-0">
+				<TimetableGrid
 					displayedWeek={academicWeek}
+					isCurrentWeek={true}
 					{gridModel}
 					{courseDisplayModels}
-					{coursePalette}
 					hasWallpaper={true}
+					{coursePalette}
+					paletteCourses={timetable.courses}
 				/>
-			</TimetableWallpaperLayer>
+			</div>
 		</div>
 	{:else}
 		<p
@@ -105,28 +107,18 @@
 		</p>
 	{/if}
 
-	{#if errorMessage}
-		<p class="m3-body-small px-4 pb-2 text-center text-error">{errorMessage}</p>
-	{/if}
-
-	<div class="shrink-0 border-t border-outline/20 bg-surface p-4">
+	<ActionBottomBar>
 		<div class="flex w-full gap-3">
 			{#if hasWallpaper}
-				<button
-					type="button"
-					class="m3-label-large flex-1 rounded-full border border-outline px-4 py-3 text-on-surface"
-					onclick={clearWallpaper}
-				>
+				<Button variant="outlined" class="w-full flex-1" onclick={clearWallpaper}>
+					<LayersClearFill class="size-5" />
 					清除壁纸
-				</button>
+				</Button>
 			{/if}
-			<button
-				type="button"
-				class="m3-label-large flex-1 rounded-full bg-primary px-4 py-3 text-on-primary"
-				onclick={onPickWallpaper}
-			>
+			<Button variant="filled" class="w-full flex-1" onclick={onPickWallpaper}>
+				<PhotoLibraryFill class="size-5" />
 				{hasWallpaper ? '重新选择' : '选择壁纸'}
-			</button>
+			</Button>
 		</div>
-	</div>
+	</ActionBottomBar>
 </div>

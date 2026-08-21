@@ -33,6 +33,16 @@ export class OfficialPluginService implements Disposable {
 		await this.migrateLegacyStorage();
 		this.installedCache = (await this.loadInstalledFromStorage()) || [];
 
+		const hasBuiltinOverlap = this.installedCache.some((record) =>
+			this.engine.isPluginLoaded(record.manifest.id)
+		);
+		if (hasBuiltinOverlap) {
+			this.installedCache = this.installedCache.filter(
+				(record) => !this.engine.isPluginLoaded(record.manifest.id)
+			);
+			await this.saveInstalledToStorage();
+		}
+
 		for (const record of this.installedCache) {
 			if (record.enabled) {
 				try {
@@ -227,17 +237,6 @@ export class OfficialPluginService implements Disposable {
 
 	async getPluginConfig<T extends Record<string, unknown>>(pluginId: string): Promise<T | null> {
 		return this.engine.storage.getPluginData<T>(pluginId, '__config__');
-	}
-
-	async updatePluginConfig<T extends Record<string, unknown>>(
-		pluginId: string,
-		patch: Partial<T>
-	): Promise<void> {
-		const current = (await this.getPluginConfig<T>(pluginId)) || ({} as T);
-		const updated = { ...current, ...patch };
-		await this.engine.storage.setPluginData(pluginId, '__config__', updated);
-		this.engine.events.emit('config:changed', { pluginId, config: updated });
-		this.engine.actions.notify('插件设置已保存', 'info');
 	}
 
 	private async loadPluginInstance(manifest: PluginManifest, code: string): Promise<Disposable> {

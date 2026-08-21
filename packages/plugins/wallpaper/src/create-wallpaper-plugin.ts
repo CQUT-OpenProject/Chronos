@@ -1,12 +1,12 @@
-import type { ChronosContext, ChronosPlugin, ThemeContribution } from '@chronos/core';
+import type { ChronosPlugin, ThemeContribution } from '@chronos/core';
 import { defineSchema, IStorageService } from '@chronos/core';
-import { deleteWallpaperBlob, WALLPAPER_PLUGIN_ID } from './storage';
 import {
-	bindWallpaperChangeEmitter,
 	getWallpaperRuntime,
 	initWallpaperRuntime,
-	resetWallpaperRuntime
+	resetWallpaperRuntime,
+	setWallpaperChangeHandler
 } from './runtime.svelte';
+import { WALLPAPER_PLUGIN_ID } from './storage';
 
 export const WALLPAPER_THEME_ID = 'wallpaper';
 
@@ -41,10 +41,7 @@ export interface CreateWallpaperPluginOptions {
 	screenComponent?: unknown;
 }
 
-async function syncConfigWallpaper(
-	ctx: ChronosContext<{ wallpaper?: Uint8Array | string }>,
-	config: Record<string, unknown>
-): Promise<void> {
+async function syncConfigWallpaper(config: Record<string, unknown>): Promise<void> {
 	const wallpaper = config.wallpaper;
 	const runtime = getWallpaperRuntime();
 
@@ -60,7 +57,6 @@ async function syncConfigWallpaper(
 
 export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}): ChronosPlugin {
 	const { screenComponent } = options;
-	let storageService: IStorageService | null = null;
 
 	return {
 		id: WALLPAPER_PLUGIN_ID,
@@ -74,24 +70,36 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 		configSchema: wallpaperScreenSchema,
 		defaultConfig: {},
 
-		apply(ctx) {
-			storageService = ctx.service(IStorageService);
-			initWallpaperRuntime(storageService);
+		async apply(ctx) {
+			initWallpaperRuntime(ctx.service(IStorageService));
+
+			setWallpaperChangeHandler((uri) => {
+				ctx.emit('wallpaper:changed', { uri });
+			});
+
+			ctx.on('wallpaper:set', async ({ blob }) => {
+				await getWallpaperRuntime().setWallpaper(blob);
+			});
+
+			ctx.on('wallpaper:hydrate', () => {
+				ctx.emit('wallpaper:changed', { uri: getWallpaperRuntime().uri });
+			});
 
 			ctx.on('config:changed', async ({ pluginId, config }) => {
 				if (pluginId !== WALLPAPER_PLUGIN_ID) return;
-				await syncConfigWallpaper(ctx, config);
+				await syncConfigWallpaper(config);
 			});
 
-			void getWallpaperRuntime().syncFromStorage(true);
+			await getWallpaperRuntime().syncFromStorage(true);
 
 			ctx.registerSlot('mine.item', {
 				id: 'wallpaper',
 				sectionId: 'appearance-feedback',
 				title: () => '设置课表壁纸',
-				href: '/plugins/tool-wallpaper',
+				href: '/wallpaper',
 				icon: 'wallpaper',
 				iconTone: 'primary',
+				keywords: ['壁纸', '背景', '图片', '自定义', '封面'],
 				order: 30
 			});
 
@@ -106,12 +114,8 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 		},
 
 		async dispose() {
-			if (storageService) {
-				await deleteWallpaperBlob(storageService, WALLPAPER_PLUGIN_ID);
-			}
+			setWallpaperChangeHandler(null);
 			resetWallpaperRuntime();
-			storageService = null;
-			bindWallpaperChangeEmitter(null);
 		}
 	};
 }

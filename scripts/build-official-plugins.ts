@@ -16,16 +16,6 @@ const plugins = [
 		type: 'theme' as const,
 		name: { 'zh-CN': 'YUMEMITA', en: 'YUMEMITA' },
 		description: { 'zh-CN': 'YUMEMITA 主题', en: 'YUMEMITA theme' }
-	},
-	{
-		id: 'tool-wallpaper',
-		entry: resolve(root, 'packages/plugins/wallpaper/bundle/entry.ts'),
-		type: 'tool' as const,
-		name: { 'zh-CN': '课表壁纸', en: 'Timetable Wallpaper' },
-		description: {
-			'zh-CN': '自定义课表背景壁纸与主题取色',
-			en: 'Customize timetable background wallpaper and theme palette'
-		}
 	}
 ];
 

@@ -186,4 +186,46 @@ describe('OfficialPluginService', () => {
 		await service.uninstall('test-plugin');
 		expect(engine.isPluginLoaded('test-plugin')).toBe(false);
 	});
+
+	it('skips init reload for profile-builtin plugins already loaded', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'iife',
+			minEngineVersion: '0.3.0',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		await engine.loadPlugin(parsePluginBundle(SAMPLE_BUNDLE));
+		expect(engine.slots.getSlotItem('mine.item', 'test-item')).toBeDefined();
+
+		await engine.storage.setPluginData('core.official-plugins', 'installed_plugins', [
+			{
+				manifest,
+				code: SAMPLE_BUNDLE,
+				enabled: true,
+				installedAt: Date.now()
+			}
+		]);
+
+		const loadPluginSpy = vi.spyOn(engine, 'loadPlugin');
+		await service.init();
+
+		expect(loadPluginSpy).not.toHaveBeenCalled();
+		expect(engine.isPluginLoaded('test-plugin')).toBe(true);
+		expect(engine.slots.getSlotItem('mine.item', 'test-item')).toBeDefined();
+		expect(service.listInstalled()).toHaveLength(0);
+
+		const stored = await engine.storage.getPluginData<unknown[]>(
+			'core.official-plugins',
+			'installed_plugins'
+		);
+		expect(stored).toEqual([]);
+	});
 });

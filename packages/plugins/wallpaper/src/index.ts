@@ -1,4 +1,3 @@
-import WallpaperScreen from './WallpaperScreen.svelte';
 import {
 	createWallpaperPlugin,
 	WALLPAPER_THEME_ID,
@@ -7,7 +6,8 @@ import {
 } from './create-wallpaper-plugin';
 import { WALLPAPER_PLUGIN_ID } from './storage';
 
-export const wallpaperPlugin = createWallpaperPlugin({ screenComponent: WallpaperScreen });
+/** Package default without host screen; web app uses `$lib/boot/wallpaper-plugin`. */
+export const wallpaperPlugin = createWallpaperPlugin();
 
 export {
 	WALLPAPER_PLUGIN_ID,
@@ -18,8 +18,4 @@ export {
 };
 export * from './storage';
 export * from './wallpaper-theme';
-export {
-	bindWallpaperChangeEmitter,
-	getWallpaperRuntime,
-	subscribeWallpaperUri
-} from './runtime.svelte';
+export { getWallpaperRuntime, setWallpaperChangeHandler } from './runtime.svelte';

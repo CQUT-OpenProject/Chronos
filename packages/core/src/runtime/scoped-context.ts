@@ -161,6 +161,13 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		return this.track(this.host.events.on(event, handler));
 	}
 
+	emit<E extends keyof (ChronosEvents & CustomChronosEvents)>(
+		event: E,
+		payload: (ChronosEvents & CustomChronosEvents)[E]
+	): void {
+		this.host.events.emit(event, payload);
+	}
+
 	registerPipelineHook(hook: (context: unknown) => void | Promise<void>): Disposable {
 		return this.track(
 			this.host.pipeline.registerWaterfall('pipeline:exportTransform', async (ctx, next) => {

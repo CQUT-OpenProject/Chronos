@@ -1,8 +1,15 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { ChronosEngine, type ChronosEnv, type UserPreferences } from '@chronos/core';
 import { wallpaperPlugin, WALLPAPER_PLUGIN_ID } from '../src/index';
+import { WALLPAPER_IMAGE_KEY } from '../src/storage';
 
-function createMockEnv(): ChronosEnv {
+const STORED_WALLPAPER = {
+	mimeType: 'image/png',
+	base64: 'iVBORw0KGgo='
+};
+const EXPECTED_DATA_URI = 'data:image/png;base64,iVBORw0KGgo=';
+
+function createMockEnv(getPluginData = vi.fn(async () => null)): ChronosEnv {
 	return {
 		platform: 'web',
 		http: { request: vi.fn() },
@@ -23,7 +30,7 @@ function createMockEnv(): ChronosEnv {
 				hapticFeedbackEnabled: true
 			})),
 			savePreferences: vi.fn(async () => {}),
-			getPluginData: vi.fn(async () => null),
+			getPluginData: getPluginData,
 			setPluginData: vi.fn(async () => {}),
 			deletePluginData: vi.fn(async () => {})
 		},
@@ -64,7 +71,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		const item = engine.slots.getSlotItem('mine.item', 'wallpaper');
 		expect(item).toBeDefined();
 		expect(item?.sectionId).toBe('appearance-feedback');
-		expect(item?.href).toBe('/plugins/tool-wallpaper');
+		expect(item?.href).toBe('/wallpaper');
 		expect(item?.icon).toBe('wallpaper');
 		expect(typeof item?.title === 'function' ? item.title() : item?.title).toBe('设置课表壁纸');
 
@@ -74,7 +81,7 @@ describe('@chronos/plugin-wallpaper', () => {
 			'设置课表壁纸'
 		);
 		expect(screen?.schema).toBeDefined();
-		expect(screen?.component).toBeDefined();
+		expect(screen?.component).toBeUndefined();
 
 		const theme = engine.themes.getTheme('wallpaper');
 		expect(theme).toBeDefined();
@@ -85,6 +92,32 @@ describe('@chronos/plugin-wallpaper', () => {
 		expect(engine.slots.getSlotItem('mine.item', 'wallpaper')).toBeUndefined();
 		expect(engine.slots.getSlotItem('shell.route.screen', 'tool-wallpaper')).toBeUndefined();
 		expect(engine.themes.getTheme('wallpaper')).toBeUndefined();
+		engine.dispose();
+	});
+
+	it('replays wallpaper:changed on wallpaper:hydrate after late subscription', async () => {
+		const getPluginData = vi.fn(async (pluginId: string, key: string) => {
+			if (pluginId === WALLPAPER_PLUGIN_ID && key === WALLPAPER_IMAGE_KEY) {
+				return STORED_WALLPAPER;
+			}
+			return null;
+		});
+		const env = createMockEnv(getPluginData);
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		const handle = await engine.loadPlugin(wallpaperPlugin);
+
+		const received: Array<string | null> = [];
+		engine.on('wallpaper:changed', ({ uri }) => {
+			received.push(uri);
+		});
+
+		engine.events.emit('wallpaper:hydrate');
+
+		expect(received).toEqual([EXPECTED_DATA_URI]);
+
+		handle.dispose();
 		engine.dispose();
 	});
 });

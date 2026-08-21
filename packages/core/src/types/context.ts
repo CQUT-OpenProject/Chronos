@@ -120,6 +120,12 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 		handler: (payload: (ChronosEvents & CustomChronosEvents)[E]) => void | Promise<void>
 	): Disposable;
 
+	/** Emit an event on the shared engine bus */
+	emit<E extends keyof (ChronosEvents & CustomChronosEvents)>(
+		event: E,
+		payload: (ChronosEvents & CustomChronosEvents)[E]
+	): void;
+
 	/** Data pipeline transformation interceptor */
 	registerPipelineHook(hook: (context: unknown) => void | Promise<void>): Disposable;
 
@@ -169,5 +175,7 @@ export interface ChronosEvents {
 	'export:after': { exporterId: string; result: ExportResult };
 	'plugin:loaded': { pluginId: string };
 	'plugin:unloaded': { pluginId: string };
+	'wallpaper:set': { blob: Blob | null };
 	'wallpaper:changed': { uri: string | null };
+	'wallpaper:hydrate': void;
 }

@@ -2,10 +2,16 @@ import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { cqutPlugin } from '@chronos/plugin-source-cqut';
 import { shareCodecPlugin } from '@chronos/plugin-codec-share';
 import { coreShellPlugin } from '$lib/boot/core-shell';
+import { wallpaperPlugin } from '$lib/boot/wallpaper-plugin';
 
 declare const __CHRONOS_PROFILE__: string;
 
-export const availablePlugins: ChronosPlugin[] = [coreShellPlugin, cqutPlugin, shareCodecPlugin];
+export const availablePlugins: ChronosPlugin[] = [
+	coreShellPlugin,
+	cqutPlugin,
+	shareCodecPlugin,
+	wallpaperPlugin
+];
 
 const defaultProfile: ChronosProfile = {
 	profileId: 'chronos-default',
@@ -33,7 +39,8 @@ const cqutProfile: ChronosProfile = {
 			id: 'source-cqut',
 			enabled: true
 		},
-		{ id: 'codec-share', enabled: true }
+		{ id: 'codec-share', enabled: true },
+		{ id: 'tool-wallpaper', enabled: true }
 	]
 };
 
@@ -51,7 +58,8 @@ const cqutOfflineProfile: ChronosProfile = {
 			enabled: true,
 			disabledSlots: ['cqut-online']
 		},
-		{ id: 'codec-share', enabled: true }
+		{ id: 'codec-share', enabled: true },
+		{ id: 'tool-wallpaper', enabled: true }
 	]
 };
 

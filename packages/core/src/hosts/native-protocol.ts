@@ -38,6 +38,7 @@ export interface NativeHostBridge {
 /**
  * Creates a standard Headless ChronosEnv driven entirely by a NativeHostBridge
  * (suitable for iOS Swift JavaScriptCore and Android Kotlin QuickJS engines).
+ * Frozen experimental API — no production adapters yet; baseline tests only.
  */
 export function createNativeHostEnv(
 	bridge: NativeHostBridge,
