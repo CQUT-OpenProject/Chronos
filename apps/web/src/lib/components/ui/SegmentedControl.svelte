@@ -16,15 +16,17 @@
 
 	const selectedIndex = $derived(segments.findIndex((segment) => segment.value === value));
 	const segmentCount = $derived(segments.length);
-	const segmentWidthPercent = $derived(segmentCount > 0 ? 100 / segmentCount : 100);
+	const safeIndex = $derived(selectedIndex < 0 ? 0 : selectedIndex);
 </script>
 
 <div class="relative flex w-full rounded-full border border-border bg-surface p-1.5 shadow-xs">
-	<div
-		class="absolute top-1.5 bottom-1.5 rounded-full bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
-		style:left="calc({selectedIndex * segmentWidthPercent}% - {selectedIndex * 0.25}rem + 0.5rem)"
-		style:width="calc({segmentWidthPercent}% - 0.5rem)"
-	></div>
+	{#if segmentCount > 0 && selectedIndex >= 0}
+		<div
+			class="absolute top-1.5 bottom-1.5 rounded-full bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
+			style:left="calc(0.375rem + {safeIndex} * ((100% - 0.75rem) / {segmentCount}))"
+			style:width="calc((100% - 0.75rem) / {segmentCount})"
+		></div>
+	{/if}
 
 	{#each segments as segment (segment.value)}
 		<button

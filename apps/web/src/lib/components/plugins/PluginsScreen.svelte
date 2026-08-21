@@ -13,7 +13,7 @@
 	import Switch from '$lib/components/ui/Switch.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
-	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
+	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
 	import PluginConfigModal from './PluginConfigModal.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
@@ -251,7 +251,7 @@
 {/snippet}
 
 <div class="flex h-full min-h-0 flex-col text-on-surface">
-	<div class="shrink-0 px-4 pt-1 pb-4">
+	<div class="shrink-0 px-4 pt-3 pb-4">
 		<SegmentedControl
 			segments={[
 				{
@@ -439,8 +439,8 @@
 		</div>
 	{:else}
 		<div class="flex min-h-0 flex-1 flex-col">
-			<FormScreenLayout footer={thirdPartyImportFooter}>
-				<div class="flex flex-col gap-3">
+			<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
+				<section class="m3-section">
 					<div class="flex items-center gap-2 px-1">
 						<h2 class="m3-section-title">官方插件</h2>
 						{#if catalogManifests.length > 0}
@@ -550,8 +550,11 @@
 							{/each}
 						</div>
 					{/if}
-				</div>
-			</FormScreenLayout>
+				</section>
+			</div>
+			<ActionBottomBar>
+				{@render thirdPartyImportFooter()}
+			</ActionBottomBar>
 		</div>
 	{/if}
 </div>
