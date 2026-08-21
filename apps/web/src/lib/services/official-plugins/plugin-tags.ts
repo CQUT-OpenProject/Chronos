@@ -1,6 +1,6 @@
 import type { PluginCategory } from '@chronos/core';
 
-/** Preset plugin category tags shown in marketplace UI (主题 / 工具 / …). */
+/** Preset plugin category tags shown in official plugin UI. */
 export const PLUGIN_CATEGORY_TAG_IDS = ['theme', 'source', 'tool', 'exporter', 'codec'] as const;
 
 export type PluginCategoryTagId = (typeof PLUGIN_CATEGORY_TAG_IDS)[number];

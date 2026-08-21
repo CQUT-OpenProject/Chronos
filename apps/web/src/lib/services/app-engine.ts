@@ -3,14 +3,14 @@ import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
 import { availablePlugins, resolveActiveProfile } from '$lib/boot/profile-registry';
 
-import { MarketplaceService } from '$lib/services/marketplace/marketplace-service';
+import { OfficialPluginService } from '$lib/services/official-plugins/official-plugin-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
 import * as m from '$lib/paraglide/messages.js';
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 let sharedEngine: ChronosEngine | null = null;
 let sharedController: ReactiveChronosController | null = null;
-let sharedMarketplace: MarketplaceService | null = null;
+let sharedOfficialPlugins: OfficialPluginService | null = null;
 let engineInitPromise: Promise<ChronosEngine> | null = null;
 let profileManager: ProfileManager | null = null;
 
@@ -51,10 +51,10 @@ async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	const profile = resolveActiveProfile();
 	await profileManager.applyProfile(profile, availablePlugins);
 
-	if (!sharedMarketplace) {
-		sharedMarketplace = new MarketplaceService(engine);
+	if (!sharedOfficialPlugins) {
+		sharedOfficialPlugins = new OfficialPluginService(engine);
 	}
-	await sharedMarketplace.init();
+	await sharedOfficialPlugins.init();
 
 	const prefs = await engine.storage.getPreferences();
 	const visualThemeId = prefs?.visualThemeId ?? 'm3-default';
@@ -94,19 +94,22 @@ export function getAppController(options?: WebProviderOptions): ReactiveChronosC
 	return sharedController;
 }
 
-export function getMarketplaceService(options?: WebProviderOptions): MarketplaceService {
-	if (!sharedMarketplace) {
+export function getOfficialPluginService(options?: WebProviderOptions): OfficialPluginService {
+	if (!sharedOfficialPlugins) {
 		const engine = getAppEngine(options);
-		sharedMarketplace = new MarketplaceService(engine);
+		sharedOfficialPlugins = new OfficialPluginService(engine);
 	}
-	return sharedMarketplace;
+	return sharedOfficialPlugins;
 }
+
+/** @deprecated Use getOfficialPluginService */
+export const getMarketplaceService = getOfficialPluginService;
 
 export function resetAppEngine(): void {
 	profileManager?.dispose();
 	profileManager = null;
-	sharedMarketplace?.dispose();
-	sharedMarketplace = null;
+	sharedOfficialPlugins?.dispose();
+	sharedOfficialPlugins = null;
 	sharedController?.dispose();
 	sharedController = null;
 	sharedEngine?.dispose();

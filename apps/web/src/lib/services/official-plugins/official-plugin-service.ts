@@ -1,20 +1,29 @@
-import type { ChronosEngine, Disposable, MarketplaceRegistry, PluginManifest } from '@chronos/core';
+import type {
+	ChronosEngine,
+	Disposable,
+	OfficialPluginCatalog,
+	PluginManifest
+} from '@chronos/core';
 import { IHttpService, IRuntimeService } from '@chronos/core';
-import { WorkerPluginBridge } from './worker-plugin-bridge';
+import { parsePluginBundle, validatePluginManifest } from './plugin-bundle';
+import { clearWallpaperForPluginUnload } from '$lib/wallpaper/wallpaper-controller.svelte';
+import { WALLPAPER_PLUGIN_ID } from '$lib/wallpaper/wallpaper-storage';
 
-const MARKETPLACE_STORAGE_KEY = 'installed_plugins';
-const MARKETPLACE_PLUGIN_ID = 'core.marketplace';
+const INSTALLED_STORAGE_KEY = 'installed_plugins';
+const OFFICIAL_PLUGINS_PLUGIN_ID = 'core.official-plugins';
+const LEGACY_MARKETPLACE_PLUGIN_ID = 'core.marketplace';
 
-export interface InstalledPluginRecord {
+export interface InstalledOfficialPluginRecord {
 	manifest: PluginManifest;
 	code: string;
+	manifestUrl?: string;
 	enabled: boolean;
 	installedAt: number;
 }
 
-export class MarketplaceService implements Disposable {
+export class OfficialPluginService implements Disposable {
 	private activeHandles = new Map<string, Disposable>();
-	private installedCache: InstalledPluginRecord[] = [];
+	private installedCache: InstalledOfficialPluginRecord[] = [];
 	private changeListeners = new Set<() => void>();
 	private initialized = false;
 
@@ -22,6 +31,7 @@ export class MarketplaceService implements Disposable {
 
 	async init(): Promise<void> {
 		if (this.initialized) return;
+		await this.migrateLegacyStorage();
 		this.installedCache = (await this.loadInstalledFromStorage()) || [];
 
 		for (const record of this.installedCache) {
@@ -29,7 +39,10 @@ export class MarketplaceService implements Disposable {
 				try {
 					await this.loadPluginInstance(record.manifest, record.code);
 				} catch (err) {
-					console.error(`[MarketplaceService] Failed to load plugin ${record.manifest.id}:`, err);
+					console.error(
+						`[OfficialPluginService] Failed to load plugin ${record.manifest.id}:`,
+						err
+					);
 				}
 			}
 		}
@@ -51,70 +64,96 @@ export class MarketplaceService implements Disposable {
 			try {
 				listener();
 			} catch (err) {
-				console.error('[MarketplaceService] Error in change listener:', err);
+				console.error('[OfficialPluginService] Error in change listener:', err);
 			}
 		}
 	}
 
-	private async loadInstalledFromStorage(): Promise<InstalledPluginRecord[]> {
-		const data = await this.engine.storage.getPluginData<InstalledPluginRecord[]>(
-			MARKETPLACE_PLUGIN_ID,
-			MARKETPLACE_STORAGE_KEY
+	private async migrateLegacyStorage(): Promise<void> {
+		const legacy = await this.engine.storage.getPluginData<InstalledOfficialPluginRecord[]>(
+			LEGACY_MARKETPLACE_PLUGIN_ID,
+			INSTALLED_STORAGE_KEY
+		);
+		if (!legacy || !Array.isArray(legacy) || legacy.length === 0) return;
+
+		const current = await this.engine.storage.getPluginData<InstalledOfficialPluginRecord[]>(
+			OFFICIAL_PLUGINS_PLUGIN_ID,
+			INSTALLED_STORAGE_KEY
+		);
+		if (current && current.length > 0) return;
+
+		await this.engine.storage.setPluginData(
+			OFFICIAL_PLUGINS_PLUGIN_ID,
+			INSTALLED_STORAGE_KEY,
+			legacy
+		);
+	}
+
+	private async loadInstalledFromStorage(): Promise<InstalledOfficialPluginRecord[]> {
+		const data = await this.engine.storage.getPluginData<InstalledOfficialPluginRecord[]>(
+			OFFICIAL_PLUGINS_PLUGIN_ID,
+			INSTALLED_STORAGE_KEY
 		);
 		return Array.isArray(data) ? data : [];
 	}
 
 	private async saveInstalledToStorage(): Promise<void> {
 		await this.engine.storage.setPluginData(
-			MARKETPLACE_PLUGIN_ID,
-			MARKETPLACE_STORAGE_KEY,
+			OFFICIAL_PLUGINS_PLUGIN_ID,
+			INSTALLED_STORAGE_KEY,
 			this.installedCache
 		);
 		this.notify();
 	}
 
-	async fetchRegistry(registryUrl = '/marketplace/registry.json'): Promise<MarketplaceRegistry> {
-		const response = await this.engine.services.get(IHttpService).request(registryUrl, {
+	async fetchCatalog(
+		catalogUrl = '/official-plugins/catalog.json'
+	): Promise<OfficialPluginCatalog> {
+		const response = await this.engine.services.get(IHttpService).request(catalogUrl, {
 			method: 'GET'
 		});
 
 		if (!response.ok) {
 			throw new Error(
-				`Failed to fetch marketplace registry from ${registryUrl}: ${response.status}`
+				`Failed to fetch official plugin catalog from ${catalogUrl}: ${response.status}`
 			);
 		}
 
-		const registry = (await response.json()) as MarketplaceRegistry;
-		if (!registry || !Array.isArray(registry.plugins)) {
-			throw new Error('Invalid marketplace registry schema format');
+		const catalog = (await response.json()) as OfficialPluginCatalog;
+		if (!catalog || !Array.isArray(catalog.manifests)) {
+			throw new Error('Invalid official plugin catalog schema format');
 		}
 
-		return registry;
+		return catalog;
 	}
 
-	async install(manifest: PluginManifest, bundleUrlOverride?: string): Promise<void> {
-		const targetUrl = bundleUrlOverride || manifest.bundleUrl;
-		const response = await this.engine.services.get(IHttpService).request(targetUrl, {
+	async fetchManifest(manifestUrl: string): Promise<PluginManifest> {
+		const response = await this.engine.services.get(IHttpService).request(manifestUrl, {
 			method: 'GET'
 		});
 
 		if (!response.ok) {
-			throw new Error(`Failed to download plugin bundle from ${targetUrl}`);
+			throw new Error(`Failed to fetch plugin manifest from ${manifestUrl}: ${response.status}`);
 		}
 
-		const code = await response.text();
+		const manifest = (await response.json()) as PluginManifest;
+		validatePluginManifest(manifest);
+		return manifest;
+	}
 
-		// SHA-256 integrity hash verification
-		const computedHash = await this.engine.services.get(IRuntimeService).sha256(code);
-		if (manifest.sha256 && computedHash.toLowerCase() !== manifest.sha256.toLowerCase()) {
-			throw new Error(
-				`Plugin integrity check failed for "${manifest.id}". Expected SHA-256 ${manifest.sha256}, got ${computedHash}`
-			);
-		}
+	async installFromManifestUrl(manifestUrl: string): Promise<void> {
+		const manifest = await this.fetchManifest(manifestUrl);
+		await this.install(manifest, manifestUrl);
+	}
 
-		const record: InstalledPluginRecord = {
+	async install(manifest: PluginManifest, manifestUrl?: string): Promise<void> {
+		validatePluginManifest(manifest);
+		const code = await this.downloadBundle(manifest);
+
+		const record: InstalledOfficialPluginRecord = {
 			manifest,
 			code,
+			manifestUrl,
 			enabled: true,
 			installedAt: Date.now()
 		};
@@ -129,6 +168,7 @@ export class MarketplaceService implements Disposable {
 
 		await this.saveInstalledToStorage();
 		await this.loadPluginInstance(manifest, code);
+		await this.syncWallpaperStateIfNeeded(manifest.id);
 		if (manifest.type === 'theme') {
 			this.engine.actions.notify('插件已安装并启用，可在「显示设置」中选择此外观主题', 'info');
 		} else {
@@ -136,8 +176,31 @@ export class MarketplaceService implements Disposable {
 		}
 	}
 
+	private async downloadBundle(manifest: PluginManifest): Promise<string> {
+		const response = await this.engine.services.get(IHttpService).request(manifest.bundleUrl, {
+			method: 'GET'
+		});
+
+		if (!response.ok) {
+			throw new Error(`Failed to download plugin bundle from ${manifest.bundleUrl}`);
+		}
+
+		const code = await response.text();
+		const computedHash = await this.engine.services.get(IRuntimeService).sha256(code);
+		if (manifest.sha256 && computedHash.toLowerCase() !== manifest.sha256.toLowerCase()) {
+			throw new Error(
+				`Plugin integrity check failed for "${manifest.id}". Expected SHA-256 ${manifest.sha256}, got ${computedHash}`
+			);
+		}
+
+		return code;
+	}
+
 	async uninstall(pluginId: string): Promise<void> {
 		await this.unloadPluginInstance(pluginId);
+		if (pluginId === WALLPAPER_PLUGIN_ID) {
+			await clearWallpaperForPluginUnload();
+		}
 		this.installedCache = this.installedCache.filter((p) => p.manifest.id !== pluginId);
 		await this.saveInstalledToStorage();
 		this.engine.actions.notify(`插件「${pluginId}」已卸载`, 'info');
@@ -153,6 +216,7 @@ export class MarketplaceService implements Disposable {
 		record.enabled = true;
 		await this.saveInstalledToStorage();
 		await this.loadPluginInstance(record.manifest, record.code);
+		await this.syncWallpaperStateIfNeeded(pluginId);
 		this.engine.actions.notify(`已启用插件「${pluginId}」`, 'info');
 	}
 
@@ -185,15 +249,29 @@ export class MarketplaceService implements Disposable {
 	private async loadPluginInstance(manifest: PluginManifest, code: string): Promise<Disposable> {
 		await this.unloadPluginInstance(manifest.id);
 
-		// Dual-track loading: third-party and unsigned plugins are strictly sandboxed via WorkerPluginBridge
-		const bridge = new WorkerPluginBridge(manifest, code, this.engine);
-		await bridge.start();
+		const plugin = parsePluginBundle(code);
+		if (plugin.id !== manifest.id) {
+			throw new Error(`Plugin id mismatch: manifest "${manifest.id}" vs bundle "${plugin.id}"`);
+		}
 
-		this.activeHandles.set(manifest.id, bridge);
-		return bridge;
+		const handle = await this.engine.loadPlugin({
+			...plugin,
+			configSchema: manifest.configSchema ?? plugin.configSchema,
+			permissions: manifest.permissions ?? manifest.capabilities ?? plugin.permissions,
+			allowedDomains: manifest.allowedDomains ?? plugin.allowedDomains
+		});
+
+		this.activeHandles.set(manifest.id, handle);
+		return handle;
 	}
 
-	private revertThemeIfNeeded(_manifest?: PluginManifest): void {
+	private async syncWallpaperStateIfNeeded(pluginId: string): Promise<void> {
+		if (pluginId !== WALLPAPER_PLUGIN_ID) return;
+		const { getWallpaperController } = await import('$lib/wallpaper/wallpaper-controller.svelte');
+		await getWallpaperController().syncFromStorage(true);
+	}
+
+	private revertThemeIfNeeded(): void {
 		const prefs = this.engine.state.userPreferences;
 		const activeThemeId = this.engine.state.activeThemeId;
 
@@ -216,22 +294,21 @@ export class MarketplaceService implements Disposable {
 	}
 
 	private async unloadPluginInstance(pluginId: string): Promise<void> {
-		const record = this.installedCache.find((p) => p.manifest.id === pluginId);
 		const handle = this.activeHandles.get(pluginId);
 		if (handle) {
 			handle.dispose();
 			this.activeHandles.delete(pluginId);
 		}
-		if (record?.manifest) {
-			this.revertThemeIfNeeded(record.manifest);
+		if (this.installedCache.some((p) => p.manifest.id === pluginId)) {
+			this.revertThemeIfNeeded();
 		}
 	}
 
-	listInstalled(): ReadonlyArray<InstalledPluginRecord> {
+	listInstalled(): ReadonlyArray<InstalledOfficialPluginRecord> {
 		return this.installedCache;
 	}
 
-	getInstalled(pluginId: string): InstalledPluginRecord | undefined {
+	getInstalled(pluginId: string): InstalledOfficialPluginRecord | undefined {
 		return this.installedCache.find((p) => p.manifest.id === pluginId);
 	}
 
