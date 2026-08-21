@@ -1,10 +1,11 @@
 {
 	"$schema": "https://chronos.app/schemas/profile.schema.json",
-	"profileId": "chronos-cqut",
-	"name": "Chronos-CQUT",
+	"profileId": "chronos-cqut-offline",
+	"name": "Chronos-CQUT-Offline",
 	"version": "0.3.0",
-	"description": "重庆理工大学定制版本，在离线版上增加「知行理工」导入能力",
+	"description": "重庆理工大学定制离线版本，在基础版上增加「正方教务」导入能力",
 	"defaultTheme": "m3-default",
+	"defaultImportSlot": "edu-html",
 	"plugins": [
 		{
 			"id": "core-shell",
@@ -12,7 +13,8 @@
 		},
 		{
 			"id": "source-cqut",
-			"enabled": true
+			"enabled": true,
+			"disabledSlots": ["cqut-online"]
 		},
 		{
 			"id": "codec-share",
