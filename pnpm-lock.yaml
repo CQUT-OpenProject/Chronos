@@ -63,9 +63,6 @@ importers:
       '@chronos/ui-kit':
         specifier: workspace:*
         version: link:../../packages/ui-kit
-      '@cqut-openproject/cas-sdk':
-        specifier: github:CQUT-OpenProject/CAS-SDK#1.0.0
-        version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f
       '@internationalized/date':
         specifier: ^3.12.3
         version: 3.12.3
@@ -93,9 +90,6 @@ importers:
       swiper:
         specifier: ^14.1.0
         version: 14.1.0
-      undici:
-        specifier: ^8.10.0
-        version: 8.10.0
       vite-plugin-functions-mixins:
         specifier: ^0.4.1
         version: 0.4.1(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))
@@ -189,6 +183,18 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
+      '@cqut-openproject/cas-sdk':
+        specifier: github:CQUT-OpenProject/CAS-SDK#1.0.0
+        version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f
+      '@sveltejs/kit':
+        specifier: ^2.63.0
+        version: 2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0))(typescript@7.0.2)
+      undici:
+        specifier: ^8.10.0
+        version: 8.10.0
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       linkedom:
         specifier: ^0.18.13

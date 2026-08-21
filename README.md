@@ -39,10 +39,10 @@ Chronos 支持三种导入方式：知行理工在线导入、分享链接与教
 
 Chronos 提供两种部署方式，共用同一套源码，按构建目标输出不同产物：
 
-| 部署方式         | 知行理工在线导入 |
-| ---------------- | ---------------- |
-| **Vercel**       | 支持             |
-| **GitHub Pages** | 不支持           |
+| 部署方式         | 知行理工在线导入 | HTML 文件导入 |
+| ---------------- | ---------------- | ------------- |
+| **Vercel**       | 支持             | 支持          |
+| **GitHub Pages** | 不支持           | 支持          |
 
 > [!IMPORTANT]
 > **Chronos** 深度适配 Vercel，强烈推荐使用 Vercel 部署
@@ -53,6 +53,7 @@ Chronos 不需要配置任何环境变量即可正常部署，以下变量仅在
 
 | 变量                    | 作用域 | 说明                                                                                                             |
 | ----------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
+| `CHRONOS_PROFILE`       | 构建时 | 产品 profile：`chronos-cqut`（默认 Vercel）、`chronos-cqut-offline`（Pages）、`chronos-default`（开源通用）      |
 | `CHRONOS_DEPLOY_TARGET` | 构建时 | 设为 `pages` 时构建 GitHub Pages 静态版，默认不设置则构建 Vercel 版                                              |
 | `ORIGIN`                | 运行时 | SvelteKit 标准变量，用于 CSRF 校验等场景。本地开发一般无需配置；若部署后出现 origin 相关报错，可设为站点完整 URL |
 | `PUBLIC_POSTHOG_KEY`    | 构建时 | PostHog 项目密钥；留空则构建期剔除埋点（GitHub Pages、自行部署默认不启用）                                       |
