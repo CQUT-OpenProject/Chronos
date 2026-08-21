@@ -55,7 +55,7 @@ export const timetableConfigSchema = z.object({
 		.optional()
 		.default(() => timetableImportMetadataSchema.parse({})),
 	viewPrefs: timetableViewPrefsSchema.optional().default(() => timetableViewPrefsSchema.parse({})),
-	customMetadata: z.record(z.unknown()).optional()
+	customMetadata: z.record(z.string(), z.unknown()).optional()
 });
 
 export type StoredTimetableImportMetadata = z.infer<typeof timetableImportMetadataSchema>;

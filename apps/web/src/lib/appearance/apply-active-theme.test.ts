@@ -41,7 +41,7 @@ describe('applyActiveTheme', () => {
 						statusText: '',
 						headers: {},
 						text: async () => '',
-						json: async () => ({}),
+						json: async <T>() => ({}) as T,
 						bytes: async () => new Uint8Array()
 					})
 				},
@@ -104,7 +104,7 @@ describe('applyActiveTheme', () => {
 						statusText: '',
 						headers: {},
 						text: async () => '',
-						json: async () => ({}),
+						json: async <T>() => ({}) as T,
 						bytes: async () => new Uint8Array()
 					})
 				},

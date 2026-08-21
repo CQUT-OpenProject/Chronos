@@ -1,16 +1,14 @@
 import type { AppShellController } from '$lib/app/app-shell.svelte';
-import { DEFAULT_CQUT_CAMPUS_ID, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import type { Timetable } from '$lib/models/timetable';
 import { trackEvent } from '$lib/client/analytics';
-import { applyCampusPeriodTimes, toSettingsDraft } from '$lib/timetable/timetable-mappers';
+import { toSettingsDraft } from '$lib/timetable/timetable-mappers';
 import { getAppController } from '$lib/services/app-engine';
-
-const timeProvider = new SystemTimeProvider();
+import { currentWeekMonday, todayIsoDate } from '@chronos/core';
+import { defaultPeriodTimes } from '$lib/models/defaults';
 
 export class TimetableDetailsEditor {
 	draft = $state<TimetableSettingsDraft | null>(null);
-	missingCampusMessage = $state<string | null>(null);
 	private loadedTimetableId = $state<string | null>(null);
 
 	constructor(
@@ -21,29 +19,17 @@ export class TimetableDetailsEditor {
 	loadFromTimetable(timetable: Timetable | null) {
 		if (!timetable) {
 			this.draft = null;
-			this.missingCampusMessage = null;
 			this.loadedTimetableId = null;
 			return;
 		}
 		if (this.loadedTimetableId === timetable.id) return;
 		this.loadedTimetableId = timetable.id;
 		this.draft = toSettingsDraft(timetable);
-		this.missingCampusMessage = null;
 	}
 
 	get canSave() {
 		return Boolean(this.draft);
 	}
-
-	get selectedCampus(): CqutCampusId | null {
-		return this.draft?.importMetadata.campusId ?? null;
-	}
-
-	selectCampus = (campusId: CqutCampusId) => {
-		if (!this.draft) return;
-		const applied = applyCampusPeriodTimes(this.draft, campusId);
-		this.missingCampusMessage = applied ? null : '请重新导入课表以获取该校区节次时间';
-	};
 
 	save = async () => {
 		const timetable = this.shell.state.appState.currentTimetable;
@@ -76,24 +62,12 @@ export class TimetableDetailsEditor {
 	resetToDefaultSettings = () => {
 		if (!this.draft) return;
 		trackEvent('timetable_details_reset');
-		const today = timeProvider.today();
+		const today = todayIsoDate();
 		this.draft.viewPrefs = {
 			showSaturday: true,
 			showSunday: true,
 			showNonCurrentWeekCourses: true
 		};
-
-		if (
-			this.draft.importMetadata.source === 'ONLINE_EDU' ||
-			this.draft.importMetadata.source === 'cqut-online'
-		) {
-			const applied = applyCampusPeriodTimes(this.draft, DEFAULT_CQUT_CAMPUS_ID);
-			this.missingCampusMessage = applied ? null : '请重新导入课表以获取该校区节次时间';
-			if (!applied) {
-				this.resetAcademicConfigToDefaults(today);
-			}
-			return;
-		}
 
 		this.resetAcademicConfigToDefaults(today);
 	};

@@ -1,10 +1,15 @@
-import type { ChronosPlugin, ChronosContext, Timetable, ExportResult } from '@chronos/core';
+import type {
+	ChronosPlugin,
+	ChronosContext,
+	Timetable,
+	ExportResult,
+	ConfigSchema
+} from '@chronos/core';
 import { defineSchema } from '@chronos/core';
 import {
 	decodeSharePayload,
 	encodeShareLink,
 	ensureShareLinkBrotliReady,
-	estimateShareLinkLength,
 	extractSharePayloadFromText,
 	formatShareClipboardText
 } from './share-link';
@@ -21,8 +26,6 @@ export const shareLinkImportSchema = defineSchema<ShareLinkImportForm>({
 		required: true
 	}
 });
-
-const shareLinkCodec = { estimatePayloadLength: estimateShareLinkLength };
 
 export const shareCodecPlugin: ChronosPlugin = {
 	id: 'codec-share',
@@ -41,7 +44,7 @@ export const shareCodecPlugin: ChronosPlugin = {
 			id: 'share-link',
 			title: () => '分享链接',
 			order: 15,
-			inputSchema: shareLinkImportSchema,
+			inputSchema: shareLinkImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 			async executeImport(inputs: Record<string, unknown>) {
 				const content =
 					(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
@@ -67,7 +70,6 @@ export const shareCodecPlugin: ChronosPlugin = {
 			async export(timetable: Timetable): Promise<ExportResult> {
 				const link = await encodeShareLink(timetable);
 				const clipboardText = formatShareClipboardText(timetable.name, link);
-				void shareLinkCodec.estimatePayloadLength(timetable);
 				return {
 					filename: 'share-link.txt',
 					mimeType: 'application/x-chronos-share-link',
@@ -75,8 +77,6 @@ export const shareCodecPlugin: ChronosPlugin = {
 				};
 			}
 		});
-
-		void shareLinkCodec;
 	}
 };
 

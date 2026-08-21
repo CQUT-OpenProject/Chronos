@@ -165,7 +165,7 @@ function createTimetableScreen() {
 		if (todayTimer) clearTimeout(todayTimer);
 		const delay = computeDelayUntilNextMidnightMillis(new Date());
 		todayTimer = setTimeout(() => {
-			today = timeProvider.today();
+			today = todayIsoDate();
 			now = new Date();
 			recompute();
 			notify();

@@ -6,8 +6,8 @@ import {
 	buildTimetableCourseDisplayModels,
 	type TimetableCourseDisplayModel
 } from './display-models';
-import { placeCapsules, type PlacedItem, type CoursePaletteEntry } from './capsule-layout';
-import { COURSE_PALETTE_ENTRIES } from './palette';
+import { placeCapsules, type PlacedItem } from './capsule-layout';
+import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from './palette';
 
 export interface TimetableWeekLayoutInput {
 	timetable: Timetable;

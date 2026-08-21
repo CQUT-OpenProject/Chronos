@@ -114,6 +114,6 @@ export class CqutOnlineHttpAdapter implements IHttpService {
 	}
 
 	async clearSession(sessionId: string): Promise<void> {
-		return this.inner.clearSession(sessionId);
+		return this.inner.clearSession?.(sessionId);
 	}
 }
