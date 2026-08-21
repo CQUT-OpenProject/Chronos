@@ -24,9 +24,9 @@
 		computeDelayUntilNextCurrentTimeRefreshMillis,
 		currentTimeMinutes,
 		findCurrentPeriodIndex,
-		parsePeriodRanges
-	} from '$lib/timetable/period-clock';
-	import { type CoursePaletteEntry } from '@chronos/core';
+		parsePeriodRanges,
+		type CoursePaletteEntry
+	} from '@chronos/core';
 	import { getAppController } from '$lib/services/app-engine';
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 	import { createTimetableInteractionMediator } from '$lib/timetable/timetable-interaction-mediator';

@@ -29,7 +29,7 @@ export function createCourseEditor(
 	let syncedCourseKey = $state<string | null>(null);
 	const controller = getAppController();
 
-	const timetable = $derived(shell.state.appState.currentTimetable);
+	const timetable = $derived(shell.controller.currentTimetable);
 	const canSave = $derived(Boolean(draft?.name.trim()));
 	const coursePalette = $derived(shell.appearance.coursePalette);
 
@@ -42,7 +42,7 @@ export function createCourseEditor(
 			draft = emptyDraft();
 			return;
 		}
-		const course = shell.state.appState.currentTimetable?.courses.find(
+		const course = shell.controller.currentTimetable?.courses.find(
 			(entry) => entry.id === courseId
 		);
 		draft = course ? courseToDraft(course) : null;

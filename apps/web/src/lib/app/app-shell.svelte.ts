@@ -1,6 +1,5 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
-import { type AppState } from '$lib/models/app-state';
 import { getAppController, getAppEngine } from '$lib/services/app-engine';
 import { createCredentialVault } from '$lib/client/credential-vault';
 import { IVaultService } from '@chronos/core';
@@ -25,31 +24,7 @@ export function createAppShell() {
 	const controller = getAppController();
 
 	const themeMode = $derived(controller.userPreferences?.themeMode ?? 'auto');
-	const timetableLayoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'fixed');
-	const paletteMode = $derived(controller.userPreferences?.paletteMode ?? 'vibrant');
-	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'rounded');
-	const hapticFeedbackEnabled = $derived(controller.userPreferences?.hapticFeedbackEnabled ?? true);
-
 	const isDark = $derived(resolveDark(themeMode, systemPrefersDark));
-	const hasWallpaper = false;
-
-	const appState = $derived<AppState>({
-		timetables: controller.timetables.map((t) => ({
-			id: t.id,
-			name: t.name,
-			courseCount: t.courseCount ?? 0,
-			createdAt: 0,
-			updatedAt: t.updatedAt
-		})),
-		currentTimetableId: controller.currentTimetable?.id ?? null,
-		wallpaperUri: null,
-		currentTimetable: controller.currentTimetable,
-		themeMode,
-		timetableLayoutMode,
-		paletteMode,
-		capsuleCornerStyle,
-		hapticFeedbackEnabled
-	});
 
 	const initialized = $derived(
 		Boolean(
@@ -57,6 +32,9 @@ export function createAppShell() {
 			controller.currentTimetable !== null ||
 			controller.timetables.length > 0
 		)
+	);
+	const hasWallpaper = $derived(
+		controller.getSlots('mine.item').some((item) => item.id === 'wallpaper')
 	);
 
 	function init() {
@@ -134,7 +112,6 @@ export function createAppShell() {
 	return {
 		get state() {
 			return {
-				appState,
 				initialized,
 				isDark,
 				hasWallpaper

@@ -37,23 +37,21 @@ describe('TimetableScreenController', () => {
 
 	const mockShell = {
 		state: {
-			appState: {
-				timetables: [],
-				currentTimetableId: 'tt-test',
-				wallpaperUri: null,
-				currentTimetable: sampleTimetable,
+			initialized: true,
+			isDark: false
+		},
+		appearance: {} as any,
+		controller: {
+			currentTimetable: sampleTimetable,
+			timetables: [sampleTimetable],
+			userPreferences: {
 				themeMode: 'auto',
 				timetableLayoutMode: 'fixed',
 				paletteMode: 'vibrant',
 				capsuleCornerStyle: 'rounded',
 				hapticFeedbackEnabled: true
-			},
-			initialized: true,
-			isDark: false,
-			hasWallpaper: false
-		},
-		appearance: {} as any,
-		controller: {} as any,
+			}
+		} as any,
 		init: () => {},
 		destroy: () => {},
 		updatePreferences: async () => {},
@@ -63,7 +61,6 @@ describe('TimetableScreenController', () => {
 		setColorScheme: async () => {},
 		setCapsuleCornerStyle: async () => {},
 		setHapticFeedbackEnabled: async () => {},
-		setWallpaper: async () => {},
 		switchTimetable: async () => {},
 		deleteTimetable: async () => {},
 		clearAllData: async () => {}
@@ -75,6 +72,7 @@ describe('TimetableScreenController', () => {
 
 		const state = screen.state;
 		expect(state.hasLoadedAppState).toBe(true);
+		expect(state.currentTimetable?.id).toBe('tt-test');
 		expect(state.startWeek).toBe(1);
 		expect(state.endWeek).toBe(20);
 		expect(state.weeks.length).toBe(20);
@@ -89,13 +87,13 @@ describe('TimetableScreenController', () => {
 		screen.setDisplayedWeek(5);
 		expect(screen.state.displayedWeek).toBe(5);
 
-		expect(screen.isSlotExpanded('1-1-2')).toBe(false);
-		screen.expandSlot('1-1-2');
-		expect(screen.isSlotExpanded('1-1-2')).toBe(true);
-		expect(screen.state.expandedSlots.has('1-1-2')).toBe(true);
+		expect(screen.isSlotExpanded('1:1:2')).toBe(false);
+		screen.expandSlot('1:1:2');
+		expect(screen.isSlotExpanded('1:1:2')).toBe(true);
+		expect(screen.state.expandedSlots.has('1:1:2')).toBe(true);
 
-		screen.collapseSlot('1-1-2');
-		expect(screen.isSlotExpanded('1-1-2')).toBe(false);
+		screen.collapseSlot('1:1:2');
+		expect(screen.isSlotExpanded('1:1:2')).toBe(false);
 	});
 
 	it('provides week layout and grid models for active and adjacent weeks', () => {

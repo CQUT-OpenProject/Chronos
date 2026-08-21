@@ -1,6 +1,6 @@
 import type { AppShellController } from '$lib/app/app-shell.svelte';
 import type { TimetableSettingsDraft } from '$lib/models/drafts';
-import type { Timetable } from '$lib/models/timetable';
+import type { Timetable } from '@chronos/core';
 import { trackEvent } from '$lib/client/analytics';
 import { toSettingsDraft } from '$lib/timetable/timetable-mappers';
 import { getAppController } from '$lib/services/app-engine';
@@ -32,7 +32,7 @@ export class TimetableDetailsEditor {
 	}
 
 	save = async () => {
-		const timetable = this.shell.state.appState.currentTimetable;
+		const timetable = this.shell.controller.currentTimetable;
 		if (!timetable || !this.draft) return;
 		const controller = getAppController();
 		await controller.saveCurrentTimetableDetails({

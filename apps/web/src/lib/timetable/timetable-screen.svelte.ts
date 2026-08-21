@@ -1,12 +1,16 @@
 import { untrack } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { trackEvent } from '$lib/client/analytics';
-import { emptyAppState, type AppState } from '$lib/models/app-state';
 import {
 	AcademicCalendarService,
+	computeDelayUntilNextCurrentTimeRefreshMillis,
 	computeTimetableWeekLayout,
+	currentTimeMinutes,
+	findCurrentPeriodIndex,
 	formatWeekDateRange,
+	parsePeriodRanges,
 	todayIsoDate,
+	type Timetable,
 	type TimetableCourseDisplayModel,
 	type TimetableGridModel,
 	type TimetableWeekLayoutResult
@@ -20,12 +24,6 @@ import {
 	slideIndexFromWeek,
 	weekFromSlideIndex
 } from './week-navigation';
-import {
-	computeDelayUntilNextCurrentTimeRefreshMillis,
-	currentTimeMinutes,
-	findCurrentPeriodIndex,
-	parsePeriodRanges
-} from './period-clock';
 
 const calendarService = new AcademicCalendarService();
 
@@ -41,7 +39,7 @@ function computeDelayUntilNextMidnightMillis(now = new Date()): number {
 }
 
 export interface TimetableScreenState {
-	appState: AppState;
+	currentTimetable: Timetable | null;
 	hasLoadedAppState: boolean;
 	today: string;
 	academicWeek: number;
@@ -78,22 +76,23 @@ function createTimetableScreen() {
 		new SvelteMap()
 	);
 
-	let cachedTimetable: AppState['currentTimetable'] = null;
+	let cachedTimetable: Timetable | null = null;
 	let cachedToday = '';
 	const cachedWeekLayouts = new SvelteMap<number, TimetableWeekLayoutResult>();
 
 	let todayTimer: ReturnType<typeof setTimeout> | null = null;
 	let periodTimer: ReturnType<typeof setTimeout> | null = null;
 
-	function currentAppState(): AppState {
-		return shellRef?.state.appState ?? emptyAppState();
+	function currentTimetable(): Timetable | null {
+		return shellRef?.controller.currentTimetable ?? null;
 	}
 
 	$effect(() => {
 		const shell = shellRef;
 		if (!shell) return;
-		const { appState, initialized } = shell.state;
-		void appState;
+		const currentTt = shell.controller.currentTimetable;
+		const initialized = shell.state.initialized;
+		void currentTt;
 		void initialized;
 		untrack(() => {
 			recompute();
@@ -106,7 +105,7 @@ function createTimetableScreen() {
 	}
 
 	function recompute() {
-		const timetable = currentAppState().currentTimetable;
+		const timetable = currentTimetable();
 		const academicWeek = calendarService.calculateAcademicWeek(today, timetable?.academicConfig);
 		const resolvedWeek = resolveDisplayedWeek(
 			timetable,
@@ -175,7 +174,7 @@ function createTimetableScreen() {
 
 	function schedulePeriodRefresh() {
 		if (periodTimer) clearTimeout(periodTimer);
-		const timetable = currentAppState().currentTimetable;
+		const timetable = currentTimetable();
 		const periods = timetable?.academicConfig.periodTimes ?? [];
 		const parsed = parsePeriodRanges(periods);
 		const delay = computeDelayUntilNextCurrentTimeRefreshMillis(new Date(), parsed);
@@ -207,7 +206,7 @@ function createTimetableScreen() {
 	}
 
 	function setDisplayedWeek(week: number) {
-		const timetable = currentAppState().currentTimetable;
+		const timetable = currentTimetable();
 		if (!timetable) return;
 		const { startWeek, endWeek } = academicBounds(timetable);
 		displayedWeekMemory = clampDisplayedWeek(week, startWeek, endWeek);
@@ -217,7 +216,7 @@ function createTimetableScreen() {
 	}
 
 	function jumpToCurrentWeek() {
-		const timetable = currentAppState().currentTimetable;
+		const timetable = currentTimetable();
 		if (!timetable) return;
 		trackEvent('timetable_week_jump_current');
 		const academicWeek = calendarService.calculateAcademicWeek(today, timetable.academicConfig);
@@ -229,7 +228,7 @@ function createTimetableScreen() {
 	}
 
 	function settlePagerAtSlide(slideIndex: number) {
-		const timetable = currentAppState().currentTimetable;
+		const timetable = currentTimetable();
 		if (!timetable) return;
 		const { startWeek } = academicBounds(timetable);
 		setDisplayedWeek(weekFromSlideIndex(startWeek, slideIndex));
@@ -260,9 +259,8 @@ function createTimetableScreen() {
 	const state = $derived.by(() => {
 		void revision;
 		void now;
-		const appState = currentAppState();
+		const timetable = currentTimetable();
 		const hasLoadedAppState = shellRef?.state.initialized ?? false;
-		const timetable = appState.currentTimetable;
 		const academicWeek = calendarService.calculateAcademicWeek(today, timetable?.academicConfig);
 		const displayedWeek = resolveDisplayedWeek(
 			timetable,
@@ -288,7 +286,7 @@ function createTimetableScreen() {
 		const currentPeriodIndex = findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now));
 
 		return {
-			appState,
+			currentTimetable: timetable,
 			hasLoadedAppState,
 			today,
 			academicWeek,

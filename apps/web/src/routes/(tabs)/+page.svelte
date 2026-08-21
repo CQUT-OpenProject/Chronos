@@ -30,7 +30,7 @@
 	}
 </script>
 
-{#if browser && clientReady && screen.state.hasLoadedAppState && !screen.state.appState.currentTimetable}
+{#if browser && clientReady && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
 	<EmptyTimetableState />
 {:else if browser && clientReady && screen.state.hasLoadedAppState}
 	<TimetableScreen

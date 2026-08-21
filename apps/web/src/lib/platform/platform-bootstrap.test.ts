@@ -80,14 +80,14 @@ describe('createPlatformBootstrap', () => {
 	const shell = {
 		init: vi.fn(),
 		appearance,
-		controller: { activeThemeId: 'm3-default' },
-		state: { isDark: false, appState: {}, initialized: false, hasWallpaper: false }
+		controller: { activeThemeId: 'm3-default', userPreferences: { paletteMode: 'vibrant' } },
+		state: { isDark: false, initialized: false }
 	};
 	const timetableScreen = {
 		init: vi.fn(),
 		state: {
 			hasLoadedAppState: false,
-			appState: { currentTimetable: null }
+			currentTimetable: null
 		}
 	};
 	const deps = { shell, timetableScreen } as unknown as PlatformBootstrapDeps;

@@ -47,8 +47,8 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 			disposeEffects = $effect.root(() => {
 				$effect(() => {
 					const isDark = deps.shell.state.isDark;
-					const paletteMode = deps.shell.state.appState.paletteMode;
-					const wallpaperUri = deps.shell.state.appState.wallpaperUri;
+					const paletteMode = deps.shell.controller.userPreferences?.paletteMode ?? 'vibrant';
+					const wallpaperUri = null;
 					const activeThemeId = deps.shell.controller.activeThemeId;
 					const engine = getAppEngine();
 
@@ -71,9 +71,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 
 				$effect(() => {
 					if (deps.timetableScreen.state.hasLoadedAppState) {
-						onboardingController.maybeShow(
-							Boolean(deps.timetableScreen.state.appState.currentTimetable)
-						);
+						onboardingController.maybeShow(Boolean(deps.timetableScreen.state.currentTimetable));
 					}
 				});
 

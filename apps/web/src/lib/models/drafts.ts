@@ -1,32 +1,15 @@
-export interface PeriodTimeDraft {
-	index: number;
-	startTime: string;
-	endTime: string;
-}
+import type { AcademicConfig, ImportMetadata, PeriodTime, TimetableViewPrefs } from '@chronos/core';
 
-export interface AcademicConfigDraft {
-	termStartDate: string;
-	startWeek: number;
-	endWeek: number;
-	periodTimes: PeriodTimeDraft[];
-}
-
-export interface TimetableImportMetadataDraft {
-	source: string;
-	campusId?: string;
-}
-
-export interface TimetableViewPrefsDraft {
-	showSaturday: boolean;
-	showSunday: boolean;
-	showNonCurrentWeekCourses: boolean;
-}
+export type PeriodTimeDraft = PeriodTime;
+export type AcademicConfigDraft = AcademicConfig;
+export type TimetableImportMetadataDraft = ImportMetadata;
+export type TimetableViewPrefsDraft = TimetableViewPrefs;
 
 export interface TimetableSettingsDraft {
 	name: string;
-	academicConfig: AcademicConfigDraft;
-	importMetadata: TimetableImportMetadataDraft;
-	viewPrefs: TimetableViewPrefsDraft;
+	academicConfig: AcademicConfig;
+	importMetadata: ImportMetadata;
+	viewPrefs: TimetableViewPrefs;
 }
 
 export interface CourseDraft {

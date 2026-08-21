@@ -1,6 +1,5 @@
-import { AcademicCalendarService, todayIsoDate, type Course } from '@chronos/core';
+import { AcademicCalendarService, todayIsoDate, type Course, type Timetable } from '@chronos/core';
 import type { CourseDraft, PeriodTimeDraft, TimetableSettingsDraft } from '$lib/models/drafts';
-import type { Timetable } from '$lib/models/timetable';
 
 const academicCalendarService = new AcademicCalendarService();
 
