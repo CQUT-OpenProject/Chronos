@@ -1,5 +1,5 @@
 import type { HttpRequestOptions, HttpResponse, IHttpService } from '@chronos/core';
-import { profileHasServerPlugins } from '$lib/server/plugin-registry.generated';
+import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
 
 /**
  * Checks whether a given hostname is a private or loopback IP address (anti-SSRF).

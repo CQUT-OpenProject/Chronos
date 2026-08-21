@@ -2,9 +2,9 @@ import { json, type RequestEvent } from '@sveltejs/kit';
 import type { PluginHttpMethod } from '@chronos/core';
 import {
 	ACTIVE_SERVER_PLUGIN_IDS,
-	loadServerManifest,
 	type PluginProxyEntry
-} from '$lib/server/plugin-registry.generated';
+} from '$lib/boot/plugin-proxy-meta.generated';
+import { loadServerManifest } from '$lib/server/plugin-server-loader.generated';
 import { checkPluginRateLimit } from './rate-limit';
 
 const manifestCache = new Map<string, Awaited<ReturnType<typeof loadServerManifest>>>();

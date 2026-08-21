@@ -36,20 +36,20 @@ export default defineConfig({
 			),
 			'@chronos/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
 			'@chronos/ui-kit': fileURLToPath(new URL('./packages/ui-kit/src/index.ts', import.meta.url)),
-			'@chronos/plugin-source-cqut': fileURLToPath(
-				new URL('./packages/plugins/source-cqut/src/index.ts', import.meta.url)
-			),
-			'@chronos/plugin-codec-share': fileURLToPath(
-				new URL('./packages/plugins/codec-share/src/index.ts', import.meta.url)
-			),
-			'@chronos/plugin-codec-share/share-link': fileURLToPath(
-				new URL('./packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
+			'@chronos/plugin-source-cqut/server': fileURLToPath(
+				new URL('./packages/plugins/source-cqut/server/index.ts', import.meta.url)
 			),
 			'@chronos/plugin-source-cqut/week-merge': fileURLToPath(
 				new URL('./packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
 			),
-			'@chronos/plugin-source-cqut/server': fileURLToPath(
-				new URL('./packages/plugins/source-cqut/server/index.ts', import.meta.url)
+			'@chronos/plugin-codec-share/share-link': fileURLToPath(
+				new URL('./packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
+			),
+			'@chronos/plugin-codec-share': fileURLToPath(
+				new URL('./packages/plugins/codec-share/src/index.ts', import.meta.url)
+			),
+			'@chronos/plugin-source-cqut': fileURLToPath(
+				new URL('./packages/plugins/source-cqut/src/index.ts', import.meta.url)
 			),
 			'@chronos/plugin-theme-yumemita': fileURLToPath(
 				new URL('./packages/plugins/theme-yumemita/src/index.ts', import.meta.url)

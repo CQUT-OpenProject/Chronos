@@ -14,7 +14,7 @@ let sharedMarketplace: MarketplaceService | null = null;
 let engineInitPromise: Promise<ChronosEngine> | null = null;
 let profileManager: ProfileManager | null = null;
 
-import { profileHasServerPlugins } from '$lib/server/plugin-registry.generated';
+import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
 
 function createEngine(options?: WebProviderOptions): ChronosEngine {
 	const env = createWebChronosEnv({

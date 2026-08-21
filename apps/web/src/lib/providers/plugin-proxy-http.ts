@@ -1,5 +1,5 @@
 import type { HttpRequestOptions, HttpResponse, IHttpService } from '@chronos/core';
-import { PLUGIN_PROXY_ENTRIES } from '$lib/server/plugin-registry.generated';
+import { PLUGIN_PROXY_ENTRIES } from '$lib/boot/plugin-proxy-meta.generated';
 
 function hostMatchesDomain(hostname: string, domain: string): boolean {
 	const lowerHost = hostname.toLowerCase();

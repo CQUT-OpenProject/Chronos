@@ -36,35 +36,58 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		resolve: {
-			alias: {
-				'@chronos/core': fileURLToPath(
-					new URL('../../packages/core/src/index.ts', import.meta.url)
-				),
-				'@chronos/ui-kit': fileURLToPath(
-					new URL('../../packages/ui-kit/src/index.ts', import.meta.url)
-				),
-				'@chronos/plugin-source-cqut': fileURLToPath(
-					new URL('../../packages/plugins/source-cqut/src/index.ts', import.meta.url)
-				),
-				'@chronos/plugin-source-cqut/week-merge': fileURLToPath(
-					new URL('../../packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
-				),
-				'@chronos/plugin-source-cqut/server': fileURLToPath(
-					new URL('../../packages/plugins/source-cqut/server/index.ts', import.meta.url)
-				),
-				'@chronos/plugin-codec-share': fileURLToPath(
-					new URL('../../packages/plugins/codec-share/src/index.ts', import.meta.url)
-				),
-				'@chronos/plugin-codec-share/share-link': fileURLToPath(
-					new URL('../../packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
-				),
-				'@chronos/plugin-theme-yumemita': fileURLToPath(
-					new URL('../../packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
-				),
-				'@chronos/plugin-wallpaper': fileURLToPath(
-					new URL('../../packages/plugins/wallpaper/src/index.ts', import.meta.url)
-				)
-			}
+			alias: [
+				{
+					find: '@chronos/plugin-source-cqut/server',
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/source-cqut/server/index.ts', import.meta.url)
+					)
+				},
+				{
+					find: '@chronos/plugin-source-cqut/week-merge',
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
+					)
+				},
+				{
+					find: /^@chronos\/plugin-source-cqut$/,
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/source-cqut/src/index.ts', import.meta.url)
+					)
+				},
+				{
+					find: '@chronos/plugin-codec-share/share-link',
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
+					)
+				},
+				{
+					find: /^@chronos\/plugin-codec-share$/,
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/codec-share/src/index.ts', import.meta.url)
+					)
+				},
+				{
+					find: '@chronos/core',
+					replacement: fileURLToPath(new URL('../../packages/core/src/index.ts', import.meta.url))
+				},
+				{
+					find: '@chronos/ui-kit',
+					replacement: fileURLToPath(new URL('../../packages/ui-kit/src/index.ts', import.meta.url))
+				},
+				{
+					find: '@chronos/plugin-theme-yumemita',
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
+					)
+				},
+				{
+					find: '@chronos/plugin-wallpaper',
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/wallpaper/src/index.ts', import.meta.url)
+					)
+				}
+			]
 		},
 		define: {
 			__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
@@ -107,14 +130,14 @@ export default defineConfig(({ mode }) => {
 				alias: {
 					'@chronos/core': '../../packages/core/src/index.ts',
 					'@chronos/ui-kit': '../../packages/ui-kit/src/index.ts',
-					'@chronos/plugin-source-cqut': '../../packages/plugins/source-cqut/src/index.ts',
-					'@chronos/plugin-source-cqut/week-merge':
-						'../../packages/plugins/source-cqut/src/week-merge.ts',
 					'@chronos/plugin-source-cqut/server':
 						'../../packages/plugins/source-cqut/server/index.ts',
-					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
+					'@chronos/plugin-source-cqut/week-merge':
+						'../../packages/plugins/source-cqut/src/week-merge.ts',
+					'@chronos/plugin-source-cqut': '../../packages/plugins/source-cqut/src/index.ts',
 					'@chronos/plugin-codec-share/share-link':
 						'../../packages/plugins/codec-share/src/share-link/index.ts',
+					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
 					'@chronos/plugin-theme-yumemita': '../../packages/plugins/theme-yumemita/src/index.ts',
 					'@chronos/plugin-wallpaper': '../../packages/plugins/wallpaper/src/index.ts'
 				},
