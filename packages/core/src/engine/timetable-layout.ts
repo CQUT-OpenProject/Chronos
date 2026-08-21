@@ -15,15 +15,8 @@ export interface TimetableWeekLayoutInput {
 	todayIso: string;
 	columnWidthPx?: number;
 	expandedSlotKeys?: ReadonlySet<string>;
-	layoutMode?: TimetableLayoutMode | 'SCROLL' | 'FIT' | 'scroll' | 'fit';
-	capsuleCornerStyle?:
-		| CapsuleCornerStyle
-		| 'ROUNDED'
-		| 'MERGE'
-		| 'SQUARE'
-		| 'rounded'
-		| 'merge'
-		| 'square';
+	layoutMode?: TimetableLayoutMode;
+	capsuleCornerStyle?: CapsuleCornerStyle;
 	coursePalette?: readonly CoursePaletteEntry[];
 	paletteCourses?: { name: string; color?: string }[];
 	academicCalendarService?: AcademicCalendarService;

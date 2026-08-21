@@ -80,17 +80,10 @@ export interface PlaceCapsulesInput {
 	visibleDays: { dayOfWeek: number }[];
 	columnWidthPx: number;
 	expandedSlotKeys: ReadonlySet<string>;
-	layoutMode?: TimetableLayoutMode | 'SCROLL' | 'FIT' | 'scroll' | 'fit';
+	layoutMode?: TimetableLayoutMode;
 	coursePalette?: readonly CoursePaletteEntry[];
 	paletteCourses?: { name: string; color?: string }[];
-	capsuleCornerStyle?:
-		| CapsuleCornerStyle
-		| 'ROUNDED'
-		| 'MERGE'
-		| 'SQUARE'
-		| 'rounded'
-		| 'merge'
-		| 'square';
+	capsuleCornerStyle?: CapsuleCornerStyle;
 }
 
 interface CourseSlotGroup {
