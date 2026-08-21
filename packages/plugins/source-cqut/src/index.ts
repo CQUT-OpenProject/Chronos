@@ -275,7 +275,11 @@ export function parseCqutScheduleData(
 	});
 }
 
-export const cqutPlugin: ChronosPlugin = {
+export interface CqutPluginConfig {
+	disabledSlots?: string[];
+}
+
+export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 	id: 'source-cqut',
 	name: () => 'CQUT-Timetable',
 	version: '1.0.0',
@@ -287,7 +291,9 @@ export const cqutPlugin: ChronosPlugin = {
 	permissions: ['network', 'storage'],
 	allowedDomains: ['authserver.cqut.edu.cn', 'uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'],
 
-	apply(ctx: ChronosContext) {
+	apply(ctx: ChronosContext<CqutPluginConfig>) {
+		const disabledSlots = new Set(ctx.config.disabledSlots ?? []);
+
 		async function saveCredentialsIfRequested(
 			username: string,
 			password: string,
@@ -360,25 +366,29 @@ export const cqutPlugin: ChronosPlugin = {
 		}
 
 		// Register import source tab slot
-		ctx.registerSlot('import.source.tab', {
-			id: 'cqut-online',
-			title: () => '知行理工',
-			order: 10,
-			inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			defaultInput: {
-				saveCredentials: false
-			},
-			executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
-				doImport(inputs, context)
-		});
+		if (!disabledSlots.has('cqut-online')) {
+			ctx.registerSlot('import.source.tab', {
+				id: 'cqut-online',
+				title: () => '知行理工',
+				order: 10,
+				inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+				defaultInput: {
+					saveCredentials: false
+				},
+				executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
+					doImport(inputs, context)
+			});
+		}
 
-		ctx.registerSlot('import.source.tab', {
-			id: 'edu-html',
-			title: () => 'HTML 文件',
-			order: 30,
-			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
-		});
+		if (!disabledSlots.has('edu-html')) {
+			ctx.registerSlot('import.source.tab', {
+				id: 'edu-html',
+				title: () => 'HTML 文件',
+				order: 30,
+				inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+				executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
+			});
+		}
 	}
 };
 

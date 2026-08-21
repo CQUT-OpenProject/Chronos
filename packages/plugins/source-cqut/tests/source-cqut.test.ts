@@ -289,4 +289,20 @@ describe('cqutPlugin', () => {
 		expect(timetable.viewPrefs.showSaturday).toBe(false);
 		expect(timetable.viewPrefs.showSunday).toBe(false);
 	});
+
+	it('skips cqut-online slot when disabledSlots includes it', async () => {
+		const env = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		const handle = await engine.loadPlugin({
+			...cqutPlugin,
+			defaultConfig: { disabledSlots: ['cqut-online'] }
+		});
+
+		expect(engine.slots.getSlotItem('import.source.tab', 'cqut-online')).toBeUndefined();
+		expect(engine.slots.getSlotItem('import.source.tab', 'edu-html')).toBeDefined();
+
+		handle.dispose();
+	});
 });

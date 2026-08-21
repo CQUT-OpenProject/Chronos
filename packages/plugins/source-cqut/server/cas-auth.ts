@@ -1,5 +1,5 @@
-import { AppError } from '$lib/domain/result/app-error';
-import { failure, success, type AppResult } from '$lib/domain/result/app-result';
+import { AppError } from './result/app-error';
+import { failure, success, type AppResult } from './result/app-result';
 import {
 	createCasClient,
 	isCasErrorOfKind,

@@ -1,4 +1,4 @@
-import { AppError } from '$lib/domain/result/app-error';
+import { AppError } from './result/app-error';
 
 function getCause(error: unknown): unknown {
 	if (error && typeof error === 'object' && 'cause' in error) {
@@ -95,7 +95,7 @@ export function logUpstreamError(step: string, error: unknown): void {
 		if (typeof record.message === 'string') parts.push(`message=${record.message}`);
 	}
 
-	console.error('[cqut-online]', parts.join(' '));
+	console.error('[source-cqut]', parts.join(' '));
 }
 
 export function toUpstreamNetworkError(

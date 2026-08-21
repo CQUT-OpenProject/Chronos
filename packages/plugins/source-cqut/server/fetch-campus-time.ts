@@ -1,11 +1,11 @@
-import { AppError } from '$lib/domain/result/app-error';
-import { failure, success, type AppResult } from '$lib/domain/result/app-result';
+import { AppError } from './result/app-error';
+import { failure, success, type AppResult } from './result/app-result';
 import {
 	CQUT_CAMPUS_IDS,
 	getCampusApiName,
 	resolveCampusIdFromApiName,
 	type CqutCampusId
-} from '@chronos/plugin-source-cqut';
+} from '../src/campus-period-times';
 import type { PeriodTime } from '@chronos/core';
 import { GET_CAMPUS_TIME_INFO_URL, GET_USER_INFO_URL, JSON_MEDIA_TYPE } from './config';
 import type { CookieJar } from './cookie-jar';

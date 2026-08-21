@@ -15,10 +15,19 @@
 			"types": "./src/week-merge.ts",
 			"import": "./src/week-merge.ts",
 			"default": "./src/week-merge.ts"
+		},
+		"./server": {
+			"types": "./server/index.ts",
+			"import": "./server/index.ts",
+			"default": "./server/index.ts"
 		}
 	},
 	"dependencies": {
-		"@chronos/core": "workspace:*"
+		"@chronos/core": "workspace:*",
+		"@cqut-openproject/cas-sdk": "github:CQUT-OpenProject/CAS-SDK#1.0.0",
+		"@sveltejs/kit": "^2.63.0",
+		"undici": "^8.10.0",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"linkedom": "^0.18.13"
