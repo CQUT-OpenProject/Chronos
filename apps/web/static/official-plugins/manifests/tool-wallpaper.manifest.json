@@ -1,0 +1,18 @@
+{
+	"id": "tool-wallpaper",
+	"name": {
+		"zh-CN": "课表壁纸",
+		"en": "Wallpaper"
+	},
+	"version": "1.0.0",
+	"description": {
+		"zh-CN": "自定义课表背景壁纸与主题取色",
+		"en": "Custom timetable wallpaper"
+	},
+	"author": "Chronos",
+	"type": "tool",
+	"bundleFormat": "esm",
+	"minEngineVersion": "0.4.0",
+	"bundleUrl": "/official-plugins/bundles/tool-wallpaper.bundle.js",
+	"sha256": "8e299aeeb114d5504969718cc8cf3e3f05dfe645d184a78af8e627268f64aade"
+}

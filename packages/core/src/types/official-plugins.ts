@@ -1,7 +1,7 @@
 import type { ConfigSchema } from '../schema/schema';
 
 export type PluginCapability = 'network' | 'storage' | 'vault' | 'notifications';
-export type BundleFormat = 'iife' | 'esm';
+export type BundleFormat = 'esm';
 
 export interface PluginManifest {
 	id: string;

@@ -57,6 +57,9 @@ export default defineConfig({
 			'@chronos/plugin-wallpaper/wallpaper-theme': fileURLToPath(
 				new URL('./packages/plugins/wallpaper/src/wallpaper-theme.ts', import.meta.url)
 			),
+			'@chronos/plugin-wallpaper/WallpaperScreen': fileURLToPath(
+				new URL('./packages/plugins/wallpaper/src/WallpaperScreen.svelte', import.meta.url)
+			),
 			'@chronos/plugin-wallpaper': fileURLToPath(
 				new URL('./packages/plugins/wallpaper/src/index.ts', import.meta.url)
 			)

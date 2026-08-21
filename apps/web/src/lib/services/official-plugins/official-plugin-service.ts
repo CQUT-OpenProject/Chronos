@@ -5,16 +5,15 @@ import type {
 	PluginManifest
 } from '@chronos/core';
 import { IHttpService, IRuntimeService } from '@chronos/core';
-import { parsePluginBundle, validatePluginManifest } from './plugin-bundle';
+import { loadEsmPluginFromCode, validatePluginManifest } from './plugin-bundle';
 
 const INSTALLED_STORAGE_KEY = 'installed_plugins';
 const OFFICIAL_PLUGINS_PLUGIN_ID = 'core.official-plugins';
-/** @deprecated Remove after v0.4.0 — migrates legacy `core.marketplace` storage */
-const LEGACY_MARKETPLACE_PLUGIN_ID = 'core.marketplace';
 
 export interface InstalledOfficialPluginRecord {
 	manifest: PluginManifest;
 	code: string;
+	cssCode?: string | null;
 	manifestUrl?: string;
 	enabled: boolean;
 	installedAt: number;
@@ -22,6 +21,7 @@ export interface InstalledOfficialPluginRecord {
 
 export class OfficialPluginService implements Disposable {
 	private activeHandles = new Map<string, Disposable>();
+	private styleElements = new Map<string, HTMLStyleElement>();
 	private installedCache: InstalledOfficialPluginRecord[] = [];
 	private changeListeners = new Set<() => void>();
 	private initialized = false;
@@ -30,7 +30,6 @@ export class OfficialPluginService implements Disposable {
 
 	async init(): Promise<void> {
 		if (this.initialized) return;
-		await this.migrateLegacyStorage();
 		this.installedCache = (await this.loadInstalledFromStorage()) || [];
 
 		const hasBuiltinOverlap = this.installedCache.some((record) =>
@@ -46,7 +45,7 @@ export class OfficialPluginService implements Disposable {
 		for (const record of this.installedCache) {
 			if (record.enabled) {
 				try {
-					await this.loadPluginInstance(record.manifest, record.code);
+					await this.loadPluginInstance(record.manifest, record.code, record.cssCode ?? null);
 				} catch (err) {
 					console.error(
 						`[OfficialPluginService] Failed to load plugin ${record.manifest.id}:`,
@@ -76,26 +75,6 @@ export class OfficialPluginService implements Disposable {
 				console.error('[OfficialPluginService] Error in change listener:', err);
 			}
 		}
-	}
-
-	private async migrateLegacyStorage(): Promise<void> {
-		const legacy = await this.engine.storage.getPluginData<InstalledOfficialPluginRecord[]>(
-			LEGACY_MARKETPLACE_PLUGIN_ID,
-			INSTALLED_STORAGE_KEY
-		);
-		if (!legacy || !Array.isArray(legacy) || legacy.length === 0) return;
-
-		const current = await this.engine.storage.getPluginData<InstalledOfficialPluginRecord[]>(
-			OFFICIAL_PLUGINS_PLUGIN_ID,
-			INSTALLED_STORAGE_KEY
-		);
-		if (current && current.length > 0) return;
-
-		await this.engine.storage.setPluginData(
-			OFFICIAL_PLUGINS_PLUGIN_ID,
-			INSTALLED_STORAGE_KEY,
-			legacy
-		);
 	}
 
 	private async loadInstalledFromStorage(): Promise<InstalledOfficialPluginRecord[]> {
@@ -157,11 +136,12 @@ export class OfficialPluginService implements Disposable {
 
 	async install(manifest: PluginManifest, manifestUrl?: string): Promise<void> {
 		validatePluginManifest(manifest);
-		const code = await this.downloadBundle(manifest);
+		const { code, cssCode } = await this.downloadBundle(manifest);
 
 		const record: InstalledOfficialPluginRecord = {
 			manifest,
 			code,
+			cssCode: cssCode ?? null,
 			manifestUrl,
 			enabled: true,
 			installedAt: Date.now()
@@ -176,7 +156,7 @@ export class OfficialPluginService implements Disposable {
 		}
 
 		await this.saveInstalledToStorage();
-		await this.loadPluginInstance(manifest, code);
+		await this.loadPluginInstance(manifest, code, cssCode ?? null);
 		if (manifest.type === 'theme') {
 			this.engine.actions.notify('插件已安装并启用，可在「显示设置」中选择此外观主题', 'info');
 		} else {
@@ -184,7 +164,9 @@ export class OfficialPluginService implements Disposable {
 		}
 	}
 
-	private async downloadBundle(manifest: PluginManifest): Promise<string> {
+	private async downloadBundle(
+		manifest: PluginManifest
+	): Promise<{ code: string; cssCode: string | null }> {
 		const response = await this.engine.services.get(IHttpService).request(manifest.bundleUrl, {
 			method: 'GET'
 		});
@@ -201,7 +183,28 @@ export class OfficialPluginService implements Disposable {
 			);
 		}
 
-		return code;
+		let cssCode: string | null = null;
+		const cssUrl = (manifest as unknown as { cssUrl?: string }).cssUrl;
+		const cssSha256 = (manifest as unknown as { cssSha256?: string }).cssSha256;
+		if (cssUrl) {
+			const cssResponse = await this.engine.services.get(IHttpService).request(cssUrl, {
+				method: 'GET'
+			});
+			if (!cssResponse.ok) {
+				throw new Error(`Failed to download plugin css from ${cssUrl}`);
+			}
+			cssCode = await cssResponse.text();
+			if (cssSha256) {
+				const computedCssHash = await this.engine.services.get(IRuntimeService).sha256(cssCode);
+				if (computedCssHash.toLowerCase() !== cssSha256.toLowerCase()) {
+					throw new Error(
+						`Plugin CSS integrity check failed for "${manifest.id}". Expected SHA-256 ${cssSha256}, got ${computedCssHash}`
+					);
+				}
+			}
+		}
+
+		return { code, cssCode };
 	}
 
 	async uninstall(pluginId: string): Promise<void> {
@@ -220,7 +223,7 @@ export class OfficialPluginService implements Disposable {
 
 		record.enabled = true;
 		await this.saveInstalledToStorage();
-		await this.loadPluginInstance(record.manifest, record.code);
+		await this.loadPluginInstance(record.manifest, record.code, record.cssCode ?? null);
 		this.engine.actions.notify(`已启用插件「${pluginId}」`, 'info');
 	}
 
@@ -239,10 +242,16 @@ export class OfficialPluginService implements Disposable {
 		return this.engine.storage.getPluginData<T>(pluginId, '__config__');
 	}
 
-	private async loadPluginInstance(manifest: PluginManifest, code: string): Promise<Disposable> {
+	private async loadPluginInstance(
+		manifest: PluginManifest,
+		code: string,
+		cssCode: string | null = null
+	): Promise<Disposable> {
 		await this.unloadPluginInstance(manifest.id);
 
-		const plugin = parsePluginBundle(code);
+		if (cssCode) this.injectCss(manifest.id, cssCode);
+
+		const plugin = await loadEsmPluginFromCode(code);
 		if (plugin.id !== manifest.id) {
 			throw new Error(`Plugin id mismatch: manifest "${manifest.id}" vs bundle "${plugin.id}"`);
 		}
@@ -256,6 +265,27 @@ export class OfficialPluginService implements Disposable {
 
 		this.activeHandles.set(manifest.id, handle);
 		return handle;
+	}
+
+	private injectCss(pluginId: string, css: string): void {
+		if (typeof document === 'undefined') return;
+		this.removeCss(pluginId);
+		const el = document.createElement('style');
+		el.setAttribute('data-plugin-id', pluginId);
+		el.textContent = css;
+		document.head.appendChild(el);
+		this.styleElements.set(pluginId, el);
+	}
+
+	private removeCss(pluginId: string): void {
+		const el = this.styleElements.get(pluginId);
+		if (el) {
+			el.remove();
+			this.styleElements.delete(pluginId);
+		} else if (typeof document !== 'undefined') {
+			const fallback = document.querySelector(`style[data-plugin-id="${pluginId}"]`);
+			fallback?.remove();
+		}
 	}
 
 	private revertThemeIfNeeded(): void {
@@ -286,6 +316,7 @@ export class OfficialPluginService implements Disposable {
 			handle.dispose();
 			this.activeHandles.delete(pluginId);
 		}
+		this.removeCss(pluginId);
 		if (this.installedCache.some((p) => p.manifest.id === pluginId)) {
 			this.revertThemeIfNeeded();
 		}
@@ -308,6 +339,8 @@ export class OfficialPluginService implements Disposable {
 			handle.dispose();
 		}
 		this.activeHandles.clear();
+		for (const [, el] of this.styleElements) el.remove();
+		this.styleElements.clear();
 		this.changeListeners.clear();
 	}
 }

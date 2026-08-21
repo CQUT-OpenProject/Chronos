@@ -88,6 +88,12 @@ export default defineConfig(({ mode }) => {
 					)
 				},
 				{
+					find: '@chronos/plugin-wallpaper/WallpaperScreen',
+					replacement: fileURLToPath(
+						new URL('../../packages/plugins/wallpaper/src/WallpaperScreen.svelte', import.meta.url)
+					)
+				},
+				{
 					find: /^@chronos\/plugin-wallpaper$/,
 					replacement: fileURLToPath(
 						new URL('../../packages/plugins/wallpaper/src/index.ts', import.meta.url)
@@ -147,6 +153,8 @@ export default defineConfig(({ mode }) => {
 					'@chronos/plugin-theme-yumemita': '../../packages/plugins/theme-yumemita/src/index.ts',
 					'@chronos/plugin-wallpaper/wallpaper-theme':
 						'../../packages/plugins/wallpaper/src/wallpaper-theme.ts',
+					'@chronos/plugin-wallpaper/WallpaperScreen':
+						'../../packages/plugins/wallpaper/src/WallpaperScreen.svelte',
 					'@chronos/plugin-wallpaper': '../../packages/plugins/wallpaper/src/index.ts'
 				},
 				compilerOptions: {

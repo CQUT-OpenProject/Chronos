@@ -8,7 +8,9 @@ export type SchemaType =
 	| 'select'
 	| 'file'
 	| 'array'
-	| 'object';
+	| 'object'
+	| 'timetable-preview'
+	| 'wallpaper-preview';
 
 export interface SelectOption {
 	label: LocalizedText;
@@ -67,6 +69,10 @@ export function extractDefaultValues<T extends object>(schema: ConfigSchema<T>):
 					break;
 				case 'select':
 					result[key] = field.options?.[0]?.value ?? '';
+					break;
+				case 'wallpaper-preview':
+				case 'timetable-preview':
+					result[key] = null;
 					break;
 				case 'string':
 				case 'password':
@@ -148,6 +154,13 @@ export function validateConfig<T extends object>(
 				if (typeof val !== 'string' && !(val instanceof Uint8Array)) {
 					errors[key] = 'Value must be a string or binary file';
 				}
+				break;
+			case 'wallpaper-preview':
+				if (val !== null && val !== '' && typeof val !== 'string' && !(val instanceof Uint8Array)) {
+					errors[key] = 'Value must be a string or binary file';
+				}
+				break;
+			case 'timetable-preview':
 				break;
 		}
 
