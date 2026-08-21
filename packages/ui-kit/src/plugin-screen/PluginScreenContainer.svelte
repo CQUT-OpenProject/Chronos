@@ -11,26 +11,59 @@
 
 	let { controller, pluginId, viewId = 'index' }: Props = $props();
 
-	// Find the screen contribution from shell.route.screen slot
 	const screenSlot = $derived(
 		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
 	);
 
 	let formValues = $state<Record<string, unknown>>({});
+	let saving = $state(false);
+	let saveError = $state<string | null>(null);
+
+	$effect(() => {
+		if (!screenSlot?.schema || screenSlot?.component) return;
+		try {
+			const ctx = controller.getPluginContext(pluginId);
+			formValues = { ...ctx.config };
+		} catch {
+			formValues = {};
+		}
+	});
+
+	async function saveSchemaConfig() {
+		if (!screenSlot?.schema) return;
+		saving = true;
+		saveError = null;
+		try {
+			const ctx = controller.getPluginContext(pluginId);
+			await ctx.updateConfig(formValues);
+		} catch (err: unknown) {
+			saveError = err instanceof Error ? err.message : '保存失败';
+		} finally {
+			saving = false;
+		}
+	}
 </script>
 
 <div class="flex w-full flex-col p-4">
 	{#if screenSlot?.component}
-		<!-- In-Process plugins render custom Svelte component -->
 		{@const DynamicComponent = screenSlot.component}
 		<DynamicComponent {controller} {pluginId} />
 	{:else if screenSlot?.schema}
-		<!-- Sandboxed / Schema plugins render dynamic SchemaForm -->
-		<div class="rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
+		<div class="flex flex-col gap-4 rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
 			<SchemaForm schema={screenSlot.schema} bind:value={formValues} />
+			{#if saveError}
+				<p class="m3-body-small text-error">{saveError}</p>
+			{/if}
+			<button
+				type="button"
+				class="m3-label-large rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
+				disabled={saving}
+				onclick={saveSchemaConfig}
+			>
+				{saving ? '保存中…' : '保存设置'}
+			</button>
 		</div>
 	{:else}
-		<!-- Fallback when slot is not registered or plugin is unloaded -->
 		<div
 			class="flex flex-col items-center justify-center py-16 text-center text-on-surface-variant"
 		>
