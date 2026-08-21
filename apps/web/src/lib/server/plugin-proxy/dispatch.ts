@@ -59,8 +59,4 @@ export async function dispatchPluginRequest(
 	});
 }
 
-export function registryHasServerPlugins(): boolean {
-	return ACTIVE_SERVER_PLUGIN_IDS.length > 0;
-}
-
 export type { PluginProxyEntry };

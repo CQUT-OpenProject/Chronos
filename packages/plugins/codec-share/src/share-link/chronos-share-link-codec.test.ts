@@ -73,7 +73,7 @@ describe('chronos-share-binary', () => {
 		expect(decoded.name).toBe(timetable.name);
 		expect(decoded.academicConfig.termStartDate).toBe('2026-03-02');
 		expect(decoded.academicConfig.endWeek).toBe(20);
-		expect(decoded.importMetadata.source).toBe('SHARED_JSON');
+		expect(decoded.importMetadata.source).toBe('share-link');
 		expect(decoded.importMetadata.campusId).toBe('liangjiang');
 		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:30');
 		expect(decoded.courses[0]).toMatchObject({
@@ -91,7 +91,7 @@ describe('chronos-share-binary', () => {
 	it('round-trips explicit huaxi campus', () => {
 		const timetable = createTimetable({
 			...sampleTimetable(),
-			importMetadata: { source: 'ONLINE_EDU', campusId: 'huaxi' }
+			importMetadata: { source: 'cqut-online', campusId: 'huaxi' }
 		});
 		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
 		expect(decoded.importMetadata.campusId).toBe('huaxi');
@@ -145,7 +145,7 @@ describe('chronos-share-binary', () => {
 				endWeek: 21,
 				periodTimes: []
 			},
-			importMetadata: { source: 'SHARED_JSON' }
+			importMetadata: { source: 'share-link' }
 		});
 
 		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
@@ -169,7 +169,7 @@ describe('chronos-share-binary', () => {
 				endWeek: 20,
 				periodTimes: []
 			},
-			importMetadata: { source: 'SHARED_JSON' }
+			importMetadata: { source: 'share-link' }
 		});
 
 		const binary = encodeTimetableToBinary(timetable);
@@ -318,7 +318,7 @@ describe('chronos-share-link-codec', () => {
 				endWeek: 21,
 				periodTimes: []
 			},
-			importMetadata: { source: 'SHARED_JSON' }
+			importMetadata: { source: 'share-link' }
 		});
 
 		const decoded = await decodeSharePayload(await encodeSharePayload(timetable));
@@ -396,7 +396,7 @@ function sampleTimetable() {
 			endWeek: 20,
 			periodTimes: []
 		},
-		importMetadata: { source: 'SHARED_JSON' },
+		importMetadata: { source: 'share-link' },
 		viewPrefs: {
 			showSaturday: true,
 			showSunday: false,
@@ -457,7 +457,7 @@ function createLargeTimetable(count: number) {
 			endWeek: 20,
 			periodTimes: []
 		},
-		importMetadata: { source: 'SHARED_JSON' }
+		importMetadata: { source: 'share-link' }
 	});
 }
 
@@ -591,6 +591,6 @@ function createCqutLargeTimetable() {
 			endWeek: 21,
 			periodTimes: []
 		},
-		importMetadata: { source: 'SHARED_JSON' }
+		importMetadata: { source: 'share-link' }
 	});
 }

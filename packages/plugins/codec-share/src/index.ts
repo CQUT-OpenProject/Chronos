@@ -10,6 +10,7 @@ import {
 	decodeSharePayload,
 	encodeShareLink,
 	ensureShareLinkBrotliReady,
+	estimateShareLinkLength,
 	extractSharePayloadFromText,
 	formatShareClipboardText
 } from './share-link';
@@ -75,7 +76,8 @@ export const shareCodecPlugin: ChronosPlugin = {
 					mimeType: 'application/x-chronos-share-link',
 					content: clipboardText
 				};
-			}
+			},
+			estimateLength: estimateShareLinkLength
 		});
 	}
 };

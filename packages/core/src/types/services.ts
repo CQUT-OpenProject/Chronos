@@ -38,6 +38,12 @@ export interface HttpResponse {
 
 export interface IHttpService {
 	request(url: string, options?: HttpRequestOptions): Promise<HttpResponse>;
+	proxy?(
+		pluginId: string,
+		action: string,
+		payload: unknown,
+		options?: { timeoutMs?: number; signal?: AbortSignal }
+	): Promise<HttpResponse>;
 	clearSession?(sessionId: string): Promise<void>;
 }
 export const IHttpService = createServiceIdentifier<IHttpService>('http');

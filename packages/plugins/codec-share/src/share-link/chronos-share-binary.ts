@@ -193,7 +193,7 @@ function applyShareImportCampus(
 			periodTimes: getCampusDefaultPeriodTimes(campusId)
 		},
 		importMetadata: {
-			source: 'SHARED_JSON',
+			source: 'share-link',
 			campusId
 		}
 	};
@@ -428,7 +428,7 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 			endWeek,
 			periodTimes: []
 		},
-		importMetadata: { source: 'SHARED_JSON' },
+		importMetadata: { source: 'share-link' },
 		viewPrefs: {
 			showSaturday: courses.some((course) => course.dayOfWeek === 6),
 			showSunday: courses.some((course) => course.dayOfWeek === 7),

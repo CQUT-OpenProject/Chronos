@@ -239,7 +239,7 @@ describe('Web Providers', () => {
 		}).not.toThrow();
 	});
 
-	it('PluginProxyHttpAdapter unwraps preview API envelope for plugin proxy domains', async () => {
+	it('PluginProxyHttpAdapter posts explicit proxy payloads', async () => {
 		const inner = new WebHttpProxyProvider();
 		const adapter = new PluginProxyHttpAdapter(inner);
 		const fetchPayload = {
@@ -257,10 +257,9 @@ describe('Web Providers', () => {
 		vi.stubGlobal('window', {});
 		vi.stubGlobal('fetch', fetchMock);
 
-		const response = await adapter.request('https://authserver.cqut.edu.cn/authserver/login', {
-			method: 'POST',
-			bypassCors: true,
-			body: 'username=stu001&password=pass123'
+		const response = await adapter.proxy!('source-cqut', 'preview', {
+			account: 'stu001',
+			password: 'pass123'
 		});
 
 		expect(fetchMock).toHaveBeenCalledWith(
@@ -272,32 +271,6 @@ describe('Web Providers', () => {
 		);
 		const json = await response.json();
 		expect(json).toEqual(fetchPayload);
-		vi.unstubAllGlobals();
-	});
-
-	it('PluginProxyHttpAdapter extracts credentials from JSON body', async () => {
-		const inner = new WebHttpProxyProvider();
-		const adapter = new PluginProxyHttpAdapter(inner);
-		const fetchMock = vi.fn(async () => ({
-			ok: true,
-			status: 200,
-			json: async () => ({ ok: true, payload: {} })
-		}));
-		vi.stubGlobal('window', {});
-		vi.stubGlobal('fetch', fetchMock);
-
-		await adapter.request('https://uis.cqut.edu.cn/api', {
-			method: 'POST',
-			bypassCors: true,
-			body: JSON.stringify({ username: 'json-user', password: 'json-pass' })
-		});
-
-		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/plugins/source-cqut/preview',
-			expect.objectContaining({
-				body: JSON.stringify({ account: 'json-user', password: 'json-pass' })
-			})
-		);
 		vi.unstubAllGlobals();
 	});
 

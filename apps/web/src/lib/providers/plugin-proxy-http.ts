@@ -1,121 +1,79 @@
-import type { HttpRequestOptions, HttpResponse, IHttpService } from '@chronos/core';
-import { PLUGIN_PROXY_ENTRIES } from '$lib/boot/plugin-proxy-meta.generated';
+import type { HttpResponse, IHttpService } from '@chronos/core';
 
-function hostMatchesDomain(hostname: string, domain: string): boolean {
-	const lowerHost = hostname.toLowerCase();
-	const lowerDomain = domain.toLowerCase();
-	return lowerHost === lowerDomain || lowerHost.endsWith(`.${lowerDomain}`);
-}
+function buildProxyResponse(
+	proxyRes: Response,
+	proxyData: { ok?: boolean; payload?: unknown; error?: { message?: string } }
+): HttpResponse {
+	if (!proxyRes.ok || !proxyData.ok) {
+		const errorMsg = proxyData?.error?.message || 'Plugin upstream connection failed';
+		return {
+			status: proxyRes.status === 200 ? 502 : proxyRes.status,
+			statusText: errorMsg,
+			headers: {},
+			ok: false,
+			text: async () => JSON.stringify(proxyData),
+			json: async <T>() => proxyData as T,
+			bytes: async () => new Uint8Array()
+		};
+	}
 
-function findProxyEntry(url: string) {
-	try {
-		const parsed = new URL(url);
-		for (const entry of PLUGIN_PROXY_ENTRIES) {
-			if (entry.domains.some((domain) => hostMatchesDomain(parsed.hostname, domain))) {
-				return entry;
-			}
-		}
-	} catch {
-		for (const entry of PLUGIN_PROXY_ENTRIES) {
-			if (entry.domains.some((domain) => url.includes(domain))) {
-				return entry;
-			}
-		}
-	}
-	return null;
-}
-
-function extractCredentials(body: HttpRequestOptions['body']): {
-	account: string;
-	password: string;
-} {
-	if (typeof body !== 'string') {
-		return { account: '', password: '' };
-	}
-	const trimmed = body.trim();
-	if (trimmed.startsWith('{')) {
-		try {
-			const json = JSON.parse(trimmed) as {
-				username?: string;
-				account?: string;
-				password?: string;
-			};
-			return {
-				account: (json.username || json.account || '').trim(),
-				password: json.password ?? ''
-			};
-		} catch {
-			return { account: '', password: '' };
-		}
-	}
-	const searchParams = new URLSearchParams(body);
+	const payloadStr = JSON.stringify(proxyData.payload ?? {});
 	return {
-		account: searchParams.get('username') || searchParams.get('account') || '',
-		password: searchParams.get('password') || ''
+		status: 200,
+		statusText: 'OK',
+		headers: { 'Content-Type': 'application/json' },
+		ok: true,
+		text: async () => payloadStr,
+		json: async <T>() => (proxyData.payload ?? {}) as T,
+		bytes: async () => new TextEncoder().encode(payloadStr)
 	};
 }
 
 /**
- * Routes plugin upstream proxy calls to the host catch-all API.
+ * Adds explicit plugin upstream proxy routing to the host catch-all API.
  */
 export class PluginProxyHttpAdapter implements IHttpService {
 	constructor(private readonly inner: IHttpService) {}
 
-	async request(url: string, options?: HttpRequestOptions): Promise<HttpResponse> {
-		if (options?.bypassCors && typeof window !== 'undefined') {
-			const entry = findProxyEntry(url);
-			if (entry) {
-				const { account, password } = extractCredentials(options.body);
-				const controller = options.timeoutMs ? new AbortController() : undefined;
-				const timeoutId =
-					options.timeoutMs && controller
-						? setTimeout(() => controller.abort(), options.timeoutMs)
-						: undefined;
+	async request(url: string, options?: Parameters<IHttpService['request']>[1]) {
+		return this.inner.request(url, options);
+	}
 
-				try {
-					const proxyRes = await fetch(`/api/plugins/${entry.pluginId}/${entry.action}`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ account, password }),
-						signal: controller?.signal
-					});
-
-					const proxyData = (await proxyRes.json()) as {
-						ok?: boolean;
-						payload?: unknown;
-						error?: { message?: string };
-					};
-
-					if (!proxyRes.ok || !proxyData.ok) {
-						const errorMsg = proxyData?.error?.message || 'Plugin upstream connection failed';
-						return {
-							status: proxyRes.status === 200 ? 502 : proxyRes.status,
-							statusText: errorMsg,
-							headers: {},
-							ok: false,
-							text: async () => JSON.stringify(proxyData),
-							json: async <T>() => proxyData as T,
-							bytes: async () => new Uint8Array()
-						};
-					}
-
-					const payloadStr = JSON.stringify(proxyData.payload ?? {});
-					return {
-						status: 200,
-						statusText: 'OK',
-						headers: { 'Content-Type': 'application/json' },
-						ok: true,
-						text: async () => payloadStr,
-						json: async <T>() => (proxyData.payload ?? {}) as T,
-						bytes: async () => new TextEncoder().encode(payloadStr)
-					};
-				} finally {
-					if (timeoutId) clearTimeout(timeoutId);
-				}
-			}
+	async proxy(
+		pluginId: string,
+		action: string,
+		payload: unknown,
+		options?: { timeoutMs?: number; signal?: AbortSignal }
+	): Promise<HttpResponse> {
+		if (typeof window === 'undefined') {
+			throw new Error('Plugin proxy is only available in the browser');
 		}
 
-		return this.inner.request(url, options);
+		const controller = options?.timeoutMs ? new AbortController() : undefined;
+		const timeoutId =
+			options?.timeoutMs && controller
+				? setTimeout(() => controller.abort(), options.timeoutMs)
+				: undefined;
+		const signal = options?.signal ?? controller?.signal;
+
+		try {
+			const proxyRes = await fetch(`/api/plugins/${pluginId}/${action}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+				signal
+			});
+
+			const proxyData = (await proxyRes.json()) as {
+				ok?: boolean;
+				payload?: unknown;
+				error?: { message?: string };
+			};
+
+			return buildProxyResponse(proxyRes, proxyData);
+		} finally {
+			if (timeoutId) clearTimeout(timeoutId);
+		}
 	}
 
 	async clearSession(sessionId: string): Promise<void> {

@@ -18,6 +18,8 @@ export interface ImportTabSlotContribution<
 	/** Declare input fields required by the import source (credentials, captcha, campus select, HTML file, etc.) */
 	inputSchema?: ConfigSchema<FormState>;
 	defaultInput?: FormState;
+	/** Optional native form component; default host falls back to M3 cards per slot id */
+	component?: unknown;
 	/** Execute import action handler */
 	executeImport(inputs: FormState, ctx?: ChronosContext): Promise<Timetable>;
 }
@@ -35,6 +37,7 @@ export interface ExportActionSlotContribution {
 	order?: number;
 	icon?: string;
 	export(timetable: Timetable, ctx?: ChronosContext): Promise<ExportResult>;
+	estimateLength?(timetable: Timetable, ctx?: ChronosContext): Promise<number>;
 }
 
 // 3. Mine/Settings section and item slot contribution specification
@@ -49,8 +52,9 @@ export interface MineItemSlotContribution {
 	sectionId: string;
 	title: LocalizedText;
 	supporting?: LocalizedText;
-	icon?: string;
+	icon?: string | unknown;
 	iconTone?: 'primary' | 'secondary' | 'tertiary' | 'neutral';
+	keywords?: string[];
 	order?: number;
 	href?: string; // Route path pointing to built-in routes or dynamic plugin routes (/plugins/[pluginId])
 	onClick?(ctx: ChronosContext): void | Promise<void>;
