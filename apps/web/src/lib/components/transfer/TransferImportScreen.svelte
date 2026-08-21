@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { trackEvent } from '$lib/client/analytics';
-	import type { TransferImportSource } from '$lib/client/preview-persistence';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import { canSaveCredentials, saveCredentialsLabel } from '$lib/transfer/transfer-state.svelte';
@@ -13,12 +12,7 @@
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { onlineImportEnabled } from '$lib/config/features';
-
-	const importSegments = [
-		...(onlineImportEnabled ? [{ value: 'ONLINE', label: '知行理工' }] : []),
-		{ value: 'SHARE_LINK', label: '分享链接' },
-		{ value: 'HTML', label: 'HTML 文件' }
-	];
+	import { getAppController } from '$lib/services/app-engine';
 
 	let {
 		transfer,
@@ -27,6 +21,17 @@
 		transfer: TransferStateController;
 		onContinue: () => void;
 	} = $props();
+
+	const controller = getAppController();
+	const availableSlots = $derived(controller.getSlots('import.source.tab'));
+	const importSegments = $derived(
+		availableSlots
+			.filter((slot) => onlineImportEnabled || slot.id !== 'cqut-online')
+			.map((slot) => ({
+				value: slot.id,
+				label: typeof slot.title === 'function' ? slot.title() : slot.title
+			}))
+	);
 
 	const transferState = $derived(transfer.state);
 	let fileInput: HTMLInputElement | undefined = $state();
@@ -101,10 +106,9 @@
 		}
 	}
 
-	function handleSourceChange(value: string) {
-		const source = value as TransferImportSource;
-		transfer.setSelectedSource(source);
-		trackEvent('import_source_select', { source });
+	function handleSourceChange(slotId: string) {
+		transfer.setSelectedSlotId(slotId);
+		trackEvent('import_source_select', { slotId });
 	}
 </script>
 
@@ -115,14 +119,16 @@
 			: '支持分享链接与教务系统导出的 HTML 文件。'}
 	</p>
 
-	<SegmentedControl
-		segments={importSegments}
-		value={transferState.selectedSource}
-		onValueChange={handleSourceChange}
-	/>
+	{#if importSegments.length > 1}
+		<SegmentedControl
+			segments={importSegments}
+			value={transferState.selectedSlotId}
+			onValueChange={handleSourceChange}
+		/>
+	{/if}
 
 	<div class="w-full">
-		{#if onlineImportEnabled && transferState.selectedSource === 'ONLINE'}
+		{#if onlineImportEnabled && transferState.selectedSlotId === 'cqut-online'}
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					{#if !connectivity.isOnline}
@@ -207,7 +213,7 @@
 					{/if}
 				</div>
 			</Card>
-		{:else if transferState.selectedSource === 'SHARE_LINK'}
+		{:else if transferState.selectedSlotId === 'share-link'}
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					<div>

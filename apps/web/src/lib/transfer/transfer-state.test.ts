@@ -21,11 +21,11 @@ describe('createTransferState', () => {
 		const controller = createTransferState();
 
 		mockStorage['chronos:import-preview'] = JSON.stringify({ name: 'Test' });
-		mockStorage['chronos:import-preview-source'] = 'SHARE_LINK';
+		mockStorage['chronos:import-preview-slot'] = 'share-link';
 
 		controller.loadPersistedPreview();
 		expect(controller.state.preview).toEqual({ name: 'Test' });
-		expect(controller.state.previewSource).toBe('SHARE_LINK');
+		expect(controller.state.previewSlotId).toBe('share-link');
 
 		controller.clearPreview();
 		expect(controller.state.preview).toBeNull();
@@ -36,11 +36,11 @@ describe('createTransferState', () => {
 		const controller = createTransferState();
 
 		mockStorage['chronos:import-preview'] = JSON.stringify({ name: 'Test' });
-		mockStorage['chronos:import-preview-source'] = 'SHARE_LINK';
+		mockStorage['chronos:import-preview-slot'] = 'share-link';
 
 		controller.clearPersistedPreview();
 		expect(mockStorage['chronos:import-preview']).toBeUndefined();
-		expect(mockStorage['chronos:import-preview-source']).toBeUndefined();
+		expect(mockStorage['chronos:import-preview-slot']).toBeUndefined();
 	});
 
 	it('persists preview and confirms import through engine', async () => {
@@ -57,16 +57,14 @@ describe('createTransferState', () => {
 			name: 'Test Schedule',
 			courses: [],
 			academicConfig: { termStartDate: '2026-02-23', startWeek: 1, endWeek: 20, periodTimes: [] },
-			importMetadata: { source: 'FILE_HTML' }
+			importMetadata: { source: 'edu-html' }
 		} as never;
 
-		controller.setDirectPreview(sampleTimetable, 'HTML');
-		controller.setHtmlImportTermStartDate('2026-02-23');
-		controller.setHtmlImportCampusId('huaxi');
+		controller.setDirectPreview(sampleTimetable, 'edu-html');
 		controller.persistPreview();
 
 		expect(mockStorage['chronos:import-preview']).toBeDefined();
-		expect(mockStorage['chronos:html-campus-id']).toBe('huaxi');
+		expect(mockStorage['chronos:import-preview-slot']).toBe('edu-html');
 
 		const success = await controller.confirmImport();
 		expect(success).toBe(true);

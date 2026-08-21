@@ -2,18 +2,15 @@
 	import { trackEvent } from '$lib/client/analytics';
 	import { ImportMode } from '$lib/domain/import-mode';
 	import {
-		previewSourceLabel,
+		resolveSlotTitle,
 		type TransferStateController
 	} from '$lib/transfer/transfer-state.svelte';
-	import { DEFAULT_CQUT_CAMPUS_ID } from '$lib/models/cqut-campus';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
-	import FormCard from '$lib/components/ui/FormCard.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-	import { InfoFill, DownloadFill } from '$lib/icons';
+	import { DownloadFill } from '$lib/icons';
 	import { countDistinctCourseNames } from '@chronos/core';
 
 	let {
@@ -28,15 +25,10 @@
 
 	const transferState = $derived(transfer.state);
 	const preview = $derived(transferState.preview);
-	const isHtmlImport = $derived(transferState.previewSource === 'HTML');
-	const selectedCampus = $derived(transferState.htmlImportCampusId ?? DEFAULT_CQUT_CAMPUS_ID);
 	const canOverwrite = $derived(Boolean(currentTimetableName));
 	const displayedCourseCount = $derived.by(() => {
 		if (!preview) return 0;
-		if (transferState.previewSource === 'ONLINE' || transferState.previewSource === 'HTML') {
-			return countDistinctCourseNames(preview.courses);
-		}
-		return preview.courses.length;
+		return countDistinctCourseNames(preview.courses);
 	});
 	let loading = $state(false);
 
@@ -81,9 +73,7 @@
 		<Button
 			variant="filled"
 			disabled={loading ||
-				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
-				(isHtmlImport &&
-					(!transferState.htmlImportTermStartDate || !transferState.htmlImportCampusId))}
+				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT)}
 			class="m3-body-large h-12 w-full shadow-xs"
 			onclick={handleConfirm}
 		>
@@ -109,7 +99,7 @@
 						<span
 							class="m3-label-large inline-flex items-center rounded-full bg-secondary-container px-3 py-1 text-on-secondary-container"
 						>
-							{previewSourceLabel(transferState.previewSource)}
+							{resolveSlotTitle(transferState.previewSlotId)}
 						</span>
 					</div>
 
@@ -127,7 +117,7 @@
 						>
 							<span class="m3-body-small text-on-surface-variant">开始周</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
-								>{preview.academicConfig.startWeek}</span
+								>{preview.academicConfig?.startWeek ?? 1}</span
 							>
 						</div>
 						<div
@@ -135,7 +125,7 @@
 						>
 							<span class="m3-body-small text-on-surface-variant">结束周</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
-								>{preview.academicConfig.endWeek}</span
+								>{preview.academicConfig?.endWeek ?? 20}</span
 							>
 						</div>
 					</div>
@@ -163,20 +153,6 @@
 					/>
 				</div>
 			</div>
-
-			{#if isHtmlImport}
-				<FormCard>
-					<DateField
-						label="学期起始日期"
-						value={transferState.htmlImportTermStartDate ?? ''}
-						onValueChange={(nextValue) => transfer.setHtmlImportTermStartDate(nextValue)}
-					/>
-				</FormCard>
-				<p class="m3-body-small flex items-center gap-1.5 px-1 text-on-surface-variant">
-					<InfoFill class="size-4 shrink-0 text-on-surface-variant/80" />
-					<span>HTML 导入需要指定本学期第一周的周一日期。</span>
-				</p>
-			{/if}
 		</div>
 	</FormScreenLayout>
 {/if}

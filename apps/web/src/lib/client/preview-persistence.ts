@@ -1,21 +1,14 @@
-import { isCqutCampusId, type CqutCampusId } from '$lib/models/cqut-campus';
-import type { Timetable } from '$lib/models/timetable';
+import type { Timetable } from '@chronos/core';
 import { ImportMode } from '$lib/domain/import-mode';
 
-export type TransferImportSource = 'ONLINE' | 'SHARE_LINK' | 'HTML';
-
 const PREVIEW_KEY = 'chronos:import-preview';
-const PREVIEW_SOURCE_KEY = 'chronos:import-preview-source';
+const PREVIEW_SLOT_KEY = 'chronos:import-preview-slot';
 const IMPORT_MODE_KEY = 'chronos:import-mode';
-const HTML_TERM_START_KEY = 'chronos:html-term-start';
-const HTML_CAMPUS_ID_KEY = 'chronos:html-campus-id';
 
 export interface PreviewSnapshot {
 	preview: Timetable;
-	previewSource: TransferImportSource;
+	slotId: string;
 	importMode: ImportMode;
-	htmlImportTermStartDate: string | null;
-	htmlImportCampusId: CqutCampusId | null;
 }
 
 export interface PreviewPersistence {
@@ -29,35 +22,21 @@ export function createSessionPreviewPersistence(
 ): PreviewPersistence {
 	const resolvedStorage = storage ?? globalThis.sessionStorage;
 	return {
-		save({ preview, previewSource, importMode, htmlImportTermStartDate, htmlImportCampusId }) {
+		save({ preview, slotId, importMode }) {
 			resolvedStorage.setItem(PREVIEW_KEY, JSON.stringify(preview));
-			resolvedStorage.setItem(PREVIEW_SOURCE_KEY, previewSource);
+			resolvedStorage.setItem(PREVIEW_SLOT_KEY, slotId);
 			resolvedStorage.setItem(IMPORT_MODE_KEY, importMode);
-			if (htmlImportTermStartDate) {
-				resolvedStorage.setItem(HTML_TERM_START_KEY, htmlImportTermStartDate);
-			} else {
-				resolvedStorage.removeItem(HTML_TERM_START_KEY);
-			}
-			if (htmlImportCampusId) {
-				resolvedStorage.setItem(HTML_CAMPUS_ID_KEY, htmlImportCampusId);
-			} else {
-				resolvedStorage.removeItem(HTML_CAMPUS_ID_KEY);
-			}
 		},
 		load() {
 			const raw = resolvedStorage.getItem(PREVIEW_KEY);
-			const source = resolvedStorage.getItem(PREVIEW_SOURCE_KEY) as TransferImportSource | null;
-			if (!raw || !source) return null;
+			const slotId = resolvedStorage.getItem(PREVIEW_SLOT_KEY);
+			if (!raw || !slotId) return null;
 			try {
-				const storedCampusId = resolvedStorage.getItem(HTML_CAMPUS_ID_KEY);
 				return {
 					preview: JSON.parse(raw) as Timetable,
-					previewSource: source,
+					slotId,
 					importMode:
-						(resolvedStorage.getItem(IMPORT_MODE_KEY) as ImportMode | null) ?? ImportMode.AS_NEW,
-					htmlImportTermStartDate: resolvedStorage.getItem(HTML_TERM_START_KEY),
-					htmlImportCampusId:
-						storedCampusId && isCqutCampusId(storedCampusId) ? storedCampusId : null
+						(resolvedStorage.getItem(IMPORT_MODE_KEY) as ImportMode | null) ?? ImportMode.AS_NEW
 				};
 			} catch {
 				return null;
@@ -65,10 +44,8 @@ export function createSessionPreviewPersistence(
 		},
 		clear() {
 			resolvedStorage.removeItem(PREVIEW_KEY);
-			resolvedStorage.removeItem(PREVIEW_SOURCE_KEY);
+			resolvedStorage.removeItem(PREVIEW_SLOT_KEY);
 			resolvedStorage.removeItem(IMPORT_MODE_KEY);
-			resolvedStorage.removeItem(HTML_TERM_START_KEY);
-			resolvedStorage.removeItem(HTML_CAMPUS_ID_KEY);
 		}
 	};
 }

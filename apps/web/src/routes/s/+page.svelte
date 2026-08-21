@@ -44,10 +44,8 @@
 
 				createSessionPreviewPersistence().save({
 					preview: timetable,
-					previewSource: 'SHARE_LINK',
-					importMode: ImportMode.AS_NEW,
-					htmlImportTermStartDate: null,
-					htmlImportCampusId: null
+					slotId: 'share-link',
+					importMode: ImportMode.AS_NEW
 				});
 
 				window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
