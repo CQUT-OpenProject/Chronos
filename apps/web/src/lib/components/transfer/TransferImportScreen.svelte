@@ -48,6 +48,14 @@
 		}
 	});
 
+	$effect(() => {
+		for (const tab of importTabs) {
+			if (tab.inputSchema && !formValues[tab.id]) {
+				formValues[tab.id] = { ...tab.defaultInput };
+			}
+		}
+	});
+
 	function resolveText(text: string | (() => string) | undefined): string {
 		if (!text) return '';
 		return typeof text === 'function' ? text() : text;
@@ -149,14 +157,19 @@
 					</div>
 
 					{#if activeTab.inputSchema}
-						{#if !formValues[activeTab.id]}
-							{((formValues[activeTab.id] = { ...(activeTab.defaultInput || {}) }), '')}
+						{#if formValues[activeTab.id]}
+							<SchemaForm
+								schema={activeTab.inputSchema}
+								bind:value={formValues[activeTab.id]}
+								disabled={loading || (activeTab.id === 'cqut-online' && !connectivity.isOnline)}
+							/>
+						{:else}
+							<SchemaForm
+								schema={activeTab.inputSchema}
+								value={{ ...(activeTab.defaultInput || {}) }}
+								disabled={loading || (activeTab.id === 'cqut-online' && !connectivity.isOnline)}
+							/>
 						{/if}
-						<SchemaForm
-							schema={activeTab.inputSchema}
-							bind:value={formValues[activeTab.id]}
-							disabled={loading || (activeTab.id === 'cqut-online' && !connectivity.isOnline)}
-						/>
 					{/if}
 
 					<div class="flex flex-col gap-2 pt-1">

@@ -635,7 +635,13 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 
 	private async activatePlugin(plugin: ChronosPlugin<Record<string, unknown>>): Promise<void> {
 		if (plugin.permissions?.length) {
-			const allowedInProcess = new Set(['storage', 'notifications']);
+			const allowedInProcess = new Set([
+				'storage',
+				'notifications',
+				'network',
+				'biometrics',
+				'calendar'
+			]);
 			const denied = plugin.permissions.filter((perm) => !allowedInProcess.has(perm));
 			if (denied.length > 0) {
 				console.warn(
