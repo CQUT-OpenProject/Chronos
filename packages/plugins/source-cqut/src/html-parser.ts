@@ -13,8 +13,6 @@ type WeekParity = 'ALL' | 'ODD' | 'EVEN';
 
 export interface HtmlImportForm {
 	file?: string;
-	termStartDate?: string;
-	campusId?: CqutCampusId;
 }
 
 export const htmlImportSchema = defineSchema<HtmlImportForm>({
@@ -23,22 +21,6 @@ export const htmlImportSchema = defineSchema<HtmlImportForm>({
 		title: () => '选择 HTML 文件',
 		description: () => '请选择从 CQUT 教务系统导出的 HTML 课表文件',
 		accept: '.html,.htm,text/html',
-		required: true
-	},
-	termStartDate: {
-		type: 'date',
-		title: () => '学期起始日期',
-		description: () => '用于计算当前教学周',
-		required: true
-	},
-	campusId: {
-		type: 'select',
-		title: () => '所在校区',
-		default: 'huaxi',
-		options: [
-			{ label: () => '花溪校区', value: 'huaxi' },
-			{ label: () => '两江校区', value: 'liangjiang' }
-		],
 		required: true
 	}
 });

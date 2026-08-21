@@ -1,3 +1,4 @@
+import { isCqutCampusId, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
 
@@ -13,6 +14,8 @@ export interface PreviewSnapshot {
 	preview: Timetable;
 	previewSource: TransferImportSource;
 	importMode: ImportMode;
+	htmlImportTermStartDate: string | null;
+	htmlImportCampusId: CqutCampusId | null;
 }
 
 export interface PreviewPersistence {
@@ -26,21 +29,35 @@ export function createSessionPreviewPersistence(
 ): PreviewPersistence {
 	const resolvedStorage = storage ?? globalThis.sessionStorage;
 	return {
-		save({ preview, previewSource, importMode }) {
+		save({ preview, previewSource, importMode, htmlImportTermStartDate, htmlImportCampusId }) {
 			resolvedStorage.setItem(PREVIEW_KEY, JSON.stringify(preview));
 			resolvedStorage.setItem(PREVIEW_SOURCE_KEY, previewSource);
 			resolvedStorage.setItem(IMPORT_MODE_KEY, importMode);
+			if (htmlImportTermStartDate) {
+				resolvedStorage.setItem(HTML_TERM_START_KEY, htmlImportTermStartDate);
+			} else {
+				resolvedStorage.removeItem(HTML_TERM_START_KEY);
+			}
+			if (htmlImportCampusId) {
+				resolvedStorage.setItem(HTML_CAMPUS_ID_KEY, htmlImportCampusId);
+			} else {
+				resolvedStorage.removeItem(HTML_CAMPUS_ID_KEY);
+			}
 		},
 		load() {
 			const raw = resolvedStorage.getItem(PREVIEW_KEY);
 			const source = resolvedStorage.getItem(PREVIEW_SOURCE_KEY) as TransferImportSource | null;
 			if (!raw || !source) return null;
 			try {
+				const storedCampusId = resolvedStorage.getItem(HTML_CAMPUS_ID_KEY);
 				return {
 					preview: JSON.parse(raw) as Timetable,
 					previewSource: source,
 					importMode:
-						(resolvedStorage.getItem(IMPORT_MODE_KEY) as ImportMode | null) ?? ImportMode.AS_NEW
+						(resolvedStorage.getItem(IMPORT_MODE_KEY) as ImportMode | null) ?? ImportMode.AS_NEW,
+					htmlImportTermStartDate: resolvedStorage.getItem(HTML_TERM_START_KEY),
+					htmlImportCampusId:
+						storedCampusId && isCqutCampusId(storedCampusId) ? storedCampusId : null
 				};
 			} catch {
 				return null;

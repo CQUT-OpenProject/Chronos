@@ -355,13 +355,7 @@ export const cqutPlugin: ChronosPlugin = {
 				throw new Error('请选择有效的 HTML 课表文件');
 			}
 			const termStartDate = inputs.termStartDate as string | undefined;
-			const campusId = inputs.campusId as CqutCampusId | undefined;
-			if (!termStartDate?.trim()) {
-				throw new Error('请选择学期起始日期');
-			}
-			if (!campusId) {
-				throw new Error('请选择校区');
-			}
+			const campusId = (inputs.campusId as CqutCampusId | undefined) ?? 'huaxi';
 			return parseHtmlTimetable(fileContent, { termStartDate, campusId });
 		}
 
@@ -383,9 +377,6 @@ export const cqutPlugin: ChronosPlugin = {
 			title: () => 'HTML 文件',
 			order: 30,
 			inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			defaultInput: {
-				campusId: 'huaxi'
-			},
 			executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
 		});
 	}

@@ -5,12 +5,16 @@
 		previewSourceLabel,
 		type TransferStateController
 	} from '$lib/transfer/transfer-state.svelte';
+	import { DEFAULT_CQUT_CAMPUS_ID } from '$lib/models/cqut-campus';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import FormCard from '$lib/components/ui/FormCard.svelte';
+	import OnlineCampusPeriodSection from '$lib/components/timetable/OnlineCampusPeriodSection.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-	import { DownloadFill } from '$lib/icons';
+	import { InfoFill, DownloadFill } from '$lib/icons';
 	import { countDistinctCourseNames } from '$lib/parsers/import-course-utils';
 
 	let {
@@ -25,6 +29,8 @@
 
 	const transferState = $derived(transfer.state);
 	const preview = $derived(transferState.preview);
+	const isHtmlImport = $derived(transferState.previewSource === 'HTML');
+	const selectedCampus = $derived(transferState.htmlImportCampusId ?? DEFAULT_CQUT_CAMPUS_ID);
 	const canOverwrite = $derived(Boolean(currentTimetableName));
 	const displayedCourseCount = $derived.by(() => {
 		if (!preview) return 0;
@@ -76,7 +82,9 @@
 		<Button
 			variant="filled"
 			disabled={loading ||
-				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT)}
+				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
+				(isHtmlImport &&
+					(!transferState.htmlImportTermStartDate || !transferState.htmlImportCampusId))}
 			class="m3-body-large h-12 w-full shadow-xs"
 			onclick={handleConfirm}
 		>
@@ -156,6 +164,25 @@
 					/>
 				</div>
 			</div>
+
+			{#if isHtmlImport}
+				<OnlineCampusPeriodSection
+					{selectedCampus}
+					onSelectCampus={(campusId) => transfer.setHtmlImportCampusId(campusId)}
+				/>
+
+				<FormCard>
+					<DateField
+						label="学期起始日期"
+						value={transferState.htmlImportTermStartDate ?? ''}
+						onValueChange={(nextValue) => transfer.setHtmlImportTermStartDate(nextValue)}
+					/>
+				</FormCard>
+				<p class="m3-body-small flex items-center gap-1.5 px-1 text-on-surface-variant">
+					<InfoFill class="size-4 shrink-0 text-on-surface-variant/80" />
+					<span>HTML 导入需要指定本学期第一周的周一日期。</span>
+				</p>
+			{/if}
 		</div>
 	</FormScreenLayout>
 {/if}
