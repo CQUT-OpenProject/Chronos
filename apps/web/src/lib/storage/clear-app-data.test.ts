@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import {
-	estimateStorageBytes,
-	formatAppDataSize,
-	removeStorageKeysWithPrefix
-} from './clear-app-data';
+import { estimateStorageBytes, formatAppDataSize } from './clear-app-data';
 
 function createMemoryStorage(initial: Record<string, string> = {}): Storage {
 	const map = new Map(Object.entries(initial));
@@ -18,22 +14,6 @@ function createMemoryStorage(initial: Record<string, string> = {}): Storage {
 		}
 	} as Storage;
 }
-
-describe('removeStorageKeysWithPrefix', () => {
-	it('removes only keys with the given prefix', () => {
-		const storage = createMemoryStorage({
-			'chronos:preview': '1',
-			'chronos_preferences:theme_mode': 'dark',
-			'other:key': 'keep'
-		});
-
-		removeStorageKeysWithPrefix(storage, 'chronos');
-
-		expect(storage.getItem('chronos:preview')).toBeNull();
-		expect(storage.getItem('chronos_preferences:theme_mode')).toBeNull();
-		expect(storage.getItem('other:key')).toBe('keep');
-	});
-});
 
 describe('estimateStorageBytes', () => {
 	it('sums utf-8 byte length for keys and values with the given prefix', () => {

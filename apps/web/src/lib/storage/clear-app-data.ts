@@ -1,5 +1,5 @@
-import { db } from './db';
-import type { CourseRow, TimetableRow, WallpaperRow } from './db';
+import type { ChronosEngine } from '@chronos/core';
+import { getAppEngine } from '$lib/services/app-engine';
 
 export const CHRONOS_STORAGE_PREFIX = 'chronos';
 const textEncoder = new TextEncoder();
@@ -18,15 +18,6 @@ function listStorageKeysWithPrefix(
 	return keys;
 }
 
-export function removeStorageKeysWithPrefix(
-	storage: Pick<Storage, 'length' | 'key' | 'removeItem'>,
-	prefix: string
-): void {
-	for (const key of listStorageKeysWithPrefix(storage, prefix)) {
-		storage.removeItem(key);
-	}
-}
-
 export function estimateStorageBytes(
 	storage: Pick<Storage, 'length' | 'key' | 'getItem'>,
 	prefix: string
@@ -42,33 +33,12 @@ export function estimateStorageBytes(
 	return total;
 }
 
-function estimateRecordBytes(record: unknown): number {
-	return textEncoder.encode(JSON.stringify(record)).length;
-}
-
-async function estimateIndexedDbBytes(): Promise<number> {
-	const [timetables, courses, wallpapers] = await Promise.all([
-		db.timetables.toArray(),
-		db.courses.toArray(),
-		db.wallpapers.toArray()
-	]);
-
+export async function estimateAppDataBytes(engine?: ChronosEngine): Promise<number> {
+	const resolvedEngine = engine ?? getAppEngine();
 	let total = 0;
-	for (const row of timetables as TimetableRow[]) {
-		total += estimateRecordBytes(row);
+	if (resolvedEngine?.storage?.estimateStorageBytes) {
+		total += await resolvedEngine.storage.estimateStorageBytes();
 	}
-	for (const row of courses as CourseRow[]) {
-		total += estimateRecordBytes(row);
-	}
-	for (const row of wallpapers as WallpaperRow[]) {
-		total += estimateRecordBytes({ id: row.id, updatedAt: row.updatedAt });
-		total += row.blob.size;
-	}
-	return total;
-}
-
-export async function estimateAppDataBytes(): Promise<number> {
-	let total = await estimateIndexedDbBytes();
 	if (typeof localStorage !== 'undefined') {
 		total += estimateStorageBytes(localStorage, CHRONOS_STORAGE_PREFIX);
 	}

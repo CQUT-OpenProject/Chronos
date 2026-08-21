@@ -361,6 +361,32 @@ export class DexieStorageProvider implements IStorageService {
 		}
 	}
 
+	async estimateStorageBytes(): Promise<number> {
+		try {
+			const [timetables, courses, wallpapers] = await Promise.all([
+				this.database.timetables.toArray(),
+				this.database.courses.toArray(),
+				this.database.wallpapers.toArray()
+			]);
+
+			const encoder = new TextEncoder();
+			let total = 0;
+			for (const row of timetables) {
+				total += encoder.encode(JSON.stringify(row)).length;
+			}
+			for (const row of courses) {
+				total += encoder.encode(JSON.stringify(row)).length;
+			}
+			for (const row of wallpapers) {
+				total += encoder.encode(JSON.stringify({ id: row.id, updatedAt: row.updatedAt })).length;
+				total += row.blob.size;
+			}
+			return total;
+		} catch {
+			return 0;
+		}
+	}
+
 	dispose(): void {
 		if (typeof window !== 'undefined' && this.storageListener) {
 			window.removeEventListener('storage', this.storageListener);

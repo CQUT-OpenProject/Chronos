@@ -66,6 +66,7 @@ export interface IStorageService {
 	getWallpaper?(): Promise<Uint8Array | null>;
 	setWallpaper?(wallpaper: Uint8Array | null): Promise<void>;
 	clearAllData?(): Promise<void>;
+	estimateStorageBytes?(): Promise<number>;
 
 	// Key-value store (namespaced automatically by pluginId)
 	getPluginData<T>(pluginId: string, key: string): Promise<T | null>;
