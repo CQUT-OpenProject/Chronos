@@ -9,7 +9,7 @@
 	let { wallpaperUri = null, children }: Props = $props();
 </script>
 
-<div class="relative min-h-0 flex-1">
+<div class="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
 	{#if wallpaperUri}
 		<div
 			class="absolute inset-0"

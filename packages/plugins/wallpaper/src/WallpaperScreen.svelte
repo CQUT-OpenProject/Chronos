@@ -1,12 +1,6 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import {
-		AcademicCalendarService,
-		computeTimetableWeekLayout,
-		todayIsoDate,
-		COURSE_PALETTE_ENTRIES
-	} from '@chronos/core';
-	import { TimetablePreviewGrid } from '@chronos/ui-kit';
+	import { TimetableLivePreview } from '@chronos/ui-kit';
 	import { getWallpaperRuntime } from './runtime.svelte';
 
 	interface Props {
@@ -16,28 +10,10 @@
 
 	let { controller, pluginId }: Props = $props();
 
-	const calendarService = new AcademicCalendarService();
-
 	const runtime = getWallpaperRuntime();
 	const wallpaperUri = $derived(runtime.uri);
 	const hasWallpaper = $derived(runtime.hasWallpaper);
 	const timetable = $derived(controller.currentTimetable);
-	const today = $derived(todayIsoDate());
-	const academicWeek = $derived(
-		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
-	);
-	const preview = $derived(
-		timetable
-			? computeTimetableWeekLayout({
-					timetable,
-					displayedWeek: academicWeek,
-					todayIso: today,
-					academicCalendarService: calendarService
-				})
-			: null
-	);
-	const gridModel = $derived(preview?.gridModel ?? null);
-	const courseDisplayModels = $derived(preview?.courseDisplayModels ?? []);
 
 	let fileInput: HTMLInputElement | undefined = $state();
 
@@ -80,22 +56,9 @@
 		onchange={onFileChange}
 	/>
 
-	{#if hasWallpaper && timetable && gridModel}
-		<div
-			class="relative min-h-0 flex-1 overflow-hidden"
-			style:background-image={wallpaperUri ? `url('${wallpaperUri}')` : undefined}
-			style:background-size="cover"
-			style:background-position="center"
-		>
-			<div class="absolute inset-0">
-				<TimetablePreviewGrid
-					displayedWeek={academicWeek}
-					{gridModel}
-					{courseDisplayModels}
-					coursePalette={COURSE_PALETTE_ENTRIES}
-					hasWallpaper={true}
-				/>
-			</div>
+	{#if hasWallpaper && timetable}
+		<div class="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+			<TimetableLivePreview {controller} hasWallpaper={true} {wallpaperUri} interactive={false} />
 		</div>
 	{:else}
 		<div class="flex min-h-0 flex-1 items-center justify-center bg-canvas p-4">

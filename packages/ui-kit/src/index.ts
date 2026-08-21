@@ -8,3 +8,4 @@ export { default as PluginScreenContainer } from './plugin-screen/PluginScreenCo
 export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-slot';
 export { default as TimetableWallpaperLayer } from './timetable-preview/TimetableWallpaperLayer.svelte';
 export { default as TimetablePreviewGrid } from './timetable-preview/TimetablePreviewGrid.svelte';
+export { default as TimetableLivePreview } from './timetable-preview/TimetableLivePreview.svelte';

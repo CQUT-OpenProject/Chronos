@@ -46,6 +46,16 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 
 			disposeEffects = $effect.root(() => {
 				$effect(() => {
+					const palette = deps.shell.appearance.coursePalette;
+					deps.shell.controller.setCoursePalette(palette);
+				});
+
+				$effect(() => {
+					const week = deps.timetableScreen.state.displayedWeek;
+					deps.shell.controller.setDisplayedWeek(week);
+				});
+
+				$effect(() => {
 					const isDark = deps.shell.state.isDark;
 					const paletteMode = deps.shell.controller.userPreferences?.paletteMode ?? 'vibrant';
 					const wallpaperUri = deps.shell.state.wallpaperUri;

@@ -3,10 +3,11 @@
 	import {
 		AcademicCalendarService,
 		computeTimetableWeekLayout,
-		todayIsoDate,
-		COURSE_PALETTE_ENTRIES
+		COURSE_PALETTE_ENTRIES,
+		todayIsoDate
 	} from '@chronos/core';
 	import TimetablePreviewGrid from '../../timetable-preview/TimetablePreviewGrid.svelte';
+	import TimetableWallpaperLayer from '../../timetable-preview/TimetableWallpaperLayer.svelte';
 
 	interface Props {
 		id?: string;
@@ -42,13 +43,32 @@
 	const academicWeek = $derived(
 		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
 	);
+	const displayedWeek = $derived(
+		controller?.displayedWeek ?? controller?.activeWeek ?? academicWeek ?? 1
+	);
+	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller?.activeWeek ?? 1));
+	const currentPeriodIndex = $derived(controller?.currentPeriodIndex ?? null);
+	const coursePalette = $derived(
+		controller?.coursePalette && controller.coursePalette.length > 0
+			? controller.coursePalette
+			: COURSE_PALETTE_ENTRIES
+	);
+	const paletteCourses = $derived(timetable?.courses ?? []);
+	const layoutMode = $derived(controller?.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'rounded');
+	const courseBadges = $derived(controller?.courseBadges ?? {});
+
 	const preview = $derived(
 		timetable
 			? computeTimetableWeekLayout({
 					timetable,
-					displayedWeek: academicWeek,
+					displayedWeek,
 					todayIso: today,
-					academicCalendarService: calendarService
+					academicCalendarService: calendarService,
+					coursePalette,
+					paletteCourses,
+					layoutMode,
+					capsuleCornerStyle
 				})
 			: null
 	);
@@ -124,35 +144,46 @@
 
 	<div class="overflow-hidden rounded-xl border border-outline/20">
 		{#if timetable && gridModel}
-			{#if objectUrl}
-				<div
-					class="relative"
-					style:background-image={`url('${objectUrl}')`}
-					style:background-size="cover"
-					style:background-position="center"
-				>
+			<div class="relative flex aspect-[9/16] max-h-[520px] w-full flex-col overflow-hidden">
+				{#if objectUrl}
+					<TimetableWallpaperLayer wallpaperUri={objectUrl}>
+						<TimetablePreviewGrid
+							{displayedWeek}
+							{gridModel}
+							{courseDisplayModels}
+							{coursePalette}
+							{paletteCourses}
+							hasWallpaper={true}
+							{layoutMode}
+							{capsuleCornerStyle}
+							{isCurrentWeek}
+							{currentPeriodIndex}
+							{courseBadges}
+							interactive={false}
+						/>
+					</TimetableWallpaperLayer>
+				{:else}
 					<TimetablePreviewGrid
-						displayedWeek={academicWeek}
+						{displayedWeek}
 						{gridModel}
 						{courseDisplayModels}
-						coursePalette={COURSE_PALETTE_ENTRIES}
-						hasWallpaper={true}
+						{coursePalette}
+						{paletteCourses}
+						hasWallpaper={false}
+						{layoutMode}
+						{capsuleCornerStyle}
+						{isCurrentWeek}
+						{currentPeriodIndex}
+						{courseBadges}
+						interactive={false}
 					/>
-				</div>
-			{:else}
-				<TimetablePreviewGrid
-					displayedWeek={academicWeek}
-					{gridModel}
-					{courseDisplayModels}
-					coursePalette={COURSE_PALETTE_ENTRIES}
-					hasWallpaper={false}
-				/>
-				<p
-					class="m3-body-small bg-surface-variant/50 px-3 py-2 text-center text-on-surface-variant"
-				>
-					选择壁纸后可预览效果
-				</p>
-			{/if}
+					<div
+						class="absolute inset-x-0 bottom-0 bg-surface-variant/80 px-3 py-2 text-center backdrop-blur-sm"
+					>
+						<p class="m3-body-small text-on-surface-variant">选择壁纸后可预览效果</p>
+					</div>
+				{/if}
+			</div>
 		{:else}
 			<p
 				class="m3-body-medium flex items-center justify-center p-8 text-center text-on-surface-variant"

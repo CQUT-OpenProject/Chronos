@@ -3,8 +3,8 @@
 	import {
 		AcademicCalendarService,
 		computeTimetableWeekLayout,
-		todayIsoDate,
-		COURSE_PALETTE_ENTRIES
+		COURSE_PALETTE_ENTRIES,
+		todayIsoDate
 	} from '@chronos/core';
 	import TimetablePreviewGrid from '../../timetable-preview/TimetablePreviewGrid.svelte';
 
@@ -23,14 +23,32 @@
 	const academicWeek = $derived(
 		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
 	);
+	const displayedWeek = $derived(
+		controller?.displayedWeek ?? controller?.activeWeek ?? academicWeek ?? 1
+	);
+	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller?.activeWeek ?? 1));
+	const currentPeriodIndex = $derived(controller?.currentPeriodIndex ?? null);
+	const coursePalette = $derived(
+		controller?.coursePalette && controller.coursePalette.length > 0
+			? controller.coursePalette
+			: COURSE_PALETTE_ENTRIES
+	);
+	const paletteCourses = $derived(timetable?.courses ?? []);
+	const layoutMode = $derived(controller?.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'rounded');
+	const courseBadges = $derived(controller?.courseBadges ?? {});
 
 	const preview = $derived(
 		timetable
 			? computeTimetableWeekLayout({
 					timetable,
-					displayedWeek: academicWeek,
+					displayedWeek,
 					todayIso: today,
-					academicCalendarService: calendarService
+					academicCalendarService: calendarService,
+					coursePalette,
+					paletteCourses,
+					layoutMode,
+					capsuleCornerStyle
 				})
 			: null
 	);
@@ -45,13 +63,22 @@
 	{/if}
 	<div class="overflow-hidden rounded-xl border border-outline/20">
 		{#if timetable && gridModel}
-			<TimetablePreviewGrid
-				displayedWeek={academicWeek}
-				{gridModel}
-				{courseDisplayModels}
-				coursePalette={COURSE_PALETTE_ENTRIES}
-				hasWallpaper={false}
-			/>
+			<div class="relative flex aspect-[9/16] max-h-[520px] w-full flex-col overflow-hidden">
+				<TimetablePreviewGrid
+					{displayedWeek}
+					{gridModel}
+					{courseDisplayModels}
+					{coursePalette}
+					{paletteCourses}
+					hasWallpaper={false}
+					{layoutMode}
+					{capsuleCornerStyle}
+					{isCurrentWeek}
+					{currentPeriodIndex}
+					{courseBadges}
+					interactive={false}
+				/>
+			</div>
 		{:else}
 			<p
 				class="m3-body-medium flex items-center justify-center p-8 text-center text-on-surface-variant"
