@@ -23,6 +23,7 @@ export * from './types/slots';
 export type { ThemeContribution, CourseBadgeContribution } from './types/contributions';
 export type { PlatformType, ChronosEnv } from './types/env';
 export * from './types/context';
+export * from './types/plugin-server';
 export * from './types/marketplace';
 export * from './types/sandbox';
 

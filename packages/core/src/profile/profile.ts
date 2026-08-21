@@ -1,6 +1,8 @@
 export interface PluginProfileConfig {
 	id: string;
 	enabled?: boolean;
+	/** Slot IDs to skip when activating this plugin (e.g. `cqut-online`). */
+	disabledSlots?: string[];
 	config?: Record<string, unknown>;
 }
 
@@ -11,6 +13,8 @@ export interface ChronosProfile {
 	description?: string;
 	plugins: PluginProfileConfig[];
 	defaultTheme?: string;
+	/** Initial import.source.tab slot id when opening the import screen. */
+	defaultImportSlot?: string;
 	preferences?: Record<string, unknown>;
 }
 

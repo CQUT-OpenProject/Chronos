@@ -50,11 +50,17 @@ export class ProfileManager implements Disposable {
 				continue;
 			}
 
-			// Pre-configure layered defaults
+			// Pre-configure layered defaults (profile disabledSlots → plugin config)
+			const profileConfig = {
+				...profilePlugin.config,
+				...(profilePlugin.disabledSlots?.length
+					? { disabledSlots: profilePlugin.disabledSlots }
+					: {})
+			};
 			const layeredDefaultConfig = resolveLayeredPluginConfig(
 				targetPlugin.defaultConfig,
 				undefined,
-				profilePlugin.config,
+				profileConfig,
 				undefined
 			);
 
