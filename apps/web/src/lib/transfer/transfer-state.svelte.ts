@@ -4,13 +4,9 @@ import {
 	type TransferImportSource
 } from '$lib/client/preview-persistence';
 import type { SavedCredentialState } from '$lib/models/auth';
-import type { CqutCampusId } from '$lib/models/cqut-campus';
-import { getCampusDefaultPeriodTimes, inferCampusIdFromCourses } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
-import { AcademicCalendarService, IVaultService, type ChronosEngine } from '@chronos/core';
-import { SystemTimeProvider } from '$lib/domain/services/time-provider';
-import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
+import { IVaultService, type ChronosEngine } from '@chronos/core';
 import { onlineImportEnabled } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
 import { estimateShareLinkLength, SHARE_LINK_WARNING_LENGTH } from '@chronos/plugin-codec-share';
@@ -21,8 +17,6 @@ export interface TransferPreviewState {
 	preview: Timetable | null;
 	previewSource: TransferImportSource | null;
 	importMode: ImportMode;
-	htmlImportTermStartDate: string | null;
-	htmlImportCampusId: CqutCampusId | null;
 	selectedTabId: string;
 	account: string;
 	password: string;
@@ -42,8 +36,6 @@ export function createTransferState(engine?: ChronosEngine) {
 	let preview = $state<Timetable | null>(null);
 	let previewSource = $state<TransferImportSource | null>(null);
 	let importMode = $state<ImportMode>(ImportMode.AS_NEW);
-	let htmlImportTermStartDate = $state<string | null>(null);
-	let htmlImportCampusId = $state<CqutCampusId | null>(null);
 	let account = $state('');
 	let password = $state('');
 	let saveCredentials = $state(false);
@@ -57,8 +49,6 @@ export function createTransferState(engine?: ChronosEngine) {
 	let errorMessage = $state<string | null>(null);
 	let statusMessage = $state<string | null>(null);
 
-	const academicCalendarService = new AcademicCalendarService();
-	const timeProvider = new SystemTimeProvider();
 	const persistence = createSessionPreviewPersistence();
 	const credentialVault = engine
 		? createCredentialVault({ vault: engine.services.get(IVaultService) })
@@ -83,8 +73,6 @@ export function createTransferState(engine?: ChronosEngine) {
 		selectedTabId = tabId;
 		preview = null;
 		previewSource = null;
-		htmlImportTermStartDate = null;
-		htmlImportCampusId = null;
 		clearMessages();
 	}
 
@@ -112,22 +100,9 @@ export function createTransferState(engine?: ChronosEngine) {
 		importMode = mode;
 	}
 
-	function setHtmlImportTermStartDate(date: string) {
-		htmlImportTermStartDate = academicCalendarService.normalizeTermStartDate(
-			date,
-			timeProvider.today()
-		);
-	}
-
-	function setHtmlImportCampusId(campusId: CqutCampusId) {
-		htmlImportCampusId = campusId;
-	}
-
 	function clearPreview() {
 		preview = null;
 		previewSource = null;
-		htmlImportTermStartDate = null;
-		htmlImportCampusId = null;
 		persistence.clear();
 		clearMessages();
 	}
@@ -163,15 +138,6 @@ export function createTransferState(engine?: ChronosEngine) {
 			preview = timetable;
 			previewSource =
 				tabId === 'cqut-online' ? 'ONLINE' : tabId === 'edu-html' ? 'HTML' : 'SHARE_LINK';
-			if (tabId === 'edu-html' && timetable.academicConfig?.termStartDate) {
-				htmlImportTermStartDate = timetable.academicConfig.termStartDate;
-				htmlImportCampusId =
-					(timetable.importMetadata?.campusId as CqutCampusId) ??
-					inferCampusIdFromCourses(timetable.courses);
-			} else {
-				htmlImportTermStartDate = null;
-				htmlImportCampusId = null;
-			}
 			return true;
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : '获取课表失败';
@@ -186,57 +152,9 @@ export function createTransferState(engine?: ChronosEngine) {
 			const timetable = await executeSlotImport('share-link', { content: content.trim() });
 			preview = timetable;
 			previewSource = 'SHARE_LINK';
-			htmlImportTermStartDate = null;
-			htmlImportCampusId = null;
 			return true;
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : '无法读取剪贴板，请检查浏览器权限';
-			return false;
-		}
-	}
-
-	async function previewFromHtmlFile(file: File) {
-		clearMessages();
-		try {
-			const fileContent = await file.text();
-			const timetable = await executeSlotImport('edu-html', {
-				file: fileContent,
-				fileContent,
-				campusId: 'huaxi',
-				termStartDate: timeProvider.today()
-			});
-			preview = timetable;
-			previewSource = 'HTML';
-			htmlImportTermStartDate = null;
-			htmlImportCampusId = inferCampusIdFromCourses(timetable.courses);
-			return true;
-		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : '解析 HTML 课表失败';
-			return false;
-		}
-	}
-
-	async function previewOnline() {
-		clearMessages();
-		const trimmedAccount = account.trim();
-		if (!trimmedAccount || !password.trim()) {
-			errorMessage = '请输入账号和密码';
-			return false;
-		}
-
-		try {
-			const timetable = await executeSlotImport('cqut-online', {
-				username: trimmedAccount,
-				password,
-				saveCredentials
-			});
-			preview = timetable;
-			previewSource = 'ONLINE';
-			htmlImportTermStartDate = null;
-			htmlImportCampusId = null;
-			return true;
-		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : '获取在线课表失败';
 			return false;
 		}
 	}
@@ -265,8 +183,6 @@ export function createTransferState(engine?: ChronosEngine) {
 			});
 			preview = timetable;
 			previewSource = 'ONLINE';
-			htmlImportTermStartDate = null;
-			htmlImportCampusId = null;
 			return true;
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : '获取在线课表失败';
@@ -294,9 +210,7 @@ export function createTransferState(engine?: ChronosEngine) {
 		persistence.save({
 			preview,
 			previewSource,
-			importMode,
-			htmlImportTermStartDate,
-			htmlImportCampusId
+			importMode
 		});
 		return true;
 	}
@@ -307,8 +221,6 @@ export function createTransferState(engine?: ChronosEngine) {
 		preview = snapshot.preview;
 		previewSource = snapshot.previewSource;
 		importMode = snapshot.importMode;
-		htmlImportTermStartDate = snapshot.htmlImportTermStartDate;
-		htmlImportCampusId = snapshot.htmlImportCampusId;
 		return true;
 	}
 
@@ -323,36 +235,11 @@ export function createTransferState(engine?: ChronosEngine) {
 			return false;
 		}
 
-		let finalPreview = preview;
-		if (previewSource === 'HTML') {
-			if (!htmlImportTermStartDate) {
-				errorMessage = '请选择学期起始日期';
-				return false;
-			}
-			if (!htmlImportCampusId) {
-				errorMessage = '请选择校区';
-				return false;
-			}
-			const periodTimes = getCampusDefaultPeriodTimes(htmlImportCampusId);
-			finalPreview = {
-				...preview,
-				academicConfig: {
-					...preview.academicConfig,
-					termStartDate: htmlImportTermStartDate,
-					periodTimes
-				},
-				importMetadata: {
-					...preview.importMetadata,
-					campusId: htmlImportCampusId
-				}
-			};
-		}
-
 		try {
 			if (!engine) {
 				throw new Error('ChronosEngine is required for ingest');
 			}
-			await engine.actions.importTimetable(finalPreview, {
+			await engine.actions.importTimetable(preview, {
 				overwriteActive: importMode === ImportMode.OVERWRITE_CURRENT
 			});
 			clearPreview();
@@ -384,8 +271,6 @@ export function createTransferState(engine?: ChronosEngine) {
 				preview,
 				previewSource,
 				importMode,
-				htmlImportTermStartDate,
-				htmlImportCampusId,
 				selectedTabId,
 				account,
 				password,
@@ -400,13 +285,9 @@ export function createTransferState(engine?: ChronosEngine) {
 		setPassword,
 		setSaveCredentials,
 		setImportMode,
-		setHtmlImportTermStartDate,
-		setHtmlImportCampusId,
 		clearPreview,
 		setDirectPreview,
 		previewFromClipboard,
-		previewFromHtmlFile,
-		previewOnline,
 		previewWithSavedCredential,
 		clearSavedCredential,
 		previewWithSlot,
@@ -432,22 +313,4 @@ export function previewSourceLabel(source: TransferImportSource | null): string 
 		default:
 			return '未知来源';
 	}
-}
-
-export function canSaveCredentials(state: SavedCredentialState): boolean {
-	if (!state.capabilitiesReady) return false;
-	return state.protectionAvailable || isAccountOnlyFallbackAvailable();
-}
-
-export function saveCredentialsLabel(state: SavedCredentialState): string {
-	if (!state.capabilitiesReady) {
-		return '正在检测设备能力…';
-	}
-	if (state.protectionAvailable) {
-		return '保存帐号密码';
-	}
-	if (isAccountOnlyFallbackAvailable()) {
-		return '保存账号（密码需每次输入）';
-	}
-	return '当前设备不支持保存帐号密码';
 }

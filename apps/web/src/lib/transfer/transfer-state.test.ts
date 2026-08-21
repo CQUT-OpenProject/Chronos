@@ -61,16 +61,15 @@ describe('createTransferState', () => {
 		} as never;
 
 		controller.setDirectPreview(sampleTimetable, 'HTML');
-		controller.setHtmlImportTermStartDate('2026-02-23');
-		controller.setHtmlImportCampusId('huaxi');
 		controller.persistPreview();
 
 		expect(mockStorage['chronos:import-preview']).toBeDefined();
-		expect(mockStorage['chronos:html-campus-id']).toBe('huaxi');
+		expect(mockStorage['chronos:import-preview-source']).toBe('HTML');
 
 		const success = await controller.confirmImport();
 		expect(success).toBe(true);
 		expect(importTimetable).toHaveBeenCalledTimes(1);
+		expect(importTimetable).toHaveBeenCalledWith(sampleTimetable, { overwriteActive: false });
 		expect(controller.state.preview).toBeNull();
 	});
 });
