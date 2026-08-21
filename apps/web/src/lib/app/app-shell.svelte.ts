@@ -31,13 +31,7 @@ export function createAppShell() {
 	const hapticFeedbackEnabled = $derived(controller.userPreferences?.hapticFeedbackEnabled ?? true);
 
 	const isDark = $derived(resolveDark(themeMode, systemPrefersDark));
-
-	const hasWallpaperSlot = $derived.by(() => {
-		void controller.slotVersion;
-		return controller.getSlots('mine.item').some((s) => s.id === 'wallpaper');
-	});
-	const effectiveWallpaperUri = $derived(hasWallpaperSlot ? controller.wallpaperUri : null);
-	const hasWallpaper = $derived(Boolean(effectiveWallpaperUri));
+	const hasWallpaper = false;
 
 	const appState = $derived<AppState>({
 		timetables: controller.timetables.map((t) => ({
@@ -48,7 +42,7 @@ export function createAppShell() {
 			updatedAt: t.updatedAt
 		})),
 		currentTimetableId: controller.currentTimetable?.id ?? null,
-		wallpaperUri: effectiveWallpaperUri,
+		wallpaperUri: null,
 		currentTimetable: controller.currentTimetable,
 		themeMode,
 		timetableLayoutMode,
@@ -75,7 +69,6 @@ export function createAppShell() {
 			mediaQuery.addEventListener('change', onChange);
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
-		void controller.loadWallpaper();
 	}
 
 	function destroy() {
@@ -121,10 +114,6 @@ export function createAppShell() {
 		await updatePreferences({ hapticFeedbackEnabled: enabled });
 	}
 
-	async function setWallpaper(wallpaper: Blob | null) {
-		await controller.setWallpaper(wallpaper);
-	}
-
 	async function switchTimetable(id: string) {
 		await controller.switchTimetable(id);
 	}
@@ -167,7 +156,6 @@ export function createAppShell() {
 		setPaletteMode,
 		setCapsuleCornerStyle,
 		setHapticFeedbackEnabled,
-		setWallpaper,
 		switchTimetable,
 		deleteTimetable,
 		clearAllData

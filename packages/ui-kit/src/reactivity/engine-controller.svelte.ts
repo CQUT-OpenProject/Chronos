@@ -29,7 +29,6 @@ export class ReactiveChronosController implements Disposable {
 	activeThemeId = $state<string>('m3-default');
 	userPreferences = $state<UserPreferences | null>(null);
 	currentLocale = $state<string>('zh-cn');
-	wallpaperUri = $state<string | null>(null);
 
 	// Slot reactivity version signal (increments on slot changes or locale switches)
 	slotVersion = $state<number>(0);
@@ -140,45 +139,6 @@ export class ReactiveChronosController implements Disposable {
 		this.slotVersion++;
 	}
 
-	async loadWallpaper(): Promise<string | null> {
-		if (typeof window === 'undefined') return null;
-		const storage = this.engine.env.storage;
-		if (!storage.getWallpaper) return null;
-		try {
-			const bytes = await storage.getWallpaper();
-			if (!bytes || bytes.byteLength === 0) {
-				if (this.wallpaperUri) {
-					URL.revokeObjectURL(this.wallpaperUri);
-					this.wallpaperUri = null;
-				}
-				return null;
-			}
-			const blob = new Blob([bytes as unknown as BlobPart]);
-			if (this.wallpaperUri) {
-				URL.revokeObjectURL(this.wallpaperUri);
-			}
-			this.wallpaperUri = URL.createObjectURL(blob);
-			return this.wallpaperUri;
-		} catch {
-			return null;
-		}
-	}
-
-	async setWallpaper(wallpaper: Blob | null): Promise<void> {
-		if (this.wallpaperUri && typeof window !== 'undefined') {
-			URL.revokeObjectURL(this.wallpaperUri);
-			this.wallpaperUri = null;
-		}
-		const storage = this.engine.env.storage;
-		if (storage.setWallpaper) {
-			const bytes = wallpaper ? new Uint8Array(await wallpaper.arrayBuffer()) : null;
-			await storage.setWallpaper(bytes);
-		}
-		if (wallpaper && typeof window !== 'undefined') {
-			this.wallpaperUri = URL.createObjectURL(wallpaper);
-		}
-	}
-
 	// Action proxies
 	async createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable> {
 		return this.engine.actions.createTimetable(name, config);
@@ -217,10 +177,6 @@ export class ReactiveChronosController implements Disposable {
 	}
 
 	async clearAllData(): Promise<void> {
-		if (this.wallpaperUri && typeof window !== 'undefined') {
-			URL.revokeObjectURL(this.wallpaperUri);
-			this.wallpaperUri = null;
-		}
 		await this.engine.actions.clearAllData();
 		this.syncAllState();
 	}
@@ -234,10 +190,6 @@ export class ReactiveChronosController implements Disposable {
 	}
 
 	dispose(): void {
-		if (this.wallpaperUri && typeof window !== 'undefined') {
-			URL.revokeObjectURL(this.wallpaperUri);
-			this.wallpaperUri = null;
-		}
 		for (const d of this.disposables) {
 			d.dispose();
 		}

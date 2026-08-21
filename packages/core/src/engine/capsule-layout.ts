@@ -140,7 +140,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		paletteCourses,
 		capsuleCornerStyle = 'rounded'
 	} = input;
-	const compact = layoutMode === 'compact' || layoutMode === 'FIT';
+	const compact = layoutMode === 'compact';
 	const visibleDayCount = visibleDays.length;
 	if (visibleDayCount === 0) return [];
 	const paletteByName = assignCourseDisplayColors(
@@ -212,9 +212,9 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		});
 	}
 
-	if (capsuleCornerStyle === 'rounded' || capsuleCornerStyle === 'MERGE') {
+	if (capsuleCornerStyle === 'rounded') {
 		applyCapsuleCornerRounding(items);
-	} else if (capsuleCornerStyle === 'sharp' || capsuleCornerStyle === 'SQUARE') {
+	} else if (capsuleCornerStyle === 'sharp') {
 		applyCapsuleSquareCorners(items);
 	}
 	return items;
