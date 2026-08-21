@@ -1,9 +1,5 @@
 import type { Course } from '@chronos/core';
-import {
-	normalizeTimetableName,
-	TimetableImportSource,
-	type Timetable
-} from '$lib/models/timetable';
+import { normalizeTimetableName, type Timetable } from '$lib/models/timetable';
 import type { CourseRow, TimetableRow } from './db';
 import { encodeTimetableConfig, decodeTimetableConfig } from './timetable-config-codec';
 
@@ -59,7 +55,7 @@ export function timetableToRow(
 	const importMetadata =
 		'importMetadata' in timetable && timetable.importMetadata
 			? timetable.importMetadata
-			: { source: TimetableImportSource.UNKNOWN };
+			: { source: 'UNKNOWN' };
 
 	return {
 		id: timetable.id,

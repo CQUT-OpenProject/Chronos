@@ -21,13 +21,6 @@ export {
 export type { AcademicConfig, PeriodTime, Timetable, TimetableViewPrefs };
 export type TimetableImportMetadata = ImportMetadata;
 
-export enum TimetableImportSource {
-	UNKNOWN = 'UNKNOWN',
-	ONLINE_EDU = 'ONLINE_EDU',
-	FILE_HTML = 'FILE_HTML',
-	SHARED_JSON = 'SHARED_JSON'
-}
-
 export const periodTimeSchema = z.object({
 	index: z.number().int(),
 	startTime: z.string(),
@@ -50,7 +43,7 @@ export const timetableViewPrefsSchema = z.object({
 const campusPeriodTimesSchema = z.record(z.string(), z.array(periodTimeSchema)).optional();
 
 export const timetableImportMetadataSchema = z.object({
-	source: z.string().default(TimetableImportSource.UNKNOWN),
+	source: z.string().default('UNKNOWN'),
 	campusId: z.string().optional(),
 	campusPeriodTimes: campusPeriodTimesSchema
 });
@@ -76,7 +69,7 @@ export type TimetableConfig = {
 };
 
 export function slimImportMetadata(raw: StoredTimetableImportMetadata): ImportMetadata {
-	const source = raw.source.trim() || TimetableImportSource.UNKNOWN;
+	const source = raw.source.trim() || 'UNKNOWN';
 	const campusId = raw.campusId?.trim();
 	return campusId ? { source, campusId } : { source };
 }

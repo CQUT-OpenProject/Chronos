@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { TimetableImportSource } from '$lib/models/timetable';
 import { createTimetable } from '$lib/models/timetable';
 import {
 	academicBounds,
@@ -68,7 +67,7 @@ function sampleTimetable() {
 			endWeek: 20,
 			periodTimes: []
 		},
-		importMetadata: { source: TimetableImportSource.UNKNOWN },
+		importMetadata: { source: 'UNKNOWN' },
 		viewPrefs: {
 			showSaturday: true,
 			showSunday: true,

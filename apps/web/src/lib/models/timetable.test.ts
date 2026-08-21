@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import {
-	createTimetable,
-	DEFAULT_TIMETABLE_NAME,
-	normalizeTimetableName,
-	TimetableImportSource
-} from './timetable';
+import { createTimetable, DEFAULT_TIMETABLE_NAME, normalizeTimetableName } from './timetable';
 
 describe('timetable name normalization', () => {
 	it('uses default name when empty', () => {
@@ -23,7 +18,7 @@ describe('timetable name normalization', () => {
 			courses: [],
 			createdAt: 1,
 			updatedAt: 1,
-			importMetadata: { source: TimetableImportSource.UNKNOWN }
+			importMetadata: { source: 'UNKNOWN' }
 		});
 		expect(timetable.name).toBe(DEFAULT_TIMETABLE_NAME);
 	});

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { TimetableImportSource } from '$lib/models/timetable';
 import { encodeTimetableConfig, decodeTimetableConfig } from './timetable-config-codec';
 
 describe('TimetableConfigJsonCodec', () => {
@@ -10,7 +9,7 @@ describe('TimetableConfigJsonCodec', () => {
 			endWeek: 18,
 			periodTimes: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
 		};
-		const importMetadata = { source: TimetableImportSource.FILE_HTML };
+		const importMetadata = { source: 'FILE_HTML' };
 		const viewPrefs = {
 			showSaturday: false,
 			showSunday: true,
@@ -36,7 +35,7 @@ describe('TimetableConfigJsonCodec', () => {
 				periodTimes: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
 			},
 			importMetadata: {
-				source: TimetableImportSource.ONLINE_EDU,
+				source: 'ONLINE_EDU',
 				campusId: 'huaxi',
 				campusPeriodTimes: {
 					huaxi: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
@@ -50,7 +49,7 @@ describe('TimetableConfigJsonCodec', () => {
 		});
 		const decoded = decodeTimetableConfig(encoded);
 		expect(decoded.importMetadata).toEqual({
-			source: TimetableImportSource.ONLINE_EDU,
+			source: 'ONLINE_EDU',
 			campusId: 'huaxi'
 		});
 		expect(
