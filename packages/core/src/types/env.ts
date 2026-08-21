@@ -40,11 +40,9 @@ export interface ChronosEnv {
 		getActiveTimetableId(): Promise<string | null>;
 		setActiveTimetableId(id: string): Promise<void>;
 
-		// Global preferences & wallpaper
+		// Global preferences
 		getPreferences(): Promise<UserPreferences>;
 		savePreferences(patch: Partial<UserPreferences>): Promise<void>;
-		getWallpaper?(): Promise<Uint8Array | null>;
-		setWallpaper?(wallpaper: Uint8Array | null): Promise<void>;
 
 		// Key-value store (microkernel layer provides Scoped isolation on top)
 		getPluginData<T>(pluginId: string, key: string): Promise<T | null>;

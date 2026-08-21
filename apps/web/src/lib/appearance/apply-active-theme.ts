@@ -37,8 +37,9 @@ export function applyActiveTheme(
 		options?.target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
 	if (!el) return;
 
+	const currentTheme = engine.themes.getTheme(activeThemeId);
 	const effectiveThemeId =
-		options?.paletteMode === 'wallpaper' || activeThemeId === 'wallpaper'
+		options?.paletteMode === 'wallpaper' || currentTheme?.supportsDynamicColor
 			? M3_DEFAULT_THEME_ID
 			: activeThemeId;
 

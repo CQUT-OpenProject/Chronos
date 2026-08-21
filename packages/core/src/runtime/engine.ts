@@ -150,8 +150,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				setActiveTimetableId: (id) => services.get(IStorageService).setActiveTimetableId(id),
 				getPreferences: () => services.get(IStorageService).getPreferences(),
 				savePreferences: (patch) => services.get(IStorageService).savePreferences(patch),
-				getWallpaper: () => services.get(IStorageService).getWallpaper?.() ?? Promise.resolve(null),
-				setWallpaper: (wp) => services.get(IStorageService).setWallpaper?.(wp) ?? Promise.resolve(),
 				getPluginData: (pid, k) => services.get(IStorageService).getPluginData(pid, k),
 				setPluginData: (pid, k, v) => services.get(IStorageService).setPluginData(pid, k, v),
 				deletePluginData: (pid, k) => services.get(IStorageService).deletePluginData(pid, k),
@@ -308,9 +306,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				await this.storage.deleteTimetable(t.id);
 			}
 			await this.storage.setActiveTimetableId('');
-			if (this.storage.setWallpaper) {
-				await this.storage.setWallpaper(null);
-			}
 		}
 		this._currentTimetable = null;
 		this._timetables = [];

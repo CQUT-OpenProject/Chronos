@@ -38,13 +38,13 @@
 			.themes.getThemes()
 			.filter((theme) => theme.id !== 'm3-default')
 			.map((theme) => {
-				const isDynamicWallpaper = theme.supportsDynamicColor && theme.id === 'wallpaper';
-				const isDisabled = isDynamicWallpaper
+				const isDynamicTheme = Boolean(theme.supportsDynamicColor);
+				const isDisabled = isDynamicTheme
 					? !hasWallpaper
 					: typeof theme.disabled === 'function'
 						? theme.disabled()
 						: Boolean(theme.disabled);
-				const defaultDesc = isDynamicWallpaper
+				const defaultDesc = isDynamicTheme
 					? hasWallpaper
 						? '从当前壁纸提取配色'
 						: '请先设置壁纸后再使用'

@@ -60,11 +60,9 @@ export interface IStorageService {
 	getActiveTimetableId(): Promise<string | null>;
 	setActiveTimetableId(id: string): Promise<void>;
 
-	// User preferences & wallpaper
+	// User preferences
 	getPreferences(): Promise<UserPreferences>;
 	savePreferences(patch: Partial<UserPreferences>): Promise<void>;
-	getWallpaper?(): Promise<Uint8Array | null>;
-	setWallpaper?(wallpaper: Uint8Array | null): Promise<void>;
 	clearAllData?(): Promise<void>;
 	estimateStorageBytes?(): Promise<number>;
 
