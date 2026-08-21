@@ -58,3 +58,5 @@ vite.config.ts.timestamp-*
 # Generated
 **/static/version.json
 static/version.json
+apps/web/src/lib/server/plugin-registry.generated.ts
+apps/web/src/routes/api/plugins/

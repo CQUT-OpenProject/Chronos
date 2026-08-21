@@ -11,7 +11,7 @@ import { DexieStorageProvider } from './dexie-storage';
 import { MemoryVaultProvider } from './memory-vault';
 import { WebAuthnVaultProvider } from './webauthn-vault';
 import { WebHttpProxyProvider } from './web-http';
-import { CqutOnlineHttpAdapter } from './cqut-online-http';
+import { PluginProxyHttpAdapter } from './plugin-proxy-http';
 import { WebRuntimeProvider } from './web-runtime';
 import { WebAnalyticsProvider } from './web-analytics';
 
@@ -20,7 +20,7 @@ export {
 	WebAuthnVaultProvider,
 	MemoryVaultProvider,
 	WebHttpProxyProvider,
-	CqutOnlineHttpAdapter,
+	PluginProxyHttpAdapter,
 	WebRuntimeProvider,
 	WebAnalyticsProvider
 };
@@ -29,7 +29,7 @@ export interface WebProviderOptions {
 	database?: ChronosDB;
 	localStorage?: Storage | null;
 	allowedDomains?: string[];
-	enableCqutProxy?: boolean;
+	enablePluginProxy?: boolean;
 }
 
 /**
@@ -37,7 +37,8 @@ export interface WebProviderOptions {
  */
 export function createWebProviders(options?: WebProviderOptions) {
 	const baseHttp = new WebHttpProxyProvider(options?.allowedDomains);
-	const http = options?.enableCqutProxy === true ? new CqutOnlineHttpAdapter(baseHttp) : baseHttp;
+	const http =
+		options?.enablePluginProxy === true ? new PluginProxyHttpAdapter(baseHttp) : baseHttp;
 
 	return {
 		storage: new DexieStorageProvider(options?.database, options?.localStorage),

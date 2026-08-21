@@ -48,6 +48,9 @@ export default defineConfig({
 			'@chronos/plugin-source-cqut/week-merge': fileURLToPath(
 				new URL('./packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
 			),
+			'@chronos/plugin-source-cqut/server': fileURLToPath(
+				new URL('./packages/plugins/source-cqut/server/index.ts', import.meta.url)
+			),
 			'@chronos/plugin-theme-yumemita': fileURLToPath(
 				new URL('./packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
 			),
@@ -58,7 +61,7 @@ export default defineConfig({
 	},
 	define: {
 		__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
-		__ONLINE_IMPORT_ENABLED__: JSON.stringify(true),
+		__CHRONOS_PROFILE__: JSON.stringify('chronos-cqut'),
 		__ANALYTICS_ENABLED__: JSON.stringify(true),
 		__SVELTEKIT_APP_VERSION__: JSON.stringify('0.3.0'),
 		__SVELTEKIT_DEV__: JSON.stringify(false),
@@ -100,6 +103,6 @@ export default defineConfig({
 		expect: { requireAssertions: true },
 		environment: 'node',
 		include: ['apps/web/src/**/*.{test,spec}.{js,ts}', 'packages/**/*.{test,spec}.{js,ts}'],
-		exclude: ['apps/web/src/**/*.svelte.{test,spec}.{js,ts}']
+		exclude: ['apps/web/src/**/*.svelte.{test,spec}.{js,ts}', '**/node_modules/**']
 	}
 });

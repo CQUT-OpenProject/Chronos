@@ -14,12 +14,13 @@ let sharedMarketplace: MarketplaceService | null = null;
 let engineInitPromise: Promise<ChronosEngine> | null = null;
 let profileManager: ProfileManager | null = null;
 
+import { profileHasServerPlugins } from '$lib/server/plugin-registry.generated';
+
 function createEngine(options?: WebProviderOptions): ChronosEngine {
-	const profile = resolveActiveProfile();
-	const enableCqutProxy = profile.plugins.some(
-		(entry) => entry.id === 'source-cqut' && entry.enabled !== false
-	);
-	const env = createWebChronosEnv({ ...options, enableCqutProxy });
+	const env = createWebChronosEnv({
+		...options,
+		enablePluginProxy: profileHasServerPlugins()
+	});
 	const engine = new ChronosEngine({
 		env,
 		initialLocale: baseLocale ?? 'zh-cn',

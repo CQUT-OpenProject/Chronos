@@ -9,6 +9,9 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { writeGeneratedThemeCss } from './src/lib/m3/theme';
 import { writeGeneratedVersionJson } from './src/lib/content/releases/version-generator';
+import { chronosProfilePlugin } from './src/lib/profile-codegen/chronos-profile-plugin';
+
+const webRoot = fileURLToPath(new URL('.', import.meta.url));
 
 function chronosThemeTokensPlugin() {
 	return {
@@ -46,6 +49,9 @@ export default defineConfig(({ mode }) => {
 				'@chronos/plugin-source-cqut/week-merge': fileURLToPath(
 					new URL('../../packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
 				),
+				'@chronos/plugin-source-cqut/server': fileURLToPath(
+					new URL('../../packages/plugins/source-cqut/server/index.ts', import.meta.url)
+				),
 				'@chronos/plugin-codec-share': fileURLToPath(
 					new URL('../../packages/plugins/codec-share/src/index.ts', import.meta.url)
 				),
@@ -62,9 +68,8 @@ export default defineConfig(({ mode }) => {
 		},
 		define: {
 			__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
-			__ONLINE_IMPORT_ENABLED__: JSON.stringify(!isPagesBuild),
 			__CHRONOS_PROFILE__: JSON.stringify(
-				process.env.CHRONOS_PROFILE ?? (isPagesBuild ? 'chronos-default' : 'chronos-cqut')
+				process.env.CHRONOS_PROFILE ?? (isPagesBuild ? 'chronos-cqut-offline' : 'chronos-cqut')
 			),
 			__ANALYTICS_ENABLED__: JSON.stringify(
 				mode === 'test' || Boolean(env.PUBLIC_POSTHOG_KEY?.trim())
@@ -94,6 +99,7 @@ export default defineConfig(({ mode }) => {
 			]
 		},
 		plugins: lazyPlugins(() => [
+			chronosProfilePlugin(webRoot),
 			chronosThemeTokensPlugin(),
 			functionsMixins(),
 			tailwindcss(),
@@ -104,6 +110,8 @@ export default defineConfig(({ mode }) => {
 					'@chronos/plugin-source-cqut': '../../packages/plugins/source-cqut/src/index.ts',
 					'@chronos/plugin-source-cqut/week-merge':
 						'../../packages/plugins/source-cqut/src/week-merge.ts',
+					'@chronos/plugin-source-cqut/server':
+						'../../packages/plugins/source-cqut/server/index.ts',
 					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
 					'@chronos/plugin-codec-share/share-link':
 						'../../packages/plugins/codec-share/src/share-link/index.ts',
@@ -192,7 +200,7 @@ export default defineConfig(({ mode }) => {
 			expect: { requireAssertions: true },
 			environment: 'node',
 			include: ['src/**/*.{test,spec}.{js,ts}', '../../packages/**/*.{test,spec}.{js,ts}'],
-			exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
+			exclude: ['src/**/*.svelte.{test,spec}.{js,ts}', '**/node_modules/**']
 		}
 	};
 });
