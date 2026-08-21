@@ -1,5 +1,5 @@
 export function periodSlotKey(day: number, start: number, end: number): string {
-	return `${day}-${start}-${end}`;
+	return `${day}:${start}:${end}`;
 }
 
 export function courseSlotKey(course: {
@@ -7,5 +7,5 @@ export function courseSlotKey(course: {
 	startPeriod: number;
 	endPeriod: number;
 }): string {
-	return `${course.dayOfWeek}:${course.startPeriod}:${course.endPeriod}`;
+	return periodSlotKey(course.dayOfWeek, course.startPeriod, course.endPeriod);
 }

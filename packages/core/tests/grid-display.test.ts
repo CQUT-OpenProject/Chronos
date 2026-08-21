@@ -12,7 +12,7 @@ import {
 
 describe('Grid & Display Models in @chronos/core', () => {
 	it('generates periodSlotKey and courseSlotKey correctly', () => {
-		expect(periodSlotKey(1, 1, 2)).toBe('1-1-2');
+		expect(periodSlotKey(1, 1, 2)).toBe('1:1:2');
 		expect(courseSlotKey({ dayOfWeek: 3, startPeriod: 5, endPeriod: 6 })).toBe('3:5:6');
 	});
 
