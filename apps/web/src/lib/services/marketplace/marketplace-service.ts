@@ -1,6 +1,5 @@
 import type { ChronosEngine, Disposable, MarketplaceRegistry, PluginManifest } from '@chronos/core';
 import { IHttpService, IRuntimeService } from '@chronos/core';
-import { BUILTIN_COLOR_SCHEME_VIBRANT, buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { WorkerPluginBridge } from './worker-plugin-bridge';
 
 const MARKETPLACE_STORAGE_KEY = 'installed_plugins';
@@ -199,21 +198,19 @@ export class MarketplaceService implements Disposable {
 		const activeThemeId = this.engine.state.activeThemeId;
 
 		if (activeThemeId !== 'm3-default' && !this.engine.themes.getTheme(activeThemeId)) {
-			const patch = buildColorSchemePatch(BUILTIN_COLOR_SCHEME_VIBRANT);
-			this.engine.actions.setTheme(patch.themeId);
+			this.engine.actions.setTheme('m3-default');
 			void this.engine.actions.updatePreferences({
-				paletteMode: patch.paletteMode,
-				visualThemeId: patch.visualThemeId
+				paletteMode: 'vibrant',
+				visualThemeId: 'm3-default'
 			});
 			return;
 		}
 
 		if (prefs.paletteMode === 'wallpaper' && !this.engine.themes.getTheme('wallpaper')) {
-			const patch = buildColorSchemePatch(BUILTIN_COLOR_SCHEME_VIBRANT);
-			this.engine.actions.setTheme(patch.themeId);
+			this.engine.actions.setTheme('m3-default');
 			void this.engine.actions.updatePreferences({
-				paletteMode: patch.paletteMode,
-				visualThemeId: patch.visualThemeId
+				paletteMode: 'vibrant',
+				visualThemeId: 'm3-default'
 			});
 		}
 	}

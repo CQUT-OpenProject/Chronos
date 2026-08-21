@@ -1,7 +1,6 @@
 import { ChronosEngine, ProfileManager } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
-import { CORE_SHELL_PLUGIN_ID, registerCoreShellSlots } from '$lib/boot/core-shell';
 import { availablePlugins, resolveActiveProfile } from '$lib/boot/profile-registry';
 
 import { MarketplaceService } from '$lib/services/marketplace/marketplace-service';
@@ -42,7 +41,6 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 	});
 
 	engine.themes.registerTheme(m3DefaultTheme);
-	registerCoreShellSlots(engine.getPluginContext(CORE_SHELL_PLUGIN_ID));
 
 	return engine;
 }

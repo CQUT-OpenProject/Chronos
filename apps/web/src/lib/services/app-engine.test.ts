@@ -43,11 +43,6 @@ function createMockDb(): ChronosDB {
 			bulkPut: vi.fn(async () => {}),
 			bulkDelete: vi.fn(async () => {})
 		},
-		wallpapers: {
-			get: vi.fn(async () => undefined),
-			put: vi.fn(async () => 'default'),
-			delete: vi.fn(async () => {})
-		},
 		pluginData: {
 			get: vi.fn(async () => undefined),
 			put: vi.fn(async () => 'id'),
@@ -65,19 +60,21 @@ describe('app-engine bootstrap', () => {
 		resetAppEngine();
 	});
 
-	it('registers shell slots when getAppController is called before bootstrap completes', async () => {
+	it('registers shell slots after profile bootstrap completes', async () => {
 		const mockDb = createMockDb();
 		const mockStore = new MockLocalStorage();
 		const opts = { database: mockDb, localStorage: mockStore };
 
 		const controller = getAppController(opts);
+		expect(controller.getSlots('shell.bottom-bar.tab')).toEqual([]);
+
+		await ensureEngineReady(opts);
+
 		expect(controller.getSlots('shell.bottom-bar.tab').map((tab) => tab.id)).toEqual([
 			'timetable',
 			'mine'
 		]);
 		expect(controller.getSlots('mine.section').length).toBeGreaterThan(0);
-
-		await ensureEngineReady(opts);
 	});
 
 	it('initializes shared ChronosEngine and ReactiveChronosController with builtin plugins and m3 theme', async () => {
