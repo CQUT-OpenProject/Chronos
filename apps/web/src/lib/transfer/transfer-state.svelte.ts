@@ -20,6 +20,7 @@ export type { TransferImportSource };
 export interface TransferPreviewState {
 	preview: Timetable | null;
 	previewSource: TransferImportSource | null;
+	selectedSource: TransferImportSource;
 	importMode: ImportMode;
 	htmlImportTermStartDate: string | null;
 	htmlImportCampusId: CqutCampusId | null;
@@ -32,12 +33,18 @@ export interface TransferPreviewState {
 	statusMessage: string | null;
 }
 
+function resolveInitialSource(): TransferImportSource {
+	if (onlineImportEnabled) return 'ONLINE';
+	return 'SHARE_LINK';
+}
+
 function resolveInitialTabId(): string {
 	if (onlineImportEnabled) return 'cqut-online';
 	return 'share-link';
 }
 
 export function createTransferState(engine?: ChronosEngine) {
+	let selectedSource = $state<TransferImportSource>(resolveInitialSource());
 	let selectedTabId = $state(resolveInitialTabId());
 	let preview = $state<Timetable | null>(null);
 	let previewSource = $state<TransferImportSource | null>(null);
@@ -77,6 +84,15 @@ export function createTransferState(engine?: ChronosEngine) {
 	function clearMessages() {
 		errorMessage = null;
 		statusMessage = null;
+	}
+
+	function setSelectedSource(source: TransferImportSource) {
+		selectedSource = source;
+		preview = null;
+		previewSource = null;
+		htmlImportTermStartDate = null;
+		htmlImportCampusId = null;
+		clearMessages();
 	}
 
 	function setSelectedTabId(tabId: string) {
@@ -191,6 +207,52 @@ export function createTransferState(engine?: ChronosEngine) {
 			return true;
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : '无法读取剪贴板，请检查浏览器权限';
+			return false;
+		}
+	}
+
+	async function previewOnline() {
+		clearMessages();
+		const trimmedAccount = account.trim();
+		if (!trimmedAccount || !password.trim()) {
+			errorMessage = '请输入账号和密码';
+			return false;
+		}
+
+		try {
+			const timetable = await executeSlotImport('cqut-online', {
+				username: trimmedAccount,
+				password,
+				saveCredentials
+			});
+			preview = timetable;
+			previewSource = 'ONLINE';
+			htmlImportTermStartDate = null;
+			htmlImportCampusId = null;
+			return true;
+		} catch (err) {
+			errorMessage = err instanceof Error ? err.message : '获取在线课表失败';
+			return false;
+		}
+	}
+
+	async function previewFromHtmlFile(file: File) {
+		clearMessages();
+		try {
+			const fileContent = await file.text();
+			const timetable = await executeSlotImport('edu-html', {
+				file: fileContent,
+				fileContent
+			});
+			preview = timetable;
+			previewSource = 'HTML';
+			htmlImportTermStartDate = timetable.academicConfig?.termStartDate || timeProvider.today();
+			htmlImportCampusId =
+				(timetable.importMetadata?.campusId as CqutCampusId) ??
+				inferCampusIdFromCourses(timetable.courses);
+			return true;
+		} catch (err) {
+			errorMessage = err instanceof Error ? err.message : '解析 HTML 课表失败';
 			return false;
 		}
 	}
@@ -344,6 +406,7 @@ export function createTransferState(engine?: ChronosEngine) {
 			return {
 				preview,
 				previewSource,
+				selectedSource,
 				importMode,
 				htmlImportTermStartDate,
 				htmlImportCampusId,
@@ -356,6 +419,7 @@ export function createTransferState(engine?: ChronosEngine) {
 				statusMessage
 			};
 		},
+		setSelectedSource,
 		setSelectedTabId,
 		setAccount,
 		setPassword,
@@ -366,6 +430,8 @@ export function createTransferState(engine?: ChronosEngine) {
 		clearPreview,
 		setDirectPreview,
 		previewFromClipboard,
+		previewOnline,
+		previewFromHtmlFile,
 		previewWithSavedCredential,
 		clearSavedCredential,
 		previewWithSlot,
