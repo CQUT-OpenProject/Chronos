@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
 	import SchemaForm from '../schema-form/SchemaForm.svelte';
+	import { resolvePluginScreenSlot } from './resolve-plugin-screen-slot';
 
 	interface Props {
 		controller: ReactiveChronosController;
@@ -12,9 +13,7 @@
 
 	// Find the screen contribution from shell.route.screen slot
 	const screenSlot = $derived(
-		controller
-			.getSlots('shell.route.screen')
-			.find((s) => s.id === viewId || s.id === `${pluginId}/${viewId}`)
+		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
 	);
 
 	let formValues = $state<Record<string, unknown>>({});
