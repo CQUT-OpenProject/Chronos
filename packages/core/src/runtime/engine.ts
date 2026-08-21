@@ -640,7 +640,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			const denied = plugin.permissions.filter((perm) => !allowedInProcess.has(perm));
 			if (denied.length > 0) {
 				console.warn(
-					`[ChronosEngine] Plugin "${plugin.id}" requests permissions [${denied.join(', ')}] that require sandbox isolation.`
+					`[ChronosEngine] Plugin "${plugin.id}" requests permissions [${denied.join(', ')}] that are not available in this host.`
 				);
 			}
 		}

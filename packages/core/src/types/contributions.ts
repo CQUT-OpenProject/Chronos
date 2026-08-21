@@ -22,7 +22,7 @@ export interface ThemeContribution {
 	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
 	/**
 	 * Compute course card colors dynamically.
-	 * In-process plugins can implement this directly; Worker sandbox plugins should provide static palette arrays.
+	 * Profile plugins can implement this directly; online-installed plugins should provide static palette arrays.
 	 */
 	resolveCoursePaint?(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint;
 }
@@ -32,6 +32,6 @@ export interface CourseBadgeContribution {
 	readonly id: string;
 	/** Synchronously generate badge (in-process plugins) */
 	getBadge?(course: Course): CourseBadge | CourseBadge[] | null;
-	/** Asynchronously project badges for batch processing (sandbox plugins) */
+	/** Asynchronously project badges for batch processing (online-installed plugins) */
 	projectBadges?(courses: Course[]): Promise<Record<string, CourseBadge[]>>;
 }

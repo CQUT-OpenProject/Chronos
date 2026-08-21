@@ -37,7 +37,7 @@ export interface ChronosPlugin<Config extends object = Record<string, unknown>> 
 	readonly defaultConfig?: Config;
 	/** Declared service dependencies (plugin remains pending until all dependencies are satisfied) */
 	readonly inject?: ReadonlyArray<ServiceIdentifier<unknown> | string>;
-	/** Declared permissions required by the plugin (for sandbox permission gate, e.g. ['network', 'storage']) */
+	/** Declared permissions required by the plugin (e.g. ['network', 'storage']) */
 	readonly permissions?: Array<'network' | 'storage' | 'vault' | 'notifications'>;
 	/** Allowed domain whitelist for network requests */
 	readonly allowedDomains?: string[];

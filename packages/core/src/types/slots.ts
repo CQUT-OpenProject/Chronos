@@ -60,7 +60,7 @@ export interface MineItemSlotContribution {
 export interface PluginScreenSlotContribution {
 	id: string; // Unique view ID, mapped to /plugins/[pluginId]/[id]
 	title: LocalizedText;
-	/** In-process plugins can mount Svelte components directly, sandboxed plugins render dynamically via SchemaForm */
+	/** Profile plugins can mount Svelte components; online-installed plugins render via SchemaForm */
 	component?: unknown;
 	schema?: ConfigSchema<Record<string, unknown>>;
 }
