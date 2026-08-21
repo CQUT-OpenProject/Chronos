@@ -19,35 +19,8 @@ function resolvePluginExport(mod: Record<string, unknown>): ChronosPlugin | null
 	return null;
 }
 
-function parseCjsBundle(code: string): ChronosPlugin | null {
-	try {
-		// eslint-disable-next-line no-new-func
-		const moduleObj = { exports: {} as Record<string, unknown> };
-		// eslint-disable-next-line no-new-func
-		const fn = new Function('module', 'exports', code);
-		fn(moduleObj, moduleObj.exports);
-		const candidate =
-			(moduleObj.exports.default as ChronosPlugin) ??
-			(moduleObj.exports.plugin as ChronosPlugin) ??
-			(isChronosPlugin(moduleObj.exports) ? (moduleObj.exports as unknown as ChronosPlugin) : null);
-		if (candidate && isChronosPlugin(candidate)) return candidate;
-	} catch {
-		// ignore, try ESM path
-	}
-	return null;
-}
-
-function isLikelyCjs(code: string): boolean {
-	return /\bmodule\.exports\b|\bexports\./.test(code);
-}
-
-/** Load an ESM bundle from verified source code via blob import. Falls back to CJS eval for Node tests. */
+/** Load an ESM bundle from verified source code via blob/data dynamic import. */
 export async function loadEsmPluginFromCode(code: string): Promise<ChronosPlugin> {
-	// Fast path: CJS bundles (used in unit tests)
-	if (isLikelyCjs(code)) {
-		const cjs = parseCjsBundle(code);
-		if (cjs) return cjs;
-	}
 	// Browser: try blob import for true ESM (with imports, svelte runtime, etc.)
 	if (
 		typeof Blob !== 'undefined' &&
@@ -65,30 +38,23 @@ export async function loadEsmPluginFromCode(code: string): Promise<ChronosPlugin
 				URL.revokeObjectURL(url);
 			}
 		} catch {
-			// fall through to transform fallback
+			// fall through to data URL
 		}
 	}
-	// Fallback: transform ESM `export default` to CJS and eval (covers Node tests for simple ESM)
-	try {
-		const transformed = code
-			.replace(/^\s*export\s+default\s+/m, 'module.exports.default = ')
-			.replace(/^\s*export\s+const\s+(\w+)\s*=/gm, 'module.exports.$1 =');
-		const cjs = parseCjsBundle(transformed);
-		if (cjs) return cjs;
-	} catch {}
-	throw new Error('Invalid plugin bundle: missing id or apply()');
-}
 
-/** Synchronous CJS parser for unit tests (legacy IIFE bundles). */
-export function parsePluginBundle(code: string): ChronosPlugin {
-	const cjs = parseCjsBundle(code);
-	if (cjs) return cjs;
-	// For simple ESM `export default { ... }` in tests, transform and eval synchronously
-	if (/export\s+default/.test(code)) {
-		const transformed = code.replace(/^\s*export\s+default\s+/m, 'module.exports.default = ');
-		const fallback = parseCjsBundle(transformed);
-		if (fallback) return fallback;
+	// Node / Testing environment: native data URL dynamic import
+	if (typeof Buffer !== 'undefined') {
+		try {
+			const base64 = Buffer.from(code, 'utf-8').toString('base64');
+			const dataUrl = `data:text/javascript;base64,${base64}`;
+			const mod = (await import(/* @vite-ignore */ dataUrl)) as Record<string, unknown>;
+			const plugin = resolvePluginExport(mod);
+			if (plugin) return plugin;
+		} catch {
+			// fall through to error
+		}
 	}
+
 	throw new Error('Invalid plugin bundle: missing id or apply()');
 }
 
@@ -111,7 +77,7 @@ export function validatePluginManifest(
 	if (typeof m.sha256 !== 'string' || !m.sha256) {
 		throw new Error('Invalid plugin manifest: missing sha256');
 	}
-	if (m.bundleFormat && m.bundleFormat !== 'esm' && m.bundleFormat !== 'iife') {
+	if (m.bundleFormat !== 'esm') {
 		throw new Error('Invalid plugin manifest: bundleFormat must be esm');
 	}
 }

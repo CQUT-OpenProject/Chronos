@@ -301,7 +301,11 @@ export class OfficialPluginService implements Disposable {
 			return;
 		}
 
-		if (prefs.paletteMode === 'wallpaper' && !this.engine.themes.getTheme('wallpaper')) {
+		if (
+			prefs.paletteMode !== 'vibrant' &&
+			prefs.paletteMode !== 'material' &&
+			!this.engine.themes.getTheme(prefs.paletteMode)
+		) {
 			this.engine.actions.setTheme('m3-default');
 			void this.engine.actions.updatePreferences({
 				paletteMode: 'vibrant',

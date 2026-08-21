@@ -3,11 +3,11 @@ import { ChronosEngine } from '@chronos/core';
 import type { ChronosEnv, StorageChangeEvent } from '@chronos/core';
 import { DEFAULT_USER_PREFERENCES } from '@chronos/core';
 import { OfficialPluginService } from './official-plugin-service';
-import { parsePluginBundle } from './plugin-bundle';
+import { loadEsmPluginFromCode } from './plugin-bundle';
 import type { OfficialPluginCatalog, PluginManifest } from '@chronos/core';
 
 const SAMPLE_BUNDLE = `
-module.exports = {
+export default {
   id: 'test-plugin',
   name: function () { return 'Test'; },
   version: '1.0.0',
@@ -73,15 +73,15 @@ function createMockEnv(httpRequest = vi.fn()) {
 	return { env, httpRequest };
 }
 
-describe('parsePluginBundle', () => {
-	it('parses module.exports plugin objects', () => {
-		const plugin = parsePluginBundle(SAMPLE_BUNDLE);
+describe('loadEsmPluginFromCode', () => {
+	it('parses export default ESM plugin objects', async () => {
+		const plugin = await loadEsmPluginFromCode(SAMPLE_BUNDLE);
 		expect(plugin.id).toBe('test-plugin');
 		expect(typeof plugin.apply).toBe('function');
 	});
 
-	it('rejects bundles without apply()', () => {
-		expect(() => parsePluginBundle('module.exports = { id: "x" };')).toThrow(
+	it('rejects bundles without apply()', async () => {
+		await expect(loadEsmPluginFromCode('export default { id: "x" };')).rejects.toThrow(
 			/Invalid plugin bundle/
 		);
 	});
@@ -125,7 +125,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
-			bundleFormat: 'iife',
+			bundleFormat: 'esm',
 			minEngineVersion: '0.3.0',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -149,7 +149,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
-			bundleFormat: 'iife',
+			bundleFormat: 'esm',
 			minEngineVersion: '0.3.0',
 			bundleUrl: '/test.bundle.js',
 			sha256: 'deadbeef'
@@ -172,7 +172,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
-			bundleFormat: 'iife',
+			bundleFormat: 'esm',
 			minEngineVersion: '0.3.0',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -196,13 +196,13 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
-			bundleFormat: 'iife',
+			bundleFormat: 'esm',
 			minEngineVersion: '0.3.0',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
 		};
 
-		await engine.loadPlugin(parsePluginBundle(SAMPLE_BUNDLE));
+		await engine.loadPlugin(await loadEsmPluginFromCode(SAMPLE_BUNDLE));
 		expect(engine.slots.getSlotItem('mine.item', 'test-item')).toBeDefined();
 
 		await engine.storage.setPluginData('core.official-plugins', 'installed_plugins', [

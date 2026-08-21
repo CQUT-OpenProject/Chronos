@@ -1,13 +1,6 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { getAppController, getAppEngine } from '$lib/services/app-engine';
-import { createCredentialVault } from '$lib/client/credential-vault';
-import {
-	CQUT_CREDENTIAL_RECORD_KEY,
-	SOURCE_CQUT_PLUGIN_ID,
-	type CqutCredentialRecord
-} from '@chronos/plugin-source-cqut';
-import { IVaultService, IStorageService } from '@chronos/core';
 import type {
 	CapsuleCornerStyle,
 	PaletteMode,
@@ -122,18 +115,6 @@ export function createAppShell() {
 	}
 
 	async function clearAllData() {
-		const storageService = engine.services.get(IStorageService);
-		const credentialVault = createCredentialVault({
-			vault: engine.services.get(IVaultService),
-			readPluginCredentialRecord: () =>
-				storageService.getPluginData<CqutCredentialRecord>(
-					SOURCE_CQUT_PLUGIN_ID,
-					CQUT_CREDENTIAL_RECORD_KEY
-				),
-			clearPluginCredentialRecord: () =>
-				storageService.deletePluginData(SOURCE_CQUT_PLUGIN_ID, CQUT_CREDENTIAL_RECORD_KEY)
-		});
-		await credentialVault.clear();
 		await controller.clearAllData();
 	}
 
