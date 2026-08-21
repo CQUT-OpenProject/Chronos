@@ -5,7 +5,7 @@ import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
 import { IVaultService, type ChronosEngine } from '@chronos/core';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
-import { onlineImportEnabled } from '$lib/config/features';
+import { getDefaultImportSlot } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
 import { estimateShareLinkLength, SHARE_LINK_WARNING_LENGTH } from '@chronos/plugin-codec-share';
 
@@ -23,8 +23,7 @@ export interface TransferPreviewState {
 }
 
 function resolveInitialSlotId(): string {
-	if (onlineImportEnabled) return 'cqut-online';
-	return 'share-link';
+	return getDefaultImportSlot();
 }
 
 export function createTransferState(engine?: ChronosEngine) {

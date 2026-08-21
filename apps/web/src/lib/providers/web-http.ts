@@ -1,6 +1,5 @@
 import type { HttpRequestOptions, HttpResponse, IHttpService } from '@chronos/core';
-
-declare const __ONLINE_IMPORT_ENABLED__: boolean | undefined;
+import { profileHasServerPlugins } from '$lib/server/plugin-registry.generated';
 
 /**
  * Checks whether a given hostname is a private or loopback IP address (anti-SSRF).
@@ -68,13 +67,9 @@ export class WebHttpProxyProvider implements IHttpService {
 				: undefined;
 
 		try {
-			// Check if running in a static deployment with bypassCors requested
-			const isOnlineSupported =
-				typeof __ONLINE_IMPORT_ENABLED__ !== 'undefined' ? __ONLINE_IMPORT_ENABLED__ : true;
-
-			if (options?.bypassCors && !isOnlineSupported) {
+			if (options?.bypassCors && !profileHasServerPlugins()) {
 				throw new Error(
-					'当前为纯静态部署模式，在线教务同步需要服务端代理支持，请使用离线 HTML 导入或分享链接'
+					'当前构建未启用服务端代理，在线教务同步不可用，请使用离线 HTML 导入或分享链接'
 				);
 			}
 

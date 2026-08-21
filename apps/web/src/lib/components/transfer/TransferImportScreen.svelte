@@ -11,7 +11,6 @@
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-	import { onlineImportEnabled } from '$lib/config/features';
 	import { getAppController } from '$lib/services/app-engine';
 
 	let {
@@ -25,12 +24,18 @@
 	const controller = getAppController();
 	const availableSlots = $derived(controller.getSlots('import.source.tab'));
 	const importSegments = $derived(
-		availableSlots
-			.filter((slot) => onlineImportEnabled || slot.id !== 'cqut-online')
-			.map((slot) => ({
-				value: slot.id,
-				label: typeof slot.title === 'function' ? slot.title() : slot.title
-			}))
+		availableSlots.map((slot) => ({
+			value: slot.id,
+			label: typeof slot.title === 'function' ? slot.title() : slot.title
+		}))
+	);
+	const hasOnlineImport = $derived(availableSlots.some((slot) => slot.id === 'cqut-online'));
+	const importDescription = $derived(
+		hasOnlineImport
+			? '支持知行理工在线导入、分享链接与教务系统导出的 HTML 文件。'
+			: availableSlots.some((slot) => slot.id === 'edu-html')
+				? '支持分享链接与教务系统导出的 HTML 文件。'
+				: '支持分享链接导入课表。'
 	);
 
 	const transferState = $derived(transfer.state);
@@ -114,9 +119,7 @@
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
 	<p class="m3-body-medium text-on-surface-variant">
-		{onlineImportEnabled
-			? '支持知行理工在线导入、分享链接与教务系统导出的 HTML 文件。'
-			: '支持分享链接与教务系统导出的 HTML 文件。'}
+		{importDescription}
 	</p>
 
 	{#if importSegments.length > 1}
@@ -128,7 +131,7 @@
 	{/if}
 
 	<div class="w-full">
-		{#if onlineImportEnabled && transferState.selectedSlotId === 'cqut-online'}
+		{#if transferState.selectedSlotId === 'cqut-online'}
 			<Card variant="outlined">
 				<div class="flex flex-col gap-4 p-2">
 					{#if !connectivity.isOnline}

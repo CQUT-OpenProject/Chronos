@@ -4,7 +4,7 @@ import {
 	WebAuthnVaultProvider,
 	MemoryVaultProvider,
 	WebHttpProxyProvider,
-	CqutOnlineHttpAdapter,
+	PluginProxyHttpAdapter,
 	WebRuntimeProvider,
 	WebAnalyticsProvider,
 	createWebProviders,
@@ -239,9 +239,9 @@ describe('Web Providers', () => {
 		}).not.toThrow();
 	});
 
-	it('CqutOnlineHttpAdapter unwraps preview API envelope for cqut.edu.cn requests', async () => {
+	it('PluginProxyHttpAdapter unwraps preview API envelope for plugin proxy domains', async () => {
 		const inner = new WebHttpProxyProvider();
-		const adapter = new CqutOnlineHttpAdapter(inner);
+		const adapter = new PluginProxyHttpAdapter(inner);
 		const fetchPayload = {
 			payload: {
 				eventList: [{ eventName: '测试课程' }]
@@ -264,7 +264,7 @@ describe('Web Providers', () => {
 		});
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/cqut/preview',
+			'/api/plugins/source-cqut/preview',
 			expect.objectContaining({
 				method: 'POST',
 				body: JSON.stringify({ account: 'stu001', password: 'pass123' })
@@ -275,9 +275,9 @@ describe('Web Providers', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('CqutOnlineHttpAdapter extracts credentials from JSON body', async () => {
+	it('PluginProxyHttpAdapter extracts credentials from JSON body', async () => {
 		const inner = new WebHttpProxyProvider();
-		const adapter = new CqutOnlineHttpAdapter(inner);
+		const adapter = new PluginProxyHttpAdapter(inner);
 		const fetchMock = vi.fn(async () => ({
 			ok: true,
 			status: 200,
@@ -293,7 +293,7 @@ describe('Web Providers', () => {
 		});
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/cqut/preview',
+			'/api/plugins/source-cqut/preview',
 			expect.objectContaining({
 				body: JSON.stringify({ account: 'json-user', password: 'json-pass' })
 			})
@@ -302,18 +302,18 @@ describe('Web Providers', () => {
 	});
 
 	it('createWebProviders instantiates all web providers', () => {
-		const providers = createWebProviders({ database: db, localStorage, enableCqutProxy: true });
+		const providers = createWebProviders({ database: db, localStorage, enablePluginProxy: true });
 		expect(providers.storage).toBeInstanceOf(DexieStorageProvider);
 		expect(providers.vault).toBeInstanceOf(WebAuthnVaultProvider);
-		expect(providers.http).toBeInstanceOf(CqutOnlineHttpAdapter);
+		expect(providers.http).toBeInstanceOf(PluginProxyHttpAdapter);
 		expect(providers.runtime).toBeInstanceOf(WebRuntimeProvider);
 		expect(providers.analytics).toBeInstanceOf(WebAnalyticsProvider);
 	});
 
-	it('createWebProviders uses plain HTTP when CQUT proxy disabled', () => {
-		const providers = createWebProviders({ database: db, localStorage, enableCqutProxy: false });
+	it('createWebProviders uses plain HTTP when plugin proxy disabled', () => {
+		const providers = createWebProviders({ database: db, localStorage, enablePluginProxy: false });
 		expect(providers.http).toBeInstanceOf(WebHttpProxyProvider);
-		expect(providers.http).not.toBeInstanceOf(CqutOnlineHttpAdapter);
+		expect(providers.http).not.toBeInstanceOf(PluginProxyHttpAdapter);
 	});
 
 	it('registerWebProviders populates ServiceContainer correctly', () => {

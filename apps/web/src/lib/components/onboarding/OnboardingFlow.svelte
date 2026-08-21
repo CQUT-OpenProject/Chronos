@@ -6,7 +6,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
-	import { onlineImportEnabled } from '$lib/config/features';
+	import { profileIncludesOnlineImport } from '$lib/config/features';
 	import type { TimetableLayoutMode } from '@chronos/core';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -193,7 +193,7 @@
 									<HighlightRow
 										icon={DownloadFill}
 										title="多种导入方式"
-										subtitle={onlineImportEnabled
+										subtitle={profileIncludesOnlineImport()
 											? '知行理工在线导入、分享链接、HTML 文件均可'
 											: '分享链接、HTML 文件均可导入'}
 									/>
@@ -257,7 +257,7 @@
 									如何导入课表？
 								</h2>
 								<div class="flex flex-col gap-3">
-									{#if onlineImportEnabled}
+									{#if profileIncludesOnlineImport()}
 										{@render importMethodCard(
 											DownloadFill,
 											'知行理工在线导入',
