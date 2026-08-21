@@ -17,3 +17,4 @@
 | [ADR 0007](./0007-plugin-profile-and-preset-assembly.md)                | **基于 Profile 的高校预设包与插件装配体系**        | Accepted | `packages/core`, `profiles/*` | 引入 Profile 与 `ProfileManager`，支持按高校零冗余定制装配与独立发行                              |
 | [ADR 0008](./0008-host-decoupling-and-deep-ingest-seam.md)              | **宿主与插件解耦深化、端口纯粹化及全槽位摄取演进** | Accepted | `apps/web`, `packages/*`      | 废除导入来源双轨枚举，纯粹化存储端口，剥离宿主特定源 UI 胶水与清理死代码                          |
 | [ADR 0009](./0009-deep-architecture-convergence-and-dead-code-purge.md) | **架构深化收敛、双轨清理与死代码彻底剥离**         | Accepted | `packages/*`, `apps/web`      | 彻底插槽化导入管道，剥离宿主影子模型与残留胶水，消除排版跨层泄漏与修复死引用                      |
+| [ADR 0010](./0010-host-state-collapse-and-architecture-deepening.md)    | **宿主状态折叠、双轨消除与架构深化收敛**           | Accepted | `packages/core`, `apps/web`   | 废除 AppState 影子模型，清除 Dexie 壁纸残余，消除 Profile 双重注册，统一槽位哈希与事件契约        |
