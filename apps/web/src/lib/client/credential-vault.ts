@@ -7,17 +7,11 @@ import {
 import type { SavedCredentialState } from '$lib/models/auth';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import {
-	readOnlineCredentialRecord,
-	writeOnlineCredentialRecord,
-	type OnlineCredentialRecord
-} from '$lib/storage/online-credential-record';
 import { credentialEnvironment } from './credential-environment.svelte';
 
 export { CQUT_PASSWORD_SECRET_KEY, SOURCE_CQUT_PLUGIN_ID };
 
 const CREDENTIAL_INVALIDATED_MESSAGE = '已保存凭据已失效，请重新录入账号和密码';
-const LEGACY_USERNAME_KEY = `${SOURCE_CQUT_PLUGIN_ID}:username`;
 
 export interface CredentialVault {
 	readonly state: SavedCredentialState;
@@ -28,43 +22,27 @@ export interface CredentialVault {
 
 export interface CredentialVaultDeps {
 	vault?: IVaultService;
-	storage?: Storage | null;
 	readPluginCredentialRecord?: () => Promise<CqutCredentialRecord | null>;
 	clearPluginCredentialRecord?: () => Promise<void>;
 }
 
-function mapLegacyRecord(record: OnlineCredentialRecord | null): CqutCredentialRecord | null {
-	if (!record) return null;
-	if (record.mode === 'vault' || record.mode === 'account_only') {
-		return { mode: record.mode, account: record.account };
-	}
-	return null;
-}
-
 export function createCredentialVault(deps: CredentialVaultDeps = {}): CredentialVault {
-	const storage = deps.storage ?? (typeof localStorage !== 'undefined' ? localStorage : null);
 	const vault = deps.vault;
 	const listeners = new Set<(state: SavedCredentialState) => void>();
 
 	async function resolveCredentialRecord(): Promise<CqutCredentialRecord | null> {
-		const pluginRecord = (await deps.readPluginCredentialRecord?.()) ?? null;
-		if (pluginRecord) return pluginRecord;
-		return mapLegacyRecord(readOnlineCredentialRecord(storage));
+		return (await deps.readPluginCredentialRecord?.()) ?? null;
 	}
 
 	function buildState(record: CqutCredentialRecord | null): SavedCredentialState {
-		const legacyAccount =
-			record?.account ||
-			(typeof localStorage !== 'undefined' ? localStorage.getItem(LEGACY_USERNAME_KEY) : null);
-
-		const hasSavedCredential = Boolean(record?.account || legacyAccount);
+		const hasSavedCredential = Boolean(record?.account);
 
 		return {
-			account: legacyAccount ?? null,
+			account: record?.account ?? null,
 			hasSavedCredential,
 			protectionAvailable: credentialEnvironment.prfAvailable,
 			capabilitiesReady: credentialEnvironment.ready,
-			savedMode: record?.mode === 'vault' ? 'vault' : legacyAccount ? 'account_only' : null
+			savedMode: record?.mode === 'vault' ? 'vault' : record ? 'account_only' : null
 		};
 	}
 
@@ -106,10 +84,6 @@ export function createCredentialVault(deps: CredentialVaultDeps = {}): Credentia
 
 	async function clear(): Promise<AppResult<void>> {
 		await vault?.removeSecret(CQUT_PASSWORD_SECRET_KEY);
-		writeOnlineCredentialRecord(null, storage);
-		if (typeof localStorage !== 'undefined') {
-			localStorage.removeItem(LEGACY_USERNAME_KEY);
-		}
 		await deps.clearPluginCredentialRecord?.();
 		notifyState(null);
 		return success(undefined);

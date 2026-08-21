@@ -31,25 +31,15 @@ export function encodeTimetableConfig(
 export function decodeTimetableConfig(configJson: string, timetableId?: string): TimetableConfig {
 	try {
 		const parsed = timetableConfigSchema.parse(JSON.parse(configJson));
-		const storedMeta = timetableImportMetadataSchema.parse(parsed.importMetadata);
-		const importMetadata = slimImportMetadata(storedMeta);
-		const migratedCqut =
-			storedMeta.campusPeriodTimes && !parsed.customMetadata?.['source-cqut']
-				? {
-						'source-cqut': {
-							campusId: importMetadata.campusId,
-							campusPeriodTimes: storedMeta.campusPeriodTimes
-						}
-					}
-				: undefined;
+		const importMetadata = slimImportMetadata(
+			timetableImportMetadataSchema.parse(parsed.importMetadata)
+		);
 		return {
 			schemaVersion: parsed.schemaVersion,
 			academicConfig: academicConfigSchema.parse(parsed.academicConfig),
 			importMetadata,
 			viewPrefs: timetableViewPrefsSchema.parse(parsed.viewPrefs),
-			customMetadata: migratedCqut
-				? { ...parsed.customMetadata, ...migratedCqut }
-				: parsed.customMetadata
+			customMetadata: parsed.customMetadata
 		};
 	} catch (error) {
 		if (timetableId) {

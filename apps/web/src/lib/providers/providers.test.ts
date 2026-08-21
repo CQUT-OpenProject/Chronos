@@ -114,19 +114,6 @@ describe('Web Providers', () => {
 		localStorage = new MockStorage();
 	});
 
-	it('DexieStorageProvider maps legacy preference keys', async () => {
-		localStorage.setItem('chronos_preferences:theme_mode', 'system');
-		localStorage.setItem('chronos_preferences:timetable_layout_mode', 'fit');
-		localStorage.setItem('chronos_preferences:palette_mode', 'random');
-		localStorage.setItem('chronos_preferences:capsule_corner_style', 'merge');
-		const storage = new DexieStorageProvider(db, localStorage);
-		const prefs = await storage.getPreferences();
-		expect(prefs.themeMode).toBe('auto');
-		expect(prefs.timetableLayoutMode).toBe('compact');
-		expect(prefs.paletteMode).toBe('vibrant');
-		expect(prefs.capsuleCornerStyle).toBe('pill');
-	});
-
 	it('DexieStorageProvider preserves timetableLayoutMode on partial preferences update', async () => {
 		const storage = new DexieStorageProvider(db, localStorage);
 		await storage.savePreferences({ timetableLayoutMode: 'compact' });

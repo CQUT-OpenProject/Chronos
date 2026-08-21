@@ -40,12 +40,9 @@ export const timetableViewPrefsSchema = z.object({
 	showNonCurrentWeekCourses: z.boolean().default(false)
 });
 
-const campusPeriodTimesSchema = z.record(z.string(), z.array(periodTimeSchema)).optional();
-
 export const timetableImportMetadataSchema = z.object({
 	source: z.string().default('UNKNOWN'),
-	campusId: z.string().optional(),
-	campusPeriodTimes: campusPeriodTimesSchema
+	campusId: z.string().optional()
 });
 
 export const timetableConfigSchema = z.object({

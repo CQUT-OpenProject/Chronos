@@ -18,12 +18,11 @@ Registered on `ServiceContainer`. Hosts bootstrap them once; runtime code reads 
 
 ## Timetable and UserPreferences
 
-Core owns the shapes. Web Dexie / Share codecs are Zod adapters that digest legacy JSON.
+Core owns the shapes. Web Dexie / Share codecs are strict Zod adapters (schemaVersion `1`).
 
 - **Timetable**: courses, `academicConfig` (including `periodTimes`), `viewPrefs`, optional `importMetadata`, optional `customMetadata`.
 - **ImportMetadata**: `{ source: string; campusId?: string }`. Campus period tables live in `customMetadata['source-cqut']`, not on `importMetadata`.
-- **UserPreferences** tokens: theme `light` \| `dark` \| `auto`; palette `vibrant` \| `random` \| `wallpaper`; layout `fixed` \| `compact`; corners `rounded` \| `sharp` \| `pill`.
-- Legacy Dexie keys: `system→auto`, `fit/scroll→compact/fixed`, `default/merge/square/monochrome→vibrant/pill/sharp/random`.
+- **UserPreferences** tokens: theme `light` \| `dark` \| `auto`; palette `vibrant` \| `wallpaper`; layout `fixed` \| `compact`; corners `rounded` \| `sharp` \| `pill`.
 
 ## Period clock
 

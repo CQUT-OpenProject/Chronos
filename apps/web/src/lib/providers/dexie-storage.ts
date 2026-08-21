@@ -27,7 +27,7 @@ function normalizeThemeMode(raw: string | null): import('@chronos/core').ThemeMo
 
 function normalizeLayoutMode(raw: string | null): import('@chronos/core').TimetableLayoutMode {
 	const value = raw?.trim().toLowerCase();
-	if (value === 'compact' || value === 'fit') return 'compact';
+	if (value === 'compact') return 'compact';
 	return 'fixed';
 }
 
@@ -39,8 +39,8 @@ function normalizePaletteMode(raw: string | null): import('@chronos/core').Palet
 
 function normalizeCornerStyle(raw: string | null): import('@chronos/core').CapsuleCornerStyle {
 	const value = raw?.trim().toLowerCase();
-	if (value === 'sharp' || value === 'square') return 'sharp';
-	if (value === 'pill' || value === 'merge') return 'pill';
+	if (value === 'sharp') return 'sharp';
+	if (value === 'pill') return 'pill';
 	return 'rounded';
 }
 
