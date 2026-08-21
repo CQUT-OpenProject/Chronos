@@ -212,7 +212,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		});
 	}
 
-	if (capsuleCornerStyle === 'rounded') {
+	if (capsuleCornerStyle === 'pill') {
 		applyCapsuleCornerRounding(items);
 	} else if (capsuleCornerStyle === 'sharp') {
 		applyCapsuleSquareCorners(items);

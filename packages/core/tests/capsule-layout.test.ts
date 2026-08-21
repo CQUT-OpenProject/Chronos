@@ -388,7 +388,7 @@ describe('capsule corner rounding', () => {
 	function place(
 		models: ReturnType<typeof courseModel>[],
 		expanded = false,
-		capsuleCornerStyle: 'rounded' | 'sharp' | 'pill' = 'rounded'
+		capsuleCornerStyle: 'rounded' | 'sharp' | 'pill' = 'pill'
 	) {
 		const slotKeys = new Set<string>();
 		if (expanded) {
@@ -405,8 +405,8 @@ describe('capsule corner rounding', () => {
 		});
 	}
 
-	it('keeps every corner rounded in pill style even when adjacent', () => {
-		const items = place([courseModel('a', 2, 1, 1), courseModel('b', 2, 2, 2)], false, 'pill');
+	it('keeps every corner rounded in rounded style even when adjacent', () => {
+		const items = place([courseModel('a', 2, 1, 1), courseModel('b', 2, 2, 2)], false, 'rounded');
 		expect(findCourse(items, 'a').corners).toEqual(allRounded);
 		expect(findCourse(items, 'b').corners).toEqual(allRounded);
 	});
@@ -416,8 +416,8 @@ describe('capsule corner rounding', () => {
 		expect(findCourse(items, 'a').corners).toEqual(allSquare);
 	});
 
-	it('keeps every corner rounded for an isolated capsule in pill style', () => {
-		const items = place([courseModel('a', 2, 2, 2)], false, 'pill');
+	it('keeps every corner rounded for an isolated capsule in rounded style', () => {
+		const items = place([courseModel('a', 2, 2, 2)], false, 'rounded');
 		expect(findCourse(items, 'a').corners).toEqual(allRounded);
 	});
 
