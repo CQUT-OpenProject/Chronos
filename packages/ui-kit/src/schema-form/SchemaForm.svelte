@@ -9,9 +9,10 @@
 		schema: ConfigSchema<Record<string, unknown>>;
 		value?: Record<string, unknown>;
 		disabled?: boolean;
+		onValueChange?: (value: Record<string, unknown>) => void;
 	}
 
-	let { schema, value = $bindable({}), disabled = false }: Props = $props();
+	let { schema, value = $bindable(), disabled = false, onValueChange }: Props = $props();
 
 	function resolveText(text: LocalizedText | undefined): string {
 		if (!text) return '';
@@ -19,12 +20,15 @@
 	}
 
 	const entries = $derived(Object.entries(schema) as Array<[string, SchemaField<unknown>]>);
+	const resolvedValue = $derived(value ?? {});
 
 	function updateField(key: string, nextValue: unknown) {
-		value = {
-			...value,
+		const next = {
+			...resolvedValue,
 			[key]: nextValue
 		};
+		value = next;
+		onValueChange?.(next);
 	}
 </script>
 
@@ -39,7 +43,7 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					value={value[key] as string}
+					value={resolvedValue[key] as string}
 					oninput={(e) => updateField(key, e.currentTarget.value)}
 				/>
 			{:else if field.type === 'password'}
@@ -51,7 +55,7 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					value={value[key] as string}
+					value={resolvedValue[key] as string}
 					oninput={(e) => updateField(key, e.currentTarget.value)}
 				/>
 			{:else if field.type === 'number'}
@@ -63,7 +67,7 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					value={value[key] as number}
+					value={resolvedValue[key] as number}
 					oninput={(e) => updateField(key, Number(e.currentTarget.value))}
 				/>
 			{:else if field.type === 'boolean'}
@@ -72,7 +76,7 @@
 					label={resolveText(field.title)}
 					description={resolveText(field.description)}
 					{disabled}
-					checked={Boolean(value[key])}
+					checked={Boolean(resolvedValue[key])}
 					onchange={(e) => updateField(key, e.currentTarget.checked)}
 				/>
 			{:else if field.type === 'select'}
@@ -86,7 +90,7 @@
 						value: opt.value
 					}))}
 					{disabled}
-					value={value[key] as string | number}
+					value={resolvedValue[key] as string | number}
 					onchange={(e) => updateField(key, e.currentTarget.value)}
 				/>
 			{:else if field.type === 'file'}
@@ -97,7 +101,7 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					value={value[key]}
+					value={resolvedValue[key]}
 					onValueChange={(val) => updateField(key, val)}
 				/>
 			{:else if field.type === 'date'}
@@ -109,7 +113,7 @@
 					description={resolveText(field.description)}
 					required={field.required}
 					{disabled}
-					value={value[key] as string}
+					value={resolvedValue[key] as string}
 					oninput={(e) => updateField(key, e.currentTarget.value)}
 				/>
 			{/if}

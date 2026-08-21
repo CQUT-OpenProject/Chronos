@@ -159,7 +159,10 @@
 					{#if activeTab.inputSchema}
 						<SchemaForm
 							schema={activeTab.inputSchema}
-							bind:value={formValues[activeTab.id]}
+							value={formValues[activeTab.id] ?? activeTab.defaultInput ?? {}}
+							onValueChange={(next) => {
+								formValues[activeTab.id] = next;
+							}}
 							disabled={loading || (activeTab.id === 'cqut-online' && !connectivity.isOnline)}
 						/>
 					{/if}
