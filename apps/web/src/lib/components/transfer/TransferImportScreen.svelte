@@ -41,6 +41,16 @@
 	const transferState = $derived(transfer.state);
 	let fileInput: HTMLInputElement | undefined = $state();
 	let loading = $state(false);
+	let account = $state('');
+	let password = $state('');
+	let saveCredentials = $state(false);
+
+	$effect(() => {
+		const savedAccount = transferState.savedCredentialState.account;
+		if (savedAccount && account.trim() === '') {
+			account = savedAccount;
+		}
+	});
 
 	const saveCheckboxEnabled = $derived(canSaveCredentials(transferState.savedCredentialState));
 	const saveCheckboxLabel = $derived(saveCredentialsLabel(transferState.savedCredentialState));
@@ -69,7 +79,11 @@
 		trackEvent('import_online_preview_attempt');
 		loading = true;
 		try {
-			const ok = await transfer.previewOnline();
+			const ok = await transfer.previewOnline({
+				username: account,
+				password,
+				saveCredentials
+			});
 			trackEvent(ok ? 'import_online_preview_success' : 'import_online_preview_fail');
 			if (ok) onContinue();
 			else notifyTransferMessages();
@@ -151,25 +165,31 @@
 							type="text"
 							inputmode="numeric"
 							autocomplete="username"
-							value={transferState.account}
-							onValueChange={(value) => transfer.setAccount(value)}
+							value={account}
+							onValueChange={(value) => {
+								account = value;
+							}}
 						/>
 						<TextField
 							id="import-password"
 							label="密码"
 							type="password"
 							autocomplete="current-password"
-							value={transferState.password}
-							onValueChange={(value) => transfer.setPassword(value)}
+							value={password}
+							onValueChange={(value) => {
+								password = value;
+							}}
 						/>
 					</FormCard>
 					<label
 						class="m3-body-medium flex cursor-pointer items-center gap-2 px-1 text-on-surface-variant"
 					>
 						<Checkbox
-							checked={transferState.saveCredentials}
+							checked={saveCredentials}
 							disabled={!saveCheckboxEnabled}
-							onCheckedChange={(checked) => transfer.setSaveCredentials(checked === true)}
+							onCheckedChange={(checked) => {
+								saveCredentials = checked === true;
+							}}
 						/>
 						<span>{saveCheckboxLabel}</span>
 					</label>

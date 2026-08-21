@@ -3,23 +3,31 @@ import { createSessionPreviewPersistence } from '$lib/client/preview-persistence
 import type { SavedCredentialState } from '$lib/models/auth';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
-import { IVaultService, type ChronosEngine } from '@chronos/core';
+import { IVaultService, IStorageService, type ChronosEngine } from '@chronos/core';
+import {
+	CQUT_CREDENTIAL_RECORD_KEY,
+	SOURCE_CQUT_PLUGIN_ID,
+	type CqutCredentialRecord
+} from '@chronos/plugin-source-cqut';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import { getDefaultImportSlot } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
-import { estimateShareLinkLength, SHARE_LINK_WARNING_LENGTH } from '@chronos/plugin-codec-share';
+import { SHARE_LINK_WARNING_LENGTH } from '@chronos/plugin-codec-share';
 
 export interface TransferPreviewState {
 	preview: Timetable | null;
 	selectedSlotId: string;
 	previewSlotId: string | null;
 	importMode: ImportMode;
-	account: string;
-	password: string;
-	saveCredentials: boolean;
 	savedCredentialState: SavedCredentialState;
 	errorMessage: string | null;
 	statusMessage: string | null;
+}
+
+export interface CqutOnlineImportInputs {
+	username: string;
+	password: string;
+	saveCredentials: boolean;
 }
 
 function resolveInitialSlotId(): string {
@@ -31,9 +39,6 @@ export function createTransferState(engine?: ChronosEngine) {
 	let preview = $state<Timetable | null>(null);
 	let previewSlotId = $state<string | null>(null);
 	let importMode = $state<ImportMode>(ImportMode.AS_NEW);
-	let account = $state('');
-	let password = $state('');
-	let saveCredentials = $state(false);
 	let savedCredentialState = $state<SavedCredentialState>({
 		account: null,
 		hasSavedCredential: false,
@@ -45,17 +50,27 @@ export function createTransferState(engine?: ChronosEngine) {
 	let statusMessage = $state<string | null>(null);
 
 	const persistence = createSessionPreviewPersistence();
+	const storageService = engine?.services.get(IStorageService);
 	const credentialVault = engine
-		? createCredentialVault({ vault: engine.services.get(IVaultService) })
+		? createCredentialVault({
+				vault: engine.services.get(IVaultService),
+				readPluginCredentialRecord: storageService
+					? () =>
+							storageService.getPluginData<CqutCredentialRecord>(
+								SOURCE_CQUT_PLUGIN_ID,
+								CQUT_CREDENTIAL_RECORD_KEY
+							)
+					: undefined,
+				clearPluginCredentialRecord: storageService
+					? () => storageService.deletePluginData(SOURCE_CQUT_PLUGIN_ID, CQUT_CREDENTIAL_RECORD_KEY)
+					: undefined
+			})
 		: null;
 
 	$effect(() => {
 		if (!credentialVault) return;
 		return credentialVault.subscribe((state) => {
 			savedCredentialState = state;
-			if (state.account && account.trim() === '') {
-				account = state.account;
-			}
 		});
 	});
 
@@ -69,26 +84,6 @@ export function createTransferState(engine?: ChronosEngine) {
 		preview = null;
 		previewSlotId = null;
 		clearMessages();
-	}
-
-	function setAccount(value: string) {
-		account = value;
-		if (previewSlotId === 'cqut-online') {
-			preview = null;
-			previewSlotId = null;
-		}
-	}
-
-	function setPassword(value: string) {
-		password = value;
-		if (previewSlotId === 'cqut-online') {
-			preview = null;
-			previewSlotId = null;
-		}
-	}
-
-	function setSaveCredentials(value: boolean) {
-		saveCredentials = value;
 	}
 
 	function setImportMode(mode: ImportMode) {
@@ -153,10 +148,10 @@ export function createTransferState(engine?: ChronosEngine) {
 		}
 	}
 
-	async function previewOnline() {
+	async function previewOnline(inputs: CqutOnlineImportInputs) {
 		clearMessages();
-		const trimmedAccount = account.trim();
-		if (!trimmedAccount || !password.trim()) {
+		const trimmedAccount = inputs.username.trim();
+		if (!trimmedAccount || !inputs.password.trim()) {
 			errorMessage = '请输入账号和密码';
 			return false;
 		}
@@ -164,8 +159,9 @@ export function createTransferState(engine?: ChronosEngine) {
 		try {
 			const timetable = await executeSlotImport('cqut-online', {
 				username: trimmedAccount,
-				password,
-				saveCredentials
+				account: trimmedAccount,
+				password: inputs.password,
+				saveCredentials: inputs.saveCredentials
 			});
 			preview = timetable;
 			previewSlotId = 'cqut-online';
@@ -206,12 +202,10 @@ export function createTransferState(engine?: ChronosEngine) {
 			return false;
 		}
 
-		account = unlockResult.value.account;
-		password = unlockResult.value.password;
-
 		try {
 			const timetable = await executeSlotImport('cqut-online', {
 				username: unlockResult.value.account,
+				account: unlockResult.value.account,
 				password: unlockResult.value.password,
 				saveCredentials: false
 			});
@@ -292,7 +286,9 @@ export function createTransferState(engine?: ChronosEngine) {
 		if (!current) {
 			return { timetableName: null, longLinkWarning: false };
 		}
-		const length = await estimateShareLinkLength(current);
+		const controller = getAppController();
+		const exportSlot = controller.getSlotItem('export.action', 'share-link');
+		const length = exportSlot?.estimateLength ? await exportSlot.estimateLength(current) : 0;
 		return {
 			timetableName: current.name,
 			longLinkWarning: length > SHARE_LINK_WARNING_LENGTH
@@ -306,18 +302,12 @@ export function createTransferState(engine?: ChronosEngine) {
 				selectedSlotId,
 				previewSlotId,
 				importMode,
-				account,
-				password,
-				saveCredentials,
 				savedCredentialState,
 				errorMessage,
 				statusMessage
 			};
 		},
 		setSelectedSlotId,
-		setAccount,
-		setPassword,
-		setSaveCredentials,
 		setImportMode,
 		clearPreview,
 		setDirectPreview,
@@ -347,11 +337,8 @@ export function resolveSlotTitle(slotId: string | null): string {
 			return typeof slot.title === 'function' ? slot.title() : slot.title;
 		}
 	} catch {
-		// Fallback
+		// Engine not ready
 	}
-	if (slotId === 'cqut-online') return '知行理工';
-	if (slotId === 'share-link') return '分享链接';
-	if (slotId === 'edu-html') return 'HTML 文件';
 	return slotId;
 }
 

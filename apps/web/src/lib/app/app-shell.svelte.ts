@@ -2,8 +2,12 @@ import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { getAppController, getAppEngine } from '$lib/services/app-engine';
 import { createCredentialVault } from '$lib/client/credential-vault';
-import { getWallpaperRuntime, WALLPAPER_PLUGIN_ID } from '@chronos/plugin-wallpaper';
-import { IVaultService } from '@chronos/core';
+import {
+	CQUT_CREDENTIAL_RECORD_KEY,
+	SOURCE_CQUT_PLUGIN_ID,
+	type CqutCredentialRecord
+} from '@chronos/plugin-source-cqut';
+import { IVaultService, IStorageService } from '@chronos/core';
 import type {
 	CapsuleCornerStyle,
 	PaletteMode,
@@ -11,6 +15,8 @@ import type {
 	TimetableLayoutMode,
 	UserPreferences
 } from '@chronos/core';
+
+const WALLPAPER_PLUGIN_ID = 'tool-wallpaper';
 
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
 	if (themeMode === 'dark') return true;
@@ -21,8 +27,9 @@ function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean 
 export function createAppShell() {
 	let systemPrefersDark = $state(false);
 	let mediaQueryCleanup: (() => void) | null = null;
+	let wallpaperChangeCleanup: (() => void) | null = null;
+	let wallpaperUri = $state<string | null>(null);
 	const appearance = createAppearance();
-	const wallpaper = getWallpaperRuntime();
 	const controller = getAppController();
 	const engine = getAppEngine();
 
@@ -37,7 +44,7 @@ export function createAppShell() {
 		)
 	);
 	const hasWallpaperPlugin = $derived(engine.isPluginLoaded(WALLPAPER_PLUGIN_ID));
-	const hasWallpaper = $derived(hasWallpaperPlugin && wallpaper.hasWallpaper);
+	const hasWallpaper = $derived(hasWallpaperPlugin && Boolean(wallpaperUri));
 
 	function init() {
 		if (typeof window !== 'undefined' && !mediaQueryCleanup) {
@@ -50,12 +57,18 @@ export function createAppShell() {
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
 
-		void wallpaper.syncFromStorage(engine.isPluginLoaded(WALLPAPER_PLUGIN_ID));
+		wallpaperChangeCleanup?.();
+		wallpaperChangeCleanup = engine.on('wallpaper:changed', ({ uri }) => {
+			wallpaperUri = uri;
+		}).dispose;
+		engine.events.emit('wallpaper:hydrate');
 	}
 
 	function destroy() {
 		mediaQueryCleanup?.();
 		mediaQueryCleanup = null;
+		wallpaperChangeCleanup?.();
+		wallpaperChangeCleanup = null;
 	}
 
 	async function updatePreferences(patch: Partial<UserPreferences>) {
@@ -97,7 +110,7 @@ export function createAppShell() {
 	}
 
 	async function setWallpaper(wallpaperBlob: Blob | null) {
-		await wallpaper.setWallpaper(wallpaperBlob);
+		engine.events.emit('wallpaper:set', { blob: wallpaperBlob });
 	}
 
 	async function switchTimetable(id: string) {
@@ -109,8 +122,16 @@ export function createAppShell() {
 	}
 
 	async function clearAllData() {
+		const storageService = engine.services.get(IStorageService);
 		const credentialVault = createCredentialVault({
-			vault: engine.services.get(IVaultService)
+			vault: engine.services.get(IVaultService),
+			readPluginCredentialRecord: () =>
+				storageService.getPluginData<CqutCredentialRecord>(
+					SOURCE_CQUT_PLUGIN_ID,
+					CQUT_CREDENTIAL_RECORD_KEY
+				),
+			clearPluginCredentialRecord: () =>
+				storageService.deletePluginData(SOURCE_CQUT_PLUGIN_ID, CQUT_CREDENTIAL_RECORD_KEY)
 		});
 		await credentialVault.clear();
 		await controller.clearAllData();
@@ -123,7 +144,7 @@ export function createAppShell() {
 				isDark,
 				hasWallpaperPlugin,
 				hasWallpaper,
-				wallpaperUri: wallpaper.uri
+				wallpaperUri
 			};
 		},
 		get appearance() {

@@ -6,9 +6,6 @@ interface PreviewRequestBody {
 	account?: string;
 	username?: string;
 	password?: string;
-	encryptedPassword?: string;
-	weekNum?: string | null;
-	yearTerm?: string | null;
 }
 
 export const handlePreview: PluginServerHandler = async ({ request }) => {
@@ -23,7 +20,7 @@ export const handlePreview: PluginServerHandler = async ({ request }) => {
 	}
 
 	const account = (body.account ?? body.username)?.trim() ?? '';
-	const password = (body.password ?? body.encryptedPassword)?.trim() ?? '';
+	const password = body.password?.trim() ?? '';
 	if (!account || !password) {
 		return json(
 			{ ok: false, error: { kind: 'Validation', message: '账号和密码不能为空' } },
@@ -33,9 +30,7 @@ export const handlePreview: PluginServerHandler = async ({ request }) => {
 
 	const result = await fetchCqutSchedule({
 		account,
-		password,
-		weekNum: body.weekNum,
-		yearTerm: body.yearTerm
+		password
 	});
 
 	if (result.ok) {
@@ -57,6 +52,3 @@ export const serverManifest: PluginServerManifest = {
 		action: 'preview'
 	}
 };
-
-export { fetchCqutSchedule } from './fetch-schedule';
-export type { FetchCqutScheduleInput, FetchCqutScheduleResult } from './fetch-schedule';

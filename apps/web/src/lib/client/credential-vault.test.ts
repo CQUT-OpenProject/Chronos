@@ -5,6 +5,7 @@ import {
 	writeOnlineCredentialRecord
 } from '$lib/storage/online-credential-record';
 import { MemoryVaultProvider } from '$lib/providers/memory-vault';
+import type { CqutCredentialRecord } from '@chronos/plugin-source-cqut';
 
 const mockCredentialEnvironment = vi.hoisted(() => ({
 	prfAvailable: false,
@@ -36,36 +37,33 @@ function createMemoryStorage(): Storage {
 
 describe('CredentialVault', () => {
 	let storage: Storage;
+	let pluginRecord: CqutCredentialRecord | null = null;
 
 	beforeEach(() => {
 		storage = createMemoryStorage();
+		pluginRecord = null;
 		mockCredentialEnvironment.prfAvailable = false;
 		mockCredentialEnvironment.ready = true;
 		mockCredentialEnvironment.init.mockClear();
 		mockCredentialEnvironment.subscribe.mockClear();
 	});
 
-	it('saves account-only credential when vault cannot store secrets', async () => {
+	function createVault(vaultPort = new MemoryVaultProvider()) {
+		return createCredentialVault({
+			storage,
+			vault: vaultPort,
+			readPluginCredentialRecord: async () => pluginRecord,
+			clearPluginCredentialRecord: async () => {
+				pluginRecord = null;
+			}
+		});
+	}
+
+	it('reads vault-backed credentials from plugin storage', async () => {
 		const vaultPort = new MemoryVaultProvider();
-		vi.spyOn(vaultPort, 'isSupported').mockResolvedValue(false);
-		const vault = createCredentialVault({ storage, vault: vaultPort });
-
-		const result = await vault.save('20240101', 'password123');
-		expect(result.ok).toBe(true);
-
-		const record = readOnlineCredentialRecord(storage);
-		expect(record).toEqual({ mode: 'account_only', account: '20240101' });
-		expect(await vaultPort.getSecret(CQUT_PASSWORD_SECRET_KEY)).toBeNull();
-	});
-
-	it('stores password on IVaultService when supported', async () => {
-		const vaultPort = new MemoryVaultProvider();
-		const vault = createCredentialVault({ storage, vault: vaultPort });
-
-		const saveResult = await vault.save('20240101', 'secret');
-		expect(saveResult.ok).toBe(true);
-		expect(readOnlineCredentialRecord(storage)).toEqual({ mode: 'vault', account: '20240101' });
-		expect(await vaultPort.getSecret(CQUT_PASSWORD_SECRET_KEY)).toBe('secret');
+		await vaultPort.storeSecret(CQUT_PASSWORD_SECRET_KEY, 'secret');
+		pluginRecord = { mode: 'vault', account: '20240101' };
+		const vault = createVault(vaultPort);
 
 		const unlock = await vault.unlock();
 		expect(unlock.ok).toBe(true);
@@ -74,20 +72,33 @@ describe('CredentialVault', () => {
 		}
 	});
 
+	it('falls back to legacy online credential record', async () => {
+		const vaultPort = new MemoryVaultProvider();
+		await vaultPort.storeSecret(CQUT_PASSWORD_SECRET_KEY, 'secret');
+		writeOnlineCredentialRecord({ mode: 'vault', account: '20240101' }, storage);
+		const vault = createVault(vaultPort);
+
+		const unlock = await vault.unlock();
+		expect(unlock.ok).toBe(true);
+	});
+
 	it('clears stored credential and vault secret', async () => {
 		const vaultPort = new MemoryVaultProvider();
-		const vault = createCredentialVault({ storage, vault: vaultPort });
-		await vault.save('20240101', 'secret');
+		await vaultPort.storeSecret(CQUT_PASSWORD_SECRET_KEY, 'secret');
+		pluginRecord = { mode: 'vault', account: '20240101' };
+		writeOnlineCredentialRecord({ mode: 'vault', account: '20240101' }, storage);
+		const vault = createVault(vaultPort);
 
 		const result = await vault.clear();
 		expect(result.ok).toBe(true);
 		expect(readOnlineCredentialRecord(storage)).toBeNull();
+		expect(pluginRecord).toBeNull();
 		expect(await vaultPort.getSecret(CQUT_PASSWORD_SECRET_KEY)).toBeNull();
 	});
 
 	it('treats leftover account-only records as unlock failures', async () => {
-		writeOnlineCredentialRecord({ mode: 'account_only', account: '20240101' }, storage);
-		const vault = createCredentialVault({ storage, vault: new MemoryVaultProvider() });
+		pluginRecord = { mode: 'account_only', account: '20240101' };
+		const vault = createVault(new MemoryVaultProvider());
 		const unlock = await vault.unlock();
 		expect(unlock.ok).toBe(false);
 	});

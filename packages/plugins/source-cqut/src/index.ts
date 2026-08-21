@@ -18,6 +18,12 @@ import {
 } from '@chronos/core';
 import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from './campus-period-times';
 import { htmlImportSchema, parseHtmlTimetable } from './html-parser';
+import {
+	CQUT_CREDENTIAL_RECORD_KEY,
+	CQUT_PASSWORD_SECRET_KEY,
+	SOURCE_CQUT_PLUGIN_ID,
+	type CqutCredentialRecord
+} from './credentials';
 
 export type { CqutCampusId } from './campus-period-times';
 export {
@@ -34,9 +40,12 @@ export {
 	shareIndexToCampusId,
 	resolveShareCampusId
 } from './campus-period-times';
-
-const CQUT_PASSWORD_SECRET_KEY = 'source-cqut:password';
-const CQUT_USERNAME_STORAGE_KEY = 'source-cqut:username';
+export {
+	SOURCE_CQUT_PLUGIN_ID,
+	CQUT_PASSWORD_SECRET_KEY,
+	CQUT_CREDENTIAL_RECORD_KEY,
+	type CqutCredentialRecord
+} from './credentials';
 
 export interface CqutImportForm {
 	username?: string;
@@ -268,7 +277,7 @@ export function parseCqutScheduleData(
 			showNonCurrentWeekCourses: false
 		},
 		importMetadata: {
-			source: 'ONLINE_EDU',
+			source: 'cqut-online',
 			campusId: resolvedCampusId
 		},
 		customMetadata
@@ -301,13 +310,26 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			activeCtx: ChronosContext
 		): Promise<void> {
 			if (!saveCredentials) return;
+			const trimmedAccount = username.trim();
+			if (!trimmedAccount) return;
+
 			const vault = activeCtx.service(IVaultService);
-			if (vault && (await vault.isSupported())) {
-				await vault.storeSecret(CQUT_PASSWORD_SECRET_KEY, password);
+			const canStoreSecret = Boolean(password.trim() && vault && (await vault.isSupported()));
+
+			if (canStoreSecret) {
+				await vault!.storeSecret(CQUT_PASSWORD_SECRET_KEY, password.trim());
+				await activeCtx.storage.set<CqutCredentialRecord>(CQUT_CREDENTIAL_RECORD_KEY, {
+					mode: 'vault',
+					account: trimmedAccount
+				});
+				return;
 			}
-			if (typeof localStorage !== 'undefined') {
-				localStorage.setItem(CQUT_USERNAME_STORAGE_KEY, username);
-			}
+
+			await vault?.removeSecret(CQUT_PASSWORD_SECRET_KEY);
+			await activeCtx.storage.set<CqutCredentialRecord>(CQUT_CREDENTIAL_RECORD_KEY, {
+				mode: 'account_only',
+				account: trimmedAccount
+			});
 		}
 
 		async function doImport(
@@ -326,13 +348,13 @@ export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
 			activeCtx.actions.notify('正在连接知行理工...', 'info');
 
 			const http = activeCtx.service(IHttpService);
-			const response = await http.request('https://authserver.cqut.edu.cn/authserver/login', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
-				useSession: true,
-				sessionId: `cqut-${username}`,
-				bypassCors: true
+			if (!http.proxy) {
+				throw new Error('当前环境不支持在线教务同步');
+			}
+
+			const response = await http.proxy(SOURCE_CQUT_PLUGIN_ID, 'preview', {
+				account: username,
+				password
 			});
 
 			if (!response.ok) {

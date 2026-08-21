@@ -1,21 +1,26 @@
 import type { IVaultService } from '@chronos/core';
+import {
+	CQUT_PASSWORD_SECRET_KEY,
+	SOURCE_CQUT_PLUGIN_ID,
+	type CqutCredentialRecord
+} from '@chronos/plugin-source-cqut';
 import type { SavedCredentialState } from '$lib/models/auth';
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
 import {
 	readOnlineCredentialRecord,
-	writeOnlineCredentialRecord
+	writeOnlineCredentialRecord,
+	type OnlineCredentialRecord
 } from '$lib/storage/online-credential-record';
 import { credentialEnvironment } from './credential-environment.svelte';
 
-export const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
-export const CQUT_PASSWORD_SECRET_KEY = `${SOURCE_CQUT_PLUGIN_ID}:password`;
+export { CQUT_PASSWORD_SECRET_KEY, SOURCE_CQUT_PLUGIN_ID };
+
 const CREDENTIAL_INVALIDATED_MESSAGE = '已保存凭据已失效，请重新录入账号和密码';
-const PLUGIN_USERNAME_KEY = `${SOURCE_CQUT_PLUGIN_ID}:username`;
+const LEGACY_USERNAME_KEY = `${SOURCE_CQUT_PLUGIN_ID}:username`;
 
 export interface CredentialVault {
 	readonly state: SavedCredentialState;
-	save(account: string, password?: string): Promise<AppResult<void>>;
 	unlock(): Promise<AppResult<{ account: string; password: string }>>;
 	clear(): Promise<AppResult<void>>;
 	subscribe(listener: (state: SavedCredentialState) => void): () => void;
@@ -24,6 +29,16 @@ export interface CredentialVault {
 export interface CredentialVaultDeps {
 	vault?: IVaultService;
 	storage?: Storage | null;
+	readPluginCredentialRecord?: () => Promise<CqutCredentialRecord | null>;
+	clearPluginCredentialRecord?: () => Promise<void>;
+}
+
+function mapLegacyRecord(record: OnlineCredentialRecord | null): CqutCredentialRecord | null {
+	if (!record) return null;
+	if (record.mode === 'vault' || record.mode === 'account_only') {
+		return { mode: record.mode, account: record.account };
+	}
+	return null;
 }
 
 export function createCredentialVault(deps: CredentialVaultDeps = {}): CredentialVault {
@@ -31,25 +46,30 @@ export function createCredentialVault(deps: CredentialVaultDeps = {}): Credentia
 	const vault = deps.vault;
 	const listeners = new Set<(state: SavedCredentialState) => void>();
 
-	function buildState(): SavedCredentialState {
-		const record = readOnlineCredentialRecord(storage);
-		const savedAccount =
-			record?.account ||
-			(typeof localStorage !== 'undefined' ? localStorage.getItem(PLUGIN_USERNAME_KEY) : null);
+	async function resolveCredentialRecord(): Promise<CqutCredentialRecord | null> {
+		const pluginRecord = (await deps.readPluginCredentialRecord?.()) ?? null;
+		if (pluginRecord) return pluginRecord;
+		return mapLegacyRecord(readOnlineCredentialRecord(storage));
+	}
 
-		const hasSavedCredential = Boolean(record?.account || savedAccount);
+	function buildState(record: CqutCredentialRecord | null): SavedCredentialState {
+		const legacyAccount =
+			record?.account ||
+			(typeof localStorage !== 'undefined' ? localStorage.getItem(LEGACY_USERNAME_KEY) : null);
+
+		const hasSavedCredential = Boolean(record?.account || legacyAccount);
 
 		return {
-			account: savedAccount ?? null,
+			account: legacyAccount ?? null,
 			hasSavedCredential,
 			protectionAvailable: credentialEnvironment.prfAvailable,
 			capabilitiesReady: credentialEnvironment.ready,
-			savedMode: record?.mode === 'vault' ? 'vault' : savedAccount ? 'account_only' : null
+			savedMode: record?.mode === 'vault' ? 'vault' : legacyAccount ? 'account_only' : null
 		};
 	}
 
-	function notifyState() {
-		const nextState = buildState();
+	function notifyState(record: CqutCredentialRecord | null) {
+		const nextState = buildState(record);
 		for (const listener of listeners) {
 			listener(nextState);
 		}
@@ -60,45 +80,8 @@ export function createCredentialVault(deps: CredentialVaultDeps = {}): Credentia
 		return vault.getSecret(CQUT_PASSWORD_SECRET_KEY);
 	}
 
-	async function save(account: string, password?: string): Promise<AppResult<void>> {
-		const trimmed = account.trim();
-		if (!trimmed) {
-			return failure(AppError.validation('请输入账号'));
-		}
-
-		const canStoreSecret = Boolean(password?.trim() && vault && (await vault.isSupported()));
-		if (!canStoreSecret) {
-			await vault?.removeSecret(CQUT_PASSWORD_SECRET_KEY);
-			writeOnlineCredentialRecord({ mode: 'account_only', account: trimmed }, storage);
-			if (typeof localStorage !== 'undefined') {
-				localStorage.setItem(PLUGIN_USERNAME_KEY, trimmed);
-			}
-			notifyState();
-			return success(undefined);
-		}
-
-		try {
-			await vault!.storeSecret(CQUT_PASSWORD_SECRET_KEY, password!.trim());
-			writeOnlineCredentialRecord({ mode: 'vault', account: trimmed }, storage);
-			if (typeof localStorage !== 'undefined') {
-				localStorage.setItem(PLUGIN_USERNAME_KEY, trimmed);
-			}
-			notifyState();
-			return success(undefined);
-		} catch (error) {
-			const message = error instanceof Error ? error.message : '保存安全凭据失败';
-			if (
-				message === 'WebAuthn verification was cancelled' ||
-				message === 'WebAuthn registration was cancelled'
-			) {
-				return failure(AppError.security('已取消设备验证'));
-			}
-			return failure(AppError.security(message));
-		}
-	}
-
 	async function unlock(): Promise<AppResult<{ account: string; password: string }>> {
-		const record = readOnlineCredentialRecord(storage);
+		const record = await resolveCredentialRecord();
 		if (!record || record.mode !== 'vault' || !vault) {
 			return failure(AppError.notFound(CREDENTIAL_INVALIDATED_MESSAGE));
 		}
@@ -125,15 +108,16 @@ export function createCredentialVault(deps: CredentialVaultDeps = {}): Credentia
 		await vault?.removeSecret(CQUT_PASSWORD_SECRET_KEY);
 		writeOnlineCredentialRecord(null, storage);
 		if (typeof localStorage !== 'undefined') {
-			localStorage.removeItem(PLUGIN_USERNAME_KEY);
+			localStorage.removeItem(LEGACY_USERNAME_KEY);
 		}
-		notifyState();
+		await deps.clearPluginCredentialRecord?.();
+		notifyState(null);
 		return success(undefined);
 	}
 
 	function subscribe(listener: (state: SavedCredentialState) => void) {
 		listeners.add(listener);
-		listener(buildState());
+		void resolveCredentialRecord().then((record) => listener(buildState(record)));
 		return () => {
 			listeners.delete(listener);
 		};
@@ -141,9 +125,8 @@ export function createCredentialVault(deps: CredentialVaultDeps = {}): Credentia
 
 	return {
 		get state() {
-			return buildState();
+			return buildState(null);
 		},
-		save,
 		unlock,
 		clear,
 		subscribe

@@ -59,7 +59,8 @@ function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 	return {
 		platform: 'web',
 		http: {
-			request: vi.fn(async () => httpResponse ?? defaultResponse)
+			request: vi.fn(async () => httpResponse ?? defaultResponse),
+			proxy: vi.fn(async () => httpResponse ?? defaultResponse)
 		},
 		storage: {
 			getTimetable: vi.fn(async (id: string) => timetables.get(id) ?? null),
@@ -132,18 +133,18 @@ describe('cqutPlugin', () => {
 			ctx
 		);
 
-		expect(env.http.request).toHaveBeenCalledWith(
-			'https://authserver.cqut.edu.cn/authserver/login',
+		expect(env.http.proxy).toHaveBeenCalledWith(
+			'source-cqut',
+			'preview',
 			expect.objectContaining({
-				method: 'POST',
-				bypassCors: true,
-				body: expect.stringContaining('username=123456')
+				account: '123456',
+				password: 'password'
 			})
 		);
 		expect(timetable.name).toBe('张三的课表');
 		expect(timetable.courses.length).toBe(1);
 		expect(timetable.courses[0]?.name).toBe('高等数学');
-		expect(timetable.importMetadata?.source).toBe('ONLINE_EDU');
+		expect(timetable.importMetadata?.source).toBe('cqut-online');
 		expect(timetable.importMetadata?.campusId).toBe('huaxi');
 		expect(timetable.customMetadata?.['source-cqut']).toBeDefined();
 
@@ -199,7 +200,7 @@ describe('cqutPlugin', () => {
 		expect(timetable.courses.length).toBe(1);
 		expect(timetable.courses[0]?.name).toBe('高等数学A');
 		expect(timetable.academicConfig.termStartDate).toBe('2026-03-02');
-		expect(timetable.importMetadata?.source).toBe('ONLINE_EDU');
+		expect(timetable.importMetadata?.source).toBe('cqut-online');
 		expect(timetable.importMetadata?.campusId).toBe('huaxi');
 	});
 

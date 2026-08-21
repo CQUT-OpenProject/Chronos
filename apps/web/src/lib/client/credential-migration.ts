@@ -9,7 +9,7 @@ const LEGACY_PASSWORD_SECRET_KEY = 'cqut-online-password';
 const LEGACY_USERNAME_KEY = 'cqut_username';
 const LEGACY_LAST_ACCOUNT_KEY = 'last_account';
 const PLUGIN_USERNAME_KEY = 'source-cqut:username';
-const CQUT_PASSWORD_SECRET_KEY = 'source-cqut:password';
+import { CQUT_PASSWORD_SECRET_KEY } from '@chronos/plugin-source-cqut';
 
 export async function runCredentialMigration(
 	storage: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null,
