@@ -49,20 +49,20 @@ Single event + hook runtime (`emit` / `on`, `serial` guards, `waterfall`). Engin
 
 Import UI executes `import.source.tab` slots directly. Session coordinator only handles preview persistence + `confirmImport` → `Engine.actions.importTimetable`. Share-link codec lives in `@chronos/plugin-codec-share` only (no web copy). Export uses `export.action` slots; clipboard write happens in UI, not a second coordinator call.
 
-## Plugin activation (intentional dual-track)
+## Plugin activation (single-track)
 
-- **Builtin plugins** (profile): `ProfileManager` → in-process `plugin.apply(ScopedContext)`.
-- **Marketplace plugins**: `WorkerPluginBridge` → sandbox Worker runtime.
+- **Profile builtin plugins**: `ProfileManager` → in-process `plugin.apply(ScopedContext)`.
+- **Official online plugins**: `OfficialPluginService` → fetch manifest + bundle (SHA-256) → `parsePluginBundle` → `engine.loadPlugin`.
 
-Both tracks share slot RPC protocol; do not merge into a single activation path.
+Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. Catalog: `apps/web/static/official-plugins/catalog.json`.
 
 ## Core shell (`core-shell`)
 
 Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile.
 
-## Sandbox
+## Official plugin install
 
-`InProcessSandboxAdapter` implements `Worker` and runs the same RPC as the real worker runtime (apply plugin, round-trip slot calls). Tests may inject a mock `Worker`. No Worker and no injected adapter → throw. Empty `postMessage` stubs are not a sandbox.
+`OfficialPluginService` manages manifest-based online install, enable/disable, and local cache. Build official bundles via `vp run build:official-plugins`.
 
 ## Share-link codec
 
