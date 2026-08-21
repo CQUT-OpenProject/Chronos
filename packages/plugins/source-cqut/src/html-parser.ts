@@ -217,7 +217,7 @@ export function parseHtmlTimetable(
 			? { source: 'FILE_HTML', campusId: options.campusId }
 			: undefined,
 		customMetadata: {
-			'core.import': {
+			'source-cqut': {
 				source: 'FILE_HTML',
 				...(options?.campusId ? { campusId: options.campusId } : {})
 			}

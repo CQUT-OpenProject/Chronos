@@ -37,7 +37,6 @@ export * from './runtime/scoped-context';
 export * from './runtime/engine';
 
 // Profile
-// Profile
 export * from './profile/profile';
 export * from './profile/profile-manager';
 

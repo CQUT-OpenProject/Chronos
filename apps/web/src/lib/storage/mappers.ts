@@ -4,7 +4,6 @@ import {
 	TimetableImportSource,
 	type Timetable
 } from '$lib/models/timetable';
-import type { TimetableSummary } from '$lib/models/app-state';
 import type { CourseRow, TimetableRow } from './db';
 import { encodeTimetableConfig, decodeTimetableConfig } from './timetable-config-codec';
 
@@ -89,32 +88,5 @@ export function timetableFromRow(row: TimetableRow, courses: CourseRow[]): Timet
 		importMetadata: config.importMetadata,
 		viewPrefs: config.viewPrefs,
 		...(config.customMetadata ? { customMetadata: config.customMetadata } : {})
-	};
-}
-
-export function summaryFromRow(row: TimetableRow, courseCount: number): TimetableSummary {
-	return {
-		id: row.id,
-		name: normalizeTimetableName(row.name),
-		courseCount,
-		createdAt: row.createdAt,
-		updatedAt: row.updatedAt
-	};
-}
-
-export function copyForStateBoundary(timetable: Timetable): Timetable {
-	return {
-		...timetable,
-		name: normalizeTimetableName(timetable.name),
-		courses: timetable.courses.map((course) => ({ ...course, weeks: [...course.weeks] })),
-		academicConfig: {
-			...timetable.academicConfig,
-			periodTimes: timetable.academicConfig.periodTimes.map((period) => ({ ...period }))
-		},
-		importMetadata: timetable.importMetadata
-			? { ...timetable.importMetadata }
-			: { source: TimetableImportSource.UNKNOWN },
-		viewPrefs: { ...timetable.viewPrefs },
-		...(timetable.customMetadata ? { customMetadata: { ...timetable.customMetadata } } : {})
 	};
 }
