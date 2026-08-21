@@ -32,7 +32,7 @@ One lookup module (`packages/core/src/engine/period-clock.ts`), two fallbacks:
 - `'none'` — Engine `updateTime` (period only while in progress).
 - `'upcomingOrLast'` — grid highlight.
 
-CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live only in `source-cqut`. Web re-exports them.
+CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live only in `@chronos/plugin-source-cqut`.
 
 ## CredentialVault vs IVaultService
 

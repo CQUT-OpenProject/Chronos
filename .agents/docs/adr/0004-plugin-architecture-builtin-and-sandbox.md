@@ -1,6 +1,6 @@
 # ADR 0004: 双轨插件激活与沙箱隔离架构 (Builtin vs Sandbox)
 
-- **状态**: Accepted
+- **状态**: Superseded by [ADR 0011](./0011-single-track-official-plugin-install.md)
 - **日期**: 2026-08-19
 - **关联提交**: `1d4f327`, `693cb4f`, `0f5612f`, `76db36a`, `7def476`, `b84b2ff`, `c7606d9`
 - **范围**: 插件执行体系 (`packages/core/src/types/sandbox.ts`, `packages/core/src/types/marketplace.ts`)
