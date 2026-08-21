@@ -54,8 +54,7 @@ export const wallpaperPlugin: ChronosPlugin = {
 
 		ctx.registerSlot('shell.route.screen', {
 			id: 'tool-wallpaper',
-			title: () => '设置课表壁纸',
-			schema: wallpaperScreenSchema
+			title: () => '设置课表壁纸'
 		});
 
 		ctx.registerSlot('theme.definition', wallpaperThemeContribution);

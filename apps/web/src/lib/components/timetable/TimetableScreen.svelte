@@ -29,9 +29,8 @@
 	const startWeek = $derived(screenState.startWeek);
 	const endWeek = $derived(screenState.endWeek);
 	const coursePalette = $derived(shell.appearance.coursePalette);
-	const hasWallpaper = $derived(
-		(shell.controller.userPreferences?.paletteMode ?? 'vibrant') === 'wallpaper'
-	);
+	const hasWallpaper = $derived(shell.state.hasWallpaper);
+	const wallpaperUri = $derived(shell.state.wallpaperUri);
 	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
@@ -162,6 +161,12 @@
 	</TopAppBar>
 
 	<div class="relative min-h-0 flex-1">
+		{#if hasWallpaper && wallpaperUri}
+			<div
+				class="absolute inset-0 bg-cover bg-center"
+				style:background-image={`url('${wallpaperUri}')`}
+			></div>
+		{/if}
 		{#key screenState.currentTimetable?.id}
 			<TimetableWeekSwiper
 				{screen}

@@ -2,6 +2,7 @@ import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { getAppController, getAppEngine } from '$lib/services/app-engine';
 import { createCredentialVault } from '$lib/client/credential-vault';
+import { getWallpaperController } from '$lib/wallpaper/wallpaper-controller.svelte';
 import { IVaultService } from '@chronos/core';
 import type {
 	CapsuleCornerStyle,
@@ -21,6 +22,7 @@ export function createAppShell() {
 	let systemPrefersDark = $state(false);
 	let mediaQueryCleanup: (() => void) | null = null;
 	const appearance = createAppearance();
+	const wallpaper = getWallpaperController();
 	const controller = getAppController();
 
 	const themeMode = $derived(controller.userPreferences?.themeMode ?? 'auto');
@@ -33,9 +35,10 @@ export function createAppShell() {
 			controller.timetables.length > 0
 		)
 	);
-	const hasWallpaper = $derived(
+	const hasWallpaperPlugin = $derived(
 		controller.getSlots('mine.item').some((item) => item.id === 'wallpaper')
 	);
+	const hasWallpaper = $derived(hasWallpaperPlugin && wallpaper.hasWallpaper);
 
 	function init() {
 		if (typeof window !== 'undefined' && !mediaQueryCleanup) {
@@ -47,6 +50,10 @@ export function createAppShell() {
 			mediaQuery.addEventListener('change', onChange);
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
+
+		void wallpaper.syncFromStorage(
+			controller.getSlots('mine.item').some((item) => item.id === 'wallpaper')
+		);
 	}
 
 	function destroy() {
@@ -92,6 +99,10 @@ export function createAppShell() {
 		await updatePreferences({ hapticFeedbackEnabled: enabled });
 	}
 
+	async function setWallpaper(wallpaperBlob: Blob | null) {
+		await wallpaper.setWallpaper(wallpaperBlob);
+	}
+
 	async function switchTimetable(id: string) {
 		await controller.switchTimetable(id);
 	}
@@ -114,7 +125,9 @@ export function createAppShell() {
 			return {
 				initialized,
 				isDark,
-				hasWallpaper
+				hasWallpaperPlugin,
+				hasWallpaper,
+				wallpaperUri: wallpaper.uri
 			};
 		},
 		get appearance() {
@@ -133,6 +146,7 @@ export function createAppShell() {
 		setPaletteMode,
 		setCapsuleCornerStyle,
 		setHapticFeedbackEnabled,
+		setWallpaper,
 		switchTimetable,
 		deleteTimetable,
 		clearAllData

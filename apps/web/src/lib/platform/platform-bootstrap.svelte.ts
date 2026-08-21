@@ -48,7 +48,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 				$effect(() => {
 					const isDark = deps.shell.state.isDark;
 					const paletteMode = deps.shell.controller.userPreferences?.paletteMode ?? 'vibrant';
-					const wallpaperUri = null;
+					const wallpaperUri = deps.shell.state.wallpaperUri;
 					const activeThemeId = deps.shell.controller.activeThemeId;
 					const engine = getAppEngine();
 

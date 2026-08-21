@@ -73,7 +73,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		expect(typeof screen?.title === 'function' ? screen.title() : screen?.title).toBe(
 			'设置课表壁纸'
 		);
-		expect(screen?.schema).toBeDefined();
+		expect(screen?.schema).toBeUndefined();
 
 		const theme = engine.themes.getTheme('wallpaper');
 		expect(theme).toBeDefined();
