@@ -45,8 +45,17 @@ export default defineConfig({
 			'@chronos/plugin-codec-share/share-link': fileURLToPath(
 				new URL('./packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
 			),
+			'@chronos/plugin-codec-share/ShareLinkImportTab': fileURLToPath(
+				new URL('./packages/plugins/codec-share/src/ShareLinkImportTab.svelte', import.meta.url)
+			),
 			'@chronos/plugin-codec-share': fileURLToPath(
 				new URL('./packages/plugins/codec-share/src/index.ts', import.meta.url)
+			),
+			'@chronos/plugin-source-cqut/CqutOnlineImportTab': fileURLToPath(
+				new URL('./packages/plugins/source-cqut/src/CqutOnlineImportTab.svelte', import.meta.url)
+			),
+			'@chronos/plugin-source-cqut/EduHtmlImportTab': fileURLToPath(
+				new URL('./packages/plugins/source-cqut/src/EduHtmlImportTab.svelte', import.meta.url)
 			),
 			'@chronos/plugin-source-cqut': fileURLToPath(
 				new URL('./packages/plugins/source-cqut/src/index.ts', import.meta.url)

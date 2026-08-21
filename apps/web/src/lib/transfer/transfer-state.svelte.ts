@@ -12,7 +12,8 @@ import {
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import { getDefaultImportSlot } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
-import { SHARE_LINK_WARNING_LENGTH } from '@chronos/plugin-codec-share';
+
+const SHARE_LINK_MAX_RECOMMENDED_LENGTH = 2000;
 
 export interface TransferPreviewState {
 	preview: Timetable | null;
@@ -291,7 +292,7 @@ export function createTransferState(engine?: ChronosEngine) {
 		const length = exportSlot?.estimateLength ? await exportSlot.estimateLength(current) : 0;
 		return {
 			timetableName: current.name,
-			longLinkWarning: length > SHARE_LINK_WARNING_LENGTH
+			longLinkWarning: length > SHARE_LINK_MAX_RECOMMENDED_LENGTH
 		};
 	}
 

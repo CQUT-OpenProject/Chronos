@@ -20,6 +20,16 @@
 			"types": "./server/index.ts",
 			"import": "./server/index.ts",
 			"default": "./server/index.ts"
+		},
+		"./CqutOnlineImportTab": {
+			"types": "./src/CqutOnlineImportTab.svelte",
+			"import": "./src/CqutOnlineImportTab.svelte",
+			"default": "./src/CqutOnlineImportTab.svelte"
+		},
+		"./EduHtmlImportTab": {
+			"types": "./src/EduHtmlImportTab.svelte",
+			"import": "./src/EduHtmlImportTab.svelte",
+			"default": "./src/EduHtmlImportTab.svelte"
 		}
 	},
 	"dependencies": {

@@ -28,59 +28,72 @@ export const shareLinkImportSchema = defineSchema<ShareLinkImportForm>({
 	}
 });
 
-export const shareCodecPlugin: ChronosPlugin = {
-	id: 'codec-share',
-	name: () => 'Share Codec',
-	version: '1.0.0',
-	description: () => '课表分享短链编解码',
-	category: 'codec',
-	order: 30,
-	author: 'CQUT OpenProject',
-	homepage: 'https://github.com/CQUT-OpenProject/Chronos',
+import ShareLinkImportTab from './ShareLinkImportTab.svelte';
 
-	async apply(ctx: ChronosContext) {
-		await ensureShareLinkBrotliReady();
+export interface CreateShareCodecPluginOptions {
+	shareComponent?: unknown;
+}
 
-		ctx.registerSlot('import.source.tab', {
-			id: 'share-link',
-			title: () => '分享链接',
-			order: 15,
-			inputSchema: shareLinkImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-			async executeImport(inputs: Record<string, unknown>) {
-				const content =
-					(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
-				if (!content?.trim()) {
-					throw new Error('未识别到有效的课表分享链接');
-				}
-				const payload = extractSharePayloadFromText(content);
-				if (!payload) {
-					throw new Error('未识别到有效的课表分享链接');
-				}
-				const result = await decodeSharePayload(payload);
-				if (!result.ok) {
-					throw new Error(result.errorMessage);
-				}
-				return result.value;
-			}
-		});
+export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = {}): ChronosPlugin {
+	const { shareComponent = ShareLinkImportTab } = options;
 
-		ctx.registerSlot('export.action', {
-			id: 'share-link',
-			title: () => '复制课表分享链接',
-			order: 5,
-			async export(timetable: Timetable): Promise<ExportResult> {
-				const link = await encodeShareLink(timetable);
-				const clipboardText = formatShareClipboardText(timetable.name, link);
-				return {
-					filename: 'share-link.txt',
-					mimeType: 'application/x-chronos-share-link',
-					content: clipboardText
-				};
-			},
-			estimateLength: estimateShareLinkLength
-		});
-	}
-};
+	return {
+		id: 'codec-share',
+		name: () => 'Share Codec',
+		version: '1.0.0',
+		description: () => '课表分享短链编解码',
+		category: 'codec',
+		order: 30,
+		author: 'CQUT OpenProject',
+		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
+
+		async apply(ctx: ChronosContext) {
+			await ensureShareLinkBrotliReady();
+
+			ctx.registerSlot('import.source.tab', {
+				id: 'share-link',
+				title: () => '分享链接',
+				order: 15,
+				component: shareComponent,
+				inputSchema: shareLinkImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+				async executeImport(inputs: Record<string, unknown>) {
+					const content =
+						(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
+					if (!content?.trim()) {
+						throw new Error('未识别到有效的课表分享链接');
+					}
+					const payload = extractSharePayloadFromText(content);
+					if (!payload) {
+						throw new Error('未识别到有效的课表分享链接');
+					}
+					const result = await decodeSharePayload(payload);
+					if (!result.ok) {
+						throw new Error(result.errorMessage);
+					}
+					return result.value;
+				}
+			});
+
+			ctx.registerSlot('export.action', {
+				id: 'share-link',
+				title: () => '复制课表分享链接',
+				order: 5,
+				async export(timetable: Timetable): Promise<ExportResult> {
+					const link = await encodeShareLink(timetable);
+					const clipboardText = formatShareClipboardText(timetable.name, link);
+					return {
+						filename: 'share-link.txt',
+						mimeType: 'application/x-chronos-share-link',
+						content: clipboardText
+					};
+				},
+				estimateLength: estimateShareLinkLength
+			});
+		}
+	};
+}
+
+export const shareCodecPlugin = createShareCodecPlugin();
 
 export {
 	decodeSharePayload,

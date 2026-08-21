@@ -284,135 +284,153 @@ export function parseCqutScheduleData(
 	});
 }
 
+import CqutOnlineImportTab from './CqutOnlineImportTab.svelte';
+import EduHtmlImportTab from './EduHtmlImportTab.svelte';
+
+export interface CreateCqutPluginOptions {
+	onlineComponent?: unknown;
+	htmlComponent?: unknown;
+}
+
 export interface CqutPluginConfig {
 	disabledSlots?: string[];
 }
 
-export const cqutPlugin: ChronosPlugin<CqutPluginConfig> = {
-	id: 'source-cqut',
-	name: () => 'CQUT-Timetable',
-	version: '1.0.0',
-	description: () => '从「知行理工」导入课表',
-	category: 'source',
-	order: 10,
-	author: 'CQUT OpenProject',
-	homepage: 'https://github.com/CQUT-OpenProject/Chronos',
-	permissions: ['network', 'storage'],
-	allowedDomains: ['authserver.cqut.edu.cn', 'uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'],
+export function createCqutPlugin(
+	options: CreateCqutPluginOptions = {}
+): ChronosPlugin<CqutPluginConfig> {
+	const { onlineComponent = CqutOnlineImportTab, htmlComponent = EduHtmlImportTab } = options;
 
-	apply(ctx: ChronosContext<CqutPluginConfig>) {
-		const disabledSlots = new Set(ctx.config.disabledSlots ?? []);
+	return {
+		id: 'source-cqut',
+		name: () => 'CQUT-Timetable',
+		version: '1.0.0',
+		description: () => '从「知行理工」导入课表',
+		category: 'source',
+		order: 10,
+		author: 'CQUT OpenProject',
+		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
+		permissions: ['network', 'storage'],
+		allowedDomains: ['authserver.cqut.edu.cn', 'uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'],
 
-		async function saveCredentialsIfRequested(
-			username: string,
-			password: string,
-			saveCredentials: boolean | undefined,
-			activeCtx: ChronosContext
-		): Promise<void> {
-			if (!saveCredentials) return;
-			const trimmedAccount = username.trim();
-			if (!trimmedAccount) return;
+		apply(ctx: ChronosContext<CqutPluginConfig>) {
+			const disabledSlots = new Set(ctx.config.disabledSlots ?? []);
 
-			const vault = activeCtx.service(IVaultService);
-			const canStoreSecret = Boolean(password.trim() && vault && (await vault.isSupported()));
+			async function saveCredentialsIfRequested(
+				username: string,
+				password: string,
+				saveCredentials: boolean | undefined,
+				activeCtx: ChronosContext
+			): Promise<void> {
+				if (!saveCredentials) return;
+				const trimmedAccount = username.trim();
+				if (!trimmedAccount) return;
 
-			if (canStoreSecret) {
-				await vault!.storeSecret(CQUT_PASSWORD_SECRET_KEY, password.trim());
+				const vault = activeCtx.service(IVaultService);
+				const canStoreSecret = Boolean(password.trim() && vault && (await vault.isSupported()));
+
+				if (canStoreSecret) {
+					await vault!.storeSecret(CQUT_PASSWORD_SECRET_KEY, password.trim());
+					await activeCtx.storage.set<CqutCredentialRecord>(CQUT_CREDENTIAL_RECORD_KEY, {
+						mode: 'vault',
+						account: trimmedAccount
+					});
+					return;
+				}
+
+				await vault?.removeSecret(CQUT_PASSWORD_SECRET_KEY);
 				await activeCtx.storage.set<CqutCredentialRecord>(CQUT_CREDENTIAL_RECORD_KEY, {
-					mode: 'vault',
+					mode: 'account_only',
 					account: trimmedAccount
 				});
-				return;
 			}
 
-			await vault?.removeSecret(CQUT_PASSWORD_SECRET_KEY);
-			await activeCtx.storage.set<CqutCredentialRecord>(CQUT_CREDENTIAL_RECORD_KEY, {
-				mode: 'account_only',
-				account: trimmedAccount
-			});
-		}
+			async function doImport(
+				inputs: Record<string, unknown>,
+				context?: ChronosContext
+			): Promise<Timetable> {
+				const activeCtx = context ?? ctx;
+				const form = inputs as unknown as CqutImportForm;
+				const username = (form.username || form.account)?.trim();
+				const password = form.password;
 
-		async function doImport(
-			inputs: Record<string, unknown>,
-			context?: ChronosContext
-		): Promise<Timetable> {
-			const activeCtx = context ?? ctx;
-			const form = inputs as unknown as CqutImportForm;
-			const username = (form.username || form.account)?.trim();
-			const password = form.password;
-
-			if (!username || !password?.trim()) {
-				throw new Error('请输入学号与密码');
-			}
-
-			activeCtx.actions.notify('正在连接知行理工...', 'info');
-
-			const http = activeCtx.service(IHttpService);
-			if (!http.proxy) {
-				throw new Error('当前环境不支持在线教务同步');
-			}
-
-			const response = await http.proxy(SOURCE_CQUT_PLUGIN_ID, 'preview', {
-				account: username,
-				password
-			});
-
-			if (!response.ok) {
-				let errorMsg = '教务认证失败，请检查学号与密码';
-				try {
-					const errJson = (await response.json()) as { error?: { message?: string } };
-					if (errJson?.error?.message) {
-						errorMsg = errJson.error.message;
-					}
-				} catch {
-					// Keep default error message
+				if (!username || !password?.trim()) {
+					throw new Error('请输入学号与密码');
 				}
-				throw new Error(errorMsg);
+
+				activeCtx.actions.notify('正在连接知行理工...', 'info');
+
+				const http = activeCtx.service(IHttpService);
+				if (!http.proxy) {
+					throw new Error('当前环境不支持在线教务同步');
+				}
+
+				const response = await http.proxy(SOURCE_CQUT_PLUGIN_ID, 'preview', {
+					account: username,
+					password
+				});
+
+				if (!response.ok) {
+					let errorMsg = '教务认证失败，请检查学号与密码';
+					try {
+						const errJson = (await response.json()) as { error?: { message?: string } };
+						if (errJson?.error?.message) {
+							errorMsg = errJson.error.message;
+						}
+					} catch {
+						// Keep default error message
+					}
+					throw new Error(errorMsg);
+				}
+
+				const parsedJson = (await response.json()) as CqutScheduleRawInput;
+				const timetable = parseCqutScheduleData(parsedJson, username, 'huaxi');
+				await saveCredentialsIfRequested(username, password, form.saveCredentials, activeCtx);
+				return timetable;
 			}
 
-			const parsedJson = (await response.json()) as CqutScheduleRawInput;
-			const timetable = parseCqutScheduleData(parsedJson, username, 'huaxi');
-			await saveCredentialsIfRequested(username, password, form.saveCredentials, activeCtx);
-			return timetable;
-		}
-
-		async function doHtmlImport(inputs: Record<string, unknown>): Promise<Timetable> {
-			const fileContent =
-				(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
-			if (!fileContent || typeof fileContent !== 'string') {
-				throw new Error('请选择有效的 HTML 课表文件');
+			async function doHtmlImport(inputs: Record<string, unknown>): Promise<Timetable> {
+				const fileContent =
+					(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
+				if (!fileContent || typeof fileContent !== 'string') {
+					throw new Error('请选择有效的 HTML 课表文件');
+				}
+				const termStartDate = inputs.termStartDate as string | undefined;
+				const campusId = (inputs.campusId as CqutCampusId | undefined) ?? 'huaxi';
+				return parseHtmlTimetable(fileContent, { termStartDate, campusId });
 			}
-			const termStartDate = inputs.termStartDate as string | undefined;
-			const campusId = (inputs.campusId as CqutCampusId | undefined) ?? 'huaxi';
-			return parseHtmlTimetable(fileContent, { termStartDate, campusId });
-		}
 
-		// Register import source tab slot
-		if (!disabledSlots.has('cqut-online')) {
-			ctx.registerSlot('import.source.tab', {
-				id: 'cqut-online',
-				title: () => '知行理工',
-				order: 10,
-				inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-				defaultInput: {
-					saveCredentials: false
-				},
-				executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
-					doImport(inputs, context)
-			});
-		}
+			// Register import source tab slot
+			if (!disabledSlots.has('cqut-online')) {
+				ctx.registerSlot('import.source.tab', {
+					id: 'cqut-online',
+					title: () => '知行理工',
+					order: 10,
+					component: onlineComponent,
+					inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+					defaultInput: {
+						saveCredentials: false
+					},
+					executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
+						doImport(inputs, context)
+				});
+			}
 
-		if (!disabledSlots.has('edu-html')) {
-			ctx.registerSlot('import.source.tab', {
-				id: 'edu-html',
-				title: () => 'HTML 文件',
-				order: 30,
-				inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-				executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
-			});
+			if (!disabledSlots.has('edu-html')) {
+				ctx.registerSlot('import.source.tab', {
+					id: 'edu-html',
+					title: () => 'HTML 文件',
+					order: 30,
+					component: htmlComponent,
+					inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+					executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
+				});
+			}
 		}
-	}
-};
+	};
+}
+
+export const cqutPlugin = createCqutPlugin();
 
 export { mergeWeekPayloads, resolveWeeksToFetch } from './week-merge';
 export type {

@@ -50,6 +50,24 @@ export default defineConfig(({ mode }) => {
 					)
 				},
 				{
+					find: '@chronos/plugin-source-cqut/CqutOnlineImportTab',
+					replacement: fileURLToPath(
+						new URL(
+							'../../packages/plugins/source-cqut/src/CqutOnlineImportTab.svelte',
+							import.meta.url
+						)
+					)
+				},
+				{
+					find: '@chronos/plugin-source-cqut/EduHtmlImportTab',
+					replacement: fileURLToPath(
+						new URL(
+							'../../packages/plugins/source-cqut/src/EduHtmlImportTab.svelte',
+							import.meta.url
+						)
+					)
+				},
+				{
 					find: /^@chronos\/plugin-source-cqut$/,
 					replacement: fileURLToPath(
 						new URL('../../packages/plugins/source-cqut/src/index.ts', import.meta.url)
@@ -59,6 +77,15 @@ export default defineConfig(({ mode }) => {
 					find: '@chronos/plugin-codec-share/share-link',
 					replacement: fileURLToPath(
 						new URL('../../packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
+					)
+				},
+				{
+					find: '@chronos/plugin-codec-share/ShareLinkImportTab',
+					replacement: fileURLToPath(
+						new URL(
+							'../../packages/plugins/codec-share/src/ShareLinkImportTab.svelte',
+							import.meta.url
+						)
 					)
 				},
 				{
@@ -146,9 +173,15 @@ export default defineConfig(({ mode }) => {
 						'../../packages/plugins/source-cqut/server/index.ts',
 					'@chronos/plugin-source-cqut/week-merge':
 						'../../packages/plugins/source-cqut/src/week-merge.ts',
+					'@chronos/plugin-source-cqut/CqutOnlineImportTab':
+						'../../packages/plugins/source-cqut/src/CqutOnlineImportTab.svelte',
+					'@chronos/plugin-source-cqut/EduHtmlImportTab':
+						'../../packages/plugins/source-cqut/src/EduHtmlImportTab.svelte',
 					'@chronos/plugin-source-cqut': '../../packages/plugins/source-cqut/src/index.ts',
 					'@chronos/plugin-codec-share/share-link':
 						'../../packages/plugins/codec-share/src/share-link/index.ts',
+					'@chronos/plugin-codec-share/ShareLinkImportTab':
+						'../../packages/plugins/codec-share/src/ShareLinkImportTab.svelte',
 					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
 					'@chronos/plugin-theme-yumemita': '../../packages/plugins/theme-yumemita/src/index.ts',
 					'@chronos/plugin-wallpaper/wallpaper-theme':

@@ -1,0 +1,62 @@
+<script lang="ts">
+	import type { ReactiveChronosController } from '@chronos/ui-kit';
+
+	interface Props {
+		controller?: ReactiveChronosController;
+		transfer: {
+			state: {
+				errorMessage: string | null;
+				statusMessage: string | null;
+			};
+			previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean>;
+		};
+		onContinue: () => void;
+	}
+
+	let { transfer, onContinue }: Props = $props();
+
+	let loading = $state(false);
+
+	function notifyTransferMessages() {
+		const { errorMessage } = transfer.state;
+		if (errorMessage) {
+			alert(errorMessage);
+		}
+	}
+
+	async function handleClipboardPreview() {
+		loading = true;
+		try {
+			const content = await navigator.clipboard.readText();
+			const ok = await transfer.previewWithSlot('share-link', {
+				content: content.trim()
+			});
+			if (ok) onContinue();
+			else notifyTransferMessages();
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : '无法读取剪贴板，请检查浏览器权限';
+			alert(msg);
+		} finally {
+			loading = false;
+		}
+	}
+</script>
+
+<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
+	<div class="flex flex-col gap-4">
+		<div>
+			<h2 class="m3-title-medium text-on-surface">从分享链接导入</h2>
+			<p class="m3-body-small mt-0.5 text-on-surface-variant">复制课表分享链接后点击下方按钮</p>
+		</div>
+		<div class="flex w-full pt-1">
+			<button
+				type="button"
+				class="m3-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+				disabled={loading}
+				onclick={handleClipboardPreview}
+			>
+				{loading ? '读取中…' : '从剪贴板导入课表'}
+			</button>
+		</div>
+	</div>
+</div>

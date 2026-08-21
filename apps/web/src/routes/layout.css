@@ -2,6 +2,8 @@
 @source '..';
 @source '../../../../packages/ui-kit/src';
 @source '../../../../packages/plugins/wallpaper/src';
+@source '../../../../packages/plugins/source-cqut/src';
+@source '../../../../packages/plugins/codec-share/src';
 @import '../lib/m3/generated-theme.css';
 @import '../lib/content/markdown-prose.css';
 @import 'swiper/css';
