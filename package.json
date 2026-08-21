@@ -21,7 +21,8 @@
 		"test": "(cd apps/web && vp test -- --run)",
 		"theme:generate": "node --experimental-strip-types scripts/generate-theme-tokens.ts",
 		"icons:png": "node --experimental-strip-types scripts/generate-icons.ts",
-		"bench:share-link": "tsx scripts/share-link-compression-benchmark.ts"
+		"bench:share-link": "tsx scripts/share-link-compression-benchmark.ts",
+		"build:official-plugins": "node --experimental-strip-types scripts/build-official-plugins.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/kit": "^2.63.0",

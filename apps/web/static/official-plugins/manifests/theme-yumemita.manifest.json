@@ -1,0 +1,18 @@
+{
+	"id": "theme-yumemita",
+	"name": {
+		"zh-CN": "YUMEMITA",
+		"en": "YUMEMITA"
+	},
+	"version": "1.0.0",
+	"description": {
+		"zh-CN": "YUMEMITA 主题",
+		"en": "YUMEMITA theme"
+	},
+	"author": "Chronos",
+	"type": "theme",
+	"bundleFormat": "iife",
+	"minEngineVersion": "0.3.0",
+	"bundleUrl": "/official-plugins/bundles/theme-yumemita.bundle.js",
+	"sha256": "30c847fece1a1844e17e6df99f1fd8b3a52b4eb80841db5cb216065be0a84285"
+}
