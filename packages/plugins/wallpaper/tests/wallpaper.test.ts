@@ -54,7 +54,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		).toBe('课表壁纸');
 	});
 
-	it('registers mine.item and theme.definition slots when loaded and revokes on dispose', async () => {
+	it('registers mine.item, screen slot, and theme when loaded', async () => {
 		const env = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
@@ -73,7 +73,8 @@ describe('@chronos/plugin-wallpaper', () => {
 		expect(typeof screen?.title === 'function' ? screen.title() : screen?.title).toBe(
 			'设置课表壁纸'
 		);
-		expect(screen?.schema).toBeUndefined();
+		expect(screen?.schema).toBeDefined();
+		expect(screen?.component).toBeDefined();
 
 		const theme = engine.themes.getTheme('wallpaper');
 		expect(theme).toBeDefined();

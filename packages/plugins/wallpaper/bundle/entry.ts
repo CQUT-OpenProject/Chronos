@@ -1,4 +1,4 @@
-/** Self-contained official plugin bundle entry (no @chronos/core runtime dependency). */
-import { wallpaperPlugin } from '../src/index.ts';
+/** Online official plugin bundle — schema-driven screen only (no Svelte component). */
+import { createWallpaperPlugin } from '../src/create-wallpaper-plugin.ts';
 
-export default wallpaperPlugin;
+export default createWallpaperPlugin();

@@ -211,6 +211,15 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
+      '@chronos/ui-kit':
+        specifier: workspace:*
+        version: link:../../ui-kit
+      '@ktibow/material-color-utilities-nightly':
+        specifier: ^0.4.1772748028000
+        version: 0.4.1772748028000
+      svelte:
+        specifier: ^5.0.0
+        version: 5.56.9(@typescript-eslint/types@8.66.0)
 
   packages/ui-kit:
     dependencies:

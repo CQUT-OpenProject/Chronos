@@ -6,8 +6,6 @@ import type {
 } from '@chronos/core';
 import { IHttpService, IRuntimeService } from '@chronos/core';
 import { parsePluginBundle, validatePluginManifest } from './plugin-bundle';
-import { clearWallpaperForPluginUnload } from '$lib/wallpaper/wallpaper-controller.svelte';
-import { WALLPAPER_PLUGIN_ID } from '$lib/wallpaper/wallpaper-storage';
 
 const INSTALLED_STORAGE_KEY = 'installed_plugins';
 const OFFICIAL_PLUGINS_PLUGIN_ID = 'core.official-plugins';
@@ -169,7 +167,6 @@ export class OfficialPluginService implements Disposable {
 
 		await this.saveInstalledToStorage();
 		await this.loadPluginInstance(manifest, code);
-		await this.syncWallpaperStateIfNeeded(manifest.id);
 		if (manifest.type === 'theme') {
 			this.engine.actions.notify('插件已安装并启用，可在「显示设置」中选择此外观主题', 'info');
 		} else {
@@ -199,9 +196,6 @@ export class OfficialPluginService implements Disposable {
 
 	async uninstall(pluginId: string): Promise<void> {
 		await this.unloadPluginInstance(pluginId);
-		if (pluginId === WALLPAPER_PLUGIN_ID) {
-			await clearWallpaperForPluginUnload();
-		}
 		this.installedCache = this.installedCache.filter((p) => p.manifest.id !== pluginId);
 		await this.saveInstalledToStorage();
 		this.engine.actions.notify(`插件「${pluginId}」已卸载`, 'info');
@@ -217,7 +211,6 @@ export class OfficialPluginService implements Disposable {
 		record.enabled = true;
 		await this.saveInstalledToStorage();
 		await this.loadPluginInstance(record.manifest, record.code);
-		await this.syncWallpaperStateIfNeeded(pluginId);
 		this.engine.actions.notify(`已启用插件「${pluginId}」`, 'info');
 	}
 
@@ -264,12 +257,6 @@ export class OfficialPluginService implements Disposable {
 
 		this.activeHandles.set(manifest.id, handle);
 		return handle;
-	}
-
-	private async syncWallpaperStateIfNeeded(pluginId: string): Promise<void> {
-		if (pluginId !== WALLPAPER_PLUGIN_ID) return;
-		const { getWallpaperController } = await import('$lib/wallpaper/wallpaper-controller.svelte');
-		await getWallpaperController().syncFromStorage(true);
 	}
 
 	private revertThemeIfNeeded(): void {

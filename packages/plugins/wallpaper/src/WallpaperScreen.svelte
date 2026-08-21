@@ -1,25 +1,30 @@
 <script lang="ts">
-	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import { trackEvent } from '$lib/client/analytics';
-	import TimetableGrid from '$lib/components/timetable/TimetableGrid.svelte';
-	import { AcademicCalendarService, computeTimetableWeekLayout, todayIsoDate } from '@chronos/core';
-	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-	import { LayersClearFill, PhotoLibraryFill } from '$lib/icons';
+	import type { ReactiveChronosController } from '@chronos/ui-kit';
+	import { TimetablePreviewGrid, TimetableWallpaperLayer } from '@chronos/ui-kit';
+	import {
+		AcademicCalendarService,
+		computeTimetableWeekLayout,
+		COURSE_PALETTE_ENTRIES,
+		resolveCoursePalette,
+		todayIsoDate
+	} from '@chronos/core';
+	import { getWallpaperRuntime } from './runtime.svelte';
 
-	let {
-		shell
-	}: {
-		shell: AppShellController;
-	} = $props();
+	interface Props {
+		controller: ReactiveChronosController;
+		pluginId?: string;
+	}
 
+	let { controller }: Props = $props();
+
+	const runtime = getWallpaperRuntime();
 	const calendarService = new AcademicCalendarService();
 
-	const timetable = $derived(shell.controller.currentTimetable);
-	const hasWallpaper = $derived(shell.state.hasWallpaper);
-	const wallpaperUri = $derived(shell.state.wallpaperUri);
-	const coursePalette = $derived(shell.appearance.coursePalette);
+	const timetable = $derived(controller.currentTimetable);
+	const wallpaperUri = $derived(runtime.uri);
+	const hasWallpaper = $derived(runtime.hasWallpaper);
+	const paletteMode = $derived(controller.userPreferences?.paletteMode ?? 'vibrant');
+	const coursePalette = $derived(resolveCoursePalette(paletteMode, COURSE_PALETTE_ENTRIES));
 	const today = $derived(todayIsoDate());
 	const academicWeek = $derived(
 		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
@@ -38,6 +43,7 @@
 	const courseDisplayModels = $derived(preview?.courseDisplayModels ?? []);
 
 	let fileInput: HTMLInputElement | undefined = $state();
+	let errorMessage = $state<string | null>(null);
 
 	function onPickWallpaper() {
 		fileInput?.click();
@@ -47,11 +53,11 @@
 		const input = event.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
-		trackEvent('wallpaper_set');
+		errorMessage = null;
 		try {
-			await shell.setWallpaper(file);
+			await runtime.setWallpaper(file);
 		} catch (error) {
-			snackbar(resolveWallpaperImportError(error));
+			errorMessage = resolveWallpaperImportError(error);
 		} finally {
 			input.value = '';
 		}
@@ -65,8 +71,8 @@
 	}
 
 	async function clearWallpaper() {
-		trackEvent('wallpaper_clear');
-		await shell.setWallpaper(null);
+		errorMessage = null;
+		await runtime.setWallpaper(null);
 	}
 </script>
 
@@ -80,23 +86,16 @@
 	/>
 
 	{#if hasWallpaper && timetable && gridModel}
-		<div
-			class="relative min-h-0 flex-1 overflow-hidden"
-			style:background-image={wallpaperUri ? `url('${wallpaperUri}')` : undefined}
-			style:background-size="cover"
-			style:background-position="center"
-		>
-			<div class="absolute inset-0">
-				<TimetableGrid
+		<div class="min-h-0 flex-1">
+			<TimetableWallpaperLayer {wallpaperUri}>
+				<TimetablePreviewGrid
 					displayedWeek={academicWeek}
-					isCurrentWeek={true}
 					{gridModel}
 					{courseDisplayModels}
-					hasWallpaper={true}
 					{coursePalette}
-					paletteCourses={timetable.courses}
+					hasWallpaper={true}
 				/>
-			</div>
+			</TimetableWallpaperLayer>
 		</div>
 	{:else}
 		<p
@@ -106,18 +105,28 @@
 		</p>
 	{/if}
 
-	<ActionBottomBar>
+	{#if errorMessage}
+		<p class="m3-body-small px-4 pb-2 text-center text-error">{errorMessage}</p>
+	{/if}
+
+	<div class="shrink-0 border-t border-outline/20 bg-surface p-4">
 		<div class="flex w-full gap-3">
 			{#if hasWallpaper}
-				<Button variant="outlined" class="w-full flex-1" onclick={clearWallpaper}>
-					<LayersClearFill class="size-5" />
+				<button
+					type="button"
+					class="m3-label-large flex-1 rounded-full border border-outline px-4 py-3 text-on-surface"
+					onclick={clearWallpaper}
+				>
 					清除壁纸
-				</Button>
+				</button>
 			{/if}
-			<Button variant="filled" class="w-full flex-1" onclick={onPickWallpaper}>
-				<PhotoLibraryFill class="size-5" />
+			<button
+				type="button"
+				class="m3-label-large flex-1 rounded-full bg-primary px-4 py-3 text-on-primary"
+				onclick={onPickWallpaper}
+			>
 				{hasWallpaper ? '重新选择' : '选择壁纸'}
-			</Button>
+			</button>
 		</div>
-	</ActionBottomBar>
+	</div>
 </div>

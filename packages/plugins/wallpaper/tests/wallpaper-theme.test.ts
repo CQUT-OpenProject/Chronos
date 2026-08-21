@@ -1,6 +1,6 @@
 import { argbFromHex, Hct } from '@ktibow/material-color-utilities-nightly';
 import { describe, expect, it } from 'vite-plus/test';
-import { colorsFromImageBytes } from './apply-wallpaper-theme';
+import { colorsFromImageBytes } from '../src/wallpaper-theme';
 import { coursePaletteFromSources } from '@chronos/ui-kit';
 import type { CoursePaletteEntry } from '@chronos/core';
 

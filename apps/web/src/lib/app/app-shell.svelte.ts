@@ -2,7 +2,7 @@ import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { getAppController, getAppEngine } from '$lib/services/app-engine';
 import { createCredentialVault } from '$lib/client/credential-vault';
-import { getWallpaperController } from '$lib/wallpaper/wallpaper-controller.svelte';
+import { getWallpaperRuntime, WALLPAPER_PLUGIN_ID } from '@chronos/plugin-wallpaper';
 import { IVaultService } from '@chronos/core';
 import type {
 	CapsuleCornerStyle,
@@ -22,8 +22,9 @@ export function createAppShell() {
 	let systemPrefersDark = $state(false);
 	let mediaQueryCleanup: (() => void) | null = null;
 	const appearance = createAppearance();
-	const wallpaper = getWallpaperController();
+	const wallpaper = getWallpaperRuntime();
 	const controller = getAppController();
+	const engine = getAppEngine();
 
 	const themeMode = $derived(controller.userPreferences?.themeMode ?? 'auto');
 	const isDark = $derived(resolveDark(themeMode, systemPrefersDark));
@@ -35,9 +36,7 @@ export function createAppShell() {
 			controller.timetables.length > 0
 		)
 	);
-	const hasWallpaperPlugin = $derived(
-		controller.getSlots('mine.item').some((item) => item.id === 'wallpaper')
-	);
+	const hasWallpaperPlugin = $derived(engine.isPluginLoaded(WALLPAPER_PLUGIN_ID));
 	const hasWallpaper = $derived(hasWallpaperPlugin && wallpaper.hasWallpaper);
 
 	function init() {
@@ -51,9 +50,7 @@ export function createAppShell() {
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
 
-		void wallpaper.syncFromStorage(
-			controller.getSlots('mine.item').some((item) => item.id === 'wallpaper')
-		);
+		void wallpaper.syncFromStorage(engine.isPluginLoaded(WALLPAPER_PLUGIN_ID));
 	}
 
 	function destroy() {
@@ -112,7 +109,6 @@ export function createAppShell() {
 	}
 
 	async function clearAllData() {
-		const engine = getAppEngine();
 		const credentialVault = createCredentialVault({
 			vault: engine.services.get(IVaultService)
 		});

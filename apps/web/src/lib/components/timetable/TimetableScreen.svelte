@@ -10,6 +10,7 @@
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
+	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
 
 	let {
@@ -160,13 +161,7 @@
 		{/snippet}
 	</TopAppBar>
 
-	<div class="relative min-h-0 flex-1">
-		{#if hasWallpaper && wallpaperUri}
-			<div
-				class="absolute inset-0 bg-cover bg-center"
-				style:background-image={`url('${wallpaperUri}')`}
-			></div>
-		{/if}
+	<TimetableWallpaperLayer wallpaperUri={hasWallpaper ? wallpaperUri : null}>
 		{#key screenState.currentTimetable?.id}
 			<TimetableWeekSwiper
 				{screen}
@@ -178,5 +173,5 @@
 				{onCourseLongClick}
 			/>
 		{/key}
-	</div>
+	</TimetableWallpaperLayer>
 </div>

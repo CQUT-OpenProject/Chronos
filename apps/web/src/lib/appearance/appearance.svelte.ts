@@ -13,7 +13,7 @@ export function createAppearance() {
 		if (typeof document === 'undefined') return;
 
 		if (input.paletteMode === 'wallpaper' || input.activeThemeId === 'wallpaper') {
-			wallpaperModule ??= await import('$lib/m3/apply-wallpaper-theme');
+			wallpaperModule ??= await import('@chronos/plugin-wallpaper/wallpaper-theme');
 		}
 
 		try {
