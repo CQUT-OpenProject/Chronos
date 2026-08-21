@@ -1,4 +1,4 @@
 import { createWallpaperPlugin } from '@chronos/plugin-wallpaper';
+import WallpaperScreen from '@chronos/plugin-wallpaper/WallpaperScreen';
 
-/** Rich UI lives at host `/wallpaper`; plugin slot stays schema-only for cqut profile builtins. */
-export const wallpaperPlugin = createWallpaperPlugin();
+export const wallpaperPlugin = createWallpaperPlugin({ screenComponent: WallpaperScreen });

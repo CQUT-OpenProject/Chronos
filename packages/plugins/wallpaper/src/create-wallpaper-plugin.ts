@@ -12,7 +12,7 @@ export const WALLPAPER_THEME_ID = 'wallpaper';
 
 export const wallpaperScreenSchema = defineSchema({
 	wallpaper: {
-		type: 'file',
+		type: 'wallpaper-preview',
 		title: () => '选择壁纸图片',
 		description: () => '支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩',
 		accept: 'image/*',
@@ -96,7 +96,7 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 				id: 'wallpaper',
 				sectionId: 'appearance-feedback',
 				title: () => '设置课表壁纸',
-				href: '/wallpaper',
+				href: '/plugins/tool-wallpaper',
 				icon: 'wallpaper',
 				iconTone: 'primary',
 				keywords: ['壁纸', '背景', '图片', '自定义', '封面'],

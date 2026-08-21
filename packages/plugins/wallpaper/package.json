@@ -15,6 +15,11 @@
 			"types": "./src/wallpaper-theme.ts",
 			"import": "./src/wallpaper-theme.ts",
 			"default": "./src/wallpaper-theme.ts"
+		},
+		"./WallpaperScreen": {
+			"types": "./src/WallpaperScreen.svelte",
+			"import": "./src/WallpaperScreen.svelte",
+			"default": "./src/WallpaperScreen.svelte"
 		}
 	},
 	"dependencies": {

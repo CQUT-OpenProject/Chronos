@@ -44,13 +44,15 @@
 	}
 </script>
 
-<div class="flex w-full flex-col p-4">
-	{#if screenSlot?.component}
-		{@const DynamicComponent = screenSlot.component}
+{#if screenSlot?.component}
+	{@const DynamicComponent = screenSlot.component}
+	<div class="flex min-h-0 w-full flex-1 flex-col">
 		<DynamicComponent {controller} {pluginId} />
-	{:else if screenSlot?.schema}
+	</div>
+{:else if screenSlot?.schema}
+	<div class="flex w-full flex-col p-4">
 		<div class="flex flex-col gap-4 rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
-			<SchemaForm schema={screenSlot.schema} bind:value={formValues} />
+			<SchemaForm schema={screenSlot.schema} bind:value={formValues} {controller} />
 			{#if saveError}
 				<p class="m3-body-small text-error">{saveError}</p>
 			{/if}
@@ -63,12 +65,14 @@
 				{saving ? '保存中…' : '保存设置'}
 			</button>
 		</div>
-	{:else}
+	</div>
+{:else}
+	<div class="flex w-full flex-col p-4">
 		<div
 			class="flex flex-col items-center justify-center py-16 text-center text-on-surface-variant"
 		>
 			<p class="text-base font-medium">页面不存在或插件已卸载</p>
 			<p class="mt-1 text-xs opacity-75">Plugin: {pluginId} / View: {viewId}</p>
 		</div>
-	{/if}
-</div>
+	</div>
+{/if}

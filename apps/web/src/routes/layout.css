@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @source '..';
 @source '../../../../packages/ui-kit/src';
+@source '../../../../packages/plugins/wallpaper/src';
 @import '../lib/m3/generated-theme.css';
 @import '../lib/content/markdown-prose.css';
 @import 'swiper/css';

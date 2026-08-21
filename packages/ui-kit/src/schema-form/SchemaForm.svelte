@@ -1,18 +1,28 @@
 <script lang="ts">
 	import type { ConfigSchema, LocalizedText, SchemaField } from '@chronos/core';
+	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
 	import TextField from './inputs/TextField.svelte';
 	import Checkbox from './inputs/Checkbox.svelte';
 	import SelectField from './inputs/SelectField.svelte';
 	import FileField from './inputs/FileField.svelte';
+	import TimetablePreviewField from './inputs/TimetablePreviewField.svelte';
+	import WallpaperPreviewField from './inputs/WallpaperPreviewField.svelte';
 
 	interface Props {
 		schema: ConfigSchema<Record<string, unknown>>;
 		value?: Record<string, unknown>;
 		disabled?: boolean;
+		controller?: ReactiveChronosController;
 		onValueChange?: (value: Record<string, unknown>) => void;
 	}
 
-	let { schema, value = $bindable(), disabled = false, onValueChange }: Props = $props();
+	let {
+		schema,
+		value = $bindable(),
+		disabled = false,
+		controller,
+		onValueChange
+	}: Props = $props();
 
 	function resolveText(text: LocalizedText | undefined): string {
 		if (!text) return '';
@@ -115,6 +125,24 @@
 					{disabled}
 					value={resolvedValue[key] as string}
 					oninput={(e) => updateField(key, e.currentTarget.value)}
+				/>
+			{:else if field.type === 'timetable-preview'}
+				<TimetablePreviewField
+					{controller}
+					label={resolveText(field.title)}
+					description={resolveText(field.description)}
+				/>
+			{:else if field.type === 'wallpaper-preview'}
+				<WallpaperPreviewField
+					id="field-{key}"
+					label={resolveText(field.title)}
+					description={resolveText(field.description)}
+					accept={field.accept}
+					required={field.required}
+					{disabled}
+					value={resolvedValue[key]}
+					{controller}
+					onValueChange={(val) => updateField(key, val)}
 				/>
 			{/if}
 		{/if}

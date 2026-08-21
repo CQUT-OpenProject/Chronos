@@ -22,8 +22,9 @@
 				: screenSlot.title
 			: '插件页面'
 	);
+	const isRich = $derived(Boolean(screenSlot?.component));
 </script>
 
-<SecondaryPageShell title={pageTitle} backHref="/mine">
+<SecondaryPageShell title={pageTitle} backHref="/mine" flush={isRich}>
 	<PluginScreenContainer {controller} {pluginId} {viewId} />
 </SecondaryPageShell>

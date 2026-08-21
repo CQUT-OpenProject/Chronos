@@ -71,7 +71,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		const item = engine.slots.getSlotItem('mine.item', 'wallpaper');
 		expect(item).toBeDefined();
 		expect(item?.sectionId).toBe('appearance-feedback');
-		expect(item?.href).toBe('/wallpaper');
+		expect(item?.href).toBe('/plugins/tool-wallpaper');
 		expect(item?.icon).toBe('wallpaper');
 		expect(typeof item?.title === 'function' ? item.title() : item?.title).toBe('设置课表壁纸');
 
@@ -81,7 +81,6 @@ describe('@chronos/plugin-wallpaper', () => {
 			'设置课表壁纸'
 		);
 		expect(screen?.schema).toBeDefined();
-		expect(screen?.component).toBeUndefined();
 
 		const theme = engine.themes.getTheme('wallpaper');
 		expect(theme).toBeDefined();
