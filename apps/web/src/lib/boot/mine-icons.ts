@@ -60,7 +60,7 @@ export const MINE_ITEM_KEYWORDS: Record<string, string[]> = {
 	],
 	feedback: ['反馈', '震动', '振动', '触感', '马达', '声音', '音效', 'haptic', 'feedback'],
 	wallpaper: ['壁纸', '背景', '图片', '自定义', '封面'],
-	plugins: ['插件', '市场', '扩展', 'plugin', 'marketplace', '主题', '工具', '同步'],
+	plugins: ['插件', '市场', '官方', '扩展', 'plugin', 'official', '主题', '工具', '安装'],
 	install: ['安装', 'PWA', '桌面', '应用', '主屏幕', '快捷', '下载'],
 	about: ['关于', '版本', '开源', '协议', '许可', '开发者', '更新', '说明']
 };

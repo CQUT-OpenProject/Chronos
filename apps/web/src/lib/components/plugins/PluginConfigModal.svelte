@@ -3,7 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { SchemaForm } from '@chronos/ui-kit';
 	import type { ConfigSchema } from '@chronos/core';
-	import { getAppEngine, getMarketplaceService } from '$lib/services/app-engine';
+	import { getAppEngine, getOfficialPluginService } from '$lib/services/app-engine';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 	let {
@@ -19,7 +19,7 @@
 	} = $props();
 
 	const engine = getAppEngine();
-	const marketplace = getMarketplaceService();
+	const officialPlugins = getOfficialPluginService();
 
 	let formValues = $state<Record<string, unknown>>({});
 	let saving = $state(false);
@@ -32,11 +32,10 @@
 
 	async function loadConfig() {
 		try {
-			const saved = await marketplace.getPluginConfig(pluginId);
+			const saved = await officialPlugins.getPluginConfig(pluginId);
 			if (saved) {
 				formValues = { ...saved };
 			} else {
-				// Fallback to engine plugin context or defaults
 				const ctx = engine.getPluginContext(pluginId);
 				formValues = { ...ctx.config };
 			}
@@ -50,7 +49,7 @@
 		try {
 			const ctx = engine.getPluginContext(pluginId);
 			await ctx.updateConfig(formValues);
-			await marketplace.updatePluginConfig(pluginId, formValues);
+			await officialPlugins.updatePluginConfig(pluginId, formValues);
 			snackbar(`《${pluginName || pluginId}》设置已保存`);
 			open = false;
 		} catch (err: unknown) {

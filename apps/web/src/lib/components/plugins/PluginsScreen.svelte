@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import {
-		getMarketplaceService,
+		getOfficialPluginService,
 		builtinPlugins,
 		getAppController
 	} from '$lib/services/app-engine';
-	import type { InstalledPluginRecord } from '$lib/services/marketplace/marketplace-service';
+	import type { InstalledOfficialPluginRecord } from '$lib/services/official-plugins/official-plugin-service';
 	import type { PluginManifest, ConfigSchema } from '@chronos/core';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -13,24 +13,27 @@
 	import Switch from '$lib/components/ui/Switch.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
+	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import PluginConfigModal from './PluginConfigModal.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
-	import { getPluginCategoryMeta } from '$lib/services/marketplace/plugin-tags';
-	import { DeleteFill, Refresh, CheckCircleFill, TuneFill } from '$lib/icons';
+	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
+	import { DeleteFill, CheckCircleFill, TuneFill } from '$lib/icons';
 
-	const marketplace = getMarketplaceService();
+	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
+
+	const officialPlugins = getOfficialPluginService();
 	const appController = getAppController();
 	const paletteMode = $derived(appController.userPreferences?.paletteMode ?? 'vibrant');
 	const visualThemeId = $derived(appController.activeThemeId);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
 
-	let activeTab = $state<'installed' | 'marketplace'>('installed');
+	let activeTab = $state<'installed' | 'official'>('installed');
 
-	let installedRecords = $state<InstalledPluginRecord[]>([]);
-	let availablePlugins = $state<PluginManifest[]>([]);
-	let loadingRegistry = $state(false);
-	let registryError = $state<string | null>(null);
+	let installedRecords = $state<InstalledOfficialPluginRecord[]>([]);
+	let catalogManifests = $state<Array<{ url: string; manifest: PluginManifest }>>([]);
+	let loadingCatalog = $state(false);
+	let catalogError = $state<string | null>(null);
 	let operatingPluginId = $state<string | null>(null);
 
 	let configModalOpen = $state(false);
@@ -47,16 +50,19 @@
 	let uninstallDialogOpen = $state(false);
 	let uninstallTarget = $state<{ id: string; name: string }>({ id: '', name: '' });
 
+	let thirdPartyInstallDialogOpen = $state(false);
+	let manifestUrlInput = $state('');
+
 	function refreshInstalled() {
-		installedRecords = [...marketplace.listInstalled()];
+		installedRecords = [...officialPlugins.listInstalled()];
 	}
 
 	onMount(() => {
-		void marketplace.init().then(() => {
+		void officialPlugins.init().then(() => {
 			refreshInstalled();
 		});
 
-		const sub = marketplace.onChanged(() => {
+		const sub = officialPlugins.onChanged(() => {
 			refreshInstalled();
 		});
 
@@ -65,23 +71,29 @@
 		};
 	});
 
-	async function loadMarketplaceRegistry() {
-		loadingRegistry = true;
-		registryError = null;
+	async function loadOfficialCatalog() {
+		loadingCatalog = true;
+		catalogError = null;
 		try {
-			const registry = await marketplace.fetchRegistry('/marketplace/registry.json');
-			availablePlugins = registry.plugins || [];
+			const catalog = await officialPlugins.fetchCatalog(BUILTIN_CATALOG_URL);
+			const entries = await Promise.all(
+				catalog.manifests.map(async (url) => {
+					const manifest = await officialPlugins.fetchManifest(url);
+					return { url, manifest };
+				})
+			);
+			catalogManifests = entries;
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
-			registryError = msg;
+			catalogError = msg;
 		} finally {
-			loadingRegistry = false;
+			loadingCatalog = false;
 		}
 	}
 
 	$effect(() => {
-		if (activeTab === 'marketplace' && availablePlugins.length === 0 && !loadingRegistry) {
-			void loadMarketplaceRegistry();
+		if (activeTab === 'official') {
+			void loadOfficialCatalog();
 		}
 	});
 
@@ -124,16 +136,42 @@
 		return themeId !== null && activeColorSchemeId === themeId;
 	}
 
-	async function handleInstall(manifest: PluginManifest) {
+	async function handleInstall(manifest: PluginManifest, manifestUrl?: string) {
 		operatingPluginId = manifest.id;
 		try {
-			await marketplace.install(manifest);
+			await officialPlugins.install(manifest, manifestUrl);
 			refreshInstalled();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			snackbar(`安装失败: ${msg}`);
 		} finally {
 			operatingPluginId = null;
+		}
+	}
+
+	function promptThirdPartyInstall() {
+		manifestUrlInput = '';
+		thirdPartyInstallDialogOpen = true;
+	}
+
+	async function confirmThirdPartyInstall() {
+		const url = manifestUrlInput.trim();
+		if (!url) {
+			snackbar('请输入 manifest.json 链接');
+			return;
+		}
+		thirdPartyInstallDialogOpen = false;
+		operatingPluginId = 'url-install';
+		try {
+			await officialPlugins.installFromManifestUrl(url);
+			refreshInstalled();
+			activeTab = 'installed';
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String(err);
+			snackbar(`安装失败: ${msg}`);
+		} finally {
+			operatingPluginId = null;
+			manifestUrlInput = '';
 		}
 	}
 
@@ -148,7 +186,7 @@
 		uninstallDialogOpen = false;
 		operatingPluginId = targetId;
 		try {
-			await marketplace.uninstall(targetId);
+			await officialPlugins.uninstall(targetId);
 			refreshInstalled();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
@@ -162,9 +200,9 @@
 		operatingPluginId = pluginId;
 		try {
 			if (enabled) {
-				await marketplace.enable(pluginId);
+				await officialPlugins.enable(pluginId);
 			} else {
-				await marketplace.disable(pluginId);
+				await officialPlugins.disable(pluginId);
 			}
 			refreshInstalled();
 		} catch (err: unknown) {
@@ -205,22 +243,29 @@
 	}
 </script>
 
-<div class="mx-auto flex w-full max-w-lg flex-col gap-4 px-4 pt-1 pb-6 text-on-surface">
-	<SegmentedControl
-		segments={[
-			{
-				value: 'installed',
-				label: `已安装 (${builtinPlugins.length + installedRecords.length})`
-			},
-			{ value: 'marketplace', label: '插件市场' }
-		]}
-		value={activeTab}
-		onValueChange={(val) => (activeTab = val as 'installed' | 'marketplace')}
-	/>
+{#snippet thirdPartyImportFooter()}
+	<Button variant="outlined" class="w-full" onclick={promptThirdPartyInstall}>
+		从第三方链接导入
+	</Button>
+{/snippet}
+
+<div class="flex h-full min-h-0 flex-col text-on-surface">
+	<div class="shrink-0 px-4 pt-1 pb-4">
+		<SegmentedControl
+			segments={[
+				{
+					value: 'installed',
+					label: `已安装 (${builtinPlugins.length + installedRecords.length})`
+				},
+				{ value: 'official', label: '插件市场' }
+			]}
+			value={activeTab}
+			onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
+		/>
+	</div>
 
 	{#if activeTab === 'installed'}
-		<div class="flex flex-col gap-5">
-			<!-- 内置插件 -->
+		<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
 					<h2 class="m3-section-title">Chronos 内置插件</h2>
@@ -276,10 +321,9 @@
 				</div>
 			</section>
 
-			<!-- 已安装插件 -->
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="m3-section-title">已安装插件</h2>
+					<h2 class="m3-section-title">已安装的官方插件</h2>
 					<span class="m3-label-small text-on-surface-variant">{installedRecords.length} 个</span>
 				</div>
 
@@ -287,9 +331,9 @@
 					<div
 						class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-8 text-center text-on-surface-variant"
 					>
-						<p class="m3-body-medium">暂无安装的第三方插件</p>
-						<Button variant="text" class="mt-1 text-xs" onclick={() => (activeTab = 'marketplace')}>
-							前往插件市场浏览
+						<p class="m3-body-medium">暂无在线安装的官方插件</p>
+						<Button variant="text" class="mt-1 text-xs" onclick={() => (activeTab = 'official')}>
+							浏览插件市场
 						</Button>
 					</div>
 				{:else}
@@ -345,7 +389,6 @@
 									</div>
 								</div>
 
-								<!-- 权限标签与操作按钮行 -->
 								<div class="flex items-center justify-between gap-2">
 									<div class="flex flex-wrap items-center gap-1">
 										{#if record.manifest.author}
@@ -393,124 +436,120 @@
 			</section>
 		</div>
 	{:else}
-		<div class="flex flex-col gap-3">
-			<div class="flex items-center justify-between px-1">
-				<div class="flex items-center gap-2">
-					<h2 class="m3-section-title">社区与在线插件</h2>
-					{#if availablePlugins.length > 0}
-						<span class="m3-label-small text-on-surface-variant">
-							{availablePlugins.length} 个
-						</span>
+		<div class="flex min-h-0 flex-1 flex-col">
+			<FormScreenLayout footer={thirdPartyImportFooter}>
+				<div class="flex flex-col gap-3">
+					<div class="flex items-center gap-2 px-1">
+						<h2 class="m3-section-title">官方插件</h2>
+						{#if catalogManifests.length > 0}
+							<span class="m3-label-small text-on-surface-variant">
+								{catalogManifests.length} 个
+							</span>
+						{/if}
+					</div>
+
+					{#if loadingCatalog}
+						<div class="flex flex-col items-center justify-center py-12">
+							<LoadingIndicator size="large" />
+							<p class="m3-body-small mt-2 text-on-surface-variant">正在加载插件市场…</p>
+						</div>
+					{:else if catalogError}
+						<div
+							class="flex flex-col items-center justify-center rounded-2xl border border-error/30 bg-error-container/20 p-6 text-center"
+						>
+							<p class="m3-body-medium font-medium text-error">无法加载插件市场目录</p>
+							<p class="m3-body-small mt-1 text-on-surface-variant">{catalogError}</p>
+							<Button
+								variant="outlined"
+								class="mt-3 h-8 px-4 text-xs"
+								onclick={loadOfficialCatalog}
+							>
+								重试
+							</Button>
+						</div>
+					{:else if catalogManifests.length === 0}
+						<div
+							class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-12 text-center text-on-surface-variant"
+						>
+							<p class="m3-body-medium">暂无可用插件</p>
+						</div>
+					{:else}
+						<div class="m3-section-surface divide-y divide-border/40">
+							{#each catalogManifests as entry (entry.manifest.id)}
+								{@const manifest = entry.manifest}
+								{@const name = resolveLocalizedName(manifest.name)}
+								{@const desc = resolveLocalizedDesc(manifest.description)}
+								{@const meta = getPluginCategoryMeta(manifest.type)}
+								{@const installed = isInstalled(manifest.id)}
+								{@const isBusy = operatingPluginId === manifest.id}
+								{@const permissions = manifest.permissions || manifest.capabilities || []}
+								<div
+									class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
+								>
+									<div class="flex min-w-0 flex-1 flex-col justify-center">
+										<div class="flex flex-wrap items-center gap-1.5">
+											<span class="m3-body-medium line-clamp-1 font-medium text-on-surface">
+												{name}
+											</span>
+											{#if manifest.version}
+												<span class="m3-label-small font-mono text-[10px] text-on-surface-variant">
+													v{manifest.version}
+												</span>
+											{/if}
+											<span
+												class="m3-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
+											>
+												{meta.label}
+											</span>
+										</div>
+										{#if desc}
+											<p class="m3-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
+												{desc}
+											</p>
+										{/if}
+										{#if permissions.length > 0 || manifest.author}
+											<div class="mt-1 flex flex-wrap items-center gap-1">
+												{#if manifest.author}
+													<span class="m3-caption text-[10px] text-on-surface-variant/70">
+														by {manifest.author}
+													</span>
+												{/if}
+												{#each permissions as perm (perm)}
+													<span
+														class="m3-caption py-0.2 rounded bg-surface-container-high px-1.5 text-[10px] text-on-surface-variant"
+													>
+														{formatPermission(perm)}
+													</span>
+												{/each}
+											</div>
+										{/if}
+									</div>
+
+									<div class="flex shrink-0 items-center gap-2">
+										{#if installed}
+											<span
+												class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
+											>
+												<CheckCircleFill class="size-3.5" />
+												已安装
+											</span>
+										{:else}
+											<Button
+												variant="filled"
+												class="h-8 shrink-0 px-3.5 text-xs font-medium"
+												disabled={isBusy}
+												onclick={() => handleInstall(manifest, entry.url)}
+											>
+												{isBusy ? '安装中…' : '安装'}
+											</Button>
+										{/if}
+									</div>
+								</div>
+							{/each}
+						</div>
 					{/if}
 				</div>
-				<Button
-					variant="text"
-					class="h-8 px-2 text-xs"
-					disabled={loadingRegistry}
-					onclick={loadMarketplaceRegistry}
-				>
-					<Refresh class="mr-1 size-3.5" />
-					刷新
-				</Button>
-			</div>
-
-			{#if loadingRegistry}
-				<div class="flex flex-col items-center justify-center py-12">
-					<LoadingIndicator size="large" />
-					<p class="m3-body-small mt-2 text-on-surface-variant">正在加载插件市场清单…</p>
-				</div>
-			{:else if registryError}
-				<div
-					class="flex flex-col items-center justify-center rounded-2xl border border-error/30 bg-error-container/20 p-6 text-center"
-				>
-					<p class="m3-body-medium font-medium text-error">无法加载插件市场清单</p>
-					<p class="m3-body-small mt-1 text-on-surface-variant">{registryError}</p>
-					<Button
-						variant="outlined"
-						class="mt-3 h-8 px-4 text-xs"
-						onclick={loadMarketplaceRegistry}
-					>
-						重试
-					</Button>
-				</div>
-			{:else if availablePlugins.length === 0}
-				<div
-					class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-12 text-center text-on-surface-variant"
-				>
-					<p class="m3-body-medium">暂无可用插件</p>
-				</div>
-			{:else}
-				<div class="m3-section-surface divide-y divide-border/40">
-					{#each availablePlugins as manifest (manifest.id)}
-						{@const name = resolveLocalizedName(manifest.name)}
-						{@const desc = resolveLocalizedDesc(manifest.description)}
-						{@const meta = getPluginCategoryMeta(manifest.type)}
-						{@const installed = isInstalled(manifest.id)}
-						{@const isBusy = operatingPluginId === manifest.id}
-						{@const permissions = manifest.permissions || manifest.capabilities || []}
-						<div
-							class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
-						>
-							<div class="flex min-w-0 flex-1 flex-col justify-center">
-								<div class="flex flex-wrap items-center gap-1.5">
-									<span class="m3-body-medium line-clamp-1 font-medium text-on-surface">
-										{name}
-									</span>
-									{#if manifest.version}
-										<span class="m3-label-small font-mono text-[10px] text-on-surface-variant">
-											v{manifest.version}
-										</span>
-									{/if}
-									<span
-										class="m3-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
-									>
-										{meta.label}
-									</span>
-								</div>
-								{#if desc}
-									<p class="m3-body-small mt-0.5 line-clamp-1 text-on-surface-variant">{desc}</p>
-								{/if}
-								{#if permissions.length > 0 || manifest.author}
-									<div class="mt-1 flex flex-wrap items-center gap-1">
-										{#if manifest.author}
-											<span class="m3-caption text-[10px] text-on-surface-variant/70">
-												by {manifest.author}
-											</span>
-										{/if}
-										{#each permissions as perm (perm)}
-											<span
-												class="m3-caption py-0.2 rounded bg-surface-container-high px-1.5 text-[10px] text-on-surface-variant"
-											>
-												{formatPermission(perm)}
-											</span>
-										{/each}
-									</div>
-								{/if}
-							</div>
-
-							<div class="flex shrink-0 items-center gap-2">
-								{#if installed}
-									<span
-										class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
-									>
-										<CheckCircleFill class="size-3.5" />
-										已安装
-									</span>
-								{:else}
-									<Button
-										variant="filled"
-										class="h-8 shrink-0 px-3.5 text-xs font-medium"
-										disabled={isBusy}
-										onclick={() => handleInstall(manifest)}
-									>
-										{isBusy ? '安装中…' : '安装'}
-									</Button>
-								{/if}
-							</div>
-						</div>
-					{/each}
-				</div>
-			{/if}
+			</FormScreenLayout>
 		</div>
 	{/if}
 </div>
@@ -531,5 +570,30 @@
 	{#snippet footer()}
 		<Button variant="text" onclick={() => (uninstallDialogOpen = false)}>取消</Button>
 		<Button variant="danger" onclick={confirmUninstall}>卸载</Button>
+	{/snippet}
+</Dialog>
+
+<Dialog bind:open={thirdPartyInstallDialogOpen} title="从第三方链接导入">
+	<div class="flex flex-col gap-3 py-2">
+		<div
+			class="flex flex-col gap-1.5 rounded-xl border border-error/30 bg-error-container/15 px-3 py-2.5"
+		>
+			<p class="m3-body-small font-medium text-on-surface">安装前请注意</p>
+			<ul class="m3-body-small list-disc space-y-1 pl-4 text-on-surface-variant">
+				<li>插件在本机进程内运行，权限与 Profile 内置插件相同</li>
+				<li>非官方插件市场目录来源，请自行确认 manifest 可信</li>
+				<li>安装风险由您自行承担</li>
+			</ul>
+		</div>
+		<input
+			class="m3-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary"
+			type="url"
+			placeholder="https://example.com/plugin.manifest.json"
+			bind:value={manifestUrlInput}
+		/>
+	</div>
+	{#snippet footer()}
+		<Button variant="text" onclick={() => (thirdPartyInstallDialogOpen = false)}>取消</Button>
+		<Button variant="filled" onclick={confirmThirdPartyInstall}>确认安装</Button>
 	{/snippet}
 </Dialog>
