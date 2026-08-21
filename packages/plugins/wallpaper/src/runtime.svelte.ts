@@ -40,9 +40,6 @@ export function getWallpaperRuntime() {
 		get hasWallpaper() {
 			return Boolean(wallpaperUri);
 		},
-		clearLocal() {
-			notify(null);
-		},
 		async syncFromStorage(pluginActive: boolean): Promise<void> {
 			if (!pluginActive || !storageRef) {
 				notify(null);
@@ -60,11 +57,6 @@ export function getWallpaperRuntime() {
 			}
 			const uri = await saveWallpaperBlob(storageRef, wallpaper, WALLPAPER_PLUGIN_ID);
 			notify(uri);
-		},
-		async clearPersisted(): Promise<void> {
-			if (!storageRef) return;
-			await deleteWallpaperBlob(storageRef, WALLPAPER_PLUGIN_ID);
-			notify(null);
 		}
 	};
 }

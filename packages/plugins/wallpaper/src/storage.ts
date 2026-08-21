@@ -54,13 +54,3 @@ export async function deleteWallpaperBlob(
 ): Promise<void> {
 	await storage.deletePluginData(pluginId, WALLPAPER_IMAGE_KEY);
 }
-
-export async function saveWallpaperBytes(
-	storage: IStorageService,
-	bytes: Uint8Array,
-	mimeType = 'image/jpeg',
-	pluginId = WALLPAPER_PLUGIN_ID
-): Promise<string> {
-	const blob = new Blob([bytes], { type: mimeType });
-	return saveWallpaperBlob(storage, blob, pluginId);
-}

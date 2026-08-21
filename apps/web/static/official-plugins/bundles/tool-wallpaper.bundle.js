@@ -2293,9 +2293,6 @@ function aa() {
 		get hasWallpaper() {
 			return !!L(ea);
 		},
-		clearLocal() {
-			ra(null);
-		},
 		async syncFromStorage(e) {
 			if (!e || !$i) {
 				ra(null);
@@ -2311,9 +2308,6 @@ function aa() {
 				}
 				ra(await Zi($i, e, Gi));
 			}
-		},
-		async clearPersisted() {
-			$i && (await Qi($i, Gi), ra(null));
 		}
 	};
 }
