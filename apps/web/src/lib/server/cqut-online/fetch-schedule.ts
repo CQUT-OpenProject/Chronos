@@ -1,10 +1,13 @@
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import type { CqutCampusId } from '$lib/models/cqut-campus';
-import type { OnlineSchedulePayload } from '$lib/models/online-schedule';
-import type { PeriodTime } from '$lib/models/timetable';
-import { onlineSchedulePayloadSchema } from '$lib/models/online-schedule-schema';
-import { mergeWeekPayloads, resolveWeeksToFetch } from '@chronos/plugin-source-cqut';
+import type { PeriodTime } from '@chronos/core';
+import {
+	mergeWeekPayloads,
+	resolveWeeksToFetch,
+	type CqutCampusId,
+	type OnlineSchedulePayload
+} from '@chronos/plugin-source-cqut';
+import { onlineSchedulePayloadSchema } from './online-schedule-schema';
 import { fetchCampusTimesForImport } from './fetch-campus-time';
 import { loginCas } from './cas-auth';
 import {

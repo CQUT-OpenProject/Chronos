@@ -1,15 +1,32 @@
 import { AppError } from '$lib/domain/result/app-error';
 import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import { CQUT_CAMPUS_IDS, getCampusApiName, type CqutCampusId } from '$lib/models/cqut-campus';
-import type { PeriodTime } from '$lib/models/timetable';
 import {
-	mapCampusTimeInfoToPeriodTimes,
-	resolveUserCampusId,
-	type CampusTimeInfoRow
-} from '$lib/timetable/timetable-mappers';
+	CQUT_CAMPUS_IDS,
+	getCampusApiName,
+	resolveCampusIdFromApiName,
+	type CqutCampusId
+} from '@chronos/plugin-source-cqut';
+import type { PeriodTime } from '@chronos/core';
 import { GET_CAMPUS_TIME_INFO_URL, GET_USER_INFO_URL, JSON_MEDIA_TYPE } from './config';
 import type { CookieJar } from './cookie-jar';
 import { requestStep } from './http-client';
+
+export interface CampusTimeInfoRow {
+	campusName: string;
+	sessionNum: number;
+	startTime: string;
+	endTime: string;
+}
+
+export function mapCampusTimeInfoToPeriodTimes(rows: CampusTimeInfoRow[]): PeriodTime[] {
+	return [...rows]
+		.sort((left, right) => left.sessionNum - right.sessionNum)
+		.map((row) => ({
+			index: row.sessionNum,
+			startTime: row.startTime,
+			endTime: row.endTime
+		}));
+}
 
 export interface CampusTimeFetchOverrides {
 	getUserInfoUrl?: string;
@@ -47,7 +64,7 @@ export async function fetchUserCampusName(
 	}
 
 	const campusName = extractUserCampusName(parsed);
-	return success(resolveUserCampusId(campusName));
+	return success(resolveCampusIdFromApiName(campusName));
 }
 
 export async function fetchCampusTimeInfo(

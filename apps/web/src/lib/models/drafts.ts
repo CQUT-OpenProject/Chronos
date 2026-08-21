@@ -1,6 +1,3 @@
-import type { CqutCampusId } from './cqut-campus';
-import type { PeriodTime } from './timetable';
-
 export interface PeriodTimeDraft {
 	index: number;
 	startTime: string;
@@ -16,8 +13,7 @@ export interface AcademicConfigDraft {
 
 export interface TimetableImportMetadataDraft {
 	source: string;
-	campusId?: CqutCampusId;
-	campusPeriodTimes?: Partial<Record<CqutCampusId, PeriodTime[]>>;
+	campusId?: string;
 }
 
 export interface TimetableViewPrefsDraft {

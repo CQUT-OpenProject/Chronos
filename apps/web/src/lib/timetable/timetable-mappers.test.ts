@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vite-plus/test';
 import { createCourse } from '@chronos/core';
 import { createTimetable } from '$lib/models/timetable';
 import {
-	applyCampusPeriodTimes,
-	mapCampusTimeInfoToPeriodTimes,
-	shouldUseOnlineCampusPeriodTimes,
+	courseToDraft,
+	reindexPeriodTimes,
+	removePeriodAt,
 	toSettingsDraft
 } from './timetable-mappers';
-import type { TimetableSettingsDraft } from '$lib/models/drafts';
 
 describe('timetable-mappers', () => {
 	it('toSettingsDraft normalizes non monday term start date', () => {
@@ -20,95 +19,32 @@ describe('timetable-mappers', () => {
 		expect(draft.academicConfig.termStartDate).toBe('2026-03-02');
 	});
 
-	it('online campus helpers apply cached period times', () => {
-		expect(shouldUseOnlineCampusPeriodTimes('ONLINE_EDU')).toBe(true);
-		expect(shouldUseOnlineCampusPeriodTimes('cqut-online')).toBe(true);
-		expect(shouldUseOnlineCampusPeriodTimes('FILE_HTML')).toBe(false);
-
-		const rows = mapCampusTimeInfoToPeriodTimes([
-			{
-				campusName: '两江校区',
-				sessionNum: 2,
-				startTime: '09:25',
-				endTime: '10:10'
-			},
-			{
-				campusName: '两江校区',
-				sessionNum: 1,
-				startTime: '08:30',
-				endTime: '09:15'
-			}
-		]);
-		expect(rows).toEqual([
-			{ index: 1, startTime: '08:30', endTime: '09:15' },
-			{ index: 2, startTime: '09:25', endTime: '10:10' }
-		]);
-
-		const draft: TimetableSettingsDraft = {
-			name: '课表',
-			academicConfig: {
-				termStartDate: '2026-03-02',
-				startWeek: 1,
-				endWeek: 20,
-				periodTimes: []
-			},
-			importMetadata: {
-				source: 'ONLINE_EDU',
-				campusPeriodTimes: {
-					liangjiang: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
-					huaxi: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
-				}
-			},
-			viewPrefs: {
-				showSaturday: true,
-				showSunday: true,
-				showNonCurrentWeekCourses: false
-			}
-		};
-
-		expect(applyCampusPeriodTimes(draft, 'huaxi')).toBe(true);
-		expect(draft.importMetadata.campusId).toBe('huaxi');
-		expect(draft.academicConfig.periodTimes[0]?.startTime).toBe('08:20');
-	});
-
-	it('toSettingsDraft reads campus period times from source-cqut metadata', () => {
-		const draft = toSettingsDraft(
-			sampleTimetable({
-				termStartDate: '2026-03-02',
-				courses: []
-			})
-		);
-		expect(draft.importMetadata.campusPeriodTimes).toBeUndefined();
-
-		const withMeta = createTimetable({
-			id: 'timetable',
-			name: '课表',
-			courses: [],
-			createdAt: 0,
-			updatedAt: 0,
-			academicConfig: {
-				termStartDate: '2026-03-02',
-				startWeek: 1,
-				endWeek: 20,
-				periodTimes: []
-			},
-			importMetadata: { source: 'ONLINE_EDU', campusId: 'huaxi' },
-			viewPrefs: {
-				showSaturday: true,
-				showSunday: true,
-				showNonCurrentWeekCourses: true
-			},
-			customMetadata: {
-				'source-cqut': {
-					campusPeriodTimes: {
-						huaxi: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
-					}
-				}
-			}
+	it('converts course to draft and manages period items', () => {
+		const course = createCourse({
+			id: 'c1',
+			name: '高等数学',
+			teacher: '张老师',
+			location: 'A101',
+			dayOfWeek: 1,
+			startPeriod: 1,
+			endPeriod: 2,
+			weeks: [1, 2, 3]
 		});
-		expect(toSettingsDraft(withMeta).importMetadata.campusPeriodTimes?.huaxi?.[0]?.startTime).toBe(
-			'08:20'
-		);
+		const draft = courseToDraft(course);
+		expect(draft.name).toBe('高等数学');
+		expect(draft.teacher).toBe('张老师');
+		expect(draft.weeks).toEqual([1, 2, 3]);
+
+		const periods = [
+			{ index: 1, startTime: '08:00', endTime: '08:45' },
+			{ index: 2, startTime: '08:55', endTime: '09:40' },
+			{ index: 3, startTime: '10:00', endTime: '10:45' }
+		];
+		const removed = removePeriodAt(periods, 1);
+		expect(removed).toHaveLength(2);
+		const reindexed = reindexPeriodTimes(removed);
+		expect(reindexed[0]?.index).toBe(1);
+		expect(reindexed[1]?.index).toBe(2);
 	});
 });
 
