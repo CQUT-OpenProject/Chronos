@@ -1,12 +1,9 @@
-import { AcademicCalendarService, type Course } from '@chronos/core';
+import { AcademicCalendarService, todayIsoDate, type Course } from '@chronos/core';
 import { resolveCampusIdFromApiName, type CqutCampusId } from '$lib/models/cqut-campus';
 import type { CourseDraft, PeriodTimeDraft, TimetableSettingsDraft } from '$lib/models/drafts';
 import type { Timetable } from '$lib/models/timetable';
-import { TimetableImportSource } from '$lib/models/timetable';
-import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 
 const academicCalendarService = new AcademicCalendarService();
-const timeProvider = new SystemTimeProvider();
 
 function readCampusPeriodTimes(
 	timetable: Timetable
@@ -40,7 +37,7 @@ export function toSettingsDraft(timetable: Timetable): TimetableSettingsDraft {
 		academicConfig: {
 			termStartDate: academicCalendarService.normalizeTermStartDate(
 				timetable.academicConfig?.termStartDate ?? '',
-				timeProvider.today()
+				todayIsoDate()
 			),
 			startWeek: timetable.academicConfig?.startWeek ?? 1,
 			endWeek: timetable.academicConfig?.endWeek ?? 20,
@@ -51,7 +48,7 @@ export function toSettingsDraft(timetable: Timetable): TimetableSettingsDraft {
 			}))
 		},
 		importMetadata: {
-			source: timetable.importMetadata?.source ?? TimetableImportSource.UNKNOWN,
+			source: timetable.importMetadata?.source ?? 'UNKNOWN',
 			campusId: timetable.importMetadata?.campusId as CqutCampusId | undefined,
 			campusPeriodTimes: readCampusPeriodTimes(timetable)
 		},
@@ -63,8 +60,8 @@ export function toSettingsDraft(timetable: Timetable): TimetableSettingsDraft {
 	};
 }
 
-export function shouldUseOnlineCampusPeriodTimes(importSource: TimetableImportSource): boolean {
-	return importSource === TimetableImportSource.ONLINE_EDU;
+export function shouldUseOnlineCampusPeriodTimes(importSource?: string): boolean {
+	return importSource === 'ONLINE_EDU' || importSource === 'cqut-online';
 }
 
 export interface CampusTimeInfoRow {

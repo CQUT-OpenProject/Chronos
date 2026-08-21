@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { createCourse } from '@chronos/core';
-import { createTimetable, TimetableImportSource } from '$lib/models/timetable';
+import { createTimetable } from '$lib/models/timetable';
 import {
 	applyCampusPeriodTimes,
 	mapCampusTimeInfoToPeriodTimes,
@@ -21,8 +21,9 @@ describe('timetable-mappers', () => {
 	});
 
 	it('online campus helpers apply cached period times', () => {
-		expect(shouldUseOnlineCampusPeriodTimes(TimetableImportSource.ONLINE_EDU)).toBe(true);
-		expect(shouldUseOnlineCampusPeriodTimes(TimetableImportSource.FILE_HTML)).toBe(false);
+		expect(shouldUseOnlineCampusPeriodTimes('ONLINE_EDU')).toBe(true);
+		expect(shouldUseOnlineCampusPeriodTimes('cqut-online')).toBe(true);
+		expect(shouldUseOnlineCampusPeriodTimes('FILE_HTML')).toBe(false);
 
 		const rows = mapCampusTimeInfoToPeriodTimes([
 			{
@@ -52,7 +53,7 @@ describe('timetable-mappers', () => {
 				periodTimes: []
 			},
 			importMetadata: {
-				source: TimetableImportSource.ONLINE_EDU,
+				source: 'ONLINE_EDU',
 				campusPeriodTimes: {
 					liangjiang: [{ index: 1, startTime: '08:30', endTime: '09:15' }],
 					huaxi: [{ index: 1, startTime: '08:20', endTime: '09:05' }]
@@ -91,7 +92,7 @@ describe('timetable-mappers', () => {
 				endWeek: 20,
 				periodTimes: []
 			},
-			importMetadata: { source: TimetableImportSource.ONLINE_EDU, campusId: 'huaxi' },
+			importMetadata: { source: 'ONLINE_EDU', campusId: 'huaxi' },
 			viewPrefs: {
 				showSaturday: true,
 				showSunday: true,
@@ -130,7 +131,7 @@ function sampleTimetable({
 			endWeek: 20,
 			periodTimes: []
 		},
-		importMetadata: { source: TimetableImportSource.UNKNOWN },
+		importMetadata: { source: 'UNKNOWN' },
 		viewPrefs: {
 			showSaturday: true,
 			showSunday: true,

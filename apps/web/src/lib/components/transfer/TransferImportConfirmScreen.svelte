@@ -9,13 +9,12 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import FormCard from '$lib/components/ui/FormCard.svelte';
-	import OnlineCampusPeriodSection from '$lib/components/timetable/OnlineCampusPeriodSection.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
 	import DateField from '$lib/components/ui/DateField.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { InfoFill, DownloadFill } from '$lib/icons';
-	import { countDistinctCourseNames } from '$lib/parsers/import-course-utils';
+	import { countDistinctCourseNames } from '@chronos/core';
 
 	let {
 		transfer,
@@ -166,11 +165,6 @@
 			</div>
 
 			{#if isHtmlImport}
-				<OnlineCampusPeriodSection
-					{selectedCampus}
-					onSelectCampus={(campusId) => transfer.setHtmlImportCampusId(campusId)}
-				/>
-
 				<FormCard>
 					<DateField
 						label="学期起始日期"

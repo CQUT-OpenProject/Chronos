@@ -138,7 +138,7 @@
 					<FormCard variant="plain">
 						<TextField
 							id="import-account"
-							label="账号"
+							label="工号 / 学号"
 							type="text"
 							inputmode="numeric"
 							autocomplete="username"
@@ -181,7 +181,7 @@
 							<p class="m3-title-small text-on-surface">
 								已保存账号：{transferState.savedCredentialState.account ?? '未知'}
 							</p>
-							{#if transferState.savedCredentialState.savedMode === 'vault' || transferState.savedCredentialState.savedMode === 'prf'}
+							{#if transferState.savedCredentialState.savedMode === 'vault'}
 								<div class="flex w-full">
 									<Button
 										variant="outlined"
