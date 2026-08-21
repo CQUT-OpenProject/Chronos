@@ -45,3 +45,9 @@ flowchart LR
 
 - **Concept Collapse（概念折叠）**：删除 2 个分散的浅模块，收敛为 1 个高杠杆的深度调度核心；
 - **Deterministic Flow（确定性流程）**：插件拦截与事件触发具备严格的执行顺序保证。
+
+---
+
+## 演进备注（2026-08-21）
+
+`registerPipelineHook` / `registerWaterfallHook` / `registerSerialHook` / `inject` 当前无生产插件消费者，API **保留但冻结**；新增插件不应依赖，覆盖见 `packages/core/tests/ioc-topology.test.ts`。

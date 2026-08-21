@@ -5,7 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { MINE_ITEM_ICON_MAP, MINE_ITEM_KEYWORDS } from '$lib/boot/mine-icons';
+	import { MINE_ITEM_ICON_MAP } from '$lib/boot/mine-icons';
 	import { CodeFill } from '$lib/icons';
 	import type { Component } from 'svelte';
 
@@ -39,13 +39,16 @@
 	}
 
 	function resolveIcon(
-		iconKey: string | undefined,
+		icon: string | unknown | undefined,
 		itemId: string
 	): Component<{ class?: string }> | undefined {
-		if (iconKey && iconKey in MINE_ITEM_ICON_MAP) {
-			return MINE_ITEM_ICON_MAP[iconKey as keyof typeof MINE_ITEM_ICON_MAP];
+		if (typeof icon === 'string' && icon in MINE_ITEM_ICON_MAP) {
+			return MINE_ITEM_ICON_MAP[icon as keyof typeof MINE_ITEM_ICON_MAP];
 		}
-		return MINE_ITEM_KEYWORDS[itemId] ? CodeFill : undefined;
+		if (icon && typeof icon !== 'string') {
+			return icon as Component<{ class?: string }>;
+		}
+		return itemId ? CodeFill : undefined;
 	}
 
 	const sections = $derived.by(() => {
@@ -88,10 +91,8 @@
 				icon: resolveIcon(item.icon, item.id),
 				iconTone: item.iconTone ?? 'neutral',
 				order: item.order ?? 50,
-				keywords: MINE_ITEM_KEYWORDS[item.id] ?? [
-					resolveText(item.title),
-					resolveText(item.supporting)
-				]
+				keywords:
+					item.keywords ?? [resolveText(item.title), resolveText(item.supporting)].filter(Boolean)
 			});
 		}
 

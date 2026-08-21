@@ -3,7 +3,7 @@ import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 
 export const CORE_SHELL_PLUGIN_ID = 'core-shell';
 
-export function registerCoreShellSlots(ctx: ChronosContext): void {
+function registerCoreShellSlots(ctx: ChronosContext): void {
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'timetable',
 		label: () => '课表',
@@ -49,6 +49,7 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/manage-timetables',
 		icon: 'list-alt',
 		iconTone: 'primary',
+		keywords: ['课表', '管理', '切换', '编辑', '课程'],
 		order: 10
 	});
 
@@ -59,6 +60,7 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/transfer/import',
 		icon: 'download',
 		iconTone: 'secondary',
+		keywords: ['导入', '数据', '共享', '文件', '扫码', '课表'],
 		order: 10
 	});
 
@@ -69,6 +71,7 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/transfer/export',
 		icon: 'share',
 		iconTone: 'tertiary',
+		keywords: ['导出', '分享', '备份', '数据', '链接', '二维码'],
 		order: 20
 	});
 
@@ -79,6 +82,25 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/display-settings',
 		icon: 'palette',
 		iconTone: 'secondary',
+		keywords: [
+			'主题',
+			'显示',
+			'外观',
+			'深色',
+			'夜间',
+			'亮色',
+			'白天',
+			'模式',
+			'颜色',
+			'跟随系统',
+			'滚动',
+			'一屏',
+			'布局',
+			'课表',
+			'配色',
+			'配色方案',
+			'随机'
+		],
 		order: 10
 	});
 
@@ -89,6 +111,7 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/feedback-settings',
 		icon: 'vibrate',
 		iconTone: 'tertiary',
+		keywords: ['反馈', '震动', '振动', '触感', '马达', '声音', '音效', 'haptic', 'feedback'],
 		order: 20
 	});
 
@@ -100,6 +123,7 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/plugins',
 		icon: 'code',
 		iconTone: 'secondary',
+		keywords: ['插件', '市场', '官方', '扩展', 'plugin', 'official', '主题', '工具', '安装'],
 		order: 5
 	});
 
@@ -116,6 +140,7 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/about/install',
 		icon: 'add-home',
 		iconTone: 'primary',
+		keywords: ['安装', 'PWA', '桌面', '应用', '主屏幕', '快捷', '下载'],
 		order: 10
 	});
 
@@ -126,6 +151,7 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/about',
 		icon: 'info',
 		iconTone: 'tertiary',
+		keywords: ['关于', '版本', '开源', '协议', '许可', '开发者', '更新', '说明'],
 		order: 20
 	});
 }
