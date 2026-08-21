@@ -1,0 +1,18 @@
+# Chronos 架构决策记录
+
+本文档索引了 Chronos 自微内核与插件化重构以来的所有关键架构决策记录（ADR）。
+
+---
+
+## 架构决策索引 (ADR Index)
+
+| 编号                                                               | 标题                                               | 状态     | 涉及范围                      | 核心概述                                                                                          |
+| :----------------------------------------------------------------- | :------------------------------------------------- | :------- | :---------------------------- | :------------------------------------------------------------------------------------------------ |
+| [ADR 0001](./0001-microkernel-and-monorepo-modularization.md)      | **微内核与 Monorepo 模块化分层架构**               | Accepted | `packages/*`, `apps/*`        | 确立 `@chronos/core` 微内核、`@chronos/ui-kit`、`@chronos/plugins/*` 与 `apps/web` 的分层依赖规则 |
+| [ADR 0002](./0002-service-container-and-ports-adapters.md)         | **服务容器与六边形端口适配器架构**                 | Accepted | `packages/core`               | 引入 `ServiceContainer` 与标准六边形端口契约（HTTP、Storage、Vault 等），解耦宿主环境             |
+| [ADR 0003](./0003-hierarchical-slot-registry-and-extensibility.md) | **分层插槽树与声明式扩展机制**                     | Accepted | `packages/core`, `ui-kit`     | 建立 `HierarchicalSlotRegistry` 分层路径插槽树与 `SchemaForm` 声明式配置驱动体系                  |
+| [ADR 0004](./0004-plugin-architecture-builtin-and-sandbox.md)      | **双轨插件激活与沙箱隔离架构**                     | Accepted | `packages/core`               | 确立官方内置插件（进程内高效运行）与第三方市场插件（WebWorker 沙箱隔离）的双轨激活模型            |
+| [ADR 0005](./0005-unified-event-pipeline.md)                       | **响应式事件与拦截钩子收敛至统一 EventPipeline**   | Accepted | `packages/core`               | 废除双轨 `EventBus` 与 `DataPipeline`，收敛为统一的 `EventPipeline` 调度核心                      |
+| [ADR 0006](./0006-hardware-credential-vault-via-webauthn-prf.md)   | **基于 WebAuthn PRF 与硬件安全的凭据保险箱**       | Accepted | `packages/core`, `apps/web`   | 定义 `IVaultService` 硬件加密端口，在 Web 端基于 WebAuthn PRF 衍生 AES-GCM 密钥保护教务凭据       |
+| [ADR 0007](./0007-plugin-profile-and-preset-assembly.md)           | **基于 Profile 的高校预设包与插件装配体系**        | Accepted | `packages/core`, `profiles/*` | 引入 Profile 与 `ProfileManager`，支持按高校零冗余定制装配与独立发行                              |
+| [ADR 0008](./0008-host-decoupling-and-deep-ingest-seam.md)         | **宿主与插件解耦深化、端口纯粹化及全槽位摄取演进** | Accepted | `apps/web`, `packages/*`      | 废除导入来源双轨枚举，纯粹化存储端口，剥离宿主特定源 UI 胶水与清理死代码                          |
