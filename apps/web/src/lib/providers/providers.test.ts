@@ -20,13 +20,7 @@ import {
 	IRuntimeService,
 	IAnalyticsService
 } from '@chronos/core';
-import type {
-	ChronosDB,
-	CourseRow,
-	PluginDataRow,
-	TimetableRow,
-	WallpaperRow
-} from '$lib/storage/db';
+import type { ChronosDB, CourseRow, PluginDataRow, TimetableRow } from '$lib/storage/db';
 
 class MockStorage implements Storage {
 	private map = new Map<string, string>();
@@ -53,7 +47,6 @@ class MockStorage implements Storage {
 function createMockDb(): ChronosDB {
 	const timetablesMap = new Map<string, TimetableRow>();
 	const coursesMap = new Map<string, CourseRow>();
-	const wallpapersMap = new Map<string, WallpaperRow>();
 	const pluginDataMap = new Map<string, PluginDataRow>();
 
 	return {
@@ -93,16 +86,6 @@ function createMockDb(): ChronosDB {
 			}),
 			bulkDelete: vi.fn(async (ids: string[]) => {
 				for (const id of ids) coursesMap.delete(id);
-			})
-		},
-		wallpapers: {
-			get: vi.fn(async (id: string) => wallpapersMap.get(id) ?? undefined),
-			put: vi.fn(async (row: WallpaperRow) => {
-				wallpapersMap.set(row.id, row);
-				return row.id;
-			}),
-			delete: vi.fn(async (id: string) => {
-				wallpapersMap.delete(id);
 			})
 		},
 		pluginData: {

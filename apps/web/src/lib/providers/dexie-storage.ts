@@ -19,8 +19,6 @@ const SETTINGS_KEYS = {
 	visualThemeId: 'chronos_preferences:visual_theme_id'
 } as const;
 
-const WALLPAPER_ID = 'default';
-
 function normalizeThemeMode(raw: string | null): import('@chronos/core').ThemeMode {
 	const value = raw?.trim().toLowerCase();
 	if (value === 'light' || value === 'dark') return value;
@@ -249,35 +247,6 @@ export class DexieStorageProvider implements IStorageService {
 		this.notifyChange({ type: 'preferences', key: 'preferences' });
 	}
 
-	async getWallpaper(): Promise<Uint8Array | null> {
-		try {
-			const row = await this.database.wallpapers.get(WALLPAPER_ID);
-			if (!row?.blob) return null;
-			const buffer = await row.blob.arrayBuffer();
-			return new Uint8Array(buffer);
-		} catch {
-			return null;
-		}
-	}
-
-	async setWallpaper(wallpaper: Uint8Array | null): Promise<void> {
-		try {
-			if (wallpaper) {
-				const blob = new Blob([wallpaper as unknown as Uint8Array<ArrayBuffer>]);
-				await this.database.wallpapers.put({
-					id: WALLPAPER_ID,
-					blob,
-					updatedAt: Date.now()
-				});
-			} else {
-				await this.database.wallpapers.delete(WALLPAPER_ID);
-			}
-			this.notifyChange({ type: 'preferences', key: 'wallpaper' });
-		} catch (err) {
-			console.warn('[DexieStorageProvider] Failed to set wallpaper:', err);
-		}
-	}
-
 	async getPluginData<T>(pluginId: string, key: string): Promise<T | null> {
 		const id = `${pluginId}:${key}`;
 		try {
@@ -321,12 +290,10 @@ export class DexieStorageProvider implements IStorageService {
 				'rw',
 				this.database.timetables,
 				this.database.courses,
-				this.database.wallpapers,
 				this.database.pluginData,
 				async () => {
 					await this.database.timetables.clear();
 					await this.database.courses.clear();
-					await this.database.wallpapers.clear();
 					await this.database.pluginData.clear();
 				}
 			);
@@ -363,10 +330,10 @@ export class DexieStorageProvider implements IStorageService {
 
 	async estimateStorageBytes(): Promise<number> {
 		try {
-			const [timetables, courses, wallpapers] = await Promise.all([
+			const [timetables, courses, pluginData] = await Promise.all([
 				this.database.timetables.toArray(),
 				this.database.courses.toArray(),
-				this.database.wallpapers.toArray()
+				this.database.pluginData.toArray()
 			]);
 
 			const encoder = new TextEncoder();
@@ -377,9 +344,8 @@ export class DexieStorageProvider implements IStorageService {
 			for (const row of courses) {
 				total += encoder.encode(JSON.stringify(row)).length;
 			}
-			for (const row of wallpapers) {
-				total += encoder.encode(JSON.stringify({ id: row.id, updatedAt: row.updatedAt })).length;
-				total += row.blob.size;
+			for (const row of pluginData) {
+				total += encoder.encode(JSON.stringify(row)).length;
 			}
 			return total;
 		} catch {
