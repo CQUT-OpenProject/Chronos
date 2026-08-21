@@ -3,6 +3,7 @@ import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
 import { CORE_SHELL_PLUGIN_ID, registerCoreShellSlots } from '$lib/boot/core-shell';
 import { availablePlugins, resolveActiveProfile } from '$lib/boot/profile-registry';
+
 import { MarketplaceService } from '$lib/services/marketplace/marketplace-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
 import * as m from '$lib/paraglide/messages.js';

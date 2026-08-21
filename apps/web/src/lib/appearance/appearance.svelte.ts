@@ -12,7 +12,7 @@ export function createAppearance() {
 	async function apply(input: ApplyAppearanceInput, signal?: AbortSignal) {
 		if (typeof document === 'undefined') return;
 
-		if (input.paletteMode === 'wallpaper') {
+		if (input.paletteMode === 'wallpaper' || input.activeThemeId === 'wallpaper') {
 			wallpaperModule ??= await import('$lib/m3/apply-wallpaper-theme');
 		}
 

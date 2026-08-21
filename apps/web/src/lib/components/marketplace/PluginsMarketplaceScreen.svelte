@@ -241,9 +241,7 @@
 										{name}
 									</span>
 									{#if plugin.version}
-										<span
-											class="m3-label-small py-0.2 rounded bg-surface-container-high px-1.5 font-mono text-[10px] text-on-surface-variant"
-										>
+										<span class="m3-label-small font-mono text-[10px] text-on-surface-variant">
 											v{plugin.version}
 										</span>
 									{/if}
@@ -268,9 +266,7 @@
 										设置
 									</Button>
 								{:else}
-									<span
-										class="m3-label-small rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface-variant/80"
-									>
+									<span class="m3-label-small text-[11px] text-on-surface-variant/80">
 										默认启用
 									</span>
 								{/if}
@@ -316,9 +312,7 @@
 												{name}
 											</span>
 											{#if record.manifest.version}
-												<span
-													class="m3-label-small py-0.2 rounded bg-surface-container-high px-1.5 font-mono text-[10px] text-on-surface-variant"
-												>
+												<span class="m3-label-small font-mono text-[10px] text-on-surface-variant">
 													v{record.manifest.version}
 												</span>
 											{/if}
@@ -463,9 +457,7 @@
 										{name}
 									</span>
 									{#if manifest.version}
-										<span
-											class="m3-label-small py-0.2 rounded bg-surface-container-high px-1.5 font-mono text-[10px] text-on-surface-variant"
-										>
+										<span class="m3-label-small font-mono text-[10px] text-on-surface-variant">
 											v{manifest.version}
 										</span>
 									{/if}

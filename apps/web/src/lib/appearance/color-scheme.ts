@@ -16,10 +16,12 @@ export interface ColorSchemePatch {
 }
 
 export function resolveColorSchemeId(
-	paletteMode: PaletteMode,
+	paletteMode: PaletteMode | undefined,
 	visualThemeId: string | undefined
 ): string {
-	if (paletteMode === 'wallpaper') return BUILTIN_COLOR_SCHEME_WALLPAPER;
+	if (visualThemeId === 'wallpaper' || paletteMode === 'wallpaper') {
+		return BUILTIN_COLOR_SCHEME_WALLPAPER;
+	}
 	const themeId = visualThemeId ?? M3_DEFAULT_THEME_ID;
 	if (themeId !== M3_DEFAULT_THEME_ID) return themeId;
 	return BUILTIN_COLOR_SCHEME_VIBRANT;
@@ -33,7 +35,7 @@ export function buildColorSchemePatch(schemeId: string): ColorSchemePatch {
 			themeId: M3_DEFAULT_THEME_ID
 		};
 	}
-	if (schemeId === BUILTIN_COLOR_SCHEME_VIBRANT) {
+	if (schemeId === BUILTIN_COLOR_SCHEME_VIBRANT || schemeId === M3_DEFAULT_THEME_ID) {
 		return {
 			paletteMode: 'vibrant',
 			visualThemeId: M3_DEFAULT_THEME_ID,

@@ -38,7 +38,9 @@ export function applyActiveTheme(
 	if (!el) return;
 
 	const effectiveThemeId =
-		options?.paletteMode === 'wallpaper' ? M3_DEFAULT_THEME_ID : activeThemeId;
+		options?.paletteMode === 'wallpaper' || activeThemeId === 'wallpaper'
+			? M3_DEFAULT_THEME_ID
+			: activeThemeId;
 
 	clearCustomThemeStyles(el);
 
