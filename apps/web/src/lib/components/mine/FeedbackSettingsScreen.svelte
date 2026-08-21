@@ -8,7 +8,9 @@
 	import { haptic } from '$lib/haptic/haptic';
 
 	let { shell }: { shell: AppShellController } = $props();
-	const hapticFeedbackEnabled = $derived(shell.state.appState.hapticFeedbackEnabled);
+	const hapticFeedbackEnabled = $derived(
+		shell.controller.userPreferences?.hapticFeedbackEnabled ?? true
+	);
 
 	async function toggleHapticFeedback(checked: boolean) {
 		trackEvent('settings_haptic_feedback_change', { enabled: checked });

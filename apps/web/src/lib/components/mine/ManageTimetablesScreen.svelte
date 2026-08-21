@@ -12,9 +12,10 @@
 		shell: AppShellController;
 	} = $props();
 
-	const appState = $derived(shell.state.appState);
+	const timetables = $derived(shell.controller.timetables);
+	const currentTimetableId = $derived(shell.controller.currentTimetable?.id ?? null);
 	const selectedTimetable = $derived(
-		appState.timetables.find((timetable) => timetable.id === appState.currentTimetableId) ?? null
+		timetables.find((timetable) => timetable.id === currentTimetableId) ?? null
 	);
 
 	let deleteDialogOpen = $state(false);
@@ -25,9 +26,9 @@
 	}
 
 	async function confirmDelete() {
-		if (!appState.currentTimetableId) return;
+		if (!currentTimetableId) return;
 		trackEvent('timetable_delete');
-		await shell.deleteTimetable(appState.currentTimetableId);
+		await shell.deleteTimetable(currentTimetableId);
 		deleteDialogOpen = false;
 	}
 </script>
@@ -36,7 +37,7 @@
 	<Button
 		variant="danger"
 		class="w-full"
-		disabled={appState.timetables.length <= 1}
+		disabled={timetables.length <= 1}
 		onclick={() => (deleteDialogOpen = true)}
 	>
 		删除课表
@@ -48,8 +49,8 @@
 		<h3 class="m3-title-medium px-1 text-on-surface">我的课表</h3>
 
 		<div class="flex flex-col gap-2.5">
-			{#each appState.timetables as timetable (timetable.id)}
-				{@const isActive = appState.currentTimetableId === timetable.id}
+			{#each timetables as timetable (timetable.id)}
+				{@const isActive = currentTimetableId === timetable.id}
 				<SelectableOption
 					name="current-timetable"
 					label={timetable.name}

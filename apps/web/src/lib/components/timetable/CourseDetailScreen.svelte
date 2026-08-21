@@ -25,15 +25,14 @@
 
 	const course = $derived(
 		courseId
-			? (shell.state.appState.currentTimetable?.courses.find((entry) => entry.id === courseId) ??
-					null)
+			? (shell.controller.currentTimetable?.courses.find((entry) => entry.id === courseId) ?? null)
 			: null
 	);
 	const paint = $derived.by(() => {
 		if (!course) return null;
 		const palette = shell.appearance.coursePalette;
 		const assigned = assignCourseDisplayColors(
-			shell.state.appState.currentTimetable?.courses ?? [],
+			shell.controller.currentTimetable?.courses ?? [],
 			palette
 		);
 		return assigned.get(normalizedCourseName(course.name)) ?? resolveCoursePaint(course, palette);

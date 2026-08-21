@@ -8,7 +8,7 @@
 	import { createTimetableDetailsEditor } from '$lib/timetable/timetable-details.svelte';
 
 	const shell = getContext<AppShellController>('appShell');
-	const timetable = $derived(shell.state.appState.currentTimetable);
+	const timetable = $derived(shell.controller.currentTimetable);
 
 	const editor = createTimetableDetailsEditor(shell, () => goto(resolve('/')));
 

@@ -29,9 +29,13 @@
 	const startWeek = $derived(screenState.startWeek);
 	const endWeek = $derived(screenState.endWeek);
 	const coursePalette = $derived(shell.appearance.coursePalette);
-	const hasWallpaper = $derived(Boolean(screenState.appState.wallpaperUri));
-	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
-	const capsuleCornerStyle = $derived(shell.state.appState.capsuleCornerStyle);
+	const hasWallpaper = $derived(
+		(shell.controller.userPreferences?.paletteMode ?? 'vibrant') === 'wallpaper'
+	);
+	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const capsuleCornerStyle = $derived(
+		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
+	);
 
 	const weekGesture = createWeekSliderGesture({
 		getStartWeek: () => startWeek,
@@ -46,10 +50,10 @@
 	);
 	const weekRangeText = $derived(
 		formatWeekDateRange(
-			screenState.appState.currentTimetable?.academicConfig,
+			screenState.currentTimetable?.academicConfig,
 			displayedWeekNumber,
 			screenState.today,
-			screenState.appState.currentTimetable?.viewPrefs
+			screenState.currentTimetable?.viewPrefs
 		)
 	);
 	const headerTodayLabel = $derived(
@@ -158,14 +162,7 @@
 	</TopAppBar>
 
 	<div class="relative min-h-0 flex-1">
-		{#if hasWallpaper}
-			<div
-				class="absolute inset-0 bg-cover bg-center"
-				style:background-image="url('{screenState.appState.wallpaperUri}')"
-			></div>
-		{/if}
-
-		{#key screenState.appState.currentTimetable?.id}
+		{#key screenState.currentTimetable?.id}
 			<TimetableWeekSwiper
 				{screen}
 				{hasWallpaper}

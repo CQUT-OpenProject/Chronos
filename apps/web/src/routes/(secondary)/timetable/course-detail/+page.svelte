@@ -15,8 +15,7 @@
 
 	const course = $derived(
 		courseId
-			? (shell.state.appState.currentTimetable?.courses.find((entry) => entry.id === courseId) ??
-					null)
+			? (shell.controller.currentTimetable?.courses.find((entry) => entry.id === courseId) ?? null)
 			: null
 	);
 

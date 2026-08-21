@@ -105,7 +105,7 @@
 					courseDisplayModels={courseModels}
 					{hasWallpaper}
 					{coursePalette}
-					paletteCourses={screenState.appState.currentTimetable?.courses}
+					paletteCourses={screenState.currentTimetable?.courses}
 					{layoutMode}
 					{capsuleCornerStyle}
 					onCourseClick={(course) => onCourseClick(course.id)}

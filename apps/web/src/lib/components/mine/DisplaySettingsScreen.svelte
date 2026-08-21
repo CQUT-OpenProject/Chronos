@@ -14,10 +14,12 @@
 	import { haptic } from '$lib/haptic/haptic';
 
 	let { shell }: { shell: AppShellController } = $props();
-	const themeMode = $derived(shell.state.appState.themeMode);
-	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
-	const paletteMode = $derived(shell.state.appState.paletteMode);
-	const capsuleCornerStyle = $derived(shell.state.appState.capsuleCornerStyle);
+	const themeMode = $derived(shell.controller.userPreferences?.themeMode ?? 'auto');
+	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const paletteMode = $derived(shell.controller.userPreferences?.paletteMode ?? 'vibrant');
+	const capsuleCornerStyle = $derived(
+		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
+	);
 	const hasWallpaper = $derived(shell.state.hasWallpaper);
 	const visualThemeId = $derived(shell.controller.activeThemeId);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));

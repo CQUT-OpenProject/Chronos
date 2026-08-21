@@ -29,7 +29,7 @@
 	const stepIndices = [0, 1, 2, 3, 4, 5] as const;
 	const isLastStep = $derived(step === onboardingController.totalSteps - 1);
 	const stepTitleId = 'onboarding-step-title';
-	const layoutMode = $derived(shell.state.appState.timetableLayoutMode);
+	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 
 	const layoutOptions = [
 		{
