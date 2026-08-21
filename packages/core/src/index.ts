@@ -24,7 +24,8 @@ export type { ThemeContribution, CourseBadgeContribution } from './types/contrib
 export type { PlatformType, ChronosEnv } from './types/env';
 export * from './types/context';
 export * from './types/plugin-server';
-export * from './types/marketplace';
+export * from './types/official-plugins';
+export * from './types/permissions';
 
 // Runtime
 export * from './runtime/service-container';

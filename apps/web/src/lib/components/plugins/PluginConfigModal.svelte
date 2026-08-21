@@ -49,7 +49,6 @@
 		try {
 			const ctx = engine.getPluginContext(pluginId);
 			await ctx.updateConfig(formValues);
-			await officialPlugins.updatePluginConfig(pluginId, formValues);
 			snackbar(`《${pluginName || pluginId}》设置已保存`);
 			open = false;
 		} catch (err: unknown) {

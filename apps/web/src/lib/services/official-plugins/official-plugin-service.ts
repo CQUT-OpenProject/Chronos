@@ -11,6 +11,7 @@ import { WALLPAPER_PLUGIN_ID } from '$lib/wallpaper/wallpaper-storage';
 
 const INSTALLED_STORAGE_KEY = 'installed_plugins';
 const OFFICIAL_PLUGINS_PLUGIN_ID = 'core.official-plugins';
+/** @deprecated Remove after v0.4.0 — migrates legacy `core.marketplace` storage */
 const LEGACY_MARKETPLACE_PLUGIN_ID = 'core.marketplace';
 
 export interface InstalledOfficialPluginRecord {
@@ -257,7 +258,7 @@ export class OfficialPluginService implements Disposable {
 		const handle = await this.engine.loadPlugin({
 			...plugin,
 			configSchema: manifest.configSchema ?? plugin.configSchema,
-			permissions: manifest.permissions ?? manifest.capabilities ?? plugin.permissions,
+			permissions: manifest.permissions ?? plugin.permissions,
 			allowedDomains: manifest.allowedDomains ?? plugin.allowedDomains
 		});
 

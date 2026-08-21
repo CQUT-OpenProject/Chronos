@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import {
 		getOfficialPluginService,
-		builtinPlugins,
+		getProfileBuiltinPlugins,
 		getAppController
 	} from '$lib/services/app-engine';
 	import type { InstalledOfficialPluginRecord } from '$lib/services/official-plugins/official-plugin-service';
@@ -23,6 +23,7 @@
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
 
 	const officialPlugins = getOfficialPluginService();
+	const profileBuiltinPlugins = $derived(getProfileBuiltinPlugins());
 	const appController = getAppController();
 	const paletteMode = $derived(appController.userPreferences?.paletteMode ?? 'vibrant');
 	const visualThemeId = $derived(appController.activeThemeId);
@@ -117,7 +118,7 @@
 
 	function isInstalled(pluginId: string): boolean {
 		return (
-			builtinPlugins.some((p) => p.id === pluginId) ||
+			profileBuiltinPlugins.some((p) => p.id === pluginId) ||
 			installedRecords.some((r) => r.manifest.id === pluginId)
 		);
 	}
@@ -255,9 +256,9 @@
 			segments={[
 				{
 					value: 'installed',
-					label: `已安装 (${builtinPlugins.length + installedRecords.length})`
+					label: `已安装 (${profileBuiltinPlugins.length + installedRecords.length})`
 				},
-				{ value: 'official', label: '插件市场' }
+				{ value: 'official', label: '官方插件' }
 			]}
 			value={activeTab}
 			onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
@@ -269,11 +270,13 @@
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
 					<h2 class="m3-section-title">Chronos 内置插件</h2>
-					<span class="m3-label-small text-on-surface-variant">{builtinPlugins.length} 个</span>
+					<span class="m3-label-small text-on-surface-variant"
+						>{profileBuiltinPlugins.length} 个</span
+					>
 				</div>
 
 				<div class="m3-section-surface divide-y divide-border/40">
-					{#each builtinPlugins as plugin (plugin.id)}
+					{#each profileBuiltinPlugins as plugin (plugin.id)}
 						{@const name = resolveLocalizedName(plugin.name)}
 						{@const desc = resolveLocalizedDesc(plugin.description)}
 						{@const meta = getPluginCategoryMeta(plugin.category)}
@@ -333,7 +336,7 @@
 					>
 						<p class="m3-body-medium">暂无在线安装的官方插件</p>
 						<Button variant="text" class="mt-1 text-xs" onclick={() => (activeTab = 'official')}>
-							浏览插件市场
+							浏览官方插件
 						</Button>
 					</div>
 				{:else}
@@ -343,8 +346,7 @@
 							{@const desc = resolveLocalizedDesc(record.manifest.description)}
 							{@const meta = getPluginCategoryMeta(record.manifest.type)}
 							{@const isBusy = operatingPluginId === record.manifest.id}
-							{@const permissions =
-								record.manifest.permissions || record.manifest.capabilities || []}
+							{@const permissions = record.manifest.permissions || []}
 							<div
 								class="flex flex-col gap-2 p-3 transition-colors hover:bg-surface-variant/30"
 								class:opacity-60={!record.enabled}
@@ -451,13 +453,13 @@
 					{#if loadingCatalog}
 						<div class="flex flex-col items-center justify-center py-12">
 							<LoadingIndicator size="large" />
-							<p class="m3-body-small mt-2 text-on-surface-variant">正在加载插件市场…</p>
+							<p class="m3-body-small mt-2 text-on-surface-variant">正在加载官方插件目录…</p>
 						</div>
 					{:else if catalogError}
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl border border-error/30 bg-error-container/20 p-6 text-center"
 						>
-							<p class="m3-body-medium font-medium text-error">无法加载插件市场目录</p>
+							<p class="m3-body-medium font-medium text-error">无法加载官方插件目录</p>
 							<p class="m3-body-small mt-1 text-on-surface-variant">{catalogError}</p>
 							<Button
 								variant="outlined"
@@ -482,7 +484,7 @@
 								{@const meta = getPluginCategoryMeta(manifest.type)}
 								{@const installed = isInstalled(manifest.id)}
 								{@const isBusy = operatingPluginId === manifest.id}
-								{@const permissions = manifest.permissions || manifest.capabilities || []}
+								{@const permissions = manifest.permissions || []}
 								<div
 									class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
 								>

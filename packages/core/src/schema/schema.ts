@@ -140,9 +140,13 @@ export function validateConfig<T extends object>(
 				break;
 			case 'string':
 			case 'password':
-			case 'file':
 				if (typeof val !== 'string') {
 					errors[key] = 'Value must be a string';
+				}
+				break;
+			case 'file':
+				if (typeof val !== 'string' && !(val instanceof Uint8Array)) {
+					errors[key] = 'Value must be a string or binary file';
 				}
 				break;
 		}

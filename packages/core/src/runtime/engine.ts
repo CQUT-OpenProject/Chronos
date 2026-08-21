@@ -4,7 +4,9 @@ import { type UserPreferences, DEFAULT_USER_PREFERENCES } from '../domain/prefer
 import type { ChronosEnv, StorageChangeEvent } from '../types/env';
 import type { Disposable } from '../types/services';
 import { IHttpService, IStorageService, IVaultService, IRuntimeService } from '../types/services';
-import type { ChronosEvents, ChronosPlugin } from '../types/context';
+import type { ChronosPlugin } from '../types/context';
+import type { ChronosEvents } from '../types/context';
+import { ALLOWED_PLUGIN_PERMISSIONS } from '../types/permissions';
 import type { ChronosSlotMap } from '../types/slots';
 import { EventPipeline } from './event-pipeline';
 import { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
@@ -630,14 +632,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 
 	private async activatePlugin(plugin: ChronosPlugin<Record<string, unknown>>): Promise<void> {
 		if (plugin.permissions?.length) {
-			const allowedInProcess = new Set([
-				'storage',
-				'notifications',
-				'network',
-				'biometrics',
-				'calendar'
-			]);
-			const denied = plugin.permissions.filter((perm) => !allowedInProcess.has(perm));
+			const denied = plugin.permissions.filter((perm) => !ALLOWED_PLUGIN_PERMISSIONS.has(perm));
 			if (denied.length > 0) {
 				console.warn(
 					`[ChronosEngine] Plugin "${plugin.id}" requests permissions [${denied.join(', ')}] that are not available in this host.`

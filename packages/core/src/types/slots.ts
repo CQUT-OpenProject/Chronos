@@ -1,8 +1,8 @@
 import type { Course } from '../domain/course';
-import type { CoursePaletteEntry } from '../engine/palette';
 import type { Timetable } from '../domain/timetable';
 import type { ChronosContext } from './context';
 import type { ConfigSchema } from '../schema/schema';
+import type { ThemeContribution } from './contributions';
 
 export type LocalizedText = string | (() => string);
 
@@ -101,21 +101,6 @@ export interface CoursePaint {
 	foreground: string;
 }
 
-export interface ThemeSlotContribution {
-	id: string;
-	name: LocalizedText;
-	description?: LocalizedText;
-	disabled?: boolean | (() => boolean);
-	supportsDynamicColor?: boolean;
-	className?: string;
-	customCssVars?: Record<string, string> | ((mode: 'light' | 'dark') => Record<string, string>);
-	paletteEntries?:
-		| readonly CoursePaletteEntry[]
-		| ((mode: 'light' | 'dark') => readonly CoursePaletteEntry[]);
-	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
-	resolveCoursePaint?(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint;
-}
-
 // 7. Shell bottom bar navigation tab slot contribution specification
 export interface BottomTabSlotContribution {
 	id: string;
@@ -138,7 +123,7 @@ export interface StandardSlotMap {
 	'shell.bottom-bar.tab': BottomTabSlotContribution;
 	'timetable.cell.badge': CourseBadgeSlotContribution;
 	'course.detail.action': CourseActionSlotContribution;
-	'theme.definition': ThemeSlotContribution;
+	'theme.definition': ThemeContribution;
 	[customSlotName: string]: unknown;
 }
 

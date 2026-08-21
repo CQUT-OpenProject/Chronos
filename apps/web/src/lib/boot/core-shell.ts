@@ -96,7 +96,7 @@ export function registerCoreShellSlots(ctx: ChronosContext): void {
 		id: 'plugins',
 		sectionId: 'app-support',
 		title: () => '插件中心',
-		supporting: () => '管理插件市场与已安装插件',
+		supporting: () => '管理官方插件与已安装扩展',
 		href: '/plugins',
 		icon: 'code',
 		iconTone: 'secondary',

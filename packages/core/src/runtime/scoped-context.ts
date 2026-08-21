@@ -9,7 +9,6 @@ import type { ChronosSlotMap } from '../types/slots';
 import type { EventPipeline } from './event-pipeline';
 import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import type { ServiceContainer } from './service-container';
-import type { ThemeContribution } from '../types/contributions';
 import type { ThemeRegistry } from './theme-registry';
 import type { BadgeManager } from './badge-manager';
 
@@ -144,9 +143,7 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 	): Disposable {
 		const slotDisp = this.host.slots.register(slotName, contribution, this.pluginId);
 		if (slotName === 'theme.definition' && this.host.themes) {
-			const themeDisp = this.host.themes.registerTheme(
-				contribution as unknown as ThemeContribution
-			);
+			const themeDisp = this.host.themes.registerTheme(contribution);
 			return this.track({
 				dispose: () => {
 					themeDisp.dispose();

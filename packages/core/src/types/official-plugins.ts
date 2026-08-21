@@ -16,7 +16,6 @@ export interface PluginManifest {
 	sha256: string;
 	/** Optional Ed25519 signature (future verification). */
 	signature?: string;
-	capabilities?: PluginCapability[];
 	permissions?: PluginCapability[];
 	allowedDomains?: string[];
 	configSchema?: ConfigSchema<Record<string, unknown>>;
@@ -31,6 +30,3 @@ export interface OfficialPluginCatalog {
 	/** Official plugin manifest URLs (same-origin or GitHub raw). */
 	manifests: string[];
 }
-
-/** @deprecated Use OfficialPluginCatalog */
-export type MarketplaceRegistry = OfficialPluginCatalog;

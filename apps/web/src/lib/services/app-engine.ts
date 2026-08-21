@@ -1,7 +1,12 @@
 import { ChronosEngine, ProfileManager } from '@chronos/core';
+import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
-import { availablePlugins, resolveActiveProfile } from '$lib/boot/profile-registry';
+import {
+	availablePlugins,
+	getAvailablePluginsForProfile,
+	resolveActiveProfile
+} from '$lib/boot/profile-registry';
 
 import { OfficialPluginService } from '$lib/services/official-plugins/official-plugin-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
@@ -102,8 +107,13 @@ export function getOfficialPluginService(options?: WebProviderOptions): Official
 	return sharedOfficialPlugins;
 }
 
-/** @deprecated Use getOfficialPluginService */
-export const getMarketplaceService = getOfficialPluginService;
+export function getActiveProfile(): ChronosProfile {
+	return profileManager?.getActiveProfile() ?? resolveActiveProfile();
+}
+
+export function getProfileBuiltinPlugins(): ChronosPlugin[] {
+	return getAvailablePluginsForProfile(getActiveProfile());
+}
 
 export function resetAppEngine(): void {
 	profileManager?.dispose();
@@ -116,5 +126,3 @@ export function resetAppEngine(): void {
 	sharedEngine = null;
 	engineInitPromise = null;
 }
-
-export { availablePlugins as builtinPlugins };
