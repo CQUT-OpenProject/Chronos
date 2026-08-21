@@ -18,4 +18,3 @@ export {
 	brotliDecompressShare,
 	SHARE_BROTLI_QUALITY
 } from './share-link-brotli';
-export { ChronosTimetableShareLinkCodec } from './chronos-timetable-share-link-codec';

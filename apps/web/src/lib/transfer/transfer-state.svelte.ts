@@ -8,8 +8,12 @@ import type { CqutCampusId } from '$lib/models/cqut-campus';
 import { getCampusDefaultPeriodTimes, inferCampusIdFromCourses } from '$lib/models/cqut-campus';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
-import { AcademicCalendarService, IVaultService, type ChronosEngine } from '@chronos/core';
-import { SystemTimeProvider } from '$lib/domain/services/time-provider';
+import {
+	AcademicCalendarService,
+	IVaultService,
+	todayIsoDate,
+	type ChronosEngine
+} from '@chronos/core';
 import { isAccountOnlyFallbackAvailable } from '$lib/client/webauthn/prf-support';
 import { onlineImportEnabled } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
@@ -65,7 +69,6 @@ export function createTransferState(engine?: ChronosEngine) {
 	let statusMessage = $state<string | null>(null);
 
 	const academicCalendarService = new AcademicCalendarService();
-	const timeProvider = new SystemTimeProvider();
 	const persistence = createSessionPreviewPersistence();
 	const credentialVault = engine
 		? createCredentialVault({ vault: engine.services.get(IVaultService) })
@@ -129,10 +132,7 @@ export function createTransferState(engine?: ChronosEngine) {
 	}
 
 	function setHtmlImportTermStartDate(date: string) {
-		htmlImportTermStartDate = academicCalendarService.normalizeTermStartDate(
-			date,
-			timeProvider.today()
-		);
+		htmlImportTermStartDate = academicCalendarService.normalizeTermStartDate(date, todayIsoDate());
 	}
 
 	function setHtmlImportCampusId(campusId: CqutCampusId) {
@@ -180,7 +180,7 @@ export function createTransferState(engine?: ChronosEngine) {
 			previewSource =
 				tabId === 'cqut-online' ? 'ONLINE' : tabId === 'edu-html' ? 'HTML' : 'SHARE_LINK';
 			if (tabId === 'edu-html') {
-				htmlImportTermStartDate = timetable.academicConfig?.termStartDate || timeProvider.today();
+				htmlImportTermStartDate = timetable.academicConfig?.termStartDate || todayIsoDate();
 				htmlImportCampusId =
 					(timetable.importMetadata?.campusId as CqutCampusId) ??
 					inferCampusIdFromCourses(timetable.courses);
@@ -246,7 +246,7 @@ export function createTransferState(engine?: ChronosEngine) {
 			});
 			preview = timetable;
 			previewSource = 'HTML';
-			htmlImportTermStartDate = timetable.academicConfig?.termStartDate || timeProvider.today();
+			htmlImportTermStartDate = timetable.academicConfig?.termStartDate || todayIsoDate();
 			htmlImportCampusId =
 				(timetable.importMetadata?.campusId as CqutCampusId) ??
 				inferCampusIdFromCourses(timetable.courses);

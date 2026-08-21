@@ -6,12 +6,12 @@ import {
 	AcademicCalendarService,
 	computeTimetableWeekLayout,
 	formatWeekDateRange,
+	todayIsoDate,
 	type TimetableCourseDisplayModel,
 	type TimetableGridModel,
 	type TimetableWeekLayoutResult
 } from '@chronos/core';
 import type { AppShellController } from '$lib/app/app-shell.svelte';
-import { SystemTimeProvider } from '$lib/domain/services/time-provider';
 import {
 	academicBounds,
 	buildWeekList,
@@ -27,7 +27,6 @@ import {
 	parsePeriodRanges
 } from './period-clock';
 
-const timeProvider = new SystemTimeProvider();
 const calendarService = new AcademicCalendarService();
 
 let displayedWeekMemory = 1;
@@ -68,7 +67,7 @@ export function getTimetableScreen(): TimetableScreenController {
 
 function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
-	let today = $state(timeProvider.today());
+	let today = $state(todayIsoDate());
 	let now = $state(new Date());
 	let revision = $state(0);
 	let expandedSlots = $state(new SvelteSet<string>());
