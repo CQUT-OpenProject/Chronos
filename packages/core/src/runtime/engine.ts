@@ -636,15 +636,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	private async activatePlugin(plugin: ChronosPlugin<Record<string, unknown>>): Promise<void> {
-		if (plugin.permissions?.length) {
-			const denied = plugin.permissions.filter((perm) => !ALLOWED_PLUGIN_PERMISSIONS.has(perm));
-			if (denied.length > 0) {
-				console.warn(
-					`[ChronosEngine] Plugin "${plugin.id}" requests permissions [${denied.join(', ')}] that are not available in this host.`
-				);
-			}
-		}
-
 		let initialConfig: Record<string, unknown> = { ...plugin.defaultConfig };
 		try {
 			const savedConfig = await this.storage.getPluginData<Record<string, unknown>>(
