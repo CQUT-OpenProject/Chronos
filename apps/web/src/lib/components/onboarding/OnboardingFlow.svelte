@@ -6,7 +6,13 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
-	import { profileIncludesOnlineImport } from '$lib/config/features';
+	import { getAppController } from '$lib/services/app-engine';
+	import {
+		buildImportDescription,
+		buildOnboardingImportHighlight,
+		defaultImportMethodSubtitle,
+		formatImportMethodTitle
+	} from '$lib/transfer/import-slot-capabilities';
 	import type { TimetableLayoutMode } from '@chronos/core';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -25,6 +31,9 @@
 	import { haptic } from '$lib/haptic/haptic';
 
 	const shell = getContext<AppShellController>('appShell');
+	const controller = getAppController();
+	const importSlots = $derived(controller.getSlots('import.source.tab'));
+	const onboardingImportHighlight = $derived(buildOnboardingImportHighlight(importSlots));
 	const step = $derived(onboardingController.step);
 	const stepIndices = [0, 1, 2, 3, 4, 5] as const;
 	const isLastStep = $derived(step === onboardingController.totalSteps - 1);
@@ -193,9 +202,7 @@
 									<HighlightRow
 										icon={DownloadFill}
 										title="多种导入方式"
-										subtitle={profileIncludesOnlineImport()
-											? '知行理工在线导入、分享链接、HTML 文件均可'
-											: '分享链接、HTML 文件均可导入'}
+										subtitle={onboardingImportHighlight}
 									/>
 									<HighlightRow
 										icon={PaletteFill}
@@ -257,23 +264,19 @@
 									如何导入课表？
 								</h2>
 								<div class="flex flex-col gap-3">
-									{#if profileIncludesOnlineImport()}
+									{#each importSlots as slot (slot.id)}
+										{@const icon =
+											slot.importKind === 'online'
+												? DownloadFill
+												: slot.importKind === 'file'
+													? DescriptionFill
+													: IosShareFill}
 										{@render importMethodCard(
-											DownloadFill,
-											'知行理工在线导入',
-											'输入知行理工账号密码，获取在线课表'
+											icon,
+											formatImportMethodTitle(slot),
+											defaultImportMethodSubtitle(slot)
 										)}
-									{/if}
-									{@render importMethodCard(
-										IosShareFill,
-										'分享链接导入',
-										'粘贴他人分享的课表链接即可导入'
-									)}
-									{@render importMethodCard(
-										DescriptionFill,
-										'HTML 文件导入',
-										'从教务系统导出课表页面后，导入该 HTML 文件'
-									)}
+									{/each}
 								</div>
 							</div>
 						{:else if step === 4}

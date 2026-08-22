@@ -9,6 +9,9 @@ export type LocalizedText = string | (() => string);
 /** Host registry key or structured shell icon descriptor. */
 export type ShellIconRef = string | import('../theme/icon-theme').ShellIconDescriptor;
 
+/** How the host groups import sources for copy and onboarding. */
+export type ImportKind = 'online' | 'file' | 'link';
+
 // 1. Import tab slot contribution specification (dynamic schema-driven interaction)
 export interface ImportTabSlotContribution<
 	FormState extends Record<string, unknown> = Record<string, unknown>
@@ -18,6 +21,8 @@ export interface ImportTabSlotContribution<
 	order?: number;
 	icon?: string;
 	supportingText?: LocalizedText;
+	/** Host-facing capability tag for onboarding copy and import descriptions. */
+	importKind?: ImportKind;
 	/** Declare input fields required by the import source (credentials, captcha, campus select, HTML file, etc.) */
 	inputSchema?: ConfigSchema<FormState>;
 	defaultInput?: FormState;

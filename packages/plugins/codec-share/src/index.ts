@@ -53,6 +53,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 				id: 'share-link',
 				title: () => '分享链接',
 				order: 15,
+				importKind: 'link',
 				component: shareComponent,
 				inputSchema: shareLinkImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 				async executeImport(inputs: Record<string, unknown>) {

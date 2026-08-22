@@ -4,6 +4,7 @@
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { getAppController } from '$lib/services/app-engine';
+	import { buildImportDescription } from '$lib/transfer/import-slot-capabilities';
 	import { SchemaForm } from '@chronos/ui-kit';
 
 	let {
@@ -26,14 +27,7 @@
 		availableSlots.find((slot) => slot.id === transfer.state.selectedSlotId) ?? availableSlots[0]
 	);
 
-	const hasOnlineImport = $derived(availableSlots.some((slot) => slot.id === 'cqut-online'));
-	const importDescription = $derived(
-		hasOnlineImport
-			? '支持知行理工在线导入、分享链接与教务系统导出的 HTML 文件。'
-			: availableSlots.some((slot) => slot.id === 'edu-html')
-				? '支持分享链接与教务系统导出的 HTML 文件。'
-				: '支持分享链接导入课表。'
-	);
+	const importDescription = $derived(buildImportDescription(availableSlots));
 
 	let schemaFormValues = $state<Record<string, unknown>>({});
 	let schemaLoading = $state(false);

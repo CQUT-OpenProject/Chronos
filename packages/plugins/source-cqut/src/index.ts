@@ -360,6 +360,8 @@ export function createCqutPlugin(
 					id: 'cqut-online',
 					title: () => '知行理工',
 					order: 10,
+					importKind: 'online',
+					supportingText: () => '输入知行理工账号密码，获取在线课表',
 					component: onlineComponent,
 					inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 					executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
@@ -372,6 +374,7 @@ export function createCqutPlugin(
 					id: 'edu-html',
 					title: () => 'HTML 文件',
 					order: 30,
+					importKind: 'file',
 					component: htmlComponent,
 					inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 					executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
