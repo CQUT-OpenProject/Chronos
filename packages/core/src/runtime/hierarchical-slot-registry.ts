@@ -18,6 +18,13 @@ export class HierarchicalSlotRegistry implements Disposable {
 			this.slots.set(key, new Map());
 		}
 		const group = this.slots.get(key)!;
+		const existingOwner = this.owners.get(key)?.get(contribution.id);
+		if (existingOwner && ownerPluginId && existingOwner !== ownerPluginId) {
+			console.warn(
+				`[HierarchicalSlotRegistry] Slot "${key}/${contribution.id}" overwritten: ` +
+					`"${existingOwner}" → "${ownerPluginId}"`
+			);
+		}
 		group.set(contribution.id, contribution);
 		if (ownerPluginId) {
 			if (!this.owners.has(key)) {

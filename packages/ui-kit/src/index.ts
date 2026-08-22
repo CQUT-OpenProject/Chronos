@@ -9,3 +9,4 @@ export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-s
 export { default as TimetableWallpaperLayer } from './timetable-preview/TimetableWallpaperLayer.svelte';
 export { default as TimetablePreviewGrid } from './timetable-preview/TimetablePreviewGrid.svelte';
 export { default as TimetableLivePreview } from './timetable-preview/TimetableLivePreview.svelte';
+export * from './timetable-preview/timetable-grid-chrome';

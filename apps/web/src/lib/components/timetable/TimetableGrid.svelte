@@ -28,6 +28,11 @@
 		type CoursePaletteEntry
 	} from '@chronos/core';
 	import { getAppController } from '$lib/services/app-engine';
+	import {
+		timetableBodyTintClass,
+		timetableSidebarTintClass,
+		timetableSolidBgClass
+	} from '@chronos/ui-kit';
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 	import { createTimetableInteractionMediator } from '$lib/timetable/timetable-interaction-mediator';
 
@@ -42,7 +47,7 @@
 		onExpandSlot?: (slotKey: string) => void;
 		gridModel: TimetableGridModel;
 		courseDisplayModels: TimetableCourseDisplayModel[];
-		hasWallpaper: boolean;
+		hasDynamicBackground: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
 		paletteCourses?: { name: string; color: string }[];
 		layoutMode?: TimetableLayoutMode;
@@ -59,7 +64,7 @@
 		onExpandSlot,
 		gridModel,
 		courseDisplayModels,
-		hasWallpaper,
+		hasDynamicBackground,
 		coursePalette,
 		paletteCourses,
 		layoutMode = 'fixed',
@@ -107,7 +112,7 @@
 			: findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
 	);
 
-	const solidBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
+	const solidBgClass = $derived(timetableSolidBgClass(hasDynamicBackground));
 	const isFitLayout = $derived(layoutMode === 'compact');
 	const rowHeightCss = $derived.by(() => {
 		if (!isFitLayout || bodyViewportHeight <= 0 || gridModel.displayedPeriodCount <= 0) {
@@ -303,11 +308,7 @@
 	class="relative flex h-full w-full flex-col {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"
 >
-	<div
-		class="flex shrink-0 items-center py-2 {hasWallpaper
-			? 'bg-[var(--wallpaper-tint-sidebar)]'
-			: 'bg-surface'}"
-	>
+	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
 		<div
 			class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
 		>
@@ -334,9 +335,9 @@
 
 	<div
 		{@attach bodyScrollAttach}
-		class="min-h-0 flex-1 {isFitLayout ? 'overflow-hidden' : 'overflow-y-auto'} {hasWallpaper
-			? 'timetable-wallpaper-body'
-			: 'bg-surface'}"
+		class="min-h-0 flex-1 {isFitLayout
+			? 'overflow-hidden'
+			: 'overflow-y-auto'} {timetableBodyTintClass(hasDynamicBackground)}"
 		role="region"
 		aria-label="本周课程表"
 	>

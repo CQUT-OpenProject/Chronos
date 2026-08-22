@@ -10,6 +10,11 @@
 	import { timetableDayShortLabel } from './day-labels';
 	import MiddleTruncateText from './MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '../utils/middle-truncate';
+	import {
+		timetableBodyTintClass,
+		timetableSidebarTintClass,
+		timetableSolidBgClass
+	} from './timetable-grid-chrome';
 
 	const ROW_HEIGHT = '5.5rem';
 	const SIDEBAR_WIDTH = '3.25rem';
@@ -25,7 +30,7 @@
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		coursePalette: readonly CoursePaletteEntry[];
 		paletteCourses?: { name: string; color?: string }[];
-		hasWallpaper?: boolean;
+		hasDynamicBackground?: boolean;
 		layoutMode?: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		interactive?: boolean;
@@ -43,7 +48,7 @@
 		courseDisplayModels,
 		coursePalette,
 		paletteCourses,
-		hasWallpaper = false,
+		hasDynamicBackground = false,
 		layoutMode = 'fixed',
 		capsuleCornerStyle = 'rounded',
 		interactive = false,
@@ -78,7 +83,7 @@
 		})
 	);
 
-	const solidBgClass = $derived(hasWallpaper ? '' : 'bg-surface');
+	const solidBgClass = $derived(timetableSolidBgClass(hasDynamicBackground));
 	const isFitLayout = $derived(layoutMode === 'compact');
 	const currentPeriodIndex = $derived(
 		propCurrentPeriodIndex !== undefined
@@ -222,11 +227,7 @@
 	class="relative flex h-full min-h-0 w-full flex-1 flex-col {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: {SIDEBAR_WIDTH}"
 >
-	<div
-		class="flex shrink-0 items-center py-2 {hasWallpaper
-			? 'bg-[var(--wallpaper-tint-sidebar)]'
-			: 'bg-surface'}"
-	>
+	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
 		<div
 			class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
 		>
@@ -253,9 +254,9 @@
 
 	<div
 		{@attach bodyViewportAttach}
-		class="min-h-0 flex-1 {isFitLayout ? 'overflow-hidden' : 'overflow-y-auto'} {hasWallpaper
-			? 'timetable-wallpaper-body'
-			: 'bg-surface'}"
+		class="min-h-0 flex-1 {isFitLayout
+			? 'overflow-hidden'
+			: 'overflow-y-auto'} {timetableBodyTintClass(hasDynamicBackground)}"
 		role="region"
 		aria-label="课表预览"
 	>

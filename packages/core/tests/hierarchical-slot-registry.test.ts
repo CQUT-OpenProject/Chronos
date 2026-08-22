@@ -84,4 +84,24 @@ describe('HierarchicalSlotRegistry in @chronos/core', () => {
 		registry.dispose();
 		expect(registry.get('mine.item')).toHaveLength(0);
 	});
+
+	it('warns when a slot contribution id is overwritten by another owner', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const registry = new HierarchicalSlotRegistry();
+
+		registry.register(
+			'import.source.tab',
+			{ id: 'share-link', title: 'A', executeImport: vi.fn() },
+			'plugin-a'
+		);
+		registry.register(
+			'import.source.tab',
+			{ id: 'share-link', title: 'B', executeImport: vi.fn() },
+			'plugin-b'
+		);
+
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('import.source.tab/share-link'));
+		expect(registry.resolveOwner('import.source.tab', 'share-link')).toBe('plugin-b');
+		warn.mockRestore();
+	});
 });
