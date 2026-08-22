@@ -36,7 +36,10 @@ export function createAppShell() {
 			controller.timetables.length > 0
 		)
 	);
-	const hasWallpaperPlugin = $derived(engine.isPluginLoaded(WALLPAPER_PLUGIN_ID));
+	const hasWallpaperPlugin = $derived.by(() => {
+		void controller.slotVersion;
+		return engine.isPluginLoaded(WALLPAPER_PLUGIN_ID);
+	});
 	const hasWallpaper = $derived(hasWallpaperPlugin && Boolean(wallpaperUri));
 
 	function init() {
