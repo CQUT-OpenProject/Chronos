@@ -147,6 +147,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				deleteTimetable: (id) => services.get(IStorageService).deleteTimetable(id),
 				getActiveTimetableId: () => services.get(IStorageService).getActiveTimetableId(),
 				setActiveTimetableId: (id) => services.get(IStorageService).setActiveTimetableId(id),
+				queryCourses: (filter) => services.get(IStorageService).queryCourses(filter),
 				getPreferences: () => services.get(IStorageService).getPreferences(),
 				savePreferences: (patch) => services.get(IStorageService).savePreferences(patch),
 				getPluginData: (pid, k) => services.get(IStorageService).getPluginData(pid, k),

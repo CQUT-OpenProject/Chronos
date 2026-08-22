@@ -20,6 +20,7 @@ export * from './schema/schema';
 
 // Types
 export * from './types/services';
+export * from './types/course-query';
 export * from './types/slots';
 export type { ThemeContribution, CourseBadgeContribution } from './types/contributions';
 export type { PlatformType, ChronosEnv } from './types/env';

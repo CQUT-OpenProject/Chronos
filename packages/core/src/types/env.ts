@@ -1,5 +1,6 @@
 import type { Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
+import type { CourseQueryFilter, CourseQueryHit } from './course-query';
 import type {
 	Disposable,
 	HttpRequestOptions,
@@ -39,6 +40,7 @@ export interface ChronosEnv {
 		deleteTimetable(id: string): Promise<void>;
 		getActiveTimetableId(): Promise<string | null>;
 		setActiveTimetableId(id: string): Promise<void>;
+		queryCourses(filter?: CourseQueryFilter): Promise<CourseQueryHit[]>;
 
 		// Global preferences
 		getPreferences(): Promise<UserPreferences>;

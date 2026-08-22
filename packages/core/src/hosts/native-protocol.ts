@@ -64,6 +64,7 @@ export function createNativeHostEnv(
 			deleteTimetable: (id) => bridge.callNative('storage', 'deleteTimetable', { id }),
 			getActiveTimetableId: () => bridge.callNative('storage', 'getActiveTimetableId'),
 			setActiveTimetableId: (id) => bridge.callNative('storage', 'setActiveTimetableId', { id }),
+			queryCourses: (filter) => bridge.callNative('storage', 'queryCourses', { filter }),
 			getPreferences: () => bridge.callNative('storage', 'getPreferences'),
 			savePreferences: (p) => bridge.callNative('storage', 'savePreferences', p),
 			getPluginData: (pid, k) =>

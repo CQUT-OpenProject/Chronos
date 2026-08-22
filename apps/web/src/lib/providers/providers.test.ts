@@ -62,7 +62,8 @@ function createMockDb(): ChronosDB {
 					toArray: async () =>
 						Array.from(timetablesMap.values()).sort((a, b) => b.updatedAt - a.updatedAt)
 				})
-			}))
+			})),
+			toArray: async () => Array.from(timetablesMap.values())
 		},
 		courses: {
 			where: vi.fn((_field: string) => ({
@@ -77,8 +78,15 @@ function createMockDb(): ChronosDB {
 							if (c.timetableId === val) coursesMap.delete(id);
 						}
 					}
+				}),
+				anyOf: (vals: unknown[]) => ({
+					toArray: async () =>
+						Array.from(coursesMap.values()).filter((c) =>
+							(vals as string[]).includes(c.timetableId)
+						)
 				})
 			})),
+			toArray: async () => Array.from(coursesMap.values()),
 			bulkPut: vi.fn(async (rows: CourseRow[]) => {
 				for (const r of rows) coursesMap.set(r.id, r);
 			}),
@@ -155,6 +163,46 @@ describe('Web Providers', () => {
 
 		await storage.deletePluginData('my-plugin', 'key1');
 		expect(await storage.getPluginData('my-plugin', 'key1')).toBeNull();
+
+		storage.dispose();
+	});
+
+	it('DexieStorageProvider queryCourses returns cross-timetable hits in one call', async () => {
+		const storage = new DexieStorageProvider(db, localStorage);
+
+		const courseA = createCourse({
+			id: 'c-a',
+			name: '数据结构',
+			location: 'A101',
+			dayOfWeek: 3,
+			startPeriod: 1,
+			endPeriod: 2,
+			weeks: [1]
+		});
+		const courseB = createCourse({
+			id: 'c-b',
+			name: '操作系统',
+			location: 'B202',
+			dayOfWeek: 3,
+			startPeriod: 3,
+			endPeriod: 4,
+			weeks: [1]
+		});
+
+		await storage.saveTimetable(
+			createTimetable({ id: 'tt_a', name: '课表 A', courses: [courseA] })
+		);
+		await storage.saveTimetable(
+			createTimetable({ id: 'tt_b', name: '课表 B', courses: [courseB] })
+		);
+
+		const hits = await storage.queryCourses({ dayOfWeek: 3, week: 1 });
+		expect(hits).toHaveLength(2);
+		expect(hits.map((h) => h.timetableId).sort()).toEqual(['tt_a', 'tt_b']);
+
+		const roomHits = await storage.queryCourses({ location: { contains: 'A101' } });
+		expect(roomHits).toHaveLength(1);
+		expect(roomHits[0]?.course.name).toBe('数据结构');
 
 		storage.dispose();
 	});

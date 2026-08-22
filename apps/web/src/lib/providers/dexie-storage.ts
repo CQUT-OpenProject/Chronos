@@ -3,16 +3,19 @@ import type {
 	IStorageService,
 	StorageChangeEvent,
 	Timetable,
-	UserPreferences
+	UserPreferences,
+	CourseQueryFilter,
+	CourseQueryHit
 } from '@chronos/core';
 import {
 	DEFAULT_USER_PREFERENCES,
 	CURRENT_PREFERENCES_SCHEMA_VERSION,
 	PALETTE_MODE_VIBRANT,
-	LEGACY_PALETTE_MODE_DYNAMIC
+	LEGACY_PALETTE_MODE_DYNAMIC,
+	matchesCourseQuery
 } from '@chronos/core';
 import { db, type ChronosDB } from '$lib/storage/db';
-import { courseToRow, timetableFromRow, timetableToRow } from '$lib/storage/mappers';
+import { courseToRow, timetableFromRow, timetableToRow, courseFromRow } from '$lib/storage/mappers';
 
 const SETTINGS_KEYS = {
 	currentTimetableId: 'chronos_preferences:current_timetable_id',
@@ -113,6 +116,42 @@ export class DexieStorageProvider implements IStorageService {
 				})
 			);
 			return results;
+		} catch {
+			return [];
+		}
+	}
+
+	async queryCourses(filter: CourseQueryFilter = {}): Promise<CourseQueryHit[]> {
+		try {
+			const timetableRows = await this.database.timetables.toArray();
+			const timetableNameById = new Map(timetableRows.map((row) => [row.id, row.name]));
+			const allowedTimetableIds =
+				filter.timetableIds !== undefined
+					? new Set(filter.timetableIds)
+					: new Set(timetableRows.map((row) => row.id));
+
+			let courseRows;
+			const ids = filter.timetableIds;
+			if (ids?.length === 1) {
+				courseRows = await this.database.courses.where('timetableId').equals(ids[0]!).toArray();
+			} else if (ids && ids.length > 1) {
+				courseRows = await this.database.courses.where('timetableId').anyOf(ids).toArray();
+			} else {
+				courseRows = await this.database.courses.toArray();
+			}
+
+			const hits: CourseQueryHit[] = [];
+			for (const row of courseRows) {
+				if (!allowedTimetableIds.has(row.timetableId)) continue;
+				const course = courseFromRow(row);
+				if (!matchesCourseQuery(course, filter)) continue;
+				hits.push({
+					timetableId: row.timetableId,
+					timetableName: timetableNameById.get(row.timetableId) ?? '',
+					course
+				});
+			}
+			return hits;
 		} catch {
 			return [];
 		}

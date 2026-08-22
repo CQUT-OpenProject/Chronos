@@ -1,5 +1,6 @@
 import type { Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
+import type { CourseQueryFilter, CourseQueryHit } from './course-query';
 
 export interface Disposable {
 	dispose(): void;
@@ -65,6 +66,7 @@ export interface IStorageService {
 	deleteTimetable(id: string): Promise<void>;
 	getActiveTimetableId(): Promise<string | null>;
 	setActiveTimetableId(id: string): Promise<void>;
+	queryCourses(filter?: CourseQueryFilter): Promise<CourseQueryHit[]>;
 
 	// User preferences
 	getPreferences(): Promise<UserPreferences>;
