@@ -9,7 +9,6 @@ import { defineSchema } from '@chronos/core';
 import {
 	decodeSharePayload,
 	encodeShareLink,
-	ensureShareLinkBrotliReady,
 	estimateShareLinkLength,
 	extractSharePayloadFromText,
 	formatShareClipboardText
@@ -48,7 +47,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 
 		async apply(ctx: ChronosContext) {
-			await ensureShareLinkBrotliReady();
+			// 压缩引擎按需加载，首包不再阻塞插件初始化（deflate 优先，brotli 懒加载）
 
 			ctx.registerSlot('import.source.tab', {
 				id: 'share-link',

@@ -7,13 +7,15 @@ import {
 } from './chronos-share-binary';
 import { appendCrc32, verifyAndStripCrc32 } from './crc32';
 import {
-	brotliCompressShare,
-	brotliDecompressShare,
-	ensureShareLinkBrotliReady
+	compressShareAdaptive,
+	decompressShareAdaptive,
+	SHARE_LINK_VERSION_BROTLI,
+	SHARE_LINK_VERSION_DEFLATE
 } from './share-link-brotli';
 
-export const SHARE_LINK_VERSION = 1;
+export const SHARE_LINK_VERSION = SHARE_LINK_VERSION_BROTLI;
 export const SHARE_LINK_PREFIX = `${SHARE_LINK_VERSION}.`;
+export const SHARE_LINK_PREFIX_DEFLATE = `${SHARE_LINK_VERSION_DEFLATE}.`;
 export const SHARE_LINK_WARNING_LENGTH = 800;
 export const SHARE_LINK_CORRUPTED_MESSAGE = '分享链接已损坏或内容不完整';
 
@@ -49,23 +51,35 @@ function base64UrlToBytes(value: string): Uint8Array {
 }
 
 export async function encodeSharePayload(timetable: Timetable): Promise<string> {
-	await ensureShareLinkBrotliReady();
 	const binary = appendCrc32(encodeTimetableToBinary(timetable));
-	const compressed = brotliCompressShare(binary);
-	return `${SHARE_LINK_PREFIX}${bytesToBase64Url(compressed)}`;
+	const { version, bytes } = await compressShareAdaptive(binary);
+	const prefix =
+		version === SHARE_LINK_VERSION_DEFLATE ? SHARE_LINK_PREFIX_DEFLATE : SHARE_LINK_PREFIX;
+	return `${prefix}${bytesToBase64Url(bytes)}`;
+}
+
+function parseShareLinkVersion(payload: string): { version: number; encoded: string } | null {
+	const dot = payload.indexOf('.');
+	if (dot <= 0) return null;
+	const v = Number(payload.slice(0, dot));
+	if (!Number.isInteger(v) || v < 1) return null;
+	return { version: v, encoded: payload.slice(dot + 1) };
 }
 
 export async function decodeSharePayload(payload: string): Promise<ShareLinkResult<Timetable>> {
-	await ensureShareLinkBrotliReady();
 	const normalized = payload.trim();
-	if (!normalized.startsWith(SHARE_LINK_PREFIX)) {
+	const parsed = parseShareLinkVersion(normalized);
+	if (
+		!parsed ||
+		(parsed.version !== SHARE_LINK_VERSION_BROTLI && parsed.version !== SHARE_LINK_VERSION_DEFLATE)
+	) {
 		return shareFailure('不支持的分享链接格式');
 	}
 
 	try {
-		const encoded = normalized.slice(SHARE_LINK_PREFIX.length);
-		const compressed = base64UrlToBytes(encoded);
-		const binary = verifyAndStripCrc32(brotliDecompressShare(compressed));
+		const compressed = base64UrlToBytes(parsed.encoded);
+		const decompressed = await decompressShareAdaptive(parsed.version, compressed);
+		const binary = verifyAndStripCrc32(decompressed);
 		return shareSuccess(decodeBinaryToTimetable(binary));
 	} catch (error) {
 		const message =
@@ -95,9 +109,16 @@ export async function estimateShareLinkLength(timetable: Timetable): Promise<num
 	return (await encodeSharePayload(timetable)).length;
 }
 
+function isValidSharePayloadFormat(payload: string): boolean {
+	const dot = payload.indexOf('.');
+	if (dot <= 0) return false;
+	const v = Number(payload.slice(0, dot));
+	return v === SHARE_LINK_VERSION_BROTLI || v === SHARE_LINK_VERSION_DEFLATE;
+}
+
 function normalizeSharePayload(candidate: string): string | null {
 	const payload = candidate.trim().split(/\s/)[0] ?? '';
-	return payload.startsWith(SHARE_LINK_PREFIX) ? payload : null;
+	return isValidSharePayloadFormat(payload) ? payload : null;
 }
 
 function extractSharePayloadFromUrlString(value: string): string | null {
@@ -121,9 +142,9 @@ function extractSharePayloadFromUrlString(value: string): string | null {
 
 export function extractSharePayloadFromLocation(location: Location): string | null {
 	const hash = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
-	if (hash.startsWith(SHARE_LINK_PREFIX)) return hash;
+	if (isValidSharePayloadFormat(hash)) return hash;
 	const queryPayload = new URLSearchParams(location.search).get('d');
-	if (queryPayload?.startsWith(SHARE_LINK_PREFIX)) return queryPayload;
+	if (queryPayload && isValidSharePayloadFormat(queryPayload)) return queryPayload;
 	return null;
 }
 

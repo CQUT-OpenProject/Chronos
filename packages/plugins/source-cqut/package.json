@@ -30,6 +30,11 @@
 			"types": "./src/EduHtmlImportTab.svelte",
 			"import": "./src/EduHtmlImportTab.svelte",
 			"default": "./src/EduHtmlImportTab.svelte"
+		},
+		"./campus-period-times": {
+			"types": "./src/campus-period-times.ts",
+			"import": "./src/campus-period-times.ts",
+			"default": "./src/campus-period-times.ts"
 		}
 	},
 	"dependencies": {
