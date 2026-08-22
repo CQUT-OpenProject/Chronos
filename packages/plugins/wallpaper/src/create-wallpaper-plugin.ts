@@ -1,5 +1,5 @@
 import type { ChronosPlugin, ThemeContribution } from '@chronos/core';
-import { defineSchema, IStorageService } from '@chronos/core';
+import { createWorkbenchColorsFromTokens, defineSchema, IStorageService } from '@chronos/core';
 import { createWallpaperRuntime, type WallpaperRuntime } from './runtime.svelte';
 import { WALLPAPER_PLUGIN_ID } from './storage';
 import { clearWallpaperTheme, extractWallpaperSeed, paintWallpaperTheme } from './wallpaper-theme';
@@ -21,6 +21,24 @@ export const wallpaperThemeContribution: ThemeContribution = {
 	name: () => '壁纸',
 	description: () => '从当前壁纸提取配色',
 	supportsDynamicColor: true,
+	workbenchColors: createWorkbenchColorsFromTokens(
+		{
+			surface: '#f9f9fe',
+			onSurface: '#2e333a',
+			primary: '#0068b7',
+			onPrimary: '#ffffff',
+			surfaceVariant: '#eceef5',
+			outline: '#aeb2bb'
+		},
+		{
+			surface: '#1e2026',
+			onSurface: '#f8fafc',
+			primary: '#0068b7',
+			onPrimary: '#ffffff',
+			surfaceVariant: '#24262e',
+			outline: '#334155'
+		}
+	),
 	dynamicColorAdapter: {
 		extractWallpaperSeed,
 		paintWallpaperTheme,

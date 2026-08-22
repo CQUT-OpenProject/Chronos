@@ -14,6 +14,7 @@ import type {
 	ThemeContribution,
 	CoursePaletteEntry
 } from '@chronos/core';
+import { createWorkbenchColorsFromTokens } from '@chronos/core/theme/workbench-colors';
 
 export const BRAND_SOURCE_ARGB = 0xff0068b7;
 
@@ -290,6 +291,7 @@ export const m3DefaultTheme: ThemeContribution = {
 	id: 'm3-default',
 	name: () => 'Material 3 (Default)',
 	supportsDynamicColor: true,
+	workbenchColors: createWorkbenchColorsFromTokens(buildM3Tokens('light'), buildM3Tokens('dark')),
 
 	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens {
 		return buildM3Tokens(mode, seedColor);

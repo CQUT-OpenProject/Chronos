@@ -28,6 +28,7 @@ export class ReactiveChronosController implements Disposable {
 	activeWeek = $state<number>(1);
 	currentPeriodIndex = $state<number | null>(null);
 	activeThemeId = $state<string>('m3-default');
+	activeIconThemeId = $state<string>('host-default');
 	userPreferences = $state<UserPreferences | null>(null);
 	currentLocale = $state<string>('zh-cn');
 
@@ -66,6 +67,7 @@ export class ReactiveChronosController implements Disposable {
 			),
 			this.engine.on('preferences:updated', ({ preferences }: { preferences: UserPreferences }) => {
 				this.userPreferences = preferences;
+				this.activeIconThemeId = preferences.visualIconThemeId ?? 'host-default';
 			}),
 			this.engine.on(
 				'time:tick',
@@ -76,6 +78,9 @@ export class ReactiveChronosController implements Disposable {
 			),
 			this.engine.on('theme:changed', ({ themeId }: { themeId: string }) => {
 				this.activeThemeId = themeId;
+			}),
+			this.engine.on('iconTheme:changed', ({ iconThemeId }: { iconThemeId: string }) => {
+				this.activeIconThemeId = iconThemeId;
 			}),
 			this.engine.on('i18n:localeChanged', ({ locale }: { locale: string }) => {
 				this.currentLocale = locale;
@@ -133,6 +138,7 @@ export class ReactiveChronosController implements Disposable {
 		this.activeWeek = this.engine.state.activeWeek;
 		this.currentPeriodIndex = this.engine.state.currentPeriodIndex;
 		this.activeThemeId = this.engine.state.activeThemeId;
+		this.activeIconThemeId = this.engine.state.userPreferences.visualIconThemeId ?? 'host-default';
 		this.userPreferences = this.engine.state.userPreferences;
 		this.currentLocale = this.engine.locale;
 		this.courseBadges = this.engine.badges.getAll();

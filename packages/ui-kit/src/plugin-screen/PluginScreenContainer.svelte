@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isChronosMountable } from '@chronos/core';
 	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
 	import SchemaForm from '../schema-form/SchemaForm.svelte';
 	import { resolvePluginScreenSlot } from './resolve-plugin-screen-slot';
@@ -15,11 +16,7 @@
 		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
 	);
 
-	const isMountableComponent = $derived.by(() => {
-		const comp = screenSlot?.component as Record<string | symbol, unknown> | undefined;
-		if (!comp) return false;
-		return (comp as Record<symbol, unknown>)[Symbol.for('chronos.mountable')] === true;
-	});
+	const isMountableComponent = $derived(isChronosMountable(screenSlot?.component));
 
 	let containerEl = $state<HTMLDivElement>();
 	let formValues = $state<Record<string, unknown>>({});
