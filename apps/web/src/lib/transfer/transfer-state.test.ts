@@ -71,4 +71,22 @@ describe('createTransferState', () => {
 		expect(importTimetable).toHaveBeenCalledTimes(1);
 		expect(controller.state.preview).toBeNull();
 	});
+
+	it('safely handles getExportMetadata when current timetable has no courses', async () => {
+		const mockEngine = {
+			state: {
+				currentTimetable: {
+					id: 't1',
+					name: '空课表',
+					courses: [],
+					academicConfig: { termStartDate: '', startWeek: 1, endWeek: 20, periodTimes: [] }
+				}
+			}
+		} as unknown as Parameters<typeof createTransferState>[0];
+
+		const controller = createTransferState(mockEngine);
+		const meta = await controller.getExportMetadata();
+		expect(meta.timetableName).toBe('空课表');
+		expect(meta.longLinkWarning).toBe(false);
+	});
 });

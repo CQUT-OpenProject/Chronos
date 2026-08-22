@@ -7,10 +7,12 @@ import {
 	type ShareCampusId
 } from './share-campus';
 import {
+	AcademicCalendarService,
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	coursePalette,
 	normalizedCourseName,
 	normalizeTimetableName,
+	todayIsoDate,
 	type Timetable
 } from '@chronos/core';
 import { consolidateCourses } from './import-course-utils';
@@ -167,16 +169,30 @@ function decodeLocation(strings: string[], buildingIdx: number, room: string): s
 	return formatLocation({ kind: 'split', building, room });
 }
 
+const academicCalendarService = new AcademicCalendarService();
+
 function normalizeTimetable(timetable: Timetable): Timetable {
+	const rawTermStart = timetable.academicConfig?.termStartDate ?? '';
+	const termStartDate = academicCalendarService.normalizeTermStartDate(
+		rawTermStart,
+		todayIsoDate()
+	);
 	return {
 		...timetable,
 		name: normalizeTimetableName(timetable.name),
+		academicConfig: {
+			...timetable.academicConfig,
+			termStartDate,
+			startWeek: timetable.academicConfig?.startWeek ?? 1,
+			endWeek: timetable.academicConfig?.endWeek ?? DEFAULT_END_WEEK,
+			periodTimes: timetable.academicConfig?.periodTimes ?? []
+		},
 		courses: consolidateCourses(
-			timetable.courses.map((course) => ({
+			(timetable.courses ?? []).map((course) => ({
 				...course,
 				name: normalizedCourseName(course.name),
-				teacher: course.teacher.trim(),
-				location: course.location.trim(),
+				teacher: (course.teacher ?? '').trim(),
+				location: (course.location ?? '').trim(),
 				remark: course.remark?.trim() ?? ''
 			}))
 		)

@@ -121,6 +121,24 @@ describe('chronos-share-binary', () => {
 		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:30');
 	});
 
+	it('handles timetable with empty or missing termStartDate gracefully', () => {
+		const timetable = createTimetable({
+			id: 'empty-start-date',
+			name: '未设起始日课表',
+			courses: [
+				course('c1', '高等数学', '王老师', {
+					location: '两江校区 弘远楼A101',
+					dayOfWeek: 1,
+					weeks: [1, 2, 3]
+				})
+			]
+		});
+		expect(timetable.academicConfig.termStartDate).toBe('');
+		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
+		expect(decoded.name).toBe('未设起始日课表');
+		expect(decoded.academicConfig.termStartDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+	});
+
 	it('rejects weeks beyond the supported range', () => {
 		const timetable = sampleTimetable();
 		timetable.courses[0]!.weeks = [33];

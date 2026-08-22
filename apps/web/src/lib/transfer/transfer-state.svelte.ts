@@ -145,7 +145,14 @@ export function createTransferState(engine?: ChronosEngine) {
 		}
 		const controller = getAppController();
 		const exportSlot = controller.getSlotItem('export.action', 'share-link');
-		const length = exportSlot?.estimateLength ? await exportSlot.estimateLength(current) : 0;
+		let length = 0;
+		if (exportSlot?.estimateLength && (current.courses?.length ?? 0) > 0) {
+			try {
+				length = await exportSlot.estimateLength(current);
+			} catch {
+				length = 0;
+			}
+		}
 		return {
 			timetableName: current.name,
 			longLinkWarning: length > SHARE_LINK_MAX_RECOMMENDED_LENGTH
