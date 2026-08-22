@@ -6,7 +6,6 @@ import type { Disposable } from '../types/services';
 import { IHttpService, IStorageService, IVaultService, IRuntimeService } from '../types/services';
 import type { ChronosPlugin } from '../types/context';
 import type { ChronosEvents } from '../types/context';
-import { ALLOWED_PLUGIN_PERMISSIONS } from '../types/permissions';
 import type { ChronosSlotMap } from '../types/slots';
 import { EventPipeline } from './event-pipeline';
 import { HierarchicalSlotRegistry } from './hierarchical-slot-registry';

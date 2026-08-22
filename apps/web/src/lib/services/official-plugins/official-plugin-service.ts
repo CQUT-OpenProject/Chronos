@@ -260,7 +260,6 @@ export class OfficialPluginService implements Disposable {
 		const handle = await this.engine.loadPlugin({
 			...plugin,
 			configSchema: manifest.configSchema ?? plugin.configSchema,
-			permissions: manifest.permissions ?? plugin.permissions,
 			allowedDomains: manifest.allowedDomains ?? plugin.allowedDomains
 		});
 

@@ -3,9 +3,6 @@ import type { AcademicConfig, Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
 import type { Disposable, ServiceIdentifier } from './services';
 import type { ChronosSlotMap, LocalizedText, CourseBadge, ExportResult } from './slots';
-import type { PluginPermission } from './permissions';
-
-export type { PluginPermission, ALLOWED_PLUGIN_PERMISSIONS } from './permissions';
 
 /** Plugin category classification */
 export type PluginCategory = 'source' | 'parser' | 'codec' | 'theme' | 'tool';
@@ -37,8 +34,6 @@ export interface ChronosPlugin<Config extends object = Record<string, unknown>> 
 	readonly defaultConfig?: Config;
 	/** Declared service dependencies (plugin remains pending until all dependencies are satisfied) */
 	readonly inject?: ReadonlyArray<ServiceIdentifier<unknown> | string>;
-	/** Declared permissions required by the plugin (e.g. ['network', 'storage']) */
-	readonly permissions?: ReadonlyArray<PluginPermission>;
 	/** Allowed domain whitelist for network requests */
 	readonly allowedDomains?: string[];
 

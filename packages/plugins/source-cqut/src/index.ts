@@ -294,7 +294,6 @@ export function createCqutPlugin(
 		order: 10,
 		author: 'CQUT OpenProject',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
-		permissions: ['network', 'storage'],
 		allowedDomains: ['authserver.cqut.edu.cn', 'uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'],
 
 		apply(ctx: ChronosContext<CqutPluginConfig>) {

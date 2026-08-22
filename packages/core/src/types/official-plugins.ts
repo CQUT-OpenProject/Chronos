@@ -3,7 +3,6 @@ import type { ConfigSchema } from '../schema/schema';
 /** Current Chronos engine API version for official plugin compatibility checks. */
 export const CHRONOS_ENGINE_VERSION = '0.4.0';
 
-export type PluginCapability = 'network' | 'storage' | 'vault' | 'notifications';
 export type BundleFormat = 'esm';
 
 export interface PluginManifest {
@@ -19,7 +18,6 @@ export interface PluginManifest {
 	sha256: string;
 	/** Optional Ed25519 signature (future verification). */
 	signature?: string;
-	permissions?: PluginCapability[];
 	allowedDomains?: string[];
 	configSchema?: ConfigSchema<Record<string, unknown>>;
 	icon?: string;

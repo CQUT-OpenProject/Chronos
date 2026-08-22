@@ -227,21 +227,6 @@
 		};
 		configModalOpen = true;
 	}
-
-	function formatPermission(perm: string): string {
-		switch (perm) {
-			case 'network':
-				return '网络';
-			case 'storage':
-				return '存储';
-			case 'vault':
-				return '凭据';
-			case 'notifications':
-				return '通知';
-			default:
-				return perm;
-		}
-	}
 </script>
 
 {#snippet thirdPartyImportFooter()}
@@ -346,7 +331,6 @@
 							{@const desc = resolveLocalizedDesc(record.manifest.description)}
 							{@const meta = getPluginCategoryMeta(record.manifest.type)}
 							{@const isBusy = operatingPluginId === record.manifest.id}
-							{@const permissions = record.manifest.permissions || []}
 							<div
 								class="flex flex-col gap-2 p-3 transition-colors hover:bg-surface-variant/30"
 								class:opacity-60={!record.enabled}
@@ -398,13 +382,6 @@
 												by {record.manifest.author}
 											</span>
 										{/if}
-										{#each permissions as perm (perm)}
-											<span
-												class="m3-caption py-0.2 rounded bg-surface-container-high px-1.5 text-[10px] text-on-surface-variant"
-											>
-												{formatPermission(perm)}
-											</span>
-										{/each}
 									</div>
 
 									<div class="flex items-center gap-1">
@@ -484,7 +461,6 @@
 								{@const meta = getPluginCategoryMeta(manifest.type)}
 								{@const installed = isInstalled(manifest.id)}
 								{@const isBusy = operatingPluginId === manifest.id}
-								{@const permissions = manifest.permissions || []}
 								<div
 									class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
 								>
@@ -509,20 +485,11 @@
 												{desc}
 											</p>
 										{/if}
-										{#if permissions.length > 0 || manifest.author}
+										{#if manifest.author}
 											<div class="mt-1 flex flex-wrap items-center gap-1">
-												{#if manifest.author}
-													<span class="m3-caption text-[10px] text-on-surface-variant/70">
-														by {manifest.author}
-													</span>
-												{/if}
-												{#each permissions as perm (perm)}
-													<span
-														class="m3-caption py-0.2 rounded bg-surface-container-high px-1.5 text-[10px] text-on-surface-variant"
-													>
-														{formatPermission(perm)}
-													</span>
-												{/each}
+												<span class="m3-caption text-[10px] text-on-surface-variant/70">
+													by {manifest.author}
+												</span>
 											</div>
 										{/if}
 									</div>

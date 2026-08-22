@@ -1,5 +1,6 @@
 // Domain
 export * from './domain/course';
+export * from './domain/course-query';
 export * from './domain/timetable';
 export * from './domain/preferences';
 
