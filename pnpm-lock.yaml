@@ -174,6 +174,10 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
+      '@chronos/plugin-source-cqut':
+        specifier: workspace:*
+        version: link:../source-cqut
+    optionalDependencies:
       brotli-wasm:
         specifier: ^3.0.1
         version: 3.0.1

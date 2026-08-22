@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createChronosAliasRecord } from './resolve-chronos-aliases.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = resolve(root, 'dist/official-plugins');
@@ -56,23 +57,7 @@ for (const plugin of plugins) {
 		configFile: false,
 		plugins: [svelte({ compilerOptions: { runes: true } })],
 		resolve: {
-			alias: {
-				'@chronos/core': resolve(root, 'packages/core/src/index.ts'),
-				'@chronos/ui-kit': resolve(root, 'packages/ui-kit/src/index.ts'),
-				'@chronos/plugin-wallpaper': resolve(root, 'packages/plugins/wallpaper/src/index.ts'),
-				'@chronos/plugin-wallpaper/wallpaper-theme': resolve(
-					root,
-					'packages/plugins/wallpaper/src/wallpaper-theme.ts'
-				),
-				'@chronos/plugin-wallpaper/WallpaperScreen': resolve(
-					root,
-					'packages/plugins/wallpaper/src/WallpaperScreen.svelte'
-				),
-				'@chronos/plugin-theme-yumemita': resolve(
-					root,
-					'packages/plugins/theme-yumemita/src/index.ts'
-				)
-			}
+			alias: createChronosAliasRecord(root)
 		},
 		build: {
 			emptyOutDir: true,

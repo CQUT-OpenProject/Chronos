@@ -23,7 +23,12 @@
 		}
 	},
 	"dependencies": {
-		"@chronos/core": "workspace:*",
+		"@chronos/core": "workspace:*"
+	},
+	"peerDependencies": {
+		"@chronos/plugin-source-cqut": "workspace:*"
+	},
+	"optionalDependencies": {
 		"brotli-wasm": "^3.0.1"
 	}
 }
