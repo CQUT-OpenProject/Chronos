@@ -77,7 +77,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 						{
 							isDark,
 							paletteMode,
-							wallpaperUri: dynamicColorUri,
+							dynamicColorUri,
 							activeThemeId,
 							themePaletteEntries
 						},
@@ -108,7 +108,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		return () => {
 			disposeEffects?.();
 			disposeEffects = null;
-			deps.shell.appearance.reset();
+			deps.shell.appearance.destroy();
 			disposeOfflineUx?.();
 			disposeOfflineUx = null;
 			connectivity.destroy();

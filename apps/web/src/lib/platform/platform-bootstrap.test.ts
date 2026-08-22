@@ -9,7 +9,6 @@ const mocks = vi.hoisted(() => ({
 	tryScheduleInstallDialog: vi.fn(),
 	initWebVitals: vi.fn(),
 	initAnalytics: vi.fn(),
-	ensureShareLinkBrotliReady: vi.fn().mockResolvedValue(undefined),
 	attachOfflineUx: vi.fn(() => vi.fn())
 }));
 
@@ -68,7 +67,7 @@ import { createPlatformBootstrap, type PlatformBootstrapDeps } from './platform-
 describe('createPlatformBootstrap', () => {
 	const appearance = {
 		apply: vi.fn(),
-		reset: vi.fn(),
+		destroy: vi.fn(),
 		coursePalette: []
 	};
 	const shell = {
@@ -115,7 +114,7 @@ describe('createPlatformBootstrap', () => {
 
 		teardown();
 		expect(mocks.connectivityDestroy).toHaveBeenCalled();
-		expect(appearance.reset).toHaveBeenCalled();
+		expect(appearance.destroy).toHaveBeenCalled();
 	});
 
 	it('is idempotent on repeated init', () => {
