@@ -1,3 +1,5 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
@@ -10,6 +12,78 @@ import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { writeGeneratedThemeCss } from './src/lib/m3/theme';
 import { writeGeneratedVersionJson } from './src/lib/content/releases/version-generator';
 import { chronosProfilePlugin } from './src/lib/profile-codegen/chronos-profile-plugin';
+
+function createChronosAlias(): Array<{ find: string | RegExp; replacement: string }> {
+	const root = fileURLToPath(new URL('../../', import.meta.url));
+	const alias: Array<{ find: string | RegExp; replacement: string }> = [];
+	const seen = new Set<string>();
+
+	function addPackage(pkgDir: string) {
+		const pkgJsonPath = resolve(pkgDir, 'package.json');
+		if (!existsSync(pkgJsonPath)) return;
+		try {
+			const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as {
+				name: string;
+				exports?: Record<string, unknown>;
+				main?: string;
+			};
+			const exportsMap = pkg.exports as
+				| Record<string, { import?: string; default?: string } | string>
+				| undefined;
+			if (exportsMap) {
+				for (const [key, value] of Object.entries(exportsMap)) {
+					const importPath = key === '.' ? pkg.name : `${pkg.name}${key.slice(1)}`;
+					if (seen.has(importPath)) continue;
+					seen.add(importPath);
+					const target =
+						typeof value === 'string'
+							? value
+							: ((value as { import?: string; default?: string }).import ??
+								(value as { import?: string; default?: string }).default);
+					if (!target) continue;
+					const replacement = fileURLToPath(new URL(target as string, `file://${pkgDir}/`));
+					if (key === '.') {
+						alias.push({
+							find: new RegExp(`^${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
+							replacement
+						});
+					} else {
+						alias.push({ find: importPath, replacement });
+					}
+				}
+			} else if (pkg.name && pkg.main) {
+				if (!seen.has(pkg.name)) {
+					seen.add(pkg.name);
+					alias.push({
+						find: new RegExp(`^${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
+						replacement: resolve(pkgDir, pkg.main)
+					});
+				}
+			}
+		} catch {}
+	}
+
+	// 顶层 packages
+	for (const entry of readdirSync(resolve(root, 'packages'))) {
+		const pkgDir = resolve(root, `packages/${entry}`);
+		if (existsSync(resolve(pkgDir, 'package.json'))) addPackage(pkgDir);
+	}
+	// plugins
+	const pluginsRoot = resolve(root, 'packages/plugins');
+	if (existsSync(pluginsRoot)) {
+		for (const entry of readdirSync(pluginsRoot)) {
+			const pkgDir = resolve(pluginsRoot, entry);
+			if (existsSync(resolve(pkgDir, 'package.json'))) addPackage(pkgDir);
+		}
+	}
+	// 子路径优先于主包，确保 @chronos/plugin-source-cqut/server 不被主包前缀误匹配
+	alias.sort((a, b) => {
+		const aStr = a.find.toString();
+		const bStr = b.find.toString();
+		return bStr.length - aStr.length;
+	});
+	return alias;
+}
 
 const webRoot = fileURLToPath(new URL('.', import.meta.url));
 
@@ -36,97 +110,8 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		resolve: {
-			alias: [
-				{
-					find: '@chronos/plugin-source-cqut/server',
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/source-cqut/server/index.ts', import.meta.url)
-					)
-				},
-				{
-					find: '@chronos/plugin-source-cqut/week-merge',
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
-					)
-				},
-				{
-					find: '@chronos/plugin-source-cqut/CqutOnlineImportTab',
-					replacement: fileURLToPath(
-						new URL(
-							'../../packages/plugins/source-cqut/src/CqutOnlineImportTab.svelte',
-							import.meta.url
-						)
-					)
-				},
-				{
-					find: '@chronos/plugin-source-cqut/EduHtmlImportTab',
-					replacement: fileURLToPath(
-						new URL(
-							'../../packages/plugins/source-cqut/src/EduHtmlImportTab.svelte',
-							import.meta.url
-						)
-					)
-				},
-				{
-					find: /^@chronos\/plugin-source-cqut$/,
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/source-cqut/src/index.ts', import.meta.url)
-					)
-				},
-				{
-					find: '@chronos/plugin-codec-share/share-link',
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
-					)
-				},
-				{
-					find: '@chronos/plugin-codec-share/ShareLinkImportTab',
-					replacement: fileURLToPath(
-						new URL(
-							'../../packages/plugins/codec-share/src/ShareLinkImportTab.svelte',
-							import.meta.url
-						)
-					)
-				},
-				{
-					find: /^@chronos\/plugin-codec-share$/,
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/codec-share/src/index.ts', import.meta.url)
-					)
-				},
-				{
-					find: '@chronos/core',
-					replacement: fileURLToPath(new URL('../../packages/core/src/index.ts', import.meta.url))
-				},
-				{
-					find: '@chronos/ui-kit',
-					replacement: fileURLToPath(new URL('../../packages/ui-kit/src/index.ts', import.meta.url))
-				},
-				{
-					find: '@chronos/plugin-theme-yumemita',
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
-					)
-				},
-				{
-					find: '@chronos/plugin-wallpaper/wallpaper-theme',
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/wallpaper/src/wallpaper-theme.ts', import.meta.url)
-					)
-				},
-				{
-					find: '@chronos/plugin-wallpaper/WallpaperScreen',
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/wallpaper/src/WallpaperScreen.svelte', import.meta.url)
-					)
-				},
-				{
-					find: /^@chronos\/plugin-wallpaper$/,
-					replacement: fileURLToPath(
-						new URL('../../packages/plugins/wallpaper/src/index.ts', import.meta.url)
-					)
-				}
-			]
+			alias: createChronosAlias(),
+			dedupe: ['svelte']
 		},
 		define: {
 			__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
@@ -166,30 +151,7 @@ export default defineConfig(({ mode }) => {
 			functionsMixins(),
 			tailwindcss(),
 			sveltekit({
-				alias: {
-					'@chronos/core': '../../packages/core/src/index.ts',
-					'@chronos/ui-kit': '../../packages/ui-kit/src/index.ts',
-					'@chronos/plugin-source-cqut/server':
-						'../../packages/plugins/source-cqut/server/index.ts',
-					'@chronos/plugin-source-cqut/week-merge':
-						'../../packages/plugins/source-cqut/src/week-merge.ts',
-					'@chronos/plugin-source-cqut/CqutOnlineImportTab':
-						'../../packages/plugins/source-cqut/src/CqutOnlineImportTab.svelte',
-					'@chronos/plugin-source-cqut/EduHtmlImportTab':
-						'../../packages/plugins/source-cqut/src/EduHtmlImportTab.svelte',
-					'@chronos/plugin-source-cqut': '../../packages/plugins/source-cqut/src/index.ts',
-					'@chronos/plugin-codec-share/share-link':
-						'../../packages/plugins/codec-share/src/share-link/index.ts',
-					'@chronos/plugin-codec-share/ShareLinkImportTab':
-						'../../packages/plugins/codec-share/src/ShareLinkImportTab.svelte',
-					'@chronos/plugin-codec-share': '../../packages/plugins/codec-share/src/index.ts',
-					'@chronos/plugin-theme-yumemita': '../../packages/plugins/theme-yumemita/src/index.ts',
-					'@chronos/plugin-wallpaper/wallpaper-theme':
-						'../../packages/plugins/wallpaper/src/wallpaper-theme.ts',
-					'@chronos/plugin-wallpaper/WallpaperScreen':
-						'../../packages/plugins/wallpaper/src/WallpaperScreen.svelte',
-					'@chronos/plugin-wallpaper': '../../packages/plugins/wallpaper/src/index.ts'
-				},
+				// alias 统一由顶层 resolve.alias 提供，此处不再重复声明
 				compilerOptions: {
 					runes: ({ filename }) =>
 						filename.split(/[/\\]/).includes('node_modules') ? undefined : true

@@ -1,78 +1,139 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite-plus';
 
+function createChronosAlias(): Array<{ find: string | RegExp; replacement: string }> {
+	const root = fileURLToPath(new URL('./', import.meta.url));
+	const alias: Array<{ find: string | RegExp; replacement: string }> = [];
+	const seen = new Set<string>();
+	function addPackage(pkgDir: string) {
+		const pkgJsonPath = resolve(pkgDir, 'package.json');
+		if (!existsSync(pkgJsonPath)) return;
+		try {
+			const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as {
+				name: string;
+				exports?: Record<string, unknown>;
+				main?: string;
+			};
+			const exportsMap = pkg.exports as
+				| Record<string, { import?: string; default?: string } | string>
+				| undefined;
+			if (exportsMap) {
+				for (const [key, value] of Object.entries(exportsMap)) {
+					const importPath = key === '.' ? pkg.name : `${pkg.name}${key.slice(1)}`;
+					if (seen.has(importPath)) continue;
+					seen.add(importPath);
+					const target =
+						typeof value === 'string'
+							? value
+							: ((value as { import?: string; default?: string }).import ??
+								(value as { import?: string; default?: string }).default);
+					if (!target) continue;
+					const replacement = fileURLToPath(new URL(target as string, `file://${pkgDir}/`));
+					if (key === '.') {
+						alias.push({
+							find: new RegExp(`^${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
+							replacement
+						});
+					} else {
+						alias.push({ find: importPath, replacement });
+					}
+				}
+			} else if (pkg.name && pkg.main) {
+				const escaped = pkg.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+				if (!seen.has(pkg.name)) {
+					seen.add(pkg.name);
+					alias.push({
+						find: new RegExp(`^${escaped}$`),
+						replacement: resolve(pkgDir, pkg.main)
+					});
+				}
+			}
+		} catch {}
+	}
+	for (const entry of readdirSync(resolve(root, 'packages'))) {
+		const pkgDir = resolve(root, `packages/${entry}`);
+		if (existsSync(resolve(pkgDir, 'package.json'))) addPackage(pkgDir);
+	}
+	const pluginsRoot = resolve(root, 'packages/plugins');
+	if (existsSync(pluginsRoot)) {
+		for (const entry of readdirSync(pluginsRoot)) {
+			const pkgDir = resolve(pluginsRoot, entry);
+			if (existsSync(resolve(pkgDir, 'package.json'))) addPackage(pkgDir);
+		}
+	}
+	// 子路径优先于主包，确保 @chronos/plugin-source-cqut/server 不被主包前缀误匹配
+	alias.sort((a, b) => {
+		const aStr = a.find.toString();
+		const bStr = b.find.toString();
+		return bStr.length - aStr.length;
+	});
+	return alias;
+}
+
+const chronosAlias = createChronosAlias();
+
 export default defineConfig({
 	defaultPackage: './apps/web',
 	resolve: {
-		alias: {
-			$lib: fileURLToPath(new URL('./apps/web/src/lib', import.meta.url)),
-			'$app/environment': fileURLToPath(
-				new URL(
-					'./node_modules/@sveltejs/kit/src/runtime/app/environment/index.js',
-					import.meta.url
+		alias: [
+			{ find: '$lib', replacement: fileURLToPath(new URL('./apps/web/src/lib', import.meta.url)) },
+			{
+				find: '$app/environment',
+				replacement: fileURLToPath(
+					new URL(
+						'./node_modules/@sveltejs/kit/src/runtime/app/environment/index.js',
+						import.meta.url
+					)
 				)
-			),
-			'$app/paths': fileURLToPath(
-				new URL('./apps/web/src/lib/test-mocks/app-paths.ts', import.meta.url)
-			),
-			'virtual:pwa-register': fileURLToPath(
-				new URL('./apps/web/src/lib/test-mocks/pwa-register.ts', import.meta.url)
-			),
-			'$app/navigation': fileURLToPath(
-				new URL('./node_modules/@sveltejs/kit/src/runtime/app/navigation.js', import.meta.url)
-			),
-			'$app/stores': fileURLToPath(
-				new URL('./node_modules/@sveltejs/kit/src/runtime/app/stores.js', import.meta.url)
-			),
-			'$app/state': fileURLToPath(
-				new URL('./node_modules/@sveltejs/kit/src/runtime/app/state/index.js', import.meta.url)
-			),
-			'$env/dynamic/public': fileURLToPath(
-				new URL('./apps/web/src/lib/config/env-dynamic-public-mock.ts', import.meta.url)
-			),
-			'$env/static/public': fileURLToPath(
-				new URL('./apps/web/src/lib/config/env-dynamic-public-mock.ts', import.meta.url)
-			),
-			'@chronos/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
-			'@chronos/ui-kit': fileURLToPath(new URL('./packages/ui-kit/src/index.ts', import.meta.url)),
-			'@chronos/plugin-source-cqut/server': fileURLToPath(
-				new URL('./packages/plugins/source-cqut/server/index.ts', import.meta.url)
-			),
-			'@chronos/plugin-source-cqut/week-merge': fileURLToPath(
-				new URL('./packages/plugins/source-cqut/src/week-merge.ts', import.meta.url)
-			),
-			'@chronos/plugin-codec-share/share-link': fileURLToPath(
-				new URL('./packages/plugins/codec-share/src/share-link/index.ts', import.meta.url)
-			),
-			'@chronos/plugin-codec-share/ShareLinkImportTab': fileURLToPath(
-				new URL('./packages/plugins/codec-share/src/ShareLinkImportTab.svelte', import.meta.url)
-			),
-			'@chronos/plugin-codec-share': fileURLToPath(
-				new URL('./packages/plugins/codec-share/src/index.ts', import.meta.url)
-			),
-			'@chronos/plugin-source-cqut/CqutOnlineImportTab': fileURLToPath(
-				new URL('./packages/plugins/source-cqut/src/CqutOnlineImportTab.svelte', import.meta.url)
-			),
-			'@chronos/plugin-source-cqut/EduHtmlImportTab': fileURLToPath(
-				new URL('./packages/plugins/source-cqut/src/EduHtmlImportTab.svelte', import.meta.url)
-			),
-			'@chronos/plugin-source-cqut': fileURLToPath(
-				new URL('./packages/plugins/source-cqut/src/index.ts', import.meta.url)
-			),
-			'@chronos/plugin-theme-yumemita': fileURLToPath(
-				new URL('./packages/plugins/theme-yumemita/src/index.ts', import.meta.url)
-			),
-			'@chronos/plugin-wallpaper/wallpaper-theme': fileURLToPath(
-				new URL('./packages/plugins/wallpaper/src/wallpaper-theme.ts', import.meta.url)
-			),
-			'@chronos/plugin-wallpaper/WallpaperScreen': fileURLToPath(
-				new URL('./packages/plugins/wallpaper/src/WallpaperScreen.svelte', import.meta.url)
-			),
-			'@chronos/plugin-wallpaper': fileURLToPath(
-				new URL('./packages/plugins/wallpaper/src/index.ts', import.meta.url)
-			)
-		}
+			},
+			{
+				find: '$app/paths',
+				replacement: fileURLToPath(
+					new URL('./apps/web/src/lib/test-mocks/app-paths.ts', import.meta.url)
+				)
+			},
+			{
+				find: 'virtual:pwa-register',
+				replacement: fileURLToPath(
+					new URL('./apps/web/src/lib/test-mocks/pwa-register.ts', import.meta.url)
+				)
+			},
+			{
+				find: '$app/navigation',
+				replacement: fileURLToPath(
+					new URL('./node_modules/@sveltejs/kit/src/runtime/app/navigation.js', import.meta.url)
+				)
+			},
+			{
+				find: '$app/stores',
+				replacement: fileURLToPath(
+					new URL('./node_modules/@sveltejs/kit/src/runtime/app/stores.js', import.meta.url)
+				)
+			},
+			{
+				find: '$app/state',
+				replacement: fileURLToPath(
+					new URL('./node_modules/@sveltejs/kit/src/runtime/app/state/index.js', import.meta.url)
+				)
+			},
+			{
+				find: '$env/dynamic/public',
+				replacement: fileURLToPath(
+					new URL('./apps/web/src/lib/config/env-dynamic-public-mock.ts', import.meta.url)
+				)
+			},
+			{
+				find: '$env/static/public',
+				replacement: fileURLToPath(
+					new URL('./apps/web/src/lib/config/env-dynamic-public-mock.ts', import.meta.url)
+				)
+			},
+			...chronosAlias
+		],
+		dedupe: ['svelte']
 	},
 	define: {
 		__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
