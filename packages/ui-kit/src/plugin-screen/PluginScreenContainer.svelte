@@ -15,9 +15,32 @@
 		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
 	);
 
+	const isMountableComponent = $derived(
+		typeof (screenSlot?.component as { mount?: unknown } | undefined)?.mount === 'function'
+	);
+
+	let containerEl = $state<HTMLDivElement>();
 	let formValues = $state<Record<string, unknown>>({});
 	let saving = $state(false);
 	let saveError = $state<string | null>(null);
+
+	$effect(() => {
+		if (!containerEl || !screenSlot?.component || !isMountableComponent) return;
+		const comp = screenSlot.component as {
+			mount(
+				target: HTMLElement,
+				props: Record<string, unknown>
+			): { unmount?(): void } | (() => void);
+		};
+		const instance = comp.mount(containerEl, { controller, pluginId });
+		return () => {
+			if (typeof instance === 'function') {
+				instance();
+			} else if (typeof instance?.unmount === 'function') {
+				instance.unmount();
+			}
+		};
+	});
 
 	$effect(() => {
 		if (!screenSlot?.schema || screenSlot?.component) return;
@@ -45,10 +68,17 @@
 </script>
 
 {#if screenSlot?.component}
-	{@const DynamicComponent = screenSlot.component}
-	<div class="flex min-h-0 w-full flex-1 flex-col">
-		<DynamicComponent {controller} {pluginId} />
-	</div>
+	{#if isMountableComponent}
+		<div bind:this={containerEl} class="flex min-h-0 w-full flex-1 flex-col"></div>
+	{:else}
+		{@const DynamicComponent = screenSlot.component as import('svelte').Component<{
+			controller: ReactiveChronosController;
+			pluginId: string;
+		}>}
+		<div class="flex min-h-0 w-full flex-1 flex-col">
+			<DynamicComponent {controller} {pluginId} />
+		</div>
+	{/if}
 {:else if screenSlot?.schema}
 	<div class="flex w-full flex-col p-4">
 		<div class="flex flex-col gap-4 rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
