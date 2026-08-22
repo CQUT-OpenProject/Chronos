@@ -1,14 +1,7 @@
 import { build } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { createHash } from 'node:crypto';
-import {
-	existsSync,
-	mkdirSync,
-	readFileSync,
-	writeFileSync,
-	readdirSync,
-	copyFileSync
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -40,6 +33,14 @@ const plugins = [
 mkdirSync(distDir, { recursive: true });
 mkdirSync(staticBundleDir, { recursive: true });
 mkdirSync(manifestDir, { recursive: true });
+// 清理旧版共享 dist 的遗留 flat 产物，避免误判
+for (const f of readdirSync(distDir)) {
+	if (f.endsWith('.bundle.js') || f.endsWith('.bundle.css') || f === 'style.css') {
+		try {
+			rmSync(resolve(distDir, f), { force: true });
+		} catch {}
+	}
+}
 
 for (const plugin of plugins) {
 	if (!existsSync(plugin.entry)) {
@@ -47,12 +48,10 @@ for (const plugin of plugins) {
 		continue;
 	}
 	const fileName = `${plugin.id}.bundle.js`;
-	// clear previous
-	const builtPath = resolve(distDir, fileName);
-	const builtCssPath = resolve(distDir, `${plugin.id}.bundle.css`);
-	try {
-		if (existsSync(builtPath)) writeFileSync(builtPath, '', 'utf8');
-	} catch {}
+	const perPluginDist = resolve(distDir, plugin.id);
+	// 隔离子目录：确保本插件 CSS 归属精确，避免共享 dist 污染
+	mkdirSync(perPluginDist, { recursive: true });
+	const builtPath = resolve(perPluginDist, fileName);
 	await build({
 		configFile: false,
 		plugins: [svelte({ compilerOptions: { runes: true } })],
@@ -76,14 +75,14 @@ for (const plugin of plugins) {
 			}
 		},
 		build: {
-			emptyOutDir: false,
+			emptyOutDir: true,
 			cssCodeSplit: false,
 			lib: {
 				entry: plugin.entry,
 				formats: ['es'],
 				fileName: () => fileName
 			},
-			outDir: distDir,
+			outDir: perPluginDist,
 			rollupOptions: {
 				output: {
 					inlineDynamicImports: true
@@ -96,31 +95,25 @@ for (const plugin of plugins) {
 	// copy js
 	writeFileSync(resolve(staticBundleDir, fileName), code, 'utf8');
 
-	// handle css if emitted
+	// handle css if emitted — 仅在隔离子目录内查找，杜绝跨插件污染
 	let cssFileName: string | null = null;
 	let cssSha256: string | null = null;
 	const staticCssPath = resolve(staticBundleDir, `${plugin.id}.bundle.css`);
-	// Vite may emit style.css; check distDir for .css
-	const distFiles = readdirSync(distDir);
+	const distFiles = readdirSync(perPluginDist);
 	const emittedCss = distFiles.find((f) => f.endsWith('.css'));
-	if (emittedCss && existsSync(resolve(distDir, emittedCss))) {
-		const cssContent = readFileSync(resolve(distDir, emittedCss), 'utf8');
-		if (cssContent.trim().length > 0) {
-			cssFileName = `${plugin.id}.bundle.css`;
-			writeFileSync(staticCssPath, cssContent, 'utf8');
-			// also keep in dist
-			if (emittedCss !== `${plugin.id}.bundle.css`) {
-				copyFileSync(resolve(distDir, emittedCss), resolve(distDir, cssFileName));
-			}
-			cssSha256 = createHash('sha256').update(cssContent).digest('hex');
-		}
-	} else if (existsSync(builtCssPath)) {
-		const cssContent = readFileSync(builtCssPath, 'utf8');
-		if (cssContent.trim().length > 0) {
-			cssFileName = `${plugin.id}.bundle.css`;
-			writeFileSync(staticCssPath, cssContent, 'utf8');
-			cssSha256 = createHash('sha256').update(cssContent).digest('hex');
-		}
+	let cssContent: string | null = null;
+	if (emittedCss && existsSync(resolve(perPluginDist, emittedCss))) {
+		const raw = readFileSync(resolve(perPluginDist, emittedCss), 'utf8');
+		if (raw.trim().length > 0) cssContent = raw;
+	}
+	// 兼容旧路径：若隔离目录未产出但 static 已有残留，不自动复用，避免污染
+	if (cssContent) {
+		cssFileName = `${plugin.id}.bundle.css`;
+		writeFileSync(staticCssPath, cssContent, 'utf8');
+		cssSha256 = createHash('sha256').update(cssContent).digest('hex');
+	} else {
+		// 无 CSS 时清理可能的上次残留 static 文件，保证 yumemita 等无样式插件不残留错误 cssUrl
+		if (existsSync(staticCssPath)) rmSync(staticCssPath, { force: true });
 	}
 
 	const sha256 = createHash('sha256').update(code).digest('hex');
@@ -151,7 +144,7 @@ for (const plugin of plugins) {
 
 const catalog = {
 	version: 1,
-	updatedAt: Date.now(),
+	updatedAt: Number(process.env.SOURCE_DATE_EPOCH ?? Date.now()),
 	manifests: plugins
 		.filter((p) => existsSync(p.entry))
 		.map((p) => `/official-plugins/manifests/${p.id}.manifest.json`)

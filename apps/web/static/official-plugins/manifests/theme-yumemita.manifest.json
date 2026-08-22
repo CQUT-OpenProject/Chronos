@@ -14,7 +14,5 @@
 	"bundleFormat": "esm",
 	"minEngineVersion": "0.4.0",
 	"bundleUrl": "/official-plugins/bundles/theme-yumemita.bundle.js",
-	"sha256": "9feec8cdc4f046b5026514237a28cf430ac64e83f5896f4e9f4e8fbce0289351",
-	"cssUrl": "/official-plugins/bundles/theme-yumemita.bundle.css",
-	"cssSha256": "85d2e2111bc59f10497b1b6e6d44e023e174fd47bdd9d0547e8cf1fdf0e842a7"
+	"sha256": "9feec8cdc4f046b5026514237a28cf430ac64e83f5896f4e9f4e8fbce0289351"
 }

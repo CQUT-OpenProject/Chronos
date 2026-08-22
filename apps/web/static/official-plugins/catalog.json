@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"updatedAt": 1787376516204,
+	"updatedAt": 1787385956622,
 	"manifests": [
 		"/official-plugins/manifests/theme-yumemita.manifest.json",
 		"/official-plugins/manifests/tool-wallpaper.manifest.json"

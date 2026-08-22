@@ -15,86 +15,86 @@ function f() {
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/constants.js
-var p = 1 << 24, m = 1024, h = 2048, g = 4096, _ = 8192, v = 16384, y = 32768, b = 1 << 25, x = 65536, S = 1 << 19, C = 1 << 20, w = 1 << 25, T = 65536, ee = 1 << 21, te = 1 << 22, ne = 1 << 23, re = Symbol("$state"), ie = Symbol("legacy props"), ae = Symbol("attributes"), oe = Symbol("class"), se = Symbol("style"), ce = Symbol("text"), le = new class extends Error {
+var p = 1 << 24, m = 1024, h = 2048, g = 4096, _ = 8192, v = 16384, y = 32768, b = 1 << 25, x = 65536, S = 1 << 19, C = 1 << 20, w = 1 << 25, ee = 65536, te = 1 << 21, ne = 1 << 22, re = 1 << 23, ie = Symbol("$state"), ae = Symbol("legacy props"), oe = Symbol("attributes"), se = Symbol("class"), ce = Symbol("style"), le = Symbol("text"), ue = new class extends Error {
 	name = "StaleReactionError";
 	message = "The reaction that called `getAbortSignal()` was re-run or destroyed";
 }();
 globalThis.document?.contentType;
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/errors.js
-function ue() {
+function de() {
 	throw Error("https://svelte.dev/e/async_derived_orphan");
 }
-function de(e, t, n) {
+function fe(e, t, n) {
 	throw Error("https://svelte.dev/e/each_key_duplicate");
 }
-function fe(e) {
+function pe(e) {
 	throw Error("https://svelte.dev/e/effect_in_teardown");
 }
-function pe() {
+function me() {
 	throw Error("https://svelte.dev/e/effect_in_unowned_derived");
 }
-function me(e) {
+function he(e) {
 	throw Error("https://svelte.dev/e/effect_orphan");
 }
-function he() {
+function ge() {
 	throw Error("https://svelte.dev/e/effect_update_depth_exceeded");
 }
-function ge(e) {
+function _e(e) {
 	throw Error("https://svelte.dev/e/props_invalid_value");
 }
-function _e() {
+function ve() {
 	throw Error("https://svelte.dev/e/state_descriptors_fixed");
 }
-function ve() {
+function ye() {
 	throw Error("https://svelte.dev/e/state_prototype_fixed");
 }
-function ye() {
+function be() {
 	throw Error("https://svelte.dev/e/state_unsafe_mutation");
 }
-function be() {
+function xe() {
 	throw Error("https://svelte.dev/e/svelte_boundary_reset_onerror");
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/constants.js
-var xe = {}, E = Symbol("uninitialized");
-function Se() {
+var Se = {}, T = Symbol("uninitialized");
+function Ce() {
 	console.warn("https://svelte.dev/e/derived_inert");
 }
-function Ce(e) {
+function we(e) {
 	console.warn("https://svelte.dev/e/hydration_mismatch");
 }
-function we() {
+function Te() {
 	console.warn("https://svelte.dev/e/svelte_boundary_reset_noop");
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/hydration.js
-var D = !1;
-function Te(e) {
-	D = e;
-}
-var O;
+var E = !1;
 function Ee(e) {
-	if (e === null) throw Ce(), xe;
-	return O = e;
+	E = e;
 }
-function De() {
-	return Ee(/* @__PURE__ */ Xt(O));
+var D;
+function De(e) {
+	if (e === null) throw we(), Se;
+	return D = e;
 }
-function k(e) {
-	if (D) {
-		if (/* @__PURE__ */ Xt(O) !== null) throw Ce(), xe;
-		O = e;
+function Oe() {
+	return De(/* @__PURE__ */ Xt(D));
+}
+function O(e) {
+	if (E) {
+		if (/* @__PURE__ */ Xt(D) !== null) throw we(), Se;
+		D = e;
 	}
 }
-function Oe(e = 1) {
-	if (D) {
-		for (var t = e, n = O; t--;) n = /* @__PURE__ */ Xt(n);
-		O = n;
+function ke(e = 1) {
+	if (E) {
+		for (var t = e, n = D; t--;) n = /* @__PURE__ */ Xt(n);
+		D = n;
 	}
 }
-function ke(e = !0) {
-	for (var t = 0, n = O;;) {
+function Ae(e = !0) {
+	for (var t = 0, n = D;;) {
 		if (n.nodeType === 8) {
 			var r = n.data;
 			if (r === "]") {
@@ -106,30 +106,30 @@ function ke(e = !0) {
 		e && n.remove(), n = i;
 	}
 }
-function Ae(e) {
-	if (!e || e.nodeType !== 8) throw Ce(), xe;
+function je(e) {
+	if (!e || e.nodeType !== 8) throw we(), Se;
 	return e.data;
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/equality.js
-function je(e) {
+function Me(e) {
 	return e === this.v;
 }
-function Me(e, t) {
+function Ne(e, t) {
 	return e == e ? e !== t || typeof e == "object" && !!e || typeof e == "function" : t == t;
 }
-function Ne(e) {
-	return !Me(e, this.v);
+function Pe(e) {
+	return !Ne(e, this.v);
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/context.js
-var Pe = null;
-function Fe(e) {
-	Pe = e;
+var Fe = null;
+function Ie(e) {
+	Fe = e;
 }
-function Ie(e, t = !1, n) {
-	Pe = {
-		p: Pe,
+function Le(e, t = !1, n) {
+	Fe = {
+		p: Fe,
 		i: !1,
 		c: null,
 		e: null,
@@ -139,40 +139,40 @@ function Ie(e, t = !1, n) {
 		l: null
 	};
 }
-function Le(e) {
-	var t = Pe, n = t.e;
+function Re(e) {
+	var t = Fe, n = t.e;
 	if (n !== null) {
 		t.e = null;
 		for (var r of n) un(r);
 	}
-	return e !== void 0 && (t.x = e), t.i = !0, Pe = t.p, e ?? {};
+	return e !== void 0 && (t.x = e), t.i = !0, Fe = t.p, e ?? {};
 }
-function Re() {
+function ze() {
 	return !0;
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/task.js
-var ze = [];
-function Be() {
-	var e = ze;
-	ze = [], d(e);
-}
-function Ve(e) {
-	if (ze.length === 0 && !vt) {
-		var t = ze;
-		queueMicrotask(() => {
-			t === ze && Be();
-		});
-	}
-	ze.push(e);
+var Be = [];
+function Ve() {
+	var e = Be;
+	Be = [], d(e);
 }
 function He(e) {
-	var t = I;
-	if (t === null) return F.f |= ne, e;
-	if (!(t.f & 32768) && !(t.f & 4)) throw e;
-	Ue(e, t);
+	if (Be.length === 0 && !yt) {
+		var t = Be;
+		queueMicrotask(() => {
+			t === Be && Ve();
+		});
+	}
+	Be.push(e);
 }
-function Ue(e, t) {
+function Ue(e) {
+	var t = I;
+	if (t === null) return F.f |= re, e;
+	if (!(t.f & 32768) && !(t.f & 4)) throw e;
+	We(e, t);
+}
+function We(e, t) {
 	if (!(t !== null && t.f & 16384)) {
 		for (; t !== null;) {
 			if (t.f & 128) {
@@ -191,35 +191,35 @@ function Ue(e, t) {
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/status.js
-var We = ~(h | g | m);
-function A(e, t) {
-	e.f = e.f & We | t;
+var Ge = ~(h | g | m);
+function k(e, t) {
+	e.f = e.f & Ge | t;
 }
-function Ge(e) {
-	e.f & 512 || e.deps === null ? A(e, m) : A(e, g);
+function Ke(e) {
+	e.f & 512 || e.deps === null ? k(e, m) : k(e, g);
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/utils.js
-function Ke(e) {
-	if (e !== null) for (let t of e) !(t.f & 2) || !(t.f & 65536) || (t.f ^= T, Ke(t.deps));
+function qe(e) {
+	if (e !== null) for (let t of e) !(t.f & 2) || !(t.f & 65536) || (t.f ^= ee, qe(t.deps));
 }
-function qe(e, t, n) {
-	e.f & 2048 ? t.add(e) : e.f & 4096 && n.add(e), Ke(e.deps), A(e, m);
+function Je(e, t, n) {
+	e.f & 2048 ? t.add(e) : e.f & 4096 && n.add(e), qe(e.deps), k(e, m);
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/store.js
-var Je = !1;
-function Ye(e) {
-	var t = Je;
+var Ye = !1;
+function Xe(e) {
+	var t = Ye;
 	try {
-		return Je = !1, [e(), Je];
+		return Ye = !1, [e(), Ye];
 	} finally {
-		Je = t;
+		Ye = t;
 	}
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/elements/bindings/shared.js
-function Xe(e) {
+function Ze(e) {
 	var t = F, n = I;
 	Pn(null), Fn(null);
 	try {
@@ -230,11 +230,11 @@ function Xe(e) {
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/reactivity/create-subscriber.js
-function Ze(e) {
-	let t = 0, n = Pt(0), r;
+function Qe(e) {
+	let t = 0, n = Ft(0), r;
 	return () => {
 		sn() && (L(n), mn(() => (t === 0 && (r = tr(() => e(() => Bt(n)))), t += 1, () => {
-			Ve(() => {
+			He(() => {
 				--t, t === 0 && (r?.(), r = void 0, Bt(n));
 			});
 		})));
@@ -242,16 +242,16 @@ function Ze(e) {
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/blocks/boundary.js
-var Qe = x | S;
-function $e(e, t, n, r) {
-	new et(e, t, n, r);
+var $e = x | S;
+function et(e, t, n, r) {
+	new tt(e, t, n, r);
 }
-var et = class {
+var tt = class {
 	parent;
 	is_pending = !1;
 	transform_error;
 	#e;
-	#t = D ? O : null;
+	#t = E ? D : null;
 	#n;
 	#r;
 	#i;
@@ -265,7 +265,7 @@ var et = class {
 	#f = /* @__PURE__ */ new Set();
 	#p = /* @__PURE__ */ new Set();
 	#m = null;
-	#h = Ze(() => (this.#m = Pt(this.#l), () => {
+	#h = Qe(() => (this.#m = Ft(this.#l), () => {
 		this.#m = null;
 	}));
 	constructor(e, t, n, r) {
@@ -273,16 +273,16 @@ var et = class {
 			var t = I;
 			t.b = this, t.f |= 128, n(e);
 		}, this.parent = I.b, this.transform_error = r ?? this.parent?.transform_error ?? ((e) => e), this.#i = hn(() => {
-			if (D) {
+			if (E) {
 				let e = this.#t;
-				De();
+				Oe();
 				let t = e.data === "[!";
 				if (e.data.startsWith("[?")) {
 					let t = JSON.parse(e.data.slice(2));
 					this.#_(t);
 				} else t ? this.#y() : this.#g();
 			} else this.#b();
-		}, Qe), D && (this.#e = O);
+		}, $e), E && (this.#e = D);
 	}
 	#g() {
 		try {
@@ -293,7 +293,7 @@ var et = class {
 	}
 	#_(e) {
 		let t = this.#n.failed, { reset: n, invoke_onerror: r } = this.#v(e);
-		Ve(r), t && (this.#s = _n(() => {
+		He(r), t && (this.#s = _n(() => {
 			t(this.#e, () => e, () => n);
 		}));
 	}
@@ -301,10 +301,10 @@ var et = class {
 		var t = !1, n = !1;
 		let r = () => {
 			if (t) {
-				we();
+				Te();
 				return;
 			}
-			t = !0, n && be(), this.#s !== null && wn(this.#s, () => {
+			t = !0, n && xe(), this.#s !== null && wn(this.#s, () => {
 				this.#s = null;
 			}), this.#S(() => {
 				this.#b();
@@ -316,18 +316,18 @@ var et = class {
 				try {
 					n = !0, this.#n.onerror?.(e, r), n = !1;
 				} catch (e) {
-					Ue(e, this.#i && this.#i.parent);
+					We(e, this.#i && this.#i.parent);
 				}
 			}
 		};
 	}
 	#y() {
 		let e = this.#n.pending;
-		e && (this.is_pending = !0, this.#o = _n(() => e(this.#e)), Ve(() => {
+		e && (this.is_pending = !0, this.#o = _n(() => e(this.#e)), He(() => {
 			var e = this.#c = document.createDocumentFragment(), t = Jt();
 			e.append(t), this.#a = this.#S(() => _n(() => this.#r(t))), this.#u === 0 && (this.#e.before(e), this.#c = null, wn(this.#o, () => {
 				this.#o = null;
-			}), this.#x(M));
+			}), this.#x(j));
 		}));
 	}
 	#b() {
@@ -339,7 +339,7 @@ var et = class {
 				On(this.#a, e);
 				let t = this.#n.pending;
 				this.#o = _n(() => t(this.#e));
-			} else this.#x(M);
+			} else this.#x(j);
 		} catch (e) {
 			this.error(e);
 		}
@@ -348,7 +348,7 @@ var et = class {
 		this.is_pending = !1, e.transfer_effects(this.#f, this.#p);
 	}
 	defer_effect(e) {
-		qe(e, this.#f, this.#p);
+		Je(e, this.#f, this.#p);
 	}
 	is_rendered() {
 		return !this.is_pending && (!this.parent || this.parent.is_rendered());
@@ -357,14 +357,14 @@ var et = class {
 		return !!this.#n.pending;
 	}
 	#S(e) {
-		var t = I, n = F, r = Pe;
-		Fn(this.#i), Pn(this.#i), Fe(this.#i.ctx);
+		var t = I, n = F, r = Fe;
+		Fn(this.#i), Pn(this.#i), Ie(this.#i.ctx);
 		try {
-			return wt.ensure(), e();
+			return Tt.ensure(), e();
 		} catch (e) {
-			return He(e), null;
+			return Ue(e), null;
 		} finally {
-			Fn(t), Pn(n), Fe(r);
+			Fn(t), Pn(n), Ie(r);
 		}
 	}
 	#C(e, t) {
@@ -377,7 +377,7 @@ var et = class {
 		}), this.#c &&= (this.#e.before(this.#c), null));
 	}
 	update_pending_count(e, t) {
-		this.#C(e, t), this.#l += e, !(!this.#m || this.#d) && (this.#d = !0, Ve(() => {
+		this.#C(e, t), this.#l += e, !(!this.#m || this.#d) && (this.#d = !0, He(() => {
 			this.#d = !1, this.#m && Rt(this.#m, this.#l);
 		}));
 	}
@@ -386,12 +386,12 @@ var et = class {
 	}
 	error(e) {
 		if (!this.#n.onerror && !this.#n.failed) throw e;
-		M?.is_fork ? (this.#a && M.skip_effect(this.#a), this.#o && M.skip_effect(this.#o), this.#s && M.skip_effect(this.#s), M.oncommit(() => {
+		j?.is_fork ? (this.#a && j.skip_effect(this.#a), this.#o && j.skip_effect(this.#o), this.#s && j.skip_effect(this.#s), j.oncommit(() => {
 			this.#w(e);
 		})) : this.#w(e);
 	}
 	#w(e) {
-		this.#a &&= (xn(this.#a), null), this.#o &&= (xn(this.#o), null), this.#s &&= (xn(this.#s), null), D && (Ee(this.#t), Oe(), Ee(ke()));
+		this.#a &&= (xn(this.#a), null), this.#o &&= (xn(this.#o), null), this.#s &&= (xn(this.#s), null), E && (De(this.#t), ke(), De(Ae()));
 		let t = this.#n.failed, n = (e) => {
 			let { reset: n, invoke_onerror: r } = this.#v(e);
 			r(), t && (this.#s = this.#S(() => {
@@ -401,117 +401,117 @@ var et = class {
 						r.b = this, r.f |= 128, t(this.#e, () => e, () => n);
 					});
 				} catch (e) {
-					return Ue(e, this.#i.parent), null;
+					return We(e, this.#i.parent), null;
 				}
 			}));
 		};
-		Ve(() => {
+		He(() => {
 			var t;
 			try {
 				t = this.transform_error(e);
 			} catch (e) {
-				Ue(e, this.#i && this.#i.parent);
+				We(e, this.#i && this.#i.parent);
 				return;
 			}
-			typeof t == "object" && t && typeof t.then == "function" ? t.then(n, (e) => Ue(e, this.#i && this.#i.parent)) : n(t);
+			typeof t == "object" && t && typeof t.then == "function" ? t.then(n, (e) => We(e, this.#i && this.#i.parent)) : n(t);
 		});
 	}
 };
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/async.js
-function tt(e, t, n, r) {
-	let i = Re() ? at : ct;
+function nt(e, t, n, r) {
+	let i = ze() ? ot : lt;
 	var a = e.filter((e) => !e.settled), o = t.map(i);
 	if (n.length === 0 && a.length === 0) {
 		r(o);
 		return;
 	}
-	var s = I, c = nt(), l = a.length === 1 ? a[0].promise : a.length > 1 ? Promise.all(a.map((e) => e.promise)) : null;
+	var s = I, c = rt(), l = a.length === 1 ? a[0].promise : a.length > 1 ? Promise.all(a.map((e) => e.promise)) : null;
 	function u(e) {
 		if (!(s.f & 16384)) {
 			c();
 			try {
 				r([...o, ...e]);
 			} catch (e) {
-				Ue(e, s);
+				We(e, s);
 			}
-			rt();
+			it();
 		}
 	}
-	var d = it();
+	var d = at();
 	if (n.length === 0) {
 		l.then(() => u([])).finally(d);
 		return;
 	}
 	function f() {
-		Promise.all(n.map((e) => /* @__PURE__ */ st(e))).then(u).catch((e) => Ue(e, s)).finally(d);
+		Promise.all(n.map((e) => /* @__PURE__ */ ct(e))).then(u).catch((e) => We(e, s)).finally(d);
 	}
 	l ? l.then(() => {
-		c(), f(), rt();
+		c(), f(), it();
 	}) : f();
 }
-function nt() {
-	var e = I, t = F, n = Pe, r = M;
+function rt() {
+	var e = I, t = F, n = Fe, r = j;
 	return function(i = !0) {
-		Fn(e), Pn(t), Fe(n), i && !(e.f & 16384) && (r?.activate(), r?.apply());
+		Fn(e), Pn(t), Ie(n), i && !(e.f & 16384) && (r?.activate(), r?.apply());
 	};
 }
-function rt(e = !0) {
-	Fn(null), Pn(null), Fe(null), e && M?.deactivate();
+function it(e = !0) {
+	Fn(null), Pn(null), Ie(null), e && j?.deactivate();
 }
-function it() {
-	var e = I, t = e.b, n = M, r = !!t?.is_rendered();
+function at() {
+	var e = I, t = e.b, n = j, r = !!t?.is_rendered();
 	return t?.update_pending_count(1, n), n.increment(r, e), () => {
 		t?.update_pending_count(-1, n), n.decrement(r, e);
 	};
 }
 /*#__NO_SIDE_EFFECTS__*/
-function at(e) {
+function ot(e) {
 	var t = 2 | h;
 	return I !== null && (I.f |= S), {
-		ctx: Pe,
+		ctx: Fe,
 		deps: null,
 		effects: null,
-		equals: je,
+		equals: Me,
 		f: t,
 		fn: e,
 		reactions: null,
 		rv: 0,
-		v: E,
+		v: T,
 		wv: 0,
 		parent: I,
 		ac: null
 	};
 }
-var ot = Symbol("obsolete");
+var st = Symbol("obsolete");
 /*#__NO_SIDE_EFFECTS__*/
-function st(e, t, n) {
+function ct(e, t, n) {
 	let r = I;
-	r === null && ue();
-	var i = void 0, a = Pt(E), o = !F, s = /* @__PURE__ */ new Set();
+	r === null && de();
+	var i = void 0, a = Ft(T), o = !F, s = /* @__PURE__ */ new Set();
 	return pn(() => {
 		var t = I, n = f();
 		i = n.promise;
 		try {
 			Promise.resolve(e()).then(n.resolve, (e) => {
-				e !== le && n.reject(e);
-			}).finally(rt);
+				e !== ue && n.reject(e);
+			}).finally(it);
 		} catch (e) {
-			n.reject(e), rt();
+			n.reject(e), it();
 		}
-		var c = M;
+		var c = j;
 		if (o) {
-			if (t.f & 32768) var l = it();
-			if (r.b?.is_rendered()) c.async_deriveds.get(t)?.reject(ot);
-			else for (let e of s.values()) e.reject(ot);
+			if (t.f & 32768) var l = at();
+			if (r.b?.is_rendered()) c.async_deriveds.get(t)?.reject(st);
+			else for (let e of s.values()) e.reject(st);
 			s.add(n), c.async_deriveds.set(t, n);
 		}
 		let u = (e, t = void 0) => {
-			l?.(), s.delete(n), t !== ot && (c.activate(), t ? (a.f |= ne, Rt(a, t)) : (a.f & 8388608 && (a.f ^= ne), Rt(a, e)), c.deactivate());
+			l?.(), s.delete(n), t !== st && (c.activate(), t ? (a.f |= re, Rt(a, t)) : (a.f & 8388608 && (a.f ^= re), Rt(a, e)), c.deactivate());
 		};
 		n.promise.then(u, (e) => u(null, e || "unknown"));
 	}), cn(() => {
-		for (let e of s) e.reject(ot);
+		for (let e of s) e.reject(st);
 	}), new Promise((e) => {
 		function t(n) {
 			function r() {
@@ -523,53 +523,53 @@ function st(e, t, n) {
 	});
 }
 /*#__NO_SIDE_EFFECTS__*/
-function j(e) {
-	let t = /* @__PURE__ */ at(e);
+function A(e) {
+	let t = /* @__PURE__ */ ot(e);
 	return Ln(t), t;
 }
 /*#__NO_SIDE_EFFECTS__*/
-function ct(e) {
-	let t = /* @__PURE__ */ at(e);
-	return t.equals = Ne, t;
-}
 function lt(e) {
+	let t = /* @__PURE__ */ ot(e);
+	return t.equals = Pe, t;
+}
+function ut(e) {
 	var t = e.effects;
 	if (t !== null) {
 		e.effects = null;
 		for (var n = 0; n < t.length; n += 1) xn(t[n]);
 	}
 }
-function ut(e) {
+function dt(e) {
 	var t, n = I, r = e.parent;
-	if (!jn && r !== null && e.v !== E && r.f & 24576) return Se(), e.v;
+	if (!jn && r !== null && e.v !== T && r.f & 24576) return Ce(), e.v;
 	Fn(r);
 	try {
-		e.f &= ~T, lt(e), t = Yn(e);
+		e.f &= ~ee, ut(e), t = Yn(e);
 	} finally {
 		Fn(n);
 	}
 	return t;
 }
-function dt(e) {
-	var t = ut(e);
-	if (!e.equals(t) && (e.wv = Kn(), (!M?.is_fork || e.deps === null) && (M === null ? e.v = t : (M.capture(e, t, !0), ht?.capture(e, t, !0)), e.deps === null))) {
-		A(e, m);
+function ft(e) {
+	var t = dt(e);
+	if (!e.equals(t) && (e.wv = Kn(), (!j?.is_fork || e.deps === null) && (j === null ? e.v = t : (j.capture(e, t, !0), gt?.capture(e, t, !0)), e.deps === null))) {
+		k(e, m);
 		return;
 	}
-	jn || (gt === null ? Ge(e) : (sn() || M?.is_fork) && gt.set(e, t));
-}
-function ft(e) {
-	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && Xe(() => {
-		t.ac.abort(le), t.ac = null;
-	}), t.fn !== null && (t.teardown = u), Zn(t, 0), yn(t));
+	jn || (_t === null ? Ke(e) : (sn() || j?.is_fork) && _t.set(e, t));
 }
 function pt(e) {
+	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && Ze(() => {
+		t.ac.abort(ue), t.ac = null;
+	}), t.fn !== null && (t.teardown = u), Zn(t, 0), yn(t));
+}
+function mt(e) {
 	if (e.effects !== null) for (let t of e.effects) t.teardown && t.fn !== null && Qn(t);
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/batch.js
-var mt = null, M = null, ht = null, gt = null, _t = null, vt = !1, yt = !1, bt = null, xt = null, St = 0, Ct = 1, wt = class e {
-	id = Ct++;
+var ht = null, j = null, gt = null, _t = null, vt = null, yt = !1, bt = !1, xt = null, St = null, Ct = 0, wt = 1, Tt = class e {
+	id = wt++;
 	#e = !1;
 	linked = !0;
 	#t = null;
@@ -591,7 +591,7 @@ var mt = null, M = null, ht = null, gt = null, _t = null, vt = !1, yt = !1, bt =
 	is_fork = !1;
 	#m = !1;
 	constructor() {
-		mt === null ? mt = this : (mt.#n = this, this.#t = mt), mt = this;
+		ht === null ? ht = this : (ht.#n = this, this.#t = ht), ht = this;
 	}
 	#h() {
 		if (this.is_fork) return !0;
@@ -617,31 +617,31 @@ var mt = null, M = null, ht = null, gt = null, _t = null, vt = !1, yt = !1, bt =
 		var n = this.#f.get(e);
 		if (n) {
 			this.#f.delete(e);
-			for (var r of n.d) A(r, h), t(r);
-			for (r of n.m) A(r, g), t(r);
+			for (var r of n.d) k(r, h), t(r);
+			for (r of n.m) k(r, g), t(r);
 		}
 		this.#p.add(e);
 	}
 	#g() {
-		this.#e = !0, St++ > 1e3 && (this.#x(), Tt());
-		for (let e of this.#u) this.#d.delete(e), A(e, h), this.schedule(e);
-		for (let e of this.#d) A(e, g), this.schedule(e);
+		this.#e = !0, Ct++ > 1e3 && (this.#x(), Et());
+		for (let e of this.#u) this.#d.delete(e), k(e, h), this.schedule(e);
+		for (let e of this.#d) k(e, g), this.schedule(e);
 		let t = this.#c;
 		this.#c = [], this.apply();
-		var n = bt = [], r = [], i = xt = [];
+		var n = xt = [], r = [], i = St = [];
 		for (let e of t) try {
 			this.#_(e, n, r);
 		} catch (t) {
-			throw At(e), this.#h() || this.discard(), t;
+			throw jt(e), this.#h() || this.discard(), t;
 		}
-		if (M = null, i.length > 0) {
+		if (j = null, i.length > 0) {
 			var a = e.ensure();
 			for (let e of i) a.schedule(e);
 		}
-		if (bt = null, xt = null, this.#h()) {
+		if (xt = null, St = null, this.#h()) {
 			this.#b(r), this.#b(n);
-			for (let [e, t] of this.#f) kt(e, t);
-			i.length > 0 && M.#g();
+			for (let [e, t] of this.#f) At(e, t);
+			i.length > 0 && j.#g();
 			return;
 		}
 		let o = this.#v();
@@ -651,8 +651,8 @@ var mt = null, M = null, ht = null, gt = null, _t = null, vt = !1, yt = !1, bt =
 		}
 		this.#u.clear(), this.#d.clear();
 		for (let e of this.#r) e(this);
-		this.#r.clear(), ht = this, Dt(r), Dt(n), ht = null, this.#s?.resolve();
-		var s = M;
+		this.#r.clear(), gt = this, Ot(r), Ot(n), gt = null, this.#s?.resolve();
+		var s = j;
 		if (this.#a === 0 && (this.#c.length === 0 || s !== null) && this.#x(), this.#c.length > 0) {
 			if (s !== null) {
 				let e = s;
@@ -706,36 +706,36 @@ var mt = null, M = null, ht = null, gt = null, _t = null, vt = !1, yt = !1, bt =
 				if (r & 2) t(e);
 				else {
 					var i = e;
-					r & 4194320 && !this.async_deriveds.has(i) && (this.#d.delete(i), A(i, h), this.schedule(i));
+					r & 4194320 && !this.async_deriveds.has(i) && (this.#d.delete(i), k(i, h), this.schedule(i));
 				}
 			}
 		};
 		for (let e of this.current.keys()) t(e);
-		this.oncommit(() => e.discard()), e.#x(), M = this, this.#g();
+		this.oncommit(() => e.discard()), e.#x(), j = this, this.#g();
 	}
 	#b(e) {
-		for (var t = 0; t < e.length; t += 1) qe(e[t], this.#u, this.#d);
+		for (var t = 0; t < e.length; t += 1) Je(e[t], this.#u, this.#d);
 	}
 	capture(e, t, n = !1) {
-		e.v !== E && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [t, n]), gt?.set(e, t)), this.is_fork || (e.v = t);
+		e.v !== T && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [t, n]), _t?.set(e, t)), this.is_fork || (e.v = t);
 	}
 	activate() {
-		M = this;
+		j = this;
 	}
 	deactivate() {
-		M = null, gt = null;
+		j = null, _t = null;
 	}
 	flush() {
 		try {
-			yt = !0, M = this, this.#g();
+			bt = !0, j = this, this.#g();
 		} finally {
-			St = 0, _t = null, bt = null, xt = null, yt = !1, M = null, gt = null, Mt.clear();
+			Ct = 0, vt = null, xt = null, St = null, bt = !1, j = null, _t = null, Nt.clear();
 		}
 	}
 	discard() {
 		for (let e of this.#i) e(this);
 		this.#i.clear();
-		for (let e of this.async_deriveds.values()) e.reject(ot);
+		for (let e of this.async_deriveds.values()) e.reject(st);
 		this.#x(), this.#s?.resolve();
 	}
 	register_created_effect(e) {
@@ -752,7 +752,7 @@ var mt = null, M = null, ht = null, gt = null, _t = null, vt = !1, yt = !1, bt =
 			let e = this.#o.get(t) ?? 0;
 			e === 1 ? this.#o.delete(t) : this.#o.set(t, e - 1);
 		}
-		this.#m || (this.#m = !0, Ve(() => {
+		this.#m || (this.#m = !0, He(() => {
 			this.#m = !1, this.linked && this.flush();
 		}));
 	}
@@ -771,26 +771,26 @@ var mt = null, M = null, ht = null, gt = null, _t = null, vt = !1, yt = !1, bt =
 		return (this.#s ??= f()).promise;
 	}
 	static ensure() {
-		if (M === null) {
-			let t = M = new e();
-			!yt && Ve(() => {
+		if (j === null) {
+			let t = j = new e();
+			!bt && He(() => {
 				t.#e || t.flush();
 			});
 		}
-		return M;
+		return j;
 	}
 	apply() {
-		gt = null;
+		_t = null;
 	}
 	schedule(e) {
-		if (_t = e, e.b?.is_pending && e.f & 16777228 && !(e.f & 32768)) {
+		if (vt = e, e.b?.is_pending && e.f & 16777228 && !(e.f & 32768)) {
 			e.b.defer_effect(e);
 			return;
 		}
 		for (var t = e; t.parent !== null;) {
 			t = t.parent;
 			var n = t.f;
-			if (bt !== null && t === I && (F === null || !(F.f & 2))) return;
+			if (xt !== null && t === I && (F === null || !(F.f & 2))) return;
 			if (n & 96) {
 				if (!(n & 1024)) return;
 				t.f ^= m;
@@ -801,95 +801,95 @@ var mt = null, M = null, ht = null, gt = null, _t = null, vt = !1, yt = !1, bt =
 	#x() {
 		if (this.linked) {
 			var e = this.#t, t = this.#n;
-			e === null || (e.#n = t), t === null ? mt = e : t.#t = e, this.linked = !1;
+			e === null || (e.#n = t), t === null ? ht = e : t.#t = e, this.linked = !1;
 		}
 	}
 };
-function Tt() {
+function Et() {
 	try {
-		he();
+		ge();
 	} catch (e) {
-		Ue(e, _t);
+		We(e, vt);
 	}
 }
-var Et = null;
-function Dt(e) {
+var Dt = null;
+function Ot(e) {
 	var t = e.length;
 	if (t !== 0) {
 		for (var n = 0; n < t;) {
 			var r = e[n++];
-			if (!(r.f & 24576) && qn(r) && (Et = /* @__PURE__ */ new Set(), Qn(r), r.deps === null && r.first === null && r.nodes === null && r.teardown === null && r.ac === null && Cn(r), Et?.size > 0)) {
-				Mt.clear();
-				for (let e of Et) {
+			if (!(r.f & 24576) && qn(r) && (Dt = /* @__PURE__ */ new Set(), Qn(r), r.deps === null && r.first === null && r.nodes === null && r.teardown === null && r.ac === null && Cn(r), Dt?.size > 0)) {
+				Nt.clear();
+				for (let e of Dt) {
 					if (e.f & 24576) continue;
 					let t = [e], n = e.parent;
-					for (; n !== null;) Et.has(n) && (Et.delete(n), t.push(n)), n = n.parent;
+					for (; n !== null;) Dt.has(n) && (Dt.delete(n), t.push(n)), n = n.parent;
 					for (let e = t.length - 1; e >= 0; e--) {
 						let n = t[e];
 						n.f & 24576 || Qn(n);
 					}
 				}
-				Et.clear();
+				Dt.clear();
 			}
 		}
-		Et = null;
+		Dt = null;
 	}
 }
-function Ot(e) {
-	M.schedule(e);
+function kt(e) {
+	j.schedule(e);
 }
-function kt(e, t) {
+function At(e, t) {
 	if (!(e.f & 32 && e.f & 1024)) {
-		e.f & 2048 ? t.d.push(e) : e.f & 4096 && t.m.push(e), A(e, m);
-		for (var n = e.first; n !== null;) kt(n, t), n = n.next;
+		e.f & 2048 ? t.d.push(e) : e.f & 4096 && t.m.push(e), k(e, m);
+		for (var n = e.first; n !== null;) At(n, t), n = n.next;
 	}
 }
-function At(e) {
-	A(e, m);
-	for (var t = e.first; t !== null;) At(t), t = t.next;
+function jt(e) {
+	k(e, m);
+	for (var t = e.first; t !== null;) jt(t), t = t.next;
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/sources.js
-var jt = /* @__PURE__ */ new Set(), Mt = /* @__PURE__ */ new Map(), Nt = !1;
-function Pt(e, t) {
+var Mt = /* @__PURE__ */ new Set(), Nt = /* @__PURE__ */ new Map(), Pt = !1;
+function Ft(e, t) {
 	return {
 		f: 0,
 		v: e,
 		reactions: null,
-		equals: je,
+		equals: Me,
 		rv: 0,
 		wv: 0
 	};
 }
 /*#__NO_SIDE_EFFECTS__*/
-function Ft(e, t) {
-	let n = Pt(e, t);
+function It(e, t) {
+	let n = Ft(e, t);
 	return Ln(n), n;
 }
 /*#__NO_SIDE_EFFECTS__*/
-function It(e, t = !1, n = !0) {
-	let r = Pt(e);
-	return t || (r.equals = Ne), r;
+function Lt(e, t = !1, n = !0) {
+	let r = Ft(e);
+	return t || (r.equals = Pe), r;
 }
-function Lt(e, t, n = !1) {
-	return F !== null && (!Nn || F.f & 131072) && Re() && F.f & 4325394 && (In === null || !In.has(e)) && ye(), Rt(e, n ? Ht(t) : t, xt);
+function M(e, t, n = !1) {
+	return F !== null && (!Nn || F.f & 131072) && ze() && F.f & 4325394 && (In === null || !In.has(e)) && be(), Rt(e, n ? Ht(t) : t, St);
 }
 function Rt(e, t, n = null) {
 	if (!e.equals(t)) {
-		Mt.set(e, jn ? t : e.v);
-		var r = wt.ensure();
+		Nt.set(e, jn ? t : e.v);
+		var r = Tt.ensure();
 		if (r.capture(e, t), e.f & 2) {
 			let t = e;
-			e.f & 2048 && ut(t), gt === null && Ge(t);
+			e.f & 2048 && dt(t), _t === null && Ke(t);
 		}
-		e.wv = Kn(), Vt(e, h, n), Re() && I !== null && I.f & 1024 && !(I.f & 96) && (Bn === null ? Vn([e]) : Bn.push(e)), !r.is_fork && jt.size > 0 && !Nt && zt();
+		e.wv = Kn(), Vt(e, h, n), ze() && I !== null && I.f & 1024 && !(I.f & 96) && (Bn === null ? Vn([e]) : Bn.push(e)), !r.is_fork && Mt.size > 0 && !Pt && zt();
 	}
 	return t;
 }
 function zt() {
-	Nt = !1;
-	for (let e of jt) {
-		e.f & 1024 && A(e, g);
+	Pt = !1;
+	for (let e of Mt) {
+		e.f & 1024 && k(e, g);
 		let t;
 		try {
 			t = qn(e);
@@ -898,64 +898,64 @@ function zt() {
 		}
 		t && Qn(e);
 	}
-	jt.clear();
+	Mt.clear();
 }
 function Bt(e) {
-	Lt(e, e.v + 1);
+	M(e, e.v + 1);
 }
 function Vt(e, t, n) {
 	var r = e.reactions;
-	if (r !== null) for (var i = Re(), a = r.length, o = 0; o < a; o++) {
+	if (r !== null) for (var i = ze(), a = r.length, o = 0; o < a; o++) {
 		var s = r[o], c = s.f;
 		if (!(!i && s === I)) {
 			var l = (c & h) === 0;
-			if (l && A(s, t), c & 131072) jt.add(s);
+			if (l && k(s, t), c & 131072) Mt.add(s);
 			else if (c & 2) {
 				var u = s;
-				gt?.delete(u), c & 65536 || (c & 512 && (I === null || !(I.f & 2097152)) && (s.f |= T), Vt(u, g, n));
+				_t?.delete(u), c & 65536 || (c & 512 && (I === null || !(I.f & 2097152)) && (s.f |= ee), Vt(u, g, n));
 			} else if (l) {
 				var d = s;
-				c & 16 && Et !== null && Et.add(d), n === null ? Ot(d) : n.push(d);
+				c & 16 && Dt !== null && Dt.add(d), n === null ? kt(d) : n.push(d);
 			}
 		}
 	}
 }
 function Ht(t) {
-	if (typeof t != "object" || !t || re in t) return t;
+	if (typeof t != "object" || !t || ie in t) return t;
 	let n = c(t);
 	if (n !== o && n !== s) return t;
-	var r = /* @__PURE__ */ new Map(), i = e(t), l = /* @__PURE__ */ Ft(0), u = null, d = Wn, f = (e) => {
+	var r = /* @__PURE__ */ new Map(), i = e(t), l = /* @__PURE__ */ It(0), u = null, d = Wn, f = (e) => {
 		if (Wn === d) return e();
 		var t = F, n = Wn;
 		Pn(null), Gn(d);
 		var r = e();
 		return Pn(t), Gn(n), r;
 	};
-	return i && r.set("length", /* @__PURE__ */ Ft(t.length, u)), new Proxy(t, {
+	return i && r.set("length", /* @__PURE__ */ It(t.length, u)), new Proxy(t, {
 		defineProperty(e, t, n) {
-			(!("value" in n) || n.configurable === !1 || n.enumerable === !1 || n.writable === !1) && _e();
+			(!("value" in n) || n.configurable === !1 || n.enumerable === !1 || n.writable === !1) && ve();
 			var i = r.get(t);
 			return i === void 0 ? f(() => {
-				var e = /* @__PURE__ */ Ft(n.value, u);
+				var e = /* @__PURE__ */ It(n.value, u);
 				return r.set(t, e), e;
-			}) : Lt(i, n.value, !0), !0;
+			}) : M(i, n.value, !0), !0;
 		},
 		deleteProperty(e, t) {
 			var n = r.get(t);
 			if (n === void 0) {
 				if (t in e) {
-					let e = f(() => /* @__PURE__ */ Ft(E, u));
+					let e = f(() => /* @__PURE__ */ It(T, u));
 					r.set(t, e), Bt(l);
 				}
-			} else Lt(n, E), Bt(l);
+			} else M(n, T), Bt(l);
 			return !0;
 		},
 		get(e, n, i) {
-			if (n === re) return t;
+			if (n === ie) return t;
 			var o = r.get(n), s = n in e;
-			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ Ft(Ht(s ? e[n] : E), u)), r.set(n, o)), o !== void 0) {
+			if (o === void 0 && (!s || a(e, n)?.writable) && (o = f(() => /* @__PURE__ */ It(Ht(s ? e[n] : T), u)), r.set(n, o)), o !== void 0) {
 				var c = L(o);
-				return c === E ? void 0 : c;
+				return c === T ? void 0 : c;
 			}
 			return Reflect.get(e, n, i);
 		},
@@ -966,7 +966,7 @@ function Ht(t) {
 				i && (n.value = L(i));
 			} else if (n === void 0) {
 				var a = r.get(t), o = a?.v;
-				if (a !== void 0 && o !== E) return {
+				if (a !== void 0 && o !== T) return {
 					enumerable: !0,
 					configurable: !0,
 					value: o,
@@ -976,27 +976,27 @@ function Ht(t) {
 			return n;
 		},
 		has(e, t) {
-			if (t === re) return !0;
-			var n = r.get(t), i = n !== void 0 && n.v !== E || Reflect.has(e, t);
-			return (n !== void 0 || I !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ Ft(i ? Ht(e[t]) : E, u)), r.set(t, n)), L(n) === E) ? !1 : i;
+			if (t === ie) return !0;
+			var n = r.get(t), i = n !== void 0 && n.v !== T || Reflect.has(e, t);
+			return (n !== void 0 || I !== null && (!i || a(e, t)?.writable)) && (n === void 0 && (n = f(() => /* @__PURE__ */ It(i ? Ht(e[t]) : T, u)), r.set(t, n)), L(n) === T) ? !1 : i;
 		},
 		set(e, t, n, o) {
 			var s = r.get(t), c = t in e;
 			if (i && t === "length") for (var d = n; d < s.v; d += 1) {
 				var p = r.get(d + "");
-				p === void 0 ? d in e && (p = f(() => /* @__PURE__ */ Ft(E, u)), r.set(d + "", p)) : Lt(p, E);
+				p === void 0 ? d in e && (p = f(() => /* @__PURE__ */ It(T, u)), r.set(d + "", p)) : M(p, T);
 			}
-			if (s === void 0) (!c || a(e, t)?.writable) && (s = f(() => /* @__PURE__ */ Ft(void 0, u)), Lt(s, Ht(n)), r.set(t, s));
+			if (s === void 0) (!c || a(e, t)?.writable) && (s = f(() => /* @__PURE__ */ It(void 0, u)), M(s, Ht(n)), r.set(t, s));
 			else {
-				c = s.v !== E;
+				c = s.v !== T;
 				var m = f(() => Ht(n));
-				Lt(s, m);
+				M(s, m);
 			}
 			var h = Reflect.getOwnPropertyDescriptor(e, t);
 			if (h?.set && h.set.call(o, n), !c) {
 				if (i && typeof t == "string") {
 					var g = r.get("length"), _ = Number(t);
-					Number.isInteger(_) && _ >= g.v && Lt(g, _ + 1);
+					Number.isInteger(_) && _ >= g.v && M(g, _ + 1);
 				}
 				Bt(l);
 			}
@@ -1006,13 +1006,13 @@ function Ht(t) {
 			L(l);
 			var t = Reflect.ownKeys(e).filter((e) => {
 				var t = r.get(e);
-				return t === void 0 || t.v !== E;
+				return t === void 0 || t.v !== T;
 			});
-			for (var [n, i] of r) i.v !== E && !(n in e) && t.push(n);
+			for (var [n, i] of r) i.v !== T && !(n in e) && t.push(n);
 			return t;
 		},
 		setPrototypeOf() {
-			ve();
+			ye();
 		}
 	});
 }
@@ -1021,7 +1021,7 @@ function qt() {
 	if (Ut === void 0) {
 		Ut = window, Wt = /Firefox/.test(navigator.userAgent);
 		var e = Element.prototype, t = Node.prototype, n = Text.prototype;
-		Gt = a(t, "firstChild").get, Kt = a(t, "nextSibling").get, l(e) && (e[oe] = void 0, e[ae] = null, e[se] = void 0, e.__e = void 0), l(n) && (n[ce] = void 0);
+		Gt = a(t, "firstChild").get, Kt = a(t, "nextSibling").get, l(e) && (e[se] = void 0, e[oe] = null, e[ce] = void 0, e.__e = void 0), l(n) && (n[le] = void 0);
 	}
 }
 function Jt(e = "") {
@@ -1036,41 +1036,41 @@ function Xt(e) {
 	return Kt.call(e);
 }
 function N(e, t) {
-	if (!D) return /* @__PURE__ */ Yt(e);
-	var n = /* @__PURE__ */ Yt(O);
-	if (n === null) n = O.appendChild(Jt());
+	if (!E) return /* @__PURE__ */ Yt(e);
+	var n = /* @__PURE__ */ Yt(D);
+	if (n === null) n = D.appendChild(Jt());
 	else if (t && n.nodeType !== 3) {
 		var r = Jt();
-		return n?.before(r), Ee(r), r;
+		return n?.before(r), De(r), r;
 	}
-	return t && nn(n), Ee(n), n;
+	return t && nn(n), De(n), n;
 }
 function Zt(e, t = !1) {
-	if (!D) {
+	if (!E) {
 		var n = /* @__PURE__ */ Yt(e);
 		return n instanceof Comment && n.data === "" ? /* @__PURE__ */ Xt(n) : n;
 	}
 	if (t) {
-		if (O?.nodeType !== 3) {
+		if (D?.nodeType !== 3) {
 			var r = Jt();
-			return O?.before(r), Ee(r), r;
+			return D?.before(r), De(r), r;
 		}
-		nn(O);
+		nn(D);
 	}
-	return O;
+	return D;
 }
 function Qt(e, t = 1, n = !1) {
-	let r = D ? O : e;
+	let r = E ? D : e;
 	for (var i; t--;) i = r, r = /* @__PURE__ */ Xt(r);
-	if (!D) return r;
+	if (!E) return r;
 	if (n) {
 		if (r?.nodeType !== 3) {
 			var a = Jt();
-			return r === null ? i?.after(a) : r.before(a), Ee(a), a;
+			return r === null ? i?.after(a) : r.before(a), De(a), a;
 		}
 		nn(r);
 	}
-	return Ee(r), r;
+	return De(r), r;
 }
 function $t(e) {
 	e.textContent = "";
@@ -1089,7 +1089,7 @@ function nn(e) {
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/effects.js
 function rn(e) {
-	I === null && (F === null && me(e), pe()), jn && fe(e);
+	I === null && (F === null && he(e), me()), jn && pe(e);
 }
 function an(e, t) {
 	var n = t.last;
@@ -1099,7 +1099,7 @@ function on(e, t) {
 	var n = I;
 	n !== null && n.f & 8192 && (e |= _);
 	var r = {
-		ctx: Pe,
+		ctx: Fe,
 		deps: null,
 		nodes: null,
 		f: e | h | 512,
@@ -1114,9 +1114,9 @@ function on(e, t) {
 		wv: 0,
 		ac: null
 	};
-	M?.register_created_effect(r);
+	j?.register_created_effect(r);
 	var i = r;
-	if (e & 4) bt === null ? wt.ensure().schedule(r) : bt.push(r);
+	if (e & 4) xt === null ? Tt.ensure().schedule(r) : xt.push(r);
 	else if (t !== null) {
 		try {
 			Qn(r);
@@ -1136,13 +1136,13 @@ function sn() {
 }
 function cn(e) {
 	let t = on(8, null);
-	return A(t, m), t.teardown = e, t;
+	return k(t, m), t.teardown = e, t;
 }
 function ln(e) {
 	rn("$effect");
 	var t = I.f;
-	if (!F && t & 32 && Pe !== null && !Pe.i) {
-		var n = Pe;
+	if (!F && t & 32 && Fe !== null && !Fe.i) {
+		var n = Fe;
 		(n.e ??= []).push(e);
 	} else return un(e);
 }
@@ -1150,7 +1150,7 @@ function un(e) {
 	return on(4 | C, e);
 }
 function dn(e) {
-	wt.ensure();
+	Tt.ensure();
 	let t = on(64 | S, e);
 	return (e = {}) => new Promise((n) => {
 		e.outro ? wn(t, () => {
@@ -1162,13 +1162,13 @@ function fn(e) {
 	return on(4, e);
 }
 function pn(e) {
-	return on(te | S, e);
+	return on(ne | S, e);
 }
 function mn(e, t = 0) {
 	return on(8 | t, e);
 }
 function P(e, t = [], n = [], r = []) {
-	tt(r, t, n, (t) => {
+	nt(r, t, n, (t) => {
 		on(8, () => {
 			e(...t.map(L));
 		});
@@ -1199,8 +1199,8 @@ function yn(e, t = !1) {
 	var n = e.first;
 	for (e.first = e.last = null; n !== null;) {
 		let e = n.ac;
-		e !== null && Xe(() => {
-			e.abort(le);
+		e !== null && Ze(() => {
+			e.abort(ue);
 		});
 		var r = n.next;
 		n.f & 64 ? n.parent = null : xn(n, t), n = r;
@@ -1262,7 +1262,7 @@ function En(e) {
 }
 function Dn(e, t) {
 	if (e.f & 8192) {
-		e.f ^= _, e.f & 1024 || (A(e, h), wt.ensure().schedule(e));
+		e.f ^= _, e.f & 1024 || (k(e, h), Tt.ensure().schedule(e));
 		for (var n = e.first; n !== null;) {
 			var r = n.next, i = !!(n.f & 65536) || !!(n.f & 32);
 			Dn(n, i ? t : !1), n = r;
@@ -1309,12 +1309,12 @@ function Kn() {
 function qn(e) {
 	var t = e.f;
 	if (t & 2048) return !0;
-	if (t & 2 && (e.f &= ~T), t & 4096) {
+	if (t & 2 && (e.f &= ~ee), t & 4096) {
 		for (var n = e.deps, r = n.length, i = 0; i < r; i++) {
 			var a = n[i];
-			if (qn(a) && dt(a), a.wv > e.wv) return !0;
+			if (qn(a) && ft(a), a.wv > e.wv) return !0;
 		}
-		t & 512 && gt === null && A(e, m);
+		t & 512 && _t === null && k(e, m);
 	}
 	return !1;
 }
@@ -1322,36 +1322,36 @@ function Jn(e, t, n = !0) {
 	var r = e.reactions;
 	if (r !== null && !(In !== null && In.has(e))) for (var i = 0; i < r.length; i++) {
 		var a = r[i];
-		a.f & 2 ? Jn(a, t, !1) : t === a && (n ? A(a, h) : a.f & 1024 && A(a, g), Ot(a));
+		a.f & 2 ? Jn(a, t, !1) : t === a && (n ? k(a, h) : a.f & 1024 && k(a, g), kt(a));
 	}
 }
 function Yn(e) {
-	var t = Rn, n = zn, r = Bn, i = F, a = In, o = Pe, s = Nn, c = Wn, l = e.f;
-	Rn = null, zn = 0, Bn = null, F = l & 96 ? null : e, In = null, Fe(e.ctx), Nn = !1, Wn = ++Un, e.ac !== null && (Xe(() => {
-		e.ac.abort(le);
+	var t = Rn, n = zn, r = Bn, i = F, a = In, o = Fe, s = Nn, c = Wn, l = e.f;
+	Rn = null, zn = 0, Bn = null, F = l & 96 ? null : e, In = null, Ie(e.ctx), Nn = !1, Wn = ++Un, e.ac !== null && (Ze(() => {
+		e.ac.abort(ue);
 	}), e.ac = null);
 	try {
-		e.f |= ee;
+		e.f |= te;
 		var u = e.fn, d = u();
 		e.f |= y;
-		var f = e.deps, p = M?.is_fork;
+		var f = e.deps, p = j?.is_fork;
 		if (Rn !== null) {
 			var m;
 			if (p || Zn(e, zn), f !== null && zn > 0) for (f.length = zn + Rn.length, m = 0; m < Rn.length; m++) f[zn + m] = Rn[m];
 			else e.deps = f = Rn;
 			if (sn() && e.f & 512) for (m = zn; m < f.length; m++) (f[m].reactions ??= []).push(e);
 		} else !p && f !== null && zn < f.length && (Zn(e, zn), f.length = zn);
-		if (Re() && Bn !== null && !Nn && f !== null && !(e.f & 6146)) for (m = 0; m < Bn.length; m++) Jn(Bn[m], e);
+		if (ze() && Bn !== null && !Nn && f !== null && !(e.f & 6146)) for (m = 0; m < Bn.length; m++) Jn(Bn[m], e);
 		if (i !== null && i !== e) {
 			if (Un++, i.deps !== null) for (let e = 0; e < n; e += 1) i.deps[e].rv = Un;
 			if (t !== null) for (let e of t) e.rv = Un;
 			Bn !== null && (r === null ? r = Bn : r.push(...Bn));
 		}
-		return e.f & 8388608 && (e.f ^= ne), d;
+		return e.f & 8388608 && (e.f ^= re), d;
 	} catch (e) {
-		return He(e);
+		return Ue(e);
 	} finally {
-		e.f ^= ee, Rn = t, zn = n, Bn = r, F = i, In = a, Fe(o), Nn = s, Wn = c;
+		e.f ^= te, Rn = t, zn = n, Bn = r, F = i, In = a, Ie(o), Nn = s, Wn = c;
 	}
 }
 function Xn(e, r) {
@@ -1365,9 +1365,9 @@ function Xn(e, r) {
 	}
 	if (i === null && r.f & 2 && (Rn === null || !n.call(Rn, r))) {
 		var s = r;
-		s.f & 512 && (s.f ^= 512, s.f &= ~T), s.v !== E && Ge(s), s.ac !== null && Xe(() => {
-			s.ac.abort(le), s.ac = null, A(s, h);
-		}), ft(s), Zn(s, 0);
+		s.f & 512 && (s.f ^= 512, s.f &= ~ee), s.v !== T && Ke(s), s.ac !== null && Ze(() => {
+			s.ac.abort(ue), s.ac = null, k(s, h);
+		}), pt(s), Zn(s, 0);
 	}
 }
 function Zn(e, t) {
@@ -1377,7 +1377,7 @@ function Zn(e, t) {
 function Qn(e) {
 	var t = e.f;
 	if (!(t & 16384)) {
-		A(e, m);
+		k(e, m);
 		var n = I, r = An;
 		I = e, An = !(t & 96);
 		try {
@@ -1400,27 +1400,27 @@ function L(e) {
 			i === null ? e.reactions = [F] : n.call(i, F) || i.push(F);
 		}
 	}
-	if (jn && Mt.has(e)) return Mt.get(e);
+	if (jn && Nt.has(e)) return Nt.get(e);
 	if (t) {
 		var a = e;
 		if (jn) {
 			var o = a.v;
-			return (!(a.f & 1024) && a.reactions !== null || er(a)) && (o = ut(a)), Mt.set(a, o), o;
+			return (!(a.f & 1024) && a.reactions !== null || er(a)) && (o = dt(a)), Nt.set(a, o), o;
 		}
 		var s = !(a.f & 512) && !Nn && F !== null && (An || !!(F.f & 512)), c = (a.f & y) === 0;
-		qn(a) && (s && (a.f |= 512), dt(a)), s && !c && (pt(a), $n(a));
+		qn(a) && (s && (a.f |= 512), ft(a)), s && !c && (mt(a), $n(a));
 	}
-	if (gt?.has(e)) return gt.get(e);
+	if (_t?.has(e)) return _t.get(e);
 	if (e.f & 8388608) throw e.v;
 	return e.v;
 }
 function $n(e) {
-	if (e.f |= 512, e.deps !== null) for (let t of e.deps) (t.reactions ??= []).push(e), t.f & 2 && !(t.f & 512) && (pt(t), $n(t));
+	if (e.f |= 512, e.deps !== null) for (let t of e.deps) (t.reactions ??= []).push(e), t.f & 2 && !(t.f & 512) && (mt(t), $n(t));
 }
 function er(e) {
-	if (e.v === E) return !0;
+	if (e.v === T) return !0;
 	if (e.deps === null) return !1;
-	for (let t of e.deps) if (Mt.has(t) || t.f & 2 && er(t)) return !0;
+	for (let t of e.deps) if (Nt.has(t) || t.f & 2 && er(t)) return !0;
 	return !1;
 }
 function tr(e) {
@@ -1517,7 +1517,7 @@ function mr(e, t) {
 function R(e, t) {
 	var n = !!(t & 1), r = !!(t & 2), i, a = !e.startsWith("<!>");
 	return () => {
-		if (D) return mr(O, null), O;
+		if (E) return mr(D, null), D;
 		i === void 0 && (i = pr(a ? e : "<!>" + e), n || (i = /* @__PURE__ */ Yt(i)));
 		var t = r || Wt ? document.importNode(i, !0) : i.cloneNode(!0);
 		if (n) {
@@ -1528,21 +1528,21 @@ function R(e, t) {
 	};
 }
 function hr() {
-	if (D) return mr(O, null), O;
+	if (E) return mr(D, null), D;
 	var e = document.createDocumentFragment(), t = document.createComment(""), n = Jt();
 	return e.append(t, n), mr(t, n), e;
 }
 function z(e, t) {
-	if (D) {
+	if (E) {
 		var n = I;
-		(!(n.f & 32768) || n.nodes.end === null) && (n.nodes.end = O), De();
+		(!(n.f & 32768) || n.nodes.end === null) && (n.nodes.end = D), Oe();
 		return;
 	}
 	e !== null && e.before(t);
 }
 function gr(e, t) {
 	var n = t == null ? "" : typeof t == "object" ? `${t}` : t;
-	n !== (e[ce] ??= e.nodeValue) && (e[ce] = n, e.nodeValue = `${n}`);
+	n !== (e[le] ??= e.nodeValue) && (e[le] = n, e.nodeValue = `${n}`);
 }
 function _r(e, t) {
 	return yr(e, t);
@@ -1552,11 +1552,11 @@ function yr(e, { target: t, anchor: n, props: i = {}, events: a, context: o, int
 	qt();
 	var l = void 0, u = dn(() => {
 		var s = n ?? t.appendChild(Jt());
-		$e(s, { pending: () => {} }, (t) => {
-			Ie({});
-			var n = Pe;
-			if (o && (n.c = o), a && (i.$$events = a), D && mr(t, null), l = e(t, i) || {}, D && (I.nodes.end = O, O === null || O.nodeType !== 8 || O.data !== "]")) throw Ce(), xe;
-			Le();
+		et(s, { pending: () => {} }, (t) => {
+			Le({});
+			var n = Fe;
+			if (o && (n.c = o), a && (i.$$events = a), E && mr(t, null), l = e(t, i) || {}, E && (I.nodes.end = D, D === null || D.nodeType !== 8 || D.data !== "]")) throw we(), Se;
+			Re();
 		}, c);
 		var u = /* @__PURE__ */ new Set(), d = (e) => {
 			for (var n = 0; n < e.length; n++) {
@@ -1635,7 +1635,7 @@ var Sr = class {
 		for (let [e, n] of this.#n) t.includes(e) || (xn(n.effect), this.#n.delete(e));
 	};
 	ensure(e, t) {
-		var n = M, r = en();
+		var n = j, r = en();
 		if (t && !this.#t.has(e) && !this.#n.has(e)) {
 			if (r) {
 				var i = document.createDocumentFragment(), a = Jt();
@@ -1649,21 +1649,21 @@ var Sr = class {
 			for (let [t, r] of this.#t) t === e ? n.unskip_effect(r) : n.skip_effect(r);
 			for (let [t, r] of this.#n) t === e ? n.unskip_effect(r.effect) : n.skip_effect(r.effect);
 			n.oncommit(this.#a), n.ondiscard(this.#o);
-		} else D && (this.anchor = O), this.#a(n);
+		} else E && (this.anchor = D), this.#a(n);
 	}
 };
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/blocks/if.js
 function Cr(e, t, n = !1) {
 	var r;
-	D && (r = O, De());
+	E && (r = D, Oe());
 	var i = new Sr(e), a = n ? x : 0;
 	function o(e, t) {
-		if (D) {
-			var n = Ae(r);
+		if (E) {
+			var n = je(r);
 			if (e !== parseInt(n.substring(1))) {
-				var a = ke();
-				Ee(a), i.anchor = a, Te(!1), i.ensure(e, t), Te(!0);
+				var a = Ae();
+				De(a), i.anchor = a, Ee(!1), i.ensure(e, t), Ee(!0);
 				return;
 			}
 		}
@@ -1721,10 +1721,10 @@ function Or(t, n, i, a, o, s = null) {
 	var c = t, l = /* @__PURE__ */ new Map();
 	if (n & 4) {
 		var u = t;
-		c = D ? Ee(/* @__PURE__ */ Yt(u)) : u.appendChild(Jt());
+		c = E ? De(/* @__PURE__ */ Yt(u)) : u.appendChild(Jt());
 	}
-	D && De();
-	var d = null, f = /* @__PURE__ */ ct(() => {
+	E && Oe();
+	var d = null, f = /* @__PURE__ */ lt(() => {
 		var t = i();
 		return e(t) ? t : t == null ? [] : r(t);
 	}), p, m = /* @__PURE__ */ new Map(), h = !0;
@@ -1741,19 +1741,19 @@ function Or(t, n, i, a, o, s = null) {
 			p = L(f);
 			var e = p.length;
 			let t = !1;
-			D && Ae(c) === "[!" != (e === 0) && (c = ke(), Ee(c), Te(!1), t = !0);
-			for (var r = /* @__PURE__ */ new Set(), u = M, v = en(), y = 0; y < e; y += 1) {
-				D && O.nodeType === 8 && O.data === "]" && (c = O, t = !0, Te(!1));
+			E && je(c) === "[!" != (e === 0) && (c = Ae(), De(c), Ee(!1), t = !0);
+			for (var r = /* @__PURE__ */ new Set(), u = j, v = en(), y = 0; y < e; y += 1) {
+				E && D.nodeType === 8 && D.data === "]" && (c = D, t = !0, Ee(!1));
 				var b = p[y], x = a(b, y), S = h ? null : l.get(x);
 				S ? (S.v && Rt(S.v, b), S.i && Rt(S.i, y), v && u.unskip_effect(S.e)) : (S = jr(l, h ? c : Dr ??= Jt(), b, x, y, o, n, i), h || (S.e.f |= w), l.set(x, S)), r.add(x);
 			}
-			if (e === 0 && s && !d && (h ? d = _n(() => s(c)) : (d = _n(() => s(Dr ??= Jt())), d.f |= w)), e > r.size && de("", "", ""), D && e > 0 && Ee(ke()), !h) {
+			if (e === 0 && s && !d && (h ? d = _n(() => s(c)) : (d = _n(() => s(Dr ??= Jt())), d.f |= w)), e > r.size && fe("", "", ""), E && e > 0 && De(Ae()), !h) {
 				if (m.set(u, r), v) {
 					for (let [e, t] of l) r.has(e) || u.skip_effect(t.e);
 					u.oncommit(g), u.ondiscard(_);
 				} else g(u);
 			}
-			t && Te(!0), L(f);
+			t && Ee(!0), L(f);
 		}),
 		flags: n,
 		items: l,
@@ -1761,7 +1761,7 @@ function Or(t, n, i, a, o, s = null) {
 		outrogroups: null,
 		fallback: d
 	};
-	h = !1, D && (c = O);
+	h = !1, E && (c = D);
 }
 function kr(e) {
 	for (; e !== null && !(e.f & 32);) e = e.next;
@@ -1802,25 +1802,25 @@ function Ar(e, t, n, i, a) {
 		e.outrogroups.size === 0 && (e.outrogroups = null);
 	}
 	if (l !== null || u !== void 0) {
-		var T = [];
-		if (u !== void 0) for (_ of u) _.f & 8192 || T.push(_);
-		for (; l !== null;) !(l.f & 8192) && l !== e.fallback && T.push(l), l = kr(l.next);
-		var ee = T.length;
-		if (ee > 0) {
-			var te = i & 4 && s === 0 ? n : null;
+		var ee = [];
+		if (u !== void 0) for (_ of u) _.f & 8192 || ee.push(_);
+		for (; l !== null;) !(l.f & 8192) && l !== e.fallback && ee.push(l), l = kr(l.next);
+		var te = ee.length;
+		if (te > 0) {
+			var ne = i & 4 && s === 0 ? n : null;
 			if (o) {
-				for (v = 0; v < ee; v += 1) T[v].nodes?.a?.measure();
-				for (v = 0; v < ee; v += 1) T[v].nodes?.a?.fix();
+				for (v = 0; v < te; v += 1) ee[v].nodes?.a?.measure();
+				for (v = 0; v < te; v += 1) ee[v].nodes?.a?.fix();
 			}
-			Tr(e, T, te);
+			Tr(e, ee, ne);
 		}
 	}
-	o && Ve(() => {
+	o && He(() => {
 		if (f !== void 0) for (_ of f) _.nodes?.a?.apply();
 	});
 }
 function jr(e, t, n, r, i, a, o, s) {
-	var c = o & 1 ? o & 16 ? Pt(n) : /* @__PURE__ */ It(n, !1, !1) : null, l = o & 2 ? Pt(i) : null;
+	var c = o & 1 ? o & 16 ? Ft(n) : /* @__PURE__ */ Lt(n, !1, !1) : null, l = o & 2 ? Ft(i) : null;
 	return {
 		v: c,
 		i: l,
@@ -1917,10 +1917,10 @@ function Br(e, t) {
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/elements/class.js
 function Vr(e, t, n, r, i, a) {
-	var o = e[oe];
-	if (D || o !== n || o === void 0) {
+	var o = e[se];
+	if (E || o !== n || o === void 0) {
 		var s = Lr(n, r, a);
-		(!D || s !== e.getAttribute("class")) && (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[oe] = n;
+		(!E || s !== e.getAttribute("class")) && (s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s)), e[se] = n;
 	} else if (a && i !== a) for (var c in a) {
 		var l = !!a[c];
 		(i == null || l !== !!i[c]) && e.classList.toggle(c, l);
@@ -1935,32 +1935,32 @@ function Hr(e, t = {}, n, r) {
 		t[i] !== a && (n[i] == null ? e.style.removeProperty(i) : e.style.setProperty(i, a, r));
 	}
 }
-function B(e, t, n, r) {
-	var i = e[se];
-	if (D || i !== t) {
+function Ur(e, t, n, r) {
+	var i = e[ce];
+	if (E || i !== t) {
 		var a = Br(t, r);
-		(!D || a !== e.getAttribute("style")) && (a == null ? e.removeAttribute("style") : e.style.cssText = a), e[se] = t;
+		(!E || a !== e.getAttribute("style")) && (a == null ? e.removeAttribute("style") : e.style.cssText = a), e[ce] = t;
 	} else r && (Array.isArray(r) ? (Hr(e, n?.[0], r[0]), Hr(e, n?.[1], r[1], "important")) : Hr(e, n, r));
 	return r;
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/elements/bindings/this.js
-function Ur(e, t) {
-	return e === t || e?.[re] === t;
+function Wr(e, t) {
+	return e === t || e?.[ie] === t;
 }
-function Wr(e = {}, t, n, r) {
-	var i = Pe.r, a = I;
+function Gr(e = {}, t, n, r) {
+	var i = Fe.r, a = I;
 	return fn(() => {
 		var o, s;
 		return mn(() => {
 			o = s, s = r?.() || [], tr(() => {
-				Ur(n(...s), e) || (t(e, ...s), o && Ur(n(...o), e) && t(null, ...o));
+				Wr(n(...s), e) || (t(e, ...s), o && Wr(n(...o), e) && t(null, ...o));
 			});
 		}), () => {
 			let r = a;
 			for (; r !== i && r.parent !== null && r.parent.f & 33554432;) r = r.parent;
 			let o = () => {
-				s && Ur(n(...s), e) && t(null, ...s);
+				s && Wr(n(...s), e) && t(null, ...s);
 			}, c = r.teardown;
 			r.teardown = () => {
 				o(), c?.();
@@ -1970,15 +1970,15 @@ function Wr(e = {}, t, n, r) {
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/props.js
-function Gr(e, t, n, r) {
-	var i = !0, o = !!(n & 8), s = !!(n & 16), c = r, l = !0, u = void 0, d = () => s && i ? (u ??= /* @__PURE__ */ at(r), L(u)) : (l && (l = !1, c = s ? tr(r) : r), c);
+function Kr(e, t, n, r) {
+	var i = !0, o = !!(n & 8), s = !!(n & 16), c = r, l = !0, u = void 0, d = () => s && i ? (u ??= /* @__PURE__ */ ot(r), L(u)) : (l && (l = !1, c = s ? tr(r) : r), c);
 	let f;
 	if (o) {
-		var p = re in e || ie in e;
+		var p = ie in e || ae in e;
 		f = a(e, t)?.set ?? (p && t in e ? (n) => e[t] = n : void 0);
 	}
 	var m, h = !1;
-	o ? [m, h] = Ye(() => e[t]) : m = e[t], m === void 0 && r !== void 0 && (m = d(), f && (i && ge(t), f(m)));
+	o ? [m, h] = Xe(() => e[t]) : m = e[t], m === void 0 && r !== void 0 && (m = d(), f && (i && _e(t), f(m)));
 	var g = i ? () => {
 		var n = e[t];
 		return n === void 0 ? d() : (l = !0, n);
@@ -1993,18 +1993,18 @@ function Gr(e, t, n, r) {
 			return arguments.length > 0 ? ((!i || !t || _ || h) && f(t ? g() : e), e) : g();
 		});
 	}
-	var v = !1, y = (n & 1 ? at : ct)(() => (v = !1, g()));
+	var v = !1, y = (n & 1 ? ot : lt)(() => (v = !1, g()));
 	o && L(y);
 	var b = I;
 	return (function(e, t) {
 		if (arguments.length > 0) {
 			let n = t ? L(y) : i && o ? Ht(e) : e;
-			return Lt(y, n), v = !0, c !== void 0 && (c = n), e;
+			return M(y, n), v = !0, c !== void 0 && (c = n), e;
 		}
 		return jn && v || b.f & 16384 ? y.v : L(y);
 	});
 }
-var Kr = [
+var qr = [
 	["#EADDFF", "#21005D"],
 	["#FFDBC9", "#311100"],
 	["#C4EED0", "#072711"],
@@ -2013,30 +2013,30 @@ var Kr = [
 	["#F6E1B0", "#241A00"],
 	["#A9F0E4", "#00201C"],
 	["#DCE9A1", "#181E00"]
-], qr = Kr.map(([e, t]) => ({
+], Jr = qr.map(([e, t]) => ({
 	background: e,
 	foreground: t
-})), Jr = /\s+/g;
-function Yr(e) {
+})), Yr = /\s+/g;
+function Xr(e) {
 	let t = 0;
 	for (let n = 0; n < e.length; n += 1) t = t * 31 + e.charCodeAt(n) | 0;
 	return t;
 }
-function Xr(e) {
-	return e.replace(/^【调】/, "").replace(/[★☆〇■◆]$/u, "").trim().replace(Jr, " ");
-}
 function Zr(e) {
-	return Kr[Math.abs(Yr(e) % Kr.length)] ?? Kr[0];
+	return e.replace(/^【调】/, "").replace(/[★☆〇■◆]$/u, "").trim().replace(Yr, " ");
 }
-var Qr = new Map(qr.map((e, t) => [e.background.toLowerCase(), t]));
-function $r(e) {
-	return Qr.get(e.trim().toLowerCase()) ?? null;
+function Qr(e) {
+	return qr[Math.abs(Xr(e) % qr.length)] ?? qr[0];
 }
-function ei(e, t = qr) {
-	let n = e.name ? Xr(e.name) : "", r = $r(e.color || (n ? Zr(n)[0] : ""));
+var $r = new Map(Jr.map((e, t) => [e.background.toLowerCase(), t]));
+function ei(e) {
+	return $r.get(e.trim().toLowerCase()) ?? null;
+}
+function ti(e, t = Jr) {
+	let n = e.name ? Zr(e.name) : "", r = ei(e.color || (n ? Qr(n)[0] : ""));
 	if (r == null || t.length === 0) {
 		if (n) {
-			let [t, r] = Zr(n);
+			let [t, r] = Qr(n);
 			return {
 				background: e.color || t,
 				foreground: e.textColor || r
@@ -2049,15 +2049,15 @@ function ei(e, t = qr) {
 	}
 	return t[r % t.length];
 }
-function ti(e, t = qr) {
+function ni(e, t = Jr) {
 	if (t.length === 0) return /* @__PURE__ */ new Map();
 	let n = /* @__PURE__ */ new Map();
 	for (let t of e) {
-		let e = Xr(t.name), r = $r(t.color || Zr(e)[0]);
+		let e = Zr(t.name), r = ei(t.color || Qr(e)[0]);
 		r != null && (n.has(e) || n.set(e, {
 			name: e,
 			slot: r,
-			hash: Yr(e)
+			hash: Xr(e)
 		}));
 	}
 	let r = [...n.values()].sort((e, t) => e.hash - t.hash || e.name.localeCompare(t.name)), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Set(), o = [];
@@ -2079,48 +2079,48 @@ function ti(e, t = qr) {
 }
 //#endregion
 //#region packages/core/src/engine/date.ts
-function ni(e) {
+function ri(e) {
 	let t = e.trim(), n = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
 	if (!n) throw Error(`Invalid ISO date: ${e}`);
 	let [, r, i, a] = n;
 	return new Date(Date.UTC(Number(r), Number(i) - 1, Number(a), 12));
 }
-function ri(e) {
+function ii(e) {
 	return `${e.getUTCFullYear()}-${String(e.getUTCMonth() + 1).padStart(2, "0")}-${String(e.getUTCDate()).padStart(2, "0")}`;
 }
-function ii(e) {
+function ai(e) {
 	let t = new Date(e.getTime()), n = t.getUTCDay(), r = n === 0 ? -6 : 1 - n;
 	return t.setUTCDate(t.getUTCDate() + r), t;
 }
-function ai(e, t) {
+function oi(e, t) {
 	let n = new Date(e.getTime());
 	return n.setUTCDate(n.getUTCDate() + t), n;
 }
-function oi(e, t) {
-	return ai(e, t * 7);
-}
 function si(e, t) {
-	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+	return oi(e, t * 7);
 }
 function ci(e, t) {
+	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+}
+function li(e, t) {
 	return e.getTime() < t.getTime();
 }
-function li(e) {
-	return ri(ii(ni(e)));
+function ui(e) {
+	return ii(ai(ri(e)));
 }
-function ui(e = /* @__PURE__ */ new Date()) {
+function di(e = /* @__PURE__ */ new Date()) {
 	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
 }
 //#endregion
 //#region packages/core/src/engine/calendar.ts
-var di = class {
+var fi = class {
 	normalizeTermStartDate(e, t) {
-		let n = ni(li(t));
-		if (!e || !e.trim()) return ri(ii(n));
+		let n = ri(ui(t));
+		if (!e || !e.trim()) return ii(ai(n));
 		try {
-			return ri(ii(ni(e)));
+			return ii(ai(ri(e)));
 		} catch {
-			return ri(ii(this.inferTermStartDateFromTermName(e) || n));
+			return ii(ai(this.inferTermStartDateFromTermName(e) || n));
 		}
 	}
 	inferTermStartDateFromTermName(e) {
@@ -2135,44 +2135,44 @@ var di = class {
 			startWeek: 1,
 			endWeek: 20,
 			periodTimes: []
-		}, r = ni(this.normalizeTermStartDate(n.termStartDate, e)), i = ni(e);
-		if (ci(i, r)) return n.startWeek;
-		let a = si(r, i);
+		}, r = ri(this.normalizeTermStartDate(n.termStartDate, e)), i = ri(e);
+		if (li(i, r)) return n.startWeek;
+		let a = ci(r, i);
 		return Math.min(Math.max(n.startWeek + a, n.startWeek), n.endWeek);
 	}
 	resolveWeekStart(e, t, n) {
-		return ri(oi(ni(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
+		return ii(si(ri(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
 	}
 	resolveCourseDate(e, t, n, r) {
-		return ri(ai(ni(this.resolveWeekStart(e, t, r)), n - 1));
+		return ii(oi(ri(this.resolveWeekStart(e, t, r)), n - 1));
 	}
-}, fi = {
+}, pi = {
 	termStartDate: "",
 	startWeek: 1,
 	endWeek: 20,
 	periodTimes: []
 };
-function pi(e) {
+function mi(e) {
 	let [, t, n] = e.split("-");
 	return `${Number(t)}/${Number(n)}`;
 }
-function mi(e, t, n, r, i = new di()) {
-	let a = e ?? fi, o = i.resolveWeekStart(a, t, n), s = 5;
+function hi(e, t, n, r, i = new fi()) {
+	let a = e ?? pi, o = i.resolveWeekStart(a, t, n), s = 5;
 	r?.showSunday ? s = 7 : r?.showSaturday && (s = 6);
-	let c = ai(ni(o), s - 1);
-	return `${pi(o)} - ${pi(ri(c))}`;
+	let c = oi(ri(o), s - 1);
+	return `${mi(o)} - ${mi(ii(c))}`;
 }
 //#endregion
 //#region packages/core/src/engine/slot-key.ts
-function hi(e, t, n) {
+function gi(e, t, n) {
 	return `${e}:${t}:${n}`;
 }
-function gi(e) {
-	return hi(e.dayOfWeek, e.startPeriod, e.endPeriod);
+function _i(e) {
+	return gi(e.dayOfWeek, e.startPeriod, e.endPeriod);
 }
 //#endregion
 //#region packages/core/src/engine/grid.ts
-function _i(e) {
+function vi(e) {
 	let t = [
 		1,
 		2,
@@ -2182,11 +2182,11 @@ function _i(e) {
 	];
 	return e.viewPrefs.showSaturday && t.push(6), e.viewPrefs.showSunday && t.push(7), t;
 }
-function vi(e) {
+function yi(e) {
 	let t = e[0] ? Number(e[0].slice(5, 7)) : 0, n = e[e.length - 1] ? Number(e[e.length - 1].slice(5, 7)) : 0;
 	return t ? t === n ? String(t) : `${t}/${n}` : "";
 }
-function yi(e, t, n = []) {
+function bi(e, t, n = []) {
 	let r = /* @__PURE__ */ new Map();
 	for (let t of e) r.set(t.index, t);
 	return Array.from({ length: t }, (e, t) => {
@@ -2198,9 +2198,9 @@ function yi(e, t, n = []) {
 		};
 	});
 }
-function bi(e, t, n, r) {
-	let i = r?.academicCalendarService ?? new di(), a = _i(n), o = ni(i.resolveWeekStart(n.academicConfig, t, e)), s = a.map((t) => {
-		let n = ri(ai(o, t - 1));
+function xi(e, t, n, r) {
+	let i = r?.academicCalendarService ?? new fi(), a = vi(n), o = ri(i.resolveWeekStart(n.academicConfig, t, e)), s = a.map((t) => {
+		let n = ii(oi(o, t - 1));
 		return {
 			dayOfWeek: t,
 			date: n,
@@ -2208,18 +2208,18 @@ function bi(e, t, n, r) {
 		};
 	}), c = Math.max(10, n.academicConfig.periodTimes.length, ...n.courses.map((e) => e.endPeriod), 0);
 	return {
-		monthLabel: vi(s.map((e) => e.date)),
+		monthLabel: yi(s.map((e) => e.date)),
 		visibleDays: s,
-		periods: yi(n.academicConfig.periodTimes, c, r?.defaultPeriods),
+		periods: bi(n.academicConfig.periodTimes, c, r?.defaultPeriods),
 		displayedPeriodCount: c
 	};
 }
 //#endregion
 //#region packages/core/src/engine/display-models.ts
-function xi(e, t) {
+function Si(e, t) {
 	return e.nextWeek === t.nextWeek ? e.originalIndex < t.originalIndex : e.nextWeek < t.nextWeek;
 }
-function Si(e, t, n) {
+function Ci(e, t, n) {
 	let r = [], i = [];
 	for (let a = 0; a < e.courses.length; a += 1) {
 		let o = e.courses[a];
@@ -2235,19 +2235,19 @@ function Si(e, t, n) {
 		}));
 	}
 	if (!e.viewPrefs.showNonCurrentWeekCourses) return r;
-	let a = new Set(r.map((e) => gi(e.course))), o = /* @__PURE__ */ new Map();
+	let a = new Set(r.map((e) => _i(e.course))), o = /* @__PURE__ */ new Map();
 	for (let { course: e, originalIndex: t } of i) {
 		let r = Infinity;
 		for (let t of e.weeks) t >= n && t < r && (r = t);
 		if (!Number.isFinite(r)) continue;
-		let i = gi(e);
+		let i = _i(e);
 		if (a.has(i)) continue;
 		let s = {
 			course: e,
 			nextWeek: r,
 			originalIndex: t
 		}, c = o.get(i);
-		(!c || xi(s, c)) && o.set(i, s);
+		(!c || Si(s, c)) && o.set(i, s);
 	}
 	let s = [...o.values()].sort((e, t) => e.originalIndex - t.originalIndex).map((e) => ({
 		course: {
@@ -2260,31 +2260,31 @@ function Si(e, t, n) {
 }
 //#endregion
 //#region packages/core/src/engine/capsule-layout.ts
-var Ci = "非本周", wi = 70, Ti = 2, Ei = 1, Di = 1, Oi = 12, ki = 8, Ai = 8, ji = 1.25, Mi = 2, Ni = [
+var wi = "非本周", Ti = 70, Ei = 2, Di = 1, Oi = 1, ki = 12, Ai = 8, ji = 8, Mi = 1.25, Ni = 2, Pi = [
 	[50, 12],
 	[70, 14],
 	[85, 15],
 	[110, 17]
-], Pi = [
+], Fi = [
 	[50, 8],
 	[70, 10],
 	[85, 11],
 	[110, 12]
-], Fi = [
+], Ii = [
 	[50, 8],
 	[70, 9],
 	[85, 10],
 	[110, 12]
 ];
-function Ii(e) {
-	let { courseDisplayModels: t, visibleDays: n, columnWidthPx: r, expandedSlotKeys: i, layoutMode: a = "fixed", coursePalette: o = qr, paletteCourses: s, capsuleCornerStyle: c = "rounded" } = e, l = a === "compact", u = n.length;
+function Li(e) {
+	let { courseDisplayModels: t, visibleDays: n, columnWidthPx: r, expandedSlotKeys: i, layoutMode: a = "fixed", coursePalette: o = Jr, paletteCourses: s, capsuleCornerStyle: c = "rounded" } = e, l = a === "compact", u = n.length;
 	if (u === 0) return [];
-	let d = ti(s ?? t.map((e) => e.course), o), f = new Map(n.map((e, t) => [e.dayOfWeek, t])), p = 100 / u, m = [];
-	for (let e of Yi(t)) {
-		let t = hi(e.dayOfWeek, e.startPeriod, e.endPeriod), n = e.courses.length, a = (f.get(e.dayOfWeek) ?? 0) * p;
+	let d = ni(s ?? t.map((e) => e.course), o), f = new Map(n.map((e, t) => [e.dayOfWeek, t])), p = 100 / u, m = [];
+	for (let e of Xi(t)) {
+		let t = gi(e.dayOfWeek, e.startPeriod, e.endPeriod), n = e.courses.length, a = (f.get(e.dayOfWeek) ?? 0) * p;
 		if (n === 1) {
 			let n = e.courses[0];
-			m.push(Li({
+			m.push(Ri({
 				displayModel: n,
 				columnLeft: a,
 				widthPercent: p,
@@ -2298,7 +2298,7 @@ function Ii(e) {
 			continue;
 		}
 		if (!i.has(t)) {
-			let i = Ji(r, 1, l);
+			let i = Yi(r, 1, l);
 			m.push({
 				kind: "overlap-placeholder",
 				key: t,
@@ -2310,13 +2310,13 @@ function Ii(e) {
 				},
 				count: n,
 				placeholderPx: i.placeholderPx,
-				corners: Ri
+				corners: zi
 			});
 			continue;
 		}
 		let s = p / n;
 		e.courses.forEach((e, i) => {
-			m.push(Li({
+			m.push(Ri({
 				displayModel: e,
 				columnLeft: a + s * i,
 				widthPercent: s,
@@ -2329,10 +2329,10 @@ function Ii(e) {
 			}));
 		});
 	}
-	return c === "pill" ? Hi(m) : c === "sharp" && Bi(m), m;
+	return c === "pill" ? Ui(m) : c === "sharp" && Vi(m), m;
 }
-function Li(e) {
-	let { displayModel: t, columnLeft: n, widthPercent: r, columnWidthPx: i, overlapCount: a, coursePalette: o, paletteByName: s, compact: c, key: l } = e, u = t.course, d = Ki(i, a), f = Zi(u.location, { includeCampus: d }), p = Ji(i, a, c), m = qi(p.detailPx, d, f.length);
+function Ri(e) {
+	let { displayModel: t, columnLeft: n, widthPercent: r, columnWidthPx: i, overlapCount: a, coursePalette: o, paletteByName: s, compact: c, key: l } = e, u = t.course, d = qi(i, a), f = Qi(u.location, { includeCampus: d }), p = Yi(i, a, c), m = Ji(p.detailPx, d, f.length);
 	return {
 		kind: "course",
 		key: l,
@@ -2344,35 +2344,35 @@ function Li(e) {
 			startPeriod: u.startPeriod,
 			endPeriod: u.endPeriod
 		},
-		colors: $i(u, o, s),
+		colors: ea(u, o, s),
 		scale: p,
 		locationLines: f,
 		locationMetrics: m,
 		teacher: u.teacher.trim(),
-		badgeLabel: t.isInDisplayedWeek ? null : Ci,
+		badgeLabel: t.isInDisplayedWeek ? null : wi,
 		overlapCount: a,
-		corners: Ri
+		corners: zi
 	};
 }
-var Ri = {
+var zi = {
 	topLeft: !0,
 	topRight: !0,
 	bottomLeft: !0,
 	bottomRight: !0
-}, zi = {
+}, Bi = {
 	topLeft: !1,
 	topRight: !1,
 	bottomLeft: !1,
 	bottomRight: !1
 };
-function Bi(e) {
-	for (let t of e) t.corners = zi;
+function Vi(e) {
+	for (let t of e) t.corners = Bi;
 }
-var Vi = .001;
-function Hi(e) {
+var Hi = .001;
+function Ui(e) {
 	let t = e.length;
 	if (t <= 1) {
-		t === 1 && (e[0].corners = Ri);
+		t === 1 && (e[0].corners = zi);
 		return;
 	}
 	for (let n = 0; n < t; n += 1) {
@@ -2380,7 +2380,7 @@ function Hi(e) {
 		for (let r = 0; r < t; r += 1) {
 			if (n === r) continue;
 			let { leftPercent: t, widthPercent: a, startPeriod: p, endPeriod: m } = e[r].geometry, h = t + a;
-			if (!(h < i - Vi || t > c + Vi) && (Ui(i, c, t, h) && (m + 1 === o && (l = !1), p === s + 1 && (u = !1)), Wi(o, s, p, m) && (Gi(h, i) && (d = !1), Gi(c, t) && (f = !1)), !l && !u && !d && !f)) break;
+			if (!(h < i - Hi || t > c + Hi) && (Wi(i, c, t, h) && (m + 1 === o && (l = !1), p === s + 1 && (u = !1)), Gi(o, s, p, m) && (Ki(h, i) && (d = !1), Ki(c, t) && (f = !1)), !l && !u && !d && !f)) break;
 		}
 		r.corners = {
 			topLeft: l && d,
@@ -2390,29 +2390,29 @@ function Hi(e) {
 		};
 	}
 }
-function Ui(e, t, n, r) {
-	return Math.max(e, n) < Math.min(t, r) - Vi;
-}
 function Wi(e, t, n, r) {
+	return Math.max(e, n) < Math.min(t, r) - Hi;
+}
+function Gi(e, t, n, r) {
 	return e <= r && n <= t;
 }
-function Gi(e, t) {
-	return Math.abs(e - t) < Vi;
+function Ki(e, t) {
+	return Math.abs(e - t) < Hi;
 }
-function Ki(e, t = 1) {
-	return Math.max(0, e) / Math.max(1, t) >= wi;
+function qi(e, t = 1) {
+	return Math.max(0, e) / Math.max(1, t) >= Ti;
 }
-function qi(e, t, n) {
+function Ji(e, t, n) {
 	let r = t ? Math.min(Math.max(n, 1), 3) : 3;
 	return {
-		fontPx: ra(t ? e : e + Mi),
-		heightPx: r * e * ji
+		fontPx: ia(t ? e : e + Ni),
+		heightPx: r * e * Mi
 	};
 }
-function Ji(e, t = 1, n = !1) {
-	let r = Math.max(0, e) / Math.max(1, t), i = ra(na(r, Ni)), a = ra(na(r, Pi)), o = ra(na(r, Fi));
-	n && (i = Math.max(Oi, ra(i - Ti)), a = Math.max(ki, ra(a - Ei)), o = Math.max(Ai, ra(o - Di)));
-	let s = ra(Math.max(11, i - 1));
+function Yi(e, t = 1, n = !1) {
+	let r = Math.max(0, e) / Math.max(1, t), i = ia(ra(r, Pi)), a = ia(ra(r, Fi)), o = ia(ra(r, Ii));
+	n && (i = Math.max(ki, ia(i - Ei)), a = Math.max(Ai, ia(a - Di)), o = Math.max(ji, ia(o - Oi)));
+	let s = ia(Math.max(11, i - 1));
 	return {
 		titlePx: i,
 		detailPx: a,
@@ -2420,15 +2420,15 @@ function Ji(e, t = 1, n = !1) {
 		placeholderPx: s
 	};
 }
-function Yi(e) {
+function Xi(e) {
 	let t = /* @__PURE__ */ new Map();
 	for (let n of e) {
 		let e = n.course.dayOfWeek, r = t.get(e);
 		r ? r.push(n) : t.set(e, [n]);
 	}
-	return [...t.entries()].sort(([e], [t]) => e - t).flatMap(([, e]) => ea(e));
+	return [...t.entries()].sort(([e], [t]) => e - t).flatMap(([, e]) => ta(e));
 }
-function Xi(e) {
+function Zi(e) {
 	let t = e.trim().split(/\s+/).filter(Boolean), n = [], r = [];
 	for (let e of t) e.endsWith("校区") ? n.push(e) : r.push(e);
 	let i = n.join(""), a = r.join("");
@@ -2448,35 +2448,35 @@ function Xi(e) {
 		room: ""
 	};
 }
-function Zi(e, t) {
-	let { campus: n, building: r, room: i } = Xi(e);
+function Qi(e, t) {
+	let { campus: n, building: r, room: i } = Zi(e);
 	return (t?.includeCampus === !1 ? [r, i] : [
 		n,
 		r,
 		i
 	]).filter((e) => e.length > 0);
 }
-function Qi(e) {
+function $i(e) {
 	let t = e.trim();
 	return /^#[0-9A-Fa-f]{6}$/.test(t) ? t : "#EADDFF";
 }
-function $i(e, t, n) {
-	let r = n.get(Xr(e.name)) ?? ei(e, t);
+function ea(e, t, n) {
+	let r = n.get(Zr(e.name)) ?? ti(e, t);
 	return {
-		background: Qi(r.background),
-		text: Qi(r.foreground)
+		background: $i(r.background),
+		text: $i(r.foreground)
 	};
 }
-function ea(e) {
+function ta(e) {
 	if (e.length === 0) return [];
 	let t = [...e].sort((e, t) => e.course.startPeriod - t.course.startPeriod || e.course.endPeriod - t.course.endPeriod || e.course.name.localeCompare(t.course.name)), n = [], r = [], i = 0;
 	for (let e of t) {
 		let t = e.course;
-		r.length === 0 || t.startPeriod <= i ? (r.push(e), i = Math.max(i, t.endPeriod)) : (n.push(ta(r, i)), r = [e], i = t.endPeriod);
+		r.length === 0 || t.startPeriod <= i ? (r.push(e), i = Math.max(i, t.endPeriod)) : (n.push(na(r, i)), r = [e], i = t.endPeriod);
 	}
-	return r.length > 0 && n.push(ta(r, i)), n;
+	return r.length > 0 && n.push(na(r, i)), n;
 }
-function ta(e, t) {
+function na(e, t) {
 	let n = e[0];
 	return {
 		dayOfWeek: n.course.dayOfWeek,
@@ -2485,7 +2485,7 @@ function ta(e, t) {
 		courses: e
 	};
 }
-function na(e, t) {
+function ra(e, t) {
 	let n = t[0], r = t[t.length - 1];
 	if (e <= n[0]) return n[1];
 	if (e >= r[0]) return r[1];
@@ -2495,17 +2495,17 @@ function na(e, t) {
 	}
 	return r[1];
 }
-function ra(e) {
+function ia(e) {
 	return Math.round(e * 10) / 10;
 }
 //#endregion
 //#region packages/core/src/engine/timetable-layout.ts
-function ia(e) {
-	let { timetable: t, displayedWeek: n, todayIso: r, columnWidthPx: i = 0, expandedSlotKeys: a = /* @__PURE__ */ new Set(), layoutMode: o = "fixed", capsuleCornerStyle: s = "rounded", coursePalette: c = qr, paletteCourses: l, academicCalendarService: u = new di() } = e, d = u.calculateAcademicWeek(r, t.academicConfig), f = n === d, p = bi(r, n, t, { academicCalendarService: u }), m = Si(t, new Set(p.visibleDays.map((e) => e.dayOfWeek)), n);
+function aa(e) {
+	let { timetable: t, displayedWeek: n, todayIso: r, columnWidthPx: i = 0, expandedSlotKeys: a = /* @__PURE__ */ new Set(), layoutMode: o = "fixed", capsuleCornerStyle: s = "rounded", coursePalette: c = Jr, paletteCourses: l, academicCalendarService: u = new fi() } = e, d = u.calculateAcademicWeek(r, t.academicConfig), f = n === d, p = xi(r, n, t, { academicCalendarService: u }), m = Ci(t, new Set(p.visibleDays.map((e) => e.dayOfWeek)), n);
 	return {
 		gridModel: p,
 		courseDisplayModels: m,
-		placements: Ii({
+		placements: Li({
 			courseDisplayModels: m,
 			visibleDays: p.visibleDays,
 			columnWidthPx: i,
@@ -2515,28 +2515,28 @@ function ia(e) {
 			coursePalette: c,
 			paletteCourses: l
 		}),
-		weekRangeText: mi(t.academicConfig, n, r, t.viewPrefs, u),
+		weekRangeText: hi(t.academicConfig, n, r, t.viewPrefs, u),
 		isCurrentWeek: f,
 		academicWeek: d
 	};
 }
 //#endregion
 //#region packages/core/src/engine/period-clock.ts
-function aa(e) {
+function oa(e) {
 	let t = /^(\d{1,2}):(\d{2})$/.exec(e.trim());
 	return t ? Number(t[1]) * 60 + Number(t[2]) : 0;
 }
-function oa(e) {
+function sa(e) {
 	return e.map((e) => ({
 		index: e.index,
-		startMinutes: aa(e.startTime),
-		endMinutes: aa(e.endTime)
+		startMinutes: oa(e.startTime),
+		endMinutes: oa(e.endTime)
 	})).sort((e, t) => e.index - t.index);
 }
-function sa(e) {
+function ca(e) {
 	return e.getHours() * 60 + e.getMinutes();
 }
-function ca(e, t, n = "upcomingOrLast") {
+function la(e, t, n = "upcomingOrLast") {
 	let r = null;
 	for (let n of e) {
 		if (t >= n.startMinutes && t <= n.endMinutes) return n.index;
@@ -2546,188 +2546,112 @@ function ca(e, t, n = "upcomingOrLast") {
 }
 //#endregion
 //#region packages/core/src/schema/schema.ts
-function la(e) {
+function ua(e) {
 	return e;
 }
 //#endregion
 //#region packages/core/src/types/services.ts
-function ua(e) {
+function da(e) {
 	return { key: e };
 }
-var da = ua("storage"), fa = "tool-wallpaper", pa = "wallpaper_image";
-function ma(e) {
+var fa = da("storage"), pa = "tool-wallpaper", ma = "wallpaper_image";
+function ha(e) {
 	let t = "";
 	for (let n = 0; n < e.length; n += 1) t += String.fromCharCode(e[n]);
 	return btoa(t);
 }
-function ha(e) {
+function ga(e) {
 	return `data:${e.mimeType || "image/jpeg"};base64,${e.base64}`;
 }
-async function ga(e) {
+async function _a(e) {
 	let t = await e.arrayBuffer();
 	return {
 		mimeType: e.type || "image/jpeg",
-		base64: ma(new Uint8Array(t))
+		base64: ha(new Uint8Array(t))
 	};
 }
-async function _a(e, t = fa) {
-	let n = await e.getPluginData(t, pa);
-	return n?.base64 ? ha(n) : null;
+async function va(e, t = pa) {
+	let n = await e.getPluginData(t, ma);
+	return n?.base64 ? ga(n) : null;
 }
-async function va(e, t, n = fa) {
-	let r = await ga(t);
-	return await e.setPluginData(n, pa, r), ha(r);
+async function ya(e, t, n = pa) {
+	let r = await _a(t);
+	return await e.setPluginData(n, ma, r), ga(r);
 }
-async function ya(e, t = fa) {
-	await e.deletePluginData(t, pa);
+async function ba(e, t = pa) {
+	await e.deletePluginData(t, ma);
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/runtime.svelte.ts
-var ba = null, xa = /* @__PURE__ */ Ft(null), Sa = null, Ca = /* @__PURE__ */ new Set();
-function wa(e) {
-	Lt(xa, e, !0);
-	for (let t of Ca) try {
+var xa = null, Sa = /* @__PURE__ */ It(null), Ca = null, wa = /* @__PURE__ */ new Set();
+function Ta(e) {
+	M(Sa, e, !0);
+	for (let t of wa) try {
 		t(e);
 	} catch (e) {
 		console.error("[WallpaperRuntime] listener error:", e);
 	}
-	Sa?.(e);
+	Ca?.(e);
 }
-function Ta(e) {
-	Sa = e, e && e(L(xa));
+function Ea(e) {
+	Ca = e, e && e(L(Sa));
 }
-function Ea() {
+function Da() {
 	return {
 		get uri() {
-			return L(xa);
+			return L(Sa);
 		},
 		get hasWallpaper() {
-			return !!L(xa);
+			return !!L(Sa);
 		},
 		async syncFromStorage(e) {
-			if (!e || !ba) {
-				wa(null);
+			if (!e || !xa) {
+				Ta(null);
 				return;
 			}
-			wa(await _a(ba, fa));
+			Ta(await va(xa, pa));
 		},
 		async setWallpaper(e) {
-			if (ba) {
+			if (xa) {
 				if (!e) {
-					await ya(ba, fa), wa(null);
+					await ba(xa, pa), Ta(null);
 					return;
 				}
-				wa(await va(ba, e, fa));
+				Ta(await ya(xa, e, pa));
 			}
 		}
 	};
 }
-function Da(e) {
-	ba = e;
+function Oa(e) {
+	xa = e;
 }
-function Oa() {
-	ba = null, Sa = null, wa(null);
+function ka() {
+	xa = null, Ta(null), Ca = null;
 }
-//#endregion
-//#region packages/plugins/wallpaper/src/create-wallpaper-plugin.ts
-var ka = "wallpaper", Aa = la({ wallpaper: {
-	type: "wallpaper-preview",
-	title: () => "选择壁纸图片",
-	description: () => "支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩",
-	accept: "image/*",
-	required: !1
-} }), ja = {
-	id: ka,
-	name: () => "壁纸",
-	description: () => "从当前壁纸提取配色",
-	supportsDynamicColor: !0,
-	getTokens: (e) => ({
-		surface: e === "dark" ? "#1e2026" : "#f9f9fe",
-		onSurface: e === "dark" ? "#f8fafc" : "#2e333a",
-		primary: "#0068b7",
-		onPrimary: "#ffffff",
-		surfaceVariant: e === "dark" ? "#24262e" : "#eceef5",
-		outline: e === "dark" ? "#334155" : "#aeb2bb"
-	})
-};
-async function Ma(e) {
-	let t = e.wallpaper, n = Ea();
-	if (t instanceof Uint8Array) {
-		await n.setWallpaper(new Blob([t]));
-		return;
-	}
-	t === null && await n.setWallpaper(null);
-}
-function Na(e = {}) {
-	let { screenComponent: t } = e;
-	return {
-		id: fa,
-		name: () => "自定义壁纸",
-		version: "1.0.0",
-		description: () => "自定义课表页壁纸，支持动态取色",
-		category: "tool",
-		order: 40,
-		author: "Chronos Community",
-		homepage: "https://github.com/CQUT-OpenProject/Chronos",
-		configSchema: Aa,
-		defaultConfig: {},
-		async apply(e) {
-			Da(e.service(da)), Ta((t) => {
-				e.emit("wallpaper:changed", { uri: t });
-			}), e.on("wallpaper:set", async ({ blob: e }) => {
-				await Ea().setWallpaper(e);
-			}), e.on("wallpaper:hydrate", () => {
-				e.emit("wallpaper:changed", { uri: Ea().uri });
-			}), e.on("config:changed", async ({ pluginId: e, config: t }) => {
-				e === "tool-wallpaper" && await Ma(t);
-			}), await Ea().syncFromStorage(!0), e.registerSlot("mine.item", {
-				id: "wallpaper",
-				sectionId: "appearance-feedback",
-				title: () => "设置课表壁纸",
-				href: "/plugins/tool-wallpaper",
-				icon: "wallpaper",
-				iconTone: "primary",
-				keywords: [
-					"壁纸",
-					"背景",
-					"图片",
-					"自定义",
-					"封面"
-				],
-				order: 30
-			}), e.registerSlot("shell.route.screen", {
-				id: fa,
-				title: () => "设置课表壁纸",
-				...t ? { component: t } : {},
-				schema: Aa
-			}), e.registerSlot("theme.definition", ja);
-		},
-		async dispose() {
-			Ta(null), Oa();
-		}
-	};
-}
-//#endregion
-//#region node_modules/.pnpm/svelte@5.56.9_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/disclose-version.js
-typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5");
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/utils/math_utils.js
-function Pa(e) {
+function Aa(e) {
 	return e < 0 ? -1 : e === 0 ? 0 : 1;
 }
-function Fa(e, t, n) {
+function ja(e, t, n) {
 	return (1 - n) * e + n * t;
 }
-function Ia(e, t, n) {
+function Ma(e, t, n) {
 	return n < e ? e : n > t ? t : n;
 }
-function V(e, t, n) {
+function B(e, t, n) {
 	return n < e ? e : n > t ? t : n;
 }
-function La(e) {
+function Na(e) {
 	return e %= 360, e < 0 && (e += 360), e;
 }
-function Ra(e, t) {
+function Pa(e) {
+	return e %= 360, e < 0 && (e += 360), e;
+}
+function Fa(e, t) {
+	return 180 - Math.abs(Math.abs(e - t) - 180);
+}
+function Ia(e, t) {
 	return [
 		e[0] * t[0][0] + e[1] * t[0][1] + e[2] * t[0][2],
 		e[0] * t[1][0] + e[1] * t[1][1] + e[2] * t[1][2],
@@ -2736,7 +2660,7 @@ function Ra(e, t) {
 }
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/utils/color_utils.js
-var za = [
+var La = [
 	[
 		.41233895,
 		.35762064,
@@ -2752,7 +2676,7 @@ var za = [
 		.11916382,
 		.95034478
 	]
-], Ba = [
+], Ra = [
 	[
 		3.2413774792388685,
 		-1.5376652402851851,
@@ -2768,80 +2692,95 @@ var za = [
 		-.20395524564742123,
 		1.0571799111220335
 	]
-], Va = [
+], za = [
 	95.047,
 	100,
 	108.883
 ];
-function Ha(e, t, n) {
+function Ba(e, t, n) {
 	return (255 << 24 | (e & 255) << 16 | (t & 255) << 8 | n & 255) >>> 0;
 }
-function Ua(e) {
-	return Ha(eo(e[0]), eo(e[1]), eo(e[2]));
+function Va(e) {
+	return Ba(to(e[0]), to(e[1]), to(e[2]));
 }
-function Wa(e) {
+function Ha(e) {
+	return e >> 24 & 255;
+}
+function Ua(e) {
 	return e >> 16 & 255;
 }
-function Ga(e) {
+function Wa(e) {
 	return e >> 8 & 255;
 }
-function Ka(e) {
+function Ga(e) {
 	return e & 255;
 }
-function qa(e, t, n) {
-	let r = Ba, i = r[0][0] * e + r[0][1] * t + r[0][2] * n, a = r[1][0] * e + r[1][1] * t + r[1][2] * n, o = r[2][0] * e + r[2][1] * t + r[2][2] * n;
-	return Ha(eo(i), eo(a), eo(o));
+function Ka(e, t, n) {
+	let r = Ra, i = r[0][0] * e + r[0][1] * t + r[0][2] * n, a = r[1][0] * e + r[1][1] * t + r[1][2] * n, o = r[2][0] * e + r[2][1] * t + r[2][2] * n;
+	return Ba(to(i), to(a), to(o));
 }
-function Ja(e) {
-	return Ra([
-		$a(Wa(e)),
-		$a(Ga(e)),
-		$a(Ka(e))
-	], za);
+function qa(e) {
+	return Ia([
+		eo(Ua(e)),
+		eo(Wa(e)),
+		eo(Ga(e))
+	], La);
+}
+function Ja(e, t, n) {
+	let r = za, i = (e + 16) / 116, a = t / 500 + i, o = i - n / 200, s = io(a), c = io(i), l = io(o);
+	return Ka(s * r[0], c * r[1], l * r[2]);
 }
 function Ya(e) {
-	let t = eo(Za(e));
-	return Ha(t, t, t);
+	let t = eo(Ua(e)), n = eo(Wa(e)), r = eo(Ga(e)), i = La, a = i[0][0] * t + i[0][1] * n + i[0][2] * r, o = i[1][0] * t + i[1][1] * n + i[1][2] * r, s = i[2][0] * t + i[2][1] * n + i[2][2] * r, c = za, l = a / c[0], u = o / c[1], d = s / c[2], f = ro(l), p = ro(u), m = ro(d);
+	return [
+		116 * p - 16,
+		500 * (f - p),
+		200 * (p - m)
+	];
 }
 function Xa(e) {
-	let t = Ja(e)[1];
-	return 116 * no(t / 100) - 16;
+	let t = to(Qa(e));
+	return Ba(t, t, t);
 }
 function Za(e) {
-	return 100 * ro((e + 16) / 116);
+	let t = qa(e)[1];
+	return 116 * ro(t / 100) - 16;
 }
 function Qa(e) {
-	return no(e / 100) * 116 - 16;
+	return 100 * io((e + 16) / 116);
 }
 function $a(e) {
+	return ro(e / 100) * 116 - 16;
+}
+function eo(e) {
 	let t = e / 255;
 	return t <= .040449936 ? t / 12.92 * 100 : ((t + .055) / 1.055) ** 2.4 * 100;
 }
-function eo(e) {
+function to(e) {
 	let t = e / 100, n = 0;
-	return n = t <= .0031308 ? t * 12.92 : 1.055 * t ** (1 / 2.4) - .055, Ia(0, 255, Math.round(n * 255));
+	return n = t <= .0031308 ? t * 12.92 : 1.055 * t ** (1 / 2.4) - .055, Ma(0, 255, Math.round(n * 255));
 }
-function to() {
-	return Va;
-}
-function no(e) {
-	return e > .008856451679035631 ? e ** (1 / 3) : (903.2962962962963 * e + 16) / 116;
+function no() {
+	return za;
 }
 function ro(e) {
+	return e > .008856451679035631 ? e ** (1 / 3) : (903.2962962962963 * e + 16) / 116;
+}
+function io(e) {
 	let t = e * e * e;
 	return t > .008856451679035631 ? t : (116 * e - 16) / 903.2962962962963;
 }
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/hct/viewing_conditions.js
-var io = class e {
-	static make(t = to(), n = 200 / Math.PI * Za(50) / 100, r = 50, i = 2, a = !1) {
-		let o = t, s = o[0] * .401288 + o[1] * .650173 + o[2] * -.051461, c = o[0] * -.250268 + o[1] * 1.204414 + o[2] * .045854, l = o[0] * -.002079 + o[1] * .048952 + o[2] * .953127, u = .8 + i / 10, d = u >= .9 ? Fa(.59, .69, (u - .9) * 10) : Fa(.525, .59, (u - .8) * 10), f = a ? 1 : u * (1 - 1 / 3.6 * Math.exp((-n - 42) / 92));
+var ao = class e {
+	static make(t = no(), n = 200 / Math.PI * Qa(50) / 100, r = 50, i = 2, a = !1) {
+		let o = t, s = o[0] * .401288 + o[1] * .650173 + o[2] * -.051461, c = o[0] * -.250268 + o[1] * 1.204414 + o[2] * .045854, l = o[0] * -.002079 + o[1] * .048952 + o[2] * .953127, u = .8 + i / 10, d = u >= .9 ? ja(.59, .69, (u - .9) * 10) : ja(.525, .59, (u - .8) * 10), f = a ? 1 : u * (1 - 1 / 3.6 * Math.exp((-n - 42) / 92));
 		f = f > 1 ? 1 : f < 0 ? 0 : f;
 		let p = u, m = [
 			100 / s * f + 1 - f,
 			100 / c * f + 1 - f,
 			100 / l * f + 1 - f
-		], h = 1 / (5 * n + 1), g = h * h * h * h, _ = 1 - g, v = g * n + .1 * _ * _ * Math.cbrt(5 * n), y = Za(r) / t[1], b = 1.48 + Math.sqrt(y), x = .725 / y ** .2, S = x, C = [
+		], h = 1 / (5 * n + 1), g = h * h * h * h, _ = 1 - g, v = g * n + .1 * _ * _ * Math.cbrt(5 * n), y = Qa(r) / t[1], b = 1.48 + Math.sqrt(y), x = .725 / y ** .2, S = x, C = [
 			(v * m[0] * s / 100) ** .42,
 			(v * m[1] * c / 100) ** .42,
 			(v * m[2] * l / 100) ** .42
@@ -2849,17 +2788,17 @@ var io = class e {
 			400 * C[0] / (C[0] + 27.13),
 			400 * C[1] / (C[1] + 27.13),
 			400 * C[2] / (C[2] + 27.13)
-		], T = (2 * w[0] + w[1] + .05 * w[2]) * x;
-		return new e(y, T, x, S, d, p, m, v, v ** .25, b);
+		], ee = (2 * w[0] + w[1] + .05 * w[2]) * x;
+		return new e(y, ee, x, S, d, p, m, v, v ** .25, b);
 	}
 	constructor(e, t, n, r, i, a, o, s, c, l) {
 		this.n = e, this.aw = t, this.nbb = n, this.ncb = r, this.c = i, this.nc = a, this.rgbD = o, this.fl = s, this.fLRoot = c, this.z = l;
 	}
 };
-io.DEFAULT = io.make();
+ao.DEFAULT = ao.make();
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/hct/cam16.js
-var ao = class e {
+var oo = class e {
 	constructor(e, t, n, r, i, a, o, s, c) {
 		this.hue = e, this.chroma = t, this.j = n, this.q = r, this.m = i, this.s = a, this.jstar = o, this.astar = s, this.bstar = c;
 	}
@@ -2868,21 +2807,21 @@ var ao = class e {
 		return 1.41 * Math.sqrt(t * t + n * n + r * r) ** .63;
 	}
 	static fromInt(t) {
-		return e.fromIntInViewingConditions(t, io.DEFAULT);
+		return e.fromIntInViewingConditions(t, ao.DEFAULT);
 	}
 	static fromIntInViewingConditions(t, n) {
-		let r = (t & 16711680) >> 16, i = (t & 65280) >> 8, a = t & 255, o = $a(r), s = $a(i), c = $a(a), l = .41233895 * o + .35762064 * s + .18051042 * c, u = .2126 * o + .7152 * s + .0722 * c, d = .01932141 * o + .11916382 * s + .95034478 * c, f = .401288 * l + .650173 * u - .051461 * d, p = -.250268 * l + 1.204414 * u + .045854 * d, m = -.002079 * l + .048952 * u + .953127 * d, h = n.rgbD[0] * f, g = n.rgbD[1] * p, _ = n.rgbD[2] * m, v = (n.fl * Math.abs(h) / 100) ** .42, y = (n.fl * Math.abs(g) / 100) ** .42, b = (n.fl * Math.abs(_) / 100) ** .42, x = Pa(h) * 400 * v / (v + 27.13), S = Pa(g) * 400 * y / (y + 27.13), C = Pa(_) * 400 * b / (b + 27.13), w = (11 * x + -12 * S + C) / 11, T = (x + S - 2 * C) / 9, ee = (20 * x + 20 * S + 21 * C) / 20, te = (40 * x + 20 * S + C) / 20, ne = La(Math.atan2(T, w) * 180 / Math.PI), re = ne * Math.PI / 180, ie = 100 * (te * n.nbb / n.aw) ** +(n.c * n.z), ae = 4 / n.c * Math.sqrt(ie / 100) * (n.aw + 4) * n.fLRoot, oe = ne < 20.14 ? ne + 360 : ne, se = (5e4 / 13 * (.25 * (Math.cos(oe * Math.PI / 180 + 2) + 3.8)) * n.nc * n.ncb * Math.sqrt(w * w + T * T) / (ee + .305)) ** .9 * (1.64 - .29 ** n.n) ** .73, ce = se * Math.sqrt(ie / 100), le = ce * n.fLRoot, ue = 50 * Math.sqrt(se * n.c / (n.aw + 4)), de = (1 + 100 * .007) * ie / (1 + .007 * ie), fe = 1 / .0228 * Math.log(1 + .0228 * le), pe = fe * Math.cos(re), me = fe * Math.sin(re);
-		return new e(ne, ce, ie, ae, le, ue, de, pe, me);
+		let r = (t & 16711680) >> 16, i = (t & 65280) >> 8, a = t & 255, o = eo(r), s = eo(i), c = eo(a), l = .41233895 * o + .35762064 * s + .18051042 * c, u = .2126 * o + .7152 * s + .0722 * c, d = .01932141 * o + .11916382 * s + .95034478 * c, f = .401288 * l + .650173 * u - .051461 * d, p = -.250268 * l + 1.204414 * u + .045854 * d, m = -.002079 * l + .048952 * u + .953127 * d, h = n.rgbD[0] * f, g = n.rgbD[1] * p, _ = n.rgbD[2] * m, v = (n.fl * Math.abs(h) / 100) ** .42, y = (n.fl * Math.abs(g) / 100) ** .42, b = (n.fl * Math.abs(_) / 100) ** .42, x = Aa(h) * 400 * v / (v + 27.13), S = Aa(g) * 400 * y / (y + 27.13), C = Aa(_) * 400 * b / (b + 27.13), w = (11 * x + -12 * S + C) / 11, ee = (x + S - 2 * C) / 9, te = (20 * x + 20 * S + 21 * C) / 20, ne = (40 * x + 20 * S + C) / 20, re = Pa(Math.atan2(ee, w) * 180 / Math.PI), ie = re * Math.PI / 180, ae = 100 * (ne * n.nbb / n.aw) ** +(n.c * n.z), oe = 4 / n.c * Math.sqrt(ae / 100) * (n.aw + 4) * n.fLRoot, se = re < 20.14 ? re + 360 : re, ce = (5e4 / 13 * (.25 * (Math.cos(se * Math.PI / 180 + 2) + 3.8)) * n.nc * n.ncb * Math.sqrt(w * w + ee * ee) / (te + .305)) ** .9 * (1.64 - .29 ** n.n) ** .73, le = ce * Math.sqrt(ae / 100), ue = le * n.fLRoot, de = 50 * Math.sqrt(ce * n.c / (n.aw + 4)), fe = (1 + 100 * .007) * ae / (1 + .007 * ae), pe = 1 / .0228 * Math.log(1 + .0228 * ue), me = pe * Math.cos(ie), he = pe * Math.sin(ie);
+		return new e(re, le, ae, oe, ue, de, fe, me, he);
 	}
 	static fromJch(t, n, r) {
-		return e.fromJchInViewingConditions(t, n, r, io.DEFAULT);
+		return e.fromJchInViewingConditions(t, n, r, ao.DEFAULT);
 	}
 	static fromJchInViewingConditions(t, n, r, i) {
 		let a = 4 / i.c * Math.sqrt(t / 100) * (i.aw + 4) * i.fLRoot, o = n * i.fLRoot, s = n / Math.sqrt(t / 100), c = 50 * Math.sqrt(s * i.c / (i.aw + 4)), l = r * Math.PI / 180, u = (1 + 100 * .007) * t / (1 + .007 * t), d = 1 / .0228 * Math.log(1 + .0228 * o), f = d * Math.cos(l), p = d * Math.sin(l);
 		return new e(r, n, t, a, o, c, u, f, p);
 	}
 	static fromUcs(t, n, r) {
-		return e.fromUcsInViewingConditions(t, n, r, io.DEFAULT);
+		return e.fromUcsInViewingConditions(t, n, r, ao.DEFAULT);
 	}
 	static fromUcsInViewingConditions(t, n, r, i) {
 		let a = n, o = r, s = Math.sqrt(a * a + o * o), c = (Math.exp(s * .0228) - 1) / .0228 / i.fLRoot, l = 180 / Math.PI * Math.atan2(o, a);
@@ -2891,25 +2830,25 @@ var ao = class e {
 		return e.fromJchInViewingConditions(u, c, l, i);
 	}
 	toInt() {
-		return this.viewed(io.DEFAULT);
+		return this.viewed(ao.DEFAULT);
 	}
 	viewed(e) {
-		let t = ((this.chroma === 0 || this.j === 0 ? 0 : this.chroma / Math.sqrt(this.j / 100)) / (1.64 - .29 ** e.n) ** .73) ** (1 / .9), n = this.hue * Math.PI / 180, r = .25 * (Math.cos(n + 2) + 3.8), i = e.aw * (this.j / 100) ** (1 / e.c / e.z), a = 5e4 / 13 * r * e.nc * e.ncb, o = i / e.nbb, s = Math.sin(n), c = Math.cos(n), l = 23 * (o + .305) * t / (23 * a + 11 * t * c + 108 * t * s), u = l * c, d = l * s, f = (460 * o + 451 * u + 288 * d) / 1403, p = (460 * o - 891 * u - 261 * d) / 1403, m = (460 * o - 220 * u - 6300 * d) / 1403, h = Math.max(0, 27.13 * Math.abs(f) / (400 - Math.abs(f))), g = Pa(f) * (100 / e.fl) * h ** (1 / .42), _ = Math.max(0, 27.13 * Math.abs(p) / (400 - Math.abs(p))), v = Pa(p) * (100 / e.fl) * _ ** (1 / .42), y = Math.max(0, 27.13 * Math.abs(m) / (400 - Math.abs(m))), b = Pa(m) * (100 / e.fl) * y ** (1 / .42), x = g / e.rgbD[0], S = v / e.rgbD[1], C = b / e.rgbD[2];
-		return qa(1.86206786 * x - 1.01125463 * S + .14918677 * C, .38752654 * x + .62144744 * S - .00897398 * C, -.0158415 * x - .03412294 * S + 1.04996444 * C);
+		let t = ((this.chroma === 0 || this.j === 0 ? 0 : this.chroma / Math.sqrt(this.j / 100)) / (1.64 - .29 ** e.n) ** .73) ** (1 / .9), n = this.hue * Math.PI / 180, r = .25 * (Math.cos(n + 2) + 3.8), i = e.aw * (this.j / 100) ** (1 / e.c / e.z), a = 5e4 / 13 * r * e.nc * e.ncb, o = i / e.nbb, s = Math.sin(n), c = Math.cos(n), l = 23 * (o + .305) * t / (23 * a + 11 * t * c + 108 * t * s), u = l * c, d = l * s, f = (460 * o + 451 * u + 288 * d) / 1403, p = (460 * o - 891 * u - 261 * d) / 1403, m = (460 * o - 220 * u - 6300 * d) / 1403, h = Math.max(0, 27.13 * Math.abs(f) / (400 - Math.abs(f))), g = Aa(f) * (100 / e.fl) * h ** (1 / .42), _ = Math.max(0, 27.13 * Math.abs(p) / (400 - Math.abs(p))), v = Aa(p) * (100 / e.fl) * _ ** (1 / .42), y = Math.max(0, 27.13 * Math.abs(m) / (400 - Math.abs(m))), b = Aa(m) * (100 / e.fl) * y ** (1 / .42), x = g / e.rgbD[0], S = v / e.rgbD[1], C = b / e.rgbD[2];
+		return Ka(1.86206786 * x - 1.01125463 * S + .14918677 * C, .38752654 * x + .62144744 * S - .00897398 * C, -.0158415 * x - .03412294 * S + 1.04996444 * C);
 	}
 	static fromXyzInViewingConditions(t, n, r, i) {
-		let a = .401288 * t + .650173 * n - .051461 * r, o = -.250268 * t + 1.204414 * n + .045854 * r, s = -.002079 * t + .048952 * n + .953127 * r, c = i.rgbD[0] * a, l = i.rgbD[1] * o, u = i.rgbD[2] * s, d = (i.fl * Math.abs(c) / 100) ** .42, f = (i.fl * Math.abs(l) / 100) ** .42, p = (i.fl * Math.abs(u) / 100) ** .42, m = Pa(c) * 400 * d / (d + 27.13), h = Pa(l) * 400 * f / (f + 27.13), g = Pa(u) * 400 * p / (p + 27.13), _ = (11 * m + -12 * h + g) / 11, v = (m + h - 2 * g) / 9, y = (20 * m + 20 * h + 21 * g) / 20, b = (40 * m + 20 * h + g) / 20, x = Math.atan2(v, _) * 180 / Math.PI, S = x < 0 ? x + 360 : x >= 360 ? x - 360 : x, C = S * Math.PI / 180, w = 100 * (b * i.nbb / i.aw) ** +(i.c * i.z), T = 4 / i.c * Math.sqrt(w / 100) * (i.aw + 4) * i.fLRoot, ee = S < 20.14 ? S + 360 : S, te = (5e4 / 13 * (1 / 4 * (Math.cos(ee * Math.PI / 180 + 2) + 3.8)) * i.nc * i.ncb * Math.sqrt(_ * _ + v * v) / (y + .305)) ** .9 * (1.64 - .29 ** i.n) ** .73, ne = te * Math.sqrt(w / 100), re = ne * i.fLRoot, ie = 50 * Math.sqrt(te * i.c / (i.aw + 4)), ae = (1 + 100 * .007) * w / (1 + .007 * w), oe = Math.log(1 + .0228 * re) / .0228, se = oe * Math.cos(C), ce = oe * Math.sin(C);
-		return new e(S, ne, w, T, re, ie, ae, se, ce);
+		let a = .401288 * t + .650173 * n - .051461 * r, o = -.250268 * t + 1.204414 * n + .045854 * r, s = -.002079 * t + .048952 * n + .953127 * r, c = i.rgbD[0] * a, l = i.rgbD[1] * o, u = i.rgbD[2] * s, d = (i.fl * Math.abs(c) / 100) ** .42, f = (i.fl * Math.abs(l) / 100) ** .42, p = (i.fl * Math.abs(u) / 100) ** .42, m = Aa(c) * 400 * d / (d + 27.13), h = Aa(l) * 400 * f / (f + 27.13), g = Aa(u) * 400 * p / (p + 27.13), _ = (11 * m + -12 * h + g) / 11, v = (m + h - 2 * g) / 9, y = (20 * m + 20 * h + 21 * g) / 20, b = (40 * m + 20 * h + g) / 20, x = Math.atan2(v, _) * 180 / Math.PI, S = x < 0 ? x + 360 : x >= 360 ? x - 360 : x, C = S * Math.PI / 180, w = 100 * (b * i.nbb / i.aw) ** +(i.c * i.z), ee = 4 / i.c * Math.sqrt(w / 100) * (i.aw + 4) * i.fLRoot, te = S < 20.14 ? S + 360 : S, ne = (5e4 / 13 * (1 / 4 * (Math.cos(te * Math.PI / 180 + 2) + 3.8)) * i.nc * i.ncb * Math.sqrt(_ * _ + v * v) / (y + .305)) ** .9 * (1.64 - .29 ** i.n) ** .73, re = ne * Math.sqrt(w / 100), ie = re * i.fLRoot, ae = 50 * Math.sqrt(ne * i.c / (i.aw + 4)), oe = (1 + 100 * .007) * w / (1 + .007 * w), se = Math.log(1 + .0228 * ie) / .0228, ce = se * Math.cos(C), le = se * Math.sin(C);
+		return new e(S, re, w, ee, ie, ae, oe, ce, le);
 	}
 	xyzInViewingConditions(e) {
-		let t = ((this.chroma === 0 || this.j === 0 ? 0 : this.chroma / Math.sqrt(this.j / 100)) / (1.64 - .29 ** e.n) ** .73) ** (1 / .9), n = this.hue * Math.PI / 180, r = .25 * (Math.cos(n + 2) + 3.8), i = e.aw * (this.j / 100) ** (1 / e.c / e.z), a = 5e4 / 13 * r * e.nc * e.ncb, o = i / e.nbb, s = Math.sin(n), c = Math.cos(n), l = 23 * (o + .305) * t / (23 * a + 11 * t * c + 108 * t * s), u = l * c, d = l * s, f = (460 * o + 451 * u + 288 * d) / 1403, p = (460 * o - 891 * u - 261 * d) / 1403, m = (460 * o - 220 * u - 6300 * d) / 1403, h = Math.max(0, 27.13 * Math.abs(f) / (400 - Math.abs(f))), g = Pa(f) * (100 / e.fl) * h ** (1 / .42), _ = Math.max(0, 27.13 * Math.abs(p) / (400 - Math.abs(p))), v = Pa(p) * (100 / e.fl) * _ ** (1 / .42), y = Math.max(0, 27.13 * Math.abs(m) / (400 - Math.abs(m))), b = Pa(m) * (100 / e.fl) * y ** (1 / .42), x = g / e.rgbD[0], S = v / e.rgbD[1], C = b / e.rgbD[2];
+		let t = ((this.chroma === 0 || this.j === 0 ? 0 : this.chroma / Math.sqrt(this.j / 100)) / (1.64 - .29 ** e.n) ** .73) ** (1 / .9), n = this.hue * Math.PI / 180, r = .25 * (Math.cos(n + 2) + 3.8), i = e.aw * (this.j / 100) ** (1 / e.c / e.z), a = 5e4 / 13 * r * e.nc * e.ncb, o = i / e.nbb, s = Math.sin(n), c = Math.cos(n), l = 23 * (o + .305) * t / (23 * a + 11 * t * c + 108 * t * s), u = l * c, d = l * s, f = (460 * o + 451 * u + 288 * d) / 1403, p = (460 * o - 891 * u - 261 * d) / 1403, m = (460 * o - 220 * u - 6300 * d) / 1403, h = Math.max(0, 27.13 * Math.abs(f) / (400 - Math.abs(f))), g = Aa(f) * (100 / e.fl) * h ** (1 / .42), _ = Math.max(0, 27.13 * Math.abs(p) / (400 - Math.abs(p))), v = Aa(p) * (100 / e.fl) * _ ** (1 / .42), y = Math.max(0, 27.13 * Math.abs(m) / (400 - Math.abs(m))), b = Aa(m) * (100 / e.fl) * y ** (1 / .42), x = g / e.rgbD[0], S = v / e.rgbD[1], C = b / e.rgbD[2];
 		return [
 			1.86206786 * x - 1.01125463 * S + .14918677 * C,
 			.38752654 * x + .62144744 * S - .00897398 * C,
 			-.0158415 * x - .03412294 * S + 1.04996444 * C
 		];
 	}
-}, oo = class e {
+}, so = class e {
 	static sanitizeRadians(e) {
 		return (e + Math.PI * 8) % (Math.PI * 2);
 	}
@@ -2919,10 +2858,10 @@ var ao = class e {
 	}
 	static chromaticAdaptation(e) {
 		let t = Math.abs(e) ** .42;
-		return Pa(e) * 400 * t / (t + 27.13);
+		return Aa(e) * 400 * t / (t + 27.13);
 	}
 	static hueOf(t) {
-		let n = Ra(t, e.SCALED_DISCOUNT_FROM_LINRGB), r = e.chromaticAdaptation(n[0]), i = e.chromaticAdaptation(n[1]), a = e.chromaticAdaptation(n[2]), o = (11 * r + -12 * i + a) / 11, s = (r + i - 2 * a) / 9;
+		let n = Ia(t, e.SCALED_DISCOUNT_FROM_LINRGB), r = e.chromaticAdaptation(n[0]), i = e.chromaticAdaptation(n[1]), a = e.chromaticAdaptation(n[2]), o = (11 * r + -12 * i + a) / 11, s = (r + i - 2 * a) / 9;
 		return Math.atan2(s, o);
 	}
 	static areInCyclicOrder(t, n, r) {
@@ -3029,12 +2968,12 @@ var ao = class e {
 	}
 	static inverseChromaticAdaptation(e) {
 		let t = Math.abs(e), n = Math.max(0, 27.13 * t / (400 - t));
-		return Pa(e) * n ** (1 / .42);
+		return Aa(e) * n ** (1 / .42);
 	}
 	static findResultByJ(t, n, r) {
-		let i = Math.sqrt(r) * 11, a = io.DEFAULT, o = 1 / (1.64 - .29 ** a.n) ** .73, s = .25 * (Math.cos(t + 2) + 3.8) * (5e4 / 13) * a.nc * a.ncb, c = Math.sin(t), l = Math.cos(t);
+		let i = Math.sqrt(r) * 11, a = ao.DEFAULT, o = 1 / (1.64 - .29 ** a.n) ** .73, s = .25 * (Math.cos(t + 2) + 3.8) * (5e4 / 13) * a.nc * a.ncb, c = Math.sin(t), l = Math.cos(t);
 		for (let t = 0; t < 5; t++) {
-			let u = i / 100, d = ((n === 0 || i === 0 ? 0 : n / Math.sqrt(u)) * o) ** (1 / .9), f = a.aw * u ** (1 / a.c / a.z) / a.nbb, p = 23 * (f + .305) * d / (23 * s + 11 * d * l + 108 * d * c), m = p * l, h = p * c, g = (460 * f + 451 * m + 288 * h) / 1403, _ = (460 * f - 891 * m - 261 * h) / 1403, v = (460 * f - 220 * m - 6300 * h) / 1403, y = Ra([
+			let u = i / 100, d = ((n === 0 || i === 0 ? 0 : n / Math.sqrt(u)) * o) ** (1 / .9), f = a.aw * u ** (1 / a.c / a.z) / a.nbb, p = 23 * (f + .305) * d / (23 * s + 11 * d * l + 108 * d * c), m = p * l, h = p * c, g = (460 * f + 451 * m + 288 * h) / 1403, _ = (460 * f - 891 * m - 261 * h) / 1403, v = (460 * f - 220 * m - 6300 * h) / 1403, y = Ia([
 				e.inverseChromaticAdaptation(g),
 				e.inverseChromaticAdaptation(_),
 				e.inverseChromaticAdaptation(v)
@@ -3042,22 +2981,22 @@ var ao = class e {
 			if (y[0] < 0 || y[1] < 0 || y[2] < 0) return 0;
 			let b = e.Y_FROM_LINRGB[0], x = e.Y_FROM_LINRGB[1], S = e.Y_FROM_LINRGB[2], C = b * y[0] + x * y[1] + S * y[2];
 			if (C <= 0) return 0;
-			if (t === 4 || Math.abs(C - r) < .002) return y[0] > 100.01 || y[1] > 100.01 || y[2] > 100.01 ? 0 : Ua(y);
+			if (t === 4 || Math.abs(C - r) < .002) return y[0] > 100.01 || y[1] > 100.01 || y[2] > 100.01 ? 0 : Va(y);
 			i -= (C - r) * i / (2 * C);
 		}
 		return 0;
 	}
 	static solveToInt(t, n, r) {
-		if (n < 1e-4 || r < 1e-4 || r > 99.9999) return Ya(r);
-		t = La(t);
-		let i = t / 180 * Math.PI, a = Za(r), o = e.findResultByJ(i, n, a);
-		return o === 0 ? Ua(e.bisectToLimit(a, i)) : o;
+		if (n < 1e-4 || r < 1e-4 || r > 99.9999) return Xa(r);
+		t = Pa(t);
+		let i = t / 180 * Math.PI, a = Qa(r), o = e.findResultByJ(i, n, a);
+		return o === 0 ? Va(e.bisectToLimit(a, i)) : o;
 	}
 	static solveToCam(t, n, r) {
-		return ao.fromInt(e.solveToInt(t, n, r));
+		return oo.fromInt(e.solveToInt(t, n, r));
 	}
 };
-oo.SCALED_DISCOUNT_FROM_LINRGB = [
+so.SCALED_DISCOUNT_FROM_LINRGB = [
 	[
 		.001200833568784504,
 		.002389694492170889,
@@ -3073,7 +3012,7 @@ oo.SCALED_DISCOUNT_FROM_LINRGB = [
 		.0005364214359186694,
 		.0032979401770712076
 	]
-], oo.LINRGB_FROM_SCALED_DISCOUNT = [
+], so.LINRGB_FROM_SCALED_DISCOUNT = [
 	[
 		1373.2198709594231,
 		-1100.4251190754821,
@@ -3089,11 +3028,11 @@ oo.SCALED_DISCOUNT_FROM_LINRGB = [
 		-57.173814538844006,
 		308.7233197812385
 	]
-], oo.Y_FROM_LINRGB = [
+], so.Y_FROM_LINRGB = [
 	.2126,
 	.7152,
 	.0722
-], oo.CRITICAL_PLANES = [
+], so.CRITICAL_PLANES = [
 	.015176349177441876,
 	.045529047532325624,
 	.07588174588720938,
@@ -3352,9 +3291,9 @@ oo.SCALED_DISCOUNT_FROM_LINRGB = [
 ];
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/hct/hct.js
-var H = class e {
+var V = class e {
 	static from(t, n, r) {
-		return new e(oo.solveToInt(t, n, r));
+		return new e(so.solveToInt(t, n, r));
 	}
 	static fromInt(t) {
 		return new e(t);
@@ -3366,19 +3305,19 @@ var H = class e {
 		return this.internalHue;
 	}
 	set hue(e) {
-		this.setInternalState(oo.solveToInt(e, this.internalChroma, this.internalTone));
+		this.setInternalState(so.solveToInt(e, this.internalChroma, this.internalTone));
 	}
 	get chroma() {
 		return this.internalChroma;
 	}
 	set chroma(e) {
-		this.setInternalState(oo.solveToInt(this.internalHue, e, this.internalTone));
+		this.setInternalState(so.solveToInt(this.internalHue, e, this.internalTone));
 	}
 	get tone() {
 		return this.internalTone;
 	}
 	set tone(e) {
-		this.setInternalState(oo.solveToInt(this.internalHue, this.internalChroma, e));
+		this.setInternalState(so.solveToInt(this.internalHue, this.internalChroma, e));
 	}
 	setValue(e, t) {
 		this[e] = t;
@@ -3397,20 +3336,20 @@ var H = class e {
 	}
 	constructor(e) {
 		this.argb = e;
-		let t = ao.fromInt(e);
-		this.internalHue = t.hue, this.internalChroma = t.chroma, this.internalTone = Xa(e), this.argb = e;
+		let t = oo.fromInt(e);
+		this.internalHue = t.hue, this.internalChroma = t.chroma, this.internalTone = Za(e), this.argb = e;
 	}
 	setInternalState(e) {
-		let t = ao.fromInt(e);
-		this.internalHue = t.hue, this.internalChroma = t.chroma, this.internalTone = Xa(e), this.argb = e;
+		let t = oo.fromInt(e);
+		this.internalHue = t.hue, this.internalChroma = t.chroma, this.internalTone = Za(e), this.argb = e;
 	}
 	inViewingConditions(t) {
-		let n = ao.fromInt(this.toInt()).xyzInViewingConditions(t), r = ao.fromXyzInViewingConditions(n[0], n[1], n[2], io.make());
-		return e.from(r.hue, r.chroma, Qa(n[1]));
+		let n = oo.fromInt(this.toInt()).xyzInViewingConditions(t), r = oo.fromXyzInViewingConditions(n[0], n[1], n[2], ao.make());
+		return e.from(r.hue, r.chroma, $a(n[1]));
 	}
-}, U = class e {
+}, H = class e {
 	static ratioOfTones(t, n) {
-		return t = V(0, 100, t), n = V(0, 100, n), e.ratioOfYs(Za(t), Za(n));
+		return t = B(0, 100, t), n = B(0, 100, n), e.ratioOfYs(Qa(t), Qa(n));
 	}
 	static ratioOfYs(e, t) {
 		let n = e > t ? e : t, r = n === t ? e : t;
@@ -3418,16 +3357,16 @@ var H = class e {
 	}
 	static lighter(t, n) {
 		if (t < 0 || t > 100) return -1;
-		let r = Za(t), i = n * (r + 5) - 5, a = e.ratioOfYs(i, r), o = Math.abs(a - n);
+		let r = Qa(t), i = n * (r + 5) - 5, a = e.ratioOfYs(i, r), o = Math.abs(a - n);
 		if (a < n && o > .04) return -1;
-		let s = Qa(i) + .4;
+		let s = $a(i) + .4;
 		return s < 0 || s > 100 ? -1 : s;
 	}
 	static darker(t, n) {
 		if (t < 0 || t > 100) return -1;
-		let r = Za(t), i = (r + 5) / n - 5, a = e.ratioOfYs(r, i), o = Math.abs(a - n);
+		let r = Qa(t), i = (r + 5) / n - 5, a = e.ratioOfYs(r, i), o = Math.abs(a - n);
 		if (a < n && o > .04) return -1;
-		let s = Qa(i) - .4;
+		let s = $a(i) - .4;
 		return s < 0 || s > 100 ? -1 : s;
 	}
 	static lighterUnsafe(t, n) {
@@ -3438,23 +3377,23 @@ var H = class e {
 		let r = e.darker(t, n);
 		return r < 0 ? 0 : r;
 	}
-}, so = class e {
+}, co = class e {
 	static isDisliked(e) {
 		let t = Math.round(e.hue) >= 90 && Math.round(e.hue) <= 111, n = Math.round(e.chroma) > 16, r = Math.round(e.tone) < 65;
 		return t && n && r;
 	}
 	static fixIfDisliked(t) {
-		return e.isDisliked(t) ? H.from(t.hue, t.chroma, 70) : t;
+		return e.isDisliked(t) ? V.from(t.hue, t.chroma, 70) : t;
 	}
 };
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/dynamic_color.js
-function co(e, t, n) {
+function lo(e, t, n) {
 	if (e.name !== n.name) throw Error(`Attempting to extend color ${e.name} with color ${n.name} of different name for spec version ${t}.`);
 	if (e.isBackground !== n.isBackground) throw Error(`Attempting to extend color ${e.name} as a ${e.isBackground ? "background" : "foreground"} with color ${n.name} as a ${n.isBackground ? "background" : "foreground"} for spec version ${t}.`);
 }
-function W(e, t, n) {
-	return co(e, t, n), G.fromPalette({
+function U(e, t, n) {
+	return lo(e, t, n), W.fromPalette({
 		name: e.name,
 		palette: (r) => r.specVersion >= t ? n.palette(r) : e.palette(r),
 		tone: (r) => r.specVersion >= t ? n.tone(r) : e.tone(r),
@@ -3481,7 +3420,7 @@ function W(e, t, n) {
 		}
 	});
 }
-var G = class e {
+var W = class e {
 	static fromPalette(t) {
 		return new e(t.name ?? "", t.palette, t.tone ?? e.getInitialToneFromBackground(t.background), t.isBackground ?? !1, t.chromaMultiplier, t.background, t.secondBackground, t.contrastCurve, t.toneDeltaPair);
 	}
@@ -3515,14 +3454,14 @@ var G = class e {
 	getHct(e) {
 		let t = this.hctCache.get(e);
 		if (t != null) return t;
-		let n = mo(e.specVersion).getHct(e, this);
+		let n = ho(e.specVersion).getHct(e, this);
 		return this.hctCache.size > 4 && this.hctCache.clear(), this.hctCache.set(e, n), n;
 	}
 	getTone(e) {
-		return mo(e.specVersion).getTone(e, this);
+		return ho(e.specVersion).getTone(e, this);
 	}
 	static foregroundTone(t, n) {
-		let r = U.lighterUnsafe(t, n), i = U.darkerUnsafe(t, n), a = U.ratioOfTones(r, t), o = U.ratioOfTones(i, t);
+		let r = H.lighterUnsafe(t, n), i = H.darkerUnsafe(t, n), a = H.ratioOfTones(r, t), o = H.ratioOfTones(i, t);
 		if (e.tonePrefersLightForeground(t)) {
 			let e = Math.abs(a - o) < .1 && a < n && o < n;
 			return a >= n || a >= o || e ? r : i;
@@ -3538,7 +3477,7 @@ var G = class e {
 	static enableLightForeground(t) {
 		return e.tonePrefersLightForeground(t) && !e.toneAllowsLightForeground(t) ? 49 : t;
 	}
-}, lo = class {
+}, uo = class {
 	getHct(e, t) {
 		let n = t.getTone(e);
 		return t.palette(e).getHct(n);
@@ -3551,63 +3490,202 @@ var G = class e {
 				let r = t.background(e), i = u.contrastCurve(e), a = d.contrastCurve(e);
 				if (r && i && a) {
 					let t = r.getTone(e), o = i.get(e.contrastLevel), s = a.get(e.contrastLevel);
-					U.ratioOfTones(t, m) < o && (m = G.foregroundTone(t, o)), U.ratioOfTones(t, h) < s && (h = G.foregroundTone(t, s)), n && (m = G.foregroundTone(t, o), h = G.foregroundTone(t, s));
+					H.ratioOfTones(t, m) < o && (m = W.foregroundTone(t, o)), H.ratioOfTones(t, h) < s && (h = W.foregroundTone(t, s)), n && (m = W.foregroundTone(t, o), h = W.foregroundTone(t, s));
 				}
 			}
-			return (h - m) * p < o && (h = V(0, 100, m + o * p), (h - m) * p >= o || (m = V(0, 100, h - o * p))), 50 <= m && m < 60 ? p > 0 ? (m = 60, h = Math.max(h, m + o * p)) : (m = 49, h = Math.min(h, m + o * p)) : 50 <= h && h < 60 && (c ? p > 0 ? (m = 60, h = Math.max(h, m + o * p)) : (m = 49, h = Math.min(h, m + o * p)) : h = p > 0 ? 60 : 49), f ? m : h;
+			return (h - m) * p < o && (h = B(0, 100, m + o * p), (h - m) * p >= o || (m = B(0, 100, h - o * p))), 50 <= m && m < 60 ? p > 0 ? (m = 60, h = Math.max(h, m + o * p)) : (m = 49, h = Math.min(h, m + o * p)) : 50 <= h && h < 60 && (c ? p > 0 ? (m = 60, h = Math.max(h, m + o * p)) : (m = 49, h = Math.min(h, m + o * p)) : h = p > 0 ? 60 : 49), f ? m : h;
 		}
 		{
 			let r = t.tone(e);
 			if (t.background == null || t.background(e) === void 0 || t.contrastCurve == null || t.contrastCurve(e) === void 0) return r;
 			let i = t.background(e).getTone(e), a = t.contrastCurve(e).get(e.contrastLevel);
-			if (U.ratioOfTones(i, r) >= a || (r = G.foregroundTone(i, a)), n && (r = G.foregroundTone(i, a)), t.isBackground && 50 <= r && r < 60 && (r = U.ratioOfTones(49, i) >= a ? 49 : 60), t.secondBackground == null || t.secondBackground(e) === void 0) return r;
+			if (H.ratioOfTones(i, r) >= a || (r = W.foregroundTone(i, a)), n && (r = W.foregroundTone(i, a)), t.isBackground && 50 <= r && r < 60 && (r = H.ratioOfTones(49, i) >= a ? 49 : 60), t.secondBackground == null || t.secondBackground(e) === void 0) return r;
 			let [o, s] = [t.background, t.secondBackground], [c, l] = [o(e).getTone(e), s(e).getTone(e)], [u, d] = [Math.max(c, l), Math.min(c, l)];
-			if (U.ratioOfTones(u, r) >= a && U.ratioOfTones(d, r) >= a) return r;
-			let f = U.lighter(u, a), p = U.darker(d, a), m = [];
-			return f !== -1 && m.push(f), p !== -1 && m.push(p), G.tonePrefersLightForeground(c) || G.tonePrefersLightForeground(l) ? f < 0 ? 100 : f : m.length === 1 ? m[0] : p < 0 ? 0 : p;
+			if (H.ratioOfTones(u, r) >= a && H.ratioOfTones(d, r) >= a) return r;
+			let f = H.lighter(u, a), p = H.darker(d, a), m = [];
+			return f !== -1 && m.push(f), p !== -1 && m.push(p), W.tonePrefersLightForeground(c) || W.tonePrefersLightForeground(l) ? f < 0 ? 100 : f : m.length === 1 ? m[0] : p < 0 ? 0 : p;
 		}
 	}
-}, uo = class {
+}, fo = class {
 	getHct(e, t) {
 		let n = t.palette(e), r = t.getTone(e), i = n.hue, a = n.chroma * (t.chromaMultiplier ? t.chromaMultiplier(e) : 1);
-		return H.from(i, a, r);
+		return V.from(i, a, r);
 	}
 	getTone(e, t) {
 		let n = t.toneDeltaPair ? t.toneDeltaPair(e) : void 0;
 		if (n) {
 			let r = n.roleA, i = n.roleB, a = n.polarity, o = n.constraint, s = a === "darker" || a === "relative_lighter" && e.isDark || a === "relative_darker" && !e.isDark ? -n.delta : n.delta, c = t.name === r.name, l = c ? r : i, u = c ? i : r, d = l.tone(e), f = u.getTone(e), p = s * (c ? 1 : -1);
-			if (o === "exact" ? d = V(0, 100, f + p) : o === "nearer" ? d = p > 0 ? V(0, 100, V(f, f + p, d)) : V(0, 100, V(f + p, f, d)) : o === "farther" && (d = p > 0 ? V(f + p, 100, d) : V(0, f + p, d)), t.background && t.contrastCurve) {
+			if (o === "exact" ? d = B(0, 100, f + p) : o === "nearer" ? d = p > 0 ? B(0, 100, B(f, f + p, d)) : B(0, 100, B(f + p, f, d)) : o === "farther" && (d = p > 0 ? B(f + p, 100, d) : B(0, f + p, d)), t.background && t.contrastCurve) {
 				let n = t.background(e), r = t.contrastCurve(e);
 				if (n && r) {
 					let t = n.getTone(e), i = r.get(e.contrastLevel);
-					d = U.ratioOfTones(t, d) >= i && e.contrastLevel >= 0 ? d : G.foregroundTone(t, i);
+					d = H.ratioOfTones(t, d) >= i && e.contrastLevel >= 0 ? d : W.foregroundTone(t, i);
 				}
 			}
-			return t.isBackground && !t.name.endsWith("_fixed_dim") && (d = d >= 57 ? V(65, 100, d) : V(0, 49, d)), d;
+			return t.isBackground && !t.name.endsWith("_fixed_dim") && (d = d >= 57 ? B(65, 100, d) : B(0, 49, d)), d;
 		}
 		{
 			let n = t.tone(e);
 			if (t.background == null || t.background(e) === void 0 || t.contrastCurve == null || t.contrastCurve(e) === void 0) return n;
 			let r = t.background(e).getTone(e), i = t.contrastCurve(e).get(e.contrastLevel);
-			if (n = U.ratioOfTones(r, n) >= i && e.contrastLevel >= 0 ? n : G.foregroundTone(r, i), t.isBackground && !t.name.endsWith("_fixed_dim") && (n = n >= 57 ? V(65, 100, n) : V(0, 49, n)), t.secondBackground == null || t.secondBackground(e) === void 0) return n;
+			if (n = H.ratioOfTones(r, n) >= i && e.contrastLevel >= 0 ? n : W.foregroundTone(r, i), t.isBackground && !t.name.endsWith("_fixed_dim") && (n = n >= 57 ? B(65, 100, n) : B(0, 49, n)), t.secondBackground == null || t.secondBackground(e) === void 0) return n;
 			let [a, o] = [t.background, t.secondBackground], [s, c] = [a(e).getTone(e), o(e).getTone(e)], [l, u] = [Math.max(s, c), Math.min(s, c)];
-			if (U.ratioOfTones(l, n) >= i && U.ratioOfTones(u, n) >= i) return n;
-			let d = U.lighter(l, i), f = U.darker(u, i), p = [];
-			return d !== -1 && p.push(d), f !== -1 && p.push(f), G.tonePrefersLightForeground(s) || G.tonePrefersLightForeground(c) ? d < 0 ? 100 : d : p.length === 1 ? p[0] : f < 0 ? 0 : f;
+			if (H.ratioOfTones(l, n) >= i && H.ratioOfTones(u, n) >= i) return n;
+			let d = H.lighter(l, i), f = H.darker(u, i), p = [];
+			return d !== -1 && p.push(d), f !== -1 && p.push(f), W.tonePrefersLightForeground(s) || W.tonePrefersLightForeground(c) ? d < 0 ? 100 : d : p.length === 1 ? p[0] : f < 0 ? 0 : f;
 		}
 	}
-}, fo = new lo(), po = new uo();
-function mo(e) {
-	return e === "2021" ? fo : po;
+}, po = new uo(), mo = new fo();
+function ho(e) {
+	return e === "2021" ? po : mo;
 }
 //#endregion
-//#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/contrast_curve.js
-var K = class {
+//#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/palettes/tonal_palette.js
+var G = class e {
+	static fromInt(t) {
+		let n = V.fromInt(t);
+		return e.fromHct(n);
+	}
+	static fromHct(t) {
+		return new e(t.hue, t.chroma, t);
+	}
+	static fromHueAndChroma(t, n) {
+		let r = new go(t, n).create();
+		return new e(t, n, r);
+	}
+	constructor(e, t, n) {
+		this.hue = e, this.chroma = t, this.keyColor = n, this.cache = /* @__PURE__ */ new Map();
+	}
+	tone(e) {
+		let t = this.cache.get(e);
+		return t === void 0 && (t = e == 99 && V.isYellow(this.hue) ? this.averageArgb(this.tone(98), this.tone(100)) : V.from(this.hue, this.chroma, e).toInt(), this.cache.set(e, t)), t;
+	}
+	getHct(e) {
+		return V.fromInt(this.tone(e));
+	}
+	averageArgb(e, t) {
+		let n = e >>> 16 & 255, r = e >>> 8 & 255, i = e & 255, a = t >>> 16 & 255, o = t >>> 8 & 255, s = t & 255, c = Math.round((n + a) / 2), l = Math.round((r + o) / 2), u = Math.round((i + s) / 2);
+		return (255 << 24 | (c & 255) << 16 | (l & 255) << 8 | u & 255) >>> 0;
+	}
+}, go = class {
+	constructor(e, t) {
+		this.hue = e, this.requestedChroma = t, this.chromaCache = /* @__PURE__ */ new Map(), this.maxChromaValue = 200;
+	}
+	create() {
+		let e = 0, t = 100;
+		for (; e < t;) {
+			let n = Math.floor((e + t) / 2), r = this.maxChroma(n) < this.maxChroma(n + 1);
+			if (this.maxChroma(n) >= this.requestedChroma - .01) {
+				if (Math.abs(e - 50) < Math.abs(t - 50)) t = n;
+				else {
+					if (e === n) return V.from(this.hue, this.requestedChroma, e);
+					e = n;
+				}
+			} else r ? e = n + 1 : t = n;
+		}
+		return V.from(this.hue, this.requestedChroma, e);
+	}
+	maxChroma(e) {
+		if (this.chromaCache.has(e)) return this.chromaCache.get(e);
+		let t = V.from(this.hue, this.maxChromaValue, e).chroma;
+		return this.chromaCache.set(e, t), t;
+	}
+}, _o = class e {
+	constructor(e) {
+		this.input = e, this.hctsByTempCache = [], this.hctsByHueCache = [], this.tempsByHctCache = /* @__PURE__ */ new Map(), this.inputRelativeTemperatureCache = -1, this.complementCache = null;
+	}
+	get hctsByTemp() {
+		if (this.hctsByTempCache.length > 0) return this.hctsByTempCache;
+		let e = this.hctsByHue.concat([this.input]), t = this.tempsByHct;
+		return e.sort((e, n) => t.get(e) - t.get(n)), this.hctsByTempCache = e, e;
+	}
+	get warmest() {
+		return this.hctsByTemp[this.hctsByTemp.length - 1];
+	}
+	get coldest() {
+		return this.hctsByTemp[0];
+	}
+	analogous(e = 5, t = 12) {
+		let n = Math.round(this.input.hue), r = this.hctsByHue[n], i = this.relativeTemperature(r), a = [r], o = 0;
+		for (let e = 0; e < 360; e++) {
+			let t = Na(n + e), r = this.hctsByHue[t], a = this.relativeTemperature(r), s = Math.abs(a - i);
+			i = a, o += s;
+		}
+		let s = 1, c = o / t, l = 0;
+		for (i = this.relativeTemperature(r); a.length < t;) {
+			let e = Na(n + s), r = this.hctsByHue[e], o = this.relativeTemperature(r), u = Math.abs(o - i);
+			l += u;
+			let d = a.length * c, f = l >= d, p = 1;
+			for (; f && a.length < t;) {
+				a.push(r);
+				let e = (a.length + p) * c;
+				f = l >= e, p++;
+			}
+			if (i = o, s++, s > 360) {
+				for (; a.length < t;) a.push(r);
+				break;
+			}
+		}
+		let u = [this.input], d = Math.floor((e - 1) / 2);
+		for (let e = 1; e < d + 1; e++) {
+			let t = 0 - e;
+			for (; t < 0;) t = a.length + t;
+			t >= a.length && (t %= a.length), u.splice(0, 0, a[t]);
+		}
+		let f = e - d - 1;
+		for (let e = 1; e < f + 1; e++) {
+			let t = e;
+			for (; t < 0;) t = a.length + t;
+			t >= a.length && (t %= a.length), u.push(a[t]);
+		}
+		return u;
+	}
+	get complement() {
+		if (this.complementCache != null) return this.complementCache;
+		let t = this.coldest.hue, n = this.tempsByHct.get(this.coldest), r = this.warmest.hue, i = this.tempsByHct.get(this.warmest) - n, a = e.isBetween(this.input.hue, t, r), o = a ? r : t, s = a ? t : r, c = 1e3, l = this.hctsByHue[Math.round(this.input.hue)], u = 1 - this.inputRelativeTemperature;
+		for (let t = 0; t <= 360; t += 1) {
+			let r = Pa(o + 1 * t);
+			if (!e.isBetween(r, o, s)) continue;
+			let a = this.hctsByHue[Math.round(r)], d = (this.tempsByHct.get(a) - n) / i, f = Math.abs(u - d);
+			f < c && (c = f, l = a);
+		}
+		return this.complementCache = l, this.complementCache;
+	}
+	relativeTemperature(e) {
+		let t = this.tempsByHct.get(this.warmest) - this.tempsByHct.get(this.coldest), n = this.tempsByHct.get(e) - this.tempsByHct.get(this.coldest);
+		return t === 0 ? .5 : n / t;
+	}
+	get inputRelativeTemperature() {
+		return this.inputRelativeTemperatureCache >= 0 || (this.inputRelativeTemperatureCache = this.relativeTemperature(this.input)), this.inputRelativeTemperatureCache;
+	}
+	get tempsByHct() {
+		if (this.tempsByHctCache.size > 0) return this.tempsByHctCache;
+		let t = this.hctsByHue.concat([this.input]), n = /* @__PURE__ */ new Map();
+		for (let r of t) n.set(r, e.rawTemperature(r));
+		return this.tempsByHctCache = n, n;
+	}
+	get hctsByHue() {
+		if (this.hctsByHueCache.length > 0) return this.hctsByHueCache;
+		let e = [];
+		for (let t = 0; t <= 360; t += 1) {
+			let n = V.from(t, this.input.chroma, this.input.tone);
+			e.push(n);
+		}
+		return this.hctsByHueCache = e, this.hctsByHueCache;
+	}
+	static isBetween(e, t, n) {
+		return t < n ? t <= e && e <= n : t <= e || e <= n;
+	}
+	static rawTemperature(e) {
+		let t = Ya(e.toInt()), n = Pa(Math.atan2(t[2], t[1]) * 180 / Math.PI);
+		return -.5 + .02 * Math.sqrt(t[1] * t[1] + t[2] * t[2]) ** 1.07 * Math.cos(Pa(n - 50) * Math.PI / 180);
+	}
+}, K = class {
 	constructor(e, t, n, r) {
 		this.low = e, this.normal = t, this.medium = n, this.high = r;
 	}
 	get(e) {
-		return e <= -1 ? this.low : e < 0 ? Fa(this.low, this.normal, (e - -1) / 1) : e < .5 ? Fa(this.normal, this.medium, (e - 0) / .5) : e < 1 ? Fa(this.medium, this.high, (e - .5) / .5) : this.high;
+		return e <= -1 ? this.low : e < 0 ? ja(this.low, this.normal, (e - -1) / 1) : e < .5 ? ja(this.normal, this.medium, (e - 0) / .5) : e < 1 ? ja(this.medium, this.high, (e - .5) / .5) : this.high;
 	}
 }, q = class {
 	constructor(e, t, n, r, i, a) {
@@ -3619,70 +3697,70 @@ var K = class {
 })(J ||= {});
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/color_spec_2021.js
-function ho(e) {
+function vo(e) {
 	return e.variant === J.FIDELITY || e.variant === J.CONTENT;
 }
 function Y(e) {
 	return e.variant === J.MONOCHROME;
 }
-function go(e, t, n, r) {
-	let i = n, a = H.from(e, t, n);
+function yo(e, t, n, r) {
+	let i = n, a = V.from(e, t, n);
 	if (a.chroma < t) {
 		let n = a.chroma;
 		for (; a.chroma < t;) {
 			i += r ? -1 : 1;
-			let o = H.from(e, t, i);
+			let o = V.from(e, t, i);
 			if (n > o.chroma || Math.abs(o.chroma - t) < .4) break;
 			Math.abs(o.chroma - t) < Math.abs(a.chroma - t) && (a = o), n = Math.max(n, o.chroma);
 		}
 	}
 	return i;
 }
-var _o = class {
+var bo = class {
 	primaryPaletteKeyColor() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "primary_palette_key_color",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => e.primaryPalette.keyColor.tone
 		});
 	}
 	secondaryPaletteKeyColor() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "secondary_palette_key_color",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => e.secondaryPalette.keyColor.tone
 		});
 	}
 	tertiaryPaletteKeyColor() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "tertiary_palette_key_color",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => e.tertiaryPalette.keyColor.tone
 		});
 	}
 	neutralPaletteKeyColor() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "neutral_palette_key_color",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.neutralPalette.keyColor.tone
 		});
 	}
 	neutralVariantPaletteKeyColor() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "neutral_variant_palette_key_color",
 			palette: (e) => e.neutralVariantPalette,
 			tone: (e) => e.neutralVariantPalette.keyColor.tone
 		});
 	}
 	errorPaletteKeyColor() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "error_palette_key_color",
 			palette: (e) => e.errorPalette,
 			tone: (e) => e.errorPalette.keyColor.tone
 		});
 	}
 	background() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "background",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 6 : 98,
@@ -3690,7 +3768,7 @@ var _o = class {
 		});
 	}
 	onBackground() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_background",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 90 : 10,
@@ -3699,7 +3777,7 @@ var _o = class {
 		});
 	}
 	surface() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 6 : 98,
@@ -3707,7 +3785,7 @@ var _o = class {
 		});
 	}
 	surfaceDim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_dim",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 6 : new K(87, 87, 80, 75).get(e.contrastLevel),
@@ -3715,7 +3793,7 @@ var _o = class {
 		});
 	}
 	surfaceBright() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_bright",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? new K(24, 24, 29, 34).get(e.contrastLevel) : 98,
@@ -3723,7 +3801,7 @@ var _o = class {
 		});
 	}
 	surfaceContainerLowest() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_container_lowest",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? new K(4, 4, 2, 0).get(e.contrastLevel) : 100,
@@ -3731,7 +3809,7 @@ var _o = class {
 		});
 	}
 	surfaceContainerLow() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_container_low",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? new K(10, 10, 11, 12).get(e.contrastLevel) : new K(96, 96, 96, 95).get(e.contrastLevel),
@@ -3739,7 +3817,7 @@ var _o = class {
 		});
 	}
 	surfaceContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_container",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? new K(12, 12, 16, 20).get(e.contrastLevel) : new K(94, 94, 92, 90).get(e.contrastLevel),
@@ -3747,7 +3825,7 @@ var _o = class {
 		});
 	}
 	surfaceContainerHigh() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_container_high",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? new K(17, 17, 21, 25).get(e.contrastLevel) : new K(92, 92, 88, 85).get(e.contrastLevel),
@@ -3755,7 +3833,7 @@ var _o = class {
 		});
 	}
 	surfaceContainerHighest() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_container_highest",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? new K(22, 22, 26, 30).get(e.contrastLevel) : new K(90, 90, 84, 80).get(e.contrastLevel),
@@ -3763,7 +3841,7 @@ var _o = class {
 		});
 	}
 	onSurface() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_surface",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 90 : 10,
@@ -3772,7 +3850,7 @@ var _o = class {
 		});
 	}
 	surfaceVariant() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_variant",
 			palette: (e) => e.neutralVariantPalette,
 			tone: (e) => e.isDark ? 30 : 90,
@@ -3780,7 +3858,7 @@ var _o = class {
 		});
 	}
 	onSurfaceVariant() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_surface_variant",
 			palette: (e) => e.neutralVariantPalette,
 			tone: (e) => e.isDark ? 80 : 30,
@@ -3789,7 +3867,7 @@ var _o = class {
 		});
 	}
 	inverseSurface() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "inverse_surface",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 90 : 20,
@@ -3797,7 +3875,7 @@ var _o = class {
 		});
 	}
 	inverseOnSurface() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "inverse_on_surface",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 20 : 95,
@@ -3806,7 +3884,7 @@ var _o = class {
 		});
 	}
 	outline() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "outline",
 			palette: (e) => e.neutralVariantPalette,
 			tone: (e) => e.isDark ? 60 : 50,
@@ -3815,7 +3893,7 @@ var _o = class {
 		});
 	}
 	outlineVariant() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "outline_variant",
 			palette: (e) => e.neutralVariantPalette,
 			tone: (e) => e.isDark ? 30 : 80,
@@ -3824,21 +3902,21 @@ var _o = class {
 		});
 	}
 	shadow() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "shadow",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => 0
 		});
 	}
 	scrim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "scrim",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => 0
 		});
 	}
 	surfaceTint() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "surface_tint",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => e.isDark ? 80 : 40,
@@ -3846,7 +3924,7 @@ var _o = class {
 		});
 	}
 	primary() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "primary",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => Y(e) ? e.isDark ? 100 : 0 : e.isDark ? 80 : 40,
@@ -3858,7 +3936,7 @@ var _o = class {
 	}
 	primaryDim() {}
 	onPrimary() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_primary",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => Y(e) ? e.isDark ? 10 : 90 : e.isDark ? 20 : 100,
@@ -3867,10 +3945,10 @@ var _o = class {
 		});
 	}
 	primaryContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "primary_container",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => ho(e) ? e.sourceColorHct.tone : Y(e) ? e.isDark ? 85 : 25 : e.isDark ? 30 : 90,
+			tone: (e) => vo(e) ? e.sourceColorHct.tone : Y(e) ? e.isDark ? 85 : 25 : e.isDark ? 30 : 90,
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => new K(1, 1, 3, 4.5),
@@ -3878,16 +3956,16 @@ var _o = class {
 		});
 	}
 	onPrimaryContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_primary_container",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => ho(e) ? G.foregroundTone(this.primaryContainer().tone(e), 4.5) : Y(e) ? e.isDark ? 0 : 100 : e.isDark ? 90 : 30,
+			tone: (e) => vo(e) ? W.foregroundTone(this.primaryContainer().tone(e), 4.5) : Y(e) ? e.isDark ? 0 : 100 : e.isDark ? 90 : 30,
 			background: (e) => this.primaryContainer(),
 			contrastCurve: (e) => new K(3, 4.5, 7, 11)
 		});
 	}
 	inversePrimary() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "inverse_primary",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => e.isDark ? 40 : 80,
@@ -3896,7 +3974,7 @@ var _o = class {
 		});
 	}
 	secondary() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "secondary",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => e.isDark ? 80 : 40,
@@ -3908,7 +3986,7 @@ var _o = class {
 	}
 	secondaryDim() {}
 	onSecondary() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_secondary",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => Y(e) ? e.isDark ? 10 : 100 : e.isDark ? 20 : 100,
@@ -3917,12 +3995,12 @@ var _o = class {
 		});
 	}
 	secondaryContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "secondary_container",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => {
 				let t = e.isDark ? 30 : 90;
-				return Y(e) ? e.isDark ? 30 : 85 : ho(e) ? go(e.secondaryPalette.hue, e.secondaryPalette.chroma, t, !e.isDark) : t;
+				return Y(e) ? e.isDark ? 30 : 85 : vo(e) ? yo(e.secondaryPalette.hue, e.secondaryPalette.chroma, t, !e.isDark) : t;
 			},
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
@@ -3931,16 +4009,16 @@ var _o = class {
 		});
 	}
 	onSecondaryContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_secondary_container",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => Y(e) ? e.isDark ? 90 : 10 : ho(e) ? G.foregroundTone(this.secondaryContainer().tone(e), 4.5) : e.isDark ? 90 : 30,
+			tone: (e) => Y(e) ? e.isDark ? 90 : 10 : vo(e) ? W.foregroundTone(this.secondaryContainer().tone(e), 4.5) : e.isDark ? 90 : 30,
 			background: (e) => this.secondaryContainer(),
 			contrastCurve: (e) => new K(3, 4.5, 7, 11)
 		});
 	}
 	tertiary() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "tertiary",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => Y(e) ? e.isDark ? 90 : 25 : e.isDark ? 80 : 40,
@@ -3952,7 +4030,7 @@ var _o = class {
 	}
 	tertiaryDim() {}
 	onTertiary() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_tertiary",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => Y(e) ? e.isDark ? 10 : 90 : e.isDark ? 20 : 100,
@@ -3961,14 +4039,14 @@ var _o = class {
 		});
 	}
 	tertiaryContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "tertiary_container",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => {
 				if (Y(e)) return e.isDark ? 60 : 49;
-				if (!ho(e)) return e.isDark ? 30 : 90;
+				if (!vo(e)) return e.isDark ? 30 : 90;
 				let t = e.tertiaryPalette.getHct(e.sourceColorHct.tone);
-				return so.fixIfDisliked(t).tone;
+				return co.fixIfDisliked(t).tone;
 			},
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
@@ -3977,16 +4055,16 @@ var _o = class {
 		});
 	}
 	onTertiaryContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_tertiary_container",
 			palette: (e) => e.tertiaryPalette,
-			tone: (e) => Y(e) ? e.isDark ? 0 : 100 : ho(e) ? G.foregroundTone(this.tertiaryContainer().tone(e), 4.5) : e.isDark ? 90 : 30,
+			tone: (e) => Y(e) ? e.isDark ? 0 : 100 : vo(e) ? W.foregroundTone(this.tertiaryContainer().tone(e), 4.5) : e.isDark ? 90 : 30,
 			background: (e) => this.tertiaryContainer(),
 			contrastCurve: (e) => new K(3, 4.5, 7, 11)
 		});
 	}
 	error() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "error",
 			palette: (e) => e.errorPalette,
 			tone: (e) => e.isDark ? 80 : 40,
@@ -3998,7 +4076,7 @@ var _o = class {
 	}
 	errorDim() {}
 	onError() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_error",
 			palette: (e) => e.errorPalette,
 			tone: (e) => e.isDark ? 20 : 100,
@@ -4007,7 +4085,7 @@ var _o = class {
 		});
 	}
 	errorContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "error_container",
 			palette: (e) => e.errorPalette,
 			tone: (e) => e.isDark ? 30 : 90,
@@ -4018,7 +4096,7 @@ var _o = class {
 		});
 	}
 	onErrorContainer() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_error_container",
 			palette: (e) => e.errorPalette,
 			tone: (e) => Y(e) ? e.isDark ? 90 : 10 : e.isDark ? 90 : 30,
@@ -4027,7 +4105,7 @@ var _o = class {
 		});
 	}
 	primaryFixed() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "primary_fixed",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => Y(e) ? 40 : 90,
@@ -4038,7 +4116,7 @@ var _o = class {
 		});
 	}
 	primaryFixedDim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "primary_fixed_dim",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => Y(e) ? 30 : 80,
@@ -4049,7 +4127,7 @@ var _o = class {
 		});
 	}
 	onPrimaryFixed() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_primary_fixed",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => Y(e) ? 100 : 10,
@@ -4059,7 +4137,7 @@ var _o = class {
 		});
 	}
 	onPrimaryFixedVariant() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_primary_fixed_variant",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => Y(e) ? 90 : 30,
@@ -4069,7 +4147,7 @@ var _o = class {
 		});
 	}
 	secondaryFixed() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "secondary_fixed",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => Y(e) ? 80 : 90,
@@ -4080,7 +4158,7 @@ var _o = class {
 		});
 	}
 	secondaryFixedDim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "secondary_fixed_dim",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => Y(e) ? 70 : 80,
@@ -4091,7 +4169,7 @@ var _o = class {
 		});
 	}
 	onSecondaryFixed() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_secondary_fixed",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => 10,
@@ -4101,7 +4179,7 @@ var _o = class {
 		});
 	}
 	onSecondaryFixedVariant() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_secondary_fixed_variant",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => Y(e) ? 25 : 30,
@@ -4111,7 +4189,7 @@ var _o = class {
 		});
 	}
 	tertiaryFixed() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "tertiary_fixed",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => Y(e) ? 40 : 90,
@@ -4122,7 +4200,7 @@ var _o = class {
 		});
 	}
 	tertiaryFixedDim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "tertiary_fixed_dim",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => Y(e) ? 30 : 80,
@@ -4133,7 +4211,7 @@ var _o = class {
 		});
 	}
 	onTertiaryFixed() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_tertiary_fixed",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => Y(e) ? 100 : 10,
@@ -4143,7 +4221,7 @@ var _o = class {
 		});
 	}
 	onTertiaryFixedVariant() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "on_tertiary_fixed_variant",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => Y(e) ? 90 : 30,
@@ -4159,16 +4237,16 @@ var _o = class {
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/color_spec_2025.js
 function X(e, t = 0, n = 100, r = 1) {
-	return V(t, n, yo(e.hue, e.chroma * r, 100, !0));
+	return B(t, n, So(e.hue, e.chroma * r, 100, !0));
 }
-function vo(e, t = 0, n = 100) {
-	return V(t, n, yo(e.hue, e.chroma, 0, !1));
+function xo(e, t = 0, n = 100) {
+	return B(t, n, So(e.hue, e.chroma, 0, !1));
 }
-function yo(e, t, n, r) {
-	let i = n, a = H.from(e, t, i);
+function So(e, t, n, r) {
+	let i = n, a = V.from(e, t, i);
 	for (; a.chroma < t && !(n < 0 || n > 100);) {
 		n += r ? -1 : 1;
-		let o = H.from(e, t, n);
+		let o = V.from(e, t, n);
 		a.chroma < o.chroma && (a = o, i = n);
 	}
 	return i;
@@ -4176,226 +4254,226 @@ function yo(e, t, n, r) {
 function Z(e) {
 	return e === 1.5 ? new K(1.5, 1.5, 3, 5.5) : e === 3 ? new K(3, 3, 4.5, 7) : e === 4.5 ? new K(4.5, 4.5, 7, 11) : e === 6 ? new K(6, 6, 7, 11) : e === 7 ? new K(7, 7, 11, 21) : e === 9 ? new K(9, 9, 11, 21) : e === 11 ? new K(11, 11, 21, 21) : e === 21 ? new K(21, 21, 21, 21) : new K(e, e, 7, 21);
 }
-var bo = class extends _o {
+var Co = class extends bo {
 	surface() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface",
 			palette: (e) => e.neutralPalette,
-			tone: (e) => (super.surface().tone(e), e.platform === "phone" ? e.isDark ? 4 : H.isYellow(e.neutralPalette.hue) ? 99 : e.variant === J.VIBRANT ? 97 : 98 : 0),
+			tone: (e) => (super.surface().tone(e), e.platform === "phone" ? e.isDark ? 4 : V.isYellow(e.neutralPalette.hue) ? 99 : e.variant === J.VIBRANT ? 97 : 98 : 0),
 			isBackground: !0
 		});
-		return W(super.surface(), "2025", e);
+		return U(super.surface(), "2025", e);
 	}
 	surfaceDim() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_dim",
 			palette: (e) => e.neutralPalette,
-			tone: (e) => e.isDark ? 4 : H.isYellow(e.neutralPalette.hue) ? 90 : e.variant === J.VIBRANT ? 85 : 87,
+			tone: (e) => e.isDark ? 4 : V.isYellow(e.neutralPalette.hue) ? 90 : e.variant === J.VIBRANT ? 85 : 87,
 			isBackground: !0,
 			chromaMultiplier: (e) => {
 				if (!e.isDark) {
 					if (e.variant === J.NEUTRAL) return 2.5;
 					if (e.variant === J.TONAL_SPOT) return 1.7;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? 2.7 : 1.75;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? 2.7 : 1.75;
 					if (e.variant === J.VIBRANT) return 1.36;
 				}
 				return 1;
 			}
 		});
-		return W(super.surfaceDim(), "2025", e);
+		return U(super.surfaceDim(), "2025", e);
 	}
 	surfaceBright() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_bright",
 			palette: (e) => e.neutralPalette,
-			tone: (e) => e.isDark ? 18 : H.isYellow(e.neutralPalette.hue) ? 99 : e.variant === J.VIBRANT ? 97 : 98,
+			tone: (e) => e.isDark ? 18 : V.isYellow(e.neutralPalette.hue) ? 99 : e.variant === J.VIBRANT ? 97 : 98,
 			isBackground: !0,
 			chromaMultiplier: (e) => {
 				if (e.isDark) {
 					if (e.variant === J.NEUTRAL) return 2.5;
 					if (e.variant === J.TONAL_SPOT) return 1.7;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? 2.7 : 1.75;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? 2.7 : 1.75;
 					if (e.variant === J.VIBRANT) return 1.36;
 				}
 				return 1;
 			}
 		});
-		return W(super.surfaceBright(), "2025", e);
+		return U(super.surfaceBright(), "2025", e);
 	}
 	surfaceContainerLowest() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container_lowest",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 0 : 100,
 			isBackground: !0
 		});
-		return W(super.surfaceContainerLowest(), "2025", e);
+		return U(super.surfaceContainerLowest(), "2025", e);
 	}
 	surfaceContainerLow() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container_low",
 			palette: (e) => e.neutralPalette,
-			tone: (e) => e.platform === "phone" ? e.isDark ? 6 : H.isYellow(e.neutralPalette.hue) ? 98 : e.variant === J.VIBRANT ? 95 : 96 : 15,
+			tone: (e) => e.platform === "phone" ? e.isDark ? 6 : V.isYellow(e.neutralPalette.hue) ? 98 : e.variant === J.VIBRANT ? 95 : 96 : 15,
 			isBackground: !0,
 			chromaMultiplier: (e) => {
 				if (e.platform === "phone") {
 					if (e.variant === J.NEUTRAL) return 1.3;
 					if (e.variant === J.TONAL_SPOT) return 1.25;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? 1.3 : 1.15;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? 1.3 : 1.15;
 					if (e.variant === J.VIBRANT) return 1.08;
 				}
 				return 1;
 			}
 		});
-		return W(super.surfaceContainerLow(), "2025", e);
+		return U(super.surfaceContainerLow(), "2025", e);
 	}
 	surfaceContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container",
 			palette: (e) => e.neutralPalette,
-			tone: (e) => e.platform === "phone" ? e.isDark ? 9 : H.isYellow(e.neutralPalette.hue) ? 96 : e.variant === J.VIBRANT ? 92 : 94 : 20,
+			tone: (e) => e.platform === "phone" ? e.isDark ? 9 : V.isYellow(e.neutralPalette.hue) ? 96 : e.variant === J.VIBRANT ? 92 : 94 : 20,
 			isBackground: !0,
 			chromaMultiplier: (e) => {
 				if (e.platform === "phone") {
 					if (e.variant === J.NEUTRAL) return 1.6;
 					if (e.variant === J.TONAL_SPOT) return 1.4;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? 1.6 : 1.3;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? 1.6 : 1.3;
 					if (e.variant === J.VIBRANT) return 1.15;
 				}
 				return 1;
 			}
 		});
-		return W(super.surfaceContainer(), "2025", e);
+		return U(super.surfaceContainer(), "2025", e);
 	}
 	surfaceContainerHigh() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container_high",
 			palette: (e) => e.neutralPalette,
-			tone: (e) => e.platform === "phone" ? e.isDark ? 12 : H.isYellow(e.neutralPalette.hue) ? 94 : e.variant === J.VIBRANT ? 90 : 92 : 25,
+			tone: (e) => e.platform === "phone" ? e.isDark ? 12 : V.isYellow(e.neutralPalette.hue) ? 94 : e.variant === J.VIBRANT ? 90 : 92 : 25,
 			isBackground: !0,
 			chromaMultiplier: (e) => {
 				if (e.platform === "phone") {
 					if (e.variant === J.NEUTRAL) return 1.9;
 					if (e.variant === J.TONAL_SPOT) return 1.5;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? 1.95 : 1.45;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? 1.95 : 1.45;
 					if (e.variant === J.VIBRANT) return 1.22;
 				}
 				return 1;
 			}
 		});
-		return W(super.surfaceContainerHigh(), "2025", e);
+		return U(super.surfaceContainerHigh(), "2025", e);
 	}
 	surfaceContainerHighest() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container_highest",
 			palette: (e) => e.neutralPalette,
-			tone: (e) => e.isDark ? 15 : H.isYellow(e.neutralPalette.hue) ? 92 : e.variant === J.VIBRANT ? 88 : 90,
+			tone: (e) => e.isDark ? 15 : V.isYellow(e.neutralPalette.hue) ? 92 : e.variant === J.VIBRANT ? 88 : 90,
 			isBackground: !0,
-			chromaMultiplier: (e) => e.variant === J.NEUTRAL ? 2.2 : e.variant === J.TONAL_SPOT ? 1.7 : e.variant === J.EXPRESSIVE ? H.isYellow(e.neutralPalette.hue) ? 2.3 : 1.6 : e.variant === J.VIBRANT ? 1.29 : 1
+			chromaMultiplier: (e) => e.variant === J.NEUTRAL ? 2.2 : e.variant === J.TONAL_SPOT ? 1.7 : e.variant === J.EXPRESSIVE ? V.isYellow(e.neutralPalette.hue) ? 2.3 : 1.6 : e.variant === J.VIBRANT ? 1.29 : 1
 		});
-		return W(super.surfaceContainerHighest(), "2025", e);
+		return U(super.surfaceContainerHighest(), "2025", e);
 	}
 	onSurface() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_surface",
 			palette: (e) => e.neutralPalette,
-			tone: (e) => e.variant === J.VIBRANT ? X(e.neutralPalette, 0, 100, 1.1) : G.getInitialToneFromBackground((e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh())(e),
+			tone: (e) => e.variant === J.VIBRANT ? X(e.neutralPalette, 0, 100, 1.1) : W.getInitialToneFromBackground((e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh())(e),
 			chromaMultiplier: (e) => {
 				if (e.platform === "phone") {
 					if (e.variant === J.NEUTRAL) return 2.2;
 					if (e.variant === J.TONAL_SPOT) return 1.7;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? e.isDark ? 3 : 2.3 : 1.6;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? e.isDark ? 3 : 2.3 : 1.6;
 				}
 				return 1;
 			},
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.isDark && e.platform === "phone" ? Z(11) : Z(9)
 		});
-		return W(super.onSurface(), "2025", e);
+		return U(super.onSurface(), "2025", e);
 	}
 	onSurfaceVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_surface_variant",
 			palette: (e) => e.neutralPalette,
 			chromaMultiplier: (e) => {
 				if (e.platform === "phone") {
 					if (e.variant === J.NEUTRAL) return 2.2;
 					if (e.variant === J.TONAL_SPOT) return 1.7;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? e.isDark ? 3 : 2.3 : 1.6;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? e.isDark ? 3 : 2.3 : 1.6;
 				}
 				return 1;
 			},
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? e.isDark ? Z(6) : Z(4.5) : Z(7)
 		});
-		return W(super.onSurfaceVariant(), "2025", e);
+		return U(super.onSurfaceVariant(), "2025", e);
 	}
 	outline() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "outline",
 			palette: (e) => e.neutralPalette,
 			chromaMultiplier: (e) => {
 				if (e.platform === "phone") {
 					if (e.variant === J.NEUTRAL) return 2.2;
 					if (e.variant === J.TONAL_SPOT) return 1.7;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? e.isDark ? 3 : 2.3 : 1.6;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? e.isDark ? 3 : 2.3 : 1.6;
 				}
 				return 1;
 			},
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(3) : Z(4.5)
 		});
-		return W(super.outline(), "2025", e);
+		return U(super.outline(), "2025", e);
 	}
 	outlineVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "outline_variant",
 			palette: (e) => e.neutralPalette,
 			chromaMultiplier: (e) => {
 				if (e.platform === "phone") {
 					if (e.variant === J.NEUTRAL) return 2.2;
 					if (e.variant === J.TONAL_SPOT) return 1.7;
-					if (e.variant === J.EXPRESSIVE) return H.isYellow(e.neutralPalette.hue) ? e.isDark ? 3 : 2.3 : 1.6;
+					if (e.variant === J.EXPRESSIVE) return V.isYellow(e.neutralPalette.hue) ? e.isDark ? 3 : 2.3 : 1.6;
 				}
 				return 1;
 			},
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(1.5) : Z(3)
 		});
-		return W(super.outlineVariant(), "2025", e);
+		return U(super.outlineVariant(), "2025", e);
 	}
 	inverseSurface() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "inverse_surface",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 98 : 4,
 			isBackground: !0
 		});
-		return W(super.inverseSurface(), "2025", e);
+		return U(super.inverseSurface(), "2025", e);
 	}
 	inverseOnSurface() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "inverse_on_surface",
 			palette: (e) => e.neutralPalette,
 			background: (e) => this.inverseSurface(),
 			contrastCurve: (e) => Z(7)
 		});
-		return W(super.inverseOnSurface(), "2025", e);
+		return U(super.inverseOnSurface(), "2025", e);
 	}
 	primary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "primary",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => e.variant === J.NEUTRAL ? e.platform === "phone" ? e.isDark ? 80 : 40 : 90 : e.variant === J.TONAL_SPOT ? e.platform === "phone" ? e.isDark ? 80 : X(e.primaryPalette) : X(e.primaryPalette, 0, 90) : e.variant === J.EXPRESSIVE ? e.platform === "phone" ? X(e.primaryPalette, 0, H.isYellow(e.primaryPalette.hue) ? 25 : H.isCyan(e.primaryPalette.hue) ? 88 : 98) : X(e.primaryPalette) : e.platform === "phone" ? X(e.primaryPalette, 0, H.isCyan(e.primaryPalette.hue) ? 88 : 98) : X(e.primaryPalette),
+			tone: (e) => e.variant === J.NEUTRAL ? e.platform === "phone" ? e.isDark ? 80 : 40 : 90 : e.variant === J.TONAL_SPOT ? e.platform === "phone" ? e.isDark ? 80 : X(e.primaryPalette) : X(e.primaryPalette, 0, 90) : e.variant === J.EXPRESSIVE ? e.platform === "phone" ? X(e.primaryPalette, 0, V.isYellow(e.primaryPalette.hue) ? 25 : V.isCyan(e.primaryPalette.hue) ? 88 : 98) : X(e.primaryPalette) : e.platform === "phone" ? X(e.primaryPalette, 0, V.isCyan(e.primaryPalette.hue) ? 88 : 98) : X(e.primaryPalette),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(4.5) : Z(7),
 			toneDeltaPair: (e) => e.platform === "phone" ? new q(this.primaryContainer(), this.primary(), 5, "relative_lighter", !0, "farther") : void 0
 		});
-		return W(super.primary(), "2025", e);
+		return U(super.primary(), "2025", e);
 	}
 	primaryDim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "primary_dim",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => e.variant === J.NEUTRAL ? 85 : e.variant === J.TONAL_SPOT ? X(e.primaryPalette, 0, 90) : X(e.primaryPalette),
@@ -4406,37 +4484,37 @@ var bo = class extends _o {
 		});
 	}
 	onPrimary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_primary",
 			palette: (e) => e.primaryPalette,
 			background: (e) => e.platform === "phone" ? this.primary() : this.primaryDim(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(6) : Z(7)
 		});
-		return W(super.onPrimary(), "2025", e);
+		return U(super.onPrimary(), "2025", e);
 	}
 	primaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "primary_container",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => e.platform === "watch" ? 30 : e.variant === J.NEUTRAL ? e.isDark ? 30 : 90 : e.variant === J.TONAL_SPOT ? e.isDark ? vo(e.primaryPalette, 35, 93) : X(e.primaryPalette, 0, 90) : e.variant === J.EXPRESSIVE ? e.isDark ? X(e.primaryPalette, 30, 93) : X(e.primaryPalette, 78, H.isCyan(e.primaryPalette.hue) ? 88 : 90) : e.isDark ? vo(e.primaryPalette, 66, 93) : X(e.primaryPalette, 66, H.isCyan(e.primaryPalette.hue) ? 88 : 93),
+			tone: (e) => e.platform === "watch" ? 30 : e.variant === J.NEUTRAL ? e.isDark ? 30 : 90 : e.variant === J.TONAL_SPOT ? e.isDark ? xo(e.primaryPalette, 35, 93) : X(e.primaryPalette, 0, 90) : e.variant === J.EXPRESSIVE ? e.isDark ? X(e.primaryPalette, 30, 93) : X(e.primaryPalette, 78, V.isCyan(e.primaryPalette.hue) ? 88 : 90) : e.isDark ? xo(e.primaryPalette, 66, 93) : X(e.primaryPalette, 66, V.isCyan(e.primaryPalette.hue) ? 88 : 93),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			toneDeltaPair: (e) => e.platform === "phone" ? void 0 : new q(this.primaryContainer(), this.primaryDim(), 10, "darker", !0, "farther"),
 			contrastCurve: (e) => e.platform === "phone" && e.contrastLevel > 0 ? Z(1.5) : void 0
 		});
-		return W(super.primaryContainer(), "2025", e);
+		return U(super.primaryContainer(), "2025", e);
 	}
 	onPrimaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_primary_container",
 			palette: (e) => e.primaryPalette,
 			background: (e) => this.primaryContainer(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(6) : Z(7)
 		});
-		return W(super.onPrimaryContainer(), "2025", e);
+		return U(super.onPrimaryContainer(), "2025", e);
 	}
 	primaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "primary_fixed",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => {
@@ -4450,60 +4528,60 @@ var bo = class extends _o {
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			contrastCurve: (e) => e.platform === "phone" && e.contrastLevel > 0 ? Z(1.5) : void 0
 		});
-		return W(super.primaryFixed(), "2025", e);
+		return U(super.primaryFixed(), "2025", e);
 	}
 	primaryFixedDim() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "primary_fixed_dim",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => this.primaryFixed().getTone(e),
 			isBackground: !0,
 			toneDeltaPair: (e) => new q(this.primaryFixedDim(), this.primaryFixed(), 5, "darker", !0, "exact")
 		});
-		return W(super.primaryFixedDim(), "2025", e);
+		return U(super.primaryFixedDim(), "2025", e);
 	}
 	onPrimaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_primary_fixed",
 			palette: (e) => e.primaryPalette,
 			background: (e) => this.primaryFixedDim(),
 			contrastCurve: (e) => Z(7)
 		});
-		return W(super.onPrimaryFixed(), "2025", e);
+		return U(super.onPrimaryFixed(), "2025", e);
 	}
 	onPrimaryFixedVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_primary_fixed_variant",
 			palette: (e) => e.primaryPalette,
 			background: (e) => this.primaryFixedDim(),
 			contrastCurve: (e) => Z(4.5)
 		});
-		return W(super.onPrimaryFixedVariant(), "2025", e);
+		return U(super.onPrimaryFixedVariant(), "2025", e);
 	}
 	inversePrimary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "inverse_primary",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => X(e.primaryPalette),
 			background: (e) => this.inverseSurface(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(6) : Z(7)
 		});
-		return W(super.inversePrimary(), "2025", e);
+		return U(super.inversePrimary(), "2025", e);
 	}
 	secondary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "secondary",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => e.platform === "watch" ? e.variant === J.NEUTRAL ? 90 : X(e.secondaryPalette, 0, 90) : e.variant === J.NEUTRAL ? e.isDark ? vo(e.secondaryPalette, 0, 98) : X(e.secondaryPalette) : e.variant === J.VIBRANT ? X(e.secondaryPalette, 0, e.isDark ? 90 : 98) : e.isDark ? 80 : X(e.secondaryPalette),
+			tone: (e) => e.platform === "watch" ? e.variant === J.NEUTRAL ? 90 : X(e.secondaryPalette, 0, 90) : e.variant === J.NEUTRAL ? e.isDark ? xo(e.secondaryPalette, 0, 98) : X(e.secondaryPalette) : e.variant === J.VIBRANT ? X(e.secondaryPalette, 0, e.isDark ? 90 : 98) : e.isDark ? 80 : X(e.secondaryPalette),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(4.5) : Z(7),
 			toneDeltaPair: (e) => e.platform === "phone" ? new q(this.secondaryContainer(), this.secondary(), 5, "relative_lighter", !0, "farther") : void 0
 		});
-		return W(super.secondary(), "2025", e);
+		return U(super.secondary(), "2025", e);
 	}
 	secondaryDim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "secondary_dim",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => e.variant === J.NEUTRAL ? 85 : X(e.secondaryPalette, 0, 90),
@@ -4514,37 +4592,37 @@ var bo = class extends _o {
 		});
 	}
 	onSecondary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_secondary",
 			palette: (e) => e.secondaryPalette,
 			background: (e) => e.platform === "phone" ? this.secondary() : this.secondaryDim(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(6) : Z(7)
 		});
-		return W(super.onSecondary(), "2025", e);
+		return U(super.onSecondary(), "2025", e);
 	}
 	secondaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "secondary_container",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => e.platform === "watch" ? 30 : e.variant === J.VIBRANT ? e.isDark ? vo(e.secondaryPalette, 30, 40) : X(e.secondaryPalette, 84, 90) : e.variant === J.EXPRESSIVE ? e.isDark ? 15 : X(e.secondaryPalette, 90, 95) : e.isDark ? 25 : 90,
+			tone: (e) => e.platform === "watch" ? 30 : e.variant === J.VIBRANT ? e.isDark ? xo(e.secondaryPalette, 30, 40) : X(e.secondaryPalette, 84, 90) : e.variant === J.EXPRESSIVE ? e.isDark ? 15 : X(e.secondaryPalette, 90, 95) : e.isDark ? 25 : 90,
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			toneDeltaPair: (e) => e.platform === "watch" ? new q(this.secondaryContainer(), this.secondaryDim(), 10, "darker", !0, "farther") : void 0,
 			contrastCurve: (e) => e.platform === "phone" && e.contrastLevel > 0 ? Z(1.5) : void 0
 		});
-		return W(super.secondaryContainer(), "2025", e);
+		return U(super.secondaryContainer(), "2025", e);
 	}
 	onSecondaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_secondary_container",
 			palette: (e) => e.secondaryPalette,
 			background: (e) => this.secondaryContainer(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(6) : Z(7)
 		});
-		return W(super.onSecondaryContainer(), "2025", e);
+		return U(super.onSecondaryContainer(), "2025", e);
 	}
 	secondaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "secondary_fixed",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => {
@@ -4558,50 +4636,50 @@ var bo = class extends _o {
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			contrastCurve: (e) => e.platform === "phone" && e.contrastLevel > 0 ? Z(1.5) : void 0
 		});
-		return W(super.secondaryFixed(), "2025", e);
+		return U(super.secondaryFixed(), "2025", e);
 	}
 	secondaryFixedDim() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "secondary_fixed_dim",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => this.secondaryFixed().getTone(e),
 			isBackground: !0,
 			toneDeltaPair: (e) => new q(this.secondaryFixedDim(), this.secondaryFixed(), 5, "darker", !0, "exact")
 		});
-		return W(super.secondaryFixedDim(), "2025", e);
+		return U(super.secondaryFixedDim(), "2025", e);
 	}
 	onSecondaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_secondary_fixed",
 			palette: (e) => e.secondaryPalette,
 			background: (e) => this.secondaryFixedDim(),
 			contrastCurve: (e) => Z(7)
 		});
-		return W(super.onSecondaryFixed(), "2025", e);
+		return U(super.onSecondaryFixed(), "2025", e);
 	}
 	onSecondaryFixedVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_secondary_fixed_variant",
 			palette: (e) => e.secondaryPalette,
 			background: (e) => this.secondaryFixedDim(),
 			contrastCurve: (e) => Z(4.5)
 		});
-		return W(super.onSecondaryFixedVariant(), "2025", e);
+		return U(super.onSecondaryFixedVariant(), "2025", e);
 	}
 	tertiary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "tertiary",
 			palette: (e) => e.tertiaryPalette,
-			tone: (e) => e.platform === "watch" ? e.variant === J.TONAL_SPOT ? X(e.tertiaryPalette, 0, 90) : X(e.tertiaryPalette) : e.variant === J.EXPRESSIVE || e.variant === J.VIBRANT ? X(e.tertiaryPalette, 0, H.isCyan(e.tertiaryPalette.hue) ? 88 : e.isDark ? 98 : 100) : e.isDark ? X(e.tertiaryPalette, 0, 98) : X(e.tertiaryPalette),
+			tone: (e) => e.platform === "watch" ? e.variant === J.TONAL_SPOT ? X(e.tertiaryPalette, 0, 90) : X(e.tertiaryPalette) : e.variant === J.EXPRESSIVE || e.variant === J.VIBRANT ? X(e.tertiaryPalette, 0, V.isCyan(e.tertiaryPalette.hue) ? 88 : e.isDark ? 98 : 100) : e.isDark ? X(e.tertiaryPalette, 0, 98) : X(e.tertiaryPalette),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(4.5) : Z(7),
 			toneDeltaPair: (e) => e.platform === "phone" ? new q(this.tertiaryContainer(), this.tertiary(), 5, "relative_lighter", !0, "farther") : void 0
 		});
-		return W(super.tertiary(), "2025", e);
+		return U(super.tertiary(), "2025", e);
 	}
 	tertiaryDim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "tertiary_dim",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => e.variant === J.TONAL_SPOT ? X(e.tertiaryPalette, 0, 90) : X(e.tertiaryPalette),
@@ -4612,37 +4690,37 @@ var bo = class extends _o {
 		});
 	}
 	onTertiary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_tertiary",
 			palette: (e) => e.tertiaryPalette,
 			background: (e) => e.platform === "phone" ? this.tertiary() : this.tertiaryDim(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(6) : Z(7)
 		});
-		return W(super.onTertiary(), "2025", e);
+		return U(super.onTertiary(), "2025", e);
 	}
 	tertiaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "tertiary_container",
 			palette: (e) => e.tertiaryPalette,
-			tone: (e) => e.platform === "watch" ? e.variant === J.TONAL_SPOT ? X(e.tertiaryPalette, 0, 90) : X(e.tertiaryPalette) : e.variant === J.NEUTRAL ? e.isDark ? X(e.tertiaryPalette, 0, 93) : X(e.tertiaryPalette, 0, 96) : e.variant === J.TONAL_SPOT ? X(e.tertiaryPalette, 0, e.isDark ? 93 : 100) : e.variant === J.EXPRESSIVE ? X(e.tertiaryPalette, 75, H.isCyan(e.tertiaryPalette.hue) ? 88 : e.isDark ? 93 : 100) : e.isDark ? X(e.tertiaryPalette, 0, 93) : X(e.tertiaryPalette, 72, 100),
+			tone: (e) => e.platform === "watch" ? e.variant === J.TONAL_SPOT ? X(e.tertiaryPalette, 0, 90) : X(e.tertiaryPalette) : e.variant === J.NEUTRAL ? e.isDark ? X(e.tertiaryPalette, 0, 93) : X(e.tertiaryPalette, 0, 96) : e.variant === J.TONAL_SPOT ? X(e.tertiaryPalette, 0, e.isDark ? 93 : 100) : e.variant === J.EXPRESSIVE ? X(e.tertiaryPalette, 75, V.isCyan(e.tertiaryPalette.hue) ? 88 : e.isDark ? 93 : 100) : e.isDark ? X(e.tertiaryPalette, 0, 93) : X(e.tertiaryPalette, 72, 100),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			toneDeltaPair: (e) => e.platform === "watch" ? new q(this.tertiaryContainer(), this.tertiaryDim(), 10, "darker", !0, "farther") : void 0,
 			contrastCurve: (e) => e.platform === "phone" && e.contrastLevel > 0 ? Z(1.5) : void 0
 		});
-		return W(super.tertiaryContainer(), "2025", e);
+		return U(super.tertiaryContainer(), "2025", e);
 	}
 	onTertiaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_tertiary_container",
 			palette: (e) => e.tertiaryPalette,
 			background: (e) => this.tertiaryContainer(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(6) : Z(7)
 		});
-		return W(super.onTertiaryContainer(), "2025", e);
+		return U(super.onTertiaryContainer(), "2025", e);
 	}
 	tertiaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "tertiary_fixed",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => {
@@ -4656,53 +4734,53 @@ var bo = class extends _o {
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			contrastCurve: (e) => e.platform === "phone" && e.contrastLevel > 0 ? Z(1.5) : void 0
 		});
-		return W(super.tertiaryFixed(), "2025", e);
+		return U(super.tertiaryFixed(), "2025", e);
 	}
 	tertiaryFixedDim() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "tertiary_fixed_dim",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => this.tertiaryFixed().getTone(e),
 			isBackground: !0,
 			toneDeltaPair: (e) => new q(this.tertiaryFixedDim(), this.tertiaryFixed(), 5, "darker", !0, "exact")
 		});
-		return W(super.tertiaryFixedDim(), "2025", e);
+		return U(super.tertiaryFixedDim(), "2025", e);
 	}
 	onTertiaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_tertiary_fixed",
 			palette: (e) => e.tertiaryPalette,
 			background: (e) => this.tertiaryFixedDim(),
 			contrastCurve: (e) => Z(7)
 		});
-		return W(super.onTertiaryFixed(), "2025", e);
+		return U(super.onTertiaryFixed(), "2025", e);
 	}
 	onTertiaryFixedVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_tertiary_fixed_variant",
 			palette: (e) => e.tertiaryPalette,
 			background: (e) => this.tertiaryFixedDim(),
 			contrastCurve: (e) => Z(4.5)
 		});
-		return W(super.onTertiaryFixedVariant(), "2025", e);
+		return U(super.onTertiaryFixedVariant(), "2025", e);
 	}
 	error() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "error",
 			palette: (e) => e.errorPalette,
-			tone: (e) => e.platform === "phone" ? e.isDark ? vo(e.errorPalette, 0, 98) : X(e.errorPalette) : vo(e.errorPalette),
+			tone: (e) => e.platform === "phone" ? e.isDark ? xo(e.errorPalette, 0, 98) : X(e.errorPalette) : xo(e.errorPalette),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(4.5) : Z(7),
 			toneDeltaPair: (e) => e.platform === "phone" ? new q(this.errorContainer(), this.error(), 5, "relative_lighter", !0, "farther") : void 0
 		});
-		return W(super.error(), "2025", e);
+		return U(super.error(), "2025", e);
 	}
 	errorDim() {
-		return G.fromPalette({
+		return W.fromPalette({
 			name: "error_dim",
 			palette: (e) => e.errorPalette,
-			tone: (e) => vo(e.errorPalette),
+			tone: (e) => xo(e.errorPalette),
 			isBackground: !0,
 			background: (e) => this.surfaceContainerHigh(),
 			contrastCurve: (e) => Z(4.5),
@@ -4710,68 +4788,68 @@ var bo = class extends _o {
 		});
 	}
 	onError() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_error",
 			palette: (e) => e.errorPalette,
 			background: (e) => e.platform === "phone" ? this.error() : this.errorDim(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(6) : Z(7)
 		});
-		return W(super.onError(), "2025", e);
+		return U(super.onError(), "2025", e);
 	}
 	errorContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "error_container",
 			palette: (e) => e.errorPalette,
-			tone: (e) => e.platform === "watch" ? 30 : e.isDark ? vo(e.errorPalette, 30, 93) : X(e.errorPalette, 0, 90),
+			tone: (e) => e.platform === "watch" ? 30 : e.isDark ? xo(e.errorPalette, 30, 93) : X(e.errorPalette, 0, 90),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			toneDeltaPair: (e) => e.platform === "watch" ? new q(this.errorContainer(), this.errorDim(), 10, "darker", !0, "farther") : void 0,
 			contrastCurve: (e) => e.platform === "phone" && e.contrastLevel > 0 ? Z(1.5) : void 0
 		});
-		return W(super.errorContainer(), "2025", e);
+		return U(super.errorContainer(), "2025", e);
 	}
 	onErrorContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_error_container",
 			palette: (e) => e.errorPalette,
 			background: (e) => this.errorContainer(),
 			contrastCurve: (e) => e.platform === "phone" ? Z(4.5) : Z(7)
 		});
-		return W(super.onErrorContainer(), "2025", e);
+		return U(super.onErrorContainer(), "2025", e);
 	}
 	surfaceVariant() {
 		let e = Object.assign(this.surfaceContainerHighest().clone(), { name: "surface_variant" });
-		return W(super.surfaceVariant(), "2025", e);
+		return U(super.surfaceVariant(), "2025", e);
 	}
 	surfaceTint() {
 		let e = Object.assign(this.primary().clone(), { name: "surface_tint" });
-		return W(super.surfaceTint(), "2025", e);
+		return U(super.surfaceTint(), "2025", e);
 	}
 	background() {
 		let e = Object.assign(this.surface().clone(), { name: "background" });
-		return W(super.background(), "2025", e);
+		return U(super.background(), "2025", e);
 	}
 	onBackground() {
 		let e = Object.assign(this.onSurface().clone(), {
 			name: "on_background",
 			tone: (e) => e.platform === "watch" ? 100 : this.onSurface().getTone(e)
 		});
-		return W(super.onBackground(), "2025", e);
+		return U(super.onBackground(), "2025", e);
 	}
 };
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/color_spec_2026.js
-function xo(e, t = 0, n = 100, r = 1) {
-	return V(t, n, Co(e.hue, e.chroma * r, 100, !0));
+function wo(e, t = 0, n = 100, r = 1) {
+	return B(t, n, Eo(e.hue, e.chroma * r, 100, !0));
 }
-function So(e, t = 0, n = 100) {
-	return V(t, n, Co(e.hue, e.chroma, 0, !1));
+function To(e, t = 0, n = 100) {
+	return B(t, n, Eo(e.hue, e.chroma, 0, !1));
 }
-function Co(e, t, n, r) {
-	let i = n, a = H.from(e, t, i);
+function Eo(e, t, n, r) {
+	let i = n, a = V.from(e, t, i);
 	for (; a.chroma < t && !(n < 0 || n > 100);) {
 		n += r ? -1 : 1;
-		let o = H.from(e, t, n);
+		let o = V.from(e, t, n);
 		a.chroma < o.chroma && (a = o, i = n);
 	}
 	return i;
@@ -4779,146 +4857,146 @@ function Co(e, t, n, r) {
 function Q(e) {
 	return e === 1.5 ? new K(1.5, 1.5, 3, 5.5) : e === 3 ? new K(3, 3, 4.5, 7) : e === 4.5 ? new K(4.5, 4.5, 7, 11) : e === 6 ? new K(6, 6, 7, 11) : e === 7 ? new K(7, 7, 11, 21) : e === 9 ? new K(9, 9, 11, 21) : e === 11 ? new K(11, 11, 21, 21) : e === 21 ? new K(21, 21, 21, 21) : new K(e, e, 7, 21);
 }
-var wo = class extends bo {
+var Do = class extends Co {
 	surface() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.variant === J.CMF ? e.isDark ? 4 : 98 : 0,
 			isBackground: !0
 		});
-		return W(super.surface(), "2026", e);
+		return U(super.surface(), "2026", e);
 	}
 	surfaceDim() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_dim",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.variant === J.CMF ? e.isDark ? 4 : 87 : 0,
 			chromaMultiplier: (e) => e.variant === J.CMF ? e.isDark ? 1 : 1.7 : 0,
 			isBackground: !0
 		});
-		return W(super.surfaceDim(), "2026", e);
+		return U(super.surfaceDim(), "2026", e);
 	}
 	surfaceBright() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_bright",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.variant === J.CMF ? e.isDark ? 18 : 98 : 0,
 			chromaMultiplier: (e) => e.variant === J.CMF ? e.isDark ? 1.7 : 1 : 0,
 			isBackground: !0
 		});
-		return W(super.surfaceBright(), "2026", e);
+		return U(super.surfaceBright(), "2026", e);
 	}
 	surfaceContainerLowest() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container_lowest",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.variant === J.CMF ? e.isDark ? 0 : 100 : 0,
 			isBackground: !0
 		});
-		return W(super.surfaceContainerLowest(), "2026", e);
+		return U(super.surfaceContainerLowest(), "2026", e);
 	}
 	surfaceContainerLow() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container_low",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.variant === J.CMF ? e.isDark ? 6 : 96 : 0,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.25 : 0,
 			isBackground: !0
 		});
-		return W(super.surfaceContainerLow(), "2026", e);
+		return U(super.surfaceContainerLow(), "2026", e);
 	}
 	surfaceContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.variant === J.CMF ? e.isDark ? 9 : 94 : 0,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.4 : 0,
 			isBackground: !0
 		});
-		return W(super.surfaceContainer(), "2026", e);
+		return U(super.surfaceContainer(), "2026", e);
 	}
 	surfaceContainerHigh() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container_high",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.variant === J.CMF ? e.isDark ? 12 : 92 : 0,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.5 : 0,
 			isBackground: !0
 		});
-		return W(super.surfaceContainerHigh(), "2026", e);
+		return U(super.surfaceContainerHigh(), "2026", e);
 	}
 	surfaceContainerHighest() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "surface_container_highest",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.variant === J.CMF ? e.isDark ? 15 : 90 : 0,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.7 : 0,
 			isBackground: !0
 		});
-		return W(super.surfaceContainerHighest(), "2026", e);
+		return U(super.surfaceContainerHighest(), "2026", e);
 	}
 	onSurface() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_surface",
 			palette: (e) => e.neutralPalette,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.7 : 0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.isDark ? Q(11) : Q(9)
 		});
-		return W(super.onSurface(), "2026", e);
+		return U(super.onSurface(), "2026", e);
 	}
 	onSurfaceVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_surface_variant",
 			palette: (e) => e.neutralPalette,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.7 : 0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.isDark ? Q(6) : Q(4.5)
 		});
-		return W(super.onSurfaceVariant(), "2026", e);
+		return U(super.onSurfaceVariant(), "2026", e);
 	}
 	outline() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "outline",
 			palette: (e) => e.neutralPalette,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.7 : 0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => Q(3)
 		});
-		return W(super.outline(), "2026", e);
+		return U(super.outline(), "2026", e);
 	}
 	outlineVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "outline_variant",
 			palette: (e) => e.neutralPalette,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.7 : 0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => Q(1.5)
 		});
-		return W(super.outlineVariant(), "2026", e);
+		return U(super.outlineVariant(), "2026", e);
 	}
 	inverseSurface() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "inverse_surface",
 			palette: (e) => e.neutralPalette,
 			tone: (e) => e.isDark ? 98 : 4,
 			chromaMultiplier: (e) => e.variant === J.CMF ? 1.7 : 0,
 			isBackground: !0
 		});
-		return W(super.inverseSurface(), "2026", e);
+		return U(super.inverseSurface(), "2026", e);
 	}
 	inverseOnSurface() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "inverse_on_surface",
 			palette: (e) => e.neutralPalette,
 			background: (e) => this.inverseSurface(),
 			contrastCurve: (e) => Q(7)
 		});
-		return W(super.inverseOnSurface(), "2026", e);
+		return U(super.inverseOnSurface(), "2026", e);
 	}
 	primary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "primary",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => e.sourceColorHct.chroma <= 12 ? e.isDark ? 80 : 40 : e.sourceColorHct.tone,
@@ -4927,39 +5005,39 @@ var wo = class extends bo {
 			contrastCurve: (e) => Q(4.5),
 			toneDeltaPair: (e) => e.platform === "phone" ? new q(this.primaryContainer(), this.primary(), 5, "relative_lighter", !0, "farther") : void 0
 		});
-		return W(super.primary(), "2026", e);
+		return U(super.primary(), "2026", e);
 	}
 	onPrimary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_primary",
 			palette: (e) => e.primaryPalette,
 			background: (e) => this.primary(),
 			contrastCurve: (e) => Q(6)
 		});
-		return W(super.onPrimary(), "2026", e);
+		return U(super.onPrimary(), "2026", e);
 	}
 	primaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "primary_container",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => !e.isDark && e.sourceColorHct.chroma <= 12 ? 90 : e.sourceColorHct.tone > 55 ? V(61, 90, e.sourceColorHct.tone) : V(30, 49, e.sourceColorHct.tone),
+			tone: (e) => !e.isDark && e.sourceColorHct.chroma <= 12 ? 90 : e.sourceColorHct.tone > 55 ? B(61, 90, e.sourceColorHct.tone) : B(30, 49, e.sourceColorHct.tone),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.primaryContainer(), "2026", e);
+		return U(super.primaryContainer(), "2026", e);
 	}
 	onPrimaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_primary_container",
 			palette: (e) => e.primaryPalette,
 			background: (e) => this.primaryContainer(),
 			contrastCurve: (e) => Q(6)
 		});
-		return W(super.onPrimaryContainer(), "2026", e);
+		return U(super.onPrimaryContainer(), "2026", e);
 	}
 	primaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "primary_fixed",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => {
@@ -4973,10 +5051,10 @@ var wo = class extends bo {
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.primaryFixed(), "2026", e);
+		return U(super.primaryFixed(), "2026", e);
 	}
 	primaryFixedDim() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "primary_fixed_dim",
 			palette: (e) => e.primaryPalette,
 			tone: (e) => this.primaryFixed().getTone(e),
@@ -4985,72 +5063,72 @@ var wo = class extends bo {
 			toneDeltaPair: (e) => new q(this.primaryFixedDim(), this.primaryFixed(), 5, "darker", !0, "exact"),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.primaryFixedDim(), "2026", e);
+		return U(super.primaryFixedDim(), "2026", e);
 	}
 	onPrimaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_primary_fixed",
 			palette: (e) => e.primaryPalette,
 			background: (e) => this.primaryFixed().getTone(e) > 57 ? this.primaryFixedDim() : this.primaryFixed(),
 			contrastCurve: (e) => Q(7)
 		});
-		return W(super.onPrimaryFixed(), "2026", e);
+		return U(super.onPrimaryFixed(), "2026", e);
 	}
 	onPrimaryFixedVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_primary_fixed_variant",
 			palette: (e) => e.primaryPalette,
 			background: (e) => this.primaryFixed().getTone(e) > 57 ? this.primaryFixedDim() : this.primaryFixed(),
 			contrastCurve: (e) => Q(4.5)
 		});
-		return W(super.onPrimaryFixedVariant(), "2026", e);
+		return U(super.onPrimaryFixedVariant(), "2026", e);
 	}
 	inversePrimary() {
 		return super.inversePrimary();
 	}
 	secondary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "secondary",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => e.isDark ? So(e.secondaryPalette) : xo(e.secondaryPalette),
+			tone: (e) => e.isDark ? To(e.secondaryPalette) : wo(e.secondaryPalette),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => Q(4.5),
 			toneDeltaPair: (e) => e.platform === "phone" ? new q(this.secondaryContainer(), this.secondary(), 5, "relative_lighter", !0, "farther") : void 0
 		});
-		return W(super.secondary(), "2026", e);
+		return U(super.secondary(), "2026", e);
 	}
 	onSecondary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_secondary",
 			palette: (e) => e.secondaryPalette,
 			background: (e) => this.secondary(),
 			contrastCurve: (e) => Q(6)
 		});
-		return W(super.onSecondary(), "2026", e);
+		return U(super.onSecondary(), "2026", e);
 	}
 	secondaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "secondary_container",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => e.isDark ? So(e.secondaryPalette, 20, 49) : xo(e.secondaryPalette, 61, 90),
+			tone: (e) => e.isDark ? To(e.secondaryPalette, 20, 49) : wo(e.secondaryPalette, 61, 90),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.secondaryContainer(), "2026", e);
+		return U(super.secondaryContainer(), "2026", e);
 	}
 	onSecondaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_secondary_container",
 			palette: (e) => e.secondaryPalette,
 			background: (e) => this.secondaryContainer(),
 			contrastCurve: (e) => Q(6)
 		});
-		return W(super.onSecondaryContainer(), "2026", e);
+		return U(super.onSecondaryContainer(), "2026", e);
 	}
 	secondaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "secondary_fixed",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => {
@@ -5064,10 +5142,10 @@ var wo = class extends bo {
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.secondaryFixed(), "2026", e);
+		return U(super.secondaryFixed(), "2026", e);
 	}
 	secondaryFixedDim() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "secondary_fixed_dim",
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => this.secondaryFixed().getTone(e),
@@ -5076,28 +5154,28 @@ var wo = class extends bo {
 			toneDeltaPair: (e) => new q(this.secondaryFixedDim(), this.secondaryFixed(), 5, "darker", !0, "exact"),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.secondaryFixedDim(), "2026", e);
+		return U(super.secondaryFixedDim(), "2026", e);
 	}
 	onSecondaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_secondary_fixed",
 			palette: (e) => e.secondaryPalette,
 			background: (e) => this.secondaryFixed().getTone(e) > 57 ? this.secondaryFixedDim() : this.secondaryFixed(),
 			contrastCurve: (e) => Q(7)
 		});
-		return W(super.onSecondaryFixed(), "2026", e);
+		return U(super.onSecondaryFixed(), "2026", e);
 	}
 	onSecondaryFixedVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_secondary_fixed_variant",
 			palette: (e) => e.secondaryPalette,
 			background: (e) => this.secondaryFixed().getTone(e) > 57 ? this.secondaryFixedDim() : this.secondaryFixed(),
 			contrastCurve: (e) => Q(4.5)
 		});
-		return W(super.onSecondaryFixedVariant(), "2026", e);
+		return U(super.onSecondaryFixedVariant(), "2026", e);
 	}
 	tertiary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "tertiary",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => e.sourceColorHcts[1]?.tone ?? e.sourceColorHct.tone,
@@ -5106,42 +5184,42 @@ var wo = class extends bo {
 			contrastCurve: (e) => Q(4.5),
 			toneDeltaPair: (e) => e.platform === "phone" ? new q(this.tertiaryContainer(), this.tertiary(), 5, "relative_lighter", !0, "farther") : void 0
 		});
-		return W(super.tertiary(), "2026", e);
+		return U(super.tertiary(), "2026", e);
 	}
 	onTertiary() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_tertiary",
 			palette: (e) => e.tertiaryPalette,
 			background: (e) => this.tertiary(),
 			contrastCurve: (e) => Q(6)
 		});
-		return W(super.onTertiary(), "2026", e);
+		return U(super.onTertiary(), "2026", e);
 	}
 	tertiaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "tertiary_container",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => {
 				let t = e.sourceColorHcts[1] ?? e.sourceColorHct;
-				return t.tone > 55 ? V(61, 90, t.tone) : V(20, 49, t.tone);
+				return t.tone > 55 ? B(61, 90, t.tone) : B(20, 49, t.tone);
 			},
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.tertiaryContainer(), "2026", e);
+		return U(super.tertiaryContainer(), "2026", e);
 	}
 	onTertiaryContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_tertiary_container",
 			palette: (e) => e.tertiaryPalette,
 			background: (e) => this.tertiaryContainer(),
 			contrastCurve: (e) => Q(6)
 		});
-		return W(super.onTertiaryContainer(), "2026", e);
+		return U(super.onTertiaryContainer(), "2026", e);
 	}
 	tertiaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "tertiary_fixed",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => {
@@ -5155,10 +5233,10 @@ var wo = class extends bo {
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.tertiaryFixed(), "2026", e);
+		return U(super.tertiaryFixed(), "2026", e);
 	}
 	tertiaryFixedDim() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "tertiary_fixed_dim",
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => this.tertiaryFixed().getTone(e),
@@ -5167,82 +5245,82 @@ var wo = class extends bo {
 			toneDeltaPair: (e) => new q(this.tertiaryFixedDim(), this.tertiaryFixed(), 5, "darker", !0, "exact"),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.tertiaryFixedDim(), "2026", e);
+		return U(super.tertiaryFixedDim(), "2026", e);
 	}
 	onTertiaryFixed() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_tertiary_fixed",
 			palette: (e) => e.tertiaryPalette,
 			background: (e) => this.tertiaryFixed().getTone(e) > 57 ? this.tertiaryFixedDim() : this.tertiaryFixed(),
 			contrastCurve: (e) => Q(7)
 		});
-		return W(super.onTertiaryFixed(), "2026", e);
+		return U(super.onTertiaryFixed(), "2026", e);
 	}
 	onTertiaryFixedVariant() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_tertiary_fixed_variant",
 			palette: (e) => e.tertiaryPalette,
 			background: (e) => this.tertiaryFixed().getTone(e) > 57 ? this.tertiaryFixedDim() : this.tertiaryFixed(),
 			contrastCurve: (e) => Q(4.5)
 		});
-		return W(super.onTertiaryFixedVariant(), "2026", e);
+		return U(super.onTertiaryFixedVariant(), "2026", e);
 	}
 	error() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "error",
 			palette: (e) => e.errorPalette,
-			tone: (e) => xo(e.errorPalette),
+			tone: (e) => wo(e.errorPalette),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => Q(4.5),
 			toneDeltaPair: (e) => e.platform === "phone" ? new q(this.errorContainer(), this.error(), 5, "relative_lighter", !0, "farther") : void 0
 		});
-		return W(super.error(), "2026", e);
+		return U(super.error(), "2026", e);
 	}
 	onError() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_error",
 			palette: (e) => e.errorPalette,
 			background: (e) => this.error(),
 			contrastCurve: (e) => Q(6)
 		});
-		return W(super.onError(), "2026", e);
+		return U(super.onError(), "2026", e);
 	}
 	errorContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "error_container",
 			palette: (e) => e.errorPalette,
-			tone: (e) => e.isDark ? So(e.errorPalette) : xo(e.errorPalette),
+			tone: (e) => e.isDark ? To(e.errorPalette) : wo(e.errorPalette),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Q(1.5) : void 0
 		});
-		return W(super.errorContainer(), "2026", e);
+		return U(super.errorContainer(), "2026", e);
 	}
 	onErrorContainer() {
-		let e = G.fromPalette({
+		let e = W.fromPalette({
 			name: "on_error_container",
 			palette: (e) => e.errorPalette,
 			background: (e) => this.errorContainer(),
 			contrastCurve: (e) => Q(6)
 		});
-		return W(super.onErrorContainer(), "2026", e);
+		return U(super.onErrorContainer(), "2026", e);
 	}
 	primaryDim() {
 		let e = Object.assign(this.primary().clone(), { name: "primary_dim" });
-		return W(super.primaryDim(), "2026", e);
+		return U(super.primaryDim(), "2026", e);
 	}
 	secondaryDim() {
 		let e = Object.assign(this.secondary().clone(), { name: "secondary_dim" });
-		return W(super.secondaryDim(), "2026", e);
+		return U(super.secondaryDim(), "2026", e);
 	}
 	tertiaryDim() {
 		let e = Object.assign(this.tertiary().clone(), { name: "tertiary_dim" });
-		return W(super.tertiaryDim(), "2026", e);
+		return U(super.tertiaryDim(), "2026", e);
 	}
 	errorDim() {
 		let e = Object.assign(this.error().clone(), { name: "error_dim" });
-		return W(super.errorDim(), "2026", e);
+		return U(super.errorDim(), "2026", e);
 	}
 }, $ = class e {
 	constructor() {
@@ -5482,74 +5560,972 @@ var wo = class extends bo {
 		return e.colorSpec.highestSurface(t);
 	}
 };
-$.contentAccentToneDelta = 15, $.colorSpec = new wo(), $.primaryPaletteKeyColor = $.colorSpec.primaryPaletteKeyColor(), $.secondaryPaletteKeyColor = $.colorSpec.secondaryPaletteKeyColor(), $.tertiaryPaletteKeyColor = $.colorSpec.tertiaryPaletteKeyColor(), $.neutralPaletteKeyColor = $.colorSpec.neutralPaletteKeyColor(), $.neutralVariantPaletteKeyColor = $.colorSpec.neutralVariantPaletteKeyColor(), $.background = $.colorSpec.background(), $.onBackground = $.colorSpec.onBackground(), $.surface = $.colorSpec.surface(), $.surfaceDim = $.colorSpec.surfaceDim(), $.surfaceBright = $.colorSpec.surfaceBright(), $.surfaceContainerLowest = $.colorSpec.surfaceContainerLowest(), $.surfaceContainerLow = $.colorSpec.surfaceContainerLow(), $.surfaceContainer = $.colorSpec.surfaceContainer(), $.surfaceContainerHigh = $.colorSpec.surfaceContainerHigh(), $.surfaceContainerHighest = $.colorSpec.surfaceContainerHighest(), $.onSurface = $.colorSpec.onSurface(), $.surfaceVariant = $.colorSpec.surfaceVariant(), $.onSurfaceVariant = $.colorSpec.onSurfaceVariant(), $.inverseSurface = $.colorSpec.inverseSurface(), $.inverseOnSurface = $.colorSpec.inverseOnSurface(), $.outline = $.colorSpec.outline(), $.outlineVariant = $.colorSpec.outlineVariant(), $.shadow = $.colorSpec.shadow(), $.scrim = $.colorSpec.scrim(), $.surfaceTint = $.colorSpec.surfaceTint(), $.primary = $.colorSpec.primary(), $.onPrimary = $.colorSpec.onPrimary(), $.primaryContainer = $.colorSpec.primaryContainer(), $.onPrimaryContainer = $.colorSpec.onPrimaryContainer(), $.inversePrimary = $.colorSpec.inversePrimary(), $.secondary = $.colorSpec.secondary(), $.onSecondary = $.colorSpec.onSecondary(), $.secondaryContainer = $.colorSpec.secondaryContainer(), $.onSecondaryContainer = $.colorSpec.onSecondaryContainer(), $.tertiary = $.colorSpec.tertiary(), $.onTertiary = $.colorSpec.onTertiary(), $.tertiaryContainer = $.colorSpec.tertiaryContainer(), $.onTertiaryContainer = $.colorSpec.onTertiaryContainer(), $.error = $.colorSpec.error(), $.onError = $.colorSpec.onError(), $.errorContainer = $.colorSpec.errorContainer(), $.onErrorContainer = $.colorSpec.onErrorContainer(), $.primaryFixed = $.colorSpec.primaryFixed(), $.primaryFixedDim = $.colorSpec.primaryFixedDim(), $.onPrimaryFixed = $.colorSpec.onPrimaryFixed(), $.onPrimaryFixedVariant = $.colorSpec.onPrimaryFixedVariant(), $.secondaryFixed = $.colorSpec.secondaryFixed(), $.secondaryFixedDim = $.colorSpec.secondaryFixedDim(), $.onSecondaryFixed = $.colorSpec.onSecondaryFixed(), $.onSecondaryFixedVariant = $.colorSpec.onSecondaryFixedVariant(), $.tertiaryFixed = $.colorSpec.tertiaryFixed(), $.tertiaryFixedDim = $.colorSpec.tertiaryFixedDim(), $.onTertiaryFixed = $.colorSpec.onTertiaryFixed(), $.onTertiaryFixedVariant = $.colorSpec.onTertiaryFixedVariant();
+$.contentAccentToneDelta = 15, $.colorSpec = new Do(), $.primaryPaletteKeyColor = $.colorSpec.primaryPaletteKeyColor(), $.secondaryPaletteKeyColor = $.colorSpec.secondaryPaletteKeyColor(), $.tertiaryPaletteKeyColor = $.colorSpec.tertiaryPaletteKeyColor(), $.neutralPaletteKeyColor = $.colorSpec.neutralPaletteKeyColor(), $.neutralVariantPaletteKeyColor = $.colorSpec.neutralVariantPaletteKeyColor(), $.background = $.colorSpec.background(), $.onBackground = $.colorSpec.onBackground(), $.surface = $.colorSpec.surface(), $.surfaceDim = $.colorSpec.surfaceDim(), $.surfaceBright = $.colorSpec.surfaceBright(), $.surfaceContainerLowest = $.colorSpec.surfaceContainerLowest(), $.surfaceContainerLow = $.colorSpec.surfaceContainerLow(), $.surfaceContainer = $.colorSpec.surfaceContainer(), $.surfaceContainerHigh = $.colorSpec.surfaceContainerHigh(), $.surfaceContainerHighest = $.colorSpec.surfaceContainerHighest(), $.onSurface = $.colorSpec.onSurface(), $.surfaceVariant = $.colorSpec.surfaceVariant(), $.onSurfaceVariant = $.colorSpec.onSurfaceVariant(), $.inverseSurface = $.colorSpec.inverseSurface(), $.inverseOnSurface = $.colorSpec.inverseOnSurface(), $.outline = $.colorSpec.outline(), $.outlineVariant = $.colorSpec.outlineVariant(), $.shadow = $.colorSpec.shadow(), $.scrim = $.colorSpec.scrim(), $.surfaceTint = $.colorSpec.surfaceTint(), $.primary = $.colorSpec.primary(), $.onPrimary = $.colorSpec.onPrimary(), $.primaryContainer = $.colorSpec.primaryContainer(), $.onPrimaryContainer = $.colorSpec.onPrimaryContainer(), $.inversePrimary = $.colorSpec.inversePrimary(), $.secondary = $.colorSpec.secondary(), $.onSecondary = $.colorSpec.onSecondary(), $.secondaryContainer = $.colorSpec.secondaryContainer(), $.onSecondaryContainer = $.colorSpec.onSecondaryContainer(), $.tertiary = $.colorSpec.tertiary(), $.onTertiary = $.colorSpec.onTertiary(), $.tertiaryContainer = $.colorSpec.tertiaryContainer(), $.onTertiaryContainer = $.colorSpec.onTertiaryContainer(), $.error = $.colorSpec.error(), $.onError = $.colorSpec.onError(), $.errorContainer = $.colorSpec.errorContainer(), $.onErrorContainer = $.colorSpec.onErrorContainer(), $.primaryFixed = $.colorSpec.primaryFixed(), $.primaryFixedDim = $.colorSpec.primaryFixedDim(), $.onPrimaryFixed = $.colorSpec.onPrimaryFixed(), $.onPrimaryFixedVariant = $.colorSpec.onPrimaryFixedVariant(), $.secondaryFixed = $.colorSpec.secondaryFixed(), $.secondaryFixedDim = $.colorSpec.secondaryFixedDim(), $.onSecondaryFixed = $.colorSpec.onSecondaryFixed(), $.onSecondaryFixedVariant = $.colorSpec.onSecondaryFixedVariant(), $.tertiaryFixed = $.colorSpec.tertiaryFixed(), $.tertiaryFixedDim = $.colorSpec.tertiaryFixedDim(), $.onTertiaryFixed = $.colorSpec.onTertiaryFixed(), $.onTertiaryFixedVariant = $.colorSpec.onTertiaryFixedVariant();
 //#endregion
-//#region packages/ui-kit/src/theme/m3-theme.ts
-var To = new $();
-G.fromPalette({
+//#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/dynamic_scheme.js
+var Oo = class e {
+	static maybeFallbackSpecVersion(e, t) {
+		return t === J.CMF ? e : t === J.EXPRESSIVE || t === J.VIBRANT || t === J.TONAL_SPOT || t === J.NEUTRAL ? e === "2026" ? "2025" : e : "2021";
+	}
+	constructor(t) {
+		if (t.sourceColorHcts) {
+			if (t.sourceColorHcts.length === 0) throw Error("sourceColorHcts cannot be empty");
+			this.sourceColorHct = t.sourceColorHcts[0], this.sourceColorHcts = t.sourceColorHcts;
+		} else if (t.sourceColorHct) this.sourceColorHct = t.sourceColorHct, this.sourceColorHcts = [t.sourceColorHct];
+		else throw Error("sourceColorHct or sourceColorHcts required");
+		this.sourceColorArgb = this.sourceColorHct.toInt(), this.variant = t.variant, this.contrastLevel = t.contrastLevel, this.isDark = t.isDark, this.platform = t.platform ?? "phone", this.specVersion = e.maybeFallbackSpecVersion(t.specVersion ?? "2021", this.variant), this.primaryPalette = t.primaryPalette ?? No(this.specVersion).getPrimaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.secondaryPalette = t.secondaryPalette ?? No(this.specVersion).getSecondaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.tertiaryPalette = t.tertiaryPalette ?? No(this.specVersion).getTertiaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.neutralPalette = t.neutralPalette ?? No(this.specVersion).getNeutralPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.neutralVariantPalette = t.neutralVariantPalette ?? No(this.specVersion).getNeutralVariantPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.errorPalette = t.errorPalette ?? No(this.specVersion).getErrorPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel) ?? G.fromHueAndChroma(25, 84), this.colors = new $();
+	}
+	toString() {
+		let e = this.sourceColorHcts.length <= 1 ? "" : `sourceColorHctList=[${this.sourceColorHcts.map((e) => e.toString()).join(", ")}], `;
+		return `Scheme: variant=${J[this.variant]}, mode=${this.isDark ? "dark" : "light"}, platform=${this.platform}, contrastLevel=${this.contrastLevel.toFixed(1)}, seed=${this.sourceColorHct.toString()}, ` + e + `specVersion=${this.specVersion}`;
+	}
+	static getPiecewiseHue(e, t, n) {
+		let r = Math.min(t.length - 1, n.length), i = e.hue;
+		for (let e = 0; e < r; e++) if (i >= t[e] && i < t[e + 1]) return Pa(n[e]);
+		return i;
+	}
+	static getRotatedHue(t, n, r) {
+		let i = e.getPiecewiseHue(t, n, r);
+		return Math.min(n.length - 1, r.length) <= 0 && (i = 0), Pa(t.hue + i);
+	}
+	getArgb(e) {
+		return e.getArgb(this);
+	}
+	getHct(e) {
+		return e.getHct(this);
+	}
+	get primaryPaletteKeyColor() {
+		return this.getArgb(this.colors.primaryPaletteKeyColor());
+	}
+	get secondaryPaletteKeyColor() {
+		return this.getArgb(this.colors.secondaryPaletteKeyColor());
+	}
+	get tertiaryPaletteKeyColor() {
+		return this.getArgb(this.colors.tertiaryPaletteKeyColor());
+	}
+	get neutralPaletteKeyColor() {
+		return this.getArgb(this.colors.neutralPaletteKeyColor());
+	}
+	get neutralVariantPaletteKeyColor() {
+		return this.getArgb(this.colors.neutralVariantPaletteKeyColor());
+	}
+	get errorPaletteKeyColor() {
+		return this.getArgb(this.colors.errorPaletteKeyColor());
+	}
+	get background() {
+		return this.getArgb(this.colors.background());
+	}
+	get onBackground() {
+		return this.getArgb(this.colors.onBackground());
+	}
+	get surface() {
+		return this.getArgb(this.colors.surface());
+	}
+	get surfaceDim() {
+		return this.getArgb(this.colors.surfaceDim());
+	}
+	get surfaceBright() {
+		return this.getArgb(this.colors.surfaceBright());
+	}
+	get surfaceContainerLowest() {
+		return this.getArgb(this.colors.surfaceContainerLowest());
+	}
+	get surfaceContainerLow() {
+		return this.getArgb(this.colors.surfaceContainerLow());
+	}
+	get surfaceContainer() {
+		return this.getArgb(this.colors.surfaceContainer());
+	}
+	get surfaceContainerHigh() {
+		return this.getArgb(this.colors.surfaceContainerHigh());
+	}
+	get surfaceContainerHighest() {
+		return this.getArgb(this.colors.surfaceContainerHighest());
+	}
+	get onSurface() {
+		return this.getArgb(this.colors.onSurface());
+	}
+	get surfaceVariant() {
+		return this.getArgb(this.colors.surfaceVariant());
+	}
+	get onSurfaceVariant() {
+		return this.getArgb(this.colors.onSurfaceVariant());
+	}
+	get inverseSurface() {
+		return this.getArgb(this.colors.inverseSurface());
+	}
+	get inverseOnSurface() {
+		return this.getArgb(this.colors.inverseOnSurface());
+	}
+	get outline() {
+		return this.getArgb(this.colors.outline());
+	}
+	get outlineVariant() {
+		return this.getArgb(this.colors.outlineVariant());
+	}
+	get shadow() {
+		return this.getArgb(this.colors.shadow());
+	}
+	get scrim() {
+		return this.getArgb(this.colors.scrim());
+	}
+	get surfaceTint() {
+		return this.getArgb(this.colors.surfaceTint());
+	}
+	get primary() {
+		return this.getArgb(this.colors.primary());
+	}
+	get primaryDim() {
+		let e = this.colors.primaryDim();
+		if (e === void 0) throw Error("`primaryDim` color is undefined prior to 2025 spec.");
+		return this.getArgb(e);
+	}
+	get onPrimary() {
+		return this.getArgb(this.colors.onPrimary());
+	}
+	get primaryContainer() {
+		return this.getArgb(this.colors.primaryContainer());
+	}
+	get onPrimaryContainer() {
+		return this.getArgb(this.colors.onPrimaryContainer());
+	}
+	get primaryFixed() {
+		return this.getArgb(this.colors.primaryFixed());
+	}
+	get primaryFixedDim() {
+		return this.getArgb(this.colors.primaryFixedDim());
+	}
+	get onPrimaryFixed() {
+		return this.getArgb(this.colors.onPrimaryFixed());
+	}
+	get onPrimaryFixedVariant() {
+		return this.getArgb(this.colors.onPrimaryFixedVariant());
+	}
+	get inversePrimary() {
+		return this.getArgb(this.colors.inversePrimary());
+	}
+	get secondary() {
+		return this.getArgb(this.colors.secondary());
+	}
+	get secondaryDim() {
+		let e = this.colors.secondaryDim();
+		if (e === void 0) throw Error("`secondaryDim` color is undefined prior to 2025 spec.");
+		return this.getArgb(e);
+	}
+	get onSecondary() {
+		return this.getArgb(this.colors.onSecondary());
+	}
+	get secondaryContainer() {
+		return this.getArgb(this.colors.secondaryContainer());
+	}
+	get onSecondaryContainer() {
+		return this.getArgb(this.colors.onSecondaryContainer());
+	}
+	get secondaryFixed() {
+		return this.getArgb(this.colors.secondaryFixed());
+	}
+	get secondaryFixedDim() {
+		return this.getArgb(this.colors.secondaryFixedDim());
+	}
+	get onSecondaryFixed() {
+		return this.getArgb(this.colors.onSecondaryFixed());
+	}
+	get onSecondaryFixedVariant() {
+		return this.getArgb(this.colors.onSecondaryFixedVariant());
+	}
+	get tertiary() {
+		return this.getArgb(this.colors.tertiary());
+	}
+	get tertiaryDim() {
+		let e = this.colors.tertiaryDim();
+		if (e === void 0) throw Error("`tertiaryDim` color is undefined prior to 2025 spec.");
+		return this.getArgb(e);
+	}
+	get onTertiary() {
+		return this.getArgb(this.colors.onTertiary());
+	}
+	get tertiaryContainer() {
+		return this.getArgb(this.colors.tertiaryContainer());
+	}
+	get onTertiaryContainer() {
+		return this.getArgb(this.colors.onTertiaryContainer());
+	}
+	get tertiaryFixed() {
+		return this.getArgb(this.colors.tertiaryFixed());
+	}
+	get tertiaryFixedDim() {
+		return this.getArgb(this.colors.tertiaryFixedDim());
+	}
+	get onTertiaryFixed() {
+		return this.getArgb(this.colors.onTertiaryFixed());
+	}
+	get onTertiaryFixedVariant() {
+		return this.getArgb(this.colors.onTertiaryFixedVariant());
+	}
+	get error() {
+		return this.getArgb(this.colors.error());
+	}
+	get errorDim() {
+		let e = this.colors.errorDim();
+		if (e === void 0) throw Error("`errorDim` color is undefined prior to 2025 spec.");
+		return this.getArgb(e);
+	}
+	get onError() {
+		return this.getArgb(this.colors.onError());
+	}
+	get errorContainer() {
+		return this.getArgb(this.colors.errorContainer());
+	}
+	get onErrorContainer() {
+		return this.getArgb(this.colors.onErrorContainer());
+	}
+};
+Oo.DEFAULT_SPEC_VERSION = "2021", Oo.DEFAULT_PLATFORM = "phone";
+var ko = class {
+	getPrimaryPalette(e, t, n, r, i) {
+		switch (e) {
+			case J.CONTENT:
+			case J.FIDELITY: return G.fromHueAndChroma(t.hue, t.chroma);
+			case J.FRUIT_SALAD: return G.fromHueAndChroma(Pa(t.hue - 50), 48);
+			case J.MONOCHROME: return G.fromHueAndChroma(t.hue, 0);
+			case J.NEUTRAL: return G.fromHueAndChroma(t.hue, 12);
+			case J.RAINBOW: return G.fromHueAndChroma(t.hue, 48);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(t.hue, 36);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(Pa(t.hue + 240), 40);
+			case J.VIBRANT: return G.fromHueAndChroma(t.hue, 200);
+			default: throw Error(`Unsupported variant: ${e}`);
+		}
+	}
+	getSecondaryPalette(e, t, n, r, i) {
+		switch (e) {
+			case J.CONTENT:
+			case J.FIDELITY: return G.fromHueAndChroma(t.hue, Math.max(t.chroma - 32, t.chroma * .5));
+			case J.FRUIT_SALAD: return G.fromHueAndChroma(Pa(t.hue - 50), 36);
+			case J.MONOCHROME: return G.fromHueAndChroma(t.hue, 0);
+			case J.NEUTRAL: return G.fromHueAndChroma(t.hue, 8);
+			case J.RAINBOW: return G.fromHueAndChroma(t.hue, 16);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(t.hue, 16);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				21,
+				51,
+				121,
+				151,
+				191,
+				271,
+				321,
+				360
+			], [
+				45,
+				95,
+				45,
+				20,
+				45,
+				90,
+				45,
+				45,
+				45
+			]), 24);
+			case J.VIBRANT: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				41,
+				61,
+				101,
+				131,
+				181,
+				251,
+				301,
+				360
+			], [
+				18,
+				15,
+				10,
+				12,
+				15,
+				18,
+				15,
+				12,
+				12
+			]), 24);
+			default: throw Error(`Unsupported variant: ${e}`);
+		}
+	}
+	getTertiaryPalette(e, t, n, r, i) {
+		switch (e) {
+			case J.CONTENT: return G.fromHct(co.fixIfDisliked(new _o(t).analogous(3, 6)[2]));
+			case J.FIDELITY: return G.fromHct(co.fixIfDisliked(new _o(t).complement));
+			case J.FRUIT_SALAD: return G.fromHueAndChroma(t.hue, 36);
+			case J.MONOCHROME: return G.fromHueAndChroma(t.hue, 0);
+			case J.NEUTRAL: return G.fromHueAndChroma(t.hue, 16);
+			case J.RAINBOW:
+			case J.TONAL_SPOT: return G.fromHueAndChroma(Pa(t.hue + 60), 24);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				21,
+				51,
+				121,
+				151,
+				191,
+				271,
+				321,
+				360
+			], [
+				120,
+				120,
+				20,
+				45,
+				20,
+				15,
+				20,
+				120,
+				120
+			]), 32);
+			case J.VIBRANT: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				41,
+				61,
+				101,
+				131,
+				181,
+				251,
+				301,
+				360
+			], [
+				35,
+				30,
+				20,
+				25,
+				30,
+				35,
+				30,
+				25,
+				25
+			]), 32);
+			default: throw Error(`Unsupported variant: ${e}`);
+		}
+	}
+	getNeutralPalette(e, t, n, r, i) {
+		switch (e) {
+			case J.CONTENT:
+			case J.FIDELITY: return G.fromHueAndChroma(t.hue, t.chroma / 8);
+			case J.FRUIT_SALAD: return G.fromHueAndChroma(t.hue, 10);
+			case J.MONOCHROME: return G.fromHueAndChroma(t.hue, 0);
+			case J.NEUTRAL: return G.fromHueAndChroma(t.hue, 2);
+			case J.RAINBOW: return G.fromHueAndChroma(t.hue, 0);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(t.hue, 6);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(Pa(t.hue + 15), 8);
+			case J.VIBRANT: return G.fromHueAndChroma(t.hue, 10);
+			default: throw Error(`Unsupported variant: ${e}`);
+		}
+	}
+	getNeutralVariantPalette(e, t, n, r, i) {
+		switch (e) {
+			case J.CONTENT: return G.fromHueAndChroma(t.hue, t.chroma / 8 + 4);
+			case J.FIDELITY: return G.fromHueAndChroma(t.hue, t.chroma / 8 + 4);
+			case J.FRUIT_SALAD: return G.fromHueAndChroma(t.hue, 16);
+			case J.MONOCHROME: return G.fromHueAndChroma(t.hue, 0);
+			case J.NEUTRAL: return G.fromHueAndChroma(t.hue, 2);
+			case J.RAINBOW: return G.fromHueAndChroma(t.hue, 0);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(t.hue, 8);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(Pa(t.hue + 15), 12);
+			case J.VIBRANT: return G.fromHueAndChroma(t.hue, 12);
+			default: throw Error(`Unsupported variant: ${e}`);
+		}
+	}
+	getErrorPalette(e, t, n, r, i) {}
+}, Ao = class e extends ko {
+	getPrimaryPalette(e, t, n, r, i) {
+		switch (e) {
+			case J.NEUTRAL: return G.fromHueAndChroma(t.hue, r === "phone" ? V.isBlue(t.hue) ? 12 : 8 : V.isBlue(t.hue) ? 16 : 12);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(t.hue, r === "phone" && n ? 26 : 32);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(t.hue, r === "phone" ? n ? 36 : 48 : 40);
+			case J.VIBRANT: return G.fromHueAndChroma(t.hue, r === "phone" ? 74 : 56);
+			default: return super.getPrimaryPalette(e, t, n, r, i);
+		}
+	}
+	getSecondaryPalette(e, t, n, r, i) {
+		switch (e) {
+			case J.NEUTRAL: return G.fromHueAndChroma(t.hue, r === "phone" ? V.isBlue(t.hue) ? 6 : 4 : V.isBlue(t.hue) ? 10 : 6);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(t.hue, 16);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				105,
+				140,
+				204,
+				253,
+				278,
+				300,
+				333,
+				360
+			], [
+				-160,
+				155,
+				-100,
+				96,
+				-96,
+				-156,
+				-165,
+				-160
+			]), r === "phone" && n ? 16 : 24);
+			case J.VIBRANT: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				38,
+				105,
+				140,
+				333,
+				360
+			], [
+				-14,
+				10,
+				-14,
+				10,
+				-14
+			]), r === "phone" ? 56 : 36);
+			default: return super.getSecondaryPalette(e, t, n, r, i);
+		}
+	}
+	getTertiaryPalette(e, t, n, r, i) {
+		switch (e) {
+			case J.NEUTRAL: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				38,
+				105,
+				161,
+				204,
+				278,
+				333,
+				360
+			], [
+				-32,
+				26,
+				10,
+				-39,
+				24,
+				-15,
+				-32
+			]), r === "phone" ? 20 : 36);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				20,
+				71,
+				161,
+				333,
+				360
+			], [
+				-40,
+				48,
+				-32,
+				40,
+				-32
+			]), r === "phone" ? 28 : 32);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				105,
+				140,
+				204,
+				253,
+				278,
+				300,
+				333,
+				360
+			], [
+				-165,
+				160,
+				-105,
+				101,
+				-101,
+				-160,
+				-170,
+				-165
+			]), 48);
+			case J.VIBRANT: return G.fromHueAndChroma(Oo.getRotatedHue(t, [
+				0,
+				38,
+				71,
+				105,
+				140,
+				161,
+				253,
+				333,
+				360
+			], [
+				-72,
+				35,
+				24,
+				-24,
+				62,
+				50,
+				62,
+				-72
+			]), 56);
+			default: return super.getTertiaryPalette(e, t, n, r, i);
+		}
+	}
+	static getExpressiveNeutralHue(e) {
+		return Oo.getRotatedHue(e, [
+			0,
+			71,
+			124,
+			253,
+			278,
+			300,
+			360
+		], [
+			10,
+			0,
+			10,
+			0,
+			10,
+			0
+		]);
+	}
+	static getExpressiveNeutralChroma(t, n, r) {
+		let i = e.getExpressiveNeutralHue(t);
+		return r === "phone" ? n ? V.isYellow(i) ? 6 : 14 : 18 : 12;
+	}
+	static getVibrantNeutralHue(e) {
+		return Oo.getRotatedHue(e, [
+			0,
+			38,
+			105,
+			140,
+			333,
+			360
+		], [
+			-14,
+			10,
+			-14,
+			10,
+			-14
+		]);
+	}
+	static getVibrantNeutralChroma(t, n) {
+		let r = e.getVibrantNeutralHue(t);
+		return n === "phone" || V.isBlue(r) ? 28 : 20;
+	}
+	getNeutralPalette(t, n, r, i, a) {
+		switch (t) {
+			case J.NEUTRAL: return G.fromHueAndChroma(n.hue, i === "phone" ? 1.4 : 6);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(n.hue, i === "phone" ? 5 : 10);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(e.getExpressiveNeutralHue(n), e.getExpressiveNeutralChroma(n, r, i));
+			case J.VIBRANT: return G.fromHueAndChroma(e.getVibrantNeutralHue(n), e.getVibrantNeutralChroma(n, i));
+			default: return super.getNeutralPalette(t, n, r, i, a);
+		}
+	}
+	getNeutralVariantPalette(t, n, r, i, a) {
+		switch (t) {
+			case J.NEUTRAL: return G.fromHueAndChroma(n.hue, (i === "phone" ? 1.4 : 6) * 2.2);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(n.hue, (i === "phone" ? 5 : 10) * 1.7);
+			case J.EXPRESSIVE:
+				let o = e.getExpressiveNeutralHue(n), s = e.getExpressiveNeutralChroma(n, r, i);
+				return G.fromHueAndChroma(o, s * (o >= 105 && o < 125 ? 1.6 : 2.3));
+			case J.VIBRANT:
+				let c = e.getVibrantNeutralHue(n), l = e.getVibrantNeutralChroma(n, i);
+				return G.fromHueAndChroma(c, l * 1.29);
+			default: return super.getNeutralVariantPalette(t, n, r, i, a);
+		}
+	}
+	getErrorPalette(e, t, n, r, i) {
+		let a = Oo.getPiecewiseHue(t, [
+			0,
+			3,
+			13,
+			23,
+			33,
+			43,
+			153,
+			273,
+			360
+		], [
+			12,
+			22,
+			32,
+			12,
+			22,
+			32,
+			22,
+			12
+		]);
+		switch (e) {
+			case J.NEUTRAL: return G.fromHueAndChroma(a, r === "phone" ? 50 : 40);
+			case J.TONAL_SPOT: return G.fromHueAndChroma(a, r === "phone" ? 60 : 48);
+			case J.EXPRESSIVE: return G.fromHueAndChroma(a, r === "phone" ? 64 : 48);
+			case J.VIBRANT: return G.fromHueAndChroma(a, r === "phone" ? 80 : 60);
+			default: return super.getErrorPalette(e, t, n, r, i);
+		}
+	}
+}, jo = new ko(), Mo = new Ao();
+function No(e) {
+	return e === "2025" ? Mo : jo;
+}
+//#endregion
+//#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/quantize/lab_point_provider.js
+var Po = class {
+	fromInt(e) {
+		return Ya(e);
+	}
+	toInt(e) {
+		return Ja(e[0], e[1], e[2]);
+	}
+	distance(e, t) {
+		let n = e[0] - t[0], r = e[1] - t[1], i = e[2] - t[2];
+		return n * n + r * r + i * i;
+	}
+}, Fo = 10, Io = 3, Lo = class {
+	static quantize(e, t, n) {
+		let r = /* @__PURE__ */ new Map(), i = [], a = [], o = new Po(), s = 0;
+		for (let t = 0; t < e.length; t++) {
+			let n = e[t], c = r.get(n);
+			c === void 0 ? (s++, i.push(o.fromInt(n)), a.push(n), r.set(n, 1)) : r.set(n, c + 1);
+		}
+		let c = [];
+		for (let e = 0; e < s; e++) {
+			let t = a[e], n = r.get(t);
+			n !== void 0 && (c[e] = n);
+		}
+		let l = Math.min(n, s);
+		t.length > 0 && (l = Math.min(l, t.length));
+		let u = [];
+		for (let e = 0; e < t.length; e++) u.push(o.fromInt(t[e]));
+		let d = l - u.length;
+		if (t.length === 0 && d > 0) for (let e = 0; e < d; e++) {
+			let e = Math.random() * 100, t = Math.random() * 201 + -100, n = Math.random() * 201 + -100;
+			u.push([
+				e,
+				t,
+				n
+			]);
+		}
+		let f = [];
+		for (let e = 0; e < s; e++) f.push(Math.floor(Math.random() * l));
+		let p = [];
+		for (let e = 0; e < l; e++) {
+			p.push([]);
+			for (let t = 0; t < l; t++) p[e].push(0);
+		}
+		let m = [];
+		for (let e = 0; e < l; e++) {
+			m.push([]);
+			for (let t = 0; t < l; t++) m[e].push(new Ro());
+		}
+		let h = [];
+		for (let e = 0; e < l; e++) h.push(0);
+		for (let e = 0; e < Fo; e++) {
+			for (let e = 0; e < l; e++) {
+				for (let t = e + 1; t < l; t++) {
+					let n = o.distance(u[e], u[t]);
+					m[t][e].distance = n, m[t][e].index = e, m[e][t].distance = n, m[e][t].index = t;
+				}
+				m[e].sort();
+				for (let t = 0; t < l; t++) p[e][t] = m[e][t].index;
+			}
+			let t = 0;
+			for (let e = 0; e < s; e++) {
+				let n = i[e], r = f[e], a = u[r], s = o.distance(n, a), c = s, d = -1;
+				for (let e = 0; e < l; e++) {
+					if (m[r][e].distance >= 4 * s) continue;
+					let t = o.distance(n, u[e]);
+					t < c && (c = t, d = e);
+				}
+				d !== -1 && Math.abs(Math.sqrt(c) - Math.sqrt(s)) > Io && (t++, f[e] = d);
+			}
+			if (t === 0 && e !== 0) break;
+			let n = Array(l).fill(0), r = Array(l).fill(0), a = Array(l).fill(0);
+			for (let e = 0; e < l; e++) h[e] = 0;
+			for (let e = 0; e < s; e++) {
+				let t = f[e], o = i[e], s = c[e];
+				h[t] += s, n[t] += o[0] * s, r[t] += o[1] * s, a[t] += o[2] * s;
+			}
+			for (let e = 0; e < l; e++) {
+				let t = h[e];
+				if (t === 0) {
+					u[e] = [
+						0,
+						0,
+						0
+					];
+					continue;
+				}
+				let i = n[e] / t, o = r[e] / t, s = a[e] / t;
+				u[e] = [
+					i,
+					o,
+					s
+				];
+			}
+		}
+		let g = /* @__PURE__ */ new Map();
+		for (let e = 0; e < l; e++) {
+			let t = h[e];
+			if (t === 0) continue;
+			let n = o.toInt(u[e]);
+			g.has(n) || g.set(n, t);
+		}
+		return g;
+	}
+}, Ro = class {
+	constructor() {
+		this.distance = -1, this.index = -1;
+	}
+}, zo = class {
+	static quantize(e) {
+		let t = /* @__PURE__ */ new Map();
+		for (let n = 0; n < e.length; n++) {
+			let r = e[n];
+			Ha(r) < 255 || t.set(r, (t.get(r) ?? 0) + 1);
+		}
+		return t;
+	}
+}, Bo = 5, Vo = 33, Ho = 35937, Uo = {
+	RED: "red",
+	GREEN: "green",
+	BLUE: "blue"
+}, Wo = class {
+	constructor(e = [], t = [], n = [], r = [], i = [], a = []) {
+		this.weights = e, this.momentsR = t, this.momentsG = n, this.momentsB = r, this.moments = i, this.cubes = a;
+	}
+	quantize(e, t) {
+		this.constructHistogram(e), this.computeMoments();
+		let n = this.createBoxes(t);
+		return this.createResult(n.resultCount);
+	}
+	constructHistogram(e) {
+		this.weights = Array.from({ length: Ho }).fill(0), this.momentsR = Array.from({ length: Ho }).fill(0), this.momentsG = Array.from({ length: Ho }).fill(0), this.momentsB = Array.from({ length: Ho }).fill(0), this.moments = Array.from({ length: Ho }).fill(0);
+		let t = zo.quantize(e);
+		for (let [e, n] of t.entries()) {
+			let t = Ua(e), r = Wa(e), i = Ga(e), a = (t >> 3) + 1, o = (r >> 3) + 1, s = (i >> 3) + 1, c = this.getIndex(a, o, s);
+			this.weights[c] = (this.weights[c] ?? 0) + n, this.momentsR[c] += n * t, this.momentsG[c] += n * r, this.momentsB[c] += n * i, this.moments[c] += n * (t * t + r * r + i * i);
+		}
+	}
+	computeMoments() {
+		for (let e = 1; e < Vo; e++) {
+			let t = Array.from({ length: Vo }).fill(0), n = Array.from({ length: Vo }).fill(0), r = Array.from({ length: Vo }).fill(0), i = Array.from({ length: Vo }).fill(0), a = Array.from({ length: Vo }).fill(0);
+			for (let o = 1; o < Vo; o++) {
+				let s = 0, c = 0, l = 0, u = 0, d = 0;
+				for (let f = 1; f < Vo; f++) {
+					let p = this.getIndex(e, o, f);
+					s += this.weights[p], c += this.momentsR[p], l += this.momentsG[p], u += this.momentsB[p], d += this.moments[p], t[f] += s, n[f] += c, r[f] += l, i[f] += u, a[f] += d;
+					let m = this.getIndex(e - 1, o, f);
+					this.weights[p] = this.weights[m] + t[f], this.momentsR[p] = this.momentsR[m] + n[f], this.momentsG[p] = this.momentsG[m] + r[f], this.momentsB[p] = this.momentsB[m] + i[f], this.moments[p] = this.moments[m] + a[f];
+				}
+			}
+		}
+	}
+	createBoxes(e) {
+		this.cubes = Array.from({ length: e }).fill(0).map(() => new Go());
+		let t = Array.from({ length: e }).fill(0);
+		this.cubes[0].r0 = 0, this.cubes[0].g0 = 0, this.cubes[0].b0 = 0, this.cubes[0].r1 = 32, this.cubes[0].g1 = 32, this.cubes[0].b1 = 32;
+		let n = e, r = 0;
+		for (let i = 1; i < e; i++) {
+			this.cut(this.cubes[r], this.cubes[i]) ? (t[r] = this.cubes[r].vol > 1 ? this.variance(this.cubes[r]) : 0, t[i] = this.cubes[i].vol > 1 ? this.variance(this.cubes[i]) : 0) : (t[r] = 0, i--), r = 0;
+			let e = t[0];
+			for (let n = 1; n <= i; n++) t[n] > e && (e = t[n], r = n);
+			if (e <= 0) {
+				n = i + 1;
+				break;
+			}
+		}
+		return new Ko(e, n);
+	}
+	createResult(e) {
+		let t = [];
+		for (let n = 0; n < e; ++n) {
+			let e = this.cubes[n], r = this.volume(e, this.weights);
+			if (r > 0) {
+				let n = Math.round(this.volume(e, this.momentsR) / r), i = Math.round(this.volume(e, this.momentsG) / r), a = Math.round(this.volume(e, this.momentsB) / r), o = 255 << 24 | (n & 255) << 16 | (i & 255) << 8 | a & 255;
+				t.push(o);
+			}
+		}
+		return t;
+	}
+	variance(e) {
+		let t = this.volume(e, this.momentsR), n = this.volume(e, this.momentsG), r = this.volume(e, this.momentsB);
+		return this.moments[this.getIndex(e.r1, e.g1, e.b1)] - this.moments[this.getIndex(e.r1, e.g1, e.b0)] - this.moments[this.getIndex(e.r1, e.g0, e.b1)] + this.moments[this.getIndex(e.r1, e.g0, e.b0)] - this.moments[this.getIndex(e.r0, e.g1, e.b1)] + this.moments[this.getIndex(e.r0, e.g1, e.b0)] + this.moments[this.getIndex(e.r0, e.g0, e.b1)] - this.moments[this.getIndex(e.r0, e.g0, e.b0)] - (t * t + n * n + r * r) / this.volume(e, this.weights);
+	}
+	cut(e, t) {
+		let n = this.volume(e, this.momentsR), r = this.volume(e, this.momentsG), i = this.volume(e, this.momentsB), a = this.volume(e, this.weights), o = this.maximize(e, Uo.RED, e.r0 + 1, e.r1, n, r, i, a), s = this.maximize(e, Uo.GREEN, e.g0 + 1, e.g1, n, r, i, a), c = this.maximize(e, Uo.BLUE, e.b0 + 1, e.b1, n, r, i, a), l, u = o.maximum, d = s.maximum, f = c.maximum;
+		if (u >= d && u >= f) {
+			if (o.cutLocation < 0) return !1;
+			l = Uo.RED;
+		} else l = d >= u && d >= f ? Uo.GREEN : Uo.BLUE;
+		switch (t.r1 = e.r1, t.g1 = e.g1, t.b1 = e.b1, l) {
+			case Uo.RED:
+				e.r1 = o.cutLocation, t.r0 = e.r1, t.g0 = e.g0, t.b0 = e.b0;
+				break;
+			case Uo.GREEN:
+				e.g1 = s.cutLocation, t.r0 = e.r0, t.g0 = e.g1, t.b0 = e.b0;
+				break;
+			case Uo.BLUE:
+				e.b1 = c.cutLocation, t.r0 = e.r0, t.g0 = e.g0, t.b0 = e.b1;
+				break;
+			default: throw Error("unexpected direction " + l);
+		}
+		return e.vol = (e.r1 - e.r0) * (e.g1 - e.g0) * (e.b1 - e.b0), t.vol = (t.r1 - t.r0) * (t.g1 - t.g0) * (t.b1 - t.b0), !0;
+	}
+	maximize(e, t, n, r, i, a, o, s) {
+		let c = this.bottom(e, t, this.momentsR), l = this.bottom(e, t, this.momentsG), u = this.bottom(e, t, this.momentsB), d = this.bottom(e, t, this.weights), f = 0, p = -1, m = 0, h = 0, g = 0, _ = 0;
+		for (let v = n; v < r; v++) {
+			if (m = c + this.top(e, t, v, this.momentsR), h = l + this.top(e, t, v, this.momentsG), g = u + this.top(e, t, v, this.momentsB), _ = d + this.top(e, t, v, this.weights), _ === 0) continue;
+			let n = (m * m + h * h + g * g) * 1, r = _ * 1, y = n / r;
+			m = i - m, h = a - h, g = o - g, _ = s - _, _ !== 0 && (n = (m * m + h * h + g * g) * 1, r = _ * 1, y += n / r, y > f && (f = y, p = v));
+		}
+		return new qo(p, f);
+	}
+	volume(e, t) {
+		return t[this.getIndex(e.r1, e.g1, e.b1)] - t[this.getIndex(e.r1, e.g1, e.b0)] - t[this.getIndex(e.r1, e.g0, e.b1)] + t[this.getIndex(e.r1, e.g0, e.b0)] - t[this.getIndex(e.r0, e.g1, e.b1)] + t[this.getIndex(e.r0, e.g1, e.b0)] + t[this.getIndex(e.r0, e.g0, e.b1)] - t[this.getIndex(e.r0, e.g0, e.b0)];
+	}
+	bottom(e, t, n) {
+		switch (t) {
+			case Uo.RED: return -n[this.getIndex(e.r0, e.g1, e.b1)] + n[this.getIndex(e.r0, e.g1, e.b0)] + n[this.getIndex(e.r0, e.g0, e.b1)] - n[this.getIndex(e.r0, e.g0, e.b0)];
+			case Uo.GREEN: return -n[this.getIndex(e.r1, e.g0, e.b1)] + n[this.getIndex(e.r1, e.g0, e.b0)] + n[this.getIndex(e.r0, e.g0, e.b1)] - n[this.getIndex(e.r0, e.g0, e.b0)];
+			case Uo.BLUE: return -n[this.getIndex(e.r1, e.g1, e.b0)] + n[this.getIndex(e.r1, e.g0, e.b0)] + n[this.getIndex(e.r0, e.g1, e.b0)] - n[this.getIndex(e.r0, e.g0, e.b0)];
+			default: throw Error("unexpected direction $direction");
+		}
+	}
+	top(e, t, n, r) {
+		switch (t) {
+			case Uo.RED: return r[this.getIndex(n, e.g1, e.b1)] - r[this.getIndex(n, e.g1, e.b0)] - r[this.getIndex(n, e.g0, e.b1)] + r[this.getIndex(n, e.g0, e.b0)];
+			case Uo.GREEN: return r[this.getIndex(e.r1, n, e.b1)] - r[this.getIndex(e.r1, n, e.b0)] - r[this.getIndex(e.r0, n, e.b1)] + r[this.getIndex(e.r0, n, e.b0)];
+			case Uo.BLUE: return r[this.getIndex(e.r1, e.g1, n)] - r[this.getIndex(e.r1, e.g0, n)] - r[this.getIndex(e.r0, e.g1, n)] + r[this.getIndex(e.r0, e.g0, n)];
+			default: throw Error("unexpected direction $direction");
+		}
+	}
+	getIndex(e, t, n) {
+		return (e << 10) + (e << 6) + e + (t << Bo) + t + n;
+	}
+}, Go = class {
+	constructor(e = 0, t = 0, n = 0, r = 0, i = 0, a = 0, o = 0) {
+		this.r0 = e, this.r1 = t, this.g0 = n, this.g1 = r, this.b0 = i, this.b1 = a, this.vol = o;
+	}
+}, Ko = class {
+	constructor(e, t) {
+		this.requestedCount = e, this.resultCount = t;
+	}
+}, qo = class {
+	constructor(e, t) {
+		this.cutLocation = e, this.maximum = t;
+	}
+}, Jo = class {
+	static quantize(e, t) {
+		let n = new Wo().quantize(e, t);
+		return Lo.quantize(e, n, t);
+	}
+}, Yo = {
+	desired: 4,
+	fallbackColorARGB: 4282549748,
+	filter: !0
+};
+function Xo(e, t) {
+	return e.score > t.score ? -1 : +(e.score < t.score);
+}
+var Zo = class e {
+	constructor() {}
+	static score(t, n) {
+		let { desired: r, fallbackColorARGB: i, filter: a } = {
+			...Yo,
+			...n
+		}, o = [], s = Array(360).fill(0), c = 0;
+		for (let [e, n] of t.entries()) {
+			let t = V.fromInt(e);
+			o.push(t);
+			let r = Math.floor(t.hue);
+			s[r] += n, c += n;
+		}
+		let l = Array(360).fill(0);
+		for (let e = 0; e < 360; e++) {
+			let t = s[e] / c;
+			for (let n = e - 14; n < e + 16; n++) {
+				let e = Na(n);
+				l[e] += t;
+			}
+		}
+		let u = [];
+		for (let t of o) {
+			let n = l[Na(Math.round(t.hue))];
+			if (a && (t.chroma < e.CUTOFF_CHROMA || n <= e.CUTOFF_EXCITED_PROPORTION)) continue;
+			let r = n * 100 * e.WEIGHT_PROPORTION, i = t.chroma < e.TARGET_CHROMA ? e.WEIGHT_CHROMA_BELOW : e.WEIGHT_CHROMA_ABOVE, o = r + (t.chroma - e.TARGET_CHROMA) * i;
+			u.push({
+				hct: t,
+				score: o
+			});
+		}
+		u.sort(Xo);
+		let d = [];
+		for (let e = 90; e >= 15; e--) {
+			d.length = 0;
+			for (let { hct: t } of u) if (d.find((n) => Fa(t.hue, n.hue) < e) || d.push(t), d.length >= r) break;
+			if (d.length >= r) break;
+		}
+		let f = [];
+		d.length === 0 && f.push(i);
+		for (let e of d) f.push(e.toInt());
+		return f;
+	}
+};
+Zo.TARGET_CHROMA = 48, Zo.WEIGHT_PROPORTION = .7, Zo.WEIGHT_CHROMA_ABOVE = .3, Zo.WEIGHT_CHROMA_BELOW = .1, Zo.CUTOFF_CHROMA = 5, Zo.CUTOFF_EXCITED_PROPORTION = .01;
+var Qo = new $(), $o = W.fromPalette({
 	name: "on_on_primary",
 	palette: (e) => e.primaryPalette,
-	background: () => To.onPrimary(),
+	background: () => Qo.onPrimary(),
 	contrastCurve: () => new K(6, 6, 7, 11)
-});
-var Eo = G.fromPalette({
+}), es = W.fromPalette({
 	name: "primary_container_subtle",
 	palette: (e) => e.primaryPalette,
 	isBackground: !0,
-	background: (e) => To.highestSurface(e),
+	background: (e) => Qo.highestSurface(e),
 	contrastCurve: () => void 0
-});
-G.fromPalette({
+}), ts = W.fromPalette({
 	name: "on_primary_container_subtle",
 	palette: (e) => e.primaryPalette,
-	background: () => Eo,
+	background: () => es,
 	contrastCurve: () => new K(6, 6, 7, 11)
-});
-var Do = G.fromPalette({
+}), ns = W.fromPalette({
 	name: "secondary_container_subtle",
 	palette: (e) => e.secondaryPalette,
 	isBackground: !0,
-	background: (e) => To.highestSurface(e),
+	background: (e) => Qo.highestSurface(e),
 	contrastCurve: () => void 0
-});
-G.fromPalette({
+}), rs = W.fromPalette({
 	name: "on_secondary_container_subtle",
 	palette: (e) => e.secondaryPalette,
-	background: () => Do,
+	background: () => ns,
 	contrastCurve: () => new K(6, 6, 7, 11)
-});
-var Oo = G.fromPalette({
+}), is = W.fromPalette({
 	name: "tertiary_container_subtle",
 	palette: (e) => e.tertiaryPalette,
 	isBackground: !0,
-	background: (e) => To.highestSurface(e),
+	background: (e) => Qo.highestSurface(e),
 	contrastCurve: () => void 0
-});
-G.fromPalette({
+}), as = W.fromPalette({
 	name: "on_tertiary_container_subtle",
 	palette: (e) => e.tertiaryPalette,
-	background: () => Oo,
+	background: () => is,
 	contrastCurve: () => new K(6, 6, 7, 11)
-});
-var ko = G.fromPalette({
+}), os = W.fromPalette({
 	name: "error_container_subtle",
 	palette: (e) => e.errorPalette,
 	isBackground: !0,
-	background: (e) => To.highestSurface(e),
+	background: (e) => Qo.highestSurface(e),
 	contrastCurve: () => void 0
-});
-//#endregion
-//#region packages/ui-kit/src/schema-form/inputs/FileField.svelte
-G.fromPalette({
+}), ss = W.fromPalette({
 	name: "on_error_container_subtle",
 	palette: (e) => e.errorPalette,
-	background: () => ko,
+	background: () => os,
 	contrastCurve: () => new K(6, 6, 7, 11)
-}), [
-	...To.allColors.filter((e) => e.name !== "background" && e.name !== "on_background"),
-	To.shadow(),
-	To.scrim()
-], [
+}), cs = [
+	...Qo.allColors.filter((e) => e.name !== "background" && e.name !== "on_background"),
+	Qo.shadow(),
+	Qo.scrim(),
+	$o,
+	es,
+	ts,
+	ns,
+	rs,
+	is,
+	as,
+	os,
+	ss
+], ls = [
 	{
 		name: "brand",
 		source: "primary"
@@ -5566,10 +6542,74 @@ G.fromPalette({
 		name: "surface-variant",
 		source: "surface-container-low"
 	}
-].filter((e) => e.name !== "surface-variant"), cr(["input"]), cr(["change"]), cr(["change"]), cr(["change"]);
+].filter((e) => e.name !== "surface-variant");
+function us(e) {
+	return /primary|secondary|tertiary/.test(e);
+}
+function ds(e) {
+	let t = (e & 16777215).toString(16).padStart(6, "0");
+	return t[0] === t[1] && t[2] === t[3] && t[4] === t[5] ? `#${t[0]}${t[2]}${t[4]}` : `#${t}`;
+}
+function fs(e) {
+	return e.replaceAll("_", "-");
+}
+function ps(e, t) {
+	return new Oo({
+		sourceColorHcts: [V.fromInt(e)],
+		variant: J.TONAL_SPOT,
+		contrastLevel: 0,
+		specVersion: "2025",
+		isDark: t
+	});
+}
+function ms(e, t) {
+	let n = ps(e, t), r = {};
+	for (let e of cs) {
+		let t = fs(e.name);
+		us(t) && (r[`--color-${t}`] = ds(e.getArgb(n)));
+	}
+	for (let e of ls) {
+		let t = r[`--color-${e.source}`];
+		t && (r[`--color-${e.name}`] = t);
+	}
+	return r;
+}
+function hs(e) {
+	let t = ps(e, !1), n = [
+		t.primaryPalette,
+		t.secondaryPalette,
+		t.tertiaryPalette
+	], r = [];
+	for (let e of [90, 80]) for (let t of n) r.push({
+		background: ds(t.tone(e)),
+		foreground: ds(t.tone(10))
+	});
+	return r;
+}
+function gs(e) {
+	let t = e.map((e) => G.fromInt(e)), n = [], r = /* @__PURE__ */ new Set();
+	function i(e, t) {
+		let i = ds(e.tone(t));
+		r.has(i) || n.length >= 6 || (r.add(i), n.push({
+			background: i,
+			foreground: ds(e.tone(10))
+		}));
+	}
+	for (let e of t) i(e, 90);
+	for (let e of t) i(e, 80);
+	let a = e[0] ?? 4278216887;
+	for (let e of hs(a)) {
+		if (n.length >= 6) break;
+		r.has(e.background) || (r.add(e.background), n.push(e));
+	}
+	return n;
+}
+//#endregion
+//#region packages/ui-kit/src/schema-form/inputs/FileField.svelte
+typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), cr(["input"]), cr(["change"]), cr(["change"]), cr(["change"]);
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/day-labels.ts
-var Ao = [
+var _s = [
 	"",
 	"一",
 	"二",
@@ -5579,26 +6619,26 @@ var Ao = [
 	"六",
 	"日"
 ];
-function jo(e) {
-	return Ao[e] ?? "?";
+function vs(e) {
+	return _s[e] ?? "?";
 }
 //#endregion
 //#region packages/ui-kit/src/utils/middle-truncate.ts
-var Mo = "…", No = /[\s《》「」『』【】（）()·—\-、，,：:；;！!？?.…]/u, Po, Fo;
-function Io(e) {
+var ys = "…", bs = /[\s《》「」『』【】（）()·—\-、，,：:；;！!？?.…]/u, xs, Ss;
+function Cs(e) {
 	if (typeof Intl < "u" && typeof Intl.Segmenter == "function") {
-		Po ??= new Intl.Segmenter("und", { granularity: "grapheme" });
+		xs ??= new Intl.Segmenter("und", { granularity: "grapheme" });
 		let t = [];
-		for (let n of Po.segment(e)) t.push(n.segment);
+		for (let n of xs.segment(e)) t.push(n.segment);
 		return t;
 	}
 	return Array.from(e);
 }
-function Lo() {
-	return typeof Intl > "u" || typeof Intl.Segmenter != "function" ? null : (Fo ??= new Intl.Segmenter("zh-CN", { granularity: "word" }), Fo);
+function ws() {
+	return typeof Intl > "u" || typeof Intl.Segmenter != "function" ? null : (Ss ??= new Intl.Segmenter("zh-CN", { granularity: "word" }), Ss);
 }
-function Ro(e, t) {
-	let n = t.length, r = /* @__PURE__ */ new Set([0, n]), i = Lo();
+function Ts(e, t) {
+	let n = t.length, r = /* @__PURE__ */ new Set([0, n]), i = ws();
 	if (i) {
 		let a = new Uint32Array(e.length + 1), o = 0;
 		for (let e = 0; e < n; e += 1) {
@@ -5615,11 +6655,11 @@ function Ro(e, t) {
 	}
 	for (let e = 1; e < n; e += 1) {
 		let n = t[e - 1] ?? "", i = t[e] ?? "";
-		(No.test(n) || No.test(i)) && r.add(e);
+		(bs.test(n) || bs.test(i)) && r.add(e);
 	}
 	return [...r].sort((e, t) => e - t);
 }
-function zo(e, t, n) {
+function Es(e, t, n) {
 	if (t <= 0) return {
 		prefixLength: 0,
 		suffixLength: 0
@@ -5628,15 +6668,15 @@ function zo(e, t, n) {
 		prefixLength: e.length,
 		suffixLength: 0
 	};
-	let r = Math.ceil(t / 2), i = Math.floor(t / 2), a = n ?? Ro(e.join(""), e), o = r, s = Bo(a, r);
+	let r = Math.ceil(t / 2), i = Math.floor(t / 2), a = n ?? Ts(e.join(""), e), o = r, s = Ds(a, r);
 	s != null && !(s === 0 && r > 0) && (o = s);
-	let c = i, l = Vo(a, e.length - i);
+	let c = i, l = Os(a, e.length - i);
 	return l != null && l < e.length && (c = e.length - l), {
 		prefixLength: o,
 		suffixLength: c
 	};
 }
-function Bo(e, t) {
+function Ds(e, t) {
 	let n = null;
 	for (let r of e) {
 		if (r > t) break;
@@ -5644,34 +6684,34 @@ function Bo(e, t) {
 	}
 	return n;
 }
-function Vo(e, t) {
+function Os(e, t) {
 	for (let n of e) if (n >= t) return n;
 	return null;
 }
-function Ho(e, t, n, r) {
+function ks(e, t, n, r) {
 	if (t <= 0) return n;
 	if (t >= e.length) return e.join("");
-	let { prefixLength: i, suffixLength: a } = zo(e, t, r);
+	let { prefixLength: i, suffixLength: a } = Es(e, t, r);
 	return i <= 0 && a <= 0 ? n : `${e.slice(0, i).join("")}${n}${a > 0 ? e.slice(e.length - a).join("") : ""}`;
 }
-function Uo(e, t, n = Mo) {
+function As(e, t, n = ys) {
 	if (!e || t(e)) return e;
 	if (!t(n)) return "";
-	let r = Io(e), i = Ro(e, r), a = n, o = 0, s = r.length;
+	let r = Cs(e), i = Ts(e, r), a = n, o = 0, s = r.length;
 	for (; o <= s;) {
-		let e = Math.floor((o + s) / 2), c = Ho(r, e, n, i);
+		let e = Math.floor((o + s) / 2), c = ks(r, e, n, i);
 		t(c) ? (a = c, o = e + 1) : s = e - 1;
 	}
 	return a;
 }
-var Wo = null;
-function Go(e) {
+var js = null;
+function Ms(e) {
 	if (typeof document > "u") return () => Infinity;
-	Wo ??= document.createElement("canvas");
-	let t = Wo.getContext("2d");
+	js ??= document.createElement("canvas");
+	let t = js.getContext("2d");
 	return t ? (t.font = e, (e) => t.measureText(e).width) : () => Infinity;
 }
-function Ko(e, t, n, r = 6) {
+function Ns(e, t, n, r = 6) {
 	if (e <= 0) return r;
 	let i = Math.max(r, n), a = Math.min(r, i), o = t(i);
 	if (o <= e) return i;
@@ -5686,48 +6726,48 @@ function Ko(e, t, n, r = 6) {
 	}
 	return c;
 }
-function qo(e) {
+function Ps(e) {
 	let t = getComputedStyle(e), n = t.fontStyle || "normal", r = t.fontWeight || "normal", i = t.fontFamily || "sans-serif";
-	return (e) => Go(`${n} ${r} ${e}px ${i}`);
+	return (e) => Ms(`${n} ${r} ${e}px ${i}`);
 }
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/MiddleTruncateText.svelte
-var Jo = /* @__PURE__ */ R("<span></span>");
-function Yo(e, t) {
-	Ie(t, !0);
-	let n = Gr(t, "class", 3, ""), r = /* @__PURE__ */ Ft(null);
+var Fs = /* @__PURE__ */ R("<span></span>");
+function Is(e, t) {
+	Le(t, !0);
+	let n = Kr(t, "class", 3, ""), r = /* @__PURE__ */ It(null);
 	function i(e) {
 		let n = t.text;
 		if (e.clientWidth <= 0 || e.clientHeight <= 0) {
 			e.textContent = n, e.removeAttribute("title");
 			return;
 		}
-		let r = Uo(n, (t) => (e.textContent = t, e.scrollHeight <= e.clientHeight + .5));
+		let r = As(n, (t) => (e.textContent = t, e.scrollHeight <= e.clientHeight + .5));
 		e.textContent = r, r === n ? e.removeAttribute("title") : e.title = n;
 	}
 	let a = (e) => {
-		Lt(r, e, !0);
+		M(r, e, !0);
 		let t = new ResizeObserver(() => {
 			i(e);
 		});
 		return t.observe(e), () => {
-			t.disconnect(), Lt(r, null);
+			t.disconnect(), M(r, null);
 		};
 	};
 	ln(() => {
 		t.text, t.style, L(r) && i(L(r));
 	});
-	var o = Jo();
+	var o = Fs();
 	Fr(o, () => a), P(() => {
-		Vr(o, 1, `block min-w-0 overflow-hidden break-all whitespace-normal ${n() ?? ""}`), B(o, t.style);
-	}), z(e, o), Le();
+		Vr(o, 1, `block min-w-0 overflow-hidden break-all whitespace-normal ${n() ?? ""}`), Ur(o, t.style);
+	}), z(e, o), Re();
 }
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/TimetablePreviewGrid.svelte
-var Xo = /* @__PURE__ */ R("<div class=\"flex min-w-0 flex-1 flex-col items-center\"><span class=\"m3-body-small text-on-surface-variant\"> </span> <div> </div></div>"), Zo = /* @__PURE__ */ R("<div class=\"flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center\"><div><span class=\"m3-body-medium font-bold\"> </span> <span> <br/> </span></div></div>"), Qo = /* @__PURE__ */ R("<button type=\"button\"><span class=\"text-on-surface-variant\"> </span></button>"), $o = /* @__PURE__ */ R("<div><span class=\"text-on-surface-variant\"> </span></div>"), es = /* @__PURE__ */ R("<span class=\"mb-0.5 flex w-full shrink-0 justify-center\"><span class=\"max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap\"> </span></span>"), ts = /* @__PURE__ */ R("<div class=\"overflow-hidden whitespace-nowrap\"> </div>"), ns = /* @__PURE__ */ R("<div class=\"mt-1.5 shrink-0 overflow-hidden leading-tight\"></div>"), rs = /* @__PURE__ */ R("<div class=\"mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap\"> </div>"), is = /* @__PURE__ */ R("<button type=\"button\"><!> <!> <!> <!></button>"), as = /* @__PURE__ */ R("<div><!> <!> <!> <!></div>"), os = /* @__PURE__ */ R("<div class=\"absolute box-border overflow-hidden\"><!></div>"), ss = /* @__PURE__ */ R("<div><div><div class=\"m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant\"><span> </span> <span>月</span></div> <div class=\"flex min-w-0 flex-1\"></div></div> <div role=\"region\" aria-label=\"课表预览\"><div class=\"flex\"><aside aria-label=\"节次与时间\" class=\"shrink-0\"></aside> <div class=\"relative min-w-0 flex-1\"></div></div></div></div>");
-function cs(e, t) {
-	Ie(t, !0);
-	let n = Gr(t, "hasWallpaper", 3, !1), r = Gr(t, "layoutMode", 3, "fixed"), i = Gr(t, "capsuleCornerStyle", 3, "rounded"), a = Gr(t, "interactive", 3, !1), o = Gr(t, "isCurrentWeek", 3, !1), s = Gr(t, "courseBadges", 19, () => ({})), c = /* @__PURE__ */ Ft(0), l = /* @__PURE__ */ Ft(0), u = /* @__PURE__ */ Ft(Ht(/* @__PURE__ */ new Set())), d = /* @__PURE__ */ Ft(Ht(/* @__PURE__ */ new Date())), f = /* @__PURE__ */ j(() => t.expandedSlots ?? L(u)), p = /* @__PURE__ */ j(() => t.gridModel.visibleDays.length), m = /* @__PURE__ */ j(() => L(p) > 0 ? L(c) / L(p) : 0), h = /* @__PURE__ */ j(() => oa(t.gridModel.periods)), g = /* @__PURE__ */ j(() => Ii({
+var Ls = /* @__PURE__ */ R("<div class=\"flex min-w-0 flex-1 flex-col items-center\"><span class=\"m3-body-small text-on-surface-variant\"> </span> <div> </div></div>"), Rs = /* @__PURE__ */ R("<div class=\"flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center\"><div><span class=\"m3-body-medium font-bold\"> </span> <span> <br/> </span></div></div>"), zs = /* @__PURE__ */ R("<button type=\"button\"><span class=\"text-on-surface-variant\"> </span></button>"), Bs = /* @__PURE__ */ R("<div><span class=\"text-on-surface-variant\"> </span></div>"), Vs = /* @__PURE__ */ R("<span class=\"mb-0.5 flex w-full shrink-0 justify-center\"><span class=\"max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap\"> </span></span>"), Hs = /* @__PURE__ */ R("<div class=\"overflow-hidden whitespace-nowrap\"> </div>"), Us = /* @__PURE__ */ R("<div class=\"mt-1.5 shrink-0 overflow-hidden leading-tight\"></div>"), Ws = /* @__PURE__ */ R("<div class=\"mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap\"> </div>"), Gs = /* @__PURE__ */ R("<button type=\"button\"><!> <!> <!> <!></button>"), Ks = /* @__PURE__ */ R("<div><!> <!> <!> <!></div>"), qs = /* @__PURE__ */ R("<div class=\"absolute box-border overflow-hidden\"><!></div>"), Js = /* @__PURE__ */ R("<div><div><div class=\"m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant\"><span> </span> <span>月</span></div> <div class=\"flex min-w-0 flex-1\"></div></div> <div role=\"region\" aria-label=\"课表预览\"><div class=\"flex\"><aside aria-label=\"节次与时间\" class=\"shrink-0\"></aside> <div class=\"relative min-w-0 flex-1\"></div></div></div></div>");
+function Ys(e, t) {
+	Le(t, !0);
+	let n = Kr(t, "hasWallpaper", 3, !1), r = Kr(t, "layoutMode", 3, "fixed"), i = Kr(t, "capsuleCornerStyle", 3, "rounded"), a = Kr(t, "interactive", 3, !1), o = Kr(t, "isCurrentWeek", 3, !1), s = Kr(t, "courseBadges", 19, () => ({})), c = /* @__PURE__ */ It(0), l = /* @__PURE__ */ It(0), u = /* @__PURE__ */ It(Ht(/* @__PURE__ */ new Set())), d = /* @__PURE__ */ It(Ht(/* @__PURE__ */ new Date())), f = /* @__PURE__ */ A(() => t.expandedSlots ?? L(u)), p = /* @__PURE__ */ A(() => t.gridModel.visibleDays.length), m = /* @__PURE__ */ A(() => L(p) > 0 ? L(c) / L(p) : 0), h = /* @__PURE__ */ A(() => sa(t.gridModel.periods)), g = /* @__PURE__ */ A(() => Li({
 		courseDisplayModels: t.courseDisplayModels,
 		visibleDays: t.gridModel.visibleDays,
 		columnWidthPx: L(m),
@@ -5736,14 +6776,14 @@ function cs(e, t) {
 		paletteCourses: t.paletteCourses,
 		layoutMode: r(),
 		capsuleCornerStyle: i()
-	})), _ = /* @__PURE__ */ j(() => n() ? "" : "bg-surface"), v = /* @__PURE__ */ j(() => r() === "compact"), y = /* @__PURE__ */ j(() => t.currentPeriodIndex === void 0 ? o() ? ca(L(h), sa(L(d))) : null : t.currentPeriodIndex), b = /* @__PURE__ */ j(() => !L(v) || L(l) <= 0 || t.gridModel.displayedPeriodCount <= 0 ? "5.5rem" : `${L(l) / t.gridModel.displayedPeriodCount}px`);
+	})), _ = /* @__PURE__ */ A(() => n() ? "" : "bg-surface"), v = /* @__PURE__ */ A(() => r() === "compact"), y = /* @__PURE__ */ A(() => t.currentPeriodIndex === void 0 ? o() ? la(L(h), ca(L(d))) : null : t.currentPeriodIndex), b = /* @__PURE__ */ A(() => !L(v) || L(l) <= 0 || t.gridModel.displayedPeriodCount <= 0 ? "5.5rem" : `${L(l) / t.gridModel.displayedPeriodCount}px`);
 	ln(() => {
 		if (t.currentPeriodIndex !== void 0 || !o()) return;
 		let e, n = () => {
 			let t = (() => {
 				let e = L(h);
 				if (e.length === 0) return 6e4;
-				let t = sa(/* @__PURE__ */ new Date()), n = null;
+				let t = ca(/* @__PURE__ */ new Date()), n = null;
 				for (let r of e) {
 					if (t < r.startMinutes) {
 						n = r.startMinutes;
@@ -5757,7 +6797,7 @@ function cs(e, t) {
 				return n == null ? 6e4 : Math.max((n - t) * 6e4, 1e3);
 			})();
 			e = setTimeout(() => {
-				Lt(d, /* @__PURE__ */ new Date(), !0), n();
+				M(d, /* @__PURE__ */ new Date(), !0), n();
 			}, t);
 		};
 		return n(), () => clearTimeout(e);
@@ -5771,7 +6811,7 @@ function cs(e, t) {
 					o -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0), o = Math.max(0, o);
 				}
 				if (o <= 0 || a.length === 0) return;
-				let s = qo(t), c = Ko(o, (e) => {
+				let s = Ps(t), c = Ns(o, (e) => {
 					let t = s(e);
 					return Math.max(...a.map((e) => t(e)));
 				}, r, 6);
@@ -5784,7 +6824,7 @@ function cs(e, t) {
 		};
 	}
 	function S(e) {
-		t.onExpandSlot ? t.onExpandSlot(e) : Lt(u, /* @__PURE__ */ new Set([...L(u), e]), !0);
+		t.onExpandSlot ? t.onExpandSlot(e) : M(u, /* @__PURE__ */ new Set([...L(u), e]), !0);
 	}
 	function C(e) {
 		return e.slice(8, 10);
@@ -5797,87 +6837,87 @@ function cs(e, t) {
 			e.bottomRight ? "rounded-br-xl" : null
 		].filter((e) => e != null).join(" ");
 	}
-	let T = (e) => {
+	let ee = (e) => {
 		let t = () => {
-			Lt(c, e.clientWidth, !0);
+			M(c, e.clientWidth, !0);
 		};
 		t();
 		let n = new ResizeObserver(t);
 		return n.observe(e), () => n.disconnect();
-	}, ee = (e) => {
+	}, te = (e) => {
 		let t = e;
-		Lt(l, t.clientHeight, !0);
+		M(l, t.clientHeight, !0);
 		let n = new ResizeObserver(() => {
-			Lt(l, t.clientHeight, !0);
+			M(l, t.clientHeight, !0);
 		});
 		return n.observe(t), () => {
 			n.disconnect();
 		};
 	};
-	var te = ss(), ne = N(te), re = N(ne), ie = N(re), ae = N(ie, !0);
-	k(ie), Oe(2), k(re);
-	var oe = Qt(re, 2);
-	Or(oe, 21, () => t.gridModel.visibleDays, (e) => e.dayOfWeek, (e, t) => {
-		var n = Xo(), r = N(n), i = N(r, !0);
-		k(r);
+	var ne = Js(), re = N(ne), ie = N(re), ae = N(ie), oe = N(ae, !0);
+	O(ae), ke(2), O(ie);
+	var se = Qt(ie, 2);
+	Or(se, 21, () => t.gridModel.visibleDays, (e) => e.dayOfWeek, (e, t) => {
+		var n = Ls(), r = N(n), i = N(r, !0);
+		O(r);
 		var a = Qt(r, 2), o = N(a, !0);
-		k(a), k(n), P((e, n) => {
+		O(a), O(n), P((e, n) => {
 			gr(i, e), Vr(a, 1, `m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full ${L(t).isToday ? "bg-brand text-on-primary" : "text-on-surface"}`), gr(o, n);
-		}, [() => jo(L(t).dayOfWeek), () => C(L(t).date)]), z(e, n);
-	}), k(oe), k(ne);
-	var se = Qt(ne, 2), ce = N(se);
-	let le;
-	var ue = N(ce);
-	let de;
-	Or(ue, 21, () => t.gridModel.periods, (e) => e.index, (e, t) => {
-		let n = /* @__PURE__ */ j(() => o() && L(t).index === L(y));
-		var r = Zo(), i = N(r), a = N(i), s = N(a, !0);
-		k(a);
+		}, [() => vs(L(t).dayOfWeek), () => C(L(t).date)]), z(e, n);
+	}), O(se), O(re);
+	var ce = Qt(re, 2), le = N(ce);
+	let ue;
+	var de = N(le);
+	let fe;
+	Or(de, 21, () => t.gridModel.periods, (e) => e.index, (e, t) => {
+		let n = /* @__PURE__ */ A(() => o() && L(t).index === L(y));
+		var r = Rs(), i = N(r), a = N(i), s = N(a, !0);
+		O(a);
 		var c = Qt(a, 2), l = N(c, !0), u = Qt(l, 2, !0);
-		k(c), k(i), k(r), P(() => {
+		O(c), O(i), O(r), P(() => {
 			Vr(i, 1, `flex h-full w-full flex-col items-center justify-center rounded-2xl ${L(n) ? "period-active" : ""}`), gr(s, L(t).index), Vr(c, 1, `m3-caption mt-1 leading-tight ${L(n) ? "" : "text-on-surface-variant"}`), gr(l, L(t).startTime), gr(u, L(t).endTime);
 		}), z(e, r);
-	}), k(ue);
-	var fe = Qt(ue, 2);
-	let pe;
-	Or(fe, 21, () => L(g), (e) => e.key, (e, n) => {
-		let r = /* @__PURE__ */ j(() => L(n).geometry.endPeriod - L(n).geometry.startPeriod + 1);
-		var i = os();
+	}), O(de);
+	var pe = Qt(de, 2);
+	let me;
+	Or(pe, 21, () => L(g), (e) => e.key, (e, n) => {
+		let r = /* @__PURE__ */ A(() => L(n).geometry.endPeriod - L(n).geometry.startPeriod + 1);
+		var i = qs();
 		let o;
 		var c = N(i), l = (e) => {
 			var t = hr(), r = Zt(t), i = (e) => {
-				var t = Qo(), r = N(t);
+				var t = zs(), r = N(t);
 				let i;
 				var a = N(r);
-				k(r), k(t), P((e) => {
-					Vr(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`, "svelte-1o3jcov"), i = B(r, "", i, { "font-size": `${L(n).placeholderPx ?? ""}px` }), gr(a, `此时段有 ${L(n).count ?? ""} 门课程重叠`);
+				O(r), O(t), P((e) => {
+					Vr(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`, "svelte-1o3jcov"), i = Ur(r, "", i, { "font-size": `${L(n).placeholderPx ?? ""}px` }), gr(a, `此时段有 ${L(n).count ?? ""} 门课程重叠`);
 				}, [() => w(L(n).corners)]), sr("click", t, () => S(L(n).key)), z(e, t);
 			}, o = (e) => {
-				var t = $o(), r = N(t);
+				var t = Bs(), r = N(t);
 				let i;
 				var a = N(r);
-				k(r), k(t), P((e) => {
-					Vr(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`, "svelte-1o3jcov"), i = B(r, "", i, { "font-size": `${L(n).placeholderPx ?? ""}px` }), gr(a, `${L(n).count ?? ""} 门课程重叠`);
+				O(r), O(t), P((e) => {
+					Vr(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`, "svelte-1o3jcov"), i = Ur(r, "", i, { "font-size": `${L(n).placeholderPx ?? ""}px` }), gr(a, `${L(n).count ?? ""} 门课程重叠`);
 				}, [() => w(L(n).corners)]), z(e, t);
 			};
 			Cr(r, (e) => {
 				a() ? e(i) : e(o, -1);
 			}), z(e, t);
 		}, u = (e) => {
-			let r = /* @__PURE__ */ j(() => s()[L(n).course.id] ?? []), i = /* @__PURE__ */ j(() => L(n).badgeLabel || L(r)[0]?.text);
+			let r = /* @__PURE__ */ A(() => s()[L(n).course.id] ?? []), i = /* @__PURE__ */ A(() => L(n).badgeLabel || L(r)[0]?.text);
 			var o = hr(), c = Zt(o), l = (e) => {
-				var r = is();
+				var r = Gs();
 				let a;
 				var o = N(r), s = (e) => {
-					var t = es(), r = N(t);
+					var t = Vs(), r = N(t);
 					let a;
 					var o = N(r, !0);
-					k(r), Fr(r, () => x(() => ({
+					O(r), Fr(r, () => x(() => ({
 						lines: [L(i)],
 						maxFontPx: L(n).scale.badgePx,
 						fromParent: !0
-					}))), k(t), P(() => {
-						a = B(r, "", a, {
+					}))), O(t), P(() => {
+						a = Ur(r, "", a, {
 							"background-color": "color-mix(in srgb, currentColor 12%, transparent)",
 							color: "color-mix(in srgb, currentColor 80%, transparent)",
 							"font-size": `${L(n).scale.badgePx ?? ""}px`
@@ -5888,7 +6928,7 @@ function cs(e, t) {
 					L(i) && e(s);
 				});
 				var c = Qt(o, 2);
-				Yo(c, {
+				Is(c, {
 					get text() {
 						return L(n).course.name;
 					},
@@ -5898,48 +6938,48 @@ function cs(e, t) {
 					}
 				});
 				var l = Qt(c, 2), u = (e) => {
-					var t = ns();
+					var t = Us();
 					Or(t, 21, () => L(n).locationLines, wr, (e, t) => {
-						var n = ts(), r = N(n, !0);
-						k(n), P(() => gr(r, L(t))), z(e, n);
-					}), k(t), Fr(t, () => x(() => ({
+						var n = Hs(), r = N(n, !0);
+						O(n), P(() => gr(r, L(t))), z(e, n);
+					}), O(t), Fr(t, () => x(() => ({
 						lines: L(n).locationLines,
 						maxFontPx: L(n).locationMetrics.fontPx
-					}))), P(() => B(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${L(n).locationMetrics.fontPx ?? ""}px; height: ${L(n).locationMetrics.heightPx ?? ""}px`)), z(e, t);
+					}))), P(() => Ur(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${L(n).locationMetrics.fontPx ?? ""}px; height: ${L(n).locationMetrics.heightPx ?? ""}px`)), z(e, t);
 				};
 				Cr(l, (e) => {
 					L(n).locationLines.length > 0 && e(u);
 				});
 				var d = Qt(l, 2), f = (e) => {
-					var t = rs(), r = N(t, !0);
-					k(t), Fr(t, () => x(() => ({
+					var t = Ws(), r = N(t, !0);
+					O(t), Fr(t, () => x(() => ({
 						lines: [L(n).teacher],
 						maxFontPx: L(n).scale.detailPx
 					}))), P(() => {
-						B(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${L(n).scale.detailPx ?? ""}px`), gr(r, L(n).teacher);
+						Ur(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${L(n).scale.detailPx ?? ""}px`), gr(r, L(n).teacher);
 					}), z(e, t);
 				};
 				Cr(d, (e) => {
 					L(n).teacher && e(f);
-				}), k(r), P((e) => {
-					Vr(r, 1, `course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left ${e ?? ""} ${L(n).displayModel.isInDisplayedWeek ? "" : "opacity-45"}`, "svelte-1o3jcov"), a = B(r, "", a, {
+				}), O(r), P((e) => {
+					Vr(r, 1, `course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left ${e ?? ""} ${L(n).displayModel.isInDisplayedWeek ? "" : "opacity-45"}`, "svelte-1o3jcov"), a = Ur(r, "", a, {
 						"--capsule": L(n).colors.background,
 						"--capsule-fg": L(n).colors.text
 					});
 				}, [() => w(L(n).corners)]), sr("click", r, () => t.onCourseClick?.(L(n).course)), z(e, r);
 			}, u = (e) => {
-				var t = as();
+				var t = Ks();
 				let r;
 				var a = N(t), o = (e) => {
-					var t = es(), r = N(t);
+					var t = Vs(), r = N(t);
 					let a;
 					var o = N(r, !0);
-					k(r), Fr(r, () => x(() => ({
+					O(r), Fr(r, () => x(() => ({
 						lines: [L(i)],
 						maxFontPx: L(n).scale.badgePx,
 						fromParent: !0
-					}))), k(t), P(() => {
-						a = B(r, "", a, {
+					}))), O(t), P(() => {
+						a = Ur(r, "", a, {
 							"background-color": "color-mix(in srgb, currentColor 12%, transparent)",
 							color: "color-mix(in srgb, currentColor 80%, transparent)",
 							"font-size": `${L(n).scale.badgePx ?? ""}px`
@@ -5950,7 +6990,7 @@ function cs(e, t) {
 					L(i) && e(o);
 				});
 				var s = Qt(a, 2);
-				Yo(s, {
+				Is(s, {
 					get text() {
 						return L(n).course.name;
 					},
@@ -5960,31 +7000,31 @@ function cs(e, t) {
 					}
 				});
 				var c = Qt(s, 2), l = (e) => {
-					var t = ns();
+					var t = Us();
 					Or(t, 21, () => L(n).locationLines, wr, (e, t) => {
-						var n = ts(), r = N(n, !0);
-						k(n), P(() => gr(r, L(t))), z(e, n);
-					}), k(t), Fr(t, () => x(() => ({
+						var n = Hs(), r = N(n, !0);
+						O(n), P(() => gr(r, L(t))), z(e, n);
+					}), O(t), Fr(t, () => x(() => ({
 						lines: L(n).locationLines,
 						maxFontPx: L(n).locationMetrics.fontPx
-					}))), P(() => B(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${L(n).locationMetrics.fontPx ?? ""}px; height: ${L(n).locationMetrics.heightPx ?? ""}px`)), z(e, t);
+					}))), P(() => Ur(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${L(n).locationMetrics.fontPx ?? ""}px; height: ${L(n).locationMetrics.heightPx ?? ""}px`)), z(e, t);
 				};
 				Cr(c, (e) => {
 					L(n).locationLines.length > 0 && e(l);
 				});
 				var u = Qt(c, 2), d = (e) => {
-					var t = rs(), r = N(t, !0);
-					k(t), Fr(t, () => x(() => ({
+					var t = Ws(), r = N(t, !0);
+					O(t), Fr(t, () => x(() => ({
 						lines: [L(n).teacher],
 						maxFontPx: L(n).scale.detailPx
 					}))), P(() => {
-						B(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${L(n).scale.detailPx ?? ""}px`), gr(r, L(n).teacher);
+						Ur(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${L(n).scale.detailPx ?? ""}px`), gr(r, L(n).teacher);
 					}), z(e, t);
 				};
 				Cr(u, (e) => {
 					L(n).teacher && e(d);
-				}), k(t), P((e) => {
-					Vr(t, 1, `course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left ${e ?? ""} ${L(n).displayModel.isInDisplayedWeek ? "" : "opacity-45"}`, "svelte-1o3jcov"), r = B(t, "", r, {
+				}), O(t), P((e) => {
+					Vr(t, 1, `course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left ${e ?? ""} ${L(n).displayModel.isInDisplayedWeek ? "" : "opacity-45"}`, "svelte-1o3jcov"), r = Ur(t, "", r, {
 						"--capsule": L(n).colors.background,
 						"--capsule-fg": L(n).colors.text
 					});
@@ -5996,29 +7036,29 @@ function cs(e, t) {
 		};
 		Cr(c, (e) => {
 			L(n).kind === "overlap-placeholder" ? e(l) : e(u, -1);
-		}), k(i), P(() => o = B(i, "", o, {
+		}), O(i), P(() => o = Ur(i, "", o, {
 			top: `calc((var(--row-height) * ${L(n).geometry.startPeriod - 1}))`,
 			left: `${L(n).geometry.leftPercent ?? ""}%`,
 			width: `${L(n).geometry.widthPercent ?? ""}%`,
 			height: `calc(var(--row-height) * ${L(r) ?? ""})`
 		})), z(e, i);
-	}), k(fe), Fr(fe, () => T), k(ce), k(se), Fr(se, () => ee), k(te), P(() => {
-		Vr(te, 1, `relative flex h-full min-h-0 w-full flex-1 flex-col ${L(_) ?? ""}`, "svelte-1o3jcov"), B(te, `--row-height: ${L(b) ?? ""}; --sidebar-width: 3.25rem`), Vr(ne, 1, `flex shrink-0 items-center py-2 ${n() ? "bg-[var(--wallpaper-tint-sidebar)]" : "bg-surface"}`), gr(ae, t.gridModel.monthLabel), Vr(se, 1, `min-h-0 flex-1 ${L(v) ? "overflow-hidden" : "overflow-y-auto"} ${n() ? "timetable-wallpaper-body" : "bg-surface"}`, "svelte-1o3jcov"), le = B(ce, "", le, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` }), de = B(ue, "", de, {
+	}), O(pe), Fr(pe, () => ee), O(le), O(ce), Fr(ce, () => te), O(ne), P(() => {
+		Vr(ne, 1, `relative flex h-full min-h-0 w-full flex-1 flex-col ${L(_) ?? ""}`, "svelte-1o3jcov"), Ur(ne, `--row-height: ${L(b) ?? ""}; --sidebar-width: 3.25rem`), Vr(re, 1, `flex shrink-0 items-center py-2 ${n() ? "bg-[var(--wallpaper-tint-sidebar)]" : "bg-surface"}`), gr(oe, t.gridModel.monthLabel), Vr(ce, 1, `min-h-0 flex-1 ${L(v) ? "overflow-hidden" : "overflow-y-auto"} ${n() ? "timetable-wallpaper-body" : "bg-surface"}`, "svelte-1o3jcov"), ue = Ur(le, "", ue, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` }), fe = Ur(de, "", fe, {
 			width: "var(--sidebar-width)",
 			height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})`
-		}), pe = B(fe, "", pe, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` });
-	}), z(e, te), Le();
+		}), me = Ur(pe, "", me, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` });
+	}), z(e, ne), Re();
 }
 cr(["click"]);
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/TimetableWallpaperLayer.svelte
-var ls = /* @__PURE__ */ R("<div class=\"absolute inset-0\"></div>"), us = /* @__PURE__ */ R("<div class=\"relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden\"><!> <!></div>");
-function ds(e, t) {
-	let n = Gr(t, "wallpaperUri", 3, null);
-	var r = us(), i = N(r), a = (e) => {
-		var t = ls();
+var Xs = /* @__PURE__ */ R("<div class=\"absolute inset-0\"></div>"), Zs = /* @__PURE__ */ R("<div class=\"relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden\"><!> <!></div>");
+function Qs(e, t) {
+	let n = Kr(t, "wallpaperUri", 3, null);
+	var r = Zs(), i = N(r), a = (e) => {
+		var t = Xs();
 		let r;
-		P(() => r = B(t, "", r, {
+		P(() => r = Ur(t, "", r, {
 			"background-image": `url("${n()}")`,
 			"background-size": "cover",
 			"background-position": "center",
@@ -6034,17 +7074,17 @@ function ds(e, t) {
 	};
 	Cr(o, (e) => {
 		t.children && e(s);
-	}), k(r), z(e, r);
+	}), O(r), z(e, r);
 }
 //#endregion
 //#region packages/ui-kit/src/plugin-screen/PluginScreenContainer.svelte
 cr(["change"]), cr(["click"]);
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/TimetableLivePreview.svelte
-var fs = /* @__PURE__ */ R("<div class=\"flex min-h-[12rem] items-center justify-center p-8\"><p class=\"m3-body-medium text-center text-on-surface-variant\">暂无课表，导入后可预览效果</p></div>");
-function ps(e, t) {
-	Ie(t, !0);
-	let n = Gr(t, "hasWallpaper", 3, !1), r = Gr(t, "wallpaperUri", 3, null), i = Gr(t, "interactive", 3, !1), a = new di(), o = /* @__PURE__ */ j(() => t.controller.currentTimetable), s = /* @__PURE__ */ j(ui), c = /* @__PURE__ */ j(() => L(o) ? a.calculateAcademicWeek(L(s), L(o).academicConfig) : null), l = /* @__PURE__ */ j(() => t.controller.displayedWeek ?? t.controller.activeWeek ?? L(c) ?? 1), u = /* @__PURE__ */ j(() => L(l) === (L(c) ?? t.controller.activeWeek ?? 1)), d = /* @__PURE__ */ j(() => t.controller.currentPeriodIndex), f = /* @__PURE__ */ j(() => t.controller.userPreferences?.timetableLayoutMode ?? "fixed"), p = /* @__PURE__ */ j(() => t.controller.userPreferences?.capsuleCornerStyle ?? "rounded"), m = /* @__PURE__ */ j(() => t.controller.coursePalette.length > 0 ? t.controller.coursePalette : qr), h = /* @__PURE__ */ j(() => L(o)?.courses ?? []), g = /* @__PURE__ */ j(() => t.controller.courseBadges ?? {}), _ = /* @__PURE__ */ j(() => L(o) ? ia({
+var $s = /* @__PURE__ */ R("<div class=\"flex min-h-[12rem] items-center justify-center p-8\"><p class=\"m3-body-medium text-center text-on-surface-variant\">暂无课表，导入后可预览效果</p></div>");
+function ec(e, t) {
+	Le(t, !0);
+	let n = Kr(t, "hasWallpaper", 3, !1), r = Kr(t, "wallpaperUri", 3, null), i = Kr(t, "interactive", 3, !1), a = new fi(), o = /* @__PURE__ */ A(() => t.controller.currentTimetable), s = /* @__PURE__ */ A(di), c = /* @__PURE__ */ A(() => L(o) ? a.calculateAcademicWeek(L(s), L(o).academicConfig) : null), l = /* @__PURE__ */ A(() => t.controller.displayedWeek ?? t.controller.activeWeek ?? L(c) ?? 1), u = /* @__PURE__ */ A(() => L(l) === (L(c) ?? t.controller.activeWeek ?? 1)), d = /* @__PURE__ */ A(() => t.controller.currentPeriodIndex), f = /* @__PURE__ */ A(() => t.controller.userPreferences?.timetableLayoutMode ?? "fixed"), p = /* @__PURE__ */ A(() => t.controller.userPreferences?.capsuleCornerStyle ?? "rounded"), m = /* @__PURE__ */ A(() => t.controller.coursePalette.length > 0 ? t.controller.coursePalette : Jr), h = /* @__PURE__ */ A(() => L(o)?.courses ?? []), g = /* @__PURE__ */ A(() => t.controller.courseBadges ?? {}), _ = /* @__PURE__ */ A(() => L(o) ? aa({
 		timetable: L(o),
 		displayedWeek: L(l),
 		todayIso: L(s),
@@ -6053,18 +7093,18 @@ function ps(e, t) {
 		paletteCourses: L(h),
 		layoutMode: L(f),
 		capsuleCornerStyle: L(p)
-	}) : null), v = /* @__PURE__ */ j(() => L(_)?.gridModel ?? null), y = /* @__PURE__ */ j(() => L(_)?.courseDisplayModels ?? []);
+	}) : null), v = /* @__PURE__ */ A(() => L(_)?.gridModel ?? null), y = /* @__PURE__ */ A(() => L(_)?.courseDisplayModels ?? []);
 	var b = hr(), x = Zt(b), S = (e) => {
 		{
-			let t = /* @__PURE__ */ j(() => n() && r() ? r() : null);
-			ds(e, {
+			let t = /* @__PURE__ */ A(() => n() && r() ? r() : null);
+			Qs(e, {
 				get wallpaperUri() {
 					return L(t);
 				},
 				children: (e, t) => {
 					{
-						let t = /* @__PURE__ */ j(() => n() && !!r());
-						cs(e, {
+						let t = /* @__PURE__ */ A(() => n() && !!r());
+						Ys(e, {
 							get displayedWeek() {
 								return L(l);
 							},
@@ -6108,18 +7148,150 @@ function ps(e, t) {
 			});
 		}
 	}, C = (e) => {
-		z(e, fs());
+		z(e, $s());
 	};
 	Cr(x, (e) => {
 		L(o) && L(v) ? e(S) : e(C, -1);
-	}), z(e, b), Le();
+	}), z(e, b), Re();
+}
+//#endregion
+//#region packages/plugins/wallpaper/src/wallpaper-theme.ts
+var tc = 128, nc = [], rc = null, ic = null, ac = null;
+function oc(e) {
+	let t = [];
+	for (let n = 0; n < e.length; n += 4) {
+		let r = e[n], i = e[n + 1], a = e[n + 2];
+		e[n + 3] < 255 || t.push(Ba(r, i, a));
+	}
+	let n = Zo.score(Jo.quantize(t, 128), { desired: 6 });
+	return {
+		seed: n[0],
+		ranked: n
+	};
+}
+function sc(e) {
+	let t = e ?? (typeof document < "u" ? document.documentElement : void 0);
+	if (t) {
+		for (let e of nc) t.style.removeProperty(e);
+		nc = [];
+	}
+}
+async function cc(e) {
+	if (e !== rc || ic == null || ac == null) {
+		let { seed: t, ranked: n } = oc(await uc(e));
+		rc = e, ic = t, ac = n;
+	}
+	return {
+		seed: ic,
+		coursePalette: gs(ac)
+	};
+}
+function lc(e, t, n) {
+	let r = n ?? (typeof document < "u" ? document.documentElement : void 0);
+	if (!r) return;
+	let i = ms(e, t);
+	sc(r), nc = Object.keys(i);
+	for (let [e, t] of Object.entries(i)) r.style.setProperty(e, t);
+}
+async function uc(e) {
+	let t = new Image();
+	t.src = e, await t.decode();
+	let n = t.naturalWidth || t.width, r = t.naturalHeight || t.height, i = Math.min(1, tc / Math.max(n, r, 1)), a = Math.max(1, Math.round(n * i)), o = Math.max(1, Math.round(r * i)), s = document.createElement("canvas");
+	s.width = a, s.height = o;
+	let c = s.getContext("2d");
+	if (!c) throw Error("Could not get canvas context");
+	return c.drawImage(t, 0, 0, a, o), c.getImageData(0, 0, a, o).data;
+}
+//#endregion
+//#region packages/plugins/wallpaper/src/create-wallpaper-plugin.ts
+var dc = "wallpaper", fc = ua({ wallpaper: {
+	type: "wallpaper-preview",
+	title: () => "选择壁纸图片",
+	description: () => "支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩",
+	accept: "image/*",
+	required: !1
+} }), pc = {
+	id: dc,
+	name: () => "壁纸",
+	description: () => "从当前壁纸提取配色",
+	supportsDynamicColor: !0,
+	dynamicColorAdapter: {
+		extractWallpaperSeed: cc,
+		paintWallpaperTheme: lc,
+		clearWallpaperTheme: sc
+	},
+	getTokens: (e) => ({
+		surface: e === "dark" ? "#1e2026" : "#f9f9fe",
+		onSurface: e === "dark" ? "#f8fafc" : "#2e333a",
+		primary: "#0068b7",
+		onPrimary: "#ffffff",
+		surfaceVariant: e === "dark" ? "#24262e" : "#eceef5",
+		outline: e === "dark" ? "#334155" : "#aeb2bb"
+	})
+};
+async function mc(e) {
+	let t = e.wallpaper, n = Da();
+	if (t instanceof Uint8Array) {
+		await n.setWallpaper(new Blob([t]));
+		return;
+	}
+	t === null && await n.setWallpaper(null);
+}
+function hc(e = {}) {
+	let { screenComponent: t } = e;
+	return {
+		id: pa,
+		name: () => "自定义壁纸",
+		version: "1.0.0",
+		description: () => "自定义课表页壁纸，支持动态取色",
+		category: "tool",
+		order: 40,
+		author: "Chronos Community",
+		homepage: "https://github.com/CQUT-OpenProject/Chronos",
+		configSchema: fc,
+		defaultConfig: {},
+		async apply(e) {
+			Oa(e.service(fa)), Ea((t) => {
+				e.emit("wallpaper:changed", { uri: t });
+			}), e.on("wallpaper:set", async ({ blob: e }) => {
+				await Da().setWallpaper(e);
+			}), e.on("wallpaper:hydrate", () => {
+				e.emit("wallpaper:changed", { uri: Da().uri });
+			}), e.on("config:changed", async ({ pluginId: e, config: t }) => {
+				e === "tool-wallpaper" && await mc(t);
+			}), await Da().syncFromStorage(!0), e.registerSlot("mine.item", {
+				id: "wallpaper",
+				sectionId: "appearance-feedback",
+				title: () => "设置课表壁纸",
+				href: "/plugins/tool-wallpaper",
+				icon: "wallpaper",
+				iconTone: "primary",
+				keywords: [
+					"壁纸",
+					"背景",
+					"图片",
+					"自定义",
+					"封面"
+				],
+				order: 30
+			}), e.registerSlot("shell.route.screen", {
+				id: pa,
+				title: () => "设置课表壁纸",
+				...t ? { component: t } : {},
+				schema: fc
+			}), e.registerSlot("theme.definition", pc);
+		},
+		async dispose() {
+			ka();
+		}
+	};
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/WallpaperScreen.svelte
-var ms = /* @__PURE__ */ R("<div class=\"relative flex min-h-0 flex-1 flex-col overflow-hidden\"><!></div>"), hs = /* @__PURE__ */ R("<div class=\"flex min-h-0 flex-1 items-center justify-center bg-canvas p-4\"><p class=\"m3-body-medium text-center text-on-surface-variant\">选择壁纸后，可在此预览应用效果</p></div>"), gs = /* @__PURE__ */ R("<button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface\">清除壁纸</button>"), _s = /* @__PURE__ */ R("<div class=\"flex min-h-0 flex-1 flex-col\"><input type=\"file\" accept=\"image/*\" class=\"hidden\"/> <!> <div class=\"bottom-bar\"><div class=\"mx-auto flex h-full w-full max-w-lg items-center gap-3\"><!> <button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary\"> </button></div></div></div>");
-function vs(e, t) {
-	Ie(t, !0);
-	let n = Ea(), r = /* @__PURE__ */ j(() => n.uri), i = /* @__PURE__ */ j(() => n.hasWallpaper), a = /* @__PURE__ */ j(() => t.controller.currentTimetable), o = /* @__PURE__ */ Ft(void 0);
+var gc = /* @__PURE__ */ R("<div class=\"relative flex min-h-0 flex-1 flex-col overflow-hidden\"><!></div>"), _c = /* @__PURE__ */ R("<div class=\"flex min-h-0 flex-1 items-center justify-center bg-canvas p-4\"><p class=\"m3-body-medium text-center text-on-surface-variant\">选择壁纸后，可在此预览应用效果</p></div>"), vc = /* @__PURE__ */ R("<button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface\">清除壁纸</button>"), yc = /* @__PURE__ */ R("<div class=\"flex min-h-0 flex-1 flex-col\"><input type=\"file\" accept=\"image/*\" class=\"hidden\"/> <!> <div class=\"bottom-bar\"><div class=\"mx-auto flex h-full w-full max-w-lg items-center gap-3\"><!> <button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary\"> </button></div></div></div>");
+function bc(e, t) {
+	Le(t, !0);
+	let n = Da(), r = /* @__PURE__ */ A(() => n.uri), i = /* @__PURE__ */ A(() => n.hasWallpaper), a = /* @__PURE__ */ A(() => t.controller.currentTimetable), o = /* @__PURE__ */ It(void 0);
 	function s() {
 		L(o)?.click();
 	}
@@ -6141,11 +7313,11 @@ function vs(e, t) {
 	async function l() {
 		await n.setWallpaper(null);
 	}
-	var u = _s(), d = N(u);
-	Wr(d, (e) => Lt(o, e), () => L(o));
+	var u = yc(), d = N(u);
+	Gr(d, (e) => M(o, e), () => L(o));
 	var f = Qt(d, 2), p = (e) => {
-		var n = ms();
-		ps(N(n), {
+		var n = gc();
+		ec(N(n), {
 			get controller() {
 				return t.controller;
 			},
@@ -6154,34 +7326,37 @@ function vs(e, t) {
 				return L(r);
 			},
 			interactive: !1
-		}), k(n), z(e, n);
+		}), O(n), z(e, n);
 	}, m = (e) => {
-		z(e, hs());
+		z(e, _c());
 	};
 	Cr(f, (e) => {
 		L(i) && L(a) ? e(p) : e(m, -1);
 	});
 	var h = Qt(f, 2), g = N(h), _ = N(g), v = (e) => {
-		var t = gs();
+		var t = vc();
 		sr("click", t, l), z(e, t);
 	};
 	Cr(_, (e) => {
 		L(i) && e(v);
 	});
 	var y = Qt(_, 2), b = N(y, !0);
-	k(y), k(g), k(h), k(u), P(() => gr(b, L(i) ? "重新选择" : "选择壁纸")), sr("change", d, c), sr("click", y, s), z(e, u), Le();
+	O(y), O(g), O(h), O(u), P(() => gr(b, L(i) ? "重新选择" : "选择壁纸")), sr("change", d, c), sr("click", y, s), z(e, u), Re();
 }
 cr(["change", "click"]);
 //#endregion
 //#region packages/plugins/wallpaper/bundle/entry.ts
-var ys = Na({ screenComponent: { mount(e, t) {
-	let n = _r(vs, {
-		target: e,
-		props: t
-	});
-	return { unmount() {
-		xr(n);
-	} };
-} } });
+var xc = hc({ screenComponent: {
+	[Symbol.for("chronos.mountable")]: !0,
+	mount(e, t) {
+		let n = _r(bc, {
+			target: e,
+			props: t
+		});
+		return { unmount() {
+			xr(n);
+		} };
+	}
+} });
 //#endregion
-export { ys as default };
+export { xc as default };
