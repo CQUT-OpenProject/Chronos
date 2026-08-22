@@ -1,8 +1,10 @@
 # ADR 0018: 主题 Shell 外观扩展契约
 
-- **状态**: Accepted
+- **状态**: Superseded by [ADR 0019](./0019-workbench-color-and-icon-theme-platform.md)
 - **日期**: 2026-08-22
 - **范围**: `packages/core/src/types/contributions.ts`, `apps/web/src/lib/appearance`, `apps/web/src/lib/shell`, `apps/web/src/lib/components/BottomTabBar.svelte`
+
+> **注意**：本文档记录的历史决策已被 ADR 0019 取代。Shell 样式现通过 `workbenchColors` 封闭键写入；底栏图标由独立 `IconThemeContribution` + `visualIconThemeId` 提供。
 
 ---
 
@@ -18,10 +20,10 @@
 
 在 `ThemeContribution` 上增加可选 `shell` 字段（`ThemeShellContribution`），不新增插槽：
 
-| 字段                   | 作用                                                                                           |
-| ---------------------- | ---------------------------------------------------------------------------------------------- |
-| `shell.customCssVars`  | Shell 专用 CSS 变量，与根级 `customCssVars` 合并后由 `applyActiveTheme` 写入 `documentElement` |
-| `shell.bottomTabIcons` | active theme 下按 `tab.id` 覆盖底栏图标（`ShellIconRef`：宿主注册表 key 或 Svelte 组件）       |
+| 字段                   | 作用                                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `shell.customCssVars`  | Shell 专用 CSS 变量，与根级 `customCssVars` 合并后由 `applyActiveTheme` 写入 `documentElement`                         |
+| `shell.bottomTabIcons` | active theme 下按 `tab.id` 覆盖底栏图标（`ShellIconRef`：宿主注册表 key、`ShellSvgIcon`、或 Profile 内置 Svelte 组件） |
 
 标准 Shell CSS 变量（宿主组件以 fallback 保持默认 M3）：
 
@@ -35,7 +37,7 @@
 theme.shell.bottomTabIcons[tabId] → tab.icon / tab.iconFill → undefined
 ```
 
-`core-shell` 在 `shell.bottom-bar.tab` 贡献上声明默认图标 key；宿主 `SHELL_ICON_MAP` + `resolveShellIcon` 统一解析。
+`core-shell` 在 `shell.bottom-bar.tab` 贡献上声明默认图标 key；宿主 `SHELL_ICON_MAP` + `resolveShellIcon` 统一解析。在线 bundle 主题通过 `ShellSvgIcon`（`{ type: 'svg', markup }`）交付自定义图标，由宿主 `ShellSvgIcon` 组件 `{@html}` 渲染，避免跨 bundle Svelte 运行时挂载。
 
 ---
 
