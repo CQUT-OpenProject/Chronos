@@ -12,10 +12,6 @@ function resolvePluginExport(mod: Record<string, unknown>): ChronosPlugin | null
 		(mod.plugin as ChronosPlugin) ??
 		(isChronosPlugin(mod) ? (mod as unknown as ChronosPlugin) : null);
 	if (isChronosPlugin(candidate)) return candidate;
-	if (mod.default && typeof mod.default === 'object') {
-		const nested = (mod.default as Record<string, unknown>).default as ChronosPlugin;
-		if (isChronosPlugin(nested)) return nested;
-	}
 	return null;
 }
 

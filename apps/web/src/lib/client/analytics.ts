@@ -36,8 +36,6 @@ export type AnalyticsEvent =
 	| 'settings_layout_change'
 	| 'settings_capsule_corner_change'
 	| 'settings_haptic_feedback_change'
-	| 'wallpaper_set'
-	| 'wallpaper_clear'
 	| 'timetable_switch'
 	| 'timetable_delete'
 	| 'timetable_overlap_expand'
