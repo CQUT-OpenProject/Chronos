@@ -67,6 +67,6 @@ export function initWallpaperRuntime(storage: IStorageService): void {
 
 export function resetWallpaperRuntime(): void {
 	storageRef = null;
-	changeHandler = null;
 	notify(null);
+	changeHandler = null;
 }

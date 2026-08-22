@@ -114,7 +114,6 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 		},
 
 		async dispose() {
-			setWallpaperChangeHandler(null);
 			resetWallpaperRuntime();
 		}
 	};

@@ -94,6 +94,27 @@ describe('@chronos/plugin-wallpaper', () => {
 		engine.dispose();
 	});
 
+	it('emits wallpaper:changed with null uri when unloaded', async () => {
+		const getPluginData = vi.fn(async () => STORED_WALLPAPER);
+		const env = createMockEnv(getPluginData);
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		const handle = await engine.loadPlugin(wallpaperPlugin);
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const received: Array<string | null> = [];
+		engine.on('wallpaper:changed', ({ uri }) => {
+			received.push(uri);
+		});
+		expect(received).toEqual([]);
+
+		handle.dispose();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(received).toEqual([null]);
+		engine.dispose();
+	});
+
 	it('replays wallpaper:changed on wallpaper:hydrate after late subscription', async () => {
 		const getPluginData = vi.fn(async (pluginId: string, key: string) => {
 			if (pluginId === WALLPAPER_PLUGIN_ID && key === WALLPAPER_IMAGE_KEY) {
