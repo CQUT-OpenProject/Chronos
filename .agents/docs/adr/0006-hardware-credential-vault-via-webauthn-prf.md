@@ -1,6 +1,6 @@
 # ADR 0006: 基于 WebAuthn PRF 与硬件安全的凭据保险箱 (IVaultService)
 
-- **状态**: Accepted
+- **状态**: Accepted（Web 实现层已由 [ADR 0017](./0017-webauthn-credential-retirement.md) Superseded；`IVaultService` 端口保留）
 - **日期**: 2026-08-20
 - **关联提交**: `b11d372`, `8729d1f`, `34a7e74`
 - **范围**: 安全与凭据管理 (`packages/core/src/types/services.ts`, `apps/web/src/lib/providers/webauthn-vault.ts`, `apps/web/src/lib/client/credential-migration.ts`)
