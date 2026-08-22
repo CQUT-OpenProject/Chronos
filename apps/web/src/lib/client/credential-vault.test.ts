@@ -1,7 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { CQUT_PASSWORD_SECRET_KEY, createCredentialVault } from '$lib/client/credential-vault';
+import type { IStorageService } from '@chronos/core';
+import {
+	CQUT_CREDENTIAL_RECORD_KEY,
+	CQUT_PASSWORD_SECRET_KEY,
+	createGenericCredentialVault,
+	SOURCE_CQUT_PLUGIN_ID,
+	type PluginCredentialRecord
+} from '$lib/client/credential-vault';
 import { MemoryVaultProvider } from '$lib/providers/memory-vault';
-import type { CqutCredentialRecord } from '@chronos/plugin-source-cqut';
 
 const mockCredentialEnvironment = vi.hoisted(() => ({
 	prfAvailable: false,
@@ -18,7 +24,14 @@ vi.mock('$lib/client/credential-environment.svelte', () => ({
 }));
 
 describe('CredentialVault', () => {
-	let pluginRecord: CqutCredentialRecord | null = null;
+	let pluginRecord: PluginCredentialRecord | null = null;
+
+	const storage: Pick<IStorageService, 'getPluginData' | 'deletePluginData'> = {
+		getPluginData: async () => pluginRecord,
+		deletePluginData: async () => {
+			pluginRecord = null;
+		}
+	};
 
 	beforeEach(() => {
 		pluginRecord = null;
@@ -29,12 +42,12 @@ describe('CredentialVault', () => {
 	});
 
 	function createVault(vaultPort = new MemoryVaultProvider()) {
-		return createCredentialVault({
+		return createGenericCredentialVault({
 			vault: vaultPort,
-			readPluginCredentialRecord: async () => pluginRecord,
-			clearPluginCredentialRecord: async () => {
-				pluginRecord = null;
-			}
+			storage: storage as IStorageService,
+			pluginId: SOURCE_CQUT_PLUGIN_ID,
+			recordKey: CQUT_CREDENTIAL_RECORD_KEY,
+			vaultKey: CQUT_PASSWORD_SECRET_KEY
 		});
 	}
 

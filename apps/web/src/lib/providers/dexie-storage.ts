@@ -5,7 +5,12 @@ import type {
 	Timetable,
 	UserPreferences
 } from '@chronos/core';
-import { DEFAULT_USER_PREFERENCES, CURRENT_PREFERENCES_SCHEMA_VERSION } from '@chronos/core';
+import {
+	DEFAULT_USER_PREFERENCES,
+	CURRENT_PREFERENCES_SCHEMA_VERSION,
+	PALETTE_MODE_VIBRANT,
+	LEGACY_PALETTE_MODE_DYNAMIC
+} from '@chronos/core';
 import { db, type ChronosDB } from '$lib/storage/db';
 import { courseToRow, timetableFromRow, timetableToRow } from '$lib/storage/mappers';
 
@@ -33,8 +38,8 @@ function normalizeLayoutMode(raw: string | null): import('@chronos/core').Timeta
 
 function normalizePaletteMode(raw: string | null): import('@chronos/core').PaletteMode {
 	const value = raw?.trim().toLowerCase();
-	if (value === 'wallpaper') return 'wallpaper';
-	return 'vibrant';
+	if (value === LEGACY_PALETTE_MODE_DYNAMIC) return LEGACY_PALETTE_MODE_DYNAMIC;
+	return PALETTE_MODE_VIBRANT;
 }
 
 function normalizeCornerStyle(raw: string | null): import('@chronos/core').CapsuleCornerStyle {

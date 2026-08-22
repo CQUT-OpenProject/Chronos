@@ -21,12 +21,6 @@ export interface TransferPreviewState {
 	statusMessage: string | null;
 }
 
-export interface CqutOnlineImportInputs {
-	username: string;
-	password: string;
-	saveCredentials: boolean;
-}
-
 function resolveInitialSlotId(): string {
 	return getDefaultImportSlot();
 }
@@ -70,50 +64,51 @@ export function createTransferState(engine?: ChronosEngine) {
 		pluginId: string;
 		recordKey: string;
 		vaultKey: string;
+		tabId: string;
 	} | null {
-		// 优先从已注册的 import.source.tab 缝隙中解析 credential 元数据
-		const tryFromEngine = (): { pluginId: string; recordKey: string; vaultKey: string } | null => {
-			if (!engine) return null;
+		const tryFromSlots = (
+			tabs: ImportTabSlotContribution[],
+			resolveOwner: (tabId: string) => string | null
+		): { pluginId: string; recordKey: string; vaultKey: string; tabId: string } | null => {
+			for (const tab of tabs) {
+				const cred = tab.credential;
+				if (!cred?.recordKey || !cred?.vaultKey) continue;
+				const owner = resolveOwner(tab.id);
+				if (!owner) continue;
+				return {
+					pluginId: owner,
+					recordKey: cred.recordKey,
+					vaultKey: cred.vaultKey,
+					tabId: tab.id
+				};
+			}
+			return null;
+		};
+
+		if (engine) {
 			try {
 				const tabs = engine.slots.get('import.source.tab') as ImportTabSlotContribution[];
-				for (const tab of tabs) {
-					const cred = (tab as ImportTabSlotContribution).credential as
-						| { recordKey: string; vaultKey: string }
-						| undefined;
-					if (cred?.recordKey && cred?.vaultKey) {
-						const owner = engine.slots.resolveOwner('import.source.tab', tab.id);
-						if (owner)
-							return { pluginId: owner, recordKey: cred.recordKey, vaultKey: cred.vaultKey };
-					}
-				}
+				const meta = tryFromSlots(tabs, (tabId) =>
+					engine.slots.resolveOwner('import.source.tab', tabId)
+				);
+				if (meta) return meta;
 			} catch {}
-			return null;
-		};
-		const tryFromController = (): {
-			pluginId: string;
-			recordKey: string;
-			vaultKey: string;
-		} | null => {
-			try {
-				const controller = getAppController();
-				const tabs = controller.getSlots('import.source.tab') as ImportTabSlotContribution[];
-				for (const tab of tabs) {
-					const cred = (tab as ImportTabSlotContribution).credential as
-						| { recordKey: string; vaultKey: string }
-						| undefined;
-					if (cred?.recordKey && cred?.vaultKey) {
-						const owner = engine?.slots.resolveOwner('import.source.tab', tab.id) ?? 'source-cqut';
-						return { pluginId: owner, recordKey: cred.recordKey, vaultKey: cred.vaultKey };
-					}
-				}
-			} catch {}
-			return null;
-		};
-		return tryFromEngine() ?? tryFromController();
+		}
+
+		try {
+			const controller = getAppController();
+			const tabs = controller.getSlots('import.source.tab') as ImportTabSlotContribution[];
+			return tryFromSlots(
+				tabs,
+				(tabId) => engine?.slots.resolveOwner('import.source.tab', tabId) ?? null
+			);
+		} catch {}
+
+		return null;
 	}
 
 	function createVaultFromMeta(
-		meta: { pluginId: string; recordKey: string; vaultKey: string } | null
+		meta: { pluginId: string; recordKey: string; vaultKey: string; tabId: string } | null
 	) {
 		if (!meta || !storageService || !vaultService) return null;
 		return createGenericCredentialVault({
@@ -221,49 +216,9 @@ export function createTransferState(engine?: ChronosEngine) {
 		}
 	}
 
-	/** @deprecated 优先使用 previewWithSlot('share-link', { content })，此方法仅为兼容保留 */
-	async function previewFromClipboard() {
-		try {
-			const content = await navigator.clipboard.readText();
-			return await previewWithSlot('share-link', { content: content.trim() });
-		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : '无法读取剪贴板，请检查浏览器权限';
-			return false;
-		}
-	}
-
-	/** @deprecated 优先使用 previewWithSlot('cqut-online', inputs) */
-	async function previewOnline(inputs: CqutOnlineImportInputs) {
-		const trimmedAccount = inputs.username.trim();
-		if (!trimmedAccount || !inputs.password.trim()) {
-			errorMessage = '请输入账号和密码';
-			return false;
-		}
-		return previewWithSlot('cqut-online', {
-			username: trimmedAccount,
-			account: trimmedAccount,
-			password: inputs.password,
-			saveCredentials: inputs.saveCredentials
-		});
-	}
-
-	/** @deprecated 优先使用 previewWithSlot('edu-html', { file }) */
-	async function previewFromHtmlFile(file: File) {
-		try {
-			const fileContent = await file.text();
-			return await previewWithSlot('edu-html', {
-				file: fileContent,
-				fileContent
-			});
-		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : '解析 HTML 课表失败';
-			return false;
-		}
-	}
-
 	async function previewWithSavedCredential() {
 		clearMessages();
-		if (!credentialVault || !savedCredentialState.hasSavedCredential) {
+		if (!credentialVault || !savedCredentialState.hasSavedCredential || !credentialMeta?.tabId) {
 			errorMessage = '当前没有可用的已保存凭据';
 			return false;
 		}
@@ -274,15 +229,16 @@ export function createTransferState(engine?: ChronosEngine) {
 			return false;
 		}
 
+		const tabId = credentialMeta.tabId;
 		try {
-			const timetable = await executeSlotImport('cqut-online', {
+			const timetable = await executeSlotImport(tabId, {
 				username: unlockResult.value.account,
 				account: unlockResult.value.account,
 				password: unlockResult.value.password,
 				saveCredentials: false
 			});
 			preview = timetable;
-			previewSlotId = 'cqut-online';
+			previewSlotId = tabId;
 			return true;
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : '获取在线课表失败';
@@ -383,9 +339,6 @@ export function createTransferState(engine?: ChronosEngine) {
 		setImportMode,
 		clearPreview,
 		setDirectPreview,
-		previewFromClipboard,
-		previewOnline,
-		previewFromHtmlFile,
 		previewWithSavedCredential,
 		clearSavedCredential,
 		previewWithSlot,
