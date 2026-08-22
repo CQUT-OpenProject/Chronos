@@ -1,0 +1,41 @@
+import { describe, expect, it } from 'vite-plus/test';
+import type { ThemeContribution } from '@chronos/core';
+import { m3DefaultTheme } from '@chronos/ui-kit';
+import { wallpaperThemeContribution } from '@chronos/plugin-wallpaper';
+
+function assertThemeContract(theme: ThemeContribution) {
+	const lightTokens = theme.getTokens('light');
+	const darkTokens = theme.getTokens('dark');
+	expect(lightTokens).toBeDefined();
+	expect(darkTokens).toBeDefined();
+	expect(theme.getTokens('light')).toEqual(lightTokens);
+
+	if (theme.paletteEntries) {
+		const entries =
+			typeof theme.paletteEntries === 'function'
+				? theme.paletteEntries('light')
+				: theme.paletteEntries;
+		expect(entries.length).toBeGreaterThan(0);
+	}
+
+	if (theme.supportsDynamicColor && theme.dynamicColorAdapter) {
+		const adapter = theme.dynamicColorAdapter;
+		expect(typeof adapter.extractWallpaperSeed).toBe('function');
+		expect(typeof adapter.paintWallpaperTheme).toBe('function');
+		expect(typeof adapter.clearWallpaperTheme).toBe('function');
+	}
+}
+
+describe('ThemeContribution contract', () => {
+	it('m3-default theme satisfies contract', () => {
+		assertThemeContract(m3DefaultTheme);
+		expect(m3DefaultTheme.supportsDynamicColor).toBe(true);
+		expect(m3DefaultTheme.dynamicColorAdapter).toBeUndefined();
+	});
+
+	it('wallpaper theme satisfies contract with dynamicColorAdapter', () => {
+		assertThemeContract(wallpaperThemeContribution);
+		expect(wallpaperThemeContribution.supportsDynamicColor).toBe(true);
+		expect(wallpaperThemeContribution.dynamicColorAdapter).toBeDefined();
+	});
+});

@@ -15,8 +15,6 @@ import type { BadgeManager } from './badge-manager';
 export interface EngineContextHost {
 	readonly services: ServiceContainer;
 	readonly events: EventPipeline;
-	/** @deprecated 使用 events，pipeline 为兼容别名 */
-	readonly pipeline: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes?: ThemeRegistry;
 	readonly badges?: BadgeManager;
@@ -188,28 +186,18 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		this.host.events.emit(event, payload);
 	}
 
-	/** @deprecated 使用 registerWaterfallHook / registerSerialHook */
-	registerPipelineHook(hook: (context: unknown) => void | Promise<void>): Disposable {
-		return this.track(
-			this.host.pipeline.registerWaterfall('pipeline:exportTransform', async (ctx, next) => {
-				await hook(ctx);
-				return next();
-			})
-		);
-	}
-
 	registerWaterfallHook<T = unknown, R = unknown>(
 		event: string,
 		handler: (payload: T, next: () => Promise<R> | R) => Promise<R> | R
 	): Disposable {
-		return this.track(this.host.pipeline.registerWaterfall(event, handler));
+		return this.track(this.host.events.registerWaterfall(event, handler));
 	}
 
 	registerSerialHook<T = unknown>(
 		event: string,
 		handler: (payload: T) => Promise<boolean | void> | boolean | void
 	): Disposable {
-		return this.track(this.host.pipeline.registerSerial(event, handler));
+		return this.track(this.host.events.registerSerial(event, handler));
 	}
 
 	inject(

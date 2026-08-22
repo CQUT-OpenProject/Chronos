@@ -34,7 +34,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	readonly env: ChronosEnv;
 	readonly services: ServiceContainer;
 	readonly events: EventPipeline;
-	readonly pipeline: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes: ThemeRegistry;
 	readonly badges: BadgeManager;
@@ -80,7 +79,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this._onNotification = options.onNotification;
 
 		this.events = new EventPipeline();
-		this.pipeline = this.events;
 		this.slots = new HierarchicalSlotRegistry(() => {
 			this.events.emit('slots:updated', undefined);
 		});
@@ -345,12 +343,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	async createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable> {
-		const allowed = await this.pipeline.serial('guard:createTimetable', { name, config });
+		const allowed = await this.events.serial('guard:createTimetable', { name, config });
 		if (!allowed) {
 			throw new Error('[ChronosEngine] createTimetable action was rejected by guard');
 		}
 
-		return this.pipeline.waterfall(
+		return this.events.waterfall(
 			'action:createTimetable',
 			{ name, config },
 			async ({ name: finalName, config: finalConfig }) => {
@@ -382,12 +380,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		timetable: Timetable,
 		options: { overwriteActive?: boolean } = {}
 	): Promise<Timetable> {
-		const allowed = await this.pipeline.serial('guard:importTimetable', { timetable, options });
+		const allowed = await this.events.serial('guard:importTimetable', { timetable, options });
 		if (!allowed) {
 			throw new Error('[ChronosEngine] importTimetable action was rejected by guard');
 		}
 
-		return this.pipeline.waterfall(
+		return this.events.waterfall(
 			'action:importTimetable',
 			{ timetable, options },
 			async ({ timetable: incoming, options: finalOptions }) => {
@@ -408,12 +406,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	async switchTimetable(timetableId: string): Promise<void> {
-		const allowed = await this.pipeline.serial('guard:switchTimetable', { timetableId });
+		const allowed = await this.events.serial('guard:switchTimetable', { timetableId });
 		if (!allowed) {
 			throw new Error('[ChronosEngine] switchTimetable action was rejected by guard');
 		}
 
-		return this.pipeline.waterfall(
+		return this.events.waterfall(
 			'action:switchTimetable',
 			{ timetableId },
 			async ({ timetableId: targetId }) => {
@@ -438,12 +436,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	async deleteTimetable(timetableId: string): Promise<void> {
-		const allowed = await this.pipeline.serial('guard:deleteTimetable', { timetableId });
+		const allowed = await this.events.serial('guard:deleteTimetable', { timetableId });
 		if (!allowed) {
 			throw new Error('[ChronosEngine] deleteTimetable action was rejected by guard');
 		}
 
-		return this.pipeline.waterfall(
+		return this.events.waterfall(
 			'action:deleteTimetable',
 			{ timetableId },
 			async ({ timetableId: targetId }) => {
@@ -487,12 +485,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		if (!this._currentTimetable) {
 			throw new Error('No active timetable to save course');
 		}
-		const allowed = await this.pipeline.serial('guard:saveCourse', { course });
+		const allowed = await this.events.serial('guard:saveCourse', { course });
 		if (!allowed) {
 			throw new Error('[ChronosEngine] saveCourse action was rejected by guard');
 		}
 
-		return this.pipeline.waterfall(
+		return this.events.waterfall(
 			'action:saveCourse',
 			{ course },
 			async ({ course: targetCourse }) => {
@@ -525,12 +523,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		if (!this._currentTimetable) {
 			throw new Error('No active timetable to delete course');
 		}
-		const allowed = await this.pipeline.serial('guard:deleteCourse', { courseId });
+		const allowed = await this.events.serial('guard:deleteCourse', { courseId });
 		if (!allowed) {
 			throw new Error('[ChronosEngine] deleteCourse action was rejected by guard');
 		}
 
-		return this.pipeline.waterfall(
+		return this.events.waterfall(
 			'action:deleteCourse',
 			{ courseId },
 			async ({ courseId: targetId }) => {

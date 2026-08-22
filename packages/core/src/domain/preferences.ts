@@ -1,5 +1,10 @@
 export type ThemeMode = 'light' | 'dark' | 'auto';
-export type PaletteMode = 'vibrant' | 'wallpaper';
+export type PaletteMode = string;
+
+/** 默认课程配色模式 */
+export const PALETTE_MODE_VIBRANT = 'vibrant';
+/** 遗留动态取色模式（壁纸），读取偏好时自动兼容 */
+export const LEGACY_PALETTE_MODE_DYNAMIC = 'wallpaper';
 export type TimetableLayoutMode = 'fixed' | 'compact';
 export type CapsuleCornerStyle = 'rounded' | 'sharp' | 'pill';
 

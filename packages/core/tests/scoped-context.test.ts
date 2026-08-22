@@ -68,7 +68,6 @@ function createMockHost() {
 		env,
 		services,
 		events: eventPipeline,
-		pipeline: eventPipeline,
 		slots,
 		themes,
 		badges,

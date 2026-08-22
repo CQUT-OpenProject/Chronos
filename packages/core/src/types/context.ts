@@ -126,9 +126,6 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 		payload: (ChronosEvents & CustomChronosEvents)[E]
 	): void;
 
-	/** Data pipeline transformation interceptor */
-	registerPipelineHook(hook: (context: unknown) => void | Promise<void>): Disposable;
-
 	/** Waterfall onion middleware hook */
 	registerWaterfallHook<T = unknown, R = unknown>(
 		event: string,
@@ -175,4 +172,7 @@ export interface ChronosEvents {
 	'export:after': { exporterId: string; result: ExportResult };
 	'plugin:loaded': { pluginId: string };
 	'plugin:unloaded': { pluginId: string };
+	'dynamicColor:set': { blob: Blob | null };
+	'dynamicColor:changed': { uri: string | null };
+	'dynamicColor:hydrate': void;
 }

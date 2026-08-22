@@ -69,11 +69,11 @@ export function resolveCoursePaint(
 
 export function resolveCoursePalette(
 	mode: string,
-	wallpaperPalette: readonly CoursePaletteEntry[] | null
+	dynamicPalette: readonly CoursePaletteEntry[] | null
 ): readonly CoursePaletteEntry[] {
 	const normalized = (mode || '').toLowerCase();
-	if (normalized === 'wallpaper' && wallpaperPalette && wallpaperPalette.length > 0) {
-		return wallpaperPalette;
+	if (normalized !== 'vibrant' && dynamicPalette && dynamicPalette.length > 0) {
+		return dynamicPalette;
 	}
 	return COURSE_PALETTE_ENTRIES;
 }
