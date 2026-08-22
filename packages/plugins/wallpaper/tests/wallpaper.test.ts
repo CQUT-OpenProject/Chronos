@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { ChronosEngine, type ChronosEnv, type UserPreferences } from '@chronos/core';
-import { wallpaperPlugin, WALLPAPER_PLUGIN_ID } from '../src/index';
-import { WALLPAPER_IMAGE_KEY } from '../src/storage';
+import { wallpaperPlugin } from '../src/index';
+import { createWallpaperRuntime } from '../src/runtime.svelte';
+import { WALLPAPER_IMAGE_KEY, WALLPAPER_PLUGIN_ID } from '../src/storage';
 
 const STORED_WALLPAPER = {
 	mimeType: 'image/png',
@@ -94,7 +95,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		engine.dispose();
 	});
 
-	it('emits wallpaper:changed with null uri when unloaded', async () => {
+	it('emits dynamicColor:changed with null uri when unloaded', async () => {
 		const getPluginData = vi.fn(async () => STORED_WALLPAPER);
 		const env = createMockEnv(getPluginData);
 		const engine = new ChronosEngine({ env });
@@ -104,7 +105,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		await new Promise((resolve) => setTimeout(resolve, 0));
 
 		const received: Array<string | null> = [];
-		engine.on('wallpaper:changed', ({ uri }) => {
+		engine.on('dynamicColor:changed', ({ uri }) => {
 			received.push(uri);
 		});
 		expect(received).toEqual([]);
@@ -115,7 +116,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		engine.dispose();
 	});
 
-	it('replays wallpaper:changed on wallpaper:hydrate after late subscription', async () => {
+	it('replays dynamicColor:changed on dynamicColor:hydrate after late subscription', async () => {
 		const getPluginData = vi.fn(async (pluginId: string, key: string) => {
 			if (pluginId === WALLPAPER_PLUGIN_ID && key === WALLPAPER_IMAGE_KEY) {
 				return STORED_WALLPAPER;
@@ -129,15 +130,46 @@ describe('@chronos/plugin-wallpaper', () => {
 		const handle = await engine.loadPlugin(wallpaperPlugin);
 
 		const received: Array<string | null> = [];
-		engine.on('wallpaper:changed', ({ uri }) => {
+		engine.on('dynamicColor:changed', ({ uri }) => {
 			received.push(uri);
 		});
 
-		engine.events.emit('wallpaper:hydrate');
+		engine.events.emit('dynamicColor:hydrate');
 
 		expect(received).toEqual([EXPECTED_DATA_URI]);
 
 		handle.dispose();
 		engine.dispose();
+	});
+
+	it('isolates runtime state per createWallpaperRuntime instance', async () => {
+		const storageA = {
+			getPluginData: vi.fn(async () => STORED_WALLPAPER),
+			setPluginData: vi.fn(async () => {}),
+			deletePluginData: vi.fn(async () => {})
+		};
+		const storageB = {
+			getPluginData: vi.fn(async () => null),
+			setPluginData: vi.fn(async () => {}),
+			deletePluginData: vi.fn(async () => {})
+		};
+
+		const runtimeA = createWallpaperRuntime(storageA as never, 'plugin-a');
+		const runtimeB = createWallpaperRuntime(storageB as never, 'plugin-b');
+
+		await runtimeA.syncFromStorage(true);
+		await runtimeB.syncFromStorage(true);
+
+		expect(runtimeA.uri).toBe(EXPECTED_DATA_URI);
+		expect(runtimeB.uri).toBeNull();
+
+		runtimeA.dispose();
+		expect(runtimeA.uri).toBeNull();
+		expect(runtimeB.uri).toBeNull();
+
+		await runtimeB.syncFromStorage(true);
+		expect(runtimeB.uri).toBeNull();
+
+		runtimeB.dispose();
 	});
 });

@@ -18,9 +18,7 @@
 	const isMountableComponent = $derived.by(() => {
 		const comp = screenSlot?.component as Record<string | symbol, unknown> | undefined;
 		if (!comp) return false;
-		// 显式 mountable 标记优先，避免 duck-typing 误判
-		if ((comp as Record<symbol, unknown>)[Symbol.for('chronos.mountable')] === true) return true;
-		return typeof (comp as { mount?: unknown }).mount === 'function';
+		return (comp as Record<symbol, unknown>)[Symbol.for('chronos.mountable')] === true;
 	});
 
 	let containerEl = $state<HTMLDivElement>();

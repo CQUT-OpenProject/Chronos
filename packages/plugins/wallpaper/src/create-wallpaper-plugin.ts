@@ -1,11 +1,6 @@
 import type { ChronosPlugin, ThemeContribution } from '@chronos/core';
 import { defineSchema, IStorageService } from '@chronos/core';
-import {
-	getWallpaperRuntime,
-	initWallpaperRuntime,
-	resetWallpaperRuntime,
-	setWallpaperChangeHandler
-} from './runtime.svelte';
+import { createWallpaperRuntime, type WallpaperRuntime } from './runtime.svelte';
 import { WALLPAPER_PLUGIN_ID } from './storage';
 import { clearWallpaperTheme, extractWallpaperSeed, paintWallpaperTheme } from './wallpaper-theme';
 
@@ -47,9 +42,11 @@ export interface CreateWallpaperPluginOptions {
 	screenComponent?: unknown;
 }
 
-async function syncConfigWallpaper(config: Record<string, unknown>): Promise<void> {
+async function syncConfigWallpaper(
+	runtime: WallpaperRuntime,
+	config: Record<string, unknown>
+): Promise<void> {
 	const wallpaper = config.wallpaper;
-	const runtime = getWallpaperRuntime();
 
 	if (wallpaper instanceof Uint8Array) {
 		await runtime.setWallpaper(new Blob([wallpaper]));
@@ -77,26 +74,26 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 		defaultConfig: {},
 
 		async apply(ctx) {
-			initWallpaperRuntime(ctx.service(IStorageService));
+			const runtime = createWallpaperRuntime(ctx.service(IStorageService), WALLPAPER_PLUGIN_ID);
 
-			setWallpaperChangeHandler((uri) => {
-				ctx.emit('wallpaper:changed', { uri });
+			runtime.setChangeHandler((uri) => {
+				ctx.emit('dynamicColor:changed', { uri });
 			});
 
-			ctx.on('wallpaper:set', async ({ blob }) => {
-				await getWallpaperRuntime().setWallpaper(blob);
+			ctx.on('dynamicColor:set', async ({ blob }) => {
+				await runtime.setWallpaper(blob);
 			});
 
-			ctx.on('wallpaper:hydrate', () => {
-				ctx.emit('wallpaper:changed', { uri: getWallpaperRuntime().uri });
+			ctx.on('dynamicColor:hydrate', () => {
+				ctx.emit('dynamicColor:changed', { uri: runtime.uri });
 			});
 
 			ctx.on('config:changed', async ({ pluginId, config }) => {
 				if (pluginId !== WALLPAPER_PLUGIN_ID) return;
-				await syncConfigWallpaper(config);
+				await syncConfigWallpaper(runtime, config);
 			});
 
-			await getWallpaperRuntime().syncFromStorage(true);
+			await runtime.syncFromStorage(true);
 
 			ctx.registerSlot('mine.item', {
 				id: 'wallpaper',
@@ -117,10 +114,8 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 			});
 
 			ctx.registerSlot('theme.definition', wallpaperThemeContribution);
-		},
 
-		async dispose() {
-			resetWallpaperRuntime();
+			ctx.addDisposable({ dispose: () => runtime.dispose() });
 		}
 	};
 }

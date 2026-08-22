@@ -10,7 +10,7 @@
 
 	let { controller, pluginId }: Props = $props();
 
-	const runtime = getWallpaperRuntime();
+	const runtime = getWallpaperRuntime(pluginId);
 	const wallpaperUri = $derived(runtime.uri);
 	const hasWallpaper = $derived(runtime.hasWallpaper);
 	const timetable = $derived(controller.currentTimetable);

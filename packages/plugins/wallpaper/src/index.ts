@@ -18,12 +18,4 @@ export {
 };
 export * from './storage';
 export * from './wallpaper-theme';
-export { getWallpaperRuntime, setWallpaperChangeHandler } from './runtime.svelte';
-
-declare module '@chronos/core' {
-	interface CustomChronosEvents {
-		'wallpaper:set': { blob: Blob | null };
-		'wallpaper:changed': { uri: string | null };
-		'wallpaper:hydrate': void;
-	}
-}
+export { getWallpaperRuntime } from './runtime.svelte';
