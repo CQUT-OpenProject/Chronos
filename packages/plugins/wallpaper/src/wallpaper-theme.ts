@@ -26,9 +26,11 @@ export function colorsFromImageBytes(bytes: Uint8ClampedArray): {
 	return { seed: ranked[0], ranked };
 }
 
-export function clearWallpaperTheme(target: HTMLElement = document.documentElement) {
+export function clearWallpaperTheme(target?: HTMLElement) {
+	const el = target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
+	if (!el) return;
 	for (const key of appliedKeys) {
-		target.style.removeProperty(key);
+		el.style.removeProperty(key);
 	}
 	appliedKeys = [];
 }
@@ -46,16 +48,14 @@ export async function extractWallpaperSeed(uri: string): Promise<{
 	return { seed: cachedSeed, coursePalette: coursePaletteFromSources(cachedRanked) };
 }
 
-export function paintWallpaperTheme(
-	seed: number,
-	isDark: boolean,
-	target: HTMLElement = document.documentElement
-) {
+export function paintWallpaperTheme(seed: number, isDark: boolean, target?: HTMLElement) {
+	const el = target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
+	if (!el) return;
 	const vars = schemeAccentCssVars(seed, isDark);
-	clearWallpaperTheme(target);
+	clearWallpaperTheme(el);
 	appliedKeys = Object.keys(vars);
 	for (const [key, value] of Object.entries(vars)) {
-		target.style.setProperty(key, value);
+		el.style.setProperty(key, value);
 	}
 }
 

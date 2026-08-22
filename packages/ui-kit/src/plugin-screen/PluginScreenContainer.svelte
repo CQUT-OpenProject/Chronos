@@ -15,9 +15,13 @@
 		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
 	);
 
-	const isMountableComponent = $derived(
-		typeof (screenSlot?.component as { mount?: unknown } | undefined)?.mount === 'function'
-	);
+	const isMountableComponent = $derived.by(() => {
+		const comp = screenSlot?.component as Record<string | symbol, unknown> | undefined;
+		if (!comp) return false;
+		// 显式 mountable 标记优先，避免 duck-typing 误判
+		if ((comp as Record<symbol, unknown>)[Symbol.for('chronos.mountable')] === true) return true;
+		return typeof (comp as { mount?: unknown }).mount === 'function';
+	});
 
 	let containerEl = $state<HTMLDivElement>();
 	let formValues = $state<Record<string, unknown>>({});
@@ -32,12 +36,22 @@
 				props: Record<string, unknown>
 			): { unmount?(): void } | (() => void);
 		};
-		const instance = comp.mount(containerEl, { controller, pluginId });
+		let instance: { unmount?(): void } | (() => void) | undefined;
+		try {
+			instance = comp.mount(containerEl, { controller, pluginId });
+		} catch (error) {
+			console.error('[PluginScreenContainer] mount failed:', error);
+			return;
+		}
 		return () => {
-			if (typeof instance === 'function') {
-				instance();
-			} else if (typeof instance?.unmount === 'function') {
-				instance.unmount();
+			try {
+				if (typeof instance === 'function') {
+					instance();
+				} else if (typeof instance?.unmount === 'function') {
+					instance.unmount();
+				}
+			} catch (error) {
+				console.error('[PluginScreenContainer] unmount failed:', error);
 			}
 		};
 	});

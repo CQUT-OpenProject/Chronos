@@ -15,6 +15,7 @@ import type { BadgeManager } from './badge-manager';
 export interface EngineContextHost {
 	readonly services: ServiceContainer;
 	readonly events: EventPipeline;
+	/** @deprecated 使用 events，pipeline 为兼容别名 */
 	readonly pipeline: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes?: ThemeRegistry;
@@ -76,8 +77,15 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 				this.host.services.get(IStorageService).getPluginData<T>(this.pluginId, key),
 			set: <T = unknown>(key: string, value: T) =>
 				this.host.services.get(IStorageService).setPluginData<T>(this.pluginId, key, value),
-			delete: (key: string) =>
-				this.host.services.get(IStorageService).deletePluginData(this.pluginId, key)
+			delete: (key: string) => {
+				if (key === '__config__') {
+					console.warn(
+						`[ScopedContext:${this.pluginId}] 拒绝删除保留键 __config__，请使用 updateConfig`
+					);
+					return Promise.resolve();
+				}
+				return this.host.services.get(IStorageService).deletePluginData(this.pluginId, key);
+			}
 		};
 
 		this.i18n = {
@@ -180,6 +188,7 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		this.host.events.emit(event, payload);
 	}
 
+	/** @deprecated 使用 registerWaterfallHook / registerSerialHook */
 	registerPipelineHook(hook: (context: unknown) => void | Promise<void>): Disposable {
 		return this.track(
 			this.host.pipeline.registerWaterfall('pipeline:exportTransform', async (ctx, next) => {

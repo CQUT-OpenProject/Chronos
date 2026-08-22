@@ -42,11 +42,7 @@ export async function applyAppearance(
 
 	abortIfNeeded(signal);
 
-	if (
-		(paletteMode === 'wallpaper' || input.activeThemeId === 'wallpaper') &&
-		wallpaperUri &&
-		wallpaper
-	) {
+	if (wallpaperUri && wallpaper) {
 		try {
 			const { seed, coursePalette: wallpaperPalette } =
 				await wallpaper.extractWallpaperSeed(wallpaperUri);

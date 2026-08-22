@@ -12,6 +12,14 @@ export type {
 } from './slots';
 
 // 1. Theme Contribution
+export interface WallpaperThemeAdapter {
+	extractWallpaperSeed(
+		uri: string
+	): Promise<{ seed: number; coursePalette: readonly CoursePaletteEntry[] }>;
+	paintWallpaperTheme(seed: number, isDark: boolean, target: HTMLElement): void;
+	clearWallpaperTheme(target?: HTMLElement): void;
+}
+
 export interface ThemeContribution {
 	readonly id: string;
 	readonly name: LocalizedText;
@@ -25,6 +33,8 @@ export interface ThemeContribution {
 	readonly paletteEntries?:
 		| readonly CoursePaletteEntry[]
 		| ((mode: 'light' | 'dark') => readonly CoursePaletteEntry[]);
+	/** 可选动态取色适配器，宿主 appearance 通过此适配器驱动壁纸/取色，无需 hardcode 'wallpaper' */
+	readonly dynamicColorAdapter?: WallpaperThemeAdapter;
 	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
 	/**
 	 * Compute course card colors dynamically.

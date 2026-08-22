@@ -7,6 +7,7 @@ import {
 	setWallpaperChangeHandler
 } from './runtime.svelte';
 import { WALLPAPER_PLUGIN_ID } from './storage';
+import { clearWallpaperTheme, extractWallpaperSeed, paintWallpaperTheme } from './wallpaper-theme';
 
 export const WALLPAPER_THEME_ID = 'wallpaper';
 
@@ -25,6 +26,11 @@ export const wallpaperThemeContribution: ThemeContribution = {
 	name: () => '壁纸',
 	description: () => '从当前壁纸提取配色',
 	supportsDynamicColor: true,
+	dynamicColorAdapter: {
+		extractWallpaperSeed,
+		paintWallpaperTheme,
+		clearWallpaperTheme
+	},
 	getTokens: (mode: 'light' | 'dark') => {
 		return {
 			surface: mode === 'dark' ? '#1e2026' : '#f9f9fe',

@@ -11,6 +11,18 @@ import type {
 
 const WALLPAPER_PLUGIN_ID = 'tool-wallpaper';
 
+function resolveHasWallpaperPlugin(): boolean {
+	try {
+		const engine = getAppEngine();
+		// 优先通过主题注册表判断，兼容旧版 isPluginLoaded
+		if (engine.themes.getTheme(WALLPAPER_PLUGIN_ID) || engine.themes.getTheme('wallpaper'))
+			return true;
+		return engine.isPluginLoaded(WALLPAPER_PLUGIN_ID);
+	} catch {
+		return false;
+	}
+}
+
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
 	if (themeMode === 'dark') return true;
 	if (themeMode === 'light') return false;
@@ -38,7 +50,7 @@ export function createAppShell() {
 	);
 	const hasWallpaperPlugin = $derived.by(() => {
 		void controller.slotVersion;
-		return engine.isPluginLoaded(WALLPAPER_PLUGIN_ID);
+		return resolveHasWallpaperPlugin();
 	});
 	const hasWallpaper = $derived(hasWallpaperPlugin && Boolean(wallpaperUri));
 

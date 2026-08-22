@@ -4,6 +4,7 @@ import WallpaperScreen from '../src/WallpaperScreen.svelte';
 
 export default createWallpaperPlugin({
 	screenComponent: {
+		[Symbol.for('chronos.mountable')]: true as const,
 		mount(target: HTMLElement, props: Record<string, unknown>) {
 			const instance = mount(WallpaperScreen, {
 				target,

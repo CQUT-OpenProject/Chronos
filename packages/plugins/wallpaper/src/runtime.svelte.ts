@@ -6,6 +6,8 @@ import {
 	WALLPAPER_PLUGIN_ID
 } from './storage';
 
+export const CHRONOS_MOUNTABLE = Symbol.for('chronos.mountable');
+
 type WallpaperChangeListener = (uri: string | null) => void;
 
 let storageRef: IStorageService | null = null;
@@ -69,4 +71,27 @@ export function resetWallpaperRuntime(): void {
 	storageRef = null;
 	notify(null);
 	changeHandler = null;
+}
+
+/**
+ * 工厂化运行时：随 ScopedContext 生命周期创建/销毁，避免模块级单例跨插件实例串扰。
+ * 当前为兼容实现，仍委托全局单例；下迭代将改为完全隔离的实例状态。
+ */
+export function createWallpaperRuntime(
+	storage: IStorageService,
+	_pluginId: string = WALLPAPER_PLUGIN_ID
+) {
+	initWallpaperRuntime(storage);
+	const runtime = getWallpaperRuntime();
+	return {
+		get uri() {
+			return runtime.uri;
+		},
+		get hasWallpaper() {
+			return runtime.hasWallpaper;
+		},
+		syncFromStorage: (active: boolean) => runtime.syncFromStorage(active),
+		setWallpaper: (blob: Blob | null) => runtime.setWallpaper(blob),
+		dispose: () => resetWallpaperRuntime()
+	};
 }

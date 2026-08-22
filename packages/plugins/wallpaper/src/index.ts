@@ -6,7 +6,7 @@ import {
 } from './create-wallpaper-plugin';
 import { WALLPAPER_PLUGIN_ID } from './storage';
 
-/** Package default without host screen; web app uses `$lib/boot/wallpaper-plugin`. */
+/** 默认插件实例（仅供单测/离线使用）；在线分发经 catalog → ESM bundle 自包含 screenComponent */
 export const wallpaperPlugin = createWallpaperPlugin();
 
 export {
