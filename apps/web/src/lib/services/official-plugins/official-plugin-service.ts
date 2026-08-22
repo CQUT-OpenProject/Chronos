@@ -338,6 +338,19 @@ export class OfficialPluginService implements Disposable {
 		return this.activeHandles.has(pluginId);
 	}
 
+	async resetAfterFactoryClear(): Promise<void> {
+		for (const [, handle] of this.activeHandles) {
+			handle.dispose();
+		}
+		this.activeHandles.clear();
+		for (const [, el] of this.styleElements) {
+			el.remove();
+		}
+		this.styleElements.clear();
+		this.installedCache = [];
+		this.notify();
+	}
+
 	dispose(): void {
 		for (const [, handle] of this.activeHandles) {
 			handle.dispose();

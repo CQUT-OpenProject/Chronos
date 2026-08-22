@@ -115,6 +115,18 @@ export function getProfileBuiltinPlugins(): ChronosPlugin[] {
 	return getAvailablePluginsForProfile(getActiveProfile());
 }
 
+export async function resetAppToInitialState(): Promise<void> {
+	const engine = await ensureEngineReady();
+	await engine.actions.clearAllData();
+	await getOfficialPluginService().resetAfterFactoryClear();
+	const profile = resolveActiveProfile();
+	if (profileManager) {
+		await profileManager.applyProfile(profile, availablePlugins);
+	}
+	engine.actions.setTheme(profile.defaultTheme ?? 'm3-default');
+	engine.events.emit('dynamicColor:hydrate');
+}
+
 export function resetAppEngine(): void {
 	profileManager?.dispose();
 	profileManager = null;

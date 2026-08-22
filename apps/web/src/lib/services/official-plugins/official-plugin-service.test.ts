@@ -283,4 +283,34 @@ describe('OfficialPluginService', () => {
 		);
 		expect(stored).toEqual([]);
 	});
+
+	it('resetAfterFactoryClear unloads plugins and clears installed cache', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '0.3.0',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		httpRequest.mockResolvedValueOnce({
+			ok: true,
+			text: async () => SAMPLE_BUNDLE
+		});
+		await service.install(manifest);
+		expect(engine.isPluginLoaded('test-plugin')).toBe(true);
+		expect(service.listInstalled()).toHaveLength(1);
+
+		await service.resetAfterFactoryClear();
+
+		expect(engine.isPluginLoaded('test-plugin')).toBe(false);
+		expect(service.listInstalled()).toHaveLength(0);
+		expect(service.isPluginActive('test-plugin')).toBe(false);
+	});
 });

@@ -1,6 +1,6 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
-import { getAppController, getAppEngine } from '$lib/services/app-engine';
+import { getAppController, getAppEngine, resetAppToInitialState } from '$lib/services/app-engine';
 import type {
 	CapsuleCornerStyle,
 	PaletteMode,
@@ -112,7 +112,8 @@ export function createAppShell() {
 	}
 
 	async function clearAllData() {
-		await controller.clearAllData();
+		await resetAppToInitialState();
+		dynamicColorUri = null;
 	}
 
 	return {
