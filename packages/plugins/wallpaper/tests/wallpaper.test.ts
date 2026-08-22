@@ -58,7 +58,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		expect(wallpaperPlugin.category).toBe('tool');
 		expect(
 			typeof wallpaperPlugin.name === 'function' ? wallpaperPlugin.name() : wallpaperPlugin.name
-		).toBe('课表壁纸');
+		).toBe('自定义壁纸');
 	});
 
 	it('registers mine.item, screen slot, and theme when loaded', async () => {

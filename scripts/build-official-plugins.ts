@@ -29,8 +29,11 @@ const plugins = [
 		id: 'tool-wallpaper',
 		entry: resolve(root, 'packages/plugins/wallpaper/bundle/entry.ts'),
 		type: 'tool' as const,
-		name: { 'zh-CN': '课表壁纸', en: 'Wallpaper' },
-		description: { 'zh-CN': '自定义课表背景壁纸与主题取色', en: 'Custom timetable wallpaper' }
+		name: { 'zh-CN': '自定义壁纸', en: 'Custom Wallpaper' },
+		description: {
+			'zh-CN': '自定义课表页壁纸，支持动态取色',
+			en: 'Custom timetable wallpaper with dynamic color'
+		}
 	}
 ];
 

@@ -60,9 +60,9 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 
 	return {
 		id: WALLPAPER_PLUGIN_ID,
-		name: () => '课表壁纸',
+		name: () => '自定义壁纸',
 		version: '1.0.0',
-		description: () => '自定义课表背景壁纸与主题取色',
+		description: () => '自定义课表页壁纸，支持动态取色',
 		category: 'tool',
 		order: 40,
 		author: 'Chronos Community',
