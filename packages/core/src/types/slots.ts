@@ -22,6 +22,11 @@ export interface ImportTabSlotContribution<
 	component?: unknown;
 	/** Execute import action handler */
 	executeImport(inputs: FormState, ctx?: ChronosContext): Promise<Timetable>;
+	/** Optional credential persistence metadata; host resolves via slot without hardcoding plugin constants */
+	credential?: {
+		recordKey: string;
+		vaultKey: string;
+	};
 }
 
 // 2. Export action slot contribution specification

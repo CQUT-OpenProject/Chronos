@@ -411,6 +411,10 @@ export function createCqutPlugin(
 					defaultInput: {
 						saveCredentials: false
 					},
+					credential: {
+						recordKey: CQUT_CREDENTIAL_RECORD_KEY,
+						vaultKey: CQUT_PASSWORD_SECRET_KEY
+					},
 					executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
 						doImport(inputs, context)
 				});
