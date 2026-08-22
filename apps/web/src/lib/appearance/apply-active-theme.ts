@@ -21,11 +21,49 @@ function clearCustomThemeStyles(target: HTMLElement) {
 		if (
 			prop.startsWith('--color-') ||
 			prop.startsWith('--period-') ||
-			prop.startsWith('--leading-')
+			prop.startsWith('--leading-') ||
+			prop.startsWith('--shell-')
 		) {
 			target.style.removeProperty(prop);
 		}
 	}
+}
+
+function collectThemeCssVars(
+	theme: NonNullable<ReturnType<ChronosEngine['themes']['getTheme']>>,
+	mode: 'light' | 'dark'
+): Record<string, string> {
+	const merged: Record<string, string> = {};
+
+	const rootVars =
+		typeof theme.customCssVars === 'function' ? theme.customCssVars(mode) : theme.customCssVars;
+	if (rootVars) {
+		Object.assign(merged, rootVars);
+	}
+
+	const shellVars =
+		typeof theme.shell?.customCssVars === 'function'
+			? theme.shell.customCssVars(mode)
+			: theme.shell?.customCssVars;
+	if (shellVars) {
+		Object.assign(merged, shellVars);
+	}
+
+	return merged;
+}
+
+export function resolveEffectiveThemeId(
+	engine: ChronosEngine,
+	activeThemeId: string,
+	paletteMode?: PaletteMode
+): string {
+	const currentTheme = engine.themes.getTheme(activeThemeId);
+	const effectiveThemeId =
+		(paletteMode !== undefined && paletteMode !== PALETTE_MODE_VIBRANT && paletteMode !== '') ||
+		currentTheme?.supportsDynamicColor
+			? M3_DEFAULT_THEME_ID
+			: activeThemeId;
+	return effectiveThemeId;
 }
 
 export function applyActiveTheme(
@@ -38,14 +76,7 @@ export function applyActiveTheme(
 		options?.target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
 	if (!el) return;
 
-	const currentTheme = engine.themes.getTheme(activeThemeId);
-	const effectiveThemeId =
-		(options?.paletteMode !== undefined &&
-			options.paletteMode !== PALETTE_MODE_VIBRANT &&
-			options.paletteMode !== '') ||
-		currentTheme?.supportsDynamicColor
-			? M3_DEFAULT_THEME_ID
-			: activeThemeId;
+	const effectiveThemeId = resolveEffectiveThemeId(engine, activeThemeId, options?.paletteMode);
 
 	clearCustomThemeStyles(el);
 
@@ -66,12 +97,9 @@ export function applyActiveTheme(
 	const mode = isDark ? 'dark' : 'light';
 	applyThemeTokens(theme.getTokens(mode), el);
 
-	if (theme.customCssVars) {
-		const vars =
-			typeof theme.customCssVars === 'function' ? theme.customCssVars(mode) : theme.customCssVars;
-		for (const [key, value] of Object.entries(vars)) {
-			el.style.setProperty(key, value);
-			previouslyAppliedCustomVarKeys.push(key);
-		}
+	const cssVars = collectThemeCssVars(theme, mode);
+	for (const [key, value] of Object.entries(cssVars)) {
+		el.style.setProperty(key, value);
+		previouslyAppliedCustomVarKeys.push(key);
 	}
 }

@@ -152,11 +152,18 @@
 	}
 
 	.bottom-bar {
-		@apply flex h-[var(--bottom-bar-height)] shrink-0 items-center border-t border-border/60 bg-surface-container px-3 pb-[var(--tabbar-safe)] sm:px-4;
+		@apply flex h-[var(--bottom-bar-height)] shrink-0 items-center border-t border-border/60 px-3 pb-[var(--tabbar-safe)] sm:px-4;
+		background-color: var(--shell-bottom-bar-bg, var(--color-surface-container));
+	}
+
+	.shell-bottom-tab-active {
+		background-color: var(--shell-bottom-tab-active-bg, var(--color-primary-container));
+		color: var(--shell-bottom-tab-active-fg, var(--color-on-primary-container));
 	}
 
 	.m3-top-app-bar {
 		@apply flex min-h-[var(--top-bar-height)] shrink-0 items-center px-3 pb-0 sm:px-4;
 		padding-top: var(--topbar-safe);
+		background-color: var(--shell-top-bar-bg, transparent);
 	}
 }

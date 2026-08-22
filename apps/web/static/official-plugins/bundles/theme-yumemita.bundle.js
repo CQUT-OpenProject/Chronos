@@ -55,10 +55,14 @@ var c = {
 		"--ee-primary": t,
 		"--ee-secondary": n,
 		"--period-active-bg": "transparent",
-		"--period-active-bg-image": `linear-gradient(to bottom, ${n}, ${t})`,
+		"--period-active-bg-image": `linear-gradient(to bottom, ${n}, ${t})`
+	},
+	shell: { customCssVars: {
+		"--shell-bottom-tab-active-bg": "transparent",
+		"--shell-bottom-tab-active-fg": t,
 		"--leading-icon-bg": `color-mix(in srgb, ${n} 75%, transparent)`,
 		"--leading-icon-color": "#fff"
-	},
+	} },
 	paletteEntries: o,
 	getTokens: s,
 	resolveCoursePaint(e, t, n) {

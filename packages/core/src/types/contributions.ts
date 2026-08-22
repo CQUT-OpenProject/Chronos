@@ -1,15 +1,28 @@
 import type { Course } from '../domain/course';
 import type { CoursePaletteEntry } from '../engine/palette';
 import type { LocalizedText } from './context';
-import type { DesignTokens, CoursePaint } from './slots';
+import type { DesignTokens, CoursePaint, ShellIconRef } from './slots';
 
 export type {
 	DesignTokens,
 	CoursePaint,
 	CourseBadge,
 	CourseBadgeSlotContribution,
-	ExportResult
+	ExportResult,
+	ShellIconRef
 } from './slots';
+
+export interface BottomTabIconOverride {
+	icon?: ShellIconRef;
+	iconFill?: ShellIconRef;
+}
+
+export interface ThemeShellContribution {
+	/** Shell CSS variables merged by host applyActiveTheme */
+	customCssVars?: Record<string, string> | ((mode: 'light' | 'dark') => Record<string, string>);
+	/** Bottom tab icon overrides when this theme is active (keyed by tab.id) */
+	bottomTabIcons?: Record<string, BottomTabIconOverride>;
+}
 
 // 1. Theme Contribution
 export interface WallpaperThemeAdapter {
@@ -30,6 +43,7 @@ export interface ThemeContribution {
 	readonly customCssVars?:
 		| Record<string, string>
 		| ((mode: 'light' | 'dark') => Record<string, string>);
+	readonly shell?: ThemeShellContribution;
 	readonly paletteEntries?:
 		| readonly CoursePaletteEntry[]
 		| ((mode: 'light' | 'dark') => readonly CoursePaletteEntry[]);

@@ -196,4 +196,104 @@ describe('applyActiveTheme', () => {
 		expect(styleMap.get('--custom-primary')).toBe('#123456');
 		engine.dispose();
 	});
+
+	it('merges shell.customCssVars with root customCssVars', () => {
+		const engine = new ChronosEngine({
+			env: {
+				platform: 'web',
+				http: {
+					request: async () => ({
+						ok: false,
+						status: 500,
+						statusText: '',
+						headers: {},
+						text: async () => '',
+						json: async <T>() => ({}) as T,
+						bytes: async () => new Uint8Array()
+					})
+				},
+				storage: {
+					getTimetable: async () => null,
+					listTimetables: async () => [],
+					saveTimetable: async () => {},
+					patchTimetable: async () => {},
+					deleteTimetable: async () => {},
+					getActiveTimetableId: async () => null,
+					setActiveTimetableId: async () => {},
+					getPreferences: async () => ({
+						schemaVersion: 1,
+						themeMode: 'auto',
+						paletteMode: 'vibrant',
+						timetableLayoutMode: 'fixed',
+						capsuleCornerStyle: 'rounded',
+						hapticFeedbackEnabled: true
+					}),
+					savePreferences: async () => {},
+					getPluginData: async () => null,
+					setPluginData: async () => {},
+					deletePluginData: async () => {}
+				},
+				vault: {
+					isSupported: async () => false,
+					storeSecret: async () => {},
+					getSecret: async () => null,
+					removeSecret: async () => {}
+				},
+				runtime: {
+					setTimeout: () => 0,
+					clearTimeout: () => {},
+					sha256: async () => '',
+					encodeUtf8: () => new Uint8Array(),
+					decodeUtf8: () => ''
+				}
+			}
+		});
+
+		engine.themes.registerTheme({
+			id: 'shell-theme',
+			name: () => 'Shell Theme',
+			customCssVars: { '--root-var': '#111111' },
+			shell: {
+				customCssVars: { '--shell-bottom-tab-active-bg': 'transparent' }
+			},
+			getTokens: () => ({
+				surface: '#fff',
+				onSurface: '#000',
+				primary: '#111111',
+				onPrimary: '#fff',
+				surfaceVariant: '#eee',
+				outline: '#ccc'
+			})
+		});
+
+		const styleMap = new Map<string, string>();
+		const target = {
+			classList: {
+				add: () => {},
+				remove: () => {},
+				toggle: () => {},
+				contains: () => false
+			},
+			style: {
+				setProperty: (name: string, value: string) => {
+					styleMap.set(name, value);
+				},
+				removeProperty: (name: string) => {
+					styleMap.delete(name);
+				},
+				[Symbol.iterator]: function* () {
+					for (const key of styleMap.keys()) yield key;
+				}
+			}
+		} as unknown as HTMLElement;
+
+		applyActiveTheme(engine, 'shell-theme', false, {
+			paletteMode: 'vibrant',
+			target
+		});
+
+		expect(styleMap.get('--root-var')).toBe('#111111');
+		expect(styleMap.get('--shell-bottom-tab-active-bg')).toBe('transparent');
+		engine.dispose();
+	});
 });

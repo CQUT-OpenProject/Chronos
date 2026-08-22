@@ -362,23 +362,44 @@ button.m3-date-field-input {
 }
 
 .m3-leading-icon.tone-primary {
-	background-color: color-mix(in srgb, var(--color-primary-container) 75%, transparent);
-	color: var(--color-brand);
+	background-color: var(
+		--leading-icon-bg-primary,
+		var(--leading-icon-bg, color-mix(in srgb, var(--color-primary-container) 75%, transparent))
+	);
+	color: var(--leading-icon-color-primary, var(--leading-icon-color, var(--color-brand)));
 }
 
 .m3-leading-icon.tone-secondary {
-	background-color: color-mix(in srgb, var(--color-secondary-container) 75%, transparent);
-	color: var(--color-on-secondary-container);
+	background-color: var(
+		--leading-icon-bg-secondary,
+		var(--leading-icon-bg, color-mix(in srgb, var(--color-secondary-container) 75%, transparent))
+	);
+	color: var(
+		--leading-icon-color-secondary,
+		var(--leading-icon-color, var(--color-on-secondary-container))
+	);
 }
 
 .m3-leading-icon.tone-tertiary {
-	background-color: color-mix(in srgb, var(--color-tertiary-container) 75%, transparent);
-	color: var(--color-on-tertiary-container);
+	background-color: var(
+		--leading-icon-bg-tertiary,
+		var(--leading-icon-bg, color-mix(in srgb, var(--color-tertiary-container) 75%, transparent))
+	);
+	color: var(
+		--leading-icon-color-tertiary,
+		var(--leading-icon-color, var(--color-on-tertiary-container))
+	);
 }
 
 .m3-leading-icon.tone-neutral {
-	background-color: color-mix(in srgb, var(--color-surface-variant) 75%, transparent);
-	color: var(--color-on-surface-variant);
+	background-color: var(
+		--leading-icon-bg-neutral,
+		var(--leading-icon-bg, color-mix(in srgb, var(--color-surface-variant) 75%, transparent))
+	);
+	color: var(
+		--leading-icon-color-neutral,
+		var(--leading-icon-color, var(--color-on-surface-variant))
+	);
 }
 
 .m3-top-app-bar {

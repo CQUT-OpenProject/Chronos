@@ -22,7 +22,12 @@ export * from './schema/schema';
 export * from './types/services';
 export * from './types/course-query';
 export * from './types/slots';
-export type { ThemeContribution, CourseBadgeContribution } from './types/contributions';
+export type {
+	ThemeContribution,
+	ThemeShellContribution,
+	BottomTabIconOverride,
+	CourseBadgeContribution
+} from './types/contributions';
 export type { PlatformType, ChronosEnv } from './types/env';
 export * from './types/context';
 export * from './types/plugin-server';

@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { getContext, type Component } from 'svelte';
+	import { getContext } from 'svelte';
+	import type { BottomTabSlotContribution } from '@chronos/core';
+	import { PALETTE_MODE_VIBRANT } from '@chronos/core';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { toAppPathname } from '$lib/navigation/app-pathname';
-	import { getAppController } from '$lib/services/app-engine';
-	import { BOTTOM_TAB_ICON_MAP } from '$lib/boot/mine-icons';
+	import { getAppController, getAppEngine } from '$lib/services/app-engine';
+	import { resolveEffectiveThemeId } from '$lib/appearance/apply-active-theme';
+	import { resolveShellIcon } from '$lib/shell/resolve-shell-icon';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
@@ -29,7 +32,23 @@
 		return typeof text === 'function' ? text() : text;
 	}
 
-	function handleTabClick(event: MouseEvent, tab: (typeof sortedTabs)[number]) {
+	function resolveTabIcon(tab: BottomTabSlotContribution, active: boolean) {
+		void controller.activeThemeId;
+		void controller.userPreferences;
+
+		const engine = getAppEngine();
+		const paletteMode = controller.userPreferences?.paletteMode ?? PALETTE_MODE_VIBRANT;
+		const effectiveThemeId = resolveEffectiveThemeId(engine, controller.activeThemeId, paletteMode);
+		const themeOverride = engine.themes.getTheme(effectiveThemeId)?.shell?.bottomTabIcons?.[tab.id];
+
+		const iconRef = active
+			? (themeOverride?.iconFill ?? themeOverride?.icon ?? tab.iconFill ?? tab.icon)
+			: (themeOverride?.icon ?? tab.icon);
+
+		return resolveShellIcon(iconRef);
+	}
+
+	function handleTabClick(event: MouseEvent, tab: BottomTabSlotContribution) {
 		haptic.light();
 		if (tab.onClick) {
 			const ctx = controller.getPluginContextForSlot('shell.bottom-bar.tab', tab.id);
@@ -49,14 +68,7 @@
 	<nav aria-label="主导航" class="flex h-full w-full max-w-md items-center justify-around">
 		{#each sortedTabs as tab (tab.id)}
 			{@const active = isActive(tab.href)}
-			{@const mappedIcons = BOTTOM_TAB_ICON_MAP[tab.id]}
-			{@const Icon = (
-				active
-					? (tab.iconFill ?? tab.icon ?? mappedIcons?.iconFill)
-					: (tab.icon ?? mappedIcons?.icon)
-			) as Component<{
-				class?: string;
-			}>}
+			{@const Icon = resolveTabIcon(tab, active)}
 			<a
 				href={resolve(tab.href as any)}
 				data-sveltekit-preload-data="off"
@@ -67,7 +79,7 @@
 				<span
 					aria-hidden="true"
 					class="flex h-7 w-12 items-center justify-center rounded-full transition-colors sm:h-8 sm:w-14 {active
-						? 'bg-primary-container text-on-primary-container'
+						? 'shell-bottom-tab-active'
 						: ''}"
 				>
 					{#if Icon}

@@ -6,6 +6,9 @@ import type { ThemeContribution } from './contributions';
 
 export type LocalizedText = string | (() => string);
 
+/** Host registry key or Svelte component (profile builtin / ESM bundle). */
+export type ShellIconRef = string | unknown;
+
 // 1. Import tab slot contribution specification (dynamic schema-driven interaction)
 export interface ImportTabSlotContribution<
 	FormState extends Record<string, unknown> = Record<string, unknown>
@@ -111,8 +114,10 @@ export interface BottomTabSlotContribution {
 	label: LocalizedText;
 	href: string;
 	order?: number;
-	icon?: unknown;
-	iconFill?: unknown;
+	/** Host icon registry key or Svelte component */
+	icon?: ShellIconRef;
+	/** Filled variant for active state */
+	iconFill?: ShellIconRef;
 	badge?: LocalizedText | (() => number | string | null);
 	onClick?(event: MouseEvent, ctx?: ChronosContext): void | Promise<void>;
 }

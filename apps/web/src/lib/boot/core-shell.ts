@@ -8,14 +8,18 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 		id: 'timetable',
 		label: () => '课表',
 		href: '/',
-		order: 10
+		order: 10,
+		icon: 'calendar-month',
+		iconFill: 'calendar-month-fill'
 	});
 
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'mine',
 		label: () => '我的',
 		href: '/mine',
-		order: 20
+		order: 20,
+		icon: 'person',
+		iconFill: 'person-fill'
 	});
 
 	ctx.registerSlot('mine.section', {

@@ -76,6 +76,16 @@ describe('@chronos/plugin-theme-yumemita', () => {
 		expect(paint.background).toBe(YUMEMITA_PALETTE_ENTRIES[0]!.background);
 	});
 
+	it('declares shell chrome CSS variables for bottom tab and leading icons', () => {
+		const shellVars = yumemitaThemeContribution.shell?.customCssVars;
+		expect(shellVars).toBeDefined();
+		expect(shellVars!['--shell-bottom-tab-active-bg']).toBe('transparent');
+		expect(shellVars!['--shell-bottom-tab-active-fg']).toBe(YUMEMITA_PRIMARY);
+		expect(shellVars!['--leading-icon-bg']).toContain(YUMEMITA_SECONDARY);
+		expect(shellVars!['--leading-icon-color']).toBe('#fff');
+		expect(yumemitaThemeContribution.customCssVars?.['--leading-icon-bg']).toBeUndefined();
+	});
+
 	it('apply registers theme slot without auto-selecting theme', async () => {
 		const engine = new ChronosEngine({ env: createMockEnv() });
 		const ctx = engine.getPluginContext(YUMEMITA_PLUGIN_ID);
