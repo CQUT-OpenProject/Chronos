@@ -284,6 +284,15 @@ export class DexieStorageProvider implements IStorageService {
 		}
 	}
 
+	async clearPluginData(pluginId: string): Promise<void> {
+		try {
+			await this.database.pluginData.where('pluginId').equals(pluginId).delete();
+			this.notifyChange({ type: 'pluginData', key: pluginId });
+		} catch (err) {
+			console.warn(`[DexieStorageProvider] Failed to clear plugin data for ${pluginId}:`, err);
+		}
+	}
+
 	async clearAllData(): Promise<void> {
 		try {
 			await this.database.transaction(

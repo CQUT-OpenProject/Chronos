@@ -50,6 +50,11 @@ function createMockEnv(httpRequest = vi.fn()) {
 			deletePluginData: async (pluginId: string, key: string): Promise<void> => {
 				kv.delete(`${pluginId}:${key}`);
 			},
+			clearPluginData: async (pluginId: string): Promise<void> => {
+				for (const key of kv.keys()) {
+					if (key.startsWith(`${pluginId}:`)) kv.delete(key);
+				}
+			},
 			onChanged: (_l: (e: StorageChangeEvent) => void) => ({ dispose: () => {} })
 		},
 		vault: {
@@ -185,6 +190,38 @@ describe('OfficialPluginService', () => {
 		await service.install(manifest);
 		await service.uninstall('test-plugin');
 		expect(engine.isPluginLoaded('test-plugin')).toBe(false);
+	});
+
+	it('uninstall wipes plugin-namespaced data', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '0.3.0',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		httpRequest.mockResolvedValueOnce({
+			ok: true,
+			text: async () => SAMPLE_BUNDLE
+		});
+		await service.install(manifest);
+
+		await engine.storage.setPluginData('test-plugin', 'wallpaper_image', { base64: 'x' });
+		expect(await engine.storage.getPluginData('test-plugin', 'wallpaper_image')).not.toBeNull();
+
+		await service.uninstall('test-plugin');
+
+		expect(await engine.storage.getPluginData('test-plugin', 'wallpaper_image')).toBeNull();
+		expect(
+			await engine.storage.getPluginData('core.official-plugins', 'installed_plugins')
+		).not.toBeNull();
 	});
 
 	it('skips init reload for profile-builtin plugins already loaded', async () => {

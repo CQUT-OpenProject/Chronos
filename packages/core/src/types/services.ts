@@ -76,6 +76,7 @@ export interface IStorageService {
 	getPluginData<T>(pluginId: string, key: string): Promise<T | null>;
 	setPluginData<T>(pluginId: string, key: string, value: T): Promise<void>;
 	deletePluginData(pluginId: string, key: string): Promise<void>;
+	clearPluginData?(pluginId: string): Promise<void>;
 
 	onChanged?(listener: (event: StorageChangeEvent) => void): Disposable;
 }

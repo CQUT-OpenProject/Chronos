@@ -210,6 +210,7 @@ export class OfficialPluginService implements Disposable {
 	async uninstall(pluginId: string): Promise<void> {
 		await this.unloadPluginInstance(pluginId);
 		this.installedCache = this.installedCache.filter((p) => p.manifest.id !== pluginId);
+		await this.engine.storage.clearPluginData?.(pluginId);
 		await this.saveInstalledToStorage();
 		this.engine.actions.notify(`插件「${pluginId}」已卸载`, 'info');
 	}
