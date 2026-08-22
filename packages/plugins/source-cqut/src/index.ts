@@ -13,17 +13,13 @@ import {
 	createTimetable,
 	coursePalette,
 	normalizedCourseName,
-	IHttpService,
-	IVaultService
+	IHttpService
 } from '@chronos/core';
 import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from './campus-period-times';
 import { htmlImportSchema, parseHtmlTimetable } from './html-parser';
-import {
-	CQUT_CREDENTIAL_RECORD_KEY,
-	CQUT_PASSWORD_SECRET_KEY,
-	SOURCE_CQUT_PLUGIN_ID,
-	type CqutCredentialRecord
-} from './credentials';
+
+const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
+const LEGACY_CREDENTIAL_RECORD_KEY = 'credential-record';
 
 export type { CqutCampusId } from './campus-period-times';
 export {
@@ -40,18 +36,11 @@ export {
 	shareIndexToCampusId,
 	resolveShareCampusId
 } from './campus-period-times';
-export {
-	SOURCE_CQUT_PLUGIN_ID,
-	CQUT_PASSWORD_SECRET_KEY,
-	CQUT_CREDENTIAL_RECORD_KEY,
-	type CqutCredentialRecord
-} from './credentials';
 
 export interface CqutImportForm {
 	username?: string;
 	account?: string;
 	password?: string;
-	saveCredentials?: boolean;
 }
 
 export const cqutImportSchema = defineSchema<CqutImportForm>({
@@ -66,11 +55,6 @@ export const cqutImportSchema = defineSchema<CqutImportForm>({
 		title: () => '密码',
 		placeholder: () => '请输入密码',
 		required: true
-	},
-	saveCredentials: {
-		type: 'boolean',
-		title: () => '在当前设备保存认证凭据',
-		default: false
 	}
 });
 
@@ -316,34 +300,7 @@ export function createCqutPlugin(
 		apply(ctx: ChronosContext<CqutPluginConfig>) {
 			const disabledSlots = new Set(ctx.config.disabledSlots ?? []);
 
-			async function saveCredentialsIfRequested(
-				username: string,
-				password: string,
-				saveCredentials: boolean | undefined,
-				activeCtx: ChronosContext
-			): Promise<void> {
-				if (!saveCredentials) return;
-				const trimmedAccount = username.trim();
-				if (!trimmedAccount) return;
-
-				const vault = activeCtx.service(IVaultService);
-				const canStoreSecret = Boolean(password.trim() && vault && (await vault.isSupported()));
-
-				if (canStoreSecret) {
-					await vault!.storeSecret(CQUT_PASSWORD_SECRET_KEY, password.trim());
-					await activeCtx.storage.set<CqutCredentialRecord>(CQUT_CREDENTIAL_RECORD_KEY, {
-						mode: 'vault',
-						account: trimmedAccount
-					});
-					return;
-				}
-
-				await vault?.removeSecret(CQUT_PASSWORD_SECRET_KEY);
-				await activeCtx.storage.set<CqutCredentialRecord>(CQUT_CREDENTIAL_RECORD_KEY, {
-					mode: 'account_only',
-					account: trimmedAccount
-				});
-			}
+			void ctx.storage.delete(LEGACY_CREDENTIAL_RECORD_KEY);
 
 			async function doImport(
 				inputs: Record<string, unknown>,
@@ -384,9 +341,7 @@ export function createCqutPlugin(
 				}
 
 				const parsedJson = (await response.json()) as CqutScheduleRawInput;
-				const timetable = parseCqutScheduleData(parsedJson, username, 'huaxi');
-				await saveCredentialsIfRequested(username, password, form.saveCredentials, activeCtx);
-				return timetable;
+				return parseCqutScheduleData(parsedJson, username, 'huaxi');
 			}
 
 			async function doHtmlImport(inputs: Record<string, unknown>): Promise<Timetable> {
@@ -408,13 +363,6 @@ export function createCqutPlugin(
 					order: 10,
 					component: onlineComponent,
 					inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-					defaultInput: {
-						saveCredentials: false
-					},
-					credential: {
-						recordKey: CQUT_CREDENTIAL_RECORD_KEY,
-						vaultKey: CQUT_PASSWORD_SECRET_KEY
-					},
 					executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
 						doImport(inputs, context)
 				});

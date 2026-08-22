@@ -5,30 +5,19 @@
 		controller?: ReactiveChronosController;
 		transfer: {
 			state: {
-				savedCredentialState: {
-					account: string | null;
-					hasSavedCredential: boolean;
-					protectionAvailable: boolean;
-					capabilitiesReady: boolean;
-					savedMode: 'vault' | 'account_only' | null;
-				};
 				errorMessage: string | null;
 				statusMessage: string | null;
 			};
 			previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean>;
-			previewWithSavedCredential?(): Promise<boolean>;
-			clearSavedCredential?(): Promise<boolean>;
 		};
 		onContinue: () => void;
 	}
 
 	let { transfer, onContinue }: Props = $props();
 
-	const transferState = $derived(transfer.state);
 	let loading = $state(false);
 	let account = $state('');
 	let password = $state('');
-	let saveCredentials = $state(false);
 	let passwordVisible = $state(false);
 	let isOnline = $state(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
@@ -48,25 +37,6 @@
 		};
 	});
 
-	$effect(() => {
-		const savedAccount = transferState.savedCredentialState.account;
-		if (savedAccount && account.trim() === '') {
-			account = savedAccount;
-		}
-	});
-
-	const saveCheckboxEnabled = $derived(
-		transferState.savedCredentialState.capabilitiesReady &&
-			(transferState.savedCredentialState.protectionAvailable || true)
-	);
-
-	const saveCheckboxLabelText = $derived.by(() => {
-		const s = transferState.savedCredentialState;
-		if (!s.capabilitiesReady) return '正在检测设备能力…';
-		if (s.protectionAvailable) return '保存帐号密码';
-		return '保存帐号（密码需每次输入）';
-	});
-
 	const onlineImportDisabled = $derived(loading || !isOnline);
 
 	function notifyTransferMessages() {
@@ -84,32 +54,13 @@
 			const ok = await transfer.previewWithSlot('cqut-online', {
 				username: account,
 				account,
-				password,
-				saveCredentials
+				password
 			});
 			if (ok) onContinue();
 			else notifyTransferMessages();
 		} finally {
 			loading = false;
 		}
-	}
-
-	async function handleSavedCredentialPreview() {
-		if (!transfer.previewWithSavedCredential) return;
-		loading = true;
-		try {
-			const ok = await transfer.previewWithSavedCredential();
-			if (ok) onContinue();
-			else notifyTransferMessages();
-		} finally {
-			loading = false;
-		}
-	}
-
-	async function handleClearSavedCredential() {
-		if (!transfer.clearSavedCredential) return;
-		await transfer.clearSavedCredential();
-		notifyTransferMessages();
 	}
 </script>
 
@@ -183,19 +134,6 @@
 			</div>
 		</div>
 
-		<label
-			class="m3-body-medium flex cursor-pointer items-center gap-2 px-1 text-on-surface-variant"
-		>
-			<input
-				type="checkbox"
-				checked={saveCredentials}
-				disabled={!saveCheckboxEnabled}
-				onchange={(e) => (saveCredentials = e.currentTarget.checked)}
-				class="size-4 rounded accent-primary disabled:opacity-50"
-			/>
-			<span>{saveCheckboxLabelText}</span>
-		</label>
-
 		<div class="flex w-full pt-1">
 			<button
 				type="button"
@@ -206,35 +144,5 @@
 				{loading ? '获取中…' : '从此账号导入课表'}
 			</button>
 		</div>
-
-		{#if transferState.savedCredentialState.hasSavedCredential}
-			<div class="flex flex-col gap-3 border-t border-outline-variant/60 pt-4">
-				<p class="m3-title-small text-on-surface">
-					已保存账号：{transferState.savedCredentialState.account ?? '未知'}
-				</p>
-				{#if transferState.savedCredentialState.savedMode === 'vault'}
-					<div class="flex w-full">
-						<button
-							type="button"
-							class="m3-label-large w-full rounded-full border border-outline bg-surface py-3 text-center font-medium text-on-surface disabled:opacity-50"
-							disabled={onlineImportDisabled}
-							onclick={handleSavedCredentialPreview}
-						>
-							{loading ? '获取中…' : '验证并预览'}
-						</button>
-					</div>
-				{/if}
-				<div class="flex w-full">
-					<button
-						type="button"
-						class="m3-label-large w-full py-2 text-center text-primary hover:underline disabled:opacity-50"
-						disabled={loading}
-						onclick={handleClearSavedCredential}
-					>
-						清除已保存凭据
-					</button>
-				</div>
-			</div>
-		{/if}
 	</div>
 </div>
