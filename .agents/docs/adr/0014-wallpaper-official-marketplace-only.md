@@ -1,6 +1,6 @@
 # ADR 0014: 课表壁纸退役 Profile 预设、转纯在线官方插件分发
 
-- **状态**: Proposed
+- **状态**: Accepted（待办由 [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md) 闭环）
 - **日期**: 2026-08-22
 - **关联**: 收敛 [ADR 0007](./0007-plugin-profile-and-preset-assembly.md) 装配边界；依赖 [ADR 0011](./0011-single-track-official-plugin-install.md)、[ADR 0012](./0012-online-plugin-rich-ui-via-esm-and-controlled-preview.md)（`865bb1861` 起）、[ADR 0013](./0013-import-pipeline-slot-closure-and-deep-convergence.md)
 - **范围**: Profile 装配与官方插件分发 (`apps/web/src/lib/boot`, `packages/plugins/wallpaper`, `packages/ui-kit`, `scripts/build-official-plugins.ts`, `apps/web/static/official-plugins`)
