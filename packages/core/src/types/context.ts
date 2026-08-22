@@ -80,6 +80,7 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 		readonly activeWeek: number;
 		readonly currentPeriodIndex: number | null;
 		readonly activeThemeId: string;
+		readonly activeIconThemeId: string;
 		readonly userPreferences: Readonly<UserPreferences>;
 	};
 
@@ -157,6 +158,7 @@ export interface ChronosEvents {
 	'preferences:updated': { preferences: UserPreferences };
 	'time:tick': { currentWeek: number; currentPeriod: number | null };
 	'theme:changed': { themeId: string };
+	'iconTheme:changed': { iconThemeId: string };
 	'i18n:localeChanged': { locale: string };
 	'config:changed': { pluginId: string; config: Record<string, unknown> };
 	'slots:updated': void;

@@ -10,6 +10,11 @@
 			"types": "./src/index.ts",
 			"import": "./src/index.ts",
 			"default": "./src/index.ts"
+		},
+		"./theme/workbench-colors": {
+			"types": "./src/theme/workbench-colors.ts",
+			"import": "./src/theme/workbench-colors.ts",
+			"default": "./src/theme/workbench-colors.ts"
 		}
 	}
 }

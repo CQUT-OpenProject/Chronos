@@ -8,7 +8,7 @@ export const LEGACY_PALETTE_MODE_DYNAMIC = 'wallpaper';
 export type TimetableLayoutMode = 'fixed' | 'compact';
 export type CapsuleCornerStyle = 'rounded' | 'sharp' | 'pill';
 
-export const CURRENT_PREFERENCES_SCHEMA_VERSION = 1;
+export const CURRENT_PREFERENCES_SCHEMA_VERSION = 2;
 
 export interface UserPreferences {
 	schemaVersion: number;
@@ -19,6 +19,8 @@ export interface UserPreferences {
 	hapticFeedbackEnabled: boolean;
 	/** Active visual theme id (e.g. m3-default, yumemita). */
 	visualThemeId?: string;
+	/** Active icon theme id (host-default = slot defaults only). */
+	visualIconThemeId?: string;
 	customMetadata?: Record<string, unknown>;
 }
 
@@ -29,5 +31,6 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
 	timetableLayoutMode: 'fixed',
 	capsuleCornerStyle: 'rounded',
 	hapticFeedbackEnabled: true,
-	visualThemeId: 'm3-default'
+	visualThemeId: 'm3-default',
+	visualIconThemeId: 'host-default'
 };

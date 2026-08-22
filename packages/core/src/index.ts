@@ -22,10 +22,10 @@ export * from './schema/schema';
 export * from './types/services';
 export * from './types/course-query';
 export * from './types/slots';
+export * from './types/mountable';
 export type {
 	ThemeContribution,
-	ThemeShellContribution,
-	BottomTabIconOverride,
+	ThemeWorkbenchColors,
 	CourseBadgeContribution
 } from './types/contributions';
 export type { PlatformType, ChronosEnv } from './types/env';
@@ -39,6 +39,11 @@ export * from './runtime/hierarchical-slot-registry';
 export { HierarchicalSlotRegistry as SlotRegistry } from './runtime/hierarchical-slot-registry';
 export * from './runtime/event-pipeline';
 export * from './runtime/theme-registry';
+export * from './runtime/icon-theme-registry';
+export * from './theme/workbench-colors';
+export * from './theme/icon-theme';
+export * from './theme/color-theme-json';
+export * from './theme/icon-theme-json';
 export * from './runtime/badge-manager';
 export * from './runtime/scoped-context';
 export * from './runtime/engine';

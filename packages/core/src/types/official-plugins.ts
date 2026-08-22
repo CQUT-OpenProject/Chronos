@@ -14,8 +14,14 @@ export interface PluginManifest {
 	type: 'theme' | 'source' | 'tool' | 'exporter';
 	bundleFormat: BundleFormat;
 	minEngineVersion: string;
-	bundleUrl: string;
-	sha256: string;
+	/** ESM plugin bundle (optional when colorsUrl is provided for theme plugins). */
+	bundleUrl?: string;
+	sha256?: string;
+	/** VS Code–style color theme JSON (theme plugins). */
+	colorsUrl?: string;
+	colorsSha256?: string;
+	iconThemeUrl?: string;
+	iconThemeSha256?: string;
 	/** Optional Ed25519 signature (future verification). */
 	signature?: string;
 	allowedDomains?: string[];

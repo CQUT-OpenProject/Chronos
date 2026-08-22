@@ -6,8 +6,8 @@ import type { ThemeContribution } from './contributions';
 
 export type LocalizedText = string | (() => string);
 
-/** Host registry key or Svelte component (profile builtin / ESM bundle). */
-export type ShellIconRef = string | unknown;
+/** Host registry key or structured shell icon descriptor. */
+export type ShellIconRef = string | import('../theme/icon-theme').ShellIconDescriptor;
 
 // 1. Import tab slot contribution specification (dynamic schema-driven interaction)
 export interface ImportTabSlotContribution<
@@ -133,6 +133,7 @@ export interface StandardSlotMap {
 	'timetable.cell.badge': CourseBadgeSlotContribution;
 	'course.detail.action': CourseActionSlotContribution;
 	'theme.definition': ThemeContribution;
+	'theme.icon.definition': import('../theme/icon-theme').IconThemeContribution;
 	[customSlotName: string]: unknown;
 }
 

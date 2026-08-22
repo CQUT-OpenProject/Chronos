@@ -1,6 +1,10 @@
 import type { Course } from '../domain/course';
 import { type AcademicConfig, type Timetable, createTimetable } from '../domain/timetable';
-import { type UserPreferences, DEFAULT_USER_PREFERENCES } from '../domain/preferences';
+import {
+	type UserPreferences,
+	DEFAULT_USER_PREFERENCES,
+	CURRENT_PREFERENCES_SCHEMA_VERSION
+} from '../domain/preferences';
 import type { ChronosEnv, StorageChangeEvent } from '../types/env';
 import type { Disposable } from '../types/services';
 import { IHttpService, IStorageService, IVaultService, IRuntimeService } from '../types/services';
@@ -11,6 +15,7 @@ import { EventPipeline } from './event-pipeline';
 import { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import { ServiceContainer } from './service-container';
 import { ThemeRegistry } from './theme-registry';
+import { IconThemeRegistry } from './icon-theme-registry';
 import { BadgeManager } from './badge-manager';
 import { ScopedContext, type EngineContextHost } from './scoped-context';
 import { AcademicCalendarService } from '../engine/calendar';
@@ -35,6 +40,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	readonly events: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes: ThemeRegistry;
+	readonly iconThemes: IconThemeRegistry;
 	readonly badges: BadgeManager;
 
 	private _locale: string;
@@ -81,7 +87,14 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.slots = new HierarchicalSlotRegistry(() => {
 			this.events.emit('slots:updated', undefined);
 		});
-		this.themes = new ThemeRegistry();
+		this.themes = new ThemeRegistry(() => {
+			this.events.emit('theme:changed', { themeId: this._activeThemeId });
+		});
+		this.iconThemes = new IconThemeRegistry(() => {
+			this.events.emit('iconTheme:changed', {
+				iconThemeId: this._userPreferences.visualIconThemeId ?? 'host-default'
+			});
+		});
 		this.badges = new BadgeManager((badges) => {
 			this.events.emit('badges:updated', { badges });
 		});
@@ -224,6 +237,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			activeWeek: this._activeWeek,
 			currentPeriodIndex: this._currentPeriodIndex,
 			activeThemeId: this._activeThemeId,
+			activeIconThemeId: this._userPreferences.visualIconThemeId ?? 'host-default',
 			userPreferences: this._userPreferences
 		};
 	}
@@ -553,10 +567,16 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	async updatePreferences(patch: Partial<UserPreferences>): Promise<void> {
 		this._userPreferences = {
 			...this._userPreferences,
-			...patch
+			...patch,
+			schemaVersion: CURRENT_PREFERENCES_SCHEMA_VERSION
 		};
 		await this.storage.savePreferences(patch);
 		this.events.emit('preferences:updated', { preferences: this._userPreferences });
+		if (patch.visualIconThemeId !== undefined) {
+			this.events.emit('iconTheme:changed', {
+				iconThemeId: patch.visualIconThemeId ?? 'host-default'
+			});
+		}
 	}
 
 	notify(message: string, type: 'info' | 'warn' | 'error' = 'info'): void {
@@ -733,6 +753,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.events.dispose();
 		this.slots.dispose();
 		this.themes.dispose();
+		this.iconThemes.dispose();
 		this.badges.dispose();
 		this.services.dispose();
 	}

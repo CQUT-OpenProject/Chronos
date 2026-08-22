@@ -10,6 +10,7 @@ import type { EventPipeline } from './event-pipeline';
 import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import type { ServiceContainer } from './service-container';
 import type { ThemeRegistry } from './theme-registry';
+import type { IconThemeRegistry } from './icon-theme-registry';
 import type { BadgeManager } from './badge-manager';
 
 export interface EngineContextHost {
@@ -17,6 +18,7 @@ export interface EngineContextHost {
 	readonly events: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes?: ThemeRegistry;
+	readonly iconThemes?: IconThemeRegistry;
 	readonly badges?: BadgeManager;
 	readonly env: ChronosEnv;
 	readonly locale: string;
@@ -26,6 +28,7 @@ export interface EngineContextHost {
 		readonly activeWeek: number;
 		readonly currentPeriodIndex: number | null;
 		readonly activeThemeId: string;
+		readonly activeIconThemeId: string;
 		readonly userPreferences: Readonly<UserPreferences>;
 	};
 	readonly actions: {
@@ -153,6 +156,15 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 			return this.track({
 				dispose: () => {
 					themeDisp.dispose();
+					slotDisp.dispose();
+				}
+			});
+		}
+		if (slotName === 'theme.icon.definition' && this.host.iconThemes) {
+			const iconDisp = this.host.iconThemes.registerIconTheme(contribution);
+			return this.track({
+				dispose: () => {
+					iconDisp.dispose();
 					slotDisp.dispose();
 				}
 			});
