@@ -17,13 +17,16 @@ export interface ThemeWorkbenchColors {
 	dark: Record<string, string>;
 }
 
-export interface WallpaperThemeAdapter {
+export interface DynamicColorAdapter {
 	extractWallpaperSeed(
 		uri: string
 	): Promise<{ seed: number; coursePalette: readonly CoursePaletteEntry[] }>;
 	paintWallpaperTheme(seed: number, isDark: boolean, target: HTMLElement): void;
 	clearWallpaperTheme(target?: HTMLElement): void;
 }
+
+/** @deprecated Use {@link DynamicColorAdapter} */
+export type WallpaperThemeAdapter = DynamicColorAdapter;
 
 export interface ThemeContribution {
 	readonly id: string;
@@ -37,7 +40,7 @@ export interface ThemeContribution {
 	readonly paletteEntries?:
 		| readonly CoursePaletteEntry[]
 		| ((mode: 'light' | 'dark') => readonly CoursePaletteEntry[]);
-	readonly dynamicColorAdapter?: WallpaperThemeAdapter;
+	readonly dynamicColorAdapter?: DynamicColorAdapter;
 	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
 	resolveCoursePaint?(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint;
 }

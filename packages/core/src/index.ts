@@ -26,7 +26,9 @@ export * from './types/mountable';
 export type {
 	ThemeContribution,
 	ThemeWorkbenchColors,
-	CourseBadgeContribution
+	CourseBadgeContribution,
+	DynamicColorAdapter,
+	WallpaperThemeAdapter
 } from './types/contributions';
 export type { PlatformType, ChronosEnv } from './types/env';
 export * from './types/context';

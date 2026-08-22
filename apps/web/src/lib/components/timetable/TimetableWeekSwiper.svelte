@@ -11,7 +11,7 @@
 
 	let {
 		screen,
-		hasWallpaper,
+		hasDynamicBackground,
 		coursePalette,
 		layoutMode,
 		capsuleCornerStyle = 'rounded',
@@ -19,7 +19,7 @@
 		onCourseLongClick
 	}: {
 		screen: TimetableScreenController;
-		hasWallpaper: boolean;
+		hasDynamicBackground: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
 		layoutMode: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
@@ -103,7 +103,7 @@
 					onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
 					{gridModel}
 					courseDisplayModels={courseModels}
-					{hasWallpaper}
+					{hasDynamicBackground}
 					{coursePalette}
 					paletteCourses={screenState.currentTimetable?.courses}
 					{layoutMode}

@@ -70,7 +70,7 @@
 					{courseDisplayModels}
 					{coursePalette}
 					{paletteCourses}
-					hasWallpaper={false}
+					hasDynamicBackground={false}
 					{layoutMode}
 					{capsuleCornerStyle}
 					{isCurrentWeek}

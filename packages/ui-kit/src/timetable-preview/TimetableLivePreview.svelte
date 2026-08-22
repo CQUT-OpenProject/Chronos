@@ -11,15 +11,15 @@
 
 	interface Props {
 		controller: ReactiveChronosController;
-		hasWallpaper?: boolean;
-		wallpaperUri?: string | null;
+		hasDynamicBackground?: boolean;
+		dynamicColorUri?: string | null;
 		interactive?: boolean;
 	}
 
 	let {
 		controller,
-		hasWallpaper = false,
-		wallpaperUri = null,
+		hasDynamicBackground = false,
+		dynamicColorUri = null,
 		interactive = false
 	}: Props = $props();
 
@@ -62,14 +62,16 @@
 </script>
 
 {#if timetable && gridModel}
-	<TimetableWallpaperLayer wallpaperUri={hasWallpaper && wallpaperUri ? wallpaperUri : null}>
+	<TimetableWallpaperLayer
+		wallpaperUri={hasDynamicBackground && dynamicColorUri ? dynamicColorUri : null}
+	>
 		<TimetablePreviewGrid
 			{displayedWeek}
 			{gridModel}
 			{courseDisplayModels}
 			coursePalette={resolvedPalette}
 			{paletteCourses}
-			hasWallpaper={hasWallpaper && Boolean(wallpaperUri)}
+			hasDynamicBackground={hasDynamicBackground && Boolean(dynamicColorUri)}
 			{layoutMode}
 			{capsuleCornerStyle}
 			{interactive}

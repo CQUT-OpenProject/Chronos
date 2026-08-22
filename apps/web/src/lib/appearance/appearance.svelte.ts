@@ -1,26 +1,19 @@
-import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from '@chronos/core';
+import { COURSE_PALETTE_ENTRIES, type DynamicColorAdapter } from '@chronos/core';
 import { getAppEngine } from '$lib/services/app-engine';
-import {
-	applyAppearance,
-	type ApplyAppearanceInput,
-	type WallpaperThemeAdapter
-} from './apply-appearance';
+import { applyAppearance, type ApplyAppearanceInput } from './apply-appearance';
 import { isDynamicColorPaletteMode } from './color-scheme';
 
 export function createAppearance() {
-	let coursePalette = $state.raw<readonly CoursePaletteEntry[]>(COURSE_PALETTE_ENTRIES);
+	let coursePalette =
+		$state.raw<readonly import('@chronos/core').CoursePaletteEntry[]>(COURSE_PALETTE_ENTRIES);
 
 	function resolveDynamicAdapter(
 		activeThemeId: string,
 		paletteMode: string
-	): WallpaperThemeAdapter | null {
+	): DynamicColorAdapter | null {
 		const engine = getAppEngine();
 		const readAdapter = (themeId: string) =>
-			(
-				engine.themes.getTheme(themeId) as unknown as
-					| { dynamicColorAdapter?: WallpaperThemeAdapter }
-					| undefined
-			)?.dynamicColorAdapter ?? null;
+			engine.themes.getTheme(themeId)?.dynamicColorAdapter ?? null;
 
 		if (isDynamicColorPaletteMode(paletteMode)) {
 			const fromPalette = readAdapter(paletteMode);
@@ -33,12 +26,12 @@ export function createAppearance() {
 	async function apply(input: ApplyAppearanceInput, signal?: AbortSignal) {
 		if (typeof document === 'undefined') return;
 
-		const adapter = resolveDynamicAdapter(input.activeThemeId, input.paletteMode);
+		const dynamicColorAdapter = resolveDynamicAdapter(input.activeThemeId, input.paletteMode);
 
 		try {
 			const result = await applyAppearance(input, {
 				target: document.documentElement,
-				wallpaper: adapter ?? undefined,
+				dynamicColorAdapter: dynamicColorAdapter ?? undefined,
 				signal
 			});
 			if (signal?.aborted) return;

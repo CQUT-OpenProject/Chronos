@@ -153,7 +153,7 @@
 							{courseDisplayModels}
 							{coursePalette}
 							{paletteCourses}
-							hasWallpaper={true}
+							hasDynamicBackground={true}
 							{layoutMode}
 							{capsuleCornerStyle}
 							{isCurrentWeek}
@@ -169,7 +169,7 @@
 						{courseDisplayModels}
 						{coursePalette}
 						{paletteCourses}
-						hasWallpaper={false}
+						hasDynamicBackground={false}
 						{layoutMode}
 						{capsuleCornerStyle}
 						{isCurrentWeek}

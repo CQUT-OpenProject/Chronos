@@ -58,7 +58,12 @@
 
 	{#if hasWallpaper && timetable}
 		<div class="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-			<TimetableLivePreview {controller} hasWallpaper={true} {wallpaperUri} interactive={false} />
+			<TimetableLivePreview
+				{controller}
+				hasDynamicBackground={true}
+				dynamicColorUri={wallpaperUri}
+				interactive={false}
+			/>
 		</div>
 	{:else}
 		<div class="flex min-h-0 flex-1 items-center justify-center bg-canvas p-4">

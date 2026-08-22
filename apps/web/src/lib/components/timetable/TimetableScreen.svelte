@@ -165,7 +165,7 @@
 		{#key screenState.currentTimetable?.id}
 			<TimetableWeekSwiper
 				{screen}
-				hasWallpaper={hasDynamicColorBackground}
+				hasDynamicBackground={hasDynamicColorBackground}
 				{coursePalette}
 				{layoutMode}
 				{capsuleCornerStyle}
