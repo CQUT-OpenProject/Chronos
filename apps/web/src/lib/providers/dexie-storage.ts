@@ -24,7 +24,8 @@ const SETTINGS_KEYS = {
 	paletteMode: 'chronos_preferences:palette_mode',
 	capsuleCornerStyle: 'chronos_preferences:capsule_corner_style',
 	hapticFeedbackEnabled: 'chronos_preferences:haptic_feedback_enabled',
-	visualThemeId: 'chronos_preferences:visual_theme_id'
+	visualThemeId: 'chronos_preferences:visual_theme_id',
+	visualIconThemeId: 'chronos_preferences:visual_icon_theme_id'
 } as const;
 
 function normalizeThemeMode(raw: string | null): import('@chronos/core').ThemeMode {
@@ -251,6 +252,8 @@ export class DexieStorageProvider implements IStorageService {
 		const hapticFeedbackEnabled = hapticRaw !== '0' && hapticRaw !== 'false';
 		const visualThemeId =
 			this.localStore.getItem(SETTINGS_KEYS.visualThemeId)?.trim() || 'm3-default';
+		const visualIconThemeId =
+			this.localStore.getItem(SETTINGS_KEYS.visualIconThemeId)?.trim() || 'host-default';
 
 		return {
 			schemaVersion: CURRENT_PREFERENCES_SCHEMA_VERSION,
@@ -259,7 +262,8 @@ export class DexieStorageProvider implements IStorageService {
 			timetableLayoutMode,
 			capsuleCornerStyle,
 			hapticFeedbackEnabled,
-			visualThemeId
+			visualThemeId,
+			visualIconThemeId
 		};
 	}
 
@@ -286,6 +290,9 @@ export class DexieStorageProvider implements IStorageService {
 		}
 		if (patch.visualThemeId !== undefined) {
 			this.localStore.setItem(SETTINGS_KEYS.visualThemeId, patch.visualThemeId);
+		}
+		if (patch.visualIconThemeId !== undefined) {
+			this.localStore.setItem(SETTINGS_KEYS.visualIconThemeId, patch.visualIconThemeId);
 		}
 
 		this.notifyChange({ type: 'preferences', key: 'preferences' });

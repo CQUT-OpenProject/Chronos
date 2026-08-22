@@ -1,6 +1,6 @@
 import type { ChronosEngine, PaletteMode } from '@chronos/core';
-import { PALETTE_MODE_VIBRANT } from '@chronos/core';
-import { applyThemeTokens } from '@chronos/ui-kit';
+import { PALETTE_MODE_VIBRANT, resolveThemeWorkbenchColors } from '@chronos/core';
+import { applyWorkbenchColors } from '@chronos/core';
 import { M3_DEFAULT_THEME_ID } from '$lib/appearance/color-scheme';
 
 let previouslyAppliedThemeClass: string | null = null;
@@ -27,29 +27,6 @@ function clearCustomThemeStyles(target: HTMLElement) {
 			target.style.removeProperty(prop);
 		}
 	}
-}
-
-function collectThemeCssVars(
-	theme: NonNullable<ReturnType<ChronosEngine['themes']['getTheme']>>,
-	mode: 'light' | 'dark'
-): Record<string, string> {
-	const merged: Record<string, string> = {};
-
-	const rootVars =
-		typeof theme.customCssVars === 'function' ? theme.customCssVars(mode) : theme.customCssVars;
-	if (rootVars) {
-		Object.assign(merged, rootVars);
-	}
-
-	const shellVars =
-		typeof theme.shell?.customCssVars === 'function'
-			? theme.shell.customCssVars(mode)
-			: theme.shell?.customCssVars;
-	if (shellVars) {
-		Object.assign(merged, shellVars);
-	}
-
-	return merged;
 }
 
 export function resolveEffectiveThemeId(
@@ -95,11 +72,6 @@ export function applyActiveTheme(
 	}
 
 	const mode = isDark ? 'dark' : 'light';
-	applyThemeTokens(theme.getTokens(mode), el);
-
-	const cssVars = collectThemeCssVars(theme, mode);
-	for (const [key, value] of Object.entries(cssVars)) {
-		el.style.setProperty(key, value);
-		previouslyAppliedCustomVarKeys.push(key);
-	}
+	const workbenchColors = resolveThemeWorkbenchColors(theme, mode);
+	previouslyAppliedCustomVarKeys = applyWorkbenchColors(el, workbenchColors);
 }

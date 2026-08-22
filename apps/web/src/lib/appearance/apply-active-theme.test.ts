@@ -9,6 +9,8 @@ function createFakeElement() {
 	const style = new Map<string, string>();
 	return {
 		classList: {
+			add: (cls: string) => classes.add(cls),
+			remove: (cls: string) => classes.delete(cls),
 			toggle: (cls: string, force?: boolean) => {
 				if (force) classes.add(cls);
 				else classes.delete(cls);
@@ -25,8 +27,9 @@ function createFakeElement() {
 			[Symbol.iterator]: function* () {
 				for (const key of style.keys()) yield key;
 			}
-		}
-	} as unknown as HTMLElement;
+		},
+		getStyle: () => style
+	} as unknown as HTMLElement & { getStyle: () => Map<string, string> };
 }
 
 describe('applyActiveTheme', () => {
@@ -54,12 +57,14 @@ describe('applyActiveTheme', () => {
 					getActiveTimetableId: async () => null,
 					setActiveTimetableId: async () => {},
 					getPreferences: async () => ({
-						schemaVersion: 1,
+						schemaVersion: 2,
 						themeMode: 'auto',
 						paletteMode: 'wallpaper',
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
-						hapticFeedbackEnabled: true
+						hapticFeedbackEnabled: true,
+						visualThemeId: 'm3-default',
+						visualIconThemeId: 'host-default'
 					}),
 					savePreferences: async () => {},
 					getPluginData: async () => null,
@@ -93,7 +98,7 @@ describe('applyActiveTheme', () => {
 		engine.dispose();
 	});
 
-	it('applies className and customCssVars from self-describing ThemeContribution', () => {
+	it('applies className and workbench colors from ThemeContribution', () => {
 		const engine = new ChronosEngine({
 			env: {
 				platform: 'web',
@@ -117,12 +122,14 @@ describe('applyActiveTheme', () => {
 					getActiveTimetableId: async () => null,
 					setActiveTimetableId: async () => {},
 					getPreferences: async () => ({
-						schemaVersion: 1,
+						schemaVersion: 2,
 						themeMode: 'auto',
 						paletteMode: 'vibrant',
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
-						hapticFeedbackEnabled: true
+						hapticFeedbackEnabled: true,
+						visualThemeId: 'm3-default',
+						visualIconThemeId: 'host-default'
 					}),
 					savePreferences: async () => {},
 					getPluginData: async () => null,
@@ -149,8 +156,14 @@ describe('applyActiveTheme', () => {
 			id: 'custom-theme',
 			name: () => 'Custom Theme',
 			className: 'theme-custom',
-			customCssVars: {
-				'--custom-primary': '#123456'
+			workbenchColors: {
+				light: {
+					'color.primary': '#123456',
+					'shell.bottomTab.activeBackground': 'transparent'
+				},
+				dark: {
+					'color.primary': '#abcdef'
+				}
 			},
 			getTokens: () => ({
 				surface: '#fff',
@@ -162,30 +175,8 @@ describe('applyActiveTheme', () => {
 			})
 		});
 
-		const styleMap = new Map<string, string>();
-		const classes = new Set<string>();
-		const target = {
-			classList: {
-				add: (cls: string) => classes.add(cls),
-				remove: (cls: string) => classes.delete(cls),
-				toggle: (cls: string, force?: boolean) => {
-					if (force ?? !classes.has(cls)) classes.add(cls);
-					else classes.delete(cls);
-				},
-				contains: (cls: string) => classes.has(cls)
-			},
-			style: {
-				setProperty: (name: string, value: string) => {
-					styleMap.set(name, value);
-				},
-				removeProperty: (name: string) => {
-					styleMap.delete(name);
-				},
-				[Symbol.iterator]: function* () {
-					for (const key of styleMap.keys()) yield key;
-				}
-			}
-		} as unknown as HTMLElement;
+		const target = createFakeElement();
+		const styleMap = (target as HTMLElement & { getStyle: () => Map<string, string> }).getStyle();
 
 		applyActiveTheme(engine, 'custom-theme', false, {
 			paletteMode: 'vibrant',
@@ -193,106 +184,7 @@ describe('applyActiveTheme', () => {
 		});
 
 		expect(target.classList.contains('theme-custom')).toBe(true);
-		expect(styleMap.get('--custom-primary')).toBe('#123456');
-		engine.dispose();
-	});
-
-	it('merges shell.customCssVars with root customCssVars', () => {
-		const engine = new ChronosEngine({
-			env: {
-				platform: 'web',
-				http: {
-					request: async () => ({
-						ok: false,
-						status: 500,
-						statusText: '',
-						headers: {},
-						text: async () => '',
-						json: async <T>() => ({}) as T,
-						bytes: async () => new Uint8Array()
-					})
-				},
-				storage: {
-					getTimetable: async () => null,
-					listTimetables: async () => [],
-					saveTimetable: async () => {},
-					patchTimetable: async () => {},
-					deleteTimetable: async () => {},
-					getActiveTimetableId: async () => null,
-					setActiveTimetableId: async () => {},
-					getPreferences: async () => ({
-						schemaVersion: 1,
-						themeMode: 'auto',
-						paletteMode: 'vibrant',
-						timetableLayoutMode: 'fixed',
-						capsuleCornerStyle: 'rounded',
-						hapticFeedbackEnabled: true
-					}),
-					savePreferences: async () => {},
-					getPluginData: async () => null,
-					setPluginData: async () => {},
-					deletePluginData: async () => {}
-				},
-				vault: {
-					isSupported: async () => false,
-					storeSecret: async () => {},
-					getSecret: async () => null,
-					removeSecret: async () => {}
-				},
-				runtime: {
-					setTimeout: () => 0,
-					clearTimeout: () => {},
-					sha256: async () => '',
-					encodeUtf8: () => new Uint8Array(),
-					decodeUtf8: () => ''
-				}
-			}
-		});
-
-		engine.themes.registerTheme({
-			id: 'shell-theme',
-			name: () => 'Shell Theme',
-			customCssVars: { '--root-var': '#111111' },
-			shell: {
-				customCssVars: { '--shell-bottom-tab-active-bg': 'transparent' }
-			},
-			getTokens: () => ({
-				surface: '#fff',
-				onSurface: '#000',
-				primary: '#111111',
-				onPrimary: '#fff',
-				surfaceVariant: '#eee',
-				outline: '#ccc'
-			})
-		});
-
-		const styleMap = new Map<string, string>();
-		const target = {
-			classList: {
-				add: () => {},
-				remove: () => {},
-				toggle: () => {},
-				contains: () => false
-			},
-			style: {
-				setProperty: (name: string, value: string) => {
-					styleMap.set(name, value);
-				},
-				removeProperty: (name: string) => {
-					styleMap.delete(name);
-				},
-				[Symbol.iterator]: function* () {
-					for (const key of styleMap.keys()) yield key;
-				}
-			}
-		} as unknown as HTMLElement;
-
-		applyActiveTheme(engine, 'shell-theme', false, {
-			paletteMode: 'vibrant',
-			target
-		});
-
-		expect(styleMap.get('--root-var')).toBe('#111111');
+		expect(styleMap.get('--color-primary')).toBe('#123456');
 		expect(styleMap.get('--shell-bottom-tab-active-bg')).toBe('transparent');
 		engine.dispose();
 	});

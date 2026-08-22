@@ -3,12 +3,13 @@
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import type { BottomTabSlotContribution } from '@chronos/core';
-	import { PALETTE_MODE_VIBRANT } from '@chronos/core';
+	import { HOST_DEFAULT_ICON_THEME_ID, PALETTE_MODE_VIBRANT } from '@chronos/core';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { toAppPathname } from '$lib/navigation/app-pathname';
 	import { getAppController, getAppEngine } from '$lib/services/app-engine';
 	import { resolveEffectiveThemeId } from '$lib/appearance/apply-active-theme';
-	import { resolveShellIcon } from '$lib/shell/resolve-shell-icon';
+	import { resolveShellIcon, shellIconSizeClass } from '$lib/shell/resolve-shell-icon';
+	import ShellSvgIcon from '$lib/shell/ShellSvgIcon.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
@@ -37,13 +38,16 @@
 		void controller.userPreferences;
 
 		const engine = getAppEngine();
-		const paletteMode = controller.userPreferences?.paletteMode ?? PALETTE_MODE_VIBRANT;
-		const effectiveThemeId = resolveEffectiveThemeId(engine, controller.activeThemeId, paletteMode);
-		const themeOverride = engine.themes.getTheme(effectiveThemeId)?.shell?.bottomTabIcons?.[tab.id];
+		const iconThemeId = controller.userPreferences?.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID;
+		const iconTheme =
+			iconThemeId !== HOST_DEFAULT_ICON_THEME_ID
+				? engine.iconThemes.getIconTheme(iconThemeId)
+				: undefined;
+		const iconOverride = iconTheme?.bottomTabIcons?.[tab.id];
 
 		const iconRef = active
-			? (themeOverride?.iconFill ?? themeOverride?.icon ?? tab.iconFill ?? tab.icon)
-			: (themeOverride?.icon ?? tab.icon);
+			? (iconOverride?.iconFill ?? iconOverride?.icon ?? tab.iconFill ?? tab.icon)
+			: (iconOverride?.icon ?? tab.icon);
 
 		return resolveShellIcon(iconRef);
 	}
@@ -68,7 +72,7 @@
 	<nav aria-label="主导航" class="flex h-full w-full max-w-md items-center justify-around">
 		{#each sortedTabs as tab (tab.id)}
 			{@const active = isActive(tab.href)}
-			{@const Icon = resolveTabIcon(tab, active)}
+			{@const icon = resolveTabIcon(tab, active)}
 			<a
 				href={resolve(tab.href as any)}
 				data-sveltekit-preload-data="off"
@@ -82,8 +86,18 @@
 						? 'shell-bottom-tab-active'
 						: ''}"
 				>
-					{#if Icon}
-						<Icon class="size-[22px] sm:size-6" />
+					{#if icon?.kind === 'component'}
+						{@const Icon = icon.component}
+						<Icon class={shellIconSizeClass()} />
+					{:else if icon?.kind === 'svg'}
+						<ShellSvgIcon
+							markup={icon.markup}
+							rotation={icon.rotation}
+							opacity={icon.opacity}
+							class={shellIconSizeClass(icon.size)}
+						/>
+					{:else if icon?.kind === 'url'}
+						<img src={icon.url} alt="" class="object-contain {shellIconSizeClass(icon.size)}" />
 					{/if}
 				</span>
 				<span
