@@ -1,5 +1,5 @@
 import type { AppShellController } from '$lib/app/app-shell.svelte';
-import { credentialEnvironment } from '$lib/client/credential-environment.svelte';
+import { runVaultLegacyCleanup } from '$lib/client/vault-legacy-cleanup';
 import { connectivity } from '$lib/platform/connectivity.svelte';
 import { onboardingController } from '$lib/client/onboarding.svelte';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
@@ -31,9 +31,10 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 
 		initNavigationStack(pathname);
 		connectivity.init();
-		void credentialEnvironment.init();
 
-		void ensureEngineReady().then(() => {
+		void ensureEngineReady().then(async () => {
+			const engine = getAppEngine();
+			await runVaultLegacyCleanup(engine);
 			deps.shell.init();
 			deps.timetableScreen.init(deps.shell);
 			void pwaInstallController.init();

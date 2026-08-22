@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import {
 	DexieStorageProvider,
-	WebAuthnVaultProvider,
-	MemoryVaultProvider,
 	WebHttpProxyProvider,
 	PluginProxyHttpAdapter,
 	WebRuntimeProvider,
@@ -10,12 +8,12 @@ import {
 	createWebProviders,
 	registerWebProviders
 } from './index';
+import { MemoryVaultProvider } from './memory-vault';
 import {
 	createCourse,
 	createTimetable,
 	ServiceContainer,
 	IStorageService,
-	IVaultService,
 	IHttpService,
 	IRuntimeService,
 	IAnalyticsService
@@ -169,15 +167,12 @@ describe('Web Providers', () => {
 		expect(await vault.getSecret('api-token')).toBeNull();
 	});
 
-	it('WebAuthnVaultProvider does not persist plaintext secrets', async () => {
-		const vault = new WebAuthnVaultProvider(localStorage, {
-			isSupported: async () => false
-		});
-		await expect(vault.storeSecret('api-token', 'sec-999')).rejects.toThrow(
-			'WebAuthn PRF vault is not available'
-		);
-		expect(localStorage.getItem('chronos_vault:api-token')).toBeNull();
-		expect(localStorage.getItem('chronos_vault_enc:api-token')).toBeNull();
+	it('createWebProviders instantiates all web providers', () => {
+		const providers = createWebProviders({ database: db, localStorage, enablePluginProxy: true });
+		expect(providers.storage).toBeInstanceOf(DexieStorageProvider);
+		expect(providers.http).toBeInstanceOf(PluginProxyHttpAdapter);
+		expect(providers.runtime).toBeInstanceOf(WebRuntimeProvider);
+		expect(providers.analytics).toBeInstanceOf(WebAnalyticsProvider);
 	});
 
 	it('WebHttpProxyProvider enforces SSRF and domain whitelist protection', async () => {
@@ -261,15 +256,6 @@ describe('Web Providers', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('createWebProviders instantiates all web providers', () => {
-		const providers = createWebProviders({ database: db, localStorage, enablePluginProxy: true });
-		expect(providers.storage).toBeInstanceOf(DexieStorageProvider);
-		expect(providers.vault).toBeInstanceOf(WebAuthnVaultProvider);
-		expect(providers.http).toBeInstanceOf(PluginProxyHttpAdapter);
-		expect(providers.runtime).toBeInstanceOf(WebRuntimeProvider);
-		expect(providers.analytics).toBeInstanceOf(WebAnalyticsProvider);
-	});
-
 	it('createWebProviders uses plain HTTP when plugin proxy disabled', () => {
 		const providers = createWebProviders({ database: db, localStorage, enablePluginProxy: false });
 		expect(providers.http).toBeInstanceOf(WebHttpProxyProvider);
@@ -281,7 +267,6 @@ describe('Web Providers', () => {
 		registerWebProviders(container, { database: db, localStorage });
 
 		expect(container.has(IStorageService)).toBe(true);
-		expect(container.has(IVaultService)).toBe(true);
 		expect(container.has(IHttpService)).toBe(true);
 		expect(container.has(IRuntimeService)).toBe(true);
 		expect(container.has(IAnalyticsService)).toBe(true);

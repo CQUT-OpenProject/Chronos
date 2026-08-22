@@ -53,8 +53,8 @@ export interface ChronosEnv {
 		onChanged?(listener: (event: StorageChangeEvent) => void): Disposable;
 	};
 
-	/** Hardware security credential abstraction (Web: WebAuthn PRF; iOS: Keychain; Android: Keystore) */
-	vault: {
+	/** Optional hardware security credential abstraction (native hosts: Keychain / Keystore) */
+	vault?: {
 		isSupported(): Promise<boolean>;
 		storeSecret(key: string, secret: string, options?: VaultSecretOptions): Promise<void>;
 		getSecret(key: string): Promise<string | null>;

@@ -4,7 +4,6 @@ const mocks = vi.hoisted(() => ({
 	initNavigationStack: vi.fn(),
 	connectivityInit: vi.fn(),
 	connectivityDestroy: vi.fn(),
-	credentialEnvironmentInit: vi.fn().mockResolvedValue(undefined),
 	pwaInstallInit: vi.fn().mockResolvedValue(undefined),
 	setInstallPromptGate: vi.fn(),
 	tryScheduleInstallDialog: vi.fn(),
@@ -23,12 +22,6 @@ vi.mock('$lib/platform/connectivity.svelte', () => ({
 		init: mocks.connectivityInit,
 		destroy: mocks.connectivityDestroy,
 		isOnline: true
-	}
-}));
-
-vi.mock('$lib/client/credential-environment.svelte', () => ({
-	credentialEnvironment: {
-		init: mocks.credentialEnvironmentInit
 	}
 }));
 
@@ -54,7 +47,8 @@ vi.mock('$lib/services/app-engine', () => ({
 	ensureEngineReady: vi.fn().mockResolvedValue({}),
 	getAppEngine: vi.fn(() => ({
 		themes: { getTheme: vi.fn() },
-		state: { activeThemeId: 'm3-default' }
+		state: { activeThemeId: 'm3-default' },
+		storage: { deletePluginData: vi.fn().mockResolvedValue(undefined) }
 	}))
 }));
 
@@ -111,7 +105,6 @@ describe('createPlatformBootstrap', () => {
 
 		expect(mocks.initNavigationStack).toHaveBeenCalledWith('/');
 		expect(mocks.connectivityInit).toHaveBeenCalled();
-		expect(mocks.credentialEnvironmentInit).toHaveBeenCalled();
 		expect(timetableScreen.init).toHaveBeenCalledWith(shell);
 		expect(mocks.pwaInstallInit).toHaveBeenCalled();
 		expect(mocks.initWebVitals).toHaveBeenCalled();

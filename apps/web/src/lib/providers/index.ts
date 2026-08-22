@@ -1,6 +1,5 @@
 import {
 	IStorageService,
-	IVaultService,
 	IHttpService,
 	IRuntimeService,
 	IAnalyticsService,
@@ -8,8 +7,6 @@ import {
 } from '@chronos/core';
 import type { ChronosDB } from '$lib/storage/db';
 import { DexieStorageProvider } from './dexie-storage';
-import { MemoryVaultProvider } from './memory-vault';
-import { WebAuthnVaultProvider } from './webauthn-vault';
 import { WebHttpProxyProvider } from './web-http';
 import { PluginProxyHttpAdapter } from './plugin-proxy-http';
 import { WebRuntimeProvider } from './web-runtime';
@@ -17,8 +14,6 @@ import { WebAnalyticsProvider } from './web-analytics';
 
 export {
 	DexieStorageProvider,
-	WebAuthnVaultProvider,
-	MemoryVaultProvider,
 	WebHttpProxyProvider,
 	PluginProxyHttpAdapter,
 	WebRuntimeProvider,
@@ -42,7 +37,6 @@ export function createWebProviders(options?: WebProviderOptions) {
 
 	return {
 		storage: new DexieStorageProvider(options?.database, options?.localStorage),
-		vault: new WebAuthnVaultProvider(options?.localStorage),
 		http,
 		runtime: new WebRuntimeProvider(),
 		analytics: new WebAnalyticsProvider()
@@ -58,7 +52,6 @@ export function createWebChronosEnv(options?: WebProviderOptions) {
 		platform: 'web' as const,
 		http: providers.http,
 		storage: providers.storage,
-		vault: providers.vault,
 		runtime: providers.runtime
 	};
 }
@@ -74,9 +67,6 @@ export function registerWebProviders(
 
 	if (!container.has(IStorageService)) {
 		container.register(IStorageService, providers.storage);
-	}
-	if (!container.has(IVaultService)) {
-		container.register(IVaultService, providers.vault);
 	}
 	if (!container.has(IHttpService)) {
 		container.register(IHttpService, providers.http);

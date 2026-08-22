@@ -155,16 +155,23 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				deletePluginData: (pid, k) => services.get(IStorageService).deletePluginData(pid, k),
 				onChanged: (l) => services.get(IStorageService).onChanged?.(l) ?? { dispose: () => {} }
 			},
-			vault: {
-				isSupported: () => services.tryGet(IVaultService)?.isSupported() ?? Promise.resolve(false),
-				storeSecret: (k, s, opts) => {
-					const svc = services.tryGet(IVaultService);
-					if (!svc) throw new Error('[ChronosEngine] IVaultService is not registered');
-					return svc.storeSecret(k, s, opts);
-				},
-				getSecret: (k) => services.tryGet(IVaultService)?.getSecret(k) ?? Promise.resolve(null),
-				removeSecret: (k) => services.tryGet(IVaultService)?.removeSecret(k) ?? Promise.resolve()
-			},
+			...(services.tryGet(IVaultService)
+				? {
+						vault: {
+							isSupported: () =>
+								services.tryGet(IVaultService)?.isSupported() ?? Promise.resolve(false),
+							storeSecret: (k, s, opts) => {
+								const svc = services.tryGet(IVaultService);
+								if (!svc) throw new Error('[ChronosEngine] IVaultService is not registered');
+								return svc.storeSecret(k, s, opts);
+							},
+							getSecret: (k) =>
+								services.tryGet(IVaultService)?.getSecret(k) ?? Promise.resolve(null),
+							removeSecret: (k) =>
+								services.tryGet(IVaultService)?.removeSecret(k) ?? Promise.resolve()
+						}
+					}
+				: {}),
 			runtime: {
 				setTimeout: (fn, ms) =>
 					services.tryGet(IRuntimeService)?.setTimeout(fn, ms) ??
