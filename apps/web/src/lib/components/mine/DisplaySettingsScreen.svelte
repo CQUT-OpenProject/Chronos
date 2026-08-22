@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { HOST_DEFAULT_ICON_THEME_ID } from '@chronos/core';
 	import type { CapsuleCornerStyle, ThemeMode, TimetableLayoutMode } from '@chronos/core';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
@@ -18,7 +19,30 @@
 	);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const visualThemeId = $derived(shell.controller.activeThemeId);
+	const activeIconThemeId = $derived(
+		shell.controller.userPreferences?.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID
+	);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
+
+	const iconThemeOptions = $derived.by(() => {
+		void shell.controller.slotVersion;
+		const builtin = {
+			id: HOST_DEFAULT_ICON_THEME_ID,
+			label: '默认',
+			description: '使用应用内置导航图标'
+		};
+		const pluginIconThemes = getAppEngine()
+			.iconThemes.getIconThemes()
+			.map((theme) => ({
+				id: theme.id,
+				label: typeof theme.name === 'function' ? theme.name() : theme.name,
+				description:
+					typeof theme.description === 'function'
+						? theme.description()
+						: (theme.description ?? undefined)
+			}));
+		return [builtin, ...pluginIconThemes];
+	});
 
 	const colorSchemeOptions = $derived.by(() => {
 		void shell.controller.slotVersion;
@@ -109,6 +133,12 @@
 		}
 	] as const;
 
+	async function selectIconTheme(iconThemeId: string) {
+		haptic.light();
+		trackEvent('settings_icon_theme_change', { iconThemeId });
+		await shell.setIconTheme(iconThemeId);
+	}
+
 	async function selectColorScheme(schemeId: string) {
 		const option = colorSchemeOptions.find((entry) => entry.id === schemeId);
 		if (!option || option.disabled) return;
@@ -168,6 +198,22 @@
 						disabled={option.disabled}
 						onchange={() => selectColorScheme(option.id)}
 					/>
+				{/snippet}
+			</MineRow>
+		{/each}
+	</MineSection>
+
+	<MineSection title="图标主题">
+		{#each iconThemeOptions as option (option.id)}
+			{@const selected = activeIconThemeId === option.id}
+			<MineRow
+				label={true}
+				title={option.label}
+				supporting={option.description}
+				onclick={() => selectIconTheme(option.id)}
+			>
+				{#snippet trailing()}
+					<Radio name="icon-theme" checked={selected} onchange={() => selectIconTheme(option.id)} />
 				{/snippet}
 			</MineRow>
 		{/each}
