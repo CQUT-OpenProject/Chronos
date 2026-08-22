@@ -1,5 +1,5 @@
 import type { PaletteMode, CoursePaletteEntry } from '@chronos/core';
-import { resolveCoursePalette } from '@chronos/core';
+import { PALETTE_MODE_VIBRANT, resolveCoursePalette } from '@chronos/core';
 
 export interface WallpaperThemeAdapter {
 	extractWallpaperSeed(uri: string): Promise<{
@@ -42,18 +42,18 @@ export async function applyAppearance(
 
 	abortIfNeeded(signal);
 
-	if (wallpaperUri && wallpaper) {
+	if (paletteMode !== PALETTE_MODE_VIBRANT && wallpaperUri && wallpaper) {
 		try {
 			const { seed, coursePalette: wallpaperPalette } =
 				await wallpaper.extractWallpaperSeed(wallpaperUri);
 			abortIfNeeded(signal);
 			wallpaper.paintWallpaperTheme(seed, isDark, target ?? document.documentElement);
 			abortIfNeeded(signal);
-			return { coursePalette: resolveCoursePalette('wallpaper', wallpaperPalette) };
+			return { coursePalette: resolveCoursePalette(paletteMode, wallpaperPalette) };
 		} catch (error) {
 			if (signal?.aborted) throw error;
 			wallpaper.clearWallpaperTheme(target);
-			return { coursePalette: resolveCoursePalette('vibrant', null) };
+			return { coursePalette: resolveCoursePalette(PALETTE_MODE_VIBRANT, null) };
 		}
 	}
 

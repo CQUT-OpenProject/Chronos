@@ -3,11 +3,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import { getAppEngine } from '$lib/services/app-engine';
-	import {
-		BUILTIN_COLOR_SCHEME_VIBRANT,
-		BUILTIN_COLOR_SCHEME_WALLPAPER,
-		resolveColorSchemeId
-	} from '$lib/appearance/color-scheme';
+	import { BUILTIN_COLOR_SCHEME_VIBRANT, resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
@@ -20,7 +16,7 @@
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
 	);
-	const hasWallpaper = $derived(shell.state.hasWallpaper);
+	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const visualThemeId = $derived(shell.controller.activeThemeId);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
 
@@ -42,12 +38,12 @@
 			.map((theme) => {
 				const isDynamicTheme = Boolean(theme.supportsDynamicColor);
 				const isDisabled = isDynamicTheme
-					? !hasWallpaper
+					? !hasDynamicColorBackground
 					: typeof theme.disabled === 'function'
 						? theme.disabled()
 						: Boolean(theme.disabled);
 				const defaultDesc = isDynamicTheme
-					? hasWallpaper
+					? hasDynamicColorBackground
 						? '从当前壁纸提取配色'
 						: '请先设置壁纸后再使用'
 					: undefined;

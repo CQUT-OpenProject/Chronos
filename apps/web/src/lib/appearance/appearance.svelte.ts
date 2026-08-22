@@ -5,45 +5,40 @@ import {
 	type ApplyAppearanceInput,
 	type WallpaperThemeAdapter
 } from './apply-appearance';
+import { isDynamicColorPaletteMode } from './color-scheme';
 
 export function createAppearance() {
 	let coursePalette = $state.raw<readonly CoursePaletteEntry[]>(COURSE_PALETTE_ENTRIES);
-	let wallpaperModule: WallpaperThemeAdapter | null = null;
 
 	function resolveDynamicAdapter(
 		activeThemeId: string,
 		paletteMode: string
 	): WallpaperThemeAdapter | null {
 		const engine = getAppEngine();
-		const theme = engine.themes.getTheme(activeThemeId) ?? engine.themes.getTheme(paletteMode);
-		const adapter = (theme as unknown as { dynamicColorAdapter?: WallpaperThemeAdapter })
-			?.dynamicColorAdapter;
-		if (adapter) return adapter;
-		return null;
-	}
+		const readAdapter = (themeId: string) =>
+			(
+				engine.themes.getTheme(themeId) as unknown as
+					| { dynamicColorAdapter?: WallpaperThemeAdapter }
+					| undefined
+			)?.dynamicColorAdapter ?? null;
 
-	async function resolveWallpaperModule(
-		activeThemeId: string,
-		paletteMode: string
-	): Promise<WallpaperThemeAdapter | null> {
-		const adapter = resolveDynamicAdapter(activeThemeId, paletteMode);
-		if (adapter) return adapter;
-		// 回退：旧版字符串特判，仅当主题仍为 'wallpaper' 但 adapter 未注册时
-		const engine = getAppEngine();
-		if (!engine.themes.getTheme('wallpaper')) return null;
-		wallpaperModule ??= await import('@chronos/plugin-wallpaper/wallpaper-theme');
-		return wallpaperModule;
+		if (isDynamicColorPaletteMode(paletteMode)) {
+			const fromPalette = readAdapter(paletteMode);
+			if (fromPalette) return fromPalette;
+		}
+
+		return readAdapter(activeThemeId);
 	}
 
 	async function apply(input: ApplyAppearanceInput, signal?: AbortSignal) {
 		if (typeof document === 'undefined') return;
 
-		const wallpaper = await resolveWallpaperModule(input.activeThemeId, input.paletteMode);
+		const adapter = resolveDynamicAdapter(input.activeThemeId, input.paletteMode);
 
 		try {
 			const result = await applyAppearance(input, {
 				target: document.documentElement,
-				wallpaper: wallpaper ?? undefined,
+				wallpaper: adapter ?? undefined,
 				signal
 			});
 			if (signal?.aborted) return;
@@ -55,9 +50,11 @@ export function createAppearance() {
 	}
 
 	function destroy() {
-		if (typeof document !== 'undefined') {
-			wallpaperModule?.clearWallpaperTheme(document.documentElement);
-		}
+		if (typeof document === 'undefined') return;
+		const engine = getAppEngine();
+		const paletteMode = engine.state.userPreferences?.paletteMode ?? 'vibrant';
+		const adapter = resolveDynamicAdapter(engine.state.activeThemeId, paletteMode);
+		adapter?.clearWallpaperTheme(document.documentElement);
 	}
 
 	return {

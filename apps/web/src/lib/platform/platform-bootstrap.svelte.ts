@@ -58,7 +58,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 				$effect(() => {
 					const isDark = deps.shell.state.isDark;
 					const paletteMode = deps.shell.controller.userPreferences?.paletteMode ?? 'vibrant';
-					const wallpaperUri = deps.shell.state.wallpaperUri;
+					const dynamicColorUri = deps.shell.state.dynamicColorUri;
 					const activeThemeId = deps.shell.controller.activeThemeId;
 					const engine = getAppEngine();
 
@@ -73,7 +73,13 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 
 					const ac = new AbortController();
 					void deps.shell.appearance.apply(
-						{ isDark, paletteMode, wallpaperUri, activeThemeId, themePaletteEntries },
+						{
+							isDark,
+							paletteMode,
+							wallpaperUri: dynamicColorUri,
+							activeThemeId,
+							themePaletteEntries
+						},
 						ac.signal
 					);
 					return () => ac.abort();

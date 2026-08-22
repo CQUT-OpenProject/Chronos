@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
 	BUILTIN_COLOR_SCHEME_VIBRANT,
-	BUILTIN_COLOR_SCHEME_WALLPAPER,
+	DYNAMIC_COLOR_SCHEME_ID,
 	M3_DEFAULT_THEME_ID,
 	buildColorSchemePatch,
 	resolveColorSchemeId
@@ -9,7 +9,7 @@ import {
 
 describe('color-scheme', () => {
 	it('resolves wallpaper before visual theme id', () => {
-		expect(resolveColorSchemeId('wallpaper', 'yumemita')).toBe(BUILTIN_COLOR_SCHEME_WALLPAPER);
+		expect(resolveColorSchemeId('wallpaper', 'yumemita')).toBe(DYNAMIC_COLOR_SCHEME_ID);
 	});
 
 	it('resolves visual theme when not wallpaper', () => {
@@ -21,7 +21,7 @@ describe('color-scheme', () => {
 	});
 
 	it('builds wallpaper patch with default theme', () => {
-		expect(buildColorSchemePatch(BUILTIN_COLOR_SCHEME_WALLPAPER)).toEqual({
+		expect(buildColorSchemePatch(DYNAMIC_COLOR_SCHEME_ID)).toEqual({
 			paletteMode: 'wallpaper',
 			visualThemeId: M3_DEFAULT_THEME_ID,
 			themeId: M3_DEFAULT_THEME_ID

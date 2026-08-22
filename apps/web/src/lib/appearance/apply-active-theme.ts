@@ -1,4 +1,5 @@
 import type { ChronosEngine, PaletteMode } from '@chronos/core';
+import { PALETTE_MODE_VIBRANT } from '@chronos/core';
 import { applyThemeTokens } from '@chronos/ui-kit';
 import { M3_DEFAULT_THEME_ID } from '$lib/appearance/color-scheme';
 
@@ -39,7 +40,10 @@ export function applyActiveTheme(
 
 	const currentTheme = engine.themes.getTheme(activeThemeId);
 	const effectiveThemeId =
-		options?.paletteMode === 'wallpaper' || currentTheme?.supportsDynamicColor
+		(options?.paletteMode !== undefined &&
+			options.paletteMode !== PALETTE_MODE_VIBRANT &&
+			options.paletteMode !== '') ||
+		currentTheme?.supportsDynamicColor
 			? M3_DEFAULT_THEME_ID
 			: activeThemeId;
 

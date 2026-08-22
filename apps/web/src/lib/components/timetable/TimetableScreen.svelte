@@ -30,8 +30,8 @@
 	const startWeek = $derived(screenState.startWeek);
 	const endWeek = $derived(screenState.endWeek);
 	const coursePalette = $derived(shell.appearance.coursePalette);
-	const hasWallpaper = $derived(shell.state.hasWallpaper);
-	const wallpaperUri = $derived(shell.state.wallpaperUri);
+	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
+	const dynamicColorUri = $derived(shell.state.dynamicColorUri);
 	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
@@ -161,11 +161,11 @@
 		{/snippet}
 	</TopAppBar>
 
-	<TimetableWallpaperLayer wallpaperUri={hasWallpaper ? wallpaperUri : null}>
+	<TimetableWallpaperLayer wallpaperUri={hasDynamicColorBackground ? dynamicColorUri : null}>
 		{#key screenState.currentTimetable?.id}
 			<TimetableWeekSwiper
 				{screen}
-				{hasWallpaper}
+				hasWallpaper={hasDynamicColorBackground}
 				{coursePalette}
 				{layoutMode}
 				{capsuleCornerStyle}

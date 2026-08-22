@@ -9,20 +9,6 @@ import type {
 	UserPreferences
 } from '@chronos/core';
 
-const WALLPAPER_PLUGIN_ID = 'tool-wallpaper';
-
-function resolveHasWallpaperPlugin(): boolean {
-	try {
-		const engine = getAppEngine();
-		// 优先通过主题注册表判断，兼容旧版 isPluginLoaded
-		if (engine.themes.getTheme(WALLPAPER_PLUGIN_ID) || engine.themes.getTheme('wallpaper'))
-			return true;
-		return engine.isPluginLoaded(WALLPAPER_PLUGIN_ID);
-	} catch {
-		return false;
-	}
-}
-
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
 	if (themeMode === 'dark') return true;
 	if (themeMode === 'light') return false;
@@ -32,8 +18,8 @@ function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean 
 export function createAppShell() {
 	let systemPrefersDark = $state(false);
 	let mediaQueryCleanup: (() => void) | null = null;
-	let wallpaperChangeCleanup: (() => void) | null = null;
-	let wallpaperUri = $state<string | null>(null);
+	let dynamicColorCleanup: (() => void) | null = null;
+	let dynamicColorUri = $state<string | null>(null);
 	const appearance = createAppearance();
 	const controller = getAppController();
 	const engine = getAppEngine();
@@ -48,11 +34,7 @@ export function createAppShell() {
 			controller.timetables.length > 0
 		)
 	);
-	const hasWallpaperPlugin = $derived.by(() => {
-		void controller.slotVersion;
-		return resolveHasWallpaperPlugin();
-	});
-	const hasWallpaper = $derived(hasWallpaperPlugin && Boolean(wallpaperUri));
+	const hasDynamicColorBackground = $derived(Boolean(dynamicColorUri));
 
 	function init() {
 		if (typeof window !== 'undefined' && !mediaQueryCleanup) {
@@ -65,18 +47,18 @@ export function createAppShell() {
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
 
-		wallpaperChangeCleanup?.();
-		wallpaperChangeCleanup = engine.on('wallpaper:changed', ({ uri }) => {
-			wallpaperUri = uri;
+		dynamicColorCleanup?.();
+		dynamicColorCleanup = engine.on('dynamicColor:changed', ({ uri }) => {
+			dynamicColorUri = uri;
 		}).dispose;
-		engine.events.emit('wallpaper:hydrate');
+		engine.events.emit('dynamicColor:hydrate');
 	}
 
 	function destroy() {
 		mediaQueryCleanup?.();
 		mediaQueryCleanup = null;
-		wallpaperChangeCleanup?.();
-		wallpaperChangeCleanup = null;
+		dynamicColorCleanup?.();
+		dynamicColorCleanup = null;
 	}
 
 	async function updatePreferences(patch: Partial<UserPreferences>) {
@@ -117,8 +99,8 @@ export function createAppShell() {
 		await updatePreferences({ hapticFeedbackEnabled: enabled });
 	}
 
-	async function setWallpaper(wallpaperBlob: Blob | null) {
-		engine.events.emit('wallpaper:set', { blob: wallpaperBlob });
+	async function setDynamicColorAsset(assetBlob: Blob | null) {
+		engine.events.emit('dynamicColor:set', { blob: assetBlob });
 	}
 
 	async function switchTimetable(id: string) {
@@ -138,9 +120,8 @@ export function createAppShell() {
 			return {
 				initialized,
 				isDark,
-				hasWallpaperPlugin,
-				hasWallpaper,
-				wallpaperUri
+				hasDynamicColorBackground,
+				dynamicColorUri
 			};
 		},
 		get appearance() {
@@ -159,7 +140,7 @@ export function createAppShell() {
 		setPaletteMode,
 		setCapsuleCornerStyle,
 		setHapticFeedbackEnabled,
-		setWallpaper,
+		setDynamicColorAsset,
 		switchTimetable,
 		deleteTimetable,
 		clearAllData

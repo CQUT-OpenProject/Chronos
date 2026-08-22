@@ -90,6 +90,29 @@ describe('applyAppearance', () => {
 		expect(result.coursePalette).toBe(YUMEMITA_PALETTE_ENTRIES);
 	});
 
+	it('does not paint wallpaper theme when paletteMode is vibrant but wallpaper uri exists', async () => {
+		const target = createFakeElement();
+		const extractWallpaperSeed = vi.fn();
+		const { wallpaper, paintWallpaperTheme, clearWallpaperTheme } = createWallpaperAdapter({
+			extractWallpaperSeed
+		});
+
+		const result = await applyAppearance(
+			{
+				paletteMode: 'vibrant',
+				isDark: false,
+				wallpaperUri: 'blob:wallpaper',
+				activeThemeId: 'm3-default'
+			},
+			{ target, wallpaper }
+		);
+
+		expect(extractWallpaperSeed).not.toHaveBeenCalled();
+		expect(paintWallpaperTheme).not.toHaveBeenCalled();
+		expect(clearWallpaperTheme).toHaveBeenCalledWith(target);
+		expect(result.coursePalette).toBe(COURSE_PALETTE_ENTRIES);
+	});
+
 	it('prefers wallpaper palette over active theme palette entries', async () => {
 		const target = createFakeElement();
 		const customPalette = [{ background: '#fedcba', foreground: '#111' }];
