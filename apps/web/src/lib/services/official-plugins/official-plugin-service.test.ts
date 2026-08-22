@@ -146,6 +146,24 @@ describe('OfficialPluginService', () => {
 		expect(service.listInstalled().length).toBe(1);
 	});
 
+	it('rejects install when minEngineVersion is newer than current engine', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '2.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '99.0.0',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		await expect(service.install(manifest)).rejects.toThrow(/requires engine >= 99\.0\.0/);
+	});
+
 	it('rejects install when sha256 mismatch', async () => {
 		const manifest: PluginManifest = {
 			id: 'test-plugin',

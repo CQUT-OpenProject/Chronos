@@ -1,5 +1,8 @@
 import type { ConfigSchema } from '../schema/schema';
 
+/** Current Chronos engine API version for official plugin compatibility checks. */
+export const CHRONOS_ENGINE_VERSION = '0.4.0';
+
 export type PluginCapability = 'network' | 'storage' | 'vault' | 'notifications';
 export type BundleFormat = 'esm';
 
