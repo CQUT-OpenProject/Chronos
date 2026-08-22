@@ -50,7 +50,6 @@ function resolvePluginExport(
 export async function loadEsmPluginFromCode(
 	code: string
 ): Promise<import('@chronos/core').ChronosPlugin> {
-	// Browser: try blob import for true ESM (with imports, svelte runtime, etc.)
 	if (
 		typeof Blob !== 'undefined' &&
 		typeof URL !== 'undefined' &&
@@ -71,7 +70,6 @@ export async function loadEsmPluginFromCode(
 		}
 	}
 
-	// Node / Testing environment: native data URL dynamic import
 	if (typeof Buffer !== 'undefined') {
 		try {
 			const base64 = Buffer.from(code, 'utf-8').toString('base64');
@@ -100,15 +98,32 @@ export function validatePluginManifest(
 	if (typeof m.version !== 'string' || !m.version) {
 		throw new Error('Invalid plugin manifest: missing version');
 	}
-	if (typeof m.bundleUrl !== 'string' || !m.bundleUrl) {
-		throw new Error('Invalid plugin manifest: missing bundleUrl');
-	}
-	if (typeof m.sha256 !== 'string' || !m.sha256) {
-		throw new Error('Invalid plugin manifest: missing sha256');
-	}
 	if (m.bundleFormat !== 'esm') {
 		throw new Error('Invalid plugin manifest: bundleFormat must be esm');
 	}
+
+	const hasBundle = typeof m.bundleUrl === 'string' && m.bundleUrl.length > 0;
+	const hasColors = typeof m.colorsUrl === 'string' && m.colorsUrl.length > 0;
+
+	if (!hasBundle && !hasColors) {
+		throw new Error('Invalid plugin manifest: require bundleUrl or colorsUrl');
+	}
+	if (hasBundle) {
+		if (typeof m.sha256 !== 'string' || !m.sha256) {
+			throw new Error('Invalid plugin manifest: missing sha256 for bundleUrl');
+		}
+	}
+	if (hasColors) {
+		if (typeof m.colorsSha256 !== 'string' || !m.colorsSha256) {
+			throw new Error('Invalid plugin manifest: missing colorsSha256 for colorsUrl');
+		}
+	}
+	if (typeof m.iconThemeUrl === 'string' && m.iconThemeUrl) {
+		if (typeof m.iconThemeSha256 !== 'string' || !m.iconThemeSha256) {
+			throw new Error('Invalid plugin manifest: missing iconThemeSha256 for iconThemeUrl');
+		}
+	}
+
 	if (typeof m.minEngineVersion === 'string' && m.minEngineVersion) {
 		assertEngineVersionCompatible(manifest as PluginManifest);
 	}

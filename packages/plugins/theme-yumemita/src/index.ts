@@ -1,33 +1,16 @@
-import type { ChronosContext, ChronosPlugin } from '@chronos/core';
 import {
-	YUMEMITA_THEME_ID,
-	yumemitaThemeContribution,
-	buildYumemitaThemeTokens,
-	YUMEMITA_PALETTE_ENTRIES,
-	YUMEMITA_PRIMARY,
-	YUMEMITA_SECONDARY
-} from './yumemita-theme';
+	createIconThemeFromJson,
+	createThemeFromColorJson,
+	parseColorThemeJson,
+	parseIconThemeJson
+} from '@chronos/core';
+import colorsJson from '../theme-yumemita.colors.json';
+import iconsJson from '../theme-yumemita.icons.json';
 
+export const YUMEMITA_THEME_ID = 'yumemita';
 export const YUMEMITA_PLUGIN_ID = 'theme-yumemita';
 
-export {
-	YUMEMITA_THEME_ID,
-	yumemitaThemeContribution,
-	buildYumemitaThemeTokens,
-	YUMEMITA_PALETTE_ENTRIES,
-	YUMEMITA_PRIMARY,
-	YUMEMITA_SECONDARY
-};
+export const yumemitaThemeContribution = createThemeFromColorJson(parseColorThemeJson(colorsJson));
+export const yumemitaIconThemeContribution = createIconThemeFromJson(parseIconThemeJson(iconsJson));
 
-export const yumemitaThemePlugin: ChronosPlugin = {
-	id: YUMEMITA_PLUGIN_ID,
-	name: () => 'YUME∞MITA',
-	version: '1.0.0',
-	description: () => 'YUME∞MITA 主题',
-	category: 'theme',
-	author: 'Chronos Community',
-
-	apply(ctx: ChronosContext) {
-		ctx.registerSlot('theme.definition', yumemitaThemeContribution);
-	}
-};
+export const YUMEMITA_PALETTE_ENTRIES = colorsJson.coursePalette.light;

@@ -4,7 +4,14 @@ import type {
 	OfficialPluginCatalog,
 	PluginManifest
 } from '@chronos/core';
-import { IHttpService, IRuntimeService } from '@chronos/core';
+import {
+	createIconThemeFromJson,
+	createThemeFromColorJson,
+	IHttpService,
+	IRuntimeService,
+	parseColorThemeJson,
+	parseIconThemeJson
+} from '@chronos/core';
 import { loadEsmPluginFromCode, validatePluginManifest } from './plugin-bundle';
 
 const INSTALLED_STORAGE_KEY = 'installed_plugins';
@@ -12,7 +19,9 @@ const OFFICIAL_PLUGINS_PLUGIN_ID = 'core.official-plugins';
 
 export interface InstalledOfficialPluginRecord {
 	manifest: PluginManifest;
-	code: string;
+	code?: string | null;
+	colorsJson?: string | null;
+	iconThemeJson?: string | null;
 	cssCode?: string | null;
 	manifestUrl?: string;
 	enabled: boolean;
@@ -45,7 +54,7 @@ export class OfficialPluginService implements Disposable {
 		for (const record of this.installedCache) {
 			if (record.enabled) {
 				try {
-					await this.loadPluginInstance(record.manifest, record.code, record.cssCode ?? null);
+					await this.loadPluginInstance(record);
 				} catch (err) {
 					console.error(
 						`[OfficialPluginService] Failed to load plugin ${record.manifest.id}:`,
@@ -136,12 +145,14 @@ export class OfficialPluginService implements Disposable {
 
 	async install(manifest: PluginManifest, manifestUrl?: string): Promise<void> {
 		validatePluginManifest(manifest);
-		const { code, cssCode } = await this.downloadBundle(manifest);
+		const assets = await this.downloadPluginAssets(manifest);
 
 		const record: InstalledOfficialPluginRecord = {
 			manifest,
-			code,
-			cssCode: cssCode ?? null,
+			code: assets.code ?? null,
+			colorsJson: assets.colorsJson ?? null,
+			iconThemeJson: assets.iconThemeJson ?? null,
+			cssCode: assets.cssCode ?? null,
 			manifestUrl,
 			enabled: true,
 			installedAt: Date.now()
@@ -156,7 +167,7 @@ export class OfficialPluginService implements Disposable {
 		}
 
 		await this.saveInstalledToStorage();
-		await this.loadPluginInstance(manifest, code, cssCode ?? null);
+		await this.loadPluginInstance(record);
 		if (manifest.type === 'theme') {
 			this.engine.actions.notify('插件已安装并启用，可在「显示设置」中选择此外观主题', 'info');
 		} else {
@@ -164,47 +175,66 @@ export class OfficialPluginService implements Disposable {
 		}
 	}
 
-	private async downloadBundle(
-		manifest: PluginManifest
-	): Promise<{ code: string; cssCode: string | null }> {
-		const response = await this.engine.services.get(IHttpService).request(manifest.bundleUrl, {
+	private async downloadTextAsset(
+		url: string,
+		expectedSha256?: string,
+		label = 'asset'
+	): Promise<string> {
+		const response = await this.engine.services.get(IHttpService).request(url, {
 			method: 'GET'
 		});
-
 		if (!response.ok) {
-			throw new Error(`Failed to download plugin bundle from ${manifest.bundleUrl}`);
+			throw new Error(`Failed to download plugin ${label} from ${url}`);
 		}
+		const text = await response.text();
+		if (expectedSha256) {
+			const hash = await this.engine.services.get(IRuntimeService).sha256(text);
+			if (hash.toLowerCase() !== expectedSha256.toLowerCase()) {
+				throw new Error(
+					`Plugin ${label} integrity check failed. Expected ${expectedSha256}, got ${hash}`
+				);
+			}
+		}
+		return text;
+	}
 
-		const code = await response.text();
-		const computedHash = await this.engine.services.get(IRuntimeService).sha256(code);
-		if (manifest.sha256 && computedHash.toLowerCase() !== manifest.sha256.toLowerCase()) {
-			throw new Error(
-				`Plugin integrity check failed for "${manifest.id}". Expected SHA-256 ${manifest.sha256}, got ${computedHash}`
+	private async downloadPluginAssets(manifest: PluginManifest): Promise<{
+		code?: string | null;
+		colorsJson?: string | null;
+		iconThemeJson?: string | null;
+		cssCode?: string | null;
+	}> {
+		let code: string | null = null;
+		let colorsJson: string | null = null;
+		let iconThemeJson: string | null = null;
+		let cssCode: string | null = null;
+
+		if (manifest.colorsUrl) {
+			colorsJson = await this.downloadTextAsset(
+				manifest.colorsUrl,
+				manifest.colorsSha256,
+				'colors'
 			);
 		}
 
-		let cssCode: string | null = null;
-		const cssUrl = (manifest as unknown as { cssUrl?: string }).cssUrl;
-		const cssSha256 = (manifest as unknown as { cssSha256?: string }).cssSha256;
-		if (cssUrl) {
-			const cssResponse = await this.engine.services.get(IHttpService).request(cssUrl, {
-				method: 'GET'
-			});
-			if (!cssResponse.ok) {
-				throw new Error(`Failed to download plugin css from ${cssUrl}`);
-			}
-			cssCode = await cssResponse.text();
-			if (cssSha256) {
-				const computedCssHash = await this.engine.services.get(IRuntimeService).sha256(cssCode);
-				if (computedCssHash.toLowerCase() !== cssSha256.toLowerCase()) {
-					throw new Error(
-						`Plugin CSS integrity check failed for "${manifest.id}". Expected SHA-256 ${cssSha256}, got ${computedCssHash}`
-					);
-				}
+		if (manifest.iconThemeUrl) {
+			iconThemeJson = await this.downloadTextAsset(
+				manifest.iconThemeUrl,
+				manifest.iconThemeSha256,
+				'icon theme'
+			);
+		}
+
+		if (manifest.bundleUrl) {
+			code = await this.downloadTextAsset(manifest.bundleUrl, manifest.sha256, 'bundle');
+			const cssUrl = manifest.cssUrl;
+			const cssSha256 = manifest.cssSha256;
+			if (cssUrl) {
+				cssCode = await this.downloadTextAsset(cssUrl, cssSha256, 'css');
 			}
 		}
 
-		return { code, cssCode };
+		return { code, colorsJson, iconThemeJson, cssCode };
 	}
 
 	async uninstall(pluginId: string): Promise<void> {
@@ -224,7 +254,7 @@ export class OfficialPluginService implements Disposable {
 
 		record.enabled = true;
 		await this.saveInstalledToStorage();
-		await this.loadPluginInstance(record.manifest, record.code, record.cssCode ?? null);
+		await this.loadPluginInstance(record);
 		this.engine.actions.notify(`已启用插件「${pluginId}」`, 'info');
 	}
 
@@ -243,28 +273,48 @@ export class OfficialPluginService implements Disposable {
 		return this.engine.storage.getPluginData<T>(pluginId, '__config__');
 	}
 
-	private async loadPluginInstance(
-		manifest: PluginManifest,
-		code: string,
-		cssCode: string | null = null
-	): Promise<Disposable> {
+	private async loadPluginInstance(record: InstalledOfficialPluginRecord): Promise<Disposable> {
+		const manifest = record.manifest;
 		await this.unloadPluginInstance(manifest.id);
 
-		if (cssCode) this.injectCss(manifest.id, cssCode);
+		if (record.cssCode) this.injectCss(manifest.id, record.cssCode);
 
-		const plugin = await loadEsmPluginFromCode(code);
-		if (plugin.id !== manifest.id) {
-			throw new Error(`Plugin id mismatch: manifest "${manifest.id}" vs bundle "${plugin.id}"`);
+		const disposables: Disposable[] = [];
+
+		if (record.colorsJson) {
+			const theme = createThemeFromColorJson(parseColorThemeJson(JSON.parse(record.colorsJson)));
+			disposables.push(this.engine.themes.registerTheme(theme));
+			disposables.push(this.engine.slots.register('theme.definition', theme, manifest.id));
 		}
 
-		const handle = await this.engine.loadPlugin({
-			...plugin,
-			configSchema: manifest.configSchema ?? plugin.configSchema,
-			allowedDomains: manifest.allowedDomains ?? plugin.allowedDomains
-		});
+		if (record.iconThemeJson) {
+			const iconTheme = createIconThemeFromJson(
+				parseIconThemeJson(JSON.parse(record.iconThemeJson))
+			);
+			disposables.push(this.engine.iconThemes.registerIconTheme(iconTheme));
+			disposables.push(this.engine.slots.register('theme.icon.definition', iconTheme, manifest.id));
+		}
 
-		this.activeHandles.set(manifest.id, handle);
-		return handle;
+		if (record.code) {
+			const plugin = await loadEsmPluginFromCode(record.code);
+			if (plugin.id !== manifest.id) {
+				throw new Error(`Plugin id mismatch: manifest "${manifest.id}" vs bundle "${plugin.id}"`);
+			}
+			const handle = await this.engine.loadPlugin({
+				...plugin,
+				configSchema: manifest.configSchema ?? plugin.configSchema,
+				allowedDomains: manifest.allowedDomains ?? plugin.allowedDomains
+			});
+			disposables.push(handle);
+		}
+
+		const composite: Disposable = {
+			dispose: () => {
+				for (const d of disposables) d.dispose();
+			}
+		};
+		this.activeHandles.set(manifest.id, composite);
+		return composite;
 	}
 
 	private injectCss(pluginId: string, css: string): void {
@@ -291,6 +341,7 @@ export class OfficialPluginService implements Disposable {
 	private revertThemeIfNeeded(): void {
 		const prefs = this.engine.state.userPreferences;
 		const activeThemeId = this.engine.state.activeThemeId;
+		const activeIconThemeId = prefs.visualIconThemeId ?? 'host-default';
 
 		if (activeThemeId !== 'm3-default' && !this.engine.themes.getTheme(activeThemeId)) {
 			this.engine.actions.setTheme('m3-default');
@@ -299,6 +350,13 @@ export class OfficialPluginService implements Disposable {
 				visualThemeId: 'm3-default'
 			});
 			return;
+		}
+
+		if (
+			activeIconThemeId !== 'host-default' &&
+			!this.engine.iconThemes.getIconTheme(activeIconThemeId)
+		) {
+			void this.engine.actions.updatePreferences({ visualIconThemeId: 'host-default' });
 		}
 
 		if (
