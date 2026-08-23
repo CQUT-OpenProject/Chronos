@@ -5,7 +5,7 @@ import type {
 	ExportResult,
 	ConfigSchema
 } from '@chronos/core';
-import { type ChronosMountable, defineSchema } from '@chronos/core';
+import { type ChronosMountable } from '@chronos/core';
 import {
 	decodeSharePayload,
 	encodeShareLink,
@@ -14,22 +14,11 @@ import {
 	extractSharePayloadFromText,
 	formatShareClipboardText
 } from './share-link';
-
-export interface ShareLinkImportForm {
-	content?: string;
-}
-
-export const shareLinkImportSchema = defineSchema<ShareLinkImportForm>({
-	content: {
-		type: 'string',
-		title: () => '分享链接或口令',
-		placeholder: () => '粘贴课表分享链接或完整口令',
-		required: true
-	}
-});
-
 import ShareLinkImportTab from './ShareLinkImportTab.svelte';
 import { mountableSvelteComponent } from '@chronos/ui-kit';
+import { createShareLinkImportSchema, SHARE_CODEC_MESSAGES } from './messages';
+
+export type { ShareLinkImportForm } from './messages';
 
 export interface CreateShareCodecPluginOptions {
 	shareComponent?: ChronosMountable;
@@ -49,11 +38,13 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 
 		async apply(ctx: ChronosContext) {
-			// 压缩引擎按需加载，首包不再阻塞插件初始化（deflate 优先，brotli 懒加载）
+			ctx.i18n.registerMessages(SHARE_CODEC_MESSAGES);
+			const t = (key: string) => ctx.i18n.t(key);
+			const shareLinkImportSchema = createShareLinkImportSchema(t);
 
 			ctx.registerSlot('import.source.tab', {
 				id: 'share-link',
-				title: () => '分享口令',
+				title: () => t('import.tab.title'),
 				order: 15,
 				importKind: 'link',
 				component: shareComponent,
@@ -68,11 +59,11 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 					const content =
 						(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
 					if (!content?.trim()) {
-						throw new Error('未识别到有效的课表分享链接');
+						throw new Error(t('import.error.empty'));
 					}
 					const payload = extractSharePayloadFromText(content);
 					if (!payload) {
-						throw new Error('未识别到有效的课表分享链接');
+						throw new Error(t('import.error.empty'));
 					}
 					const result = await decodeSharePayload(payload);
 					if (!result.ok) {
@@ -84,11 +75,11 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 
 			ctx.registerSlot('export.action', {
 				id: 'share-link',
-				title: () => '分享口令',
+				title: () => t('export.action.title'),
 				order: 5,
 				disposition: 'clipboard',
 				isPrimary: true,
-				description: () => '生成紧凑分享口令并复制到剪贴板',
+				description: () => t('export.action.description'),
 				async export(timetable: Timetable): Promise<ExportResult> {
 					const link = await encodeShareLink(timetable);
 					const clipboardText = formatShareClipboardText(timetable.name, link);
@@ -97,7 +88,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 						mimeType: 'application/x-chronos-share-link',
 						content: clipboardText,
 						disposition: 'clipboard',
-						successMessage: () => '已复制课表链接'
+						successMessage: () => t('export.success')
 					};
 				},
 				estimateLength: estimateShareLinkLength,
@@ -106,7 +97,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 					try {
 						const length = await estimateShareLinkLength(timetable);
 						if (length > 2000) {
-							return '课表较大，部分应用可能截断链接内容，请注意核对导入结果';
+							return t('export.warning.large');
 						}
 						return null;
 					} catch {

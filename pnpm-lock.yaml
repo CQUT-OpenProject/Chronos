@@ -237,6 +237,9 @@ importers:
 
   packages/plugins/wallpaper:
     dependencies:
+      '@chronos/codec-kit':
+        specifier: workspace:*
+        version: link:../../codec-kit
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core

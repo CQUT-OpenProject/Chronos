@@ -1,4 +1,5 @@
 import type { IStorageService } from '@chronos/core';
+import { bytesToBase64 } from '@chronos/codec-kit';
 
 export const WALLPAPER_PLUGIN_ID = 'tool-wallpaper';
 export const WALLPAPER_IMAGE_KEY = 'wallpaper_image';
@@ -6,14 +7,6 @@ export const WALLPAPER_IMAGE_KEY = 'wallpaper_image';
 interface StoredWallpaperImage {
 	mimeType: string;
 	base64: string;
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-	let binary = '';
-	for (let i = 0; i < bytes.length; i += 1) {
-		binary += String.fromCharCode(bytes[i]);
-	}
-	return btoa(binary);
 }
 
 function storedToDataUrl(stored: StoredWallpaperImage): string {

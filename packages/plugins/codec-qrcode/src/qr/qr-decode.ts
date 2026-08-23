@@ -30,8 +30,6 @@ export async function decodeQrFromBlob(blob: Blob): Promise<string> {
 		const text = await blob.text();
 		const match = /chronos-qr:[A-Za-z0-9+/=:_-]+/.exec(text);
 		if (match) return match[0];
-		const trimmed = text.trim();
-		if (trimmed.startsWith('{') && trimmed.endsWith('}')) return trimmed;
 	} catch {
 		// continue to image rasterization
 	}

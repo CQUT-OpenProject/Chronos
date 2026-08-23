@@ -70,12 +70,11 @@ export async function decompressShareAdaptive(
 	bytes: Uint8Array
 ): Promise<Uint8Array> {
 	if (version === SHARE_LINK_VERSION_DEFLATE) {
-		try {
-			return await inflateRaw(bytes);
-		} catch {
-			// fallback to brotli
-		}
+		return inflateRaw(bytes);
 	}
-	await ensureShareLinkBrotliReady();
-	return brotliDecompressShare(bytes);
+	if (version === SHARE_LINK_VERSION_BROTLI) {
+		await ensureShareLinkBrotliReady();
+		return brotliDecompressShare(bytes);
+	}
+	throw new Error('unsupported share link compression version');
 }

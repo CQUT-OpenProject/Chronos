@@ -5,7 +5,12 @@ import {
 	encodeTimetableToBinary,
 	ShareBinaryDecodeError
 } from './chronos-share-binary';
-import { appendCrc32, verifyAndStripCrc32 } from '@chronos/codec-kit';
+import {
+	appendCrc32,
+	verifyAndStripCrc32,
+	bytesToBase64Url,
+	base64UrlToBytes
+} from '@chronos/codec-kit';
 import {
 	compressShareAdaptive,
 	decompressShareAdaptive,
@@ -27,27 +32,6 @@ function shareSuccess<T>(value: T): ShareLinkResult<T> {
 
 function shareFailure<T>(errorMessage: string): ShareLinkResult<T> {
 	return { ok: false, errorMessage };
-}
-
-function bytesToBase64Url(bytes: Uint8Array): string {
-	const CHUNK_SIZE = 8192;
-	let binary = '';
-	for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
-		const chunk = bytes.subarray(i, i + CHUNK_SIZE);
-		binary += String.fromCharCode(...chunk);
-	}
-	return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
-
-function base64UrlToBytes(value: string): Uint8Array {
-	const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
-	const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
-	const binary = atob(padded);
-	const bytes = new Uint8Array(binary.length);
-	for (let index = 0; index < binary.length; index += 1) {
-		bytes[index] = binary.charCodeAt(index);
-	}
-	return bytes;
 }
 
 export async function encodeSharePayload(timetable: Timetable): Promise<string> {
