@@ -5,5 +5,8 @@
 	"exports": {
 		"./colors.json": "./theme-yumemita.colors.json",
 		"./icons.json": "./theme-yumemita.icons.json"
+	},
+	"devDependencies": {
+		"@chronos/core": "workspace:*"
 	}
 }

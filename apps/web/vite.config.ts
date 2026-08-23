@@ -41,15 +41,6 @@ export default defineConfig(({ mode }) => {
 			alias: createChronosAlias(monorepoRoot),
 			dedupe: ['svelte']
 		},
-		build: {
-			rollupOptions: {
-				output: {
-					manualChunks(id) {
-						if (id.includes('node_modules/brotli-wasm')) return 'vendor-brotli-wasm';
-					}
-				}
-			}
-		},
 		define: {
 			__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
 			__CHRONOS_PROFILE__: JSON.stringify(
