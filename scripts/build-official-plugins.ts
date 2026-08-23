@@ -39,6 +39,16 @@ const plugins: PluginDef[] = [
 			en: 'Custom timetable wallpaper with dynamic color'
 		},
 		entry: resolve(root, 'packages/plugins/wallpaper/bundle/entry.ts')
+	},
+	{
+		id: 'tool-qrcode',
+		type: 'tool',
+		name: { 'zh-CN': '课表二维码', en: 'Timetable QR Code' },
+		description: {
+			'zh-CN': '生成课表分享二维码矢量图与扫码/图片识别导入',
+			en: 'Generate timetable QR codes and import via scan or image'
+		},
+		entry: resolve(root, 'packages/plugins/codec-qrcode/bundle/entry.ts')
 	}
 ];
 
