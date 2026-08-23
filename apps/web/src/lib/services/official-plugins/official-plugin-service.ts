@@ -348,34 +348,8 @@ export class OfficialPluginService implements Disposable {
 		}
 	}
 
-	private revertThemeIfNeeded(): void {
-		const prefs = this.engine.state.userPreferences;
-		const activeThemeId = this.engine.state.activeThemeId;
-		const activeIconThemeId = prefs.visualIconThemeId ?? 'host-default';
-
-		if (activeThemeId !== 'm3-default' && !this.engine.themes.getTheme(activeThemeId)) {
-			this.engine.actions.setTheme('m3-default');
-			void this.engine.actions.updatePreferences({
-				paletteMode: 'vibrant',
-				visualThemeId: 'm3-default'
-			});
-			return;
-		}
-
-		if (
-			activeIconThemeId !== 'host-default' &&
-			!this.engine.iconThemes.getIconTheme(activeIconThemeId)
-		) {
-			void this.engine.actions.updatePreferences({ visualIconThemeId: 'host-default' });
-		}
-
-		if (prefs.paletteMode !== 'vibrant' && !this.engine.themes.getTheme(prefs.paletteMode)) {
-			this.engine.actions.setTheme('m3-default');
-			void this.engine.actions.updatePreferences({
-				paletteMode: 'vibrant',
-				visualThemeId: 'm3-default'
-			});
-		}
+	private async revertThemeIfNeeded(): Promise<void> {
+		await this.engine.actions.revertToDefaultThemes();
 	}
 
 	private async unloadPluginInstance(pluginId: string): Promise<void> {
@@ -386,7 +360,7 @@ export class OfficialPluginService implements Disposable {
 		}
 		this.removeCss(pluginId);
 		if (this.installedCache.some((p) => p.manifest.id === pluginId)) {
-			this.revertThemeIfNeeded();
+			void this.revertThemeIfNeeded();
 		}
 	}
 

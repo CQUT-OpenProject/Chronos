@@ -98,6 +98,7 @@ function createMockHost() {
 			deleteCourse: vi.fn(),
 			setTheme: vi.fn(),
 			updatePreferences: vi.fn(),
+			revertToDefaultThemes: vi.fn(),
 			notify: vi.fn()
 		}
 	};

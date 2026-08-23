@@ -1,4 +1,5 @@
 import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
+import { DEFAULT_VISUAL_THEME_ID } from '@chronos/core';
 import { cqutPlugin } from '@chronos/plugin-source-cqut';
 import { shareCodecPlugin } from '@chronos/plugin-codec-share';
 import { coreShellPlugin } from '$lib/boot/core-shell';
@@ -17,7 +18,7 @@ const defaultProfile: ChronosProfile = {
 	name: 'Chronos 标准开源版',
 	version: '0.3.0',
 	description: '包含分享短链与标准备份能力',
-	defaultTheme: 'm3-default',
+	defaultTheme: DEFAULT_VISUAL_THEME_ID,
 	defaultImportSlot: 'share-link',
 	plugins: [
 		{ id: 'core-shell', enabled: true },
@@ -30,7 +31,7 @@ const cqutProfile: ChronosProfile = {
 	name: '重庆理工大学定制版',
 	version: '0.3.0',
 	description: '专为重庆理工大学定制，内置知行理工教务直连与校区专属节次',
-	defaultTheme: 'm3-default',
+	defaultTheme: DEFAULT_VISUAL_THEME_ID,
 	defaultImportSlot: 'cqut-online',
 	plugins: [
 		{ id: 'core-shell', enabled: true },
@@ -47,7 +48,7 @@ const cqutOfflineProfile: ChronosProfile = {
 	name: '重庆理工大学离线版',
 	version: '0.3.0',
 	description: 'HTML 课表导入与分享短链，不含知行理工在线同步',
-	defaultTheme: 'm3-default',
+	defaultTheme: DEFAULT_VISUAL_THEME_ID,
 	defaultImportSlot: 'edu-html',
 	plugins: [
 		{ id: 'core-shell', enabled: true },

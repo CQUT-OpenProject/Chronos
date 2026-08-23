@@ -1,3 +1,5 @@
+import { DEFAULT_VISUAL_THEME_ID, HOST_DEFAULT_ICON_THEME_ID } from '../theme/theme-defaults';
+
 export type ThemeMode = 'light' | 'dark' | 'auto';
 export type PaletteMode = string;
 export type AppLocale = 'zh-cn' | 'en';
@@ -34,6 +36,6 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
 	timetableLayoutMode: 'fixed',
 	capsuleCornerStyle: 'rounded',
 	hapticFeedbackEnabled: true,
-	visualThemeId: 'm3-default',
-	visualIconThemeId: 'host-default'
+	visualThemeId: DEFAULT_VISUAL_THEME_ID,
+	visualIconThemeId: HOST_DEFAULT_ICON_THEME_ID
 };

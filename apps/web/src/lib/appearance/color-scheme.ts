@@ -1,10 +1,14 @@
 import type { PaletteMode } from '@chronos/core';
-import { LEGACY_PALETTE_MODE_DYNAMIC, PALETTE_MODE_VIBRANT } from '@chronos/core';
+import {
+	DEFAULT_VISUAL_THEME_ID,
+	LEGACY_PALETTE_MODE_DYNAMIC,
+	PALETTE_MODE_VIBRANT
+} from '@chronos/core';
 
 export const BUILTIN_COLOR_SCHEME_VIBRANT = 'vibrant';
-/** 壁纸主题在配色方案层的 scheme id（与 theme.definition id 对齐） */
-export const DYNAMIC_COLOR_SCHEME_ID = 'wallpaper';
-export const M3_DEFAULT_THEME_ID = 'm3-default';
+/** Dynamic color scheme id (aligned with legacy palette mode and wallpaper theme id). */
+export const DYNAMIC_COLOR_SCHEME_ID = LEGACY_PALETTE_MODE_DYNAMIC;
+export const M3_DEFAULT_THEME_ID = DEFAULT_VISUAL_THEME_ID;
 
 export interface ColorSchemePreferences {
 	paletteMode: PaletteMode;

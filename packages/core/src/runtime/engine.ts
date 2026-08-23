@@ -3,8 +3,10 @@ import { type AcademicConfig, type Timetable, createTimetable } from '../domain/
 import {
 	type UserPreferences,
 	DEFAULT_USER_PREFERENCES,
-	CURRENT_PREFERENCES_SCHEMA_VERSION
+	CURRENT_PREFERENCES_SCHEMA_VERSION,
+	PALETTE_MODE_VIBRANT
 } from '../domain/preferences';
+import { DEFAULT_VISUAL_THEME_ID, HOST_DEFAULT_ICON_THEME_ID } from '../theme/theme-defaults';
 import { PLUGIN_CONFIG_STORAGE_KEY } from '../constants/plugin-storage';
 import type { ChronosEnv, StorageChangeEvent } from '../types/env';
 import type { Disposable } from '../types/services';
@@ -65,7 +67,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}> = [];
 	private _activeWeek = 1;
 	private _currentPeriodIndex: number | null = null;
-	private _activeThemeId = 'm3-default';
+	private _activeThemeId = DEFAULT_VISUAL_THEME_ID;
 	private _userPreferences: UserPreferences = { ...DEFAULT_USER_PREFERENCES };
 
 	private loadedPlugins = new Map<
@@ -95,7 +97,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		});
 		this.iconThemes = new IconThemeRegistry(() => {
 			this.events.emit('iconTheme:changed', {
-				iconThemeId: this._userPreferences.visualIconThemeId ?? 'host-default'
+				iconThemeId: this._userPreferences.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID
 			});
 		});
 		this.badges = new BadgeManager((badges) => {
@@ -175,7 +177,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			activeWeek: this._activeWeek,
 			currentPeriodIndex: this._currentPeriodIndex,
 			activeThemeId: this._activeThemeId,
-			activeIconThemeId: this._userPreferences.visualIconThemeId ?? 'host-default',
+			activeIconThemeId: this._userPreferences.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID,
 			userPreferences: this._userPreferences
 		};
 	}
@@ -193,7 +195,8 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			setTheme: this.setTheme.bind(this),
 			updatePreferences: this.updatePreferences.bind(this),
 			clearAllData: this.clearAllData.bind(this),
-			notify: this.notify.bind(this)
+			notify: this.notify.bind(this),
+			revertToDefaultThemes: this.revertToDefaultThemes.bind(this)
 		};
 	}
 
@@ -507,6 +510,40 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.events.emit('theme:changed', { themeId });
 	}
 
+	async revertToDefaultThemes(): Promise<void> {
+		const prefs = this._userPreferences;
+		const activeThemeId = this._activeThemeId;
+		const activeIconThemeId = prefs.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID;
+		const patch: Partial<UserPreferences> = {};
+		let reverted = false;
+
+		if (activeThemeId !== DEFAULT_VISUAL_THEME_ID && !this.themes.getTheme(activeThemeId)) {
+			this.setTheme(DEFAULT_VISUAL_THEME_ID);
+			patch.paletteMode = PALETTE_MODE_VIBRANT;
+			patch.visualThemeId = DEFAULT_VISUAL_THEME_ID;
+			reverted = true;
+		}
+
+		if (
+			activeIconThemeId !== HOST_DEFAULT_ICON_THEME_ID &&
+			!this.iconThemes.getIconTheme(activeIconThemeId)
+		) {
+			patch.visualIconThemeId = HOST_DEFAULT_ICON_THEME_ID;
+		}
+
+		if (prefs.paletteMode !== PALETTE_MODE_VIBRANT && !this.themes.getTheme(prefs.paletteMode)) {
+			if (!reverted) {
+				this.setTheme(DEFAULT_VISUAL_THEME_ID);
+			}
+			patch.paletteMode = PALETTE_MODE_VIBRANT;
+			patch.visualThemeId = DEFAULT_VISUAL_THEME_ID;
+		}
+
+		if (Object.keys(patch).length > 0) {
+			await this.updatePreferences(patch);
+		}
+	}
+
 	async updatePreferences(patch: Partial<UserPreferences>): Promise<void> {
 		this._userPreferences = {
 			...this._userPreferences,
@@ -517,7 +554,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.events.emit('preferences:updated', { preferences: this._userPreferences });
 		if (patch.visualIconThemeId !== undefined) {
 			this.events.emit('iconTheme:changed', {
-				iconThemeId: patch.visualIconThemeId ?? 'host-default'
+				iconThemeId: patch.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID
 			});
 		}
 	}

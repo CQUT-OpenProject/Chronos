@@ -1,6 +1,6 @@
 import type { LocalizedText } from '../types/slots';
 
-export const HOST_DEFAULT_ICON_THEME_ID = 'host-default';
+export { DEFAULT_VISUAL_THEME_ID, HOST_DEFAULT_ICON_THEME_ID } from './theme-defaults';
 
 export type ShellIconSize = 'default' | 'large';
 

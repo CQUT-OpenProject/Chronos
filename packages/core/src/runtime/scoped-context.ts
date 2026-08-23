@@ -50,6 +50,7 @@ export interface EngineContextHost {
 		deleteCourse(courseId: string): Promise<void>;
 		setTheme(themeId: string): void;
 		updatePreferences(patch: Partial<UserPreferences>): Promise<void>;
+		revertToDefaultThemes(): Promise<void>;
 		notify(message: string, type?: 'info' | 'warn' | 'error'): void;
 	};
 }

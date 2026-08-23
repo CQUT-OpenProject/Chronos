@@ -41,6 +41,7 @@ export * from './runtime/event-pipeline';
 export * from './runtime/theme-registry';
 export * from './runtime/icon-theme-registry';
 export * from './theme/workbench-colors';
+export * from './theme/theme-defaults';
 export * from './theme/icon-theme';
 export * from './theme/color-theme-json';
 export * from './theme/icon-theme-json';
@@ -56,6 +57,6 @@ export * from './profile/profile-manager';
 export * from './hosts/native-protocol';
 
 // i18n
-export { I18nCatalog, interpolateMessage } from './i18n/i18n-catalog';
+export { I18nCatalog, interpolateMessage, resolveLocaleMapText } from './i18n/i18n-catalog';
 export type { PluginMessageCatalog } from './i18n/i18n-catalog';
 export { PLUGIN_CONFIG_STORAGE_KEY } from './constants/plugin-storage';

@@ -12,7 +12,9 @@ import {
 	CURRENT_PREFERENCES_SCHEMA_VERSION,
 	PALETTE_MODE_VIBRANT,
 	LEGACY_PALETTE_MODE_DYNAMIC,
-	matchesCourseQuery
+	matchesCourseQuery,
+	DEFAULT_VISUAL_THEME_ID,
+	HOST_DEFAULT_ICON_THEME_ID
 } from '@chronos/core';
 import { db, type ChronosDB } from '$lib/storage/db';
 import { courseToRow, timetableFromRow, timetableToRow, courseFromRow } from '$lib/storage/mappers';
@@ -251,9 +253,10 @@ export class DexieStorageProvider implements IStorageService {
 		const hapticRaw = this.localStore.getItem(SETTINGS_KEYS.hapticFeedbackEnabled);
 		const hapticFeedbackEnabled = hapticRaw !== '0' && hapticRaw !== 'false';
 		const visualThemeId =
-			this.localStore.getItem(SETTINGS_KEYS.visualThemeId)?.trim() || 'm3-default';
+			this.localStore.getItem(SETTINGS_KEYS.visualThemeId)?.trim() || DEFAULT_VISUAL_THEME_ID;
 		const visualIconThemeId =
-			this.localStore.getItem(SETTINGS_KEYS.visualIconThemeId)?.trim() || 'host-default';
+			this.localStore.getItem(SETTINGS_KEYS.visualIconThemeId)?.trim() ||
+			HOST_DEFAULT_ICON_THEME_ID;
 
 		return {
 			schemaVersion: CURRENT_PREFERENCES_SCHEMA_VERSION,
