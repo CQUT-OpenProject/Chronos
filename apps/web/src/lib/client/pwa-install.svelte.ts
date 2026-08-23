@@ -11,7 +11,7 @@ import { isPwaStandalone, PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalon
 const INSTALLED_KEY = 'chronos:pwa-installed';
 const OPEN_IN_APP_HINT = '如未自动跳转，请从程序坞、启动台或开始菜单手动打开 Chronos。';
 
-export class PWAInstallController {
+class PWAInstallController {
 	deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
 	installDialogOpen = $state(false);
 	openInAppDialogOpen = $state(false);

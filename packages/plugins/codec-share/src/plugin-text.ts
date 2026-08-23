@@ -1,7 +1,7 @@
 import type { ReactiveChronosController } from '@chronos/ui-kit';
 import { SHARE_CODEC_MESSAGES } from './messages';
 
-export const SHARE_CODEC_PLUGIN_ID = 'codec-share';
+const SHARE_CODEC_PLUGIN_ID = 'codec-share';
 
 export function sharePluginText(
 	controller: ReactiveChronosController | undefined,

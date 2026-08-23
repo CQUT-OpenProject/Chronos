@@ -1,10 +1,7 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 import type { PluginHttpMethod } from '@chronos/core';
 import { pluginServerError } from '@chronos/core';
-import {
-	ACTIVE_SERVER_PLUGIN_IDS,
-	type PluginProxyEntry
-} from '$lib/boot/plugin-proxy-meta.generated';
+import { ACTIVE_SERVER_PLUGIN_IDS } from '$lib/boot/plugin-proxy-meta.generated';
 import { loadServerManifest } from '$lib/server/plugin-server-loader.generated';
 import { checkPluginRateLimit } from './rate-limit';
 
@@ -61,5 +58,3 @@ export async function dispatchPluginRequest(
 		getClientAddress: event.getClientAddress
 	});
 }
-
-export type { PluginProxyEntry };

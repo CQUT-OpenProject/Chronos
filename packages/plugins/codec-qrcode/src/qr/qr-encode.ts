@@ -3,8 +3,6 @@
  * Supports Version 1 to 40 (up to 2953 bytes) with full ECC block interleaving and SVG output.
  */
 
-export type QrErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
-
 interface EccBlock {
 	count: number;
 	totalCodewords: number;

@@ -10,7 +10,7 @@ import {
 	type TimetableViewPrefs
 } from '$lib/models/timetable';
 
-export const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 1;
 
 export function encodeTimetableConfig(
 	academicConfig: AcademicConfig,

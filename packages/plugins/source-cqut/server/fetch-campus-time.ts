@@ -11,14 +11,14 @@ import { GET_CAMPUS_TIME_INFO_URL, GET_USER_INFO_URL, JSON_MEDIA_TYPE } from './
 import type { CookieJar } from './cookie-jar';
 import { requestStep } from './http-client';
 
-export interface CampusTimeInfoRow {
+interface CampusTimeInfoRow {
 	campusName: string;
 	sessionNum: number;
 	startTime: string;
 	endTime: string;
 }
 
-export function mapCampusTimeInfoToPeriodTimes(rows: CampusTimeInfoRow[]): PeriodTime[] {
+function mapCampusTimeInfoToPeriodTimes(rows: CampusTimeInfoRow[]): PeriodTime[] {
 	return [...rows]
 		.sort((left, right) => left.sessionNum - right.sessionNum)
 		.map((row) => ({

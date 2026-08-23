@@ -2,7 +2,7 @@ import type { ChronosPlugin, ChronosContext } from '@chronos/core';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 import { CORE_SHELL_MESSAGES } from '$lib/boot/core-shell-messages';
 
-export const CORE_SHELL_PLUGIN_ID = 'core-shell';
+const CORE_SHELL_PLUGIN_ID = 'core-shell';
 export const CORE_SHELL_SUPPORT_SECTION_ID = 'app-support';
 
 function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string): void {

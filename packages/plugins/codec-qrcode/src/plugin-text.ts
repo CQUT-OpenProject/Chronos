@@ -1,7 +1,7 @@
 import type { ReactiveChronosController } from '@chronos/ui-kit';
 import { QR_CODEC_MESSAGES } from './messages';
 
-export const QR_CODEC_PLUGIN_ID = 'tool-qrcode';
+const QR_CODEC_PLUGIN_ID = 'tool-qrcode';
 
 export function qrPluginText(
 	controller: ReactiveChronosController | undefined,

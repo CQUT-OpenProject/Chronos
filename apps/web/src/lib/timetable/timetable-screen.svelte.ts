@@ -38,7 +38,7 @@ function computeDelayUntilNextMidnightMillis(now = new Date()): number {
 	return Math.max(nextMidnight.getTime() - now.getTime(), 1_000);
 }
 
-export interface TimetableScreenState {
+interface TimetableScreenState {
 	currentTimetable: Timetable | null;
 	hasLoadedAppState: boolean;
 	today: string;

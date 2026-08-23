@@ -83,7 +83,7 @@ function isTimeoutError(error: unknown): boolean {
 	return false;
 }
 
-export function logUpstreamError(step: string, error: unknown): void {
+function logUpstreamError(step: string, error: unknown): void {
 	const cause = getCause(error);
 	const parts = [`step=${step}`];
 

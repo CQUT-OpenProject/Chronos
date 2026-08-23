@@ -10,11 +10,6 @@ export const BUILTIN_COLOR_SCHEME_VIBRANT = 'vibrant';
 export const DYNAMIC_COLOR_SCHEME_ID = LEGACY_PALETTE_MODE_DYNAMIC;
 export const M3_DEFAULT_THEME_ID = DEFAULT_VISUAL_THEME_ID;
 
-export interface ColorSchemePreferences {
-	paletteMode: PaletteMode;
-	visualThemeId?: string;
-}
-
 export interface ColorSchemePatch {
 	paletteMode: PaletteMode;
 	visualThemeId: string;

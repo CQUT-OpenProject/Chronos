@@ -1,9 +1,6 @@
 import type { AcademicConfig, ImportMetadata, PeriodTime, TimetableViewPrefs } from '@chronos/core';
 
 export type PeriodTimeDraft = PeriodTime;
-export type AcademicConfigDraft = AcademicConfig;
-export type TimetableImportMetadataDraft = ImportMetadata;
-export type TimetableViewPrefsDraft = TimetableViewPrefs;
 
 export interface TimetableSettingsDraft {
 	name: string;

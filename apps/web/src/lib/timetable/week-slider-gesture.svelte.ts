@@ -262,5 +262,3 @@ export function createWeekSliderGesture({
 		openWeekSlider
 	};
 }
-
-export type WeekSliderGestureController = ReturnType<typeof createWeekSliderGesture>;

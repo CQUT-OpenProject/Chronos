@@ -7,7 +7,7 @@ import { createWallpaperScreenSchema, WALLPAPER_MESSAGES } from './messages';
 
 export const WALLPAPER_THEME_ID = 'wallpaper';
 
-export function createWallpaperThemeContribution(t: (key: string) => string): ThemeContribution {
+function createWallpaperThemeContribution(t: (key: string) => string): ThemeContribution {
 	return {
 		id: WALLPAPER_THEME_ID,
 		name: () => t('theme.name'),

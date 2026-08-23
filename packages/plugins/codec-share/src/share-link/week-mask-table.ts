@@ -1,6 +1,6 @@
 import { bitmaskToWeeks, weeksToBitmask } from '@chronos/codec-kit';
 
-export const WEEK_MASK_RANGE_FLAG = 0x80;
+const WEEK_MASK_RANGE_FLAG = 0x80;
 const MAX_MASK_ENTRIES = 255;
 
 function encodeWeekMaskEntry(weeks: number[]): number[] {

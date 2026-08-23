@@ -16,7 +16,7 @@ export interface OfficialPluginServiceDeps {
 	runtimeActivator: OfficialPluginRuntimeActivator;
 }
 
-export function createOfficialPluginServiceDeps(engine: ChronosEngine): OfficialPluginServiceDeps {
+function createOfficialPluginServiceDeps(engine: ChronosEngine): OfficialPluginServiceDeps {
 	const installedStore = new OfficialPluginInstalledStore(engine);
 	const runtimeActivator = new OfficialPluginRuntimeActivator(engine, (pluginId) =>
 		installedStore.has(pluginId)

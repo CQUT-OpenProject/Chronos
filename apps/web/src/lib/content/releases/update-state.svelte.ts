@@ -10,7 +10,7 @@ import {
 	type ServiceWorkerAdapter
 } from './service-worker-adapter';
 
-export interface SoftwareUpdateState {
+interface SoftwareUpdateState {
 	checking: boolean;
 	updating: boolean;
 	hasUpdate: boolean;

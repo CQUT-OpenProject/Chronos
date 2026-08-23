@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	DEFAULT_TIMETABLE_NAME,
 	normalizeTimetableName,
 	createTimetable,
@@ -12,16 +11,11 @@ import {
 } from '@chronos/core';
 import { defaultPeriodTimes } from './defaults';
 
-export {
-	CURRENT_TIMETABLE_SCHEMA_VERSION,
-	DEFAULT_TIMETABLE_NAME,
-	normalizeTimetableName,
-	createTimetable
-};
+export { DEFAULT_TIMETABLE_NAME, normalizeTimetableName, createTimetable };
 export type { AcademicConfig, PeriodTime, Timetable, TimetableViewPrefs };
 export type TimetableImportMetadata = ImportMetadata;
 
-export const periodTimeSchema = z.object({
+const periodTimeSchema = z.object({
 	index: z.number().int(),
 	startTime: z.string(),
 	endTime: z.string()

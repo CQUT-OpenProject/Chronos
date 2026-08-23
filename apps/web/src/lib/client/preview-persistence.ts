@@ -5,7 +5,7 @@ const PREVIEW_KEY = 'chronos:import-preview';
 const PREVIEW_SLOT_KEY = 'chronos:import-preview-slot';
 const IMPORT_MODE_KEY = 'chronos:import-mode';
 
-export interface PreviewSnapshot {
+interface PreviewSnapshot {
 	preview: Timetable;
 	slotId: string;
 	importMode: ImportMode;

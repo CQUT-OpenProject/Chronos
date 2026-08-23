@@ -3,13 +3,13 @@ import { normalizeReleaseTag } from './release';
 import type { ReleaseCatalog } from './catalog';
 import { createLocalReleaseCatalog } from './local-catalog';
 
-export interface ReleaseListState {
+interface ReleaseListState {
 	loading: boolean;
 	releases: Release[];
 	errorMessage: string | null;
 }
 
-export interface ReleaseDetailState {
+interface ReleaseDetailState {
 	loading: boolean;
 	release: Release | null;
 	errorMessage: string | null;

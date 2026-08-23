@@ -1,7 +1,5 @@
 import type { PeriodTime } from '@chronos/core';
 
-export { currentWeekMonday } from '@chronos/core';
-
 export function defaultPeriodTimes(): PeriodTime[] {
 	return [
 		{ index: 1, startTime: '08:00', endTime: '08:45' },

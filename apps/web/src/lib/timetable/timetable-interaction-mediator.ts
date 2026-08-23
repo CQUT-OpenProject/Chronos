@@ -2,13 +2,13 @@ import { haptic } from '$lib/haptic/haptic';
 import { trackEvent, type AnalyticsEvent } from '$lib/client/analytics';
 import type { Course } from '@chronos/core';
 
-export interface HapticPort {
+interface HapticPort {
 	light(): boolean;
 	medium(): boolean;
 	heavy(): boolean;
 }
 
-export interface TelemetryPort {
+interface TelemetryPort {
 	track(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>): void;
 }
 
@@ -51,5 +51,3 @@ export function createTimetableInteractionMediator(
 		}
 	};
 }
-
-export type TimetableInteractionMediator = ReturnType<typeof createTimetableInteractionMediator>;

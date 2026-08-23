@@ -1,7 +1,7 @@
 import type { ChronosEngine } from '@chronos/core';
 import { getAppEngine } from '$lib/services/app-engine';
 
-export const CHRONOS_STORAGE_PREFIX = 'chronos';
+const CHRONOS_STORAGE_PREFIX = 'chronos';
 const textEncoder = new TextEncoder();
 
 function listStorageKeysWithPrefix(

@@ -111,7 +111,7 @@ export function getOfficialPluginService(options?: WebProviderOptions): Official
 	return sharedOfficialPlugins;
 }
 
-export function getActiveProfile(): ChronosProfile {
+function getActiveProfile(): ChronosProfile {
 	return profileManager?.getActiveProfile() ?? resolveActiveProfile();
 }
 
