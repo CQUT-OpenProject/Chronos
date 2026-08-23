@@ -195,20 +195,6 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		this.host.events.emit(event, payload);
 	}
 
-	registerWaterfallHook<T = unknown, R = unknown>(
-		event: string,
-		handler: (payload: T, next: () => Promise<R> | R) => Promise<R> | R
-	): Disposable {
-		return this.track(this.host.events.registerWaterfall(event, handler));
-	}
-
-	registerSerialHook<T = unknown>(
-		event: string,
-		handler: (payload: T) => Promise<boolean | void> | boolean | void
-	): Disposable {
-		return this.track(this.host.events.registerSerial(event, handler));
-	}
-
 	inject(
 		deps: ReadonlyArray<ServiceIdentifier<unknown> | string>,
 		callback: (ctx: ChronosContext<Config>) => Disposable | void

@@ -1,4 +1,5 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
+import { applyActiveTheme } from '$lib/appearance/apply-active-theme';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { getAppController, getAppEngine, resetAppToInitialState } from '$lib/services/app-engine';
 import type {
@@ -19,6 +20,7 @@ export function createAppShell() {
 	let systemPrefersDark = $state(false);
 	let mediaQueryCleanup: (() => void) | null = null;
 	let dynamicColorCleanup: (() => void) | null = null;
+	let disposeAppearanceEffects: (() => void) | null = null;
 	let dynamicColorUri = $state<string | null>(null);
 	const appearance = createAppearance();
 	const controller = getAppController();
@@ -52,6 +54,45 @@ export function createAppShell() {
 			dynamicColorUri = uri;
 		}).dispose;
 		engine.events.emit('dynamicColor:hydrate');
+
+		// The appearance pipeline lives here (not in platform-bootstrap): this
+		// controller already owns engine/theme/preference reactivity, so the
+		// effects read their inputs locally instead of being relayed across
+		// controllers.
+		disposeAppearanceEffects?.();
+		disposeAppearanceEffects = $effect.root(() => {
+			$effect(() => {
+				controller.setCoursePalette(appearance.coursePalette);
+			});
+
+			$effect(() => {
+				const dark = isDark;
+				const paletteMode = controller.userPreferences?.paletteMode ?? 'vibrant';
+				const activeThemeId = controller.activeThemeId;
+
+				applyActiveTheme(engine, activeThemeId, dark, { paletteMode });
+
+				const theme = engine.themes.getTheme(activeThemeId);
+				const mode = dark ? 'dark' : 'light';
+				const themePaletteEntries =
+					typeof theme?.paletteEntries === 'function'
+						? theme.paletteEntries(mode)
+						: (theme?.paletteEntries ?? null);
+
+				const ac = new AbortController();
+				void appearance.apply(
+					{
+						isDark: dark,
+						paletteMode,
+						dynamicColorUri,
+						activeThemeId,
+						themePaletteEntries
+					},
+					ac.signal
+				);
+				return () => ac.abort();
+			});
+		});
 	}
 
 	function destroy() {
@@ -59,6 +100,8 @@ export function createAppShell() {
 		mediaQueryCleanup = null;
 		dynamicColorCleanup?.();
 		dynamicColorCleanup = null;
+		disposeAppearanceEffects?.();
+		disposeAppearanceEffects = null;
 	}
 
 	async function updatePreferences(patch: Partial<UserPreferences>) {
@@ -109,10 +152,6 @@ export function createAppShell() {
 		await updatePreferences({ hapticFeedbackEnabled: enabled });
 	}
 
-	async function setDynamicColorAsset(assetBlob: Blob | null) {
-		engine.events.emit('dynamicColor:set', { blob: assetBlob });
-	}
-
 	async function switchTimetable(id: string) {
 		await controller.switchTimetable(id);
 	}
@@ -152,7 +191,6 @@ export function createAppShell() {
 		setPaletteMode,
 		setCapsuleCornerStyle,
 		setHapticFeedbackEnabled,
-		setDynamicColorAsset,
 		switchTimetable,
 		deleteTimetable,
 		clearAllData

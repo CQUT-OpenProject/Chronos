@@ -112,18 +112,6 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 	/** Emit an event on the shared engine bus */
 	emit<E extends keyof ChronosEvents>(event: E, payload: ChronosEvents[E]): void;
 
-	/** Waterfall onion middleware hook */
-	registerWaterfallHook<T = unknown, R = unknown>(
-		event: string,
-		handler: (payload: T, next: () => Promise<R> | R) => Promise<R> | R
-	): Disposable;
-
-	/** Serial decision / guard hook (return false to short-circuit) */
-	registerSerialHook<T = unknown>(
-		event: string,
-		handler: (payload: T) => Promise<boolean | void> | boolean | void
-	): Disposable;
-
 	/**
 	 * Conditionally activate logic when all specified optional services
 	 * become available. The callback is invoked once dependencies are met
