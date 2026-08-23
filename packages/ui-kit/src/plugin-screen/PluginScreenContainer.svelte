@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { isChronosMountable } from '@chronos/core';
 	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
 	import SchemaForm from '../schema-form/SchemaForm.svelte';
 	import { resolvePluginScreenSlot } from './resolve-plugin-screen-slot';
@@ -47,21 +46,11 @@
 </script>
 
 {#if screenSlot?.component}
-	{#if isChronosMountable(screenSlot.component)}
-		<MountableSlotOutlet
-			component={screenSlot.component}
-			props={{ controller, pluginId }}
-			class="flex min-h-0 w-full flex-1 flex-col"
-		/>
-	{:else}
-		{@const DynamicComponent = screenSlot.component as import('svelte').Component<{
-			controller: ReactiveChronosController;
-			pluginId: string;
-		}>}
-		<div class="flex min-h-0 w-full flex-1 flex-col">
-			<DynamicComponent {controller} {pluginId} />
-		</div>
-	{/if}
+	<MountableSlotOutlet
+		component={screenSlot.component}
+		props={{ controller, pluginId }}
+		class="flex min-h-0 w-full flex-1 flex-col"
+	/>
 {:else if screenSlot?.schema}
 	<div class="flex w-full flex-col p-4">
 		<div class="flex flex-col gap-4 rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">

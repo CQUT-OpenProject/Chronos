@@ -7,6 +7,7 @@ import type {
 	AcademicConfig,
 	ConfigSchema
 } from '@chronos/core';
+import { type ChronosMountable } from '@chronos/core';
 import {
 	defineSchema,
 	createCourse,
@@ -23,19 +24,14 @@ import {
 import { htmlImportSchema, parseHtmlTimetable } from './html-parser';
 
 const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
-const LEGACY_CREDENTIAL_RECORD_KEY = 'credential-record';
 
 export type { CqutCampusId } from './campus-period-times';
 export {
 	CQUT_CAMPUSES,
-	CQUT_CAMPUS_IDS,
-	DEFAULT_CQUT_CAMPUS_ID,
 	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
+	DEFAULT_CQUT_CAMPUS_ID,
 	getCampusApiName,
 	getCampusDefaultPeriodTimes,
-	isCqutCampusId,
-	resolveCampusIdFromApiName,
-	inferCampusIdFromCourses,
 	campusIdToShareIndex,
 	shareIndexToCampusId,
 	resolveShareCampusId
@@ -47,7 +43,7 @@ export interface CqutImportForm {
 	password?: string;
 }
 
-export const cqutImportSchema = defineSchema<CqutImportForm>({
+const cqutImportSchema = defineSchema<CqutImportForm>({
 	username: {
 		type: 'string',
 		title: () => '账号',
@@ -66,17 +62,6 @@ export interface CqutCampusScheduleMetadata {
 	campusId?: string;
 	campusPeriodTimes?: Record<string, PeriodTime[]>;
 	studentId?: string;
-}
-
-export interface CqutRawScheduleItem {
-	courseName: string;
-	teacherName?: string;
-	roomName?: string;
-	dayOfWeek: number;
-	startPeriod: number;
-	endPeriod: number;
-	weeks: number[];
-	remark?: string;
 }
 
 export interface CqutOnlineEventItem {
@@ -101,18 +86,14 @@ export interface CqutOnlinePayloadData {
 	eventList?: CqutOnlineEventItem[];
 }
 
+/** 服务端 /api/plugins/source-cqut/preview 响应中插件可解析的字段（payload 形状单轨） */
 export interface CqutScheduleRawInput {
 	studentName?: string;
 	termName?: string;
 	termStartDate?: string;
 	campusId?: string;
-	courses?: CqutRawScheduleItem[];
 	campusPeriodTimes?: Record<string, PeriodTime[]>;
 	payload?: CqutOnlinePayloadData;
-	eventList?: CqutOnlineEventItem[];
-	yearTerm?: string;
-	weekNum?: string;
-	weekDayList?: Array<{ weekDay: string; weekDate: string; today?: boolean }>;
 }
 
 function inferCqutTermStartDate(payload: {
@@ -169,13 +150,12 @@ export function parseCqutScheduleData(
 		? `${rawData.studentName}的课表`
 		: rawData.termName || '重庆理工大学课表';
 
-	const onlinePayload = rawData.payload ?? (rawData.eventList ? rawData : undefined);
+	const payload = rawData.payload;
+	if (payload?.eventList && Array.isArray(payload.eventList)) {
+		timetableName = studentId ? `${studentId}的课表` : payload.yearTerm || '重庆理工大学课表';
+		termStartDate = inferCqutTermStartDate(payload);
 
-	if (onlinePayload?.eventList && Array.isArray(onlinePayload.eventList)) {
-		timetableName = studentId ? `${studentId}的课表` : onlinePayload.yearTerm || '重庆理工大学课表';
-		termStartDate = inferCqutTermStartDate(onlinePayload);
-
-		courses = onlinePayload.eventList
+		courses = payload.eventList
 			.map((event, idx) => {
 				const dayOfWeek = Number(event.weekDay);
 				const startPeriod = Number(event.sessionStart);
@@ -212,24 +192,6 @@ export function parseCqutScheduleData(
 				});
 			})
 			.filter((c): c is Course => c !== null);
-	} else if (rawData.courses && Array.isArray(rawData.courses)) {
-		courses = rawData.courses.map((item, idx) => {
-			const normalizedName = normalizedCourseName(item.courseName);
-			const [color, textColor] = coursePalette(normalizedName);
-			return createCourse({
-				id: `cqut-${item.dayOfWeek}-${item.startPeriod}-${item.endPeriod}-${idx}`,
-				name: normalizedName,
-				teacher: item.teacherName ?? '',
-				location: item.roomName ?? '',
-				dayOfWeek: item.dayOfWeek,
-				startPeriod: item.startPeriod,
-				endPeriod: item.endPeriod,
-				color,
-				textColor,
-				weeks: item.weeks,
-				remark: item.remark ?? ''
-			});
-		});
 	}
 
 	const resolvedCampusId = (rawData.campusId as CqutCampusId) || fallbackCampusId;
@@ -274,10 +236,11 @@ export function parseCqutScheduleData(
 
 import CqutOnlineImportTab from './CqutOnlineImportTab.svelte';
 import EduHtmlImportTab from './EduHtmlImportTab.svelte';
+import { mountableSvelteComponent } from '@chronos/ui-kit';
 
 export interface CreateCqutPluginOptions {
-	onlineComponent?: unknown;
-	htmlComponent?: unknown;
+	onlineComponent?: ChronosMountable;
+	htmlComponent?: ChronosMountable;
 }
 
 export interface CqutPluginConfig {
@@ -287,7 +250,10 @@ export interface CqutPluginConfig {
 export function createCqutPlugin(
 	options: CreateCqutPluginOptions = {}
 ): ChronosPlugin<CqutPluginConfig> {
-	const { onlineComponent = CqutOnlineImportTab, htmlComponent = EduHtmlImportTab } = options;
+	const {
+		onlineComponent = mountableSvelteComponent(CqutOnlineImportTab),
+		htmlComponent = mountableSvelteComponent(EduHtmlImportTab)
+	} = options;
 
 	return {
 		id: 'source-cqut',
@@ -302,8 +268,6 @@ export function createCqutPlugin(
 
 		apply(ctx: ChronosContext<CqutPluginConfig>) {
 			const disabledSlots = new Set(ctx.config.disabledSlots ?? []);
-
-			void ctx.storage.delete(LEGACY_CREDENTIAL_RECORD_KEY);
 
 			async function doImport(
 				inputs: Record<string, unknown>,

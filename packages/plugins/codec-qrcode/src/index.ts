@@ -6,7 +6,7 @@ import type {
 	ExportResult,
 	ConfigSchema
 } from '@chronos/core';
-import { createTimetable, createCourse, defineSchema } from '@chronos/core';
+import { type ChronosMountable, createTimetable, createCourse, defineSchema } from '@chronos/core';
 import {
 	base64ToBytes,
 	bitmaskToWeeks,
@@ -19,6 +19,7 @@ import {
 import { generateQrSvg, generateQrMatrix } from './qr/qr-encode';
 import { decodeQrFromBlob } from './qr/qr-decode';
 import QrCodeImportTab from './QrCodeImportTab.svelte';
+import { mountableSvelteComponent } from '@chronos/ui-kit';
 
 export interface V2CompactQrPayload {
 	v: 2;
@@ -88,90 +89,61 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 }
 
 export async function deserializeTimetableFromQr(rawText: string): Promise<Timetable> {
-	let content = rawText.trim();
+	const content = rawText.trim();
 
-	// 1. Version 2 (Deflate + Dictionary + Bitmask)
-	if (content.startsWith('chronos-qr:v2:')) {
-		const base64 = content.slice('chronos-qr:v2:'.length);
-		const compressedBytes = base64ToBytes(base64);
-		const decompressedBytes = await inflateRaw(compressedBytes);
-		const jsonStr = new TextDecoder().decode(decompressedBytes);
-		const data = JSON.parse(jsonStr) as V2CompactQrPayload;
-
-		const pool = data.s ?? [];
-		const courses: Course[] = (data.c ?? []).map((tuple, idx) => {
-			const name = (tuple[0] >= 0 ? pool[tuple[0]] : null) ?? '未命名课程';
-			const teacher = (tuple[1] >= 0 ? pool[tuple[1]] : null) ?? '';
-			const location = (tuple[2] >= 0 ? pool[tuple[2]] : null) ?? '';
-			const dayOfWeek = tuple[3] ?? 1;
-			const startPeriod = tuple[4] ?? 1;
-			const endPeriod = tuple[5] ?? 1;
-			const weeks = bitmaskToWeeks(tuple[6] ?? 1);
-			const safeWeeks = weeks.length > 0 ? weeks : [1];
-			const remark = tuple[7] !== undefined && tuple[7] >= 0 ? pool[tuple[7]] : undefined;
-			const color = tuple[8] !== undefined && tuple[8] >= 0 ? pool[tuple[8]] : undefined;
-
-			return createCourse({
-				id: `c-qr-${idx + 1}-${Date.now().toString(36)}`,
-				name,
-				teacher,
-				location,
-				dayOfWeek,
-				startPeriod,
-				endPeriod,
-				weeks: safeWeeks,
-				remark,
-				color
-			});
-		});
-
-		return createTimetable({
-			id: `t-qr-${Date.now().toString(36)}`,
-			name: data.n || '二维码导入课表',
-			academicConfig: {
-				termStartDate: data.d ?? '',
-				startWeek: data.w?.[0] ?? 1,
-				endWeek: data.w?.[1] ?? 20,
-				periodTimes: (data.p ?? []).map((p) => ({
-					index: p[0],
-					startTime: p[1],
-					endTime: p[2]
-				}))
-			},
-			courses
-		});
-	}
-
-	// 2. Version 1 (Uncompressed Base64 JSON)
-	if (content.startsWith('chronos-qr:v1:')) {
-		const base64 = content.slice('chronos-qr:v1:'.length);
-		const bytes = base64ToBytes(base64);
-		content = new TextDecoder().decode(bytes);
-	}
-
-	// 3. Fallback direct JSON parsing
-	let data: unknown;
-	try {
-		data = JSON.parse(content);
-	} catch {
+	// 单轨：仅接受 v2（Deflate + 字典 + 周次 bitmask）；无历史版本需要兼容
+	if (!content.startsWith('chronos-qr:v2:')) {
 		throw new Error('二维码数据格式损坏或无法解析为课表');
 	}
 
-	if (!data || typeof data !== 'object') {
-		throw new Error('二维码内容不是合法的课表数据结构');
-	}
+	const base64 = content.slice('chronos-qr:v2:'.length);
+	const compressedBytes = base64ToBytes(base64);
+	const decompressedBytes = await inflateRaw(compressedBytes);
+	const jsonStr = new TextDecoder().decode(decompressedBytes);
+	const data = JSON.parse(jsonStr) as V2CompactQrPayload;
 
-	const legacy = data as Record<string, unknown>;
-	if (Array.isArray(legacy.courses)) {
-		return createTimetable({
-			id: `t-qr-${Date.now().toString(36)}`,
-			name: (legacy.name as string) || '二维码导入课表',
-			academicConfig: legacy.academicConfig as Timetable['academicConfig'],
-			courses: (legacy.courses as Course[]).map((c) => createCourse(c))
+	const pool = data.s ?? [];
+	const courses: Course[] = (data.c ?? []).map((tuple, idx) => {
+		const name = (tuple[0] >= 0 ? pool[tuple[0]] : null) ?? '未命名课程';
+		const teacher = (tuple[1] >= 0 ? pool[tuple[1]] : null) ?? '';
+		const location = (tuple[2] >= 0 ? pool[tuple[2]] : null) ?? '';
+		const dayOfWeek = tuple[3] ?? 1;
+		const startPeriod = tuple[4] ?? 1;
+		const endPeriod = tuple[5] ?? 1;
+		const weeks = bitmaskToWeeks(tuple[6] ?? 1);
+		const safeWeeks = weeks.length > 0 ? weeks : [1];
+		const remark = tuple[7] !== undefined && tuple[7] >= 0 ? pool[tuple[7]] : undefined;
+		const color = tuple[8] !== undefined && tuple[8] >= 0 ? pool[tuple[8]] : undefined;
+
+		return createCourse({
+			id: `c-qr-${idx + 1}-${Date.now().toString(36)}`,
+			name,
+			teacher,
+			location,
+			dayOfWeek,
+			startPeriod,
+			endPeriod,
+			weeks: safeWeeks,
+			remark,
+			color
 		});
-	}
+	});
 
-	throw new Error('二维码中未包含有效的课表课程数据');
+	return createTimetable({
+		id: `t-qr-${Date.now().toString(36)}`,
+		name: data.n || '二维码导入课表',
+		academicConfig: {
+			termStartDate: data.d ?? '',
+			startWeek: data.w?.[0] ?? 1,
+			endWeek: data.w?.[1] ?? 20,
+			periodTimes: (data.p ?? []).map((p) => ({
+				index: p[0],
+				startTime: p[1],
+				endTime: p[2]
+			}))
+		},
+		courses
+	});
 }
 
 export interface QrCodeImportForm {
@@ -189,11 +161,11 @@ export const qrCodeImportSchema = defineSchema<QrCodeImportForm>({
 });
 
 export interface CreateQrCodecPluginOptions {
-	importComponent?: unknown;
+	importComponent?: ChronosMountable;
 }
 
 export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}): ChronosPlugin {
-	const { importComponent = QrCodeImportTab } = options;
+	const { importComponent = mountableSvelteComponent(QrCodeImportTab) } = options;
 
 	return {
 		id: 'tool-qrcode',

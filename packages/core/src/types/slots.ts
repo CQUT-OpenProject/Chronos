@@ -27,8 +27,8 @@ export interface ImportTabSlotContribution<
 	/** Declare input fields required by the import source (credentials, captcha, campus select, HTML file, etc.) */
 	inputSchema?: ConfigSchema<FormState>;
 	defaultInput?: FormState;
-	/** Optional native form component; default host falls back to M3 cards per slot id */
-	component?: unknown;
+	/** Optional rich-UI component mounted via the single CHRONOS_MOUNTABLE protocol */
+	component?: import('./mountable').ChronosMountable;
 	/**
 	 * Deep-link handshake: lets a host deep-link entry (e.g. a /s landing page)
 	 * dispatch generically without knowing any concrete slot id or input shape.
@@ -77,7 +77,7 @@ export interface MineItemSlotContribution {
 	sectionId: string;
 	title: LocalizedText;
 	supporting?: LocalizedText;
-	icon?: string | unknown;
+	icon?: unknown;
 	iconTone?: 'primary' | 'secondary' | 'tertiary' | 'neutral';
 	keywords?: string[];
 	order?: number;
@@ -89,8 +89,8 @@ export interface MineItemSlotContribution {
 export interface PluginScreenSlotContribution {
 	id: string; // Unique view ID, mapped to /plugins/[pluginId]/[id]
 	title: LocalizedText;
-	/** Svelte component for rich UI (profile builtins and ESM online bundles); falls back to schema if absent */
-	component?: unknown;
+	/** Svelte component for rich UI via the single CHRONOS_MOUNTABLE protocol; falls back to schema if absent */
+	component?: import('./mountable').ChronosMountable;
 	schema?: ConfigSchema<Record<string, unknown>>;
 }
 

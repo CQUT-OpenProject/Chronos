@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isChronosMountable, resolveLocalizedText } from '@chronos/core';
+	import { resolveLocalizedText } from '@chronos/core';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
@@ -94,20 +94,11 @@
 
 	<div class="w-full">
 		{#if activeSlot?.component}
-			{#if isChronosMountable(activeSlot.component)}
-				<MountableSlotOutlet
-					component={activeSlot.component}
-					props={{ controller, transfer, onContinue }}
-					class="w-full"
-				/>
-			{:else}
-				{@const DynamicComponent = activeSlot.component as import('svelte').Component<{
-					controller?: typeof controller;
-					transfer: typeof transfer;
-					onContinue: () => void;
-				}>}
-				<DynamicComponent {controller} {transfer} {onContinue} />
-			{/if}
+			<MountableSlotOutlet
+				component={activeSlot.component}
+				props={{ controller, transfer, onContinue }}
+				class="w-full"
+			/>
 		{:else if activeSlot?.inputSchema}
 			<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 				<div class="flex flex-col gap-4">

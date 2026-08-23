@@ -1,4 +1,4 @@
-import type { ChronosPlugin, ThemeContribution } from '@chronos/core';
+import type { ChronosMountable, ChronosPlugin, ThemeContribution } from '@chronos/core';
 import { createWorkbenchColorsFromTokens, defineSchema, IStorageService } from '@chronos/core';
 import { createWallpaperRuntime, type WallpaperRuntime } from './runtime.svelte';
 import { WALLPAPER_PLUGIN_ID } from './storage';
@@ -55,7 +55,7 @@ export function createWallpaperThemeContribution(): ThemeContribution {
 }
 
 export interface CreateWallpaperPluginOptions {
-	screenComponent?: unknown;
+	screenComponent?: ChronosMountable;
 }
 
 async function syncConfigWallpaper(
@@ -65,7 +65,7 @@ async function syncConfigWallpaper(
 	const wallpaper = config.wallpaper;
 
 	if (wallpaper instanceof Uint8Array) {
-		await runtime.setWallpaper(new Blob([wallpaper]));
+		await runtime.setWallpaper(new Blob([new Uint8Array(wallpaper)]));
 		return;
 	}
 

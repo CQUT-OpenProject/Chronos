@@ -5,7 +5,7 @@ import type {
 	ExportResult,
 	ConfigSchema
 } from '@chronos/core';
-import { defineSchema } from '@chronos/core';
+import { type ChronosMountable, defineSchema } from '@chronos/core';
 import {
 	decodeSharePayload,
 	encodeShareLink,
@@ -29,13 +29,14 @@ export const shareLinkImportSchema = defineSchema<ShareLinkImportForm>({
 });
 
 import ShareLinkImportTab from './ShareLinkImportTab.svelte';
+import { mountableSvelteComponent } from '@chronos/ui-kit';
 
 export interface CreateShareCodecPluginOptions {
-	shareComponent?: unknown;
+	shareComponent?: ChronosMountable;
 }
 
 export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = {}): ChronosPlugin {
-	const { shareComponent = ShareLinkImportTab } = options;
+	const { shareComponent = mountableSvelteComponent(ShareLinkImportTab) } = options;
 
 	return {
 		id: 'codec-share',
