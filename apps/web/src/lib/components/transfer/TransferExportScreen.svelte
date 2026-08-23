@@ -18,12 +18,14 @@
 	} = $props();
 
 	const controller = getAppController();
-	const exportActions = $derived(
+	const allExportActions = $derived(
 		controller
 			.getSlots('export.action')
 			.slice()
 			.sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
 	);
+	const primaryAction = $derived(allExportActions.find((a) => a.isPrimary) ?? allExportActions[0]);
+	const secondaryActions = $derived(allExportActions.filter((a) => a.id !== primaryAction?.id));
 
 	let loading = $state(false);
 
@@ -37,7 +39,7 @@
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = result.filename;
+		a.download = result.filename ?? 'timetable-export';
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
@@ -55,12 +57,17 @@
 		try {
 			const ctx = controller.getPluginContextForSlot('export.action', action.id);
 			const result = await action.export(current, ctx);
+			const disposition =
+				result.disposition ??
+				action.disposition ??
+				(result.mimeType === 'application/x-chronos-share-link' ? 'clipboard' : 'download');
 
-			if (result.mimeType === 'application/x-chronos-share-link') {
+			if (disposition === 'clipboard') {
 				const text = typeof result.content === 'string' ? result.content : '';
 				await navigator.clipboard.writeText(text);
 				trackEvent('export_copy_link');
-				snackbar('已复制课表链接');
+				const msg = resolveText(result.successMessage) || '已复制课表链接';
+				snackbar(msg);
 				if (longLinkWarning) {
 					trackEvent('export_long_link_warning_shown');
 					snackbar('课表较大，部分应用可能截断链接内容，请注意核对导入结果');
@@ -68,10 +75,16 @@
 				return;
 			}
 
-			if (result) {
+			if (disposition === 'download' && result) {
 				downloadExportResult(result);
 				trackEvent('export_slot_execute_success', { actionId: action.id });
-				snackbar(`已导出《${result.filename}》`);
+				const msg = resolveText(result.successMessage) || `已导出《${result.filename ?? '课表'}》`;
+				snackbar(msg);
+				return;
+			}
+
+			if (result.successMessage) {
+				snackbar(resolveText(result.successMessage));
 			}
 		} catch (err: unknown) {
 			trackEvent('export_slot_execute_fail', { actionId: action.id });
@@ -84,15 +97,15 @@
 </script>
 
 {#snippet footer()}
-	{#if exportActions[0]}
+	{#if primaryAction}
 		<Button
 			variant="filled"
 			class="w-full"
 			disabled={loading || !currentTimetableName}
-			onclick={() => handleActionExport(exportActions[0]!)}
+			onclick={() => handleActionExport(primaryAction)}
 		>
 			<IosShareFill class="size-5" />
-			{loading ? '导出中…' : resolveText(exportActions[0]!.title)}
+			{loading ? '导出中…' : resolveText(primaryAction.title)}
 		</Button>
 	{/if}
 {/snippet}
@@ -113,18 +126,20 @@
 			{/if}
 		</div>
 
-		{#if exportActions.length > 1}
+		{#if secondaryActions.length > 0}
 			<section class="flex flex-col gap-3">
 				<h3 class="m3-title-medium px-1 text-on-surface">更多导出格式</h3>
 				<div class="flex flex-col gap-2.5">
-					{#each exportActions.slice(1) as action (action.id)}
+					{#each secondaryActions as action (action.id)}
 						<Card variant="outlined">
 							<div class="flex items-center justify-between p-3.5">
 								<div class="flex flex-col">
 									<span class="m3-title-small font-medium text-on-surface">
 										{resolveText(action.title)}
 									</span>
-									<span class="m3-body-small text-on-surface-variant"> 导出为标准文件产物 </span>
+									<span class="m3-body-small text-on-surface-variant">
+										{resolveText(action.description) || '导出为标准文件产物'}
+									</span>
 								</div>
 								<Button
 									variant="tonal"

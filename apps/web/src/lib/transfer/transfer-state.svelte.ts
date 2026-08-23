@@ -137,25 +137,36 @@ export function createTransferState(engine?: ChronosEngine) {
 
 	async function getExportMetadata() {
 		if (!engine) {
-			return { timetableName: null, longLinkWarning: false };
+			return { timetableName: null, longLinkWarning: false, warningMessage: null };
 		}
 		const current = engine.state.currentTimetable;
 		if (!current) {
-			return { timetableName: null, longLinkWarning: false };
+			return { timetableName: null, longLinkWarning: false, warningMessage: null };
 		}
-		const controller = getAppController();
-		const exportSlot = controller.getSlotItem('export.action', 'share-link');
-		let length = 0;
-		if (exportSlot?.estimateLength && (current.courses?.length ?? 0) > 0) {
-			try {
-				length = await exportSlot.estimateLength(current);
-			} catch {
-				length = 0;
+		let warningMessage: string | null = null;
+		try {
+			const controller = getAppController();
+			const exportSlots = controller.getSlots('export.action');
+			const primaryAction =
+				exportSlots.find((s) => s.isPrimary) ??
+				exportSlots.slice().sort((a, b) => (a.order ?? 50) - (b.order ?? 50))[0];
+			if (primaryAction?.checkWarning) {
+				const ctx = controller.getPluginContextForSlot('export.action', primaryAction.id);
+				warningMessage = await primaryAction.checkWarning(current, ctx);
+			} else if (primaryAction?.estimateLength && (current.courses?.length ?? 0) > 0) {
+				const length = await primaryAction.estimateLength(current);
+				if (length > SHARE_LINK_MAX_RECOMMENDED_LENGTH) {
+					warningMessage = '课表较大，部分应用可能截断链接内容，请注意核对导入结果';
+				}
 			}
+		} catch {
+			warningMessage = null;
 		}
+
 		return {
 			timetableName: current.name,
-			longLinkWarning: length > SHARE_LINK_MAX_RECOMMENDED_LENGTH
+			longLinkWarning: Boolean(warningMessage),
+			warningMessage
 		};
 	}
 

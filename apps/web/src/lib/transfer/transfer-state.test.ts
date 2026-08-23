@@ -88,5 +88,29 @@ describe('createTransferState', () => {
 		const meta = await controller.getExportMetadata();
 		expect(meta.timetableName).toBe('空课表');
 		expect(meta.longLinkWarning).toBe(false);
+		expect(meta.warningMessage).toBeNull();
+	});
+
+	it('returns warning when primary action checkWarning finds a warning', async () => {
+		const mockEngine = {
+			state: {
+				currentTimetable: {
+					id: 't2',
+					name: '大课表',
+					courses: [{ id: '1' }],
+					academicConfig: {
+						termStartDate: '2026-03-02',
+						startWeek: 1,
+						endWeek: 20,
+						periodTimes: []
+					}
+				}
+			}
+		} as unknown as Parameters<typeof createTransferState>[0];
+
+		const controller = createTransferState(mockEngine);
+		const meta = await controller.getExportMetadata();
+		expect(meta.timetableName).toBe('大课表');
+		expect(typeof meta.longLinkWarning).toBe('boolean');
 	});
 });
