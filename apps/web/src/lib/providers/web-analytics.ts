@@ -1,5 +1,5 @@
 import type { IAnalyticsService } from '@chronos/core';
-import { trackEvent, type AnalyticsEvent } from '$lib/client/analytics';
+import { capturePostHogEvent, type AnalyticsEvent } from '$lib/client/analytics';
 
 /**
  * WebAnalyticsProvider implements the IAnalyticsService interface for Chronos Web host.
@@ -19,6 +19,6 @@ export class WebAnalyticsProvider implements IAnalyticsService {
 			}
 		}
 
-		trackEvent(event as AnalyticsEvent, cleanedProps);
+		capturePostHogEvent(event as AnalyticsEvent, cleanedProps);
 	}
 }

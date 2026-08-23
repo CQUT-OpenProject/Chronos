@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/public';
 import type { PostHog } from 'posthog-js';
+import type { IAnalyticsService } from '@chronos/core';
 
 export type AnalyticsEvent =
 	| 'onboarding_step_next'
@@ -57,6 +58,11 @@ export type AnalyticsEvent =
 let client: PostHog | null = null;
 let pending: Array<[AnalyticsEvent, Record<string, string | number | boolean> | undefined]> | null =
 	null;
+let analyticsPort: IAnalyticsService | null = null;
+
+export function bindAnalyticsPort(service: IAnalyticsService): void {
+	analyticsPort = service;
+}
 
 export function initAnalytics() {
 	if (import.meta.env.DEV || !__ANALYTICS_ENABLED__) return;
@@ -86,7 +92,8 @@ export function initAnalytics() {
 		});
 }
 
-export function trackEvent(
+/** PostHog adapter entry — used by `WebAnalyticsProvider` only. */
+export function capturePostHogEvent(
 	name: AnalyticsEvent,
 	properties?: Record<string, string | number | boolean>
 ) {
@@ -95,4 +102,16 @@ export function trackEvent(
 		return;
 	}
 	pending?.push([name, properties]);
+}
+
+/** UI telemetry facade — routes through `IAnalyticsService` when the engine port is bound. */
+export function trackEvent(
+	name: AnalyticsEvent,
+	properties?: Record<string, string | number | boolean>
+) {
+	if (analyticsPort) {
+		analyticsPort.track(name, properties);
+		return;
+	}
+	capturePostHogEvent(name, properties);
 }

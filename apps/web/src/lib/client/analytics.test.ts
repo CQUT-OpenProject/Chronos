@@ -68,4 +68,15 @@ describe('analytics', () => {
 			expect(posthog.capture).toHaveBeenCalledWith('share_link_decode_success', undefined);
 		});
 	});
+
+	it('routes trackEvent through bound analytics port', async () => {
+		const { trackEvent, bindAnalyticsPort } = await import('./analytics');
+		const track = vi.fn();
+		bindAnalyticsPort({ track });
+
+		trackEvent('course_save', { source: 'test' });
+
+		expect(track).toHaveBeenCalledWith('course_save', { source: 'test' });
+		expect(posthog.capture).not.toHaveBeenCalled();
+	});
 });

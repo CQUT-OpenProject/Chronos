@@ -1,4 +1,4 @@
-import { ChronosEngine, ProfileManager } from '@chronos/core';
+import { ChronosEngine, ProfileManager, DEFAULT_VISUAL_THEME_ID } from '@chronos/core';
 import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
@@ -19,13 +19,16 @@ let sharedOfficialPlugins: OfficialPluginService | null = null;
 let engineInitPromise: Promise<ChronosEngine> | null = null;
 let profileManager: ProfileManager | null = null;
 
+import { bindAnalyticsPort } from '$lib/client/analytics';
 import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
+import { syncEngineLocaleFromPreferences } from '$lib/i18n/locale-sync';
 
 function createEngine(options?: WebProviderOptions): ChronosEngine {
 	const env = createWebChronosEnv({
 		...options,
 		enablePluginProxy: profileHasServerPlugins()
 	});
+	bindAnalyticsPort(env.analytics);
 	const engine = new ChronosEngine({
 		env,
 		initialLocale: baseLocale ?? 'zh-cn',
@@ -62,11 +65,12 @@ async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	await sharedOfficialPlugins.init();
 
 	const prefs = await engine.storage.getPreferences();
-	const visualThemeId = prefs?.visualThemeId ?? 'm3-default';
+	syncEngineLocaleFromPreferences(engine);
+	const visualThemeId = prefs?.visualThemeId ?? DEFAULT_VISUAL_THEME_ID;
 	if (engine.themes.getTheme(visualThemeId)) {
 		engine.actions.setTheme(visualThemeId);
-	} else if (engine.themes.getTheme('m3-default')) {
-		engine.actions.setTheme('m3-default');
+	} else if (engine.themes.getTheme(DEFAULT_VISUAL_THEME_ID)) {
+		engine.actions.setTheme(DEFAULT_VISUAL_THEME_ID);
 	}
 }
 
@@ -123,7 +127,7 @@ export async function resetAppToInitialState(): Promise<void> {
 	if (profileManager) {
 		await profileManager.applyProfile(profile, availablePlugins);
 	}
-	engine.actions.setTheme(profile.defaultTheme ?? 'm3-default');
+	engine.actions.setTheme(profile.defaultTheme ?? DEFAULT_VISUAL_THEME_ID);
 	engine.events.emit('dynamicColor:hydrate', undefined);
 }
 
