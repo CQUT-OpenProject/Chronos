@@ -176,7 +176,8 @@ export type ChronosSlotMap = StandardSlotMap & CustomSlotMap;
  */
 export function resolveLocalizedText(
 	text: LocalizedText | undefined | null,
-	fallback = ''
+	fallback = '',
+	_locale?: string
 ): string {
 	if (text === undefined || text === null) return fallback;
 	const value = typeof text === 'function' ? text() : text;

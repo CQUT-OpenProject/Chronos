@@ -2,6 +2,7 @@ import type { Course } from '../domain/course';
 import type { AcademicConfig, Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
 import type { ChronosEnv } from '../types/env';
+import { PLUGIN_CONFIG_STORAGE_KEY } from '../constants/plugin-storage';
 import type { Disposable, ServiceIdentifier } from '../types/services';
 import { IStorageService } from '../types/services';
 import type { ChronosContext, ChronosEvents } from '../types/context';
@@ -13,6 +14,7 @@ import type { ServiceContainer } from './service-container';
 import type { ThemeRegistry } from './theme-registry';
 import type { IconThemeRegistry } from './icon-theme-registry';
 import type { BadgeManager } from './badge-manager';
+import type { I18nCatalog } from '../i18n/i18n-catalog';
 
 export interface EngineContextHost {
 	readonly services: ServiceContainer;
@@ -22,8 +24,10 @@ export interface EngineContextHost {
 	readonly iconThemes?: IconThemeRegistry;
 	readonly badges?: BadgeManager;
 	readonly env: ChronosEnv;
+	readonly i18nCatalog: I18nCatalog;
 	readonly locale: string;
 	t(key: string, params?: Record<string, unknown>): string;
+	translateForPlugin(pluginId: string, key: string, params?: Record<string, unknown>): string;
 	readonly state: {
 		readonly currentTimetable: Readonly<Timetable> | null;
 		readonly activeWeek: number;
@@ -65,6 +69,7 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 	readonly i18n: {
 		readonly locale: string;
 		t(key: string, params?: Record<string, unknown>): string;
+		registerMessages(messages: Record<string, Record<string, string>>): Disposable;
 	};
 
 	constructor(
@@ -80,7 +85,7 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 			set: <T = unknown>(key: string, value: T) =>
 				this.host.services.get(IStorageService).setPluginData<T>(this.pluginId, key, value),
 			delete: (key: string) => {
-				if (key === '__config__') {
+				if (key === PLUGIN_CONFIG_STORAGE_KEY) {
 					console.warn(
 						`[ScopedContext:${this.pluginId}] 拒绝删除保留键 __config__，请使用 updateConfig`
 					);
@@ -94,12 +99,14 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 			get locale() {
 				return host.locale;
 			},
-			t: (key: string, params?: Record<string, unknown>) => host.t(key, params)
+			t: (key: string, params?: Record<string, unknown>) =>
+				host.translateForPlugin(pluginId, key, params),
+			registerMessages: (messages: Record<string, Record<string, string>>) => {
+				const handle = host.i18nCatalog.register(pluginId, messages);
+				this.subscriptions.push(handle);
+				return handle;
+			}
 		};
-	}
-
-	get env(): Readonly<ChronosEnv> {
-		return this.host.env;
 	}
 
 	get config(): Readonly<Config> {
@@ -111,7 +118,7 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 			...this._config,
 			...patch
 		};
-		await this.storage.set('__config__', this._config);
+		await this.storage.set(PLUGIN_CONFIG_STORAGE_KEY, this._config);
 		this.host.events.emit('config:changed', {
 			pluginId: this.pluginId,
 			config: this._config as Record<string, unknown>
@@ -198,52 +205,6 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 
 	emit<E extends keyof ChronosEvents>(event: E, payload: ChronosEvents[E]): void {
 		this.host.events.emit(event, payload);
-	}
-
-	inject(
-		deps: ReadonlyArray<ServiceIdentifier<unknown> | string>,
-		callback: (ctx: ChronosContext<Config>) => Disposable | void
-	): Disposable {
-		const keys = deps.map((d) => (typeof d === 'string' ? d : d.key));
-		let callbackDisposable: Disposable | void;
-		let activated = false;
-
-		const tryActivate = () => {
-			if (activated) return;
-			if (keys.every((k) => this.host.services.hasKey(k))) {
-				activated = true;
-				callbackDisposable = callback(this);
-			}
-		};
-
-		const deactivate = () => {
-			if (!activated) return;
-			activated = false;
-			callbackDisposable?.dispose();
-			callbackDisposable = undefined;
-		};
-
-		const regSub = this.host.services.onServiceRegistered((key) => {
-			if (keys.includes(key)) tryActivate();
-		});
-
-		const unregSub = this.host.services.onServiceUnregistered((key) => {
-			if (keys.includes(key)) deactivate();
-		});
-
-		// Check if all deps are already satisfied at registration time
-		tryActivate();
-
-		const handle: Disposable = {
-			dispose: () => {
-				deactivate();
-				regSub.dispose();
-				unregSub.dispose();
-			}
-		};
-
-		this.subscriptions.push(handle);
-		return handle;
 	}
 
 	dispose(): void {

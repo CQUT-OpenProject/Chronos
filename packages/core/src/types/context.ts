@@ -26,8 +26,6 @@ export interface ChronosPlugin<Config extends object = Record<string, unknown>> 
 	readonly readme?: LocalizedText;
 	readonly configSchema?: ConfigSchema<Config>;
 	readonly defaultConfig?: Config;
-	/** Declared service dependencies (plugin remains pending until all dependencies are satisfied) */
-	readonly inject?: ReadonlyArray<ServiceIdentifier<unknown> | string>;
 	/** Allowed domain whitelist for network requests */
 	readonly allowedDomains?: string[];
 
@@ -58,6 +56,7 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 	readonly i18n: {
 		readonly locale: string;
 		t(key: string, params?: Record<string, unknown>): string;
+		registerMessages(messages: Record<string, Record<string, string>>): Disposable;
 	};
 
 	/** Read-only core state snapshot */
@@ -104,16 +103,6 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 
 	/** Emit an event on the shared engine bus */
 	emit<E extends keyof ChronosEvents>(event: E, payload: ChronosEvents[E]): void;
-
-	/**
-	 * Conditionally activate logic when all specified optional services
-	 * become available. The callback is invoked once dependencies are met
-	 * and automatically disposed when any dependency is unregistered.
-	 */
-	inject(
-		deps: ReadonlyArray<ServiceIdentifier<unknown> | string>,
-		callback: (ctx: ChronosContext<Config>) => Disposable | void
-	): Disposable;
 
 	/** Manually register disposable resources to be cleaned up on unload */
 	addDisposable(disposable: Disposable): void;

@@ -1,5 +1,6 @@
 export type ThemeMode = 'light' | 'dark' | 'auto';
 export type PaletteMode = string;
+export type AppLocale = 'zh-cn' | 'en';
 
 /** 默认课程配色模式 */
 export const PALETTE_MODE_VIBRANT = 'vibrant';
@@ -21,6 +22,8 @@ export interface UserPreferences {
 	visualThemeId?: string;
 	/** Active icon theme id (host-default = slot defaults only). */
 	visualIconThemeId?: string;
+	/** UI locale (zh-cn | en). */
+	locale?: AppLocale;
 	customMetadata?: Record<string, unknown>;
 }
 

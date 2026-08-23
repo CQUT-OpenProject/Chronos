@@ -5,9 +5,16 @@ import {
 	DEFAULT_USER_PREFERENCES,
 	CURRENT_PREFERENCES_SCHEMA_VERSION
 } from '../domain/preferences';
+import { PLUGIN_CONFIG_STORAGE_KEY } from '../constants/plugin-storage';
 import type { ChronosEnv, StorageChangeEvent } from '../types/env';
 import type { Disposable } from '../types/services';
-import { IHttpService, IStorageService, IVaultService, IRuntimeService } from '../types/services';
+import {
+	IHttpService,
+	IStorageService,
+	IVaultService,
+	IRuntimeService,
+	IAnalyticsService
+} from '../types/services';
 import type { ChronosPlugin } from '../types/context';
 import type { ChronosEvents } from '../types/context';
 import type { ChronosSlotMap } from '../types/slots';
@@ -25,9 +32,10 @@ import {
 	findCurrentPeriodIndex,
 	parsePeriodRanges
 } from '../engine/period-clock';
+import { I18nCatalog, interpolateMessage } from '../i18n/i18n-catalog';
 
 export interface ChronosEngineOptions {
-	env?: ChronosEnv;
+	env: ChronosEnv;
 	services?: ServiceContainer;
 	initialLocale?: string;
 	i18nHandler?: (key: string, params?: Record<string, unknown>) => string;
@@ -42,6 +50,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	readonly themes: ThemeRegistry;
 	readonly iconThemes: IconThemeRegistry;
 	readonly badges: BadgeManager;
+	readonly i18nCatalog: I18nCatalog;
 
 	private _locale: string;
 	private _i18nHandler?: (key: string, params?: Record<string, unknown>) => string;
@@ -66,22 +75,16 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			context: ScopedContext<Record<string, unknown>>;
 		}
 	>();
-	private pendingPlugins = new Map<
-		string,
-		{
-			plugin: ChronosPlugin<Record<string, unknown>>;
-			missingDeps: Set<string>;
-		}
-	>();
-	private serviceSubscriptions: Disposable[] = [];
-	private storageSubscription?: Disposable;
-	private calendarService = new AcademicCalendarService();
 
 	constructor(options: ChronosEngineOptions) {
+		if (!options.env) {
+			throw new Error('[ChronosEngine] env is required at construction');
+		}
 		this.services = options.services ?? new ServiceContainer();
 		this._locale = options.initialLocale ?? 'zh-cn';
 		this._i18nHandler = options.i18nHandler;
 		this._onNotification = options.onNotification;
+		this.i18nCatalog = new I18nCatalog();
 
 		this.events = new EventPipeline();
 		this.slots = new HierarchicalSlotRegistry(() => {
@@ -99,24 +102,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			this.events.emit('badges:updated', { badges });
 		});
 
-		// Listen to service registrations for topological dependency activation
-		this.serviceSubscriptions.push(
-			this.services.onServiceRegistered((key) => {
-				void this.handleServiceRegistered(key);
-			}),
-			this.services.onServiceUnregistered((key) => {
-				void this.handleServiceUnregistered(key);
-			})
-		);
-
-		// If env is provided, register standard service providers into ServiceContainer
-		if (options.env) {
-			this.env = options.env;
-			this.registerEnvProviders(this.env);
-		} else {
-			this.env = this.createEnvFacade(this.services);
-		}
+		this.env = options.env;
+		this.registerEnvProviders(this.env);
 	}
+
+	private storageSubscription?: Disposable;
+	private calendarService = new AcademicCalendarService();
 
 	private registerEnvProviders(env: ChronosEnv): void {
 		if (!this.services.has(IStorageService) && env.storage) {
@@ -138,90 +129,9 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				decodeUtf8: env.runtime.decodeUtf8.bind(env.runtime)
 			});
 		}
-	}
-
-	private createEnvFacade(services: ServiceContainer): ChronosEnv {
-		return {
-			platform: services.tryGet(IRuntimeService)?.platform ?? 'web',
-			http: {
-				request: (url, opts) => {
-					const svc = services.tryGet(IHttpService);
-					if (!svc) throw new Error('[ChronosEngine] IHttpService is not registered');
-					return svc.request(url, opts);
-				},
-				...(services.tryGet(IHttpService)?.proxy
-					? {
-							proxy: (
-								pluginId: string,
-								action: string,
-								payload: unknown,
-								options?: { timeoutMs?: number; signal?: AbortSignal }
-							) => {
-								const svc = services.tryGet(IHttpService);
-								if (!svc?.proxy)
-									throw new Error('[ChronosEngine] IHttpService.proxy is not registered');
-								return svc.proxy(pluginId, action, payload, options);
-							}
-						}
-					: {}),
-				clearSession: (sid) =>
-					services.tryGet(IHttpService)?.clearSession?.(sid) ?? Promise.resolve()
-			},
-			storage: {
-				getTimetable: (id) => services.get(IStorageService).getTimetable(id),
-				listTimetables: () => services.get(IStorageService).listTimetables(),
-				saveTimetable: (tt) => services.get(IStorageService).saveTimetable(tt),
-				patchTimetable: (id, patch) => services.get(IStorageService).patchTimetable(id, patch),
-				deleteTimetable: (id) => services.get(IStorageService).deleteTimetable(id),
-				getActiveTimetableId: () => services.get(IStorageService).getActiveTimetableId(),
-				setActiveTimetableId: (id) => services.get(IStorageService).setActiveTimetableId(id),
-				queryCourses: (filter) => services.get(IStorageService).queryCourses(filter),
-				getPreferences: () => services.get(IStorageService).getPreferences(),
-				savePreferences: (patch) => services.get(IStorageService).savePreferences(patch),
-				getPluginData: (pid, k) => services.get(IStorageService).getPluginData(pid, k),
-				setPluginData: (pid, k, v) => services.get(IStorageService).setPluginData(pid, k, v),
-				deletePluginData: (pid, k) => services.get(IStorageService).deletePluginData(pid, k),
-				clearPluginData: (pid) =>
-					services.get(IStorageService).clearPluginData?.(pid) ?? Promise.resolve(),
-				onChanged: (l) => services.get(IStorageService).onChanged?.(l) ?? { dispose: () => {} }
-			},
-			...(services.tryGet(IVaultService)
-				? {
-						vault: {
-							isSupported: () =>
-								services.tryGet(IVaultService)?.isSupported() ?? Promise.resolve(false),
-							storeSecret: (k, s, opts) => {
-								const svc = services.tryGet(IVaultService);
-								if (!svc) throw new Error('[ChronosEngine] IVaultService is not registered');
-								return svc.storeSecret(k, s, opts);
-							},
-							getSecret: (k) =>
-								services.tryGet(IVaultService)?.getSecret(k) ?? Promise.resolve(null),
-							removeSecret: (k) =>
-								services.tryGet(IVaultService)?.removeSecret(k) ?? Promise.resolve()
-						}
-					}
-				: {}),
-			runtime: {
-				setTimeout: (fn, ms) =>
-					services.tryGet(IRuntimeService)?.setTimeout(fn, ms) ??
-					(setTimeout(fn, ms) as unknown as number),
-				clearTimeout: (h) => {
-					const svc = services.tryGet(IRuntimeService);
-					if (svc) svc.clearTimeout(h);
-					else clearTimeout(h);
-				},
-				sha256: (d) => {
-					const svc = services.tryGet(IRuntimeService);
-					if (!svc) throw new Error('[ChronosEngine] IRuntimeService is not registered');
-					return svc.sha256(d);
-				},
-				encodeUtf8: (s) =>
-					services.tryGet(IRuntimeService)?.encodeUtf8(s) ?? new TextEncoder().encode(s),
-				decodeUtf8: (b) =>
-					services.tryGet(IRuntimeService)?.decodeUtf8(b) ?? new TextDecoder().decode(b)
-			}
-		};
+		if (!this.services.has(IAnalyticsService) && env.analytics) {
+			this.services.register(IAnalyticsService, env.analytics);
+		}
 	}
 
 	get storage(): import('../types/services').IStorageService {
@@ -240,6 +150,17 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	t(key: string, params?: Record<string, unknown>): string {
 		if (this._i18nHandler) {
 			return this._i18nHandler(key, params);
+		}
+		if (params && typeof params.default === 'string') {
+			return params.default;
+		}
+		return key;
+	}
+
+	translateForPlugin(pluginId: string, key: string, params?: Record<string, unknown>): string {
+		const fromCatalog = this.i18nCatalog.t(pluginId, key, this._locale);
+		if (fromCatalog !== undefined) {
+			return interpolateMessage(fromCatalog, params);
 		}
 		if (params && typeof params.default === 'string') {
 			return params.default;
@@ -306,6 +227,11 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		}
 		this.events.emit('timetables:updated', { timetables: this._timetables });
 		this.events.emit('preferences:updated', { preferences: this._userPreferences });
+
+		const savedLocale = this._userPreferences.locale;
+		if (savedLocale) {
+			this._locale = savedLocale;
+		}
 
 		if (storage.onChanged) {
 			this.storageSubscription = storage.onChanged(this.handleStorageChange.bind(this));
@@ -627,46 +553,17 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		return this.loadedPlugins.has(pluginId);
 	}
 
-	isPluginPending(pluginId: string): boolean {
-		return this.pendingPlugins.has(pluginId);
-	}
-
 	async loadPlugin<Config extends object = Record<string, unknown>>(
 		plugin: ChronosPlugin<Config>
 	): Promise<Disposable> {
 		if (this.loadedPlugins.has(plugin.id)) {
 			await this.unloadPlugin(plugin.id);
 		}
-		this.pendingPlugins.delete(plugin.id);
-
-		const missingDeps = new Set<string>();
-		if (plugin.inject) {
-			for (const dep of plugin.inject) {
-				const key = typeof dep === 'string' ? dep : dep.key;
-				if (!this.services.hasKey(key)) {
-					missingDeps.add(key);
-				}
-			}
-		}
-
-		if (missingDeps.size > 0) {
-			this.pendingPlugins.set(plugin.id, {
-				plugin: plugin as unknown as ChronosPlugin<Record<string, unknown>>,
-				missingDeps
-			});
-			return {
-				dispose: () => {
-					this.pendingPlugins.delete(plugin.id);
-					void this.unloadPlugin(plugin.id);
-				}
-			};
-		}
 
 		await this.activatePlugin(plugin as unknown as ChronosPlugin<Record<string, unknown>>);
 
 		return {
 			dispose: () => {
-				this.pendingPlugins.delete(plugin.id);
 				void this.unloadPlugin(plugin.id);
 			}
 		};
@@ -677,7 +574,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		try {
 			const savedConfig = await this.storage.getPluginData<Record<string, unknown>>(
 				plugin.id,
-				'__config__'
+				PLUGIN_CONFIG_STORAGE_KEY
 			);
 			if (savedConfig) {
 				initialConfig = { ...initialConfig, ...savedConfig };
@@ -696,40 +593,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.events.emit('plugin:loaded', { pluginId: plugin.id });
 	}
 
-	private async handleServiceRegistered(key: string): Promise<void> {
-		for (const [pluginId, pending] of Array.from(this.pendingPlugins.entries())) {
-			if (pending.missingDeps.has(key)) {
-				pending.missingDeps.delete(key);
-				if (pending.missingDeps.size === 0) {
-					this.pendingPlugins.delete(pluginId);
-					await this.activatePlugin(pending.plugin);
-				}
-			}
-		}
-	}
-
-	private async handleServiceUnregistered(key: string): Promise<void> {
-		for (const [pluginId, entry] of Array.from(this.loadedPlugins.entries())) {
-			const injects = entry.plugin.inject;
-			if (injects && injects.some((dep) => (typeof dep === 'string' ? dep : dep.key) === key)) {
-				const missing = new Set<string>([key]);
-				for (const dep of injects) {
-					const depKey = typeof dep === 'string' ? dep : dep.key;
-					if (!this.services.hasKey(depKey)) {
-						missing.add(depKey);
-					}
-				}
-				await this.unloadPlugin(pluginId);
-				this.pendingPlugins.set(pluginId, { plugin: entry.plugin, missingDeps: missing });
-			}
-		}
-	}
-
 	async unloadPlugin(pluginId: string): Promise<void> {
 		const entry = this.loadedPlugins.get(pluginId);
 		if (!entry) return;
 
 		this.loadedPlugins.delete(pluginId);
+		this.i18nCatalog.disposePlugin(pluginId);
 		entry.context.dispose();
 		try {
 			await entry.plugin.dispose?.();
@@ -748,11 +617,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	dispose(): void {
-		for (const sub of this.serviceSubscriptions) {
-			sub.dispose();
-		}
-		this.serviceSubscriptions.length = 0;
-
 		for (const [pluginId, entry] of this.loadedPlugins) {
 			try {
 				entry.context.dispose();
@@ -762,11 +626,11 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			}
 		}
 		this.loadedPlugins.clear();
-		this.pendingPlugins.clear();
 
 		this.storageSubscription?.dispose();
 		this.storageSubscription = undefined;
 
+		this.i18nCatalog.dispose();
 		this.events.dispose();
 		this.slots.dispose();
 		this.themes.dispose();

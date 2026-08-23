@@ -54,3 +54,8 @@ export * from './profile/profile-manager';
 
 // Hosts
 export * from './hosts/native-protocol';
+
+// i18n
+export { I18nCatalog, interpolateMessage } from './i18n/i18n-catalog';
+export type { PluginMessageCatalog } from './i18n/i18n-catalog';
+export { PLUGIN_CONFIG_STORAGE_KEY } from './constants/plugin-storage';

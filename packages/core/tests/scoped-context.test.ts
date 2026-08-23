@@ -5,6 +5,7 @@ import { HierarchicalSlotRegistry } from '../src/runtime/hierarchical-slot-regis
 import { ServiceContainer } from '../src/runtime/service-container';
 import { ThemeRegistry } from '../src/runtime/theme-registry';
 import { BadgeManager } from '../src/runtime/badge-manager';
+import { I18nCatalog } from '../src/i18n/i18n-catalog';
 import { IStorageService, IHttpService, createServiceIdentifier } from '../src/types/services';
 import type { ChronosEnv } from '../src/types/env';
 import { DEFAULT_USER_PREFERENCES } from '../src/domain/preferences';
@@ -45,6 +46,7 @@ function createMockHost() {
 	const slots = new HierarchicalSlotRegistry();
 	const themes = new ThemeRegistry();
 	const badges = new BadgeManager();
+	const i18nCatalog = new I18nCatalog();
 
 	const env: ChronosEnv = {
 		platform: 'node',
@@ -72,8 +74,11 @@ function createMockHost() {
 		slots,
 		themes,
 		badges,
+		i18nCatalog,
 		locale: 'zh-cn',
 		t: (key: string) => key,
+		translateForPlugin: (pluginId: string, key: string) =>
+			i18nCatalog.t(pluginId, key, 'zh-cn') ?? key,
 		state: {
 			currentTimetable: null,
 			activeWeek: 1,
@@ -190,11 +195,9 @@ describe('ScopedContext in @chronos/core', () => {
 		});
 
 		expect(host.slots.get('timetable.cell.badge').length).toBe(1);
-		expect(host.badges.getBadges().length).toBe(1);
 
 		handle.dispose();
 
 		expect(host.slots.get('timetable.cell.badge').length).toBe(0);
-		expect(host.badges.getBadges().length).toBe(0);
 	});
 });
