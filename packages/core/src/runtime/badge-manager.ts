@@ -25,6 +25,11 @@ export class BadgeManager implements Disposable {
 	}
 
 	async recalculate(courses: Course[]): Promise<Record<string, CourseBadge[]>> {
+		if (this.contributions.size === 0) {
+			this.cache = {};
+			return this.cache;
+		}
+
 		const nextBadges: Record<string, CourseBadge[]> = {};
 
 		for (const course of courses) {

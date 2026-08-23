@@ -79,16 +79,16 @@ Slot field `component?: ChronosMountable` is the only rich-UI protocol. In-proce
 
 No global conflict arbitrator. Behavior by resource type:
 
-| Resource                                                                  | Strategy                                                                                   |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Multi-contribution slots (`import.source.tab`, `mine.*`, `export.action`) | Coexist; sorted by `order`                                                                 |
-| `timetable.cell.badge`                                                    | Aggregate all contributors (currently a reserved contract — pipeline live, zero producers) |
-| Color / icon themes                                                       | Register many; user picks one via preferences                                              |
-| Same `contribution.id` under one slot                                     | Last registration wins (warned in dev)                                                     |
-| Same `plugin.id` reload                                                   | Unload then load                                                                           |
-| Profile builtin vs official install overlap                               | Builtin wins; official record deduped                                                      |
-| Plugin uninstall with active theme                                        | `revertThemeIfNeeded` → defaults                                                           |
-| `dynamicColor:*` events                                                   | Broadcast; host keeps single `dynamicColorUri` (last emit wins)                            |
+| Resource                                                                  | Strategy                                                                                                         |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Multi-contribution slots (`import.source.tab`, `mine.*`, `export.action`) | Coexist; sorted by `order`                                                                                       |
+| `timetable.cell.badge`                                                    | Aggregate all contributors (**RESERVED** — pipeline live, zero producers; `BadgeManager` early-exits when empty) |
+| Color / icon themes                                                       | Register many; user picks one via preferences                                                                    |
+| Same `contribution.id` under one slot                                     | Last registration wins (warned in dev)                                                                           |
+| Same `plugin.id` reload                                                   | Unload then load                                                                                                 |
+| Profile builtin vs official install overlap                               | Builtin wins; official record deduped                                                                            |
+| Plugin uninstall with active theme                                        | `revertThemeIfNeeded` → defaults                                                                                 |
+| `dynamicColor:*` events                                                   | Broadcast; host keeps single `dynamicColorUri` (last emit wins)                                                  |
 
 ## Core shell (`core-shell`)
 

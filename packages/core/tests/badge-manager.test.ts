@@ -79,4 +79,23 @@ describe('BadgeManager in @chronos/core', () => {
 		sub.dispose();
 		expect(Object.keys(manager.getAll())).toHaveLength(0);
 	});
+
+	it('skips aggregation when no contributors are registered', async () => {
+		const onUpdated = vi.fn();
+		const manager = new BadgeManager(onUpdated);
+		const badges = await manager.recalculate([
+			createCourse({
+				id: 'c1',
+				name: 'Math',
+				teacher: '',
+				location: '',
+				dayOfWeek: 1,
+				startPeriod: 1,
+				endPeriod: 2,
+				weeks: [1]
+			})
+		]);
+		expect(badges).toEqual({});
+		expect(onUpdated).not.toHaveBeenCalled();
+	});
 });
