@@ -25,7 +25,16 @@ describe('@chronos/plugin-theme-yumemita', () => {
 
 	it('resolveCoursePaint uses palette entries', () => {
 		const paint = themeContribution.resolveCoursePaint!(
-			{ id: '1', name: 'Math', weekday: 1, startSlot: 1, endSlot: 2 },
+			{
+				id: '1',
+				name: 'Math',
+				teacher: '',
+				location: '',
+				dayOfWeek: 1,
+				startPeriod: 1,
+				endPeriod: 2,
+				weeks: [1]
+			},
 			0,
 			'light'
 		);

@@ -51,6 +51,7 @@ function createMockEnv(): ChronosEnv {
 			setActiveTimetableId: vi.fn(async (id: string) => {
 				activeId = id;
 			}),
+			queryCourses: vi.fn(async () => []),
 			getPreferences: vi.fn(async () => ({ ...prefs })),
 			savePreferences: vi.fn(async (p: Partial<UserPreferences>) => {
 				prefs = { ...prefs, ...p };

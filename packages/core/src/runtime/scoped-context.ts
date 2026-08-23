@@ -7,6 +7,7 @@ import { IStorageService } from '../types/services';
 import type { ChronosContext, ChronosEvents } from '../types/context';
 import type { ChronosSlotMap } from '../types/slots';
 import type { EventPipeline } from './event-pipeline';
+import type { ThemeContribution } from '../types/contributions';
 import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import type { ServiceContainer } from './service-container';
 import type { ThemeRegistry } from './theme-registry';
@@ -152,7 +153,9 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 	): Disposable {
 		const slotDisp = this.host.slots.register(slotName, contribution, this.pluginId);
 		if (slotName === 'theme.definition' && this.host.themes) {
-			const themeDisp = this.host.themes.registerTheme(contribution);
+			const themeDisp = this.host.themes.registerTheme(
+				contribution as unknown as ThemeContribution
+			);
 			return this.track({
 				dispose: () => {
 					themeDisp.dispose();
@@ -161,7 +164,9 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 			});
 		}
 		if (slotName === 'theme.icon.definition' && this.host.iconThemes) {
-			const iconDisp = this.host.iconThemes.registerIconTheme(contribution);
+			const iconDisp = this.host.iconThemes.registerIconTheme(
+				contribution as unknown as import('../theme/icon-theme').IconThemeContribution
+			);
 			return this.track({
 				dispose: () => {
 					iconDisp.dispose();

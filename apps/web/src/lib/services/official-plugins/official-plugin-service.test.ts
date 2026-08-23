@@ -1,10 +1,17 @@
-import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
+import { describe, expect, it, vi, beforeEach, type Mock } from 'vite-plus/test';
 import { ChronosEngine } from '@chronos/core';
-import type { ChronosEnv, StorageChangeEvent } from '@chronos/core';
+import type {
+	ChronosEnv,
+	HttpRequestOptions,
+	HttpResponse,
+	StorageChangeEvent
+} from '@chronos/core';
 import { DEFAULT_USER_PREFERENCES } from '@chronos/core';
 import { OfficialPluginService } from './official-plugin-service';
 import { loadEsmPluginFromCode } from './plugin-bundle';
 import type { OfficialPluginCatalog, PluginManifest } from '@chronos/core';
+
+type HttpMock = Mock<(url: string, options?: HttpRequestOptions) => Promise<HttpResponse>>;
 
 const SAMPLE_BUNDLE = `
 export default {
@@ -23,7 +30,20 @@ export default {
 };
 `;
 
-function createMockEnv(httpRequest = vi.fn()) {
+function httpResponse(overrides: Partial<HttpResponse> = {}): HttpResponse {
+	return {
+		status: 200,
+		statusText: 'OK',
+		headers: {},
+		ok: true,
+		text: async () => '',
+		json: async <T>() => undefined as T,
+		bytes: async () => new Uint8Array(),
+		...overrides
+	};
+}
+
+function createMockEnv(httpRequest: HttpMock = vi.fn()) {
 	const kv = new Map<string, unknown>();
 
 	const env: ChronosEnv = {
@@ -40,6 +60,7 @@ function createMockEnv(httpRequest = vi.fn()) {
 			deleteTimetable: async () => {},
 			getActiveTimetableId: async () => null,
 			setActiveTimetableId: async () => {},
+			queryCourses: async () => [],
 			getPreferences: async () => ({ ...DEFAULT_USER_PREFERENCES }),
 			savePreferences: async () => {},
 			getPluginData: async <T>(pluginId: string, key: string): Promise<T | null> =>
@@ -95,7 +116,7 @@ describe('loadEsmPluginFromCode', () => {
 describe('OfficialPluginService', () => {
 	let engine: ChronosEngine;
 	let service: OfficialPluginService;
-	let httpRequest: ReturnType<typeof vi.fn>;
+	let httpRequest: HttpMock;
 
 	beforeEach(async () => {
 		httpRequest = vi.fn();
@@ -112,10 +133,11 @@ describe('OfficialPluginService', () => {
 			manifests: ['/official-plugins/manifests/test.manifest.json']
 		};
 
-		httpRequest.mockResolvedValueOnce({
-			ok: true,
-			json: async () => catalog
-		});
+		httpRequest.mockResolvedValueOnce(
+			httpResponse({
+				json: async <T>() => catalog as T
+			})
+		);
 
 		const result = await service.fetchCatalog('/official-plugins/catalog.json');
 		expect(result.manifests.length).toBe(1);
@@ -136,10 +158,7 @@ describe('OfficialPluginService', () => {
 			sha256: hash
 		};
 
-		httpRequest.mockResolvedValueOnce({
-			ok: true,
-			text: async () => SAMPLE_BUNDLE
-		});
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 
 		await service.install(manifest);
 		expect(engine.isPluginLoaded('test-plugin')).toBe(true);
@@ -178,10 +197,7 @@ describe('OfficialPluginService', () => {
 			sha256: 'deadbeef'
 		};
 
-		httpRequest.mockResolvedValueOnce({
-			ok: true,
-			text: async () => SAMPLE_BUNDLE
-		});
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 
 		await expect(service.install(manifest)).rejects.toThrow(/integrity check failed/);
 	});
@@ -201,10 +217,7 @@ describe('OfficialPluginService', () => {
 			sha256: hash
 		};
 
-		httpRequest.mockResolvedValueOnce({
-			ok: true,
-			text: async () => SAMPLE_BUNDLE
-		});
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 		await service.install(manifest);
 		await service.uninstall('test-plugin');
 		expect(engine.isPluginLoaded('test-plugin')).toBe(false);
@@ -225,10 +238,7 @@ describe('OfficialPluginService', () => {
 			sha256: hash
 		};
 
-		httpRequest.mockResolvedValueOnce({
-			ok: true,
-			text: async () => SAMPLE_BUNDLE
-		});
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 		await service.install(manifest);
 
 		await engine.storage.setPluginData('test-plugin', 'wallpaper_image', { base64: 'x' });
@@ -299,10 +309,7 @@ describe('OfficialPluginService', () => {
 			sha256: hash
 		};
 
-		httpRequest.mockResolvedValueOnce({
-			ok: true,
-			text: async () => SAMPLE_BUNDLE
-		});
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 		await service.install(manifest);
 		expect(engine.isPluginLoaded('test-plugin')).toBe(true);
 		expect(service.listInstalled()).toHaveLength(1);

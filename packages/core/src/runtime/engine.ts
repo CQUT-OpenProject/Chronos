@@ -149,6 +149,21 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 					if (!svc) throw new Error('[ChronosEngine] IHttpService is not registered');
 					return svc.request(url, opts);
 				},
+				...(services.tryGet(IHttpService)?.proxy
+					? {
+							proxy: (
+								pluginId: string,
+								action: string,
+								payload: unknown,
+								options?: { timeoutMs?: number; signal?: AbortSignal }
+							) => {
+								const svc = services.tryGet(IHttpService);
+								if (!svc?.proxy)
+									throw new Error('[ChronosEngine] IHttpService.proxy is not registered');
+								return svc.proxy(pluginId, action, payload, options);
+							}
+						}
+					: {}),
 				clearSession: (sid) =>
 					services.tryGet(IHttpService)?.clearSession?.(sid) ?? Promise.resolve()
 			},
@@ -166,6 +181,8 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				getPluginData: (pid, k) => services.get(IStorageService).getPluginData(pid, k),
 				setPluginData: (pid, k, v) => services.get(IStorageService).setPluginData(pid, k, v),
 				deletePluginData: (pid, k) => services.get(IStorageService).deletePluginData(pid, k),
+				clearPluginData: (pid) =>
+					services.get(IStorageService).clearPluginData?.(pid) ?? Promise.resolve(),
 				onChanged: (l) => services.get(IStorageService).onChanged?.(l) ?? { dispose: () => {} }
 			},
 			...(services.tryGet(IVaultService)

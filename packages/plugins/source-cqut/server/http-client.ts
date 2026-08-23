@@ -47,7 +47,7 @@ export async function request(
 		}
 		const requestInit: UndiciRequestInit = {
 			...(init as UndiciRequestInit),
-			headers,
+			headers: Object.fromEntries(headers),
 			redirect: options.redirect ?? 'follow',
 			signal,
 			dispatcher: getCqutDispatcher()

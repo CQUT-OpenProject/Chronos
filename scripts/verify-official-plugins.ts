@@ -33,7 +33,7 @@ export function verifyOfficialPlugins(): void {
 			continue;
 		}
 		const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Record<string, unknown>;
-		const pluginId = String(manifest.id ?? manifestUrl);
+		const pluginId = typeof manifest.id === 'string' && manifest.id ? manifest.id : manifestUrl;
 
 		for (const [urlField, hashField] of ASSET_FIELDS) {
 			const url = manifest[urlField];

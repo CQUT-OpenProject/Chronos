@@ -56,6 +56,7 @@ describe('applyActiveTheme', () => {
 					deleteTimetable: async () => {},
 					getActiveTimetableId: async () => null,
 					setActiveTimetableId: async () => {},
+					queryCourses: async () => [],
 					getPreferences: async () => ({
 						schemaVersion: 2,
 						themeMode: 'auto',
@@ -121,6 +122,7 @@ describe('applyActiveTheme', () => {
 					deleteTimetable: async () => {},
 					getActiveTimetableId: async () => null,
 					setActiveTimetableId: async () => {},
+					queryCourses: async () => [],
 					getPreferences: async () => ({
 						schemaVersion: 2,
 						themeMode: 'auto',

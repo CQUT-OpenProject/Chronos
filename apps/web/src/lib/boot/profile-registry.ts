@@ -5,7 +5,12 @@ import { coreShellPlugin } from '$lib/boot/core-shell';
 
 declare const __CHRONOS_PROFILE__: string;
 
-export const availablePlugins: ChronosPlugin[] = [coreShellPlugin, cqutPlugin, shareCodecPlugin];
+export const availablePlugins: readonly ChronosPlugin[] = [
+	coreShellPlugin,
+	// ScopedContext 边界处 Config 泛型擦除（同 engine.activatePlugin 先例）
+	cqutPlugin as unknown as ChronosPlugin,
+	shareCodecPlugin
+];
 
 const defaultProfile: ChronosProfile = {
 	profileId: 'chronos-default',

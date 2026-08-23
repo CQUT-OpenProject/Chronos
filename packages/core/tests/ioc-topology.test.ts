@@ -3,7 +3,6 @@ import { ChronosEngine } from '../src/runtime/engine';
 import { ServiceContainer } from '../src/runtime/service-container';
 import { createServiceIdentifier, IHttpService } from '../src/types/services';
 import type { ChronosPlugin } from '../src/types/context';
-import type { Timetable } from '../src/domain/timetable';
 
 interface ICustomAuthService {
 	login(token: string): Promise<boolean>;
@@ -29,6 +28,7 @@ describe('IoC Topological Activation and Lifecycle', () => {
 					deleteTimetable: vi.fn().mockResolvedValue(undefined),
 					getActiveTimetableId: vi.fn().mockResolvedValue(null),
 					setActiveTimetableId: vi.fn().mockResolvedValue(undefined),
+					queryCourses: vi.fn().mockResolvedValue([]),
 					getPreferences: vi.fn().mockResolvedValue({}),
 					savePreferences: vi.fn().mockResolvedValue(undefined),
 					getPluginData: vi.fn().mockResolvedValue(null),

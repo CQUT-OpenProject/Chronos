@@ -1,5 +1,3 @@
-import type { PluginCategory } from '@chronos/core';
-
 /** Preset plugin category tags shown in official plugin UI. */
 export const PLUGIN_CATEGORY_TAG_IDS = ['theme', 'source', 'tool', 'exporter', 'codec'] as const;
 
@@ -11,7 +9,7 @@ export function isPluginCategoryTagId(value: string): value is PluginCategoryTag
 	return PLUGIN_CATEGORY_TAG_SET.has(value);
 }
 
-export function getPluginCategoryMeta(categoryOrType?: PluginCategory | string): {
+export function getPluginCategoryMeta(categoryOrType?: string): {
 	label: string;
 	badgeClass: string;
 } {

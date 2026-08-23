@@ -67,6 +67,7 @@ function createNativeHostEnv(): ChronosEnv {
 			setActiveTimetableId: async (id: string) => {
 				activeId = id;
 			},
+			queryCourses: async () => [],
 			getPreferences: async () => preferences,
 			savePreferences: async (patch: Partial<UserPreferences>) => {
 				preferences = { ...preferences, ...patch };

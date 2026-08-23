@@ -50,10 +50,11 @@ export function createAppShell() {
 		}
 
 		dynamicColorCleanup?.();
-		dynamicColorCleanup = engine.on('dynamicColor:changed', ({ uri }) => {
+		const dynamicColorSub = engine.on('dynamicColor:changed', ({ uri }) => {
 			dynamicColorUri = uri;
-		}).dispose;
-		engine.events.emit('dynamicColor:hydrate');
+		});
+		dynamicColorCleanup = () => dynamicColorSub.dispose();
+		engine.events.emit('dynamicColor:hydrate', undefined);
 
 		// The appearance pipeline lives here (not in platform-bootstrap): this
 		// controller already owns engine/theme/preference reactivity, so the

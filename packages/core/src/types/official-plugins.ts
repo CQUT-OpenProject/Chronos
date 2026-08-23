@@ -17,9 +17,14 @@ export interface PluginManifest {
 	/** ESM plugin bundle (optional when colorsUrl is provided for theme plugins). */
 	bundleUrl?: string;
 	sha256?: string;
+	/** Optional stylesheet shipped alongside the bundle (tool plugins with rich UI). */
+	cssUrl?: string;
+	cssSha256?: string;
 	/** VS Code–style color theme JSON (theme plugins). */
 	colorsUrl?: string;
 	colorsSha256?: string;
+	/** Theme contribution id declared by the shipped colors JSON (single source, host never guesses). */
+	themeId?: string;
 	iconThemeUrl?: string;
 	iconThemeSha256?: string;
 	/** Optional Ed25519 signature (future verification). */

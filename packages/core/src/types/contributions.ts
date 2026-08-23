@@ -1,7 +1,6 @@
 import type { Course } from '../domain/course';
 import type { CoursePaletteEntry } from '../engine/palette';
-import type { LocalizedText } from './context';
-import type { DesignTokens, CoursePaint } from './slots';
+import type { DesignTokens, CoursePaint, LocalizedText } from './slots';
 
 export type {
 	DesignTokens,

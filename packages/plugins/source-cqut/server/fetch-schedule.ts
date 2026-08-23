@@ -4,9 +4,9 @@ import type { PeriodTime } from '@chronos/core';
 import {
 	mergeWeekPayloads,
 	resolveWeeksToFetch,
-	type CqutCampusId,
 	type OnlineSchedulePayload
 } from '../src/week-merge';
+import type { CqutCampusId } from '../src/campus-period-times';
 import { onlineSchedulePayloadSchema } from './online-schedule-schema';
 import { fetchCampusTimesForImport } from './fetch-campus-time';
 import { loginCas } from './cas-auth';

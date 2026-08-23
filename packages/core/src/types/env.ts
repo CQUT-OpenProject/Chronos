@@ -26,6 +26,13 @@ export interface ChronosEnv {
 	http: {
 		/** Send request to upstream URL. Host transparently proxies or connects natively based on bypassCors */
 		request(url: string, options?: HttpRequestOptions): Promise<HttpResponse>;
+		/** Route a plugin-scoped request through the host server proxy (browser hosts with server plugins) */
+		proxy?(
+			pluginId: string,
+			action: string,
+			payload: unknown,
+			options?: { timeoutMs?: number; signal?: AbortSignal }
+		): Promise<HttpResponse>;
 		/** Clear session cookies for the specified sessionId */
 		clearSession?(sessionId: string): Promise<void>;
 	};
@@ -50,6 +57,7 @@ export interface ChronosEnv {
 		getPluginData<T>(pluginId: string, key: string): Promise<T | null>;
 		setPluginData<T>(pluginId: string, key: string, value: T): Promise<void>;
 		deletePluginData(pluginId: string, key: string): Promise<void>;
+		clearPluginData?(pluginId: string): Promise<void>;
 
 		// Cross-tab / background storage change subscription
 		onChanged?(listener: (event: StorageChangeEvent) => void): Disposable;

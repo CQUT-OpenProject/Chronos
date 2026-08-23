@@ -27,6 +27,7 @@ function createMockEnv(): ChronosEnv {
 			deleteTimetable: vi.fn(async () => {}),
 			getActiveTimetableId: vi.fn(async () => null),
 			setActiveTimetableId: vi.fn(async () => {}),
+			queryCourses: vi.fn(async () => []),
 			getPreferences: vi.fn(async (): Promise<UserPreferences> => ({
 				schemaVersion: 1,
 				themeMode: 'auto',

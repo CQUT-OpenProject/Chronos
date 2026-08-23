@@ -49,9 +49,7 @@ export function courseFromRow(row: CourseRow): Course {
 	};
 }
 
-export function timetableToRow(
-	timetable: Timetable | import('@chronos/core').Timetable
-): TimetableRow {
+export function timetableToRow(timetable: Timetable): TimetableRow {
 	const importMetadata =
 		'importMetadata' in timetable && timetable.importMetadata
 			? timetable.importMetadata

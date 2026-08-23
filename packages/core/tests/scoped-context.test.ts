@@ -20,6 +20,7 @@ function createMockHost() {
 		deleteTimetable: vi.fn(),
 		getActiveTimetableId: vi.fn(),
 		setActiveTimetableId: vi.fn(),
+		queryCourses: vi.fn(async () => []),
 		getPreferences: async () => DEFAULT_USER_PREFERENCES,
 		savePreferences: vi.fn(),
 		getPluginData: async <T>(pluginId: string, key: string): Promise<T | null> =>
@@ -78,6 +79,7 @@ function createMockHost() {
 			activeWeek: 1,
 			currentPeriodIndex: null,
 			activeThemeId: 'default',
+			activeIconThemeId: 'host-default',
 			userPreferences: DEFAULT_USER_PREFERENCES
 		},
 		actions: {

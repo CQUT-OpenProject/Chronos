@@ -15,7 +15,7 @@ export class ProfileManager implements Disposable {
 
 	async applyProfile(
 		profile: ChronosProfile,
-		availablePlugins: ChronosPlugin[]
+		availablePlugins: readonly ChronosPlugin[]
 	): Promise<Disposable> {
 		// Clean up previous profile loads
 		this.disposeLoaded();

@@ -44,6 +44,7 @@ describe('Profile System and Layered Config', () => {
 					deleteTimetable: vi.fn().mockResolvedValue(undefined),
 					getActiveTimetableId: vi.fn().mockResolvedValue(null),
 					setActiveTimetableId: vi.fn().mockResolvedValue(undefined),
+					queryCourses: vi.fn().mockResolvedValue([]),
 					getPreferences: vi.fn().mockResolvedValue({
 						schemaVersion: 1,
 						themeMode: 'auto',

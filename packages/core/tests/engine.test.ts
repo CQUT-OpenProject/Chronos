@@ -43,6 +43,7 @@ function createMockEnv() {
 			setActiveTimetableId: async (id: string) => {
 				activeId = id || null;
 			},
+			queryCourses: async () => [],
 			getPreferences: async () => prefs,
 			savePreferences: async (patch) => {
 				prefs = { ...prefs, ...patch };

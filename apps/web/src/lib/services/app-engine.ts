@@ -124,7 +124,7 @@ export async function resetAppToInitialState(): Promise<void> {
 		await profileManager.applyProfile(profile, availablePlugins);
 	}
 	engine.actions.setTheme(profile.defaultTheme ?? 'm3-default');
-	engine.events.emit('dynamicColor:hydrate');
+	engine.events.emit('dynamicColor:hydrate', undefined);
 }
 
 export function resetAppEngine(): void {

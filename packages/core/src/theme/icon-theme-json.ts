@@ -25,8 +25,10 @@ function validateDescriptor(descriptor: ShellIconDescriptor, path: string): Shel
 	if (!isShellIconDescriptor(descriptor)) {
 		throw new Error(`Invalid icon descriptor at ${path}`);
 	}
-	if (descriptor.type === 'svg' && descriptor.markup.includes('<script')) {
-		throw new Error(`Invalid SVG at ${path}: script tags not allowed`);
+	if (descriptor.type === 'svg' && typeof descriptor.markup === 'string') {
+		if (descriptor.markup.includes('<script')) {
+			throw new Error(`Invalid SVG at ${path}: script tags not allowed`);
+		}
 	}
 	return descriptor;
 }
@@ -39,7 +41,7 @@ export function parseIconThemeJson(raw: unknown): IconThemeJson {
 	if (typeof data.id !== 'string' || !data.id) {
 		throw new Error('Invalid icon theme JSON: missing id');
 	}
-	return data as IconThemeJson;
+	return data as unknown as IconThemeJson;
 }
 
 export function createIconThemeFromJson(json: IconThemeJson): IconThemeContribution {

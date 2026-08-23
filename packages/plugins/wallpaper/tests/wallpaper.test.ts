@@ -10,7 +10,9 @@ const STORED_WALLPAPER = {
 };
 const EXPECTED_DATA_URI = 'data:image/png;base64,iVBORw0KGgo=';
 
-function createMockEnv(getPluginData = vi.fn(async () => null)): ChronosEnv {
+function createMockEnv(
+	getPluginData: (pluginId: string, key: string) => Promise<unknown> = async () => null
+): ChronosEnv {
 	return {
 		platform: 'web',
 		http: { request: vi.fn() },
@@ -22,6 +24,7 @@ function createMockEnv(getPluginData = vi.fn(async () => null)): ChronosEnv {
 			deleteTimetable: vi.fn(async () => {}),
 			getActiveTimetableId: vi.fn(async () => null),
 			setActiveTimetableId: vi.fn(async () => {}),
+			queryCourses: vi.fn(async () => []),
 			getPreferences: vi.fn(async (): Promise<UserPreferences> => ({
 				schemaVersion: 1,
 				themeMode: 'auto',
@@ -31,7 +34,8 @@ function createMockEnv(getPluginData = vi.fn(async () => null)): ChronosEnv {
 				hapticFeedbackEnabled: true
 			})),
 			savePreferences: vi.fn(async () => {}),
-			getPluginData: getPluginData,
+			getPluginData: ((pluginId: string, key: string) =>
+				getPluginData(pluginId, key)) as ChronosEnv['storage']['getPluginData'],
 			setPluginData: vi.fn(async () => {}),
 			deletePluginData: vi.fn(async () => {})
 		},
@@ -134,7 +138,7 @@ describe('@chronos/plugin-wallpaper', () => {
 			received.push(uri);
 		});
 
-		engine.events.emit('dynamicColor:hydrate');
+		engine.events.emit('dynamicColor:hydrate', undefined);
 
 		expect(received).toEqual([EXPECTED_DATA_URI]);
 

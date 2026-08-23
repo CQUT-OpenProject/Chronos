@@ -80,6 +80,12 @@ export default defineConfig({
 		// build computed their manifest sha256 (see scripts/verify-official-plugins.ts).
 		'*.{ts,tsx,vue,svelte,json,css,html}': 'vp check --fix'
 	},
+	lint: {
+		options: {
+			typeAware: true,
+			typeCheck: true
+		}
+	},
 	fmt: {
 		useTabs: true,
 		singleQuote: true,

@@ -1,6 +1,11 @@
-import type { Course, CoursePaint } from '../domain/course';
+import type { Course } from '../domain/course';
 import type { CoursePaletteEntry } from '../engine/palette';
-import type { DesignTokens, ThemeContribution, ThemeWorkbenchColors } from '../types/contributions';
+import type {
+	CoursePaint,
+	DesignTokens,
+	ThemeContribution,
+	ThemeWorkbenchColors
+} from '../types/contributions';
 import { validateWorkbenchColors, workbenchColorsToDesignTokens } from './workbench-colors';
 
 export type ColorThemeJsonCoursePalette = Record<'light' | 'dark', readonly CoursePaletteEntry[]>;
@@ -42,7 +47,7 @@ export function parseColorThemeJson(raw: unknown): ColorThemeJson {
 	if (!variants.light || !variants.dark) {
 		throw new Error('Invalid color theme JSON: variants must include light and dark');
 	}
-	return data as ColorThemeJson;
+	return data as unknown as ColorThemeJson;
 }
 
 export function validateThemeWorkbenchColors(

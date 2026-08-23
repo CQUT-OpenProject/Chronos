@@ -10,6 +10,7 @@ describe('ThemeRegistry in @chronos/core', () => {
 		const theme: ThemeContribution = {
 			id: 'nord',
 			name: 'Nord Theme',
+			workbenchColors: { light: {}, dark: {} },
 			getTokens: () => ({
 				surface: '#2e3440',
 				onSurface: '#eceff4',
