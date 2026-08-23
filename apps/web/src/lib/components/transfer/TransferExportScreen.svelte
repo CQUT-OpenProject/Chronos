@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { trackEvent } from '$lib/client/analytics';
 	import { getAppController } from '$lib/services/app-engine';
-	import type { ExportResult, ExportActionSlotContribution } from '@chronos/core';
+	import {
+		pickPrimary,
+		resolveLocalizedText,
+		type ExportResult,
+		type ExportActionSlotContribution
+	} from '@chronos/core';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -11,28 +16,18 @@
 
 	let {
 		currentTimetableName,
-		longLinkWarning = false
+		warningMessage = null
 	}: {
 		currentTimetableName: string | null;
-		longLinkWarning?: boolean;
+		warningMessage?: string | null;
 	} = $props();
 
 	const controller = getAppController();
-	const allExportActions = $derived(
-		controller
-			.getSlots('export.action')
-			.slice()
-			.sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
-	);
-	const primaryAction = $derived(allExportActions.find((a) => a.isPrimary) ?? allExportActions[0]);
+	const allExportActions = $derived(controller.getSlots('export.action'));
+	const primaryAction = $derived(pickPrimary(allExportActions));
 	const secondaryActions = $derived(allExportActions.filter((a) => a.id !== primaryAction?.id));
 
 	let loading = $state(false);
-
-	function resolveText(text: string | (() => string) | undefined): string {
-		if (!text) return '';
-		return typeof text === 'function' ? text() : text;
-	}
 
 	function downloadExportResult(result: ExportResult) {
 		const blob = new Blob([result.content], { type: result.mimeType });
@@ -57,20 +52,17 @@
 		try {
 			const ctx = controller.getPluginContextForSlot('export.action', action.id);
 			const result = await action.export(current, ctx);
-			const disposition =
-				result.disposition ??
-				action.disposition ??
-				(result.mimeType === 'application/x-chronos-share-link' ? 'clipboard' : 'download');
+			const disposition = result.disposition ?? action.disposition ?? 'download';
 
 			if (disposition === 'clipboard') {
 				const text = typeof result.content === 'string' ? result.content : '';
 				await navigator.clipboard.writeText(text);
 				trackEvent('export_copy_link');
-				const msg = resolveText(result.successMessage) || '已复制课表链接';
+				const msg = resolveLocalizedText(result.successMessage) || '已复制课表链接';
 				snackbar(msg);
-				if (longLinkWarning) {
+				if (warningMessage) {
 					trackEvent('export_long_link_warning_shown');
-					snackbar('课表较大，部分应用可能截断链接内容，请注意核对导入结果');
+					snackbar(warningMessage);
 				}
 				return;
 			}
@@ -78,13 +70,14 @@
 			if (disposition === 'download' && result) {
 				downloadExportResult(result);
 				trackEvent('export_slot_execute_success', { actionId: action.id });
-				const msg = resolveText(result.successMessage) || `已导出《${result.filename ?? '课表'}》`;
+				const msg =
+					resolveLocalizedText(result.successMessage) || `已导出《${result.filename ?? '课表'}》`;
 				snackbar(msg);
 				return;
 			}
 
 			if (result.successMessage) {
-				snackbar(resolveText(result.successMessage));
+				snackbar(resolveLocalizedText(result.successMessage));
 			}
 		} catch (err: unknown) {
 			trackEvent('export_slot_execute_fail', { actionId: action.id });
@@ -105,7 +98,7 @@
 			onclick={() => handleActionExport(primaryAction)}
 		>
 			<IosShareFill class="size-5" />
-			{loading ? '导出中…' : resolveText(primaryAction.title)}
+			{loading ? '导出中…' : resolveLocalizedText(primaryAction.title)}
 		</Button>
 	{/if}
 {/snippet}
@@ -121,8 +114,8 @@
 					: DEFAULT_TIMETABLE_NAME}」导出或分享
 			</p>
 			<p>支持生成在线分享短链，或通过插件导出为结构化数据文件</p>
-			{#if longLinkWarning}
-				<p class="text-warning">课表较大，部分应用可能截断链接内容</p>
+			{#if warningMessage}
+				<p class="text-warning">{warningMessage}</p>
 			{/if}
 		</div>
 
@@ -135,10 +128,10 @@
 							<div class="flex items-center justify-between p-3.5">
 								<div class="flex flex-col">
 									<span class="m3-title-small font-medium text-on-surface">
-										{resolveText(action.title)}
+										{resolveLocalizedText(action.title)}
 									</span>
 									<span class="m3-body-small text-on-surface-variant">
-										{resolveText(action.description) || '导出为标准文件产物'}
+										{resolveLocalizedText(action.description) || '导出为标准文件产物'}
 									</span>
 								</div>
 								<Button

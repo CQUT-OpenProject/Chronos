@@ -29,6 +29,14 @@ export interface ImportTabSlotContribution<
 	defaultInput?: FormState;
 	/** Optional native form component; default host falls back to M3 cards per slot id */
 	component?: unknown;
+	/**
+	 * Deep-link handshake: lets a host deep-link entry (e.g. a /s landing page)
+	 * dispatch generically without knowing any concrete slot id or input shape.
+	 */
+	deepLink?: {
+		/** Build executeImport inputs from the location; return null if it is not ours. */
+		fromLocation(location: Pick<Location, 'hash' | 'search'>): Record<string, unknown> | null;
+	};
 	/** Execute import action handler */
 	executeImport(inputs: FormState, ctx?: ChronosContext): Promise<Timetable>;
 }
@@ -160,3 +168,25 @@ export interface CustomSlotMap {}
 
 /** Complete slot contract map combining standard and custom slots */
 export type ChronosSlotMap = StandardSlotMap & CustomSlotMap;
+
+/**
+ * Resolves a LocalizedText to a plain string. Single implementation for the
+ * `typeof text === 'function' ? text() : text` pattern previously duplicated
+ * across every slot consumer.
+ */
+export function resolveLocalizedText(
+	text: LocalizedText | undefined | null,
+	fallback = ''
+): string {
+	if (text === undefined || text === null) return fallback;
+	const value = typeof text === 'function' ? text() : text;
+	return value ?? fallback;
+}
+
+/**
+ * Picks the primary action from an order-sorted contribution list:
+ * the explicit `isPrimary` item if any, otherwise the first item.
+ */
+export function pickPrimary<T extends { isPrimary?: boolean }>(items: readonly T[]): T | undefined {
+	return items.find((item) => item.isPrimary) ?? items[0];
+}

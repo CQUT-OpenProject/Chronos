@@ -10,6 +10,7 @@ import {
 	decodeSharePayload,
 	encodeShareLink,
 	estimateShareLinkLength,
+	extractSharePayloadFromLocation,
 	extractSharePayloadFromText,
 	formatShareClipboardText
 } from './share-link';
@@ -56,6 +57,12 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 				importKind: 'link',
 				component: shareComponent,
 				inputSchema: shareLinkImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+				deepLink: {
+					fromLocation(location) {
+						const payload = extractSharePayloadFromLocation(location as Location);
+						return payload ? { content: payload, fileContent: payload } : null;
+					}
+				},
 				async executeImport(inputs: Record<string, unknown>) {
 					const content =
 						(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);

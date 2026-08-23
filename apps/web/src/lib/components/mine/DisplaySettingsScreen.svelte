@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { HOST_DEFAULT_ICON_THEME_ID } from '@chronos/core';
+	import { HOST_DEFAULT_ICON_THEME_ID, resolveLocalizedText } from '@chronos/core';
 	import type { CapsuleCornerStyle, ThemeMode, TimetableLayoutMode } from '@chronos/core';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
@@ -35,7 +35,7 @@
 			.iconThemes.getIconThemes()
 			.map((theme) => ({
 				id: theme.id,
-				label: typeof theme.name === 'function' ? theme.name() : theme.name,
+				label: resolveLocalizedText(theme.name),
 				description:
 					typeof theme.description === 'function'
 						? theme.description()
@@ -78,7 +78,7 @@
 
 				return {
 					id: theme.id,
-					label: typeof theme.name === 'function' ? theme.name() : theme.name,
+					label: resolveLocalizedText(theme.name),
 					description: desc,
 					disabled: isDisabled
 				};

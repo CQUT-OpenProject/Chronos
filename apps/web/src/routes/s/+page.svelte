@@ -8,7 +8,7 @@
 	import { createSessionPreviewPersistence } from '$lib/client/preview-persistence';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { ensureEngineReady } from '$lib/services/app-engine';
-	import { extractSharePayloadFromLocation } from '@chronos/plugin-codec-share';
+	import { resolveDeepLinkImport } from '$lib/transfer/deep-link';
 
 	let status = $state<'loading' | 'error'>('loading');
 
@@ -16,26 +16,17 @@
 		if (!browser) return;
 
 		void (async () => {
-			const payload = extractSharePayloadFromLocation(window.location);
-
-			if (!payload) {
-				trackEvent('share_link_decode_fail');
-				status = 'error';
-				snackbar('链接中未找到课表数据');
-				return;
-			}
-
 			try {
 				const engine = await ensureEngineReady();
-				const shareLinkSlot = engine.slots.getSlotItem('import.source.tab', 'share-link');
-				if (!shareLinkSlot) {
-					throw new Error('分享链接导入不可用');
+				const tabs = engine.slots.get('import.source.tab');
+				const match = resolveDeepLinkImport(tabs, window.location);
+
+				if (!match) {
+					throw new Error('链接中未找到课表数据');
 				}
-				const ctx = engine.getPluginContextForSlot('import.source.tab', 'share-link');
-				const timetable = await shareLinkSlot.executeImport(
-					{ content: payload, fileContent: payload },
-					ctx
-				);
+
+				const ctx = engine.getPluginContextForSlot('import.source.tab', match.tab.id);
+				const timetable = await match.tab.executeImport(match.inputs, ctx);
 				if (!timetable?.courses?.length) {
 					throw new Error('分享链接中未找到有效课表数据');
 				}
@@ -44,7 +35,7 @@
 
 				createSessionPreviewPersistence().save({
 					preview: timetable,
-					slotId: 'share-link',
+					slotId: match.tab.id,
 					importMode: ImportMode.AS_NEW
 				});
 

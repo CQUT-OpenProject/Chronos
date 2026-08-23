@@ -3,6 +3,7 @@
 	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
 	import SchemaForm from '../schema-form/SchemaForm.svelte';
 	import { resolvePluginScreenSlot } from './resolve-plugin-screen-slot';
+	import MountableSlotOutlet from './MountableSlotOutlet.svelte';
 
 	interface Props {
 		controller: ReactiveChronosController;
@@ -16,40 +17,9 @@
 		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
 	);
 
-	const isMountableComponent = $derived(isChronosMountable(screenSlot?.component));
-
-	let containerEl = $state<HTMLDivElement>();
 	let formValues = $state<Record<string, unknown>>({});
 	let saving = $state(false);
 	let saveError = $state<string | null>(null);
-
-	$effect(() => {
-		if (!containerEl || !screenSlot?.component || !isMountableComponent) return;
-		const comp = screenSlot.component as {
-			mount(
-				target: HTMLElement,
-				props: Record<string, unknown>
-			): { unmount?(): void } | (() => void);
-		};
-		let instance: { unmount?(): void } | (() => void) | undefined;
-		try {
-			instance = comp.mount(containerEl, { controller, pluginId });
-		} catch (error) {
-			console.error('[PluginScreenContainer] mount failed:', error);
-			return;
-		}
-		return () => {
-			try {
-				if (typeof instance === 'function') {
-					instance();
-				} else if (typeof instance?.unmount === 'function') {
-					instance.unmount();
-				}
-			} catch (error) {
-				console.error('[PluginScreenContainer] unmount failed:', error);
-			}
-		};
-	});
 
 	$effect(() => {
 		if (!screenSlot?.schema || screenSlot?.component) return;
@@ -77,8 +47,12 @@
 </script>
 
 {#if screenSlot?.component}
-	{#if isMountableComponent}
-		<div bind:this={containerEl} class="flex min-h-0 w-full flex-1 flex-col"></div>
+	{#if isChronosMountable(screenSlot.component)}
+		<MountableSlotOutlet
+			component={screenSlot.component}
+			props={{ controller, pluginId }}
+			class="flex min-h-0 w-full flex-1 flex-col"
+		/>
 	{:else}
 		{@const DynamicComponent = screenSlot.component as import('svelte').Component<{
 			controller: ReactiveChronosController;

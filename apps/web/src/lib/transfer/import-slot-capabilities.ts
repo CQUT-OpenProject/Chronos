@@ -1,12 +1,16 @@
-import type { ImportKind, ImportTabSlotContribution } from '@chronos/core';
+import {
+	resolveLocalizedText,
+	type ImportKind,
+	type ImportTabSlotContribution
+} from '@chronos/core';
 
 function resolveSlotTitle(slot: ImportTabSlotContribution): string {
-	return typeof slot.title === 'function' ? slot.title() : slot.title;
+	return resolveLocalizedText(slot.title);
 }
 
 function resolveSlotSupportingText(slot: ImportTabSlotContribution): string | undefined {
 	if (!slot.supportingText) return undefined;
-	return typeof slot.supportingText === 'function' ? slot.supportingText() : slot.supportingText;
+	return resolveLocalizedText(slot.supportingText);
 }
 
 export function slotsHaveImportKind(

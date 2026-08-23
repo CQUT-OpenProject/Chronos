@@ -9,15 +9,15 @@
 	const transfer = createTransferState(engine);
 
 	let currentTimetableName = $state<string | null>(null);
-	let longLinkWarning = $state(false);
+	let exportWarning = $state<string | null>(null);
 
 	onMount(async () => {
 		const metadata = await transfer.getExportMetadata();
 		currentTimetableName = metadata.timetableName;
-		longLinkWarning = metadata.longLinkWarning;
+		exportWarning = metadata.warningMessage;
 	});
 </script>
 
 <SecondaryPageShell title="导出课表" backHref="/mine" flush>
-	<TransferExportScreen {currentTimetableName} {longLinkWarning} />
+	<TransferExportScreen {currentTimetableName} warningMessage={exportWarning} />
 </SecondaryPageShell>

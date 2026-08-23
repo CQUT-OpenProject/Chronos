@@ -5,7 +5,8 @@
 	import {
 		assignCourseDisplayColors,
 		normalizedCourseName,
-		resolveCoursePaint
+		resolveCoursePaint,
+		resolveLocalizedText
 	} from '@chronos/core';
 	import { timetableDayLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
 	import { getAppController } from '$lib/services/app-engine';
@@ -101,7 +102,7 @@
 							void action.onExecute(course, ctx);
 						}}
 					>
-						{typeof action.label === 'function' ? action.label() : action.label}
+						{resolveLocalizedText(action.label)}
 					</Button>
 				{/each}
 			</div>

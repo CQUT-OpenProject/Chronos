@@ -7,6 +7,7 @@
 	import { getAppController } from '$lib/services/app-engine';
 	import { MINE_ITEM_ICON_MAP } from '$lib/boot/mine-icons';
 	import { CodeFill } from '$lib/icons';
+	import { resolveLocalizedText } from '@chronos/core';
 	import type { Component } from 'svelte';
 
 	let { shell }: { shell: AppShellController } = $props();
@@ -33,11 +34,6 @@
 		items: SettingItem[];
 	};
 
-	function resolveText(text: string | (() => string) | undefined): string {
-		if (!text) return '';
-		return typeof text === 'function' ? text() : text;
-	}
-
 	function resolveIcon(
 		icon: string | unknown | undefined,
 		itemId: string
@@ -60,7 +56,7 @@
 		for (const pSec of pluginSections) {
 			sectionMap[pSec.id] = {
 				id: pSec.id,
-				title: resolveText(pSec.title),
+				title: resolveLocalizedText(pSec.title),
 				order: pSec.order ?? 50,
 				items: []
 			};
@@ -84,27 +80,22 @@
 				: undefined;
 			section.items.push({
 				id: item.id,
-				title: resolveText(item.title),
-				supporting: resolveText(item.supporting),
+				title: resolveLocalizedText(item.title),
+				supporting: resolveLocalizedText(item.supporting),
 				href: item.href,
 				onClick: item.onClick && context ? () => item.onClick!(context) : undefined,
 				icon: resolveIcon(item.icon, item.id),
 				iconTone: item.iconTone ?? 'neutral',
 				order: item.order ?? 50,
 				keywords:
-					item.keywords ?? [resolveText(item.title), resolveText(item.supporting)].filter(Boolean)
+					item.keywords ??
+					[resolveLocalizedText(item.title), resolveLocalizedText(item.supporting)].filter(Boolean)
 			});
 		}
 
-		const sortedSections = Object.values(sectionMap).sort(
-			(a, b) => (a.order ?? 50) - (b.order ?? 50)
-		);
-
-		for (const sec of sortedSections) {
-			sec.items.sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
-		}
-
-		return sortedSections;
+		// Registry `get()` already returns order-sorted contributions, so both
+		// sections and items keep their sorted order through insertion here.
+		return Object.values(sectionMap);
 	});
 
 	const filteredSections = $derived.by(() => {

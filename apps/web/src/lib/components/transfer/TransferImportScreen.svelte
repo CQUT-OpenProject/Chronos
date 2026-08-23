@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { isChronosMountable } from '@chronos/core';
+	import { isChronosMountable, resolveLocalizedText } from '@chronos/core';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 	import { buildImportDescription } from '$lib/transfer/import-slot-capabilities';
-	import { SchemaForm } from '@chronos/ui-kit';
+	import { MountableSlotOutlet, SchemaForm } from '@chronos/ui-kit';
 
 	let {
 		transfer,
@@ -21,38 +21,12 @@
 	const importSegments = $derived(
 		availableSlots.map((slot) => ({
 			value: slot.id,
-			label: typeof slot.title === 'function' ? slot.title() : slot.title
+			label: resolveLocalizedText(slot.title)
 		}))
 	);
 	const activeSlot = $derived(
 		availableSlots.find((slot) => slot.id === transfer.state.selectedSlotId) ?? availableSlots[0]
 	);
-
-	const isMountable = $derived(isChronosMountable(activeSlot?.component));
-	let mountableContainerEl = $state<HTMLDivElement>();
-
-	$effect(() => {
-		if (!mountableContainerEl || !activeSlot?.component || !isMountable) return;
-		const comp = activeSlot.component;
-		let instance: { unmount?(): void } | (() => void) | undefined;
-		try {
-			instance = comp.mount(mountableContainerEl, { controller, transfer, onContinue });
-		} catch (error) {
-			console.error('[TransferImportScreen] mount failed:', error);
-			return;
-		}
-		return () => {
-			try {
-				if (typeof instance === 'function') {
-					instance();
-				} else if (typeof instance?.unmount === 'function') {
-					instance.unmount();
-				}
-			} catch (error) {
-				console.error('[TransferImportScreen] unmount failed:', error);
-			}
-		};
-	});
 
 	const importDescription = $derived(buildImportDescription(availableSlots));
 
@@ -92,8 +66,8 @@
 		{:else}
 			<div class="flex w-full gap-2 overflow-x-auto pb-1">
 				{#each availableSlots as slot (slot.id)}
-					{@const title = typeof slot.title === 'function' ? slot.title() : slot.title}
-					{@const badge = typeof slot.badge === 'function' ? slot.badge() : slot.badge}
+					{@const title = resolveLocalizedText(slot.title)}
+					{@const badge = typeof slot.badge === 'function' ? slot.badge() : (slot.badge ?? '')}
 					{@const isSelected = transfer.state.selectedSlotId === slot.id}
 					<button
 						type="button"
@@ -120,8 +94,12 @@
 
 	<div class="w-full">
 		{#if activeSlot?.component}
-			{#if isMountable}
-				<div bind:this={mountableContainerEl} class="w-full"></div>
+			{#if isChronosMountable(activeSlot.component)}
+				<MountableSlotOutlet
+					component={activeSlot.component}
+					props={{ controller, transfer, onContinue }}
+					class="w-full"
+				/>
 			{:else}
 				{@const DynamicComponent = activeSlot.component as import('svelte').Component<{
 					controller?: typeof controller;
@@ -135,13 +113,11 @@
 				<div class="flex flex-col gap-4">
 					<div>
 						<h2 class="m3-title-medium text-on-surface">
-							{typeof activeSlot.title === 'function' ? activeSlot.title() : activeSlot.title}
+							{resolveLocalizedText(activeSlot.title)}
 						</h2>
 						{#if activeSlot.supportingText}
 							<p class="m3-body-small mt-0.5 text-on-surface-variant">
-								{typeof activeSlot.supportingText === 'function'
-									? activeSlot.supportingText()
-									: activeSlot.supportingText}
+								{resolveLocalizedText(activeSlot.supportingText)}
 							</p>
 						{/if}
 					</div>

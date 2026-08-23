@@ -3,7 +3,11 @@
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import type { BottomTabSlotContribution } from '@chronos/core';
-	import { HOST_DEFAULT_ICON_THEME_ID, PALETTE_MODE_VIBRANT } from '@chronos/core';
+	import {
+		HOST_DEFAULT_ICON_THEME_ID,
+		PALETTE_MODE_VIBRANT,
+		resolveLocalizedText
+	} from '@chronos/core';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { toAppPathname } from '$lib/navigation/app-pathname';
 	import { getAppController, getAppEngine } from '$lib/services/app-engine';
@@ -15,22 +19,13 @@
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
 	const controller = getAppController();
 
-	const sortedTabs = $derived.by(() => {
-		void controller.slotVersion;
-		const rawTabs = controller.getSlots('shell.bottom-bar.tab');
-		return [...rawTabs].sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
-	});
+	const sortedTabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
 
 	const appPathname = $derived(toAppPathname(page.url.pathname));
 
 	function isActive(href: string) {
 		if (href === '/') return appPathname === '/';
 		return appPathname.startsWith(href);
-	}
-
-	function resolveText(text: string | (() => string) | undefined): string {
-		if (!text) return '';
-		return typeof text === 'function' ? text() : text;
 	}
 
 	function resolveTabIcon(tab: BottomTabSlotContribution, active: boolean) {
@@ -105,7 +100,7 @@
 						? 'text-on-surface'
 						: 'text-on-surface-variant'}"
 				>
-					{resolveText(tab.label)}
+					{resolveLocalizedText(tab.label)}
 				</span>
 			</a>
 		{/each}
