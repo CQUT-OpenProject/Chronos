@@ -14,7 +14,7 @@
 	"bundleFormat": "esm",
 	"minEngineVersion": "0.4.0",
 	"bundleUrl": "/official-plugins/bundles/tool-wallpaper/bundle.js",
-	"sha256": "bfbeb9c611043134d757799844438bd809579bca919446d0eb8062b0a0a752d0",
+	"sha256": "99d2d47691026530bbd83f5c98fc46725bf7bd757eeb61d2d9a881c1554011f5",
 	"cssUrl": "/official-plugins/bundles/tool-wallpaper/bundle.css",
 	"cssSha256": "85d2e2111bc59f10497b1b6e6d44e023e174fd47bdd9d0547e8cf1fdf0e842a7"
 }

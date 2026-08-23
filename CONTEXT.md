@@ -37,7 +37,13 @@ CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live onl
 
 Single event + hook runtime on `ChronosEngine.events` (`emit` / `on`, `serial` guards, `waterfall`).
 
-**Removed:** `EventBus`, `DataPipeline`, `engine.pipeline` aliases, and the plugin-facing `ctx.registerWaterfallHook` / `ctx.registerSerialHook` registration face (zero real consumers; engine-internal serial/waterfall machinery is retained for future re-introduction). Do not reintroduce them.
+**Removed:** `EventBus`, `DataPipeline`, `engine.pipeline` aliases, the plugin-facing `ctx.registerWaterfallHook` / `ctx.registerSerialHook` registration face, and the never-emitted `import:before/after` / `export:before/after` events plus `ExportTransformHook` types. Do not reintroduce them.
+
+**FROZEN BASELINE:** engine-internal serial/waterfall machinery (and the guard/waterfall wrappers inside every engine action) has zero hook registrants. Like `hosts/native-protocol.ts`: no new public API; if no real consumer appears within two release cycles, remove the machinery and the action wrappers wholesale.
+
+## Reserved port: queryCourses
+
+`IStorageService.queryCourses` (cross-timetable course lookup) is a **reserved capability**: implemented by Dexie, threaded through env/engine facades, with zero production consumers today. Kept deliberately (Round 4 decision); do not "clean it up" without revisiting that decision, and do not extend it until a consumer exists.
 
 ## Transfer ingest
 
@@ -55,7 +61,11 @@ Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. Cat
 ## Official plugin shapes
 
 1. **`ChronosPlugin` (ESM bundle)** — full `apply()` + slots (e.g. `tool-wallpaper`).
-2. **`ThemeManifest` (JSON-only)** — `colorsUrl` / `iconThemeUrl` without JS; `OfficialPluginService` registers themes directly (e.g. `theme-yumemita`).
+2. **`ThemeManifest` (JSON-only)** — `colorsUrl` / `iconThemeUrl` without JS; assets register through a headless `ScopedContext` owned by `OfficialPluginService` (e.g. `theme-yumemita`). Manifests declare `themeId` explicitly; the host never guesses id prefixes.
+
+### Component protocol (single)
+
+Slot field `component?: ChronosMountable` is the only rich-UI protocol. In-process Svelte components are wrapped via ui-kit `mountableSvelteComponent()`; ESM bundles ship their own mountable wrapper. Hosts render through `MountableSlotOutlet` (+ SchemaForm fallback) and never branch on component shape.
 
 ## Plugin conflict strategy
 

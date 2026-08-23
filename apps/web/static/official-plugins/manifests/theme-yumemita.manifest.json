@@ -15,6 +15,7 @@
 	"minEngineVersion": "0.4.0",
 	"colorsUrl": "/official-plugins/bundles/theme-yumemita/colors.json",
 	"colorsSha256": "e7ffab6903194b2396aee8e3fd282e4e27ecc3c8ee40d2fe7eea5170e52f3c89",
+	"themeId": "yumemita",
 	"iconThemeUrl": "/official-plugins/bundles/theme-yumemita/icons.json",
 	"iconThemeSha256": "1fef532812af55ba51b176ab7e6d6b7ffa07df1834078b140fb7c533619090ed"
 }
