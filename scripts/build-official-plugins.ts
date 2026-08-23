@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createChronosAliasRecord } from './resolve-chronos-aliases.ts';
+import { verifyOfficialPlugins } from './verify-official-plugins.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = resolve(root, 'dist/official-plugins');
@@ -176,7 +177,7 @@ for (const file of legacyFlatFiles) {
 }
 
 const catalog = {
-	version: 1,
+	version: 2,
 	updatedAt: Number(process.env.SOURCE_DATE_EPOCH ?? Date.now()),
 	manifests: plugins.map((p) => `/official-plugins/manifests/${p.id}.manifest.json`)
 };
@@ -186,5 +187,9 @@ writeFileSync(
 	`${JSON.stringify(catalog, null, '\t')}\n`,
 	'utf8'
 );
+
+// Self-check: fail the build loudly if any written asset does not match its
+// declared sha256, so stale artifacts can never ship.
+verifyOfficialPlugins();
 
 console.log('Official plugin bundles and manifests updated.');
