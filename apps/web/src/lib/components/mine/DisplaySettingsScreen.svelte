@@ -1,9 +1,16 @@
 <script lang="ts">
-	import { HOST_DEFAULT_ICON_THEME_ID, resolveLocalizedText } from '@chronos/core';
-	import type { CapsuleCornerStyle, ThemeMode, TimetableLayoutMode } from '@chronos/core';
+	import type { AppLocale } from '@chronos/core';
+	import {
+		HOST_DEFAULT_ICON_THEME_ID,
+		resolveLocalizedText,
+		type CapsuleCornerStyle,
+		type ThemeMode,
+		type TimetableLayoutMode
+	} from '@chronos/core';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import { getAppEngine } from '$lib/services/app-engine';
+	import { APP_LOCALES, applyAppLocale, normalizeAppLocale } from '$lib/i18n/locale-sync';
 	import { BUILTIN_COLOR_SCHEME_VIBRANT, resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
@@ -23,6 +30,9 @@
 		shell.controller.userPreferences?.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID
 	);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
+	const activeLocale = $derived(
+		normalizeAppLocale(shell.controller.userPreferences?.locale ?? shell.controller.currentLocale)
+	);
 
 	const iconThemeOptions = $derived.by(() => {
 		void shell.controller.slotVersion;
@@ -164,9 +174,26 @@
 		trackEvent('settings_capsule_corner_change', { style });
 		await shell.setCapsuleCornerStyle(style);
 	}
+
+	async function selectLocale(locale: AppLocale) {
+		haptic.light();
+		trackEvent('settings_locale_change', { locale });
+		await applyAppLocale(getAppEngine(), locale);
+	}
 </script>
 
 <div class="flex flex-col gap-5">
+	<MineSection title="语言">
+		{#each APP_LOCALES as option (option.id)}
+			{@const selected = activeLocale === option.id}
+			<MineRow label={true} title={option.label} onclick={() => selectLocale(option.id)}>
+				{#snippet trailing()}
+					<Radio name="app-locale" checked={selected} onchange={() => selectLocale(option.id)} />
+				{/snippet}
+			</MineRow>
+		{/each}
+	</MineSection>
+
 	<MineSection title="主题模式">
 		{#each themeOptions as option (option.mode)}
 			{@const selected = themeMode === option.mode}
