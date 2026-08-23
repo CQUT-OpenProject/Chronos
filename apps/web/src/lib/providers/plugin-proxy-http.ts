@@ -1,11 +1,16 @@
 import type { HttpResponse, IHttpService } from '@chronos/core';
+import {
+	parsePluginServerResponse,
+	pluginServerErrorMessage,
+	type PluginServerResponse
+} from '@chronos/core';
 
 function buildProxyResponse(
 	proxyRes: Response,
-	proxyData: { ok?: boolean; payload?: unknown; error?: { message?: string } }
+	proxyData: PluginServerResponse<unknown>
 ): HttpResponse {
 	if (!proxyRes.ok || !proxyData.ok) {
-		const errorMsg = proxyData?.error?.message || 'Plugin upstream connection failed';
+		const errorMsg = pluginServerErrorMessage(proxyData) ?? 'Plugin upstream connection failed';
 		return {
 			status: proxyRes.status === 200 ? 502 : proxyRes.status,
 			statusText: errorMsg,
@@ -64,11 +69,8 @@ export class PluginProxyHttpAdapter implements IHttpService {
 				signal
 			});
 
-			const proxyData = (await proxyRes.json()) as {
-				ok?: boolean;
-				payload?: unknown;
-				error?: { message?: string };
-			};
+			const raw = await proxyRes.json();
+			const proxyData = parsePluginServerResponse(raw);
 
 			return buildProxyResponse(proxyRes, proxyData);
 		} finally {

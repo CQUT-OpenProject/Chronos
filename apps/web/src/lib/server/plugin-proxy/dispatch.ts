@@ -1,5 +1,6 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 import type { PluginHttpMethod } from '@chronos/core';
+import { pluginServerError } from '@chronos/core';
 import {
 	ACTIVE_SERVER_PLUGIN_IDS,
 	type PluginProxyEntry
@@ -8,6 +9,11 @@ import { loadServerManifest } from '$lib/server/plugin-server-loader.generated';
 import { checkPluginRateLimit } from './rate-limit';
 
 const manifestCache = new Map<string, Awaited<ReturnType<typeof loadServerManifest>>>();
+
+/** Visible for tests only. */
+export function resetDispatchManifestCacheForTests(): void {
+	manifestCache.clear();
+}
 
 async function getManifest(pluginId: string) {
 	if (!ACTIVE_SERVER_PLUGIN_IDS.includes(pluginId as (typeof ACTIVE_SERVER_PLUGIN_IDS)[number])) {
@@ -32,24 +38,21 @@ export async function dispatchPluginRequest(
 	const action = resolveAction(event.params);
 
 	if (!pluginId || !action) {
-		return json({ ok: false, error: { kind: 'NotFound', message: 'Not found' } }, { status: 404 });
+		return json(pluginServerError('NotFound', 'Not found'), { status: 404 });
 	}
 
 	const manifest = await getManifest(pluginId);
 	const handler = manifest?.handlers[action]?.[method];
 	if (!handler) {
-		return json({ ok: false, error: { kind: 'NotFound', message: 'Not found' } }, { status: 404 });
+		return json(pluginServerError('NotFound', 'Not found'), { status: 404 });
 	}
 
 	const rateLimit = checkPluginRateLimit(pluginId, event.getClientAddress());
 	if (!rateLimit.allowed) {
-		return json(
-			{ ok: false, error: { kind: 'Validation', message: '请求过于频繁，请稍后再试' } },
-			{
-				status: 429,
-				headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) }
-			}
-		);
+		return json(pluginServerError('Validation', '请求过于频繁，请稍后再试'), {
+			status: 429,
+			headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) }
+		});
 	}
 
 	return handler({

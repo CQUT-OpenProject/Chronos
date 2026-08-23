@@ -15,7 +15,9 @@ import {
 	coursePalette,
 	deriveWeekendViewPrefs,
 	normalizedCourseName,
-	IHttpService
+	IHttpService,
+	parsePluginServerResponse,
+	pluginServerErrorMessage
 } from '@chronos/core';
 import {
 	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
@@ -285,9 +287,10 @@ export function createCqutPlugin(
 				if (!response.ok) {
 					let errorMsg = t('import.online.error.authFailed');
 					try {
-						const errJson = (await response.json()) as { error?: { message?: string } };
-						if (errJson?.error?.message) {
-							errorMsg = errJson.error.message;
+						const errBody = parsePluginServerResponse(await response.json());
+						const message = pluginServerErrorMessage(errBody);
+						if (message) {
+							errorMsg = message;
 						}
 					} catch {
 						// Keep default error message
