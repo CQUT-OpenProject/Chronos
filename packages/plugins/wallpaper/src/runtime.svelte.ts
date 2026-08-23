@@ -6,8 +6,6 @@ import {
 	WALLPAPER_PLUGIN_ID
 } from './storage';
 
-export const CHRONOS_MOUNTABLE = Symbol.for('chronos.mountable');
-
 type WallpaperChangeListener = (uri: string | null) => void;
 
 export interface WallpaperRuntime {
@@ -35,18 +33,14 @@ export function createWallpaperRuntime(
 ): WallpaperRuntime {
 	let wallpaperUri = $state<string | null>(null);
 	let changeHandler: WallpaperChangeListener | null = null;
-	const listeners = new Set<WallpaperChangeListener>();
 
 	function notify(uri: string | null) {
 		wallpaperUri = uri;
-		for (const listener of listeners) {
-			try {
-				listener(uri);
-			} catch (err) {
-				console.error('[WallpaperRuntime] listener error:', err);
-			}
+		try {
+			changeHandler?.(uri);
+		} catch (err) {
+			console.error('[WallpaperRuntime] listener error:', err);
 		}
-		changeHandler?.(uri);
 	}
 
 	const runtime: WallpaperRuntime = {
@@ -80,7 +74,6 @@ export function createWallpaperRuntime(
 		dispose() {
 			notify(null);
 			changeHandler = null;
-			listeners.clear();
 			if (runtimeRegistry.get(pluginId) === runtime) {
 				runtimeRegistry.delete(pluginId);
 			}
