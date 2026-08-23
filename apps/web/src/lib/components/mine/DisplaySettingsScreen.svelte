@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { AppLocale } from '@chronos/core';
 	import {
+		DEFAULT_VISUAL_THEME_ID,
 		HOST_DEFAULT_ICON_THEME_ID,
 		resolveLocalizedText,
 		type CapsuleCornerStyle,
@@ -46,10 +47,7 @@
 			.map((theme) => ({
 				id: theme.id,
 				label: resolveLocalizedText(theme.name),
-				description:
-					typeof theme.description === 'function'
-						? theme.description()
-						: (theme.description ?? undefined)
+				description: resolveLocalizedText(theme.description)
 			}));
 		return [builtin, ...pluginIconThemes];
 	});
@@ -68,7 +66,7 @@
 
 		const pluginThemes = getAppEngine()
 			.themes.getThemes()
-			.filter((theme) => theme.id !== 'm3-default')
+			.filter((theme) => theme.id !== DEFAULT_VISUAL_THEME_ID)
 			.map((theme) => {
 				const isDynamicTheme = Boolean(theme.supportsDynamicColor);
 				const isDisabled = isDynamicTheme
@@ -81,10 +79,7 @@
 						? '从当前壁纸提取配色'
 						: '请先设置壁纸后再使用'
 					: undefined;
-				const desc =
-					typeof theme.description === 'function'
-						? theme.description()
-						: (theme.description ?? defaultDesc);
+				const desc = resolveLocalizedText(theme.description, defaultDesc);
 
 				return {
 					id: theme.id,

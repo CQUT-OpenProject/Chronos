@@ -7,6 +7,7 @@
 	} from '$lib/services/app-engine';
 	import type { InstalledOfficialPluginRecord } from '$lib/services/official-plugins/official-plugin-service';
 	import type { PluginManifest, ConfigSchema } from '@chronos/core';
+	import { resolveLocaleMapText } from '@chronos/core';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
@@ -98,22 +99,15 @@
 		}
 	});
 
-	function resolveLocalizedName(
-		name: string | Record<string, string> | (() => string) | undefined
-	): string {
-		if (!name) return '';
-		if (typeof name === 'function') return name();
-		if (typeof name === 'string') return name;
-		return name['zh-CN'] || name['zh-cn'] || name['en'] || Object.values(name)[0] || '';
-	}
+	const activeLocale = $derived(appController.currentLocale);
 
-	function resolveLocalizedDesc(
-		desc: string | Record<string, string> | (() => string) | undefined
+	function resolveManifestText(
+		value: string | Record<string, string> | (() => string) | undefined
 	): string {
-		if (!desc) return '';
-		if (typeof desc === 'function') return desc();
-		if (typeof desc === 'string') return desc;
-		return desc['zh-CN'] || desc['zh-cn'] || desc['en'] || Object.values(desc)[0] || '';
+		if (!value) return '';
+		if (typeof value === 'function') return value();
+		if (typeof value === 'string') return value;
+		return resolveLocaleMapText(value, activeLocale);
 	}
 
 	function isInstalled(pluginId: string): boolean {
@@ -253,8 +247,8 @@
 
 				<div class="m3-section-surface divide-y divide-border/40">
 					{#each profileBuiltinPlugins as plugin (plugin.id)}
-						{@const name = resolveLocalizedName(plugin.name)}
-						{@const desc = resolveLocalizedDesc(plugin.description)}
+						{@const name = resolveManifestText(plugin.name)}
+						{@const desc = resolveManifestText(plugin.description)}
 						{@const meta = getPluginCategoryMeta(plugin.category)}
 						<div
 							class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
@@ -318,8 +312,8 @@
 				{:else}
 					<div class="m3-section-surface divide-y divide-border/40">
 						{#each installedRecords as record (record.manifest.id)}
-							{@const name = resolveLocalizedName(record.manifest.name)}
-							{@const desc = resolveLocalizedDesc(record.manifest.description)}
+							{@const name = resolveManifestText(record.manifest.name)}
+							{@const desc = resolveManifestText(record.manifest.description)}
 							{@const meta = getPluginCategoryMeta(record.manifest.type)}
 							{@const isBusy = operatingPluginId === record.manifest.id}
 							<div
@@ -447,8 +441,8 @@
 						<div class="m3-section-surface divide-y divide-border/40">
 							{#each catalogManifests as entry (entry.manifest.id)}
 								{@const manifest = entry.manifest}
-								{@const name = resolveLocalizedName(manifest.name)}
-								{@const desc = resolveLocalizedDesc(manifest.description)}
+								{@const name = resolveManifestText(manifest.name)}
+								{@const desc = resolveManifestText(manifest.description)}
 								{@const meta = getPluginCategoryMeta(manifest.type)}
 								{@const installed = isInstalled(manifest.id)}
 								{@const isBusy = operatingPluginId === manifest.id}

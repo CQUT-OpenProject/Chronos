@@ -55,3 +55,21 @@ export function interpolateMessage(template: string, params?: Record<string, unk
 				: JSON.stringify(value);
 	});
 }
+
+/** Resolve manifest-style locale maps (`zh-CN` / `zh-cn` / `en`) for a target locale. */
+export function resolveLocaleMapText(
+	map: Record<string, string> | undefined | null,
+	locale: string,
+	fallback = ''
+): string {
+	if (!map) return fallback;
+	const normalized = normalizeLocale(locale);
+	return (
+		map[normalized] ??
+		map['zh-CN'] ??
+		map['zh-cn'] ??
+		map['en'] ??
+		Object.values(map)[0] ??
+		fallback
+	);
+}
