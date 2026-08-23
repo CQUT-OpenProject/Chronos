@@ -1,18 +1,19 @@
-async function collect(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
-	return new Uint8Array(await new Response(stream).arrayBuffer());
-}
-
 export async function deflateRaw(bytes: Uint8Array): Promise<Uint8Array> {
 	if (typeof CompressionStream === 'undefined') {
 		const specifier = ['node', 'zlib'].join(':');
 		const zlib = (await import(/* @vite-ignore */ specifier)) as typeof import('node:zlib');
 		return new Uint8Array(zlib.deflateRawSync(Buffer.from(bytes)));
 	}
-	const stream = new CompressionStream('deflate-raw');
-	const writer = stream.writable.getWriter();
-	await writer.write(bytes as unknown as BufferSource);
-	await writer.close();
-	return collect(stream.readable);
+	const input = new ReadableStream<Uint8Array>({
+		start(controller) {
+			controller.enqueue(bytes);
+			controller.close();
+		}
+	});
+	const output = input.pipeThrough(
+		new CompressionStream('deflate-raw') as unknown as ReadableWritablePair<Uint8Array, Uint8Array>
+	);
+	return new Uint8Array(await new Response(output).arrayBuffer());
 }
 
 export async function inflateRaw(bytes: Uint8Array): Promise<Uint8Array> {
@@ -21,9 +22,17 @@ export async function inflateRaw(bytes: Uint8Array): Promise<Uint8Array> {
 		const zlib = (await import(/* @vite-ignore */ specifier)) as typeof import('node:zlib');
 		return new Uint8Array(zlib.inflateRawSync(Buffer.from(bytes)));
 	}
-	const stream = new DecompressionStream('deflate-raw');
-	const writer = stream.writable.getWriter();
-	await writer.write(bytes as unknown as BufferSource);
-	await writer.close();
-	return collect(stream.readable);
+	const input = new ReadableStream<Uint8Array>({
+		start(controller) {
+			controller.enqueue(bytes);
+			controller.close();
+		}
+	});
+	const output = input.pipeThrough(
+		new DecompressionStream('deflate-raw') as unknown as ReadableWritablePair<
+			Uint8Array,
+			Uint8Array
+		>
+	);
+	return new Uint8Array(await new Response(output).arrayBuffer());
 }

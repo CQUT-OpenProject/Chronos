@@ -5226,9 +5226,6 @@ function Oi(e) {
 //#endregion
 //#region packages/codec-kit/src/deflate.ts
 async function ki(e) {
-	return new Uint8Array(await new Response(e).arrayBuffer());
-}
-async function Ai(e) {
 	if (typeof CompressionStream > "u") {
 		let t = await import(
 			/* @vite-ignore */
@@ -5236,10 +5233,12 @@ async function Ai(e) {
 );
 		return new Uint8Array(t.deflateRawSync(Buffer.from(e)));
 	}
-	let t = new CompressionStream("deflate-raw"), n = t.writable.getWriter();
-	return await n.write(e), await n.close(), ki(t.readable);
+	let t = new ReadableStream({ start(t) {
+		t.enqueue(e), t.close();
+	} }).pipeThrough(new CompressionStream("deflate-raw"));
+	return new Uint8Array(await new Response(t).arrayBuffer());
 }
-async function ji(e) {
+async function Ai(e) {
 	if (typeof DecompressionStream > "u") {
 		let t = await import(
 			/* @vite-ignore */
@@ -5247,27 +5246,29 @@ async function ji(e) {
 );
 		return new Uint8Array(t.inflateRawSync(Buffer.from(e)));
 	}
-	let t = new DecompressionStream("deflate-raw"), n = t.writable.getWriter();
-	return await n.write(e), await n.close(), ki(t.readable);
+	let t = new ReadableStream({ start(t) {
+		t.enqueue(e), t.close();
+	} }).pipeThrough(new DecompressionStream("deflate-raw"));
+	return new Uint8Array(await new Response(t).arrayBuffer());
 }
 //#endregion
 //#region packages/codec-kit/src/base64.ts
-var Mi = 8192;
-function Ni(e) {
+var ji = 8192;
+function Mi(e) {
 	let t = "";
-	for (let n = 0; n < e.length; n += Mi) t += String.fromCharCode(...e.subarray(n, n + Mi));
+	for (let n = 0; n < e.length; n += ji) t += String.fromCharCode(...e.subarray(n, n + ji));
 	return t;
 }
-function Pi(e) {
+function Ni(e) {
 	let t = new Uint8Array(e.length);
 	for (let n = 0; n < e.length; n += 1) t[n] = e.charCodeAt(n);
 	return t;
 }
-function Fi(e) {
-	return btoa(Ni(e));
+function Pi(e) {
+	return btoa(Mi(e));
 }
-function Ii(e) {
-	return Pi(atob(e));
+function Fi(e) {
+	return Ni(atob(e));
 }
 (() => {
 	let e = /* @__PURE__ */ new Uint32Array(256);
@@ -5278,24 +5279,24 @@ function Ii(e) {
 	}
 	return e;
 })();
-function Li(e) {
+function Ii(e) {
 	let t = e.filter((e) => e < 1 || e > 32);
 	if (t.length > 0) throw RangeError(`week out of range: ${t.join(", ")}`);
 }
-function Ri(e) {
-	Li(e);
+function Li(e) {
+	Ii(e);
 	let t = 0;
 	for (let n of e) t |= 1 << n - 1;
 	return t >>> 0;
 }
-function zi(e) {
+function Ri(e) {
 	let t = [];
 	for (let n = 1; n <= 32; n += 1) e & 1 << n - 1 && t.push(n);
 	return t;
 }
 //#endregion
 //#region packages/codec-kit/src/interner.ts
-var Bi = class {
+var zi = class {
 	strings = [];
 	index = /* @__PURE__ */ new Map();
 	maxEntries;
@@ -5311,33 +5312,33 @@ var Bi = class {
 		let r = this.strings.length;
 		return this.strings.push(t), this.index.set(t, r), r;
 	}
-}, Vi = /* @__PURE__ */ new Uint8Array(512), Hi = /* @__PURE__ */ new Uint8Array(256);
+}, Bi = /* @__PURE__ */ new Uint8Array(512), Vi = /* @__PURE__ */ new Uint8Array(256);
 (() => {
 	let e = 1;
-	for (let t = 0; t < 255; t++) Vi[t] = e, Vi[t + 255] = e, Hi[e] = t, e <<= 1, e & 256 && (e ^= 285);
+	for (let t = 0; t < 255; t++) Bi[t] = e, Bi[t + 255] = e, Vi[e] = t, e <<= 1, e & 256 && (e ^= 285);
 })();
-function Ui(e, t) {
-	return e === 0 || t === 0 ? 0 : Vi[Hi[e] + Hi[t]];
+function Hi(e, t) {
+	return e === 0 || t === 0 ? 0 : Bi[Vi[e] + Vi[t]];
 }
-function Wi(e) {
+function Ui(e) {
 	let t = new Uint8Array([1]);
 	for (let n = 0; n < e; n++) {
 		let e = new Uint8Array(t.length + 1);
-		for (let r = 0; r < t.length; r++) e[r] ^= Ui(t[r], Vi[n]), e[r + 1] ^= t[r];
+		for (let r = 0; r < t.length; r++) e[r] ^= Hi(t[r], Bi[n]), e[r + 1] ^= t[r];
 		t = e;
 	}
 	return t;
 }
-function Gi(e, t) {
-	let n = Wi(t), r = new Uint8Array(t);
+function Wi(e, t) {
+	let n = Ui(t), r = new Uint8Array(t);
 	for (let i = 0; i < e.length; i++) {
 		let a = e[i] ^ r[0];
-		for (let e = 0; e < t - 1; e++) r[e] = r[e + 1] ^ Ui(n[e + 1], a);
-		r[t - 1] = Ui(n[t], a);
+		for (let e = 0; e < t - 1; e++) r[e] = r[e + 1] ^ Hi(n[e + 1], a);
+		r[t - 1] = Hi(n[t], a);
 	}
 	return r;
 }
-var Ki = [
+var Gi = [
 	{
 		eccPerBlock: 7,
 		blocks: [{
@@ -5770,7 +5771,7 @@ var Ki = [
 			dataCodewords: 119
 		}]
 	}
-], qi = [
+], Ki = [
 	[],
 	[6, 18],
 	[6, 22],
@@ -6013,7 +6014,7 @@ var Ki = [
 		142,
 		170
 	]
-], Ji = [
+], qi = [
 	31892,
 	34236,
 	39577,
@@ -6048,21 +6049,21 @@ var Ki = [
 	158308,
 	161089,
 	167017
-], Yi = 9174;
-function Xi(e) {
-	let t = Ki[e - 1];
+], Ji = 9174;
+function Yi(e) {
+	let t = Gi[e - 1];
 	if (!t) throw Error(`Unsupported QR version: ${e}`);
 	return t;
 }
-function Zi(e) {
+function Xi(e) {
 	for (let t = 1; t <= 40; t++) {
-		let n = Xi(t).blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0);
+		let n = Yi(t).blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0);
 		if (e + (t <= 9 ? 2 : 3) <= n) return t;
 	}
 	throw Error(`Data payload too large for QR Code (length: ${e}, max capacity: 2953 bytes)`);
 }
-function Qi(e, t) {
-	let n = new TextEncoder().encode(e), r = Xi(t), i = r.blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0), a = [];
+function Zi(e, t) {
+	let n = new TextEncoder().encode(e), r = Yi(t), i = r.blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0), a = [];
 	function o(e, t) {
 		for (let n = t - 1; n >= 0; n--) a.push(e >> n & 1);
 	}
@@ -6083,15 +6084,15 @@ function Qi(e, t) {
 	let d = [], f = [], p = 0;
 	for (let e of r.blocks) for (let t = 0; t < e.count; t++) {
 		let t = l.subarray(p, p + e.dataCodewords);
-		d.push(t), f.push(Gi(t, r.eccPerBlock)), p += e.dataCodewords;
+		d.push(t), f.push(Wi(t, r.eccPerBlock)), p += e.dataCodewords;
 	}
 	let m = [], h = Math.max(...d.map((e) => e.length));
 	for (let e = 0; e < h; e++) for (let t of d) e < t.length && m.push(t[e]);
 	for (let e = 0; e < r.eccPerBlock; e++) for (let t of f) m.push(t[e]);
 	return Uint8Array.from(m);
 }
-function $i(e) {
-	let t = Zi(new TextEncoder().encode(e).length), n = t * 4 + 17, r = Array.from({ length: n }, () => Array(n).fill(null)), i = Array.from({ length: n }, () => Array(n).fill(!1));
+function Qi(e) {
+	let t = Xi(new TextEncoder().encode(e).length), n = t * 4 + 17, r = Array.from({ length: n }, () => Array(n).fill(null)), i = Array.from({ length: n }, () => Array(n).fill(!1));
 	function a(e, t, a, o = !0) {
 		e >= 0 && e < n && t >= 0 && t < n && (r[e][t] = a, o && (i[e][t] = !0));
 	}
@@ -6103,7 +6104,7 @@ function $i(e) {
 	}
 	o(0, 0), o(0, n - 7), o(n - 7, 0);
 	for (let e = 8; e < n - 8; e++) r[6][e] === null && a(6, e, e % 2 == 0), r[e][6] === null && a(e, 6, e % 2 == 0);
-	let s = qi[t - 1] ?? [];
+	let s = Ki[t - 1] ?? [];
 	for (let e of s) for (let t of s) if (!i[e][t]) for (let n = -2; n <= 2; n++) for (let r = -2; r <= 2; r++) {
 		let i = Math.max(Math.abs(n), Math.abs(r)) !== 1;
 		a(e + n, t + r, i);
@@ -6112,13 +6113,13 @@ function $i(e) {
 	for (let e = 0; e < 9; e++) r[8][e] === null && a(8, e, !1, !0), r[e][8] === null && a(e, 8, !1, !0);
 	for (let e = 0; e < 8; e++) r[8][n - 1 - e] === null && a(8, n - 1 - e, !1, !0), r[n - 1 - e][8] === null && a(n - 1 - e, 8, !1, !0);
 	if (t >= 7) {
-		let e = Ji[t - 7];
+		let e = qi[t - 7];
 		for (let t = 0; t < 18; t++) {
 			let r = (e >> t & 1) == 1, i = Math.floor(t / 3), o = t % 3 + n - 11;
 			a(i, o, r), a(o, i, r);
 		}
 	}
-	let c = Qi(e, t), l = 0, u = n - 1, d = -1;
+	let c = Zi(e, t), l = 0, u = n - 1, d = -1;
 	for (let e = n - 1; e > 0; e -= 2) for (e === 6 && e--;;) {
 		for (let t = 0; t < 2; t++) {
 			let n = e - t;
@@ -6133,7 +6134,7 @@ function $i(e) {
 		}
 	}
 	for (let e = 0; e < n; e++) for (let t = 0; t < n; t++) i[e][t] || (e + t) % 2 == 0 && (r[e][t] = !r[e][t]);
-	let f = Yi;
+	let f = Ji;
 	for (let e = 0; e < 15; e++) {
 		let t = (f >> e & 1) == 1;
 		e < 6 ? r[8][e] = t : e < 8 ? r[8][e + 1] = t : r[8][n - 15 + e] = t, e < 8 ? r[n - 1 - e][8] = t : r[14 - e][8] = t;
@@ -6143,14 +6144,14 @@ function $i(e) {
 		modules: r.map((e) => e.map((e) => !!e))
 	};
 }
-function ea(e, t = {}) {
-	let { margin: n = 2, color: r = "#000000", background: i = "#ffffff", size: a = 512 } = t, o = $i(e), s = o.size + n * 2, c = [];
+function $i(e, t = {}) {
+	let { margin: n = 2, color: r = "#000000", background: i = "#ffffff", size: a = 512 } = t, o = Qi(e), s = o.size + n * 2, c = [];
 	for (let e = 0; e < o.size; e++) for (let t = 0; t < o.size; t++) o.modules[e][t] && c.push(`M${t + n},${e + n}h1v1h-1z`);
 	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${a}" height="${a}" shape-rendering="crispEdges" data-chronos-qr="${e}"><metadata>${e}</metadata><rect width="${s}" height="${s}" fill="${i}"/><path d="${c.join("")}" fill="${r}"/></svg>`;
 }
 //#endregion
 //#region packages/plugins/codec-qrcode/src/qr/qr-decode.ts
-async function ta(e) {
+async function ea(e) {
 	if (typeof window > "u") throw Error("QR 解码仅支持在浏览器环境中运行");
 	try {
 		let t = await e.text(), n = /chronos-qr:[A-Za-z0-9+/=:_-]+/.exec(t);
@@ -6178,8 +6179,8 @@ async function ta(e) {
 }
 //#endregion
 //#region packages/plugins/codec-qrcode/src/QrCodeImportTab.svelte
-var na = /* @__PURE__ */ Rn("<div class=\"rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs\"><div class=\"flex flex-col gap-4\"><div><h2 class=\"m3-title-medium text-on-surface\">从二维码导入</h2> <p class=\"m3-body-small mt-0.5 text-on-surface-variant\">选择或拖入他人分享的课表二维码图片</p></div> <input type=\"file\" accept=\"image/*,.svg\" class=\"hidden\"/> <div role=\"region\" aria-label=\"二维码图片上传区域\"><svg class=\"size-10 text-on-surface-variant/80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><path d=\"M14 14h3v3h-3z\"></path><path d=\"M20 14v3h-3\"></path><path d=\"M14 20h7\"></path></svg> <div class=\"flex flex-col gap-1\"><span class=\"m3-body-medium font-medium text-on-surface\">点击选择二维码图片</span> <span class=\"m3-body-small text-on-surface-variant\">支持 PNG、JPEG、WebP 或 SVG 格式</span></div> <button type=\"button\" class=\"m3-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50\"> </button></div></div></div>");
-function ra(e, t) {
+var ta = /* @__PURE__ */ Rn("<div class=\"rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs\"><div class=\"flex flex-col gap-4\"><div><h2 class=\"m3-title-medium text-on-surface\">二维码</h2> <p class=\"m3-body-small mt-0.5 text-on-surface-variant\">选择或拖入他人分享的课表二维码图片</p></div> <input type=\"file\" accept=\"image/*,.svg\" class=\"hidden\"/> <div role=\"region\" aria-label=\"二维码图片上传区域\"><svg class=\"size-10 text-on-surface-variant/80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><path d=\"M14 14h3v3h-3z\"></path><path d=\"M20 14v3h-3\"></path><path d=\"M14 20h7\"></path></svg> <div class=\"flex flex-col gap-1\"><span class=\"m3-body-medium font-medium text-on-surface\">点击选择二维码图片</span> <span class=\"m3-body-small text-on-surface-variant\">支持 PNG、JPEG、WebP 或 SVG 格式</span></div> <button type=\"button\" class=\"m3-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50\"> </button></div></div></div>");
+function na(e, t) {
 	xe(t, !0);
 	let n = /* @__PURE__ */ _t(!1), r = /* @__PURE__ */ _t(null), i = /* @__PURE__ */ _t(!1);
 	function a() {
@@ -6189,7 +6190,7 @@ function ra(e, t) {
 	async function o(e) {
 		k(n, !0);
 		try {
-			let n = await ta(e);
+			let n = await ea(e);
 			await t.transfer.previewWithSlot("qrcode", { content: n }) ? t.onContinue() : a();
 		} catch (e) {
 			let t = e instanceof Error ? e.message : "二维码识别失败";
@@ -6207,7 +6208,7 @@ function ra(e, t) {
 		let t = e.dataTransfer?.files?.[0];
 		t && await o(t);
 	}
-	var l = na(), u = Mt(jt(jt(l)), 2);
+	var l = ta(), u = Mt(jt(jt(l)), 2);
 	Qn(u, (e) => k(r, e), () => I(r));
 	var d = Mt(u, 2), f = Mt(jt(d), 4), p = jt(f, !0);
 	Ut(() => {
@@ -6219,9 +6220,9 @@ function ra(e, t) {
 jn(["change", "click"]);
 //#endregion
 //#region packages/plugins/codec-qrcode/src/index.ts
-async function ia(e) {
-	let t = new Bi(), n = e.courses.map((e) => {
-		let n = t.intern(e.name), r = t.intern(e.teacher), i = t.intern(e.location), a = t.intern(e.remark), o = t.intern(e.color), s = Ri(e.weeks), c = [
+async function ra(e) {
+	let t = new zi(), n = e.courses.map((e) => {
+		let n = t.intern(e.name), r = t.intern(e.teacher), i = t.intern(e.location), a = t.intern(e.remark), o = t.intern(e.color), s = Li(e.weeks), c = [
 			n,
 			r,
 			i,
@@ -6243,13 +6244,13 @@ async function ia(e) {
 		e.endTime
 	]));
 	let i = JSON.stringify(r);
-	return `chronos-qr:v2:${Fi(await Ai(new TextEncoder().encode(i)))}`;
+	return `chronos-qr:v2:${Pi(await ki(new TextEncoder().encode(i)))}`;
 }
-async function aa(e) {
+async function ia(e) {
 	let t = e.trim();
 	if (!t.startsWith("chronos-qr:v2:")) throw Error("二维码数据格式损坏或无法解析为课表");
-	let n = await ji(Ii(t.slice(14))), r = new TextDecoder().decode(n), i = JSON.parse(r), a = i.s ?? [], o = (i.c ?? []).map((e, t) => {
-		let n = (e[0] >= 0 ? a[e[0]] : null) ?? "未命名课程", r = (e[1] >= 0 ? a[e[1]] : null) ?? "", i = (e[2] >= 0 ? a[e[2]] : null) ?? "", o = e[3] ?? 1, s = e[4] ?? 1, c = e[5] ?? 1, l = zi(e[6] ?? 1), u = l.length > 0 ? l : [1], d = e[7] !== void 0 && e[7] >= 0 ? a[e[7]] : void 0, f = e[8] !== void 0 && e[8] >= 0 ? a[e[8]] : void 0;
+	let n = await Ai(Fi(t.slice(14))), r = new TextDecoder().decode(n), i = JSON.parse(r), a = i.s ?? [], o = (i.c ?? []).map((e, t) => {
+		let n = (e[0] >= 0 ? a[e[0]] : null) ?? "未命名课程", r = (e[1] >= 0 ? a[e[1]] : null) ?? "", i = (e[2] >= 0 ? a[e[2]] : null) ?? "", o = e[3] ?? 1, s = e[4] ?? 1, c = e[5] ?? 1, l = Ri(e[6] ?? 1), u = l.length > 0 ? l : [1], d = e[7] !== void 0 && e[7] >= 0 ? a[e[7]] : void 0, f = e[8] !== void 0 && e[8] >= 0 ? a[e[8]] : void 0;
 		return ar({
 			id: `c-qr-${t + 1}-${Date.now().toString(36)}`,
 			name: n,
@@ -6283,14 +6284,14 @@ async function aa(e) {
 		courses: o
 	});
 }
-var oa = dr({ content: {
+var aa = dr({ content: {
 	type: "string",
 	title: () => "二维码内容",
 	placeholder: () => "二维码识别出的数据内容",
 	required: !0
 } });
-function sa(e = {}) {
-	let { importComponent: t = Oi(ra) } = e;
+function oa(e = {}) {
+	let { importComponent: t = Oi(na) } = e;
 	return {
 		id: "tool-qrcode",
 		name: () => "课表二维码",
@@ -6309,15 +6310,15 @@ function sa(e = {}) {
 				badge: () => "图片",
 				supportingText: () => "选择或扫描课表二维码图片进行导入",
 				component: t,
-				inputSchema: oa,
+				inputSchema: aa,
 				async executeImport(e) {
 					let t = e.content ?? e.fileContent;
 					if (!t?.trim()) throw Error("未识别到有效的二维码内容");
-					return aa(t);
+					return ia(t);
 				}
 			}), e.registerSlot("export.action", {
 				id: "qrcode",
-				title: () => "课表二维码",
+				title: () => "二维码",
 				order: 20,
 				disposition: "download",
 				isPrimary: !1,
@@ -6325,7 +6326,7 @@ function sa(e = {}) {
 				async export(e, t) {
 					let n = e ?? t?.state.currentTimetable;
 					if (!n) throw Error("无可导出的课表");
-					let r = ea(await ia(n), { margin: 2 });
+					let r = $i(await ra(n), { margin: 2 });
 					return {
 						filename: `${(n.name || "timetable").replace(/[/\\?%*:|"<>]/g, "_")}-qrcode.svg`,
 						mimeType: "image/svg+xml",
@@ -6338,9 +6339,9 @@ function sa(e = {}) {
 		}
 	};
 }
-sa();
+oa();
 //#endregion
 //#region packages/plugins/codec-qrcode/bundle/entry.ts
-var ca = sa({ importComponent: Oi(ra) });
+var sa = oa({ importComponent: Oi(na) });
 //#endregion
-export { ca as default };
+export { sa as default };
