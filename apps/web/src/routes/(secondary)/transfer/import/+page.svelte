@@ -17,6 +17,6 @@
 	}
 </script>
 
-<SecondaryPageShell title="导入课表" backHref="/mine">
+<SecondaryPageShell title="导入课程表" backHref="/mine">
 	<TransferImportScreen {transfer} onContinue={continueToConfirm} />
 </SecondaryPageShell>

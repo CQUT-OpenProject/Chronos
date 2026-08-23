@@ -7,6 +7,6 @@
 	const shell = getContext<AppShellController>('appShell');
 </script>
 
-<SecondaryPageShell title="管理课表" backHref="/mine" flush>
+<SecondaryPageShell title="管理课程表" backHref="/mine" flush>
 	<ManageTimetablesScreen {shell} />
 </SecondaryPageShell>

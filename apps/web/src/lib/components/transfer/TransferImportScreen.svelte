@@ -5,7 +5,6 @@
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { buildImportDescription } from '$lib/transfer/import-slot-capabilities';
 	import { MountableSlotOutlet, SchemaForm } from '@chronos/ui-kit';
 
 	let {
@@ -27,8 +26,9 @@
 	const activeSlot = $derived(
 		availableSlots.find((slot) => slot.id === transfer.state.selectedSlotId) ?? availableSlots[0]
 	);
-
-	const importDescription = $derived(buildImportDescription(availableSlots));
+	const activeSlotId = $derived(activeSlot?.id ?? '');
+	const useSegmentedTabs = $derived(availableSlots.length > 0 && availableSlots.length <= 3);
+	const useScrollableTabs = $derived(availableSlots.length > 3);
 
 	let schemaFormValues = $state<Record<string, unknown>>({});
 	let schemaLoading = $state(false);
@@ -52,44 +52,40 @@
 </script>
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
-	<p class="m3-body-medium text-on-surface-variant">
-		{importDescription}
-	</p>
+	<p class="m3-body-medium text-center text-on-surface-variant">使用以下方式导入课程表：</p>
 
-	{#if importSegments.length > 1}
-		{#if importSegments.length <= 3}
-			<SegmentedControl
-				segments={importSegments}
-				value={transfer.state.selectedSlotId}
-				onValueChange={handleSourceChange}
-			/>
-		{:else}
-			<div class="flex w-full gap-2 overflow-x-auto pb-1">
-				{#each availableSlots as slot (slot.id)}
-					{@const title = resolveLocalizedText(slot.title)}
-					{@const badge = typeof slot.badge === 'function' ? slot.badge() : (slot.badge ?? '')}
-					{@const isSelected = transfer.state.selectedSlotId === slot.id}
-					<button
-						type="button"
-						class="m3-label-large relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-center transition-colors {isSelected
-							? 'bg-secondary-container font-medium text-on-secondary-container shadow-xs'
-							: 'bg-surface-variant/40 text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface'}"
-						onclick={() => handleSourceChange(slot.id)}
-					>
-						<span>{title}</span>
-						{#if badge}
-							<span
-								class="m3-label-small rounded-full px-1.5 py-0.5 text-[10px] leading-none {isSelected
-									? 'bg-primary text-on-primary'
-									: 'bg-outline-variant text-on-surface-variant'}"
-							>
-								{badge}
-							</span>
-						{/if}
-					</button>
-				{/each}
-			</div>
-		{/if}
+	{#if useSegmentedTabs}
+		<SegmentedControl
+			segments={importSegments}
+			value={activeSlotId}
+			onValueChange={handleSourceChange}
+		/>
+	{:else if useScrollableTabs}
+		<div class="flex w-full gap-2 overflow-x-auto pb-1">
+			{#each availableSlots as slot (slot.id)}
+				{@const title = resolveLocalizedText(slot.title)}
+				{@const badge = typeof slot.badge === 'function' ? slot.badge() : (slot.badge ?? '')}
+				{@const isSelected = transfer.state.selectedSlotId === slot.id}
+				<button
+					type="button"
+					class="m3-label-large relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-center transition-colors {isSelected
+						? 'bg-secondary-container font-medium text-on-secondary-container shadow-xs'
+						: 'bg-surface-variant/40 text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface'}"
+					onclick={() => handleSourceChange(slot.id)}
+				>
+					<span>{title}</span>
+					{#if badge}
+						<span
+							class="m3-label-small rounded-full px-1.5 py-0.5 text-[10px] leading-none {isSelected
+								? 'bg-primary text-on-primary'
+								: 'bg-outline-variant text-on-surface-variant'}"
+						>
+							{badge}
+						</span>
+					{/if}
+				</button>
+			{/each}
+		</div>
 	{/if}
 
 	<div class="w-full">

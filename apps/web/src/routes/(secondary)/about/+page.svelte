@@ -7,6 +7,6 @@
 	const shell = getContext<AppShellController>('appShell');
 </script>
 
-<SecondaryPageShell title="关于" backHref="/mine">
+<SecondaryPageShell title="关于 Chronos" backHref="/mine">
 	<AboutScreen {shell} />
 </SecondaryPageShell>

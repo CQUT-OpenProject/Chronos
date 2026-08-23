@@ -7,27 +7,35 @@
 		type ExportResult,
 		type ExportActionSlotContribution
 	} from '@chronos/core';
-	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
-	import { IosShareFill } from '$lib/icons';
 	import { DEFAULT_TIMETABLE_NAME, normalizeTimetableName } from '$lib/models/timetable';
 
 	let {
-		currentTimetableName,
 		warningMessage = null
 	}: {
-		currentTimetableName: string | null;
 		warningMessage?: string | null;
 	} = $props();
 
 	const controller = getAppController();
+	const currentTimetable = $derived(controller.currentTimetable);
 	const allExportActions = $derived(controller.getSlots('export.action'));
-	const primaryAction = $derived(pickPrimary(allExportActions));
-	const secondaryActions = $derived(allExportActions.filter((a) => a.id !== primaryAction?.id));
+	const defaultActionId = $derived(pickPrimary(allExportActions)?.id ?? allExportActions[0]?.id);
 
-	let loading = $state(false);
+	let selectedId = $state<string | null>(null);
+	let runningId = $state<string | null>(null);
+
+	const selectedAction = $derived(
+		allExportActions.find((a) => a.id === (selectedId ?? defaultActionId)) ?? null
+	);
+	const segments = $derived(
+		allExportActions.map((action) => ({
+			value: action.id,
+			label: resolveLocalizedText(action.title)
+		}))
+	);
+	const showExportTabs = $derived(segments.length > 0);
 
 	function downloadExportResult(result: ExportResult) {
 		const blob = new Blob([result.content], { type: result.mimeType });
@@ -41,38 +49,74 @@
 		URL.revokeObjectURL(url);
 	}
 
+	async function copyTextSafely(text: string): Promise<boolean> {
+		try {
+			await navigator.clipboard.writeText(text);
+			return true;
+		} catch {
+			// 非安全上下文或权限被拒：回退到临时文本域 + execCommand
+			try {
+				const textarea = document.createElement('textarea');
+				textarea.value = text;
+				textarea.style.position = 'fixed';
+				textarea.style.opacity = '0';
+				document.body.appendChild(textarea);
+				textarea.select();
+				const ok = document.execCommand('copy');
+				document.body.removeChild(textarea);
+				return ok;
+			} catch {
+				return false;
+			}
+		}
+	}
+
+	function withTimeout<T>(promise: Promise<T>, ms = 15000): Promise<T> {
+		return new Promise<T>((resolve, reject) => {
+			const timer = setTimeout(() => reject(new Error('导出耗时过长，请重试')), ms);
+			promise.then(
+				(value) => {
+					clearTimeout(timer);
+					resolve(value);
+				},
+				(error) => {
+					clearTimeout(timer);
+					reject(error);
+				}
+			);
+		});
+	}
+
 	async function handleActionExport(action: ExportActionSlotContribution) {
 		const current = controller.currentTimetable;
 		if (!current) {
 			snackbar('当前没有可导出的课表');
 			return;
 		}
-		loading = true;
+		if (runningId) return;
+
+		runningId = action.id;
 		trackEvent('export_slot_execute_attempt', { actionId: action.id });
 		try {
 			const ctx = controller.getPluginContextForSlot('export.action', action.id);
-			const result = await action.export(current, ctx);
+			const result = await withTimeout(action.export(current, ctx));
 			const disposition = result.disposition ?? action.disposition ?? 'download';
 
 			if (disposition === 'clipboard') {
 				const text = typeof result.content === 'string' ? result.content : '';
-				await navigator.clipboard.writeText(text);
+				const copied = await withTimeout(copyTextSafely(text));
+				if (!copied) throw new Error('复制失败，请手动复制后重试');
 				trackEvent('export_copy_link');
-				const msg = resolveLocalizedText(result.successMessage) || '已复制课表链接';
-				snackbar(msg);
-				if (warningMessage) {
-					trackEvent('export_long_link_warning_shown');
-					snackbar(warningMessage);
-				}
+				snackbar(resolveLocalizedText(result.successMessage) || '已复制课表链接');
 				return;
 			}
 
-			if (disposition === 'download' && result) {
+			if (disposition === 'download') {
 				downloadExportResult(result);
 				trackEvent('export_slot_execute_success', { actionId: action.id });
-				const msg =
-					resolveLocalizedText(result.successMessage) || `已导出《${result.filename ?? '课表'}》`;
-				snackbar(msg);
+				snackbar(
+					resolveLocalizedText(result.successMessage) || `已保存《${result.filename ?? '课表'}》`
+				);
 				return;
 			}
 
@@ -81,71 +125,64 @@
 			}
 		} catch (err: unknown) {
 			trackEvent('export_slot_execute_fail', { actionId: action.id });
-			const msg = err instanceof Error ? err.message : '导出失败';
-			snackbar(msg);
+			snackbar(err instanceof Error ? err.message : '导出失败');
 		} finally {
-			loading = false;
+			runningId = null;
 		}
+	}
+
+	function actionDescription(action: ExportActionSlotContribution): string {
+		return resolveLocalizedText(action.description) || '保存到本机，随时可以再导入';
+	}
+
+	function exportButtonLabel(action: ExportActionSlotContribution): string {
+		return `导出为 ${resolveLocalizedText(action.title)}`;
 	}
 </script>
 
-{#snippet footer()}
-	{#if primaryAction}
-		<Button
-			variant="filled"
-			class="w-full"
-			disabled={loading || !currentTimetableName}
-			onclick={() => handleActionExport(primaryAction)}
-		>
-			<IosShareFill class="size-5" />
-			{loading ? '导出中…' : resolveLocalizedText(primaryAction.title)}
-		</Button>
+<div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
+	<p class="m3-body-medium text-center text-on-surface-variant">
+		将「{currentTimetable
+			? normalizeTimetableName(currentTimetable.name)
+			: DEFAULT_TIMETABLE_NAME}」使用以下方式分享：
+	</p>
+
+	{#if warningMessage}
+		<p class="m3-body-small text-center text-warning">{warningMessage}</p>
 	{/if}
-{/snippet}
 
-<FormScreenLayout {footer}>
-	<div class="flex flex-col gap-6 py-2">
-		<div
-			class="m3-body-medium flex flex-col items-center justify-center gap-1 text-center text-on-surface-variant"
-		>
-			<p>
-				将「{currentTimetableName
-					? normalizeTimetableName(currentTimetableName)
-					: DEFAULT_TIMETABLE_NAME}」导出或分享
-			</p>
-			<p>支持生成在线分享短链，或通过插件导出为结构化数据文件</p>
-			{#if warningMessage}
-				<p class="text-warning">{warningMessage}</p>
-			{/if}
+	{#if showExportTabs}
+		<SegmentedControl
+			{segments}
+			value={selectedAction?.id ?? ''}
+			onValueChange={(id) => (selectedId = id)}
+		/>
+	{/if}
+
+	{#if selectedAction}
+		<div class="flex flex-col gap-3 rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
+			<div>
+				<h2 class="m3-title-medium text-on-surface">
+					{resolveLocalizedText(selectedAction.title)}
+				</h2>
+				<p class="m3-body-small mt-0.5 text-on-surface-variant">
+					{actionDescription(selectedAction)}
+				</p>
+			</div>
+			<Button
+				variant="filled"
+				class="w-full"
+				disabled={runningId !== null || !currentTimetable}
+				onclick={() => handleActionExport(selectedAction)}
+			>
+				{runningId === selectedAction.id ? '导出中…' : exportButtonLabel(selectedAction)}
+			</Button>
 		</div>
-
-		{#if secondaryActions.length > 0}
-			<section class="flex flex-col gap-3">
-				<h3 class="m3-title-medium px-1 text-on-surface">更多导出格式</h3>
-				<div class="flex flex-col gap-2.5">
-					{#each secondaryActions as action (action.id)}
-						<Card variant="outlined">
-							<div class="flex items-center justify-between p-3.5">
-								<div class="flex flex-col">
-									<span class="m3-title-small font-medium text-on-surface">
-										{resolveLocalizedText(action.title)}
-									</span>
-									<span class="m3-body-small text-on-surface-variant">
-										{resolveLocalizedText(action.description) || '导出为标准文件产物'}
-									</span>
-								</div>
-								<Button
-									variant="tonal"
-									disabled={loading || !currentTimetableName}
-									onclick={() => handleActionExport(action)}
-								>
-									导出
-								</Button>
-							</div>
-						</Card>
-					{/each}
-				</div>
-			</section>
-		{/if}
-	</div>
-</FormScreenLayout>
+	{:else}
+		<div
+			class="rounded-2xl border border-outline/30 bg-surface p-6 text-center text-on-surface-variant shadow-xs"
+		>
+			暂无可用的导出方式
+		</div>
+	{/if}
+</div>
