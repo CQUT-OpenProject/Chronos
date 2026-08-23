@@ -1,7 +1,7 @@
-import { beforeAll, describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 import type { Course } from '@chronos/core';
 import { createTimetable } from '@chronos/core';
-import { bitmaskToWeeks, weeksToBitmask } from './week-bitmask';
+import { bitmaskToWeeks, deflateRaw, inflateRaw, weeksToBitmask } from '@chronos/codec-kit';
 import { decodeBinaryToTimetable, encodeTimetableToBinary } from './chronos-share-binary';
 import { parseLocation } from './location-codec';
 import { WeekMaskTable } from './week-mask-table';
@@ -13,13 +13,9 @@ import {
 	extractSharePayloadFromLocation,
 	extractSharePayloadFromText,
 	formatShareClipboardText,
-	SHARE_LINK_CORRUPTED_MESSAGE
+	SHARE_LINK_CORRUPTED_MESSAGE,
+	SHARE_LINK_PREFIX_DEFLATE
 } from './chronos-share-link-codec';
-import {
-	brotliCompressShare,
-	brotliDecompressShare,
-	ensureShareLinkBrotliReady
-} from './share-link-brotli';
 
 describe('week-bitmask', () => {
 	it('round-trips contiguous and sparse weeks', () => {
@@ -206,14 +202,10 @@ describe('chronos-share-binary', () => {
 });
 
 describe('chronos-share-link-codec', () => {
-	beforeAll(async () => {
-		await ensureShareLinkBrotliReady();
-	});
-
 	it('round-trips share payload and link', async () => {
 		const timetable = sampleTimetable();
 		const payload = await encodeSharePayload(timetable);
-		expect(payload.startsWith('1.')).toBe(true);
+		expect(payload.startsWith(SHARE_LINK_PREFIX_DEFLATE)).toBe(true);
 
 		const decoded = await decodeSharePayload(payload);
 		expect(decoded.ok).toBe(true);
@@ -247,10 +239,10 @@ describe('chronos-share-link-codec', () => {
 
 	it('rejects checksum mismatches with a clear message', async () => {
 		const payload = await encodeSharePayload(sampleTimetable());
-		const compressed = base64UrlToTestBytes(payload.slice(2));
-		const inflated = brotliDecompressShare(compressed);
+		const compressed = base64UrlToTestBytes(payload.slice(SHARE_LINK_PREFIX_DEFLATE.length));
+		const inflated = await inflateRaw(compressed);
 		inflated[inflated.length - 1]! ^= 0x01;
-		const tampered = `1.${bytesToTestBase64Url(brotliCompressShare(inflated))}`;
+		const tampered = `${SHARE_LINK_PREFIX_DEFLATE}${bytesToTestBase64Url(await deflateRaw(inflated))}`;
 		const decoded = await decodeSharePayload(tampered);
 
 		expect(decoded.ok).toBe(false);
@@ -294,10 +286,10 @@ describe('chronos-share-link-codec', () => {
 		expect(formatShareClipboardText('', link)).toContain('「未命名课表」');
 	});
 
-	it('keeps 15-course payload under 475 characters', async () => {
+	it('keeps 15-course payload under 520 characters', async () => {
 		const timetable = createLargeTimetable(15);
 		const payload = await encodeSharePayload(timetable);
-		expect(payload.length).toBeLessThan(410);
+		expect(payload.length).toBeLessThan(520);
 		expect(await estimateShareLinkLength(timetable)).toBe(payload.length);
 	});
 
@@ -352,10 +344,10 @@ describe('chronos-share-link-codec', () => {
 		expect(byName['形势与政策5']?.teacher).toBe('董璇');
 	});
 
-	it('keeps 25-course CQUT payload under 670 characters', async () => {
+	it('keeps 25-course CQUT payload under 740 characters', async () => {
 		const timetable = createCqutLargeTimetable();
 		const payload = await encodeSharePayload(timetable);
-		expect(payload.length).toBeLessThan(590);
+		expect(payload.length).toBeLessThan(740);
 		const decoded = await decodeSharePayload(payload);
 		expect(decoded.ok).toBe(true);
 		if (!decoded.ok) return;

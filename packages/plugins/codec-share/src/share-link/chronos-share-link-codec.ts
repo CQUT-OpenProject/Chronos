@@ -5,7 +5,7 @@ import {
 	encodeTimetableToBinary,
 	ShareBinaryDecodeError
 } from './chronos-share-binary';
-import { appendCrc32, verifyAndStripCrc32 } from './crc32';
+import { appendCrc32, verifyAndStripCrc32 } from '@chronos/codec-kit';
 import {
 	compressShareAdaptive,
 	decompressShareAdaptive,
@@ -79,8 +79,9 @@ export async function decodeSharePayload(payload: string): Promise<ShareLinkResu
 	try {
 		const compressed = base64UrlToBytes(parsed.encoded);
 		const decompressed = await decompressShareAdaptive(parsed.version, compressed);
-		const binary = verifyAndStripCrc32(decompressed);
-		return shareSuccess(decodeBinaryToTimetable(binary));
+		const verified = verifyAndStripCrc32(decompressed);
+		if (!verified) throw new ShareBinaryDecodeError('checksum mismatch');
+		return shareSuccess(decodeBinaryToTimetable(verified));
 	} catch (error) {
 		const message =
 			error instanceof ShareBinaryDecodeError

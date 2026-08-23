@@ -5,7 +5,7 @@ import zlib from 'node:zlib';
 import type { Course } from '../packages/core/src/index.ts';
 import { createTimetable } from '../packages/core/src/index.ts';
 import { encodeTimetableToBinary } from '../packages/plugins/codec-share/src/share-link/chronos-share-binary.ts';
-import { appendCrc32 } from '../packages/plugins/codec-share/src/share-link/crc32.ts';
+import { appendCrc32 } from '../packages/codec-kit/src/index.ts';
 import {
 	brotliCompressShare,
 	brotliDecompressShare,

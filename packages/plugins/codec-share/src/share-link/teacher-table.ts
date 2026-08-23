@@ -1,5 +1,4 @@
-import { writeVarint } from './varint';
-import { VarintReader } from './varint';
+import { VarintReader, writeVarint } from '@chronos/codec-kit';
 
 export const NO_TEACHER_SLOT = 0x0f;
 const MAX_TEACHERS = 14;

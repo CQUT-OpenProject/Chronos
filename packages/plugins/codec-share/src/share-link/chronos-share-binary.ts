@@ -25,10 +25,15 @@ import {
 	ROOM_BYTE_LENGTH,
 	writeRoomBytes
 } from './location-codec';
-import { VarintReader, writeVarint } from './varint';
+import {
+	assertValidWeeks,
+	MAX_TIMETABLE_WEEK as MAX_WEEK,
+	StringInterner,
+	VarintReader,
+	writeVarint
+} from '@chronos/codec-kit';
 import { WeekMaskTable } from './week-mask-table';
 import { NO_TEACHER_SLOT, TeacherTable } from './teacher-table';
-import { assertValidWeeks, MAX_WEEK } from './week-bitmask';
 import { ShareBinaryDecodeError } from './share-binary-decode-error';
 
 const MAGIC = [0x43, 0x53] as const;
@@ -42,11 +47,6 @@ const FLAG_HAS_REMARKS = 1 << 0;
 const FLAG_CUSTOM_END_WEEK = 1 << 1;
 const FLAG_GLOBAL_WEEK_MASK = 1 << 2;
 const FLAG_SINGLE_BUILDING = 1 << 3;
-
-interface StringPool {
-	strings: string[];
-	indexOf: Map<string, number>;
-}
 
 interface EncodedCourse {
 	nameIdx: number;
@@ -74,30 +74,10 @@ function daysSinceEpochToDate(days: number): string {
 	return `${year}-${month}-${day}`;
 }
 
-function createStringPool(timetableName: string): StringPool {
-	const strings = [timetableName];
-	const indexOf = new Map<string, number>([[timetableName, 0]]);
-	return { strings, indexOf };
-}
-
-function internString(pool: StringPool, value: string): number {
-	const trimmed = value.trim();
-	if (!trimmed) return -1;
-	const existing = pool.indexOf.get(trimmed);
-	if (existing !== undefined) return existing;
-	if (pool.strings.length >= MAX_STRINGS) {
-		throw new ShareBinaryDecodeError('string table overflow');
-	}
-	const index = pool.strings.length;
-	pool.strings.push(trimmed);
-	pool.indexOf.set(trimmed, index);
-	return index;
-}
-
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
-function writeStringTable(pool: StringPool, target: number[]): void {
+function writeStringTable(pool: StringInterner, target: number[]): void {
 	target.push(pool.strings.length);
 	for (const value of pool.strings) {
 		const bytes = textEncoder.encode(value);
@@ -149,14 +129,17 @@ function unpackEndTeacher(byte: number): { endPeriod: number; teacherSlot: numbe
 	return { endPeriod: (byte >> 4) & 0x0f, teacherSlot: byte & 0x0f };
 }
 
-function encodeLocation(pool: StringPool, location: string): { buildingIdx: number; room: string } {
+function encodeLocation(
+	pool: StringInterner,
+	location: string
+): { buildingIdx: number; room: string } {
 	const parsed = parseLocation(location);
 	if (parsed.kind === 'full') {
 		if (!parsed.value) return { buildingIdx: NO_BUILDING, room: '' };
-		return { buildingIdx: internString(pool, parsed.value), room: '' };
+		return { buildingIdx: pool.intern(parsed.value), room: '' };
 	}
 	return {
-		buildingIdx: internString(pool, parsed.building),
+		buildingIdx: pool.intern(parsed.building),
 		room: parsed.room
 	};
 }
@@ -224,7 +207,7 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 		throw new ShareBinaryDecodeError('too many courses');
 	}
 
-	const pool = createStringPool(normalized.name);
+	const pool = new StringInterner({ maxEntries: MAX_STRINGS, seed: normalized.name });
 	const weekMaskTable = new WeekMaskTable();
 	const teacherTable = new TeacherTable();
 	const endWeek = normalized.academicConfig.endWeek || DEFAULT_END_WEEK;
@@ -246,9 +229,9 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 	const encodedCourses: EncodedCourse[] = normalized.courses.map((course) => {
 		if (!course.name) throw new ShareBinaryDecodeError('course name is required');
 		assertValidWeeks(course.weeks);
-		const nameIdx = internString(pool, course.name);
+		const nameIdx = pool.intern(course.name);
 		const teacherSlot = teacherTable.intern(course.teacher);
-		const remarkIdx = course.remark ? internString(pool, course.remark) : -1;
+		const remarkIdx = course.remark ? pool.intern(course.remark) : -1;
 		const location = encodeLocation(pool, course.location);
 		const parsed = parseLocation(course.location);
 		return {
