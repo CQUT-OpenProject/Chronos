@@ -18,6 +18,7 @@
 		}
 	},
 	"dependencies": {
+		"@chronos/codec-kit": "workspace:*",
 		"@chronos/core": "workspace:*"
 	},
 	"peerDependencies": {

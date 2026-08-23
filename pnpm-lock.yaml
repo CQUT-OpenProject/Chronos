@@ -48,9 +48,6 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@chronos/plugin-codec-qrcode':
-        specifier: workspace:*
-        version: link:../../packages/plugins/codec-qrcode
       '@chronos/plugin-codec-share':
         specifier: workspace:*
         version: link:../../packages/plugins/codec-share
@@ -170,22 +167,27 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(@vitest/browser-preview@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))
 
+  packages/codec-kit: {}
+
   packages/core: {}
 
   packages/plugins/codec-qrcode:
     dependencies:
+      '@chronos/codec-kit':
+        specifier: workspace:*
+        version: link:../../codec-kit
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
-      '@chronos/plugin-codec-share':
-        specifier: workspace:*
-        version: link:../codec-share
       svelte:
         specifier: ^5.0.0
         version: 5.56.9(@typescript-eslint/types@8.66.0)
 
   packages/plugins/codec-share:
     dependencies:
+      '@chronos/codec-kit':
+        specifier: workspace:*
+        version: link:../../codec-kit
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core

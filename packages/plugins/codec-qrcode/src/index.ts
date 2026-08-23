@@ -7,6 +7,15 @@ import type {
 	ConfigSchema
 } from '@chronos/core';
 import { createTimetable, createCourse, defineSchema } from '@chronos/core';
+import {
+	base64ToBytes,
+	bitmaskToWeeks,
+	bytesToBase64,
+	deflateRaw,
+	inflateRaw,
+	StringInterner,
+	weeksToBitmask
+} from '@chronos/codec-kit';
 import { generateQrSvg, generateQrMatrix } from './qr/qr-encode';
 import { decodeQrFromBlob } from './qr/qr-decode';
 import QrCodeImportTab from './QrCodeImportTab.svelte';
@@ -22,101 +31,15 @@ export interface V2CompactQrPayload {
 	// [nameIdx, teacherIdx, locationIdx, dayOfWeek, startPeriod, endPeriod, weekBitmask, remarkIdx?, colorIdx?]
 }
 
-function uint8ArrayToBase64(bytes: Uint8Array): string {
-	let binary = '';
-	for (let i = 0; i < bytes.length; i++) {
-		binary += String.fromCharCode(bytes[i]!);
-	}
-	return typeof btoa === 'function' ? btoa(binary) : Buffer.from(bytes).toString('base64');
-}
-
-function base64ToUint8Array(base64: string): Uint8Array {
-	const binary =
-		typeof atob === 'function' ? atob(base64) : Buffer.from(base64, 'base64').toString('binary');
-	const bytes = new Uint8Array(binary.length);
-	for (let i = 0; i < binary.length; i++) {
-		bytes[i] = binary.charCodeAt(i);
-	}
-	return bytes;
-}
-
-async function deflateCompress(bytes: Uint8Array): Promise<Uint8Array> {
-	if (typeof CompressionStream !== 'undefined') {
-		try {
-			const cs = new CompressionStream('deflate-raw');
-			const writer = cs.writable.getWriter();
-			writer.write(bytes as unknown as BufferSource);
-			writer.close();
-			const response = new Response(cs.readable);
-			const arrayBuffer = await response.arrayBuffer();
-			return new Uint8Array(arrayBuffer);
-		} catch {
-			// fallback to uncompressed
-		}
-	}
-	return bytes;
-}
-
-async function inflateDecompress(bytes: Uint8Array): Promise<Uint8Array> {
-	if (typeof DecompressionStream !== 'undefined') {
-		try {
-			const ds = new DecompressionStream('deflate-raw');
-			const writer = ds.writable.getWriter();
-			writer.write(bytes as unknown as BufferSource);
-			writer.close();
-			const response = new Response(ds.readable);
-			const arrayBuffer = await response.arrayBuffer();
-			return new Uint8Array(arrayBuffer);
-		} catch {
-			// fallback
-		}
-	}
-	return bytes;
-}
-
-function weeksToBitmask(weeks: number[]): number {
-	let mask = 0;
-	for (const w of weeks) {
-		if (w >= 1 && w <= 31) {
-			mask |= 1 << w;
-		}
-	}
-	return mask;
-}
-
-function bitmaskToWeeks(mask: number): number[] {
-	const weeks: number[] = [];
-	for (let i = 1; i <= 31; i++) {
-		if ((mask & (1 << i)) !== 0) {
-			weeks.push(i);
-		}
-	}
-	return weeks.length > 0 ? weeks : [1];
-}
-
 export async function serializeTimetableForQr(timetable: Timetable): Promise<string> {
-	const stringPool: string[] = [];
-	const stringMap = new Map<string, number>();
-
-	function internString(str?: string | null): number {
-		if (!str) return -1;
-		const trimmed = str.trim();
-		if (!trimmed) return -1;
-		let idx = stringMap.get(trimmed);
-		if (idx === undefined) {
-			idx = stringPool.length;
-			stringPool.push(trimmed);
-			stringMap.set(trimmed, idx);
-		}
-		return idx;
-	}
+	const interner = new StringInterner();
 
 	const coursesData: V2CompactQrPayload['c'] = timetable.courses.map((course) => {
-		const nameIdx = internString(course.name);
-		const teacherIdx = internString(course.teacher);
-		const locationIdx = internString(course.location);
-		const remarkIdx = internString(course.remark);
-		const colorIdx = internString(course.color);
+		const nameIdx = interner.intern(course.name);
+		const teacherIdx = interner.intern(course.teacher);
+		const locationIdx = interner.intern(course.location);
+		const remarkIdx = interner.intern(course.remark);
+		const colorIdx = interner.intern(course.color);
 		const weekBitmask = weeksToBitmask(course.weeks);
 
 		const item: V2CompactQrPayload['c'][number] = [
@@ -140,7 +63,7 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 	const payload: V2CompactQrPayload = {
 		v: 2,
 		n: timetable.name,
-		s: stringPool,
+		s: interner.strings,
 		c: coursesData
 	};
 
@@ -159,9 +82,9 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 
 	const json = JSON.stringify(payload);
 	const rawBytes = new TextEncoder().encode(json);
-	const compressedBytes = await deflateCompress(rawBytes);
+	const compressedBytes = await deflateRaw(rawBytes);
 
-	return `chronos-qr:v2:${uint8ArrayToBase64(compressedBytes)}`;
+	return `chronos-qr:v2:${bytesToBase64(compressedBytes)}`;
 }
 
 export async function deserializeTimetableFromQr(rawText: string): Promise<Timetable> {
@@ -170,8 +93,8 @@ export async function deserializeTimetableFromQr(rawText: string): Promise<Timet
 	// 1. Version 2 (Deflate + Dictionary + Bitmask)
 	if (content.startsWith('chronos-qr:v2:')) {
 		const base64 = content.slice('chronos-qr:v2:'.length);
-		const compressedBytes = base64ToUint8Array(base64);
-		const decompressedBytes = await inflateDecompress(compressedBytes);
+		const compressedBytes = base64ToBytes(base64);
+		const decompressedBytes = await inflateRaw(compressedBytes);
 		const jsonStr = new TextDecoder().decode(decompressedBytes);
 		const data = JSON.parse(jsonStr) as V2CompactQrPayload;
 
@@ -184,6 +107,7 @@ export async function deserializeTimetableFromQr(rawText: string): Promise<Timet
 			const startPeriod = tuple[4] ?? 1;
 			const endPeriod = tuple[5] ?? 1;
 			const weeks = bitmaskToWeeks(tuple[6] ?? 1);
+			const safeWeeks = weeks.length > 0 ? weeks : [1];
 			const remark = tuple[7] !== undefined && tuple[7] >= 0 ? pool[tuple[7]] : undefined;
 			const color = tuple[8] !== undefined && tuple[8] >= 0 ? pool[tuple[8]] : undefined;
 
@@ -195,7 +119,7 @@ export async function deserializeTimetableFromQr(rawText: string): Promise<Timet
 				dayOfWeek,
 				startPeriod,
 				endPeriod,
-				weeks,
+				weeks: safeWeeks,
 				remark,
 				color
 			});
@@ -221,7 +145,7 @@ export async function deserializeTimetableFromQr(rawText: string): Promise<Timet
 	// 2. Version 1 (Uncompressed Base64 JSON)
 	if (content.startsWith('chronos-qr:v1:')) {
 		const base64 = content.slice('chronos-qr:v1:'.length);
-		const bytes = base64ToUint8Array(base64);
+		const bytes = base64ToBytes(base64);
 		content = new TextDecoder().decode(bytes);
 	}
 
