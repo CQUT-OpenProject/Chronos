@@ -1,10 +1,9 @@
-import type { Timetable } from '../domain/timetable';
-import type { UserPreferences } from '../domain/preferences';
-import type { CourseQueryFilter, CourseQueryHit } from './course-query';
 import type {
 	Disposable,
 	HttpRequestOptions,
 	HttpResponse,
+	IAnalyticsService,
+	IStorageService,
 	StorageChangeEvent,
 	VaultSecretOptions
 } from './services';
@@ -18,6 +17,25 @@ export type {
 };
 
 export type PlatformType = 'web' | 'ios' | 'android' | 'node';
+
+export type ChronosEnvStorage = Pick<
+	IStorageService,
+	| 'getTimetable'
+	| 'listTimetables'
+	| 'saveTimetable'
+	| 'patchTimetable'
+	| 'deleteTimetable'
+	| 'getActiveTimetableId'
+	| 'setActiveTimetableId'
+	| 'queryCourses'
+	| 'getPreferences'
+	| 'savePreferences'
+	| 'getPluginData'
+	| 'setPluginData'
+	| 'deletePluginData'
+	| 'clearPluginData'
+	| 'onChanged'
+>;
 
 export interface ChronosEnv {
 	readonly platform: PlatformType;
@@ -38,30 +56,10 @@ export interface ChronosEnv {
 	};
 
 	/** Structured persistence repository */
-	storage: {
-		// Timetable storage
-		getTimetable(id: string): Promise<Timetable | null>;
-		listTimetables(): Promise<Array<{ id: string; name: string; updatedAt: number }>>;
-		saveTimetable(timetable: Timetable): Promise<void>;
-		patchTimetable(id: string, patch: Partial<Timetable>): Promise<void>;
-		deleteTimetable(id: string): Promise<void>;
-		getActiveTimetableId(): Promise<string | null>;
-		setActiveTimetableId(id: string): Promise<void>;
-		queryCourses(filter?: CourseQueryFilter): Promise<CourseQueryHit[]>;
+	storage: ChronosEnvStorage;
 
-		// Global preferences
-		getPreferences(): Promise<UserPreferences>;
-		savePreferences(patch: Partial<UserPreferences>): Promise<void>;
-
-		// Key-value store (microkernel layer provides Scoped isolation on top)
-		getPluginData<T>(pluginId: string, key: string): Promise<T | null>;
-		setPluginData<T>(pluginId: string, key: string, value: T): Promise<void>;
-		deletePluginData(pluginId: string, key: string): Promise<void>;
-		clearPluginData?(pluginId: string): Promise<void>;
-
-		// Cross-tab / background storage change subscription
-		onChanged?(listener: (event: StorageChangeEvent) => void): Disposable;
-	};
+	/** Optional product analytics port */
+	analytics?: Pick<IAnalyticsService, 'track'>;
 
 	/** Optional hardware security credential abstraction (native hosts: Keychain / Keystore) */
 	vault?: {

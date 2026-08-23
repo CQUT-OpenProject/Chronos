@@ -45,6 +45,7 @@ export function createWebChronosEnv(options?: WebProviderOptions) {
 		platform: 'web' as const,
 		http: providers.http,
 		storage: providers.storage,
-		runtime: providers.runtime
+		runtime: providers.runtime,
+		analytics: providers.analytics
 	};
 }

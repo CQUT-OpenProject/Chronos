@@ -9,6 +9,7 @@ import {
 	createThemeFromColorJson,
 	IHttpService,
 	IRuntimeService,
+	PLUGIN_CONFIG_STORAGE_KEY,
 	parseColorThemeJson,
 	parseIconThemeJson,
 	ScopedContext
@@ -271,7 +272,7 @@ export class OfficialPluginService implements Disposable {
 	}
 
 	async getPluginConfig<T extends Record<string, unknown>>(pluginId: string): Promise<T | null> {
-		return this.engine.storage.getPluginData<T>(pluginId, '__config__');
+		return this.engine.storage.getPluginData<T>(pluginId, PLUGIN_CONFIG_STORAGE_KEY);
 	}
 
 	private async loadPluginInstance(record: InstalledOfficialPluginRecord): Promise<Disposable> {

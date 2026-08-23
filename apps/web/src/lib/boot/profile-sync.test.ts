@@ -34,4 +34,8 @@ describe('profile registry ↔ codegen definitions sync', () => {
 			expect(known.has(serverPluginId)).toBe(true);
 		}
 	});
+
+	it('derives proxy domains from plugin server manifests', () => {
+		expect(SERVER_PLUGIN_MODULES['source-cqut']?.domains).toEqual(['cqut.edu.cn']);
+	});
 });

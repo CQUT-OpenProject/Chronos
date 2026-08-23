@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createChronosAliasRecord } from './resolve-chronos-aliases.ts';
+import { CHRONOS_ENGINE_VERSION } from '../packages/core/src/types/official-plugins.ts';
 import { verifyOfficialPlugins } from './verify-official-plugins.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -84,7 +85,7 @@ for (const plugin of plugins) {
 		author: 'Chronos',
 		type: plugin.type,
 		bundleFormat: 'esm',
-		minEngineVersion: '0.4.0'
+		minEngineVersion: CHRONOS_ENGINE_VERSION
 	};
 
 	const outDir = pluginBundleDir(plugin.id);
