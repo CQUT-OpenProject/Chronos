@@ -203,6 +203,12 @@ export class ReactiveChronosController implements Disposable {
 		this.engine.updateTime(now);
 	}
 
+	/** Resolve a plugin message catalog key for the current locale (reactive via slotVersion). */
+	translatePlugin(pluginId: string, key: string, params?: Record<string, unknown>): string {
+		void this.slotVersion;
+		return this.engine.translateForPlugin(pluginId, key, params);
+	}
+
 	dispose(): void {
 		for (const d of this.disposables) {
 			d.dispose();

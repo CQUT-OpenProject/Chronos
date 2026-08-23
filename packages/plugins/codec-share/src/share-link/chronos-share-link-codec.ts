@@ -17,12 +17,29 @@ import {
 	SHARE_LINK_VERSION_BROTLI,
 	SHARE_LINK_VERSION_DEFLATE
 } from './share-link-brotli';
+import { SHARE_CODEC_MESSAGES } from '../messages';
 
 export const SHARE_LINK_VERSION = SHARE_LINK_VERSION_BROTLI;
 export const SHARE_LINK_PREFIX = `${SHARE_LINK_VERSION}.`;
 export const SHARE_LINK_PREFIX_DEFLATE = `${SHARE_LINK_VERSION_DEFLATE}.`;
 export const SHARE_LINK_WARNING_LENGTH = 800;
-export const SHARE_LINK_CORRUPTED_MESSAGE = '分享链接已损坏或内容不完整';
+
+type ShareCodecLabels = (typeof SHARE_CODEC_MESSAGES)['zh-cn'];
+const DEFAULT_SHARE_LABELS: ShareCodecLabels = SHARE_CODEC_MESSAGES['zh-cn'];
+
+export type ShareDecodeLabels = {
+	'share.error.corrupted': string;
+	'share.error.unsupported': string;
+	'share.error.parseFailed': string;
+};
+
+export type ShareClipboardLabels = {
+	'share.clipboard.unnamed': string;
+	'share.clipboard.template': string;
+};
+
+/** @deprecated Use SHARE_CODEC_MESSAGES share.error.corrupted */
+export const SHARE_LINK_CORRUPTED_MESSAGE = DEFAULT_SHARE_LABELS['share.error.corrupted'];
 
 export type ShareLinkResult<T> = { ok: true; value: T } | { ok: false; errorMessage: string };
 
@@ -50,14 +67,17 @@ function parseShareLinkVersion(payload: string): { version: number; encoded: str
 	return { version: v, encoded: payload.slice(dot + 1) };
 }
 
-export async function decodeSharePayload(payload: string): Promise<ShareLinkResult<Timetable>> {
+export async function decodeSharePayload(
+	payload: string,
+	labels: ShareDecodeLabels = DEFAULT_SHARE_LABELS
+): Promise<ShareLinkResult<Timetable>> {
 	const normalized = payload.trim();
 	const parsed = parseShareLinkVersion(normalized);
 	if (
 		!parsed ||
 		(parsed.version !== SHARE_LINK_VERSION_BROTLI && parsed.version !== SHARE_LINK_VERSION_DEFLATE)
 	) {
-		return shareFailure('不支持的分享链接格式');
+		return shareFailure(labels['share.error.unsupported']);
 	}
 
 	try {
@@ -70,11 +90,11 @@ export async function decodeSharePayload(payload: string): Promise<ShareLinkResu
 		const message =
 			error instanceof ShareBinaryDecodeError
 				? error.message === 'checksum mismatch'
-					? SHARE_LINK_CORRUPTED_MESSAGE
+					? labels['share.error.corrupted']
 					: error.message
 				: error instanceof Error
 					? error.message
-					: '分享链接解析失败';
+					: labels['share.error.parseFailed'];
 		return shareFailure(message);
 	}
 }
@@ -85,9 +105,13 @@ export async function encodeShareLink(timetable: Timetable, origin = ''): Promis
 	return `${base}/s#${payload}`;
 }
 
-export function formatShareClipboardText(timetableName: string, link: string): string {
-	const name = normalizeTimetableName(timetableName);
-	return `我分享了一张课表：「${name}」\n复制这段文本后，打开 Chronos，选择从【分享链接】方式导入\n${link}`;
+export function formatShareClipboardText(
+	timetableName: string,
+	link: string,
+	labels: ShareClipboardLabels = DEFAULT_SHARE_LABELS
+): string {
+	const name = normalizeTimetableName(timetableName) || labels['share.clipboard.unnamed'];
+	return labels['share.clipboard.template'].replace('{name}', name).replace('{link}', link);
 }
 
 export async function estimateShareLinkLength(timetable: Timetable): Promise<number> {

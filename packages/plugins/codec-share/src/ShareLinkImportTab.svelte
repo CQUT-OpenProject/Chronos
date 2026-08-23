@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
+	import { sharePluginText } from './plugin-text';
 
 	interface Props {
 		controller?: ReactiveChronosController;
@@ -12,9 +13,14 @@
 		onContinue: () => void;
 	}
 
-	let { transfer, onContinue }: Props = $props();
+	let { controller, transfer, onContinue }: Props = $props();
 
 	let loading = $state(false);
+
+	const title = $derived(sharePluginText(controller, 'import.ui.title'));
+	const subtitle = $derived(sharePluginText(controller, 'import.ui.subtitle'));
+	const loadingLabel = $derived(sharePluginText(controller, 'import.ui.loading'));
+	const clipboardLabel = $derived(sharePluginText(controller, 'import.ui.clipboard'));
 
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
@@ -33,7 +39,10 @@
 			if (ok) onContinue();
 			else notifyTransferMessages();
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : '无法读取剪贴板，请检查浏览器权限';
+			const msg =
+				err instanceof Error
+					? err.message
+					: sharePluginText(controller, 'import.ui.clipboardError');
 			alert(msg);
 		} finally {
 			loading = false;
@@ -44,8 +53,8 @@
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
 		<div>
-			<h2 class="m3-title-medium text-on-surface">分享口令</h2>
-			<p class="m3-body-small mt-0.5 text-on-surface-variant">复制课表分享口令后点击下方按钮</p>
+			<h2 class="m3-title-medium text-on-surface">{title}</h2>
+			<p class="m3-body-small mt-0.5 text-on-surface-variant">{subtitle}</p>
 		</div>
 		<div class="flex w-full pt-1">
 			<button
@@ -54,7 +63,7 @@
 				disabled={loading}
 				onclick={handleClipboardPreview}
 			>
-				{loading ? '读取中…' : '从剪贴板导入课表'}
+				{loading ? loadingLabel : clipboardLabel}
 			</button>
 		</div>
 	</div>

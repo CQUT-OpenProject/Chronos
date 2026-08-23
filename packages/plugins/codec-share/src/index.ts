@@ -12,7 +12,9 @@ import {
 	estimateShareLinkLength,
 	extractSharePayloadFromLocation,
 	extractSharePayloadFromText,
-	formatShareClipboardText
+	formatShareClipboardText,
+	type ShareClipboardLabels,
+	type ShareDecodeLabels
 } from './share-link';
 import ShareLinkImportTab from './ShareLinkImportTab.svelte';
 import { mountableSvelteComponent } from '@chronos/ui-kit';
@@ -26,12 +28,14 @@ export interface CreateShareCodecPluginOptions {
 
 export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = {}): ChronosPlugin {
 	const { shareComponent = mountableSvelteComponent(ShareLinkImportTab) } = options;
+	let translate: ((key: string) => string) | undefined;
 
 	return {
 		id: 'codec-share',
-		name: () => 'Share Codec',
+		name: () => translate?.('plugin.name') ?? SHARE_CODEC_MESSAGES['zh-cn']['plugin.name'],
 		version: '1.0.0',
-		description: () => '课表分享短链编解码',
+		description: () =>
+			translate?.('plugin.description') ?? SHARE_CODEC_MESSAGES['zh-cn']['plugin.description'],
 		category: 'codec',
 		order: 30,
 		author: 'CQUT OpenProject',
@@ -40,7 +44,17 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 		async apply(ctx: ChronosContext) {
 			ctx.i18n.registerMessages(SHARE_CODEC_MESSAGES);
 			const t = (key: string) => ctx.i18n.t(key);
+			translate = t;
 			const shareLinkImportSchema = createShareLinkImportSchema(t);
+			const decodeLabels: ShareDecodeLabels = {
+				'share.error.corrupted': t('share.error.corrupted'),
+				'share.error.unsupported': t('share.error.unsupported'),
+				'share.error.parseFailed': t('share.error.parseFailed')
+			};
+			const clipboardLabels: ShareClipboardLabels = {
+				'share.clipboard.unnamed': t('share.clipboard.unnamed'),
+				'share.clipboard.template': t('share.clipboard.template')
+			};
 
 			ctx.registerSlot('import.source.tab', {
 				id: 'share-link',
@@ -65,7 +79,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 					if (!payload) {
 						throw new Error(t('import.error.empty'));
 					}
-					const result = await decodeSharePayload(payload);
+					const result = await decodeSharePayload(payload, decodeLabels);
 					if (!result.ok) {
 						throw new Error(result.errorMessage);
 					}
@@ -82,7 +96,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 				description: () => t('export.action.description'),
 				async export(timetable: Timetable): Promise<ExportResult> {
 					const link = await encodeShareLink(timetable);
-					const clipboardText = formatShareClipboardText(timetable.name, link);
+					const clipboardText = formatShareClipboardText(timetable.name, link, clipboardLabels);
 					return {
 						filename: 'share-link.txt',
 						mimeType: 'application/x-chronos-share-link',

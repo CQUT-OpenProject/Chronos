@@ -26,7 +26,18 @@ export const SHARE_CODEC_MESSAGES = {
 		'export.action.title': '分享口令',
 		'export.action.description': '生成紧凑分享口令并复制到剪贴板',
 		'export.success': '已复制课表链接',
-		'export.warning.large': '课表较大，部分应用可能截断链接内容，请注意核对导入结果'
+		'export.warning.large': '课表较大，部分应用可能截断链接内容，请注意核对导入结果',
+		'import.ui.title': '分享口令',
+		'import.ui.subtitle': '复制课表分享口令后点击下方按钮',
+		'import.ui.loading': '读取中…',
+		'import.ui.clipboard': '从剪贴板导入课表',
+		'import.ui.clipboardError': '无法读取剪贴板，请检查浏览器权限',
+		'share.error.corrupted': '分享链接已损坏或内容不完整',
+		'share.error.unsupported': '不支持的分享链接格式',
+		'share.error.parseFailed': '分享链接解析失败',
+		'share.clipboard.unnamed': '未命名课表',
+		'share.clipboard.template':
+			'我分享了一张课表：「{name}」\n复制这段文本后，打开 Chronos，选择从【分享链接】方式导入\n{link}'
 	},
 	en: {
 		'plugin.name': 'Share Codec',
@@ -39,6 +50,17 @@ export const SHARE_CODEC_MESSAGES = {
 		'export.action.description': 'Generate a compact share token and copy to clipboard',
 		'export.success': 'Timetable link copied',
 		'export.warning.large':
-			'The timetable is large; some apps may truncate the link. Verify the import result.'
+			'The timetable is large; some apps may truncate the link. Verify the import result.',
+		'import.ui.title': 'Share link',
+		'import.ui.subtitle': 'Copy a share token, then tap the button below',
+		'import.ui.loading': 'Reading…',
+		'import.ui.clipboard': 'Import from clipboard',
+		'import.ui.clipboardError': 'Could not read clipboard. Check browser permissions',
+		'share.error.corrupted': 'Share link is corrupted or incomplete',
+		'share.error.unsupported': 'Unsupported share link format',
+		'share.error.parseFailed': 'Failed to parse share link',
+		'share.clipboard.unnamed': 'Untitled timetable',
+		'share.clipboard.template':
+			'I shared a timetable: "{name}"\nCopy this text, open Chronos, and import via Share link\n{link}'
 	}
 } as const;

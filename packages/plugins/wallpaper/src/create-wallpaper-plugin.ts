@@ -1,26 +1,17 @@
 import type { ChronosMountable, ChronosPlugin, ThemeContribution } from '@chronos/core';
-import { createWorkbenchColorsFromTokens, defineSchema, IStorageService } from '@chronos/core';
+import { createWorkbenchColorsFromTokens, IStorageService } from '@chronos/core';
 import { createWallpaperRuntime, type WallpaperRuntime } from './runtime.svelte';
 import { WALLPAPER_PLUGIN_ID } from './storage';
 import { createWallpaperThemeAdapter } from './wallpaper-theme';
+import { createWallpaperScreenSchema, WALLPAPER_MESSAGES } from './messages';
 
 export const WALLPAPER_THEME_ID = 'wallpaper';
 
-export const wallpaperScreenSchema = defineSchema({
-	wallpaper: {
-		type: 'wallpaper-preview',
-		title: () => '选择壁纸图片',
-		description: () => '支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩',
-		accept: 'image/*',
-		required: false
-	}
-});
-
-export function createWallpaperThemeContribution(): ThemeContribution {
+export function createWallpaperThemeContribution(t: (key: string) => string): ThemeContribution {
 	return {
 		id: WALLPAPER_THEME_ID,
-		name: () => '壁纸',
-		description: () => '从当前壁纸提取配色',
+		name: () => t('theme.name'),
+		description: () => t('theme.description'),
 		supportsDynamicColor: true,
 		workbenchColors: createWorkbenchColorsFromTokens(
 			{
@@ -76,20 +67,28 @@ async function syncConfigWallpaper(
 
 export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}): ChronosPlugin {
 	const { screenComponent } = options;
+	let translate: ((key: string) => string) | undefined;
+	const fallbackT = (key: string) =>
+		WALLPAPER_MESSAGES['zh-cn'][key as keyof (typeof WALLPAPER_MESSAGES)['zh-cn']];
 
 	return {
 		id: WALLPAPER_PLUGIN_ID,
-		name: () => '自定义壁纸',
+		name: () => translate?.('plugin.name') ?? WALLPAPER_MESSAGES['zh-cn']['plugin.name'],
 		version: '1.0.0',
-		description: () => '自定义课表页壁纸，支持动态取色',
+		description: () =>
+			translate?.('plugin.description') ?? WALLPAPER_MESSAGES['zh-cn']['plugin.description'],
 		category: 'tool',
 		order: 40,
 		author: 'Chronos Community',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
-		configSchema: wallpaperScreenSchema,
+		configSchema: createWallpaperScreenSchema(fallbackT),
 		defaultConfig: {},
 
 		async apply(ctx) {
+			ctx.i18n.registerMessages(WALLPAPER_MESSAGES);
+			const t = (key: string) => ctx.i18n.t(key);
+			translate = t;
+			const wallpaperScreenSchema = createWallpaperScreenSchema(t);
 			const runtime = createWallpaperRuntime(ctx.service(IStorageService), WALLPAPER_PLUGIN_ID);
 
 			runtime.setChangeHandler((uri) => {
@@ -111,25 +110,30 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 
 			await runtime.syncFromStorage(true);
 
+			const keywords = t('mine.keywords')
+				.split(',')
+				.map((entry) => entry.trim())
+				.filter(Boolean);
+
 			ctx.registerSlot('mine.item', {
 				id: 'wallpaper',
 				sectionId: 'appearance-feedback',
-				title: () => '设置课表壁纸',
+				title: () => t('mine.title'),
 				href: '/plugins/tool-wallpaper',
 				icon: 'wallpaper',
 				iconTone: 'primary',
-				keywords: ['壁纸', '背景', '图片', '自定义', '封面'],
+				keywords,
 				order: 30
 			});
 
 			ctx.registerSlot('shell.route.screen', {
 				id: WALLPAPER_PLUGIN_ID,
-				title: () => '设置课表壁纸',
+				title: () => t('screen.title'),
 				...(screenComponent ? { component: screenComponent } : {}),
 				schema: wallpaperScreenSchema
 			});
 
-			const themeContribution = createWallpaperThemeContribution();
+			const themeContribution = createWallpaperThemeContribution(t);
 			ctx.registerSlot('theme.definition', themeContribution);
 
 			ctx.addDisposable({ dispose: () => runtime.dispose() });

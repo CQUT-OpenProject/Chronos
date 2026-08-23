@@ -37,7 +37,13 @@ describe('ThemeContribution contract', () => {
 		const registered = new Map<string, unknown>();
 		const disposable = { dispose: () => {} };
 		await wallpaperPlugin.apply({
+			pluginId: 'tool-wallpaper',
 			config: {},
+			i18n: {
+				locale: 'zh-cn',
+				t: (key: string) => key,
+				registerMessages: () => disposable
+			},
 			storage: {
 				delete: vi.fn(async () => {}),
 				getPluginData: vi.fn(async () => null),

@@ -10,7 +10,6 @@ import {
 	type ChronosMountable,
 	createTimetable,
 	createCourse,
-	defineSchema,
 	deriveWeekendViewPrefs
 } from '@chronos/core';
 import {
@@ -26,6 +25,12 @@ import { generateQrSvg, generateQrMatrix } from './qr/qr-encode';
 import { decodeQrFromBlob } from './qr/qr-decode';
 import QrCodeImportTab from './QrCodeImportTab.svelte';
 import { mountableSvelteComponent } from '@chronos/ui-kit';
+import {
+	createQrCodeImportSchema,
+	QR_CODEC_MESSAGES,
+	qrCodecLabels,
+	type QrCodecLabels
+} from './messages';
 
 export interface V2CompactQrPayload {
 	v: 2;
@@ -94,12 +99,17 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 	return `chronos-qr:v2:${bytesToBase64(compressedBytes)}`;
 }
 
-export async function deserializeTimetableFromQr(rawText: string): Promise<Timetable> {
+export async function deserializeTimetableFromQr(
+	rawText: string,
+	labels: Pick<
+		QrCodecLabels,
+		'import.error.corrupt' | 'timetable.unnamedCourse' | 'timetable.defaultName'
+	> = qrCodecLabels('zh-cn')
+): Promise<Timetable> {
 	const content = rawText.trim();
 
-	// 单轨：仅接受 v2（Deflate + 字典 + 周次 bitmask）；无历史版本需要兼容
 	if (!content.startsWith('chronos-qr:v2:')) {
-		throw new Error('二维码数据格式损坏或无法解析为课表');
+		throw new Error(labels['import.error.corrupt']);
 	}
 
 	const base64 = content.slice('chronos-qr:v2:'.length);
@@ -110,7 +120,7 @@ export async function deserializeTimetableFromQr(rawText: string): Promise<Timet
 
 	const pool = data.s ?? [];
 	const courses: Course[] = (data.c ?? []).map((tuple, idx) => {
-		const name = (tuple[0] >= 0 ? pool[tuple[0]] : null) ?? '未命名课程';
+		const name = (tuple[0] >= 0 ? pool[tuple[0]] : null) ?? labels['timetable.unnamedCourse'];
 		const teacher = (tuple[1] >= 0 ? pool[tuple[1]] : null) ?? '';
 		const location = (tuple[2] >= 0 ? pool[tuple[2]] : null) ?? '';
 		const dayOfWeek = tuple[3] ?? 1;
@@ -137,7 +147,7 @@ export async function deserializeTimetableFromQr(rawText: string): Promise<Timet
 
 	return createTimetable({
 		id: `t-qr-${Date.now().toString(36)}`,
-		name: data.n || '二维码导入课表',
+		name: data.n || labels['timetable.defaultName'],
 		academicConfig: {
 			termStartDate: data.d ?? '',
 			startWeek: data.w?.[0] ?? 1,
@@ -156,19 +166,7 @@ export async function deserializeTimetableFromQr(rawText: string): Promise<Timet
 	});
 }
 
-export interface QrCodeImportForm {
-	content?: string;
-	fileContent?: string;
-}
-
-export const qrCodeImportSchema = defineSchema<QrCodeImportForm>({
-	content: {
-		type: 'string',
-		title: () => '二维码内容',
-		placeholder: () => '二维码识别出的数据内容',
-		required: true
-	}
-});
+export type { QrCodeImportForm } from './messages';
 
 export interface CreateQrCodecPluginOptions {
 	importComponent?: ChronosMountable;
@@ -176,48 +174,56 @@ export interface CreateQrCodecPluginOptions {
 
 export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}): ChronosPlugin {
 	const { importComponent = mountableSvelteComponent(QrCodeImportTab) } = options;
+	let translate: ((key: string) => string) | undefined;
 
 	return {
 		id: 'tool-qrcode',
-		name: () => '课表二维码',
+		name: () => translate?.('plugin.name') ?? QR_CODEC_MESSAGES['zh-cn']['plugin.name'],
 		version: '1.0.0',
-		description: () => '课表二维码生成与识别导入',
+		description: () =>
+			translate?.('plugin.description') ?? QR_CODEC_MESSAGES['zh-cn']['plugin.description'],
 		category: 'tool',
 		order: 35,
 		author: 'CQUT OpenProject',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 
 		async apply(ctx: ChronosContext) {
+			ctx.i18n.registerMessages(QR_CODEC_MESSAGES);
+			const t = (key: string) => ctx.i18n.t(key);
+			translate = t;
+			const labels = qrCodecLabels(ctx.i18n.locale);
+			const qrCodeImportSchema = createQrCodeImportSchema(t);
+
 			ctx.registerSlot('import.source.tab', {
 				id: 'qrcode',
-				title: () => '二维码',
+				title: () => t('import.tab.title'),
 				order: 25,
 				importKind: 'file',
-				badge: () => '图片',
-				supportingText: () => '选择或扫描课表二维码图片进行导入',
+				badge: () => t('import.tab.badge'),
+				supportingText: () => t('import.tab.supporting'),
 				component: importComponent,
 				inputSchema: qrCodeImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 				async executeImport(inputs: Record<string, unknown>) {
 					const content =
 						(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
 					if (!content?.trim()) {
-						throw new Error('未识别到有效的二维码内容');
+						throw new Error(t('import.error.empty'));
 					}
-					return deserializeTimetableFromQr(content);
+					return deserializeTimetableFromQr(content, labels);
 				}
 			});
 
 			ctx.registerSlot('export.action', {
 				id: 'qrcode',
-				title: () => '二维码',
+				title: () => t('export.action.title'),
 				order: 20,
 				disposition: 'download',
 				isPrimary: false,
-				description: () => '生成分享二维码矢量图并保存',
+				description: () => t('export.action.description'),
 				async export(timetable: Timetable, exportCtx?: ChronosContext): Promise<ExportResult> {
 					const targetTimetable = timetable ?? exportCtx?.state.currentTimetable;
 					if (!targetTimetable) {
-						throw new Error('无可导出的课表');
+						throw new Error(t('export.error.noTimetable'));
 					}
 					const payload = await serializeTimetableForQr(targetTimetable);
 					const svg = generateQrSvg(payload, { margin: 2 });
@@ -227,7 +233,7 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}): C
 						mimeType: 'image/svg+xml',
 						content: svg,
 						disposition: 'download',
-						successMessage: () => '已生成并下载课表二维码'
+						successMessage: () => t('export.success')
 					};
 				}
 			});

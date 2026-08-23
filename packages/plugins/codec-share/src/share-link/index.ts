@@ -11,7 +11,11 @@ export {
 	extractSharePayloadFromLocation,
 	extractSharePayloadFromText
 } from './chronos-share-link-codec';
-export type { ShareLinkResult } from './chronos-share-link-codec';
+export type {
+	ShareLinkResult,
+	ShareClipboardLabels,
+	ShareDecodeLabels
+} from './chronos-share-link-codec';
 export {
 	ensureShareLinkBrotliReady,
 	brotliCompressShare,

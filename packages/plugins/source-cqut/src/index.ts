@@ -23,6 +23,7 @@ import {
 	type CqutCampusId
 } from './campus-period-times';
 import { htmlImportSchema, parseHtmlTimetable } from './html-parser';
+import { createCqutImportSchema, SOURCE_CQUT_MESSAGES, type CqutImportForm } from './messages';
 
 const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
 
@@ -38,26 +39,7 @@ export {
 	resolveShareCampusId
 } from './campus-period-times';
 
-export interface CqutImportForm {
-	username?: string;
-	account?: string;
-	password?: string;
-}
-
-const cqutImportSchema = defineSchema<CqutImportForm>({
-	username: {
-		type: 'string',
-		title: () => '账号',
-		placeholder: () => '请输入工号 / 学号',
-		required: true
-	},
-	password: {
-		type: 'password',
-		title: () => '密码',
-		placeholder: () => '请输入密码',
-		required: true
-	}
-});
+export type { CqutImportForm } from './messages';
 
 export interface CqutCampusScheduleMetadata {
 	campusId?: string;
@@ -254,12 +236,14 @@ export function createCqutPlugin(
 		onlineComponent = mountableSvelteComponent(CqutOnlineImportTab),
 		htmlComponent = mountableSvelteComponent(EduHtmlImportTab)
 	} = options;
+	let translate: ((key: string) => string) | undefined;
 
 	return {
 		id: 'source-cqut',
-		name: () => 'CQUT-Timetable',
+		name: () => translate?.('plugin.name') ?? SOURCE_CQUT_MESSAGES['zh-cn']['plugin.name'],
 		version: '1.0.0',
-		description: () => '从「知行理工」导入课表',
+		description: () =>
+			translate?.('plugin.description') ?? SOURCE_CQUT_MESSAGES['zh-cn']['plugin.description'],
 		category: 'source',
 		order: 10,
 		author: 'CQUT OpenProject',
@@ -267,6 +251,10 @@ export function createCqutPlugin(
 		allowedDomains: ['authserver.cqut.edu.cn', 'uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'],
 
 		apply(ctx: ChronosContext<CqutPluginConfig>) {
+			ctx.i18n.registerMessages(SOURCE_CQUT_MESSAGES);
+			const t = (key: string) => ctx.i18n.t(key);
+			translate = t;
+			const cqutImportSchema = createCqutImportSchema(t);
 			const disabledSlots = new Set(ctx.config.disabledSlots ?? []);
 
 			async function doImport(
@@ -279,14 +267,14 @@ export function createCqutPlugin(
 				const password = form.password;
 
 				if (!username || !password?.trim()) {
-					throw new Error('请输入学号与密码');
+					throw new Error(t('import.online.error.credentials'));
 				}
 
-				activeCtx.actions.notify('正在连接知行理工...', 'info');
+				activeCtx.actions.notify(t('import.online.notify.connecting'), 'info');
 
 				const http = activeCtx.service(IHttpService);
 				if (!http.proxy) {
-					throw new Error('当前环境不支持在线教务同步');
+					throw new Error(t('import.online.error.proxyUnsupported'));
 				}
 
 				const response = await http.proxy(SOURCE_CQUT_PLUGIN_ID, 'preview', {
@@ -295,7 +283,7 @@ export function createCqutPlugin(
 				});
 
 				if (!response.ok) {
-					let errorMsg = '教务认证失败，请检查学号与密码';
+					let errorMsg = t('import.online.error.authFailed');
 					try {
 						const errJson = (await response.json()) as { error?: { message?: string } };
 						if (errJson?.error?.message) {
@@ -315,21 +303,20 @@ export function createCqutPlugin(
 				const fileContent =
 					(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
 				if (!fileContent || typeof fileContent !== 'string') {
-					throw new Error('请选择有效的 HTML 课表文件');
+					throw new Error(t('import.html.error.invalidFile'));
 				}
 				const termStartDate = inputs.termStartDate as string | undefined;
 				const campusId = (inputs.campusId as CqutCampusId | undefined) ?? DEFAULT_CQUT_CAMPUS_ID;
 				return parseHtmlTimetable(fileContent, { termStartDate, campusId });
 			}
 
-			// Register import source tab slot
 			if (!disabledSlots.has('cqut-online')) {
 				ctx.registerSlot('import.source.tab', {
 					id: 'cqut-online',
-					title: () => '知行理工',
+					title: () => t('import.online.tab.title'),
 					order: 10,
 					importKind: 'online',
-					supportingText: () => '输入知行理工账号密码，获取在线课表',
+					supportingText: () => t('import.online.tab.supporting'),
 					component: onlineComponent,
 					inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 					executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
@@ -340,9 +327,10 @@ export function createCqutPlugin(
 			if (!disabledSlots.has('edu-html')) {
 				ctx.registerSlot('import.source.tab', {
 					id: 'edu-html',
-					title: () => 'HTML 文件',
+					title: () => t('import.html.tab.title'),
 					order: 30,
 					importKind: 'file',
+					supportingText: () => t('import.html.tab.supporting'),
 					component: htmlComponent,
 					inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
 					executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)

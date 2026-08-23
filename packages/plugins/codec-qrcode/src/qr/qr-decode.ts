@@ -2,6 +2,8 @@
  * QR Code image decoder leveraging Canvas rasterization and standard Web BarcodeDetector API.
  */
 
+import { qrCodecLabels } from '../messages';
+
 interface BarcodeResult {
 	rawValue: string;
 	format: string;
@@ -20,12 +22,19 @@ declare global {
 	}
 }
 
-export async function decodeQrFromBlob(blob: Blob): Promise<string> {
+type DecodeLabelKey = 'decode.browserOnly' | 'decode.unreadableImage' | 'decode.noQrFound';
+
+export async function decodeQrFromBlob(
+	blob: Blob,
+	labelFor?: (key: DecodeLabelKey) => string
+): Promise<string> {
+	const labels = qrCodecLabels('zh-cn');
+	const textFor = (key: DecodeLabelKey) => labelFor?.(key) ?? labels[key];
+
 	if (typeof window === 'undefined') {
-		throw new Error('QR 解码仅支持在浏览器环境中运行');
+		throw new Error(textFor('decode.browserOnly'));
 	}
 
-	// 1. If text or SVG, attempt direct inspection first
 	try {
 		const text = await blob.text();
 		const match = /chronos-qr:[A-Za-z0-9+/=:_-]+/.exec(text);
@@ -34,7 +43,6 @@ export async function decodeQrFromBlob(blob: Blob): Promise<string> {
 		// continue to image rasterization
 	}
 
-	// 2. Load into Image and draw onto Canvas (works universally across SVG, PNG, JPEG, WebP)
 	const url = URL.createObjectURL(blob);
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d');
@@ -43,7 +51,7 @@ export async function decodeQrFromBlob(blob: Blob): Promise<string> {
 		const img = new Image();
 		await new Promise<void>((resolve, reject) => {
 			img.onload = () => resolve();
-			img.onerror = () => reject(new Error('无法读取图片内容'));
+			img.onerror = () => reject(new Error(textFor('decode.unreadableImage')));
 			img.src = url;
 		});
 
@@ -53,7 +61,6 @@ export async function decodeQrFromBlob(blob: Blob): Promise<string> {
 		canvas.height = height;
 		ctx?.drawImage(img, 0, 0, width, height);
 
-		// 3. Detect via standard BarcodeDetector API on Canvas
 		if (window.BarcodeDetector) {
 			try {
 				const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
@@ -69,5 +76,5 @@ export async function decodeQrFromBlob(blob: Blob): Promise<string> {
 		URL.revokeObjectURL(url);
 	}
 
-	throw new Error('未能从该图片中识别出有效的二维码或当前浏览器不支持原生扫码识别');
+	throw new Error(textFor('decode.noQrFound'));
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
 	import { decodeQrFromBlob } from './qr/qr-decode';
+	import { qrPluginText } from './plugin-text';
 
 	interface Props {
 		controller?: ReactiveChronosController;
@@ -13,11 +14,19 @@
 		onContinue: () => void;
 	}
 
-	let { transfer, onContinue }: Props = $props();
+	let { controller, transfer, onContinue }: Props = $props();
 
 	let loading = $state(false);
 	let fileInputRef = $state<HTMLInputElement | null>(null);
 	let isDragging = $state(false);
+
+	const title = $derived(qrPluginText(controller, 'import.ui.title'));
+	const subtitle = $derived(qrPluginText(controller, 'import.ui.subtitle'));
+	const dropLabel = $derived(qrPluginText(controller, 'import.ui.dropLabel'));
+	const formats = $derived(qrPluginText(controller, 'import.ui.formats'));
+	const selectLabel = $derived(qrPluginText(controller, 'import.ui.select'));
+	const scanningLabel = $derived(qrPluginText(controller, 'import.ui.scanning'));
+	const dropAria = $derived(qrPluginText(controller, 'import.ui.dropAria'));
 
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
@@ -29,14 +38,15 @@
 	async function processImageBlob(blob: Blob) {
 		loading = true;
 		try {
-			const text = await decodeQrFromBlob(blob);
+			const text = await decodeQrFromBlob(blob, (key) => qrPluginText(controller, key));
 			const ok = await transfer.previewWithSlot('qrcode', {
 				content: text
 			});
 			if (ok) onContinue();
 			else notifyTransferMessages();
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : '二维码识别失败';
+			const msg =
+				err instanceof Error ? err.message : qrPluginText(controller, 'import.error.decodeFailed');
 			alert(msg);
 		} finally {
 			loading = false;
@@ -63,8 +73,8 @@
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
 		<div>
-			<h2 class="m3-title-medium text-on-surface">二维码</h2>
-			<p class="m3-body-small mt-0.5 text-on-surface-variant">选择或拖入他人分享的课表二维码图片</p>
+			<h2 class="m3-title-medium text-on-surface">{title}</h2>
+			<p class="m3-body-small mt-0.5 text-on-surface-variant">{subtitle}</p>
 		</div>
 
 		<input
@@ -86,7 +96,7 @@
 			ondragleave={() => (isDragging = false)}
 			ondrop={handleDrop}
 			role="region"
-			aria-label="二维码图片上传区域"
+			aria-label={dropAria}
 		>
 			<svg
 				class="size-10 text-on-surface-variant/80"
@@ -103,8 +113,8 @@
 				<path d="M14 20h7"></path>
 			</svg>
 			<div class="flex flex-col gap-1">
-				<span class="m3-body-medium font-medium text-on-surface">点击选择二维码图片</span>
-				<span class="m3-body-small text-on-surface-variant">支持 PNG、JPEG、WebP 或 SVG 格式</span>
+				<span class="m3-body-medium font-medium text-on-surface">{dropLabel}</span>
+				<span class="m3-body-small text-on-surface-variant">{formats}</span>
 			</div>
 			<button
 				type="button"
@@ -112,7 +122,7 @@
 				disabled={loading}
 				onclick={() => fileInputRef?.click()}
 			>
-				{loading ? '识别中…' : '选择图片'}
+				{loading ? scanningLabel : selectLabel}
 			</button>
 		</div>
 	</div>
