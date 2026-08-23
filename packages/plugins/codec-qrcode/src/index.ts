@@ -209,7 +209,7 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}): C
 
 			ctx.registerSlot('export.action', {
 				id: 'qrcode',
-				title: () => '课表二维码',
+				title: () => '二维码',
 				order: 20,
 				disposition: 'download',
 				isPrimary: false,

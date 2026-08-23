@@ -68,7 +68,7 @@
 			</div>
 		{/if}
 		<div>
-			<h2 class="m3-title-medium text-on-surface">从知行理工获取</h2>
+			<h2 class="m3-title-medium text-on-surface">知行理工</h2>
 			<p class="m3-body-small mt-0.5 text-on-surface-variant">
 				请输入知行理工账号密码以获取在线课表。
 			</p>

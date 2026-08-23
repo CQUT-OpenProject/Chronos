@@ -16,7 +16,7 @@ const onlineSlot: ImportTabSlotContribution = {
 
 const linkSlot: ImportTabSlotContribution = {
 	id: 'share-link',
-	title: () => '分享链接',
+	title: () => '分享口令',
 	importKind: 'link',
 	executeImport: async () => ({}) as never
 };
@@ -39,25 +39,25 @@ describe('import-slot-capabilities', () => {
 
 	it('builds transfer import descriptions from registered slots', () => {
 		expect(buildImportDescription([onlineSlot, linkSlot, fileSlot])).toBe(
-			'支持知行理工在线导入、分享链接、教务系统导出的 HTML 文件。'
+			'支持知行理工在线导入、分享口令、教务系统导出的 HTML 文件。'
 		);
 		expect(buildImportDescription([linkSlot, fileSlot])).toBe(
-			'支持分享链接、教务系统导出的 HTML 文件。'
+			'支持分享口令、教务系统导出的 HTML 文件。'
 		);
-		expect(buildImportDescription([linkSlot])).toBe('支持分享链接导入课表。');
+		expect(buildImportDescription([linkSlot])).toBe('支持分享口令导入课表。');
 	});
 
 	it('builds onboarding highlight copy without host plugin ids', () => {
 		expect(buildOnboardingImportHighlight([onlineSlot, linkSlot, fileSlot])).toBe(
-			'知行理工在线导入、分享链接、HTML 文件均可'
+			'知行理工在线导入、分享口令、HTML 文件均可'
 		);
 		expect(buildOnboardingImportHighlight([linkSlot, fileSlot])).toBe(
-			'分享链接、HTML 文件均可导入'
+			'分享口令、HTML 文件均可导入'
 		);
 	});
 
 	it('formats import method titles from slot metadata', () => {
 		expect(formatImportMethodTitle(onlineSlot)).toBe('知行理工在线导入');
-		expect(formatImportMethodTitle(linkSlot)).toBe('分享链接导入');
+		expect(formatImportMethodTitle(linkSlot)).toBe('分享口令导入');
 	});
 });

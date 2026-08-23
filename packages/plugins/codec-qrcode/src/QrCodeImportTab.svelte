@@ -63,7 +63,7 @@
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
 		<div>
-			<h2 class="m3-title-medium text-on-surface">从二维码导入</h2>
+			<h2 class="m3-title-medium text-on-surface">二维码</h2>
 			<p class="m3-body-small mt-0.5 text-on-surface-variant">选择或拖入他人分享的课表二维码图片</p>
 		</div>
 

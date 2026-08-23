@@ -37,7 +37,7 @@ export function defaultImportMethodSubtitle(slot: ImportTabSlotContribution): st
 			return '从教务系统导出课表页面后，导入该 HTML 文件';
 		case 'link':
 		default:
-			return '粘贴他人分享的课表链接即可导入';
+			return '粘贴他人分享的课表口令即可导入';
 	}
 }
 
@@ -49,7 +49,7 @@ function buildCapabilityLabels(slots: ReadonlyArray<ImportTabSlotContribution>):
 		}
 	}
 	if (slotsHaveImportKind(slots, 'link')) {
-		parts.push('分享链接');
+		parts.push('分享口令');
 	}
 	if (slotsHaveImportKind(slots, 'file')) {
 		parts.push('HTML 文件');
@@ -63,18 +63,18 @@ export function buildImportDescription(slots: ReadonlyArray<ImportTabSlotContrib
 	const hasFile = slotsHaveImportKind(slots, 'file');
 
 	if (onlineSlots.length === 0 && !hasLink && !hasFile) {
-		return '支持分享链接导入课表。';
+		return '支持分享口令导入课表。';
 	}
 
 	const parts: string[] = [];
 	for (const slot of onlineSlots) {
 		parts.push(`${resolveSlotTitle(slot)}在线导入`);
 	}
-	if (hasLink) parts.push('分享链接');
+	if (hasLink) parts.push('分享口令');
 	if (hasFile) parts.push('教务系统导出的 HTML 文件');
 
 	if (hasLink && !hasFile && onlineSlots.length === 0) {
-		return '支持分享链接导入课表。';
+		return '支持分享口令导入课表。';
 	}
 
 	return `支持${parts.join('、')}。`;
@@ -84,7 +84,7 @@ export function buildOnboardingImportHighlight(
 	slots: ReadonlyArray<ImportTabSlotContribution>
 ): string {
 	const parts = buildCapabilityLabels(slots);
-	if (parts.length === 0) return '分享链接可导入';
+	if (parts.length === 0) return '分享口令可导入';
 	const suffix = slotsHaveImportKind(slots, 'online') ? '均可' : '均可导入';
 	return `${parts.join('、')}${suffix}`;
 }

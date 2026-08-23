@@ -53,7 +53,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 
 			ctx.registerSlot('import.source.tab', {
 				id: 'share-link',
-				title: () => '分享链接',
+				title: () => '分享口令',
 				order: 15,
 				importKind: 'link',
 				component: shareComponent,
@@ -84,7 +84,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 
 			ctx.registerSlot('export.action', {
 				id: 'share-link',
-				title: () => '复制课表分享链接',
+				title: () => '分享口令',
 				order: 5,
 				disposition: 'clipboard',
 				isPrimary: true,

@@ -54,7 +54,7 @@
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
 		<div>
-			<h2 class="m3-title-medium text-on-surface">从文件导入课表</h2>
+			<h2 class="m3-title-medium text-on-surface">HTML 文件</h2>
 			<p class="m3-body-small mt-0.5 text-on-surface-variant">选择教务系统导出的 HTML 课表文件。</p>
 		</div>
 		<label class="flex items-center gap-2 text-sm text-on-surface-variant">
