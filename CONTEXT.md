@@ -6,15 +6,15 @@ Canonical vocabulary for runtime modules. Prefer these names over file names.
 
 Registered on `ServiceContainer`. Hosts bootstrap them once; runtime code reads the container (or `engine.storage` / `ctx.service(...)`), not ad-hoc `env` fallbacks.
 
-| Port                | Role                                                                          |
-| ------------------- | ----------------------------------------------------------------------------- |
-| `IHttpService`      | Network + optional session                                                    |
-| `IStorageService`   | Timetables, preferences, wallpaper, plugin KV                                 |
-| `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV. |
-| `IRuntimeService`   | Platform timers, SHA-256, UTF-8                                               |
-| `IAnalyticsService` | Optional product analytics                                                    |
+| Port                | Role                                                                                                                                            |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IHttpService`      | Network + optional session                                                                                                                      |
+| `IStorageService`   | Timetables, preferences, wallpaper, plugin KV                                                                                                   |
+| `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                   |
+| `IRuntimeService`   | Platform timers, SHA-256, UTF-8                                                                                                                 |
+| `IAnalyticsService` | Optional product analytics (registered via `ChronosEnv.analytics` → container; screens may still call `$lib/client/analytics` during migration) |
 
-`ChronosEnv` is only a host bootstrap adapter (web + native). After construction, `registerEnvProviders` copies ports into the container. `createEnvFacade` exists for “container only, no `env` argument”.
+`ChronosEnv` is only a host bootstrap adapter (web + native). After construction, `registerEnvProviders` copies ports into the container. All hosts must pass `env` at construction (no container-only facade).
 
 ## Timetable and UserPreferences
 
@@ -23,7 +23,7 @@ Core owns the shapes. Web Dexie / Share codecs are strict Zod adapters (schemaVe
 - **Timetable**: courses, `academicConfig` (including `periodTimes`), `viewPrefs`, optional `importMetadata`, optional `customMetadata`.
 - **ImportMetadata**: `{ source: string; campusId?: string }`. Campus period tables live in `customMetadata['source-cqut']`, not on `importMetadata`.
 - **Weekend columns**: initial `showSaturday` / `showSunday` derive from course occupancy via core `deriveWeekendViewPrefs` — import-constructing plugins must use it; users override afterwards in details editing.
-- **UserPreferences** tokens: theme `light` \| `dark` \| `auto`; palette `vibrant` \| `wallpaper`; layout `fixed` \| `compact`; corners `rounded` \| `sharp` \| `pill`; `visualThemeId`; `visualIconThemeId`.
+- **UserPreferences** tokens: theme `light` \| `dark` \| `auto`; palette `vibrant` \| `wallpaper`; layout `fixed` \| `compact`; corners `rounded` \| `sharp` \| `pill`; `visualThemeId`; `visualIconThemeId`; optional `locale` (`zh-cn` \| `en`).
 
 ## Period clock
 
@@ -57,7 +57,14 @@ Import UI executes `import.source.tab` slots directly. Host `transfer-state` han
 - **Profile builtin plugins**: `ProfileManager` → in-process `plugin.apply(ScopedContext)`.
 - **Official online plugins**: `OfficialPluginService` → fetch manifest + assets (SHA-256) → `loadEsmPluginFromCode` (when bundle present) → `engine.loadPlugin`.
 
-Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. Catalog: `apps/web/static/official-plugins/catalog.json`.
+Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. No `plugin.inject` dependency topology — optional services use `ctx.service(...)` inside `apply`. Catalog: `apps/web/static/official-plugins/catalog.json`.
+
+## Plugin i18n
+
+- **Host shell**: Paraglide (`apps/web/messages/`, locales `zh-cn` / `en`).
+- **Plugins**: `ctx.i18n.registerMessages(catalog)` in `apply`; slots/schemas use `() => ctx.i18n.t('key')`.
+- **Locale hub**: `ChronosEngine.setLocale` emits `i18n:localeChanged`; `ReactiveChronosController.slotVersion` increments so slot UI re-resolves `LocalizedText`.
+- See ADR 0024.
 
 ## Official plugin shapes
 
