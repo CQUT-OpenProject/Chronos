@@ -55,9 +55,13 @@ Import UI executes `import.source.tab` slots directly. Host `transfer-state` han
 ## Plugin activation (single-track)
 
 - **Profile builtin plugins**: `ProfileManager` → in-process `plugin.apply(ScopedContext)`.
-- **Official online plugins**: `OfficialPluginService` → fetch manifest + assets (SHA-256) → `loadEsmPluginFromCode` (when bundle present) → `engine.loadPlugin`.
+- **Official online plugins**: `OfficialPluginService` facade orchestrates four deep modules (`OfficialPluginCatalogClient`, `OfficialPluginAssetPipeline`, `OfficialPluginInstalledStore`, `OfficialPluginRuntimeActivator`) → fetch manifest + assets (SHA-256) → `loadEsmPluginFromCode` (when bundle present) → `engine.loadPlugin`.
 
 Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. No `plugin.inject` dependency topology — optional services use `ctx.service(...)` inside `apply`. Catalog: `apps/web/static/official-plugins/catalog.json`.
+
+## Plugin server proxy
+
+Server-side plugin handlers expose HTTP actions via `/api/plugins/{pluginId}/{action}`. Wire envelope is `PluginServerResponse<T>` in `@chronos/core` (`pluginServerSuccess` / `pluginServerError` / `parsePluginServerResponse`). `IHttpService.proxy` posts to this route from the browser; handler implementation errors use plugin-local `AppResult`, mapped at the handler boundary.
 
 ## Plugin i18n
 
