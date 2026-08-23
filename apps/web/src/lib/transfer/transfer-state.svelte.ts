@@ -7,14 +7,13 @@ import { getAppController } from '$lib/services/app-engine';
 
 export interface TransferPreviewState {
 	preview: Timetable | null;
-	selectedSlotId: string;
+	selectedSlotId: string | undefined;
 	previewSlotId: string | null;
 	importMode: ImportMode;
 	errorMessage: string | null;
-	statusMessage: string | null;
 }
 
-function resolveInitialSlotId(): string {
+function resolveInitialSlotId(): string | undefined {
 	return getDefaultImportSlot();
 }
 
@@ -24,13 +23,11 @@ export function createTransferState(engine?: ChronosEngine) {
 	let previewSlotId = $state<string | null>(null);
 	let importMode = $state<ImportMode>(ImportMode.AS_NEW);
 	let errorMessage = $state<string | null>(null);
-	let statusMessage = $state<string | null>(null);
 
 	const persistence = createSessionPreviewPersistence();
 
 	function clearMessages() {
 		errorMessage = null;
-		statusMessage = null;
 	}
 
 	function setSelectedSlotId(slotId: string) {
@@ -167,8 +164,7 @@ export function createTransferState(engine?: ChronosEngine) {
 				selectedSlotId,
 				previewSlotId,
 				importMode,
-				errorMessage,
-				statusMessage
+				errorMessage
 			};
 		},
 		setSelectedSlotId,

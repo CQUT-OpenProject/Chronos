@@ -6,7 +6,6 @@
 		transfer: {
 			state: {
 				errorMessage: string | null;
-				statusMessage: string | null;
 			};
 			previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean>;
 		};
@@ -14,7 +13,6 @@
 	}
 
 	let { transfer, onContinue }: Props = $props();
-
 	let loading = $state(false);
 	let account = $state('');
 	let password = $state('');
@@ -40,11 +38,9 @@
 	const onlineImportDisabled = $derived(loading || !isOnline);
 
 	function notifyTransferMessages() {
-		const { statusMessage, errorMessage } = transfer.state;
+		const { errorMessage } = transfer.state;
 		if (errorMessage) {
 			alert(errorMessage);
-		} else if (statusMessage) {
-			console.log(statusMessage);
 		}
 	}
 

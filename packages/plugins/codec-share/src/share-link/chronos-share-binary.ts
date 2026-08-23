@@ -4,8 +4,8 @@ import {
 	getCampusDefaultPeriodTimes,
 	resolveShareCampusId,
 	shareIndexToCampusId,
-	type ShareCampusId
-} from './share-campus';
+	type CqutCampusId as ShareCampusId
+} from '@chronos/plugin-source-cqut/campus-period-times';
 import {
 	AcademicCalendarService,
 	CURRENT_TIMETABLE_SCHEMA_VERSION,

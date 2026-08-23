@@ -6,12 +6,7 @@ import {
 	type Timetable,
 	type UserPreferences
 } from '@chronos/core';
-import {
-	cqutPlugin,
-	parseCqutScheduleData,
-	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
-	type CqutCampusScheduleMetadata
-} from '../src/index';
+import { cqutPlugin, parseCqutScheduleData, CQUT_DEFAULT_CAMPUS_PERIOD_TIMES } from '../src/index';
 
 function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 	const timetables = new Map<string, Timetable>();
@@ -35,23 +30,27 @@ function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 		json: async <T = unknown>() =>
 			({
 				studentName: '张三',
-				termName: '2024-2025-2',
-				termStartDate: '2025-02-24',
 				campusId: 'huaxi',
 				campusPeriodTimes: {
 					huaxi: [{ index: 1, startTime: '08:30', endTime: '09:15' }]
 				},
-				courses: [
-					{
-						courseName: '高等数学',
-						teacherName: '李老师',
-						roomName: '一教101',
-						dayOfWeek: 1,
-						startPeriod: 1,
-						endPeriod: 2,
-						weeks: [1, 2, 3]
-					}
-				]
+				payload: {
+					yearTerm: '2024-2025-2',
+					weekNum: '1',
+					termStartDate: '2025-02-24',
+					weekDayList: [{ weekDay: '1', weekDate: '02/24' }],
+					eventList: [
+						{
+							eventName: '高等数学',
+							memberName: '李老师',
+							address: '一教101',
+							weekDay: '1',
+							sessionStart: '1',
+							sessionList: ['1', '2'],
+							weekList: ['1', '2', '3']
+						}
+					]
+				}
 			}) as T,
 		bytes: async () => new Uint8Array()
 	};
@@ -72,6 +71,7 @@ function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 			setActiveTimetableId: vi.fn(async (id: string) => {
 				activeId = id;
 			}),
+			queryCourses: vi.fn(async () => []),
 			getPreferences: vi.fn(async (): Promise<UserPreferences> => ({ ...prefs })),
 			savePreferences: vi.fn(async () => {}),
 			getPluginData: vi.fn(async (pId: string, k: string) => {
@@ -133,6 +133,7 @@ describe('cqutPlugin', () => {
 			ctx
 		);
 
+		// eslint-disable-next-line typescript/unbound-method -- 断言对象即 mock 本身，无 this 依赖
 		expect(env.http.proxy).toHaveBeenCalledWith(
 			'source-cqut',
 			'preview',
@@ -141,7 +142,7 @@ describe('cqutPlugin', () => {
 				password: 'password'
 			})
 		);
-		expect(timetable.name).toBe('张三的课表');
+		expect(timetable.name).toBe('123456的课表');
 		expect(timetable.courses.length).toBe(1);
 		expect(timetable.courses[0]?.name).toBe('高等数学');
 		expect(timetable.importMetadata?.source).toBe('cqut-online');
@@ -213,38 +214,6 @@ describe('cqutPlugin', () => {
 		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'cqut-online')!;
 		const ctx = engine.getPluginContext('source-cqut');
 		await expect(sourceSlot.executeImport({}, ctx)).rejects.toThrow('请输入学号与密码');
-	});
-
-	it('parses CQUT schedule data correctly', () => {
-		const timetable = parseCqutScheduleData(
-			{
-				studentName: '李四',
-				termName: '2024-2025-1',
-				termStartDate: '2024-09-01',
-				campusId: 'liangjiang',
-				campusPeriodTimes: {
-					liangjiang: [{ index: 1, startTime: '09:00', endTime: '09:45' }]
-				},
-				courses: [
-					{
-						courseName: '大学英语',
-						dayOfWeek: 2,
-						startPeriod: 3,
-						endPeriod: 4,
-						weeks: [1, 2, 3, 4]
-					}
-				]
-			},
-			'2024001'
-		);
-
-		expect(timetable.name).toBe('李四的课表');
-		expect(timetable.academicConfig.periodTimes[0]?.startTime).toBe('09:00');
-		expect(timetable.courses[0]?.name).toBe('大学英语');
-		const metadata = timetable.customMetadata?.['source-cqut'] as
-			| CqutCampusScheduleMetadata
-			| undefined;
-		expect(metadata?.studentId).toBe('2024001');
 	});
 
 	it('parses CQUT server online schedule payload format', () => {

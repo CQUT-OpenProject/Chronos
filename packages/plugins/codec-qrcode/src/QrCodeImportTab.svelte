@@ -7,7 +7,6 @@
 		transfer: {
 			state: {
 				errorMessage: string | null;
-				statusMessage: string | null;
 			};
 			previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean>;
 		};
