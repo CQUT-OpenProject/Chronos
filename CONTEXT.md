@@ -80,6 +80,10 @@ Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded fir
 
 Kernel events: `dynamicColor:set`, `dynamicColor:changed`, `dynamicColor:hydrate`. Host `app-shell` bridges to `dynamicColorUri`; `ThemeContribution.dynamicColorAdapter` (`DynamicColorAdapter`) paints course palette from image URI. Scheme id `wallpaper` in preferences is legacy-compatible naming.
 
+## Codec kit
+
+`@chronos/codec-kit`: shared build-time byte-codec primitives consumed as a normal dependency by codec plugins (not a plugin, not in profiles). Exports `deflateRaw/inflateRaw` (deflate-raw; throws on failure — fallback policy belongs to callers), base64/base64url, `crc32/appendCrc32/verifyAndStripCrc32`, varint, canonical week bitmask (`bit(w-1)`, `MAX_TIMETABLE_WEEK=32`, `assertValidWeeks`), and `StringInterner`. No wire-format envelopes live here. See ADR 0020.
+
 ## Share-link codec
 
 Canonical implementation: `@chronos/plugin-codec-share/share-link`. Slots: `import.source.tab` (`share-link`), `export.action` (`share-link`).
