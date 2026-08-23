@@ -19,3 +19,7 @@ export const NETWORK_RETRY_COUNT = 2;
 /** Per-instance IP sliding window; not shared across Vercel instances. */
 export const PREVIEW_RATE_LIMIT_MAX = 8;
 export const PREVIEW_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+/** Keep in sync with `serverManifest.proxy` in `server/index.ts`. */
+export const SERVER_PROXY_DOMAINS = ['cqut.edu.cn'] as const;
+export const SERVER_PROXY_ACTION = 'preview' as const;

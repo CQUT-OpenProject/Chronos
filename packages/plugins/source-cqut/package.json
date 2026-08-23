@@ -16,6 +16,11 @@
 			"import": "./src/week-merge.ts",
 			"default": "./src/week-merge.ts"
 		},
+		"./server/config": {
+			"types": "./server/config.ts",
+			"import": "./server/config.ts",
+			"default": "./server/config.ts"
+		},
 		"./server": {
 			"types": "./server/index.ts",
 			"import": "./server/index.ts",

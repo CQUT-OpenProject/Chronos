@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { PluginServerHandler, PluginServerManifest } from '@chronos/core';
+import { SERVER_PROXY_ACTION, SERVER_PROXY_DOMAINS } from './config';
 import { fetchCqutSchedule } from './fetch-schedule';
 
 interface PreviewRequestBody {
@@ -48,7 +49,7 @@ export const serverManifest: PluginServerManifest = {
 		preview: { POST: handlePreview }
 	},
 	proxy: {
-		domains: ['cqut.edu.cn'],
-		action: 'preview'
+		domains: [...SERVER_PROXY_DOMAINS],
+		action: SERVER_PROXY_ACTION
 	}
 };
