@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vite-plus/test';
 import { EventPipeline } from '../src/runtime/event-pipeline';
 
 describe('EventPipeline', () => {
-	it('broadcasts events with emit and parallel', async () => {
+	it('broadcasts events with emit', () => {
 		const pipeline = new EventPipeline();
 		const received: string[] = [];
 
@@ -11,10 +11,8 @@ describe('EventPipeline', () => {
 		});
 
 		pipeline.emit('theme:changed', { themeId: 'theme-1' });
-		expect(received).toContain('theme-1');
-
-		await pipeline.parallel('theme:changed', { themeId: 'theme-2' });
-		expect(received).toContain('theme-2');
+		pipeline.emit('theme:changed', { themeId: 'theme-2' });
+		expect(received).toEqual(['theme-1', 'theme-2']);
 
 		pipeline.dispose();
 	});

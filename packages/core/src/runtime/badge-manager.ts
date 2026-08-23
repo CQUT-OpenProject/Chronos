@@ -24,10 +24,6 @@ export class BadgeManager implements Disposable {
 		};
 	}
 
-	getBadges(): ReadonlyArray<CourseBadgeSlotContribution> {
-		return Array.from(this.contributions.values()).map((entry) => entry.badge);
-	}
-
 	async recalculate(courses: Course[]): Promise<Record<string, CourseBadge[]>> {
 		const nextBadges: Record<string, CourseBadge[]> = {};
 
@@ -58,10 +54,6 @@ export class BadgeManager implements Disposable {
 
 	getAll(): Record<string, CourseBadge[]> {
 		return { ...this.cache };
-	}
-
-	getForCourse(courseId: string): CourseBadge[] {
-		return this.cache[courseId] ? [...this.cache[courseId]] : [];
 	}
 
 	dispose(): void {

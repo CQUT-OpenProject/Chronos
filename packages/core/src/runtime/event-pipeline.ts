@@ -60,42 +60,6 @@ export class EventPipeline implements Disposable {
 		}
 	}
 
-	async parallel<E extends keyof ChronosEvents>(
-		event: E,
-		payload: ChronosEvents[E]
-	): Promise<void> {
-		const handlers = this.broadcastListeners.get(String(event));
-		if (!handlers || handlers.size === 0) return;
-
-		const snapshot = Array.from(handlers);
-		const promises: Promise<void>[] = [];
-
-		for (const handler of snapshot) {
-			try {
-				const result = handler(payload);
-				if (result instanceof Promise) {
-					promises.push(
-						result.catch((error) => {
-							console.error(
-								`[EventPipeline] Unhandled error in parallel listener for "${String(event)}":`,
-								error
-							);
-						})
-					);
-				}
-			} catch (error) {
-				console.error(
-					`[EventPipeline] Unhandled error in parallel listener for "${String(event)}":`,
-					error
-				);
-			}
-		}
-
-		if (promises.length > 0) {
-			await Promise.all(promises);
-		}
-	}
-
 	// === 2. Waterfall Onion Middleware Pipeline ===
 	// FROZEN BASELINE — 引擎动作内部调用 waterfall/serial，但注册面当前零消费者
 	// （见 CONTEXT.md EventPipeline 段）。与 hosts/native-protocol.ts 同款到期条款：

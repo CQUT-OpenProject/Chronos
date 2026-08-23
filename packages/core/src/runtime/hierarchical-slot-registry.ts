@@ -4,7 +4,6 @@ import type { ChronosSlotMap } from '../types/slots';
 export class HierarchicalSlotRegistry implements Disposable {
 	private slots = new Map<string, Map<string, unknown>>();
 	private owners = new Map<string, Map<string, string>>();
-	private listeners = new Set<() => void>();
 
 	constructor(private onSlotsChangedCallback?: () => void) {}
 
@@ -63,35 +62,12 @@ export class HierarchicalSlotRegistry implements Disposable {
 		return this.slots.get(String(slotName))?.get(id) as ChronosSlotMap[K] | undefined;
 	}
 
-	onChanged(listener: () => void): Disposable {
-		this.listeners.add(listener);
-		return {
-			dispose: () => {
-				this.listeners.delete(listener);
-			}
-		};
-	}
-
-	clear(): void {
-		this.slots.clear();
-		this.owners.clear();
-		this.notify();
-	}
-
 	private notify(): void {
-		for (const listener of this.listeners) {
-			try {
-				listener();
-			} catch (error) {
-				console.error('[HierarchicalSlotRegistry] Error in listener:', error);
-			}
-		}
 		this.onSlotsChangedCallback?.();
 	}
 
 	dispose(): void {
 		this.slots.clear();
 		this.owners.clear();
-		this.listeners.clear();
 	}
 }

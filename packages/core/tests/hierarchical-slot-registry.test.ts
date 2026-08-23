@@ -45,12 +45,9 @@ describe('HierarchicalSlotRegistry in @chronos/core', () => {
 		expect(registry.resolveOwner('import.source.tab', 'missing')).toBeUndefined();
 	});
 
-	it('triggers change listener and supports dynamic disposal', () => {
+	it('triggers constructor change callback and supports dynamic disposal', () => {
 		const onChanged = vi.fn();
 		const registry = new HierarchicalSlotRegistry(onChanged);
-		const listener = vi.fn();
-
-		const listenerSub = registry.onChanged(listener);
 
 		const item: MineItemSlotContribution = {
 			id: 'settings-item',
@@ -60,17 +57,11 @@ describe('HierarchicalSlotRegistry in @chronos/core', () => {
 
 		const regSub = registry.register('mine.item', item);
 		expect(onChanged).toHaveBeenCalledTimes(1);
-		expect(listener).toHaveBeenCalledTimes(1);
 		expect(registry.get('mine.item')).toHaveLength(1);
 
 		regSub.dispose();
 		expect(onChanged).toHaveBeenCalledTimes(2);
-		expect(listener).toHaveBeenCalledTimes(2);
 		expect(registry.get('mine.item')).toHaveLength(0);
-
-		listenerSub.dispose();
-		registry.register('mine.item', item);
-		expect(listener).toHaveBeenCalledTimes(2); // no additional call after unsubscribe
 	});
 
 	it('clears all slots and listeners on dispose', () => {

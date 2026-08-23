@@ -168,13 +168,6 @@ export function workbenchColorsToDesignTokens(
 	return tokens;
 }
 
-export function getWorkbenchColorsForMode(
-	workbenchColors: { light: Record<string, string>; dark: Record<string, string> },
-	mode: 'light' | 'dark'
-): Record<string, string> {
-	return workbenchColors[mode];
-}
-
 export function designTokensToWorkbenchColors(
 	tokens: Record<string, string>
 ): Record<string, string> {

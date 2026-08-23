@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { ConfigSchema, LocalizedText, SchemaField } from '@chronos/core';
+	import type { ConfigSchema, SchemaField } from '@chronos/core';
+	import { resolveLocalizedText } from '@chronos/core';
 	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
 	import TextField from './inputs/TextField.svelte';
 	import Checkbox from './inputs/Checkbox.svelte';
@@ -24,11 +25,6 @@
 		onValueChange
 	}: Props = $props();
 
-	function resolveText(text: LocalizedText | undefined): string {
-		if (!text) return '';
-		return typeof text === 'function' ? text() : text;
-	}
-
 	const entries = $derived(Object.entries(schema) as Array<[string, SchemaField<unknown>]>);
 	const resolvedValue = $derived(value ?? {});
 
@@ -48,9 +44,9 @@
 			{#if field.type === 'string'}
 				<TextField
 					id="field-{key}"
-					label={resolveText(field.title)}
-					placeholder={resolveText(field.placeholder)}
-					description={resolveText(field.description)}
+					label={resolveLocalizedText(field.title)}
+					placeholder={resolveLocalizedText(field.placeholder)}
+					description={resolveLocalizedText(field.description)}
 					required={field.required}
 					{disabled}
 					value={resolvedValue[key] as string}
@@ -60,9 +56,9 @@
 				<TextField
 					id="field-{key}"
 					type="password"
-					label={resolveText(field.title)}
-					placeholder={resolveText(field.placeholder)}
-					description={resolveText(field.description)}
+					label={resolveLocalizedText(field.title)}
+					placeholder={resolveLocalizedText(field.placeholder)}
+					description={resolveLocalizedText(field.description)}
 					required={field.required}
 					{disabled}
 					value={resolvedValue[key] as string}
@@ -72,9 +68,9 @@
 				<TextField
 					id="field-{key}"
 					type="number"
-					label={resolveText(field.title)}
-					placeholder={resolveText(field.placeholder)}
-					description={resolveText(field.description)}
+					label={resolveLocalizedText(field.title)}
+					placeholder={resolveLocalizedText(field.placeholder)}
+					description={resolveLocalizedText(field.description)}
 					required={field.required}
 					{disabled}
 					value={resolvedValue[key] as number}
@@ -83,8 +79,8 @@
 			{:else if field.type === 'boolean'}
 				<Checkbox
 					id="field-{key}"
-					label={resolveText(field.title)}
-					description={resolveText(field.description)}
+					label={resolveLocalizedText(field.title)}
+					description={resolveLocalizedText(field.description)}
 					{disabled}
 					checked={Boolean(resolvedValue[key])}
 					onchange={(e) => updateField(key, e.currentTarget.checked)}
@@ -92,11 +88,11 @@
 			{:else if field.type === 'select'}
 				<SelectField
 					id="field-{key}"
-					label={resolveText(field.title)}
-					description={resolveText(field.description)}
+					label={resolveLocalizedText(field.title)}
+					description={resolveLocalizedText(field.description)}
 					required={field.required}
 					options={(field.options || []).map((opt) => ({
-						label: resolveText(opt.label),
+						label: resolveLocalizedText(opt.label),
 						value: opt.value
 					}))}
 					{disabled}
@@ -106,9 +102,9 @@
 			{:else if field.type === 'file'}
 				<FileField
 					id="field-{key}"
-					label={resolveText(field.title)}
+					label={resolveLocalizedText(field.title)}
 					accept={field.accept}
-					description={resolveText(field.description)}
+					description={resolveLocalizedText(field.description)}
 					required={field.required}
 					{disabled}
 					value={resolvedValue[key]}
@@ -118,9 +114,9 @@
 				<TextField
 					id="field-{key}"
 					type="date"
-					label={resolveText(field.title)}
-					placeholder={resolveText(field.placeholder)}
-					description={resolveText(field.description)}
+					label={resolveLocalizedText(field.title)}
+					placeholder={resolveLocalizedText(field.placeholder)}
+					description={resolveLocalizedText(field.description)}
 					required={field.required}
 					{disabled}
 					value={resolvedValue[key] as string}
@@ -129,14 +125,14 @@
 			{:else if field.type === 'timetable-preview'}
 				<TimetablePreviewField
 					{controller}
-					label={resolveText(field.title)}
-					description={resolveText(field.description)}
+					label={resolveLocalizedText(field.title)}
+					description={resolveLocalizedText(field.description)}
 				/>
 			{:else if field.type === 'wallpaper-preview'}
 				<WallpaperPreviewField
 					id="field-{key}"
-					label={resolveText(field.title)}
-					description={resolveText(field.description)}
+					label={resolveLocalizedText(field.title)}
+					description={resolveLocalizedText(field.description)}
 					accept={field.accept}
 					required={field.required}
 					{disabled}

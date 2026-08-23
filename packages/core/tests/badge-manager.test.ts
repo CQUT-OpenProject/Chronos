@@ -60,7 +60,7 @@ describe('BadgeManager in @chronos/core', () => {
 			{ id: 'prof', text: '教授授课', colorScheme: 'primary' }
 		]);
 		expect(badges['c2']).toEqual([]);
-		expect(manager.getForCourse('c1')).toEqual([
+		expect(manager.getAll()['c1']).toEqual([
 			{ id: 'lab', text: '实验课', colorScheme: 'warning' },
 			{ id: 'prof', text: '教授授课', colorScheme: 'primary' }
 		]);
@@ -74,9 +74,9 @@ describe('BadgeManager in @chronos/core', () => {
 		};
 
 		const sub = manager.registerCourseBadge(provider);
-		expect(manager.getBadges().length).toBe(1);
+		await manager.recalculate([]);
 
 		sub.dispose();
-		expect(manager.getBadges().length).toBe(0);
+		expect(Object.keys(manager.getAll())).toHaveLength(0);
 	});
 });
