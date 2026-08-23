@@ -18,6 +18,9 @@ importers:
 
   .:
     devDependencies:
+      '@resvg/resvg-js':
+        specifier: ^2.6.2
+        version: 2.6.2
       '@sveltejs/kit':
         specifier: ^2.63.0
         version: 2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0))(typescript@7.0.2)
@@ -100,6 +103,9 @@ importers:
       '@chronos/plugin-theme-yumemita':
         specifier: workspace:*
         version: link:../../packages/plugins/theme-yumemita
+      '@chronos/plugin-wallpaper':
+        specifier: workspace:*
+        version: link:../../packages/plugins/wallpaper
       '@inlang/paraglide-js':
         specifier: ^2.24.1
         version: 2.24.1(@voidzero-dev/vite-plus-core@0.2.9(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.6)(typescript@7.0.2))(typescript@7.0.2)
@@ -176,6 +182,9 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
+      '@chronos/ui-kit':
+        specifier: workspace:*
+        version: link:../../ui-kit
       svelte:
         specifier: ^5.0.0
         version: 5.56.9(@typescript-eslint/types@8.66.0)
@@ -191,6 +200,9 @@ importers:
       '@chronos/plugin-source-cqut':
         specifier: workspace:*
         version: link:../source-cqut
+      '@chronos/ui-kit':
+        specifier: workspace:*
+        version: link:../../ui-kit
     optionalDependencies:
       brotli-wasm:
         specifier: ^3.0.1
@@ -201,6 +213,9 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
+      '@chronos/ui-kit':
+        specifier: workspace:*
+        version: link:../../ui-kit
       '@cqut-openproject/cas-sdk':
         specifier: github:CQUT-OpenProject/CAS-SDK#1.0.0
         version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f

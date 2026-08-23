@@ -171,7 +171,11 @@ export default defineConfig(({ mode }) => {
 			expect: { requireAssertions: true },
 			environment: 'node',
 			include: ['src/**/*.{test,spec}.{js,ts}', '../../packages/**/*.{test,spec}.{js,ts}'],
-			exclude: ['src/**/*.svelte.{test,spec}.{js,ts}', '**/node_modules/**']
+			exclude: [
+				'src/**/*.svelte.{test,spec}.{js,ts}',
+				'**/node_modules/**',
+				'../../packages/**/node_modules/**'
+			]
 		}
 	};
 });

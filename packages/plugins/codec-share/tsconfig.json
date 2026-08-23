@@ -1,6 +1,7 @@
 {
 	"extends": "../../../tsconfig.json",
 	"compilerOptions": {
+		"types": ["node"],
 		"paths": {
 			"@chronos/core": ["../../../packages/core/src/index.ts"]
 		}

@@ -112,6 +112,10 @@ export default defineConfig({
 		expect: { requireAssertions: true },
 		environment: 'node',
 		include: ['apps/web/src/**/*.{test,spec}.{js,ts}', 'packages/**/*.{test,spec}.{js,ts}'],
-		exclude: ['apps/web/src/**/*.svelte.{test,spec}.{js,ts}', '**/node_modules/**']
+		exclude: [
+			'apps/web/src/**/*.svelte.{test,spec}.{js,ts}',
+			'**/node_modules/**',
+			'packages/**/node_modules/**'
+		]
 	}
 });

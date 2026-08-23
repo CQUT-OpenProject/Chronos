@@ -12,7 +12,18 @@
 			"default": "./src/index.ts"
 		},
 		"./*": {
+			"types": "./src/*",
 			"default": "./src/*"
+		},
+		"./theme/m3-theme": {
+			"types": "./src/theme/m3-theme.ts",
+			"import": "./src/theme/m3-theme.ts",
+			"default": "./src/theme/m3-theme.ts"
+		},
+		"./timetable-preview/day-labels": {
+			"types": "./src/timetable-preview/day-labels.ts",
+			"import": "./src/timetable-preview/day-labels.ts",
+			"default": "./src/timetable-preview/day-labels.ts"
 		}
 	},
 	"dependencies": {
