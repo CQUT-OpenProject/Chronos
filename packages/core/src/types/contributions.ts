@@ -25,9 +25,6 @@ export interface DynamicColorAdapter {
 	clearWallpaperTheme(target?: HTMLElement): void;
 }
 
-/** @deprecated Use {@link DynamicColorAdapter} */
-export type WallpaperThemeAdapter = DynamicColorAdapter;
-
 export interface ThemeContribution {
 	readonly id: string;
 	readonly name: LocalizedText;

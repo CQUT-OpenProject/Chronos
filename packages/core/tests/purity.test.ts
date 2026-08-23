@@ -13,7 +13,6 @@ describe('@chronos/core ECMAScript Purity', () => {
 		expect(Core.COURSE_PALETTE_ENTRIES).toBeInstanceOf(Array);
 		expect(Core.EventPipeline).toBeTypeOf('function');
 		expect(Core.findCurrentPeriodIndex).toBeTypeOf('function');
-		expect(Core.SlotRegistry).toBeTypeOf('function');
 		expect(Core.HierarchicalSlotRegistry).toBeTypeOf('function');
 		expect(Core.ServiceContainer).toBeTypeOf('function');
 		expect(Core.createServiceIdentifier).toBeTypeOf('function');

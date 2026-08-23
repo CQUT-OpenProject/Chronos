@@ -127,7 +127,7 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 		href: '/plugins',
 		icon: 'code',
 		iconTone: 'secondary',
-		keywords: ['插件', '市场', '官方', '扩展', 'plugin', 'official', '主题', '工具', '安装'],
+		keywords: ['插件', '官方', '扩展', 'plugin', 'official', '主题', '工具', '安装'],
 		order: 5
 	});
 

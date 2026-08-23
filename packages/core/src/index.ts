@@ -27,8 +27,7 @@ export type {
 	ThemeContribution,
 	ThemeWorkbenchColors,
 	CourseBadgeContribution,
-	DynamicColorAdapter,
-	WallpaperThemeAdapter
+	DynamicColorAdapter
 } from './types/contributions';
 export type { PlatformType, ChronosEnv } from './types/env';
 export * from './types/context';
@@ -38,7 +37,6 @@ export * from './types/official-plugins';
 // Runtime
 export * from './runtime/service-container';
 export * from './runtime/hierarchical-slot-registry';
-export { HierarchicalSlotRegistry as SlotRegistry } from './runtime/hierarchical-slot-registry';
 export * from './runtime/event-pipeline';
 export * from './runtime/theme-registry';
 export * from './runtime/icon-theme-registry';

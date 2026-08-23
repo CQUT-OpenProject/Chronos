@@ -359,11 +359,7 @@ export class OfficialPluginService implements Disposable {
 			void this.engine.actions.updatePreferences({ visualIconThemeId: 'host-default' });
 		}
 
-		if (
-			prefs.paletteMode !== 'vibrant' &&
-			prefs.paletteMode !== 'material' &&
-			!this.engine.themes.getTheme(prefs.paletteMode)
-		) {
+		if (prefs.paletteMode !== 'vibrant' && !this.engine.themes.getTheme(prefs.paletteMode)) {
 			this.engine.actions.setTheme('m3-default');
 			void this.engine.actions.updatePreferences({
 				paletteMode: 'vibrant',

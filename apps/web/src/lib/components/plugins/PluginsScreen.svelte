@@ -553,7 +553,7 @@
 			<p class="m3-body-small font-medium text-on-surface">安装前请注意</p>
 			<ul class="m3-body-small list-disc space-y-1 pl-4 text-on-surface-variant">
 				<li>插件在本机进程内运行，权限与 Profile 内置插件相同</li>
-				<li>非官方插件市场目录来源，请自行确认 manifest 可信</li>
+				<li>manifest 来自非官方目录来源时，请自行确认其可信</li>
 				<li>安装风险由您自行承担</li>
 			</ul>
 		</div>
