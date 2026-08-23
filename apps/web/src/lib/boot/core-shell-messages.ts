@@ -1,0 +1,42 @@
+export const CORE_SHELL_MESSAGES = {
+	'zh-cn': {
+		'tab.timetable': '课表',
+		'tab.mine': '我的',
+		'section.timetable-management': '课表管理',
+		'section.data-sync': '数据与分享',
+		'section.appearance-feedback': '个性化',
+		'section.app-support': '应用与支持',
+		'item.manage-timetables': '管理课程表',
+		'item.import': '导入课程表',
+		'item.export': '分享课程表',
+		'item.display': '显示设置',
+		'item.feedback': '反馈设置',
+		'item.plugins': '插件中心',
+		'item.plugins.supporting': '管理官方插件与已安装扩展',
+		'item.install': '安装 Chronos',
+		'item.install.supporting.standalone': '已安装为桌面应用',
+		'item.install.supporting.local': '已安装，可在应用中打开',
+		'item.install.supporting.prompt': '添加到主屏幕，快捷打开应用',
+		'item.about': '关于 Chronos'
+	},
+	en: {
+		'tab.timetable': 'Timetable',
+		'tab.mine': 'Mine',
+		'section.timetable-management': 'Timetables',
+		'section.data-sync': 'Data & sharing',
+		'section.appearance-feedback': 'Personalization',
+		'section.app-support': 'App & support',
+		'item.manage-timetables': 'Manage timetables',
+		'item.import': 'Import timetable',
+		'item.export': 'Share timetable',
+		'item.display': 'Display settings',
+		'item.feedback': 'Feedback settings',
+		'item.plugins': 'Plugin center',
+		'item.plugins.supporting': 'Manage official plugins and installed extensions',
+		'item.install': 'Install Chronos',
+		'item.install.supporting.standalone': 'Installed as a desktop app',
+		'item.install.supporting.local': 'Installed — open in the app',
+		'item.install.supporting.prompt': 'Add to home screen for quick access',
+		'item.about': 'About Chronos'
+	}
+} as const;

@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import { getAppController } from '$lib/services/app-engine';
+	import { CORE_SHELL_SUPPORT_SECTION_ID } from '$lib/boot/core-shell';
 	import { MINE_ITEM_ICON_MAP } from '$lib/boot/mine-icons';
 	import { CodeFill } from '$lib/icons';
 	import { resolveLocalizedText } from '@chronos/core';
@@ -24,13 +25,11 @@
 		icon?: Component<{ class?: string }>;
 		iconTone?: MineIconTone;
 		keywords?: string[];
-		order?: number;
 	};
 
 	type SettingSection = {
 		id: string;
 		title: string;
-		order?: number;
 		items: SettingItem[];
 	};
 
@@ -57,19 +56,17 @@
 			sectionMap[pSec.id] = {
 				id: pSec.id,
 				title: resolveLocalizedText(pSec.title),
-				order: pSec.order ?? 50,
 				items: []
 			};
 		}
 
 		for (const item of pluginItems) {
-			const targetSectionId = item.sectionId || 'app-support';
+			const targetSectionId = item.sectionId ?? CORE_SHELL_SUPPORT_SECTION_ID;
 			let section = sectionMap[targetSectionId];
 			if (!section) {
 				section = {
 					id: targetSectionId,
 					title: '扩展设置',
-					order: 35,
 					items: []
 				};
 				sectionMap[targetSectionId] = section;
@@ -86,7 +83,6 @@
 				onClick: item.onClick && context ? () => item.onClick!(context) : undefined,
 				icon: resolveIcon(item.icon, item.id),
 				iconTone: item.iconTone ?? 'neutral',
-				order: item.order ?? 50,
 				keywords:
 					item.keywords ??
 					[resolveLocalizedText(item.title), resolveLocalizedText(item.supporting)].filter(Boolean)

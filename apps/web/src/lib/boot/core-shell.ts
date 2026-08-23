@@ -1,12 +1,14 @@
 import type { ChronosPlugin, ChronosContext } from '@chronos/core';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
+import { CORE_SHELL_MESSAGES } from '$lib/boot/core-shell-messages';
 
 export const CORE_SHELL_PLUGIN_ID = 'core-shell';
+export const CORE_SHELL_SUPPORT_SECTION_ID = 'app-support';
 
-function registerCoreShellSlots(ctx: ChronosContext): void {
+function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string): void {
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'timetable',
-		label: () => '课表',
+		label: () => t('tab.timetable'),
 		href: '/',
 		order: 10,
 		icon: 'calendar-month',
@@ -15,7 +17,7 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'mine',
-		label: () => '我的',
+		label: () => t('tab.mine'),
 		href: '/mine',
 		order: 20,
 		icon: 'person',
@@ -24,32 +26,32 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 
 	ctx.registerSlot('mine.section', {
 		id: 'timetable-management',
-		title: () => '课表管理',
+		title: () => t('section.timetable-management'),
 		order: 10
 	});
 
 	ctx.registerSlot('mine.section', {
 		id: 'data-sync',
-		title: () => '数据与分享',
+		title: () => t('section.data-sync'),
 		order: 20
 	});
 
 	ctx.registerSlot('mine.section', {
 		id: 'appearance-feedback',
-		title: () => '个性化',
+		title: () => t('section.appearance-feedback'),
 		order: 30
 	});
 
 	ctx.registerSlot('mine.section', {
-		id: 'app-support',
-		title: () => '应用与支持',
+		id: CORE_SHELL_SUPPORT_SECTION_ID,
+		title: () => t('section.app-support'),
 		order: 40
 	});
 
 	ctx.registerSlot('mine.item', {
 		id: 'manage-timetables',
 		sectionId: 'timetable-management',
-		title: () => '管理课程表',
+		title: () => t('item.manage-timetables'),
 		href: '/manage-timetables',
 		icon: 'list-alt',
 		iconTone: 'primary',
@@ -60,7 +62,7 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 	ctx.registerSlot('mine.item', {
 		id: 'import',
 		sectionId: 'data-sync',
-		title: () => '导入课程表',
+		title: () => t('item.import'),
 		href: '/transfer/import',
 		icon: 'download',
 		iconTone: 'secondary',
@@ -71,7 +73,7 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 	ctx.registerSlot('mine.item', {
 		id: 'export',
 		sectionId: 'data-sync',
-		title: () => '分享课程表',
+		title: () => t('item.export'),
 		href: '/transfer/export',
 		icon: 'share',
 		iconTone: 'tertiary',
@@ -82,7 +84,7 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 	ctx.registerSlot('mine.item', {
 		id: 'display',
 		sectionId: 'appearance-feedback',
-		title: () => '显示设置',
+		title: () => t('item.display'),
 		href: '/display-settings',
 		icon: 'palette',
 		iconTone: 'secondary',
@@ -111,7 +113,7 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 	ctx.registerSlot('mine.item', {
 		id: 'feedback',
 		sectionId: 'appearance-feedback',
-		title: () => '反馈设置',
+		title: () => t('item.feedback'),
 		href: '/feedback-settings',
 		icon: 'vibrate',
 		iconTone: 'tertiary',
@@ -121,9 +123,9 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 
 	ctx.registerSlot('mine.item', {
 		id: 'plugins',
-		sectionId: 'app-support',
-		title: () => '插件中心',
-		supporting: () => '管理官方插件与已安装扩展',
+		sectionId: CORE_SHELL_SUPPORT_SECTION_ID,
+		title: () => t('item.plugins'),
+		supporting: () => t('item.plugins.supporting'),
 		href: '/plugins',
 		icon: 'code',
 		iconTone: 'secondary',
@@ -133,14 +135,14 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 
 	ctx.registerSlot('mine.item', {
 		id: 'install',
-		sectionId: 'app-support',
-		title: () => '安装 Chronos',
+		sectionId: CORE_SHELL_SUPPORT_SECTION_ID,
+		title: () => t('item.install'),
 		supporting: () =>
 			pwaInstallController.isStandalone
-				? '已安装为桌面应用'
+				? t('item.install.supporting.standalone')
 				: pwaInstallController.isInstalledLocally
-					? '已安装，可在应用中打开'
-					: '添加到主屏幕，快捷打开应用',
+					? t('item.install.supporting.local')
+					: t('item.install.supporting.prompt'),
 		href: '/about/install',
 		icon: 'add-home',
 		iconTone: 'primary',
@@ -150,8 +152,8 @@ function registerCoreShellSlots(ctx: ChronosContext): void {
 
 	ctx.registerSlot('mine.item', {
 		id: 'about',
-		sectionId: 'app-support',
-		title: () => '关于 Chronos',
+		sectionId: CORE_SHELL_SUPPORT_SECTION_ID,
+		title: () => t('item.about'),
 		href: '/about',
 		icon: 'info',
 		iconTone: 'tertiary',
@@ -168,6 +170,7 @@ export const coreShellPlugin: ChronosPlugin = {
 	category: 'tool',
 	order: 0,
 	apply(ctx) {
-		registerCoreShellSlots(ctx);
+		ctx.i18n.registerMessages(CORE_SHELL_MESSAGES);
+		registerCoreShellSlots(ctx, (key) => ctx.i18n.t(key));
 	}
 };
