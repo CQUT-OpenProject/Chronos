@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { timetableDayLabel, timetableDayShortLabel } from './day-labels';
+import { timetableDayLabel, timetableDayShortLabel } from '../src/timetable-preview/day-labels';
 
 describe('day-labels', () => {
 	it('maps day of week to Chinese labels', () => {

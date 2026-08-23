@@ -1,10 +1,3 @@
-import {
-	IStorageService,
-	IHttpService,
-	IRuntimeService,
-	IAnalyticsService,
-	ServiceContainer
-} from '@chronos/core';
 import type { ChronosDB } from '$lib/storage/db';
 import { DexieStorageProvider } from './dexie-storage';
 import { WebHttpProxyProvider } from './web-http';
@@ -54,29 +47,4 @@ export function createWebChronosEnv(options?: WebProviderOptions) {
 		storage: providers.storage,
 		runtime: providers.runtime
 	};
-}
-
-/**
- * Registers all Web standard service providers into a ServiceContainer.
- */
-export function registerWebProviders(
-	container: ServiceContainer,
-	options?: WebProviderOptions
-): ServiceContainer {
-	const providers = createWebProviders(options);
-
-	if (!container.has(IStorageService)) {
-		container.register(IStorageService, providers.storage);
-	}
-	if (!container.has(IHttpService)) {
-		container.register(IHttpService, providers.http);
-	}
-	if (!container.has(IRuntimeService)) {
-		container.register(IRuntimeService, providers.runtime);
-	}
-	if (!container.has(IAnalyticsService)) {
-		container.register(IAnalyticsService, providers.analytics);
-	}
-
-	return container;
 }

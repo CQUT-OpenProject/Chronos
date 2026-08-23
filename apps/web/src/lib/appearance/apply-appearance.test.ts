@@ -4,7 +4,10 @@ import {
 	type CoursePaletteEntry,
 	type DynamicColorAdapter
 } from '@chronos/core';
-import { YUMEMITA_PALETTE_ENTRIES, YUMEMITA_THEME_ID } from '@chronos/plugin-theme-yumemita';
+import colorsJson from '@chronos/plugin-theme-yumemita/colors.json';
+
+const YUMEMITA_THEME_ID = 'yumemita';
+const YUMEMITA_PALETTE_ENTRIES = colorsJson.coursePalette.light;
 import { applyAppearance } from './apply-appearance';
 
 function createFakeElement() {

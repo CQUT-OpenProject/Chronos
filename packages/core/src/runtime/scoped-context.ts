@@ -4,7 +4,7 @@ import type { UserPreferences } from '../domain/preferences';
 import type { ChronosEnv } from '../types/env';
 import type { Disposable, ServiceIdentifier } from '../types/services';
 import { IStorageService } from '../types/services';
-import type { ChronosContext, ChronosEvents, CustomChronosEvents } from '../types/context';
+import type { ChronosContext, ChronosEvents } from '../types/context';
 import type { ChronosSlotMap } from '../types/slots';
 import type { EventPipeline } from './event-pipeline';
 import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
@@ -184,17 +184,14 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		return this.track(slotDisp);
 	}
 
-	on<E extends keyof (ChronosEvents & CustomChronosEvents)>(
+	on<E extends keyof ChronosEvents>(
 		event: E,
-		handler: (payload: (ChronosEvents & CustomChronosEvents)[E]) => void | Promise<void>
+		handler: (payload: ChronosEvents[E]) => void | Promise<void>
 	): Disposable {
 		return this.track(this.host.events.on(event, handler));
 	}
 
-	emit<E extends keyof (ChronosEvents & CustomChronosEvents)>(
-		event: E,
-		payload: (ChronosEvents & CustomChronosEvents)[E]
-	): void {
+	emit<E extends keyof ChronosEvents>(event: E, payload: ChronosEvents[E]): void {
 		this.host.events.emit(event, payload);
 	}
 

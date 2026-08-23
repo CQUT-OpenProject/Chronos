@@ -9,9 +9,9 @@
 		type TimetableGridModel
 	} from '@chronos/core';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
-	import MiddleTruncateText from '$lib/components/timetable/MiddleTruncateText.svelte';
-	import { createSizedCanvasMeasurer, fitFontSizePx } from '$lib/text/middle-truncate';
-	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
+	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
+	import { createSizedCanvasMeasurer, fitFontSizePx } from '@chronos/ui-kit/utils/middle-truncate';
+	import { timetableDayShortLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,
 		buildOverlapPlaceholderAriaLabel

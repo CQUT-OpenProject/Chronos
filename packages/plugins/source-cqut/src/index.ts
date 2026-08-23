@@ -15,7 +15,11 @@ import {
 	normalizedCourseName,
 	IHttpService
 } from '@chronos/core';
-import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from './campus-period-times';
+import {
+	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
+	DEFAULT_CQUT_CAMPUS_ID,
+	type CqutCampusId
+} from './campus-period-times';
 import { htmlImportSchema, parseHtmlTimetable } from './html-parser';
 
 const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
@@ -157,7 +161,7 @@ function inferCqutTermStartDate(payload: {
 export function parseCqutScheduleData(
 	rawData: CqutScheduleRawInput,
 	studentId = '',
-	fallbackCampusId: CqutCampusId = 'huaxi'
+	fallbackCampusId: CqutCampusId = DEFAULT_CQUT_CAMPUS_ID
 ): Timetable {
 	let courses: Course[] = [];
 	let termStartDate = rawData.termStartDate ?? '';
@@ -231,7 +235,7 @@ export function parseCqutScheduleData(
 	const resolvedCampusId = (rawData.campusId as CqutCampusId) || fallbackCampusId;
 	const campusPeriodTimes = rawData.campusPeriodTimes || CQUT_DEFAULT_CAMPUS_PERIOD_TIMES;
 	const activePeriodTimes =
-		campusPeriodTimes[resolvedCampusId] ?? CQUT_DEFAULT_CAMPUS_PERIOD_TIMES.huaxi;
+		campusPeriodTimes[resolvedCampusId] ?? CQUT_DEFAULT_CAMPUS_PERIOD_TIMES[DEFAULT_CQUT_CAMPUS_ID];
 
 	const customMetadata: Record<string, unknown> = {
 		'source-cqut': {
@@ -340,7 +344,7 @@ export function createCqutPlugin(
 				}
 
 				const parsedJson = (await response.json()) as CqutScheduleRawInput;
-				return parseCqutScheduleData(parsedJson, username, 'huaxi');
+				return parseCqutScheduleData(parsedJson, username, DEFAULT_CQUT_CAMPUS_ID);
 			}
 
 			async function doHtmlImport(inputs: Record<string, unknown>): Promise<Timetable> {
@@ -350,7 +354,7 @@ export function createCqutPlugin(
 					throw new Error('请选择有效的 HTML 课表文件');
 				}
 				const termStartDate = inputs.termStartDate as string | undefined;
-				const campusId = (inputs.campusId as CqutCampusId | undefined) ?? 'huaxi';
+				const campusId = (inputs.campusId as CqutCampusId | undefined) ?? DEFAULT_CQUT_CAMPUS_ID;
 				return parseHtmlTimetable(fileContent, { termStartDate, campusId });
 			}
 

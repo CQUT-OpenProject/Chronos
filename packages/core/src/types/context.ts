@@ -7,13 +7,6 @@ import type { ChronosSlotMap, LocalizedText, CourseBadge, ExportResult } from '.
 /** Plugin category classification */
 export type PluginCategory = 'source' | 'parser' | 'codec' | 'theme' | 'tool';
 
-/**
- * Custom event map extension point for module augmentation.
- * Plugins can extend this interface via `declare module '@chronos/core'`.
- */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface CustomChronosEvents {}
-
 export interface ChronosPlugin<Config extends object = Record<string, unknown>> {
 	readonly id: string;
 	readonly name: LocalizedText;
@@ -111,16 +104,13 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 	): Disposable;
 
 	/** Event bus listener (auto-tracked and revoked on unload) */
-	on<E extends keyof (ChronosEvents & CustomChronosEvents)>(
+	on<E extends keyof ChronosEvents>(
 		event: E,
-		handler: (payload: (ChronosEvents & CustomChronosEvents)[E]) => void | Promise<void>
+		handler: (payload: ChronosEvents[E]) => void | Promise<void>
 	): Disposable;
 
 	/** Emit an event on the shared engine bus */
-	emit<E extends keyof (ChronosEvents & CustomChronosEvents)>(
-		event: E,
-		payload: (ChronosEvents & CustomChronosEvents)[E]
-	): void;
+	emit<E extends keyof ChronosEvents>(event: E, payload: ChronosEvents[E]): void;
 
 	/** Waterfall onion middleware hook */
 	registerWaterfallHook<T = unknown, R = unknown>(

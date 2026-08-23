@@ -6,16 +6,33 @@ import {
 	coursePalette,
 	normalizedCourseName
 } from '@chronos/core';
-import { CQUT_DEFAULT_CAMPUS_PERIOD_TIMES, type CqutCampusId } from './campus-period-times';
+import {
+	CQUT_CAMPUSES,
+	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
+	DEFAULT_CQUT_CAMPUS_ID,
+	type CqutCampusId
+} from './campus-period-times';
 
 const WHITESPACE_REGEX = /\s+/g;
 type WeekParity = 'ALL' | 'ODD' | 'EVEN';
 
 export interface HtmlImportForm {
 	file?: string;
+	campusId?: CqutCampusId;
 }
 
 export const htmlImportSchema = defineSchema<HtmlImportForm>({
+	campusId: {
+		type: 'select',
+		title: () => '校区',
+		description: () => '课表对应的校区（决定节次时间）',
+		default: DEFAULT_CQUT_CAMPUS_ID,
+		required: true,
+		options: Object.entries(CQUT_CAMPUSES).map(([id, campus]) => ({
+			value: id,
+			label: () => campus.apiName
+		}))
+	},
 	file: {
 		type: 'file',
 		title: () => '选择 HTML 文件',

@@ -2,7 +2,7 @@ import type { ChronosPlugin, ThemeContribution } from '@chronos/core';
 import { createWorkbenchColorsFromTokens, defineSchema, IStorageService } from '@chronos/core';
 import { createWallpaperRuntime, type WallpaperRuntime } from './runtime.svelte';
 import { WALLPAPER_PLUGIN_ID } from './storage';
-import { clearWallpaperTheme, extractWallpaperSeed, paintWallpaperTheme } from './wallpaper-theme';
+import { createWallpaperThemeAdapter } from './wallpaper-theme';
 
 export const WALLPAPER_THEME_ID = 'wallpaper';
 
@@ -16,45 +16,43 @@ export const wallpaperScreenSchema = defineSchema({
 	}
 });
 
-export const wallpaperThemeContribution: ThemeContribution = {
-	id: WALLPAPER_THEME_ID,
-	name: () => '壁纸',
-	description: () => '从当前壁纸提取配色',
-	supportsDynamicColor: true,
-	workbenchColors: createWorkbenchColorsFromTokens(
-		{
-			surface: '#f9f9fe',
-			onSurface: '#2e333a',
-			primary: '#0068b7',
-			onPrimary: '#ffffff',
-			surfaceVariant: '#eceef5',
-			outline: '#aeb2bb'
-		},
-		{
-			surface: '#1e2026',
-			onSurface: '#f8fafc',
-			primary: '#0068b7',
-			onPrimary: '#ffffff',
-			surfaceVariant: '#24262e',
-			outline: '#334155'
+export function createWallpaperThemeContribution(): ThemeContribution {
+	return {
+		id: WALLPAPER_THEME_ID,
+		name: () => '壁纸',
+		description: () => '从当前壁纸提取配色',
+		supportsDynamicColor: true,
+		workbenchColors: createWorkbenchColorsFromTokens(
+			{
+				surface: '#f9f9fe',
+				onSurface: '#2e333a',
+				primary: '#0068b7',
+				onPrimary: '#ffffff',
+				surfaceVariant: '#eceef5',
+				outline: '#aeb2bb'
+			},
+			{
+				surface: '#1e2026',
+				onSurface: '#f8fafc',
+				primary: '#0068b7',
+				onPrimary: '#ffffff',
+				surfaceVariant: '#24262e',
+				outline: '#334155'
+			}
+		),
+		dynamicColorAdapter: createWallpaperThemeAdapter(),
+		getTokens: (mode: 'light' | 'dark') => {
+			return {
+				surface: mode === 'dark' ? '#1e2026' : '#f9f9fe',
+				onSurface: mode === 'dark' ? '#f8fafc' : '#2e333a',
+				primary: '#0068b7',
+				onPrimary: '#ffffff',
+				surfaceVariant: mode === 'dark' ? '#24262e' : '#eceef5',
+				outline: mode === 'dark' ? '#334155' : '#aeb2bb'
+			};
 		}
-	),
-	dynamicColorAdapter: {
-		extractWallpaperSeed,
-		paintWallpaperTheme,
-		clearWallpaperTheme
-	},
-	getTokens: (mode: 'light' | 'dark') => {
-		return {
-			surface: mode === 'dark' ? '#1e2026' : '#f9f9fe',
-			onSurface: mode === 'dark' ? '#f8fafc' : '#2e333a',
-			primary: '#0068b7',
-			onPrimary: '#ffffff',
-			surfaceVariant: mode === 'dark' ? '#24262e' : '#eceef5',
-			outline: mode === 'dark' ? '#334155' : '#aeb2bb'
-		};
-	}
-};
+	};
+}
 
 export interface CreateWallpaperPluginOptions {
 	screenComponent?: unknown;
@@ -131,7 +129,8 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 				schema: wallpaperScreenSchema
 			});
 
-			ctx.registerSlot('theme.definition', wallpaperThemeContribution);
+			const themeContribution = createWallpaperThemeContribution();
+			ctx.registerSlot('theme.definition', themeContribution);
 
 			ctx.addDisposable({ dispose: () => runtime.dispose() });
 		}

@@ -1,5 +1,5 @@
 import type { Course } from '@chronos/core';
-import { timetableDayLabel } from '$lib/timetable/day-labels';
+import { timetableDayLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
 
 function formatPeriodRange(startPeriod: number, endPeriod: number): string {
 	return startPeriod === endPeriod ? `第 ${startPeriod} 节` : `第 ${startPeriod}-${endPeriod} 节`;

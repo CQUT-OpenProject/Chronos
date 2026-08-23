@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 import type { ThemeContribution } from '@chronos/core';
 import { m3DefaultTheme } from '@chronos/ui-kit';
-import { wallpaperThemeContribution } from '@chronos/plugin-wallpaper';
+import { wallpaperPlugin } from '@chronos/plugin-wallpaper';
 
 function assertThemeContract(theme: ThemeContribution) {
 	const lightTokens = theme.getTokens('light');
@@ -33,9 +33,35 @@ describe('ThemeContribution contract', () => {
 		expect(m3DefaultTheme.dynamicColorAdapter).toBeUndefined();
 	});
 
-	it('wallpaper theme satisfies contract with dynamicColorAdapter', () => {
-		assertThemeContract(wallpaperThemeContribution);
-		expect(wallpaperThemeContribution.supportsDynamicColor).toBe(true);
-		expect(wallpaperThemeContribution.dynamicColorAdapter).toBeDefined();
+	it('wallpaper theme satisfies contract with dynamicColorAdapter', async () => {
+		const registered = new Map<string, unknown>();
+		const disposable = { dispose: () => {} };
+		await wallpaperPlugin.apply({
+			config: {},
+			storage: {
+				delete: vi.fn(async () => {}),
+				getPluginData: vi.fn(async () => null),
+				setPluginData: vi.fn(async () => {}),
+				deletePluginData: vi.fn(async () => {})
+			},
+			service: () => ({
+				getPluginData: vi.fn(async () => null),
+				setPluginData: vi.fn(async () => {}),
+				deletePluginData: vi.fn(async () => {})
+			}),
+			on: () => disposable,
+			emit: () => {},
+			registerSlot: ((name: string, contribution: unknown) => {
+				registered.set(name, contribution);
+				return disposable;
+			}) as never,
+			addDisposable: () => {}
+		} as never);
+
+		const contribution = registered.get('theme.definition') as ThemeContribution;
+		expect(contribution).toBeDefined();
+		assertThemeContract(contribution);
+		expect(contribution.supportsDynamicColor).toBe(true);
+		expect(contribution.dynamicColorAdapter).toBeDefined();
 	});
 });

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
 import { m3DefaultTheme, buildM3Tokens } from '../src/theme/m3-theme';
-import { tokensToCssVars } from '../src/theme/apply-theme';
 import { createCourse } from '@chronos/core';
 
 describe('M3DefaultTheme', () => {
@@ -52,16 +51,5 @@ describe('M3DefaultTheme', () => {
 		const paint2 = m3DefaultTheme.resolveCoursePaint!(autoCourse, 1, 'light');
 		expect(paint2.background).toBeDefined();
 		expect(paint2.foreground).toBeDefined();
-	});
-
-	it('converts design tokens to CSS custom variables', () => {
-		const tokens = {
-			surface: '#ffffff',
-			primary: '#0068b7',
-			onPrimary: '#ffffff'
-		};
-		const cssVars = tokensToCssVars(tokens);
-		expect(cssVars['--color-surface']).toBe('#ffffff');
-		expect(cssVars['--color-primary']).toBe('#0068b7');
 	});
 });

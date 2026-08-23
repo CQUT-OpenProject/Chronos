@@ -38,7 +38,12 @@ export interface NativeHostBridge {
 /**
  * Creates a standard Headless ChronosEnv driven entirely by a NativeHostBridge
  * (suitable for iOS Swift JavaScriptCore and Android Kotlin QuickJS engines).
- * Frozen experimental API — no production adapters yet; baseline tests only.
+ *
+ * FROZEN BASELINE — no production adapters exist. This module is versioned and
+ * covered by `native-host-baseline.test.ts` only; do not extend the protocol
+ * until a native host project actually consumes it. If no native host is
+ * started within two release cycles, remove this module entirely rather than
+ * letting it linger half-frozen on the export surface.
  */
 export function createNativeHostEnv(
 	bridge: NativeHostBridge,

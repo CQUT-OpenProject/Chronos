@@ -7,7 +7,7 @@
 		normalizedCourseName,
 		resolveCoursePaint
 	} from '@chronos/core';
-	import { timetableDayLabel } from '$lib/timetable/day-labels';
+	import { timetableDayLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
 	import { getAppController } from '$lib/services/app-engine';
 	import Button from '$lib/components/ui/Button.svelte';
 

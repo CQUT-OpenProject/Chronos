@@ -61,6 +61,9 @@ const profileMap: Record<string, ChronosProfile> = {
 	'chronos-cqut-offline': cqutOfflineProfile
 };
 
+/** Every profile known to the host (single runtime source of truth). */
+export const registeredProfiles: readonly ChronosProfile[] = Object.values(profileMap);
+
 export function resolveActiveProfile(): ChronosProfile {
 	const profileId =
 		typeof __CHRONOS_PROFILE__ !== 'undefined' ? __CHRONOS_PROFILE__ : 'chronos-cqut';

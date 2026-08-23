@@ -1,59 +1,22 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
-import { ChronosEngine, type ChronosEnv, type UserPreferences } from '@chronos/core';
+import { describe, it, expect } from 'vite-plus/test';
 import {
-	YUMEMITA_THEME_ID,
-	yumemitaThemeContribution,
-	yumemitaIconThemeContribution,
-	YUMEMITA_PALETTE_ENTRIES
-} from '../src/index';
+	createIconThemeFromJson,
+	createThemeFromColorJson,
+	parseColorThemeJson,
+	parseIconThemeJson
+} from '@chronos/core';
+import colorsJson from '../theme-yumemita.colors.json';
+import iconsJson from '../theme-yumemita.icons.json';
 
-function createMockEnv(): ChronosEnv {
-	return {
-		platform: 'web',
-		http: { request: vi.fn() },
-		storage: {
-			getTimetable: vi.fn(async () => null),
-			listTimetables: vi.fn(async () => []),
-			saveTimetable: vi.fn(async () => {}),
-			patchTimetable: vi.fn(async () => {}),
-			deleteTimetable: vi.fn(async () => {}),
-			getActiveTimetableId: vi.fn(async () => null),
-			setActiveTimetableId: vi.fn(async () => {}),
-			getPreferences: vi.fn(async (): Promise<UserPreferences> => ({
-				schemaVersion: 2,
-				themeMode: 'auto',
-				paletteMode: 'vibrant',
-				timetableLayoutMode: 'fixed',
-				capsuleCornerStyle: 'rounded',
-				hapticFeedbackEnabled: true,
-				visualThemeId: 'm3-default',
-				visualIconThemeId: 'host-default'
-			})),
-			savePreferences: vi.fn(async () => {}),
-			getPluginData: vi.fn(async () => null),
-			setPluginData: vi.fn(async () => {}),
-			deletePluginData: vi.fn(async () => {})
-		},
-		vault: {
-			isSupported: vi.fn(async () => false),
-			storeSecret: vi.fn(async () => {}),
-			getSecret: vi.fn(async () => null),
-			removeSecret: vi.fn(async () => {})
-		},
-		runtime: {
-			setTimeout: () => 0,
-			clearTimeout: () => {},
-			sha256: vi.fn(async () => ''),
-			encodeUtf8: () => new Uint8Array(),
-			decodeUtf8: () => ''
-		}
-	};
-}
+const THEME_ID = 'yumemita';
+const themeContribution = createThemeFromColorJson(parseColorThemeJson(colorsJson));
+const iconThemeContribution = createIconThemeFromJson(parseIconThemeJson(iconsJson));
+const paletteEntries = colorsJson.coursePalette.light;
 
 describe('@chronos/plugin-theme-yumemita', () => {
 	it('builds light/dark workbench colors from JSON', () => {
-		const light = yumemitaThemeContribution.workbenchColors.light;
-		const dark = yumemitaThemeContribution.workbenchColors.dark;
+		const light = themeContribution.workbenchColors.light;
+		const dark = themeContribution.workbenchColors.dark;
 		expect(light['color.primary']).toBe('#2288dd');
 		expect(light['shell.bottomTab.activeForeground']).toBe('#2288dd');
 		expect(light['timetable.period.activeBackgroundImage']).toContain('linear-gradient');
@@ -61,16 +24,16 @@ describe('@chronos/plugin-theme-yumemita', () => {
 	});
 
 	it('resolveCoursePaint uses palette entries', () => {
-		const paint = yumemitaThemeContribution.resolveCoursePaint!(
+		const paint = themeContribution.resolveCoursePaint!(
 			{ id: '1', name: 'Math', weekday: 1, startSlot: 1, endSlot: 2 },
 			0,
 			'light'
 		);
-		expect(paint.background).toBe(YUMEMITA_PALETTE_ENTRIES[0]!.background);
+		expect(paint.background).toBe(paletteEntries[0]!.background);
 	});
 
 	it('icon theme overrides mine tab with svg descriptor', () => {
-		const mineIcons = yumemitaIconThemeContribution.bottomTabIcons?.mine;
+		const mineIcons = iconThemeContribution.bottomTabIcons?.mine;
 		expect(mineIcons?.icon?.type).toBe('svg');
 		expect(mineIcons?.icon?.size).toBe('large');
 		expect(mineIcons?.icon?.rotation).toBe(25);
@@ -78,7 +41,7 @@ describe('@chronos/plugin-theme-yumemita', () => {
 	});
 
 	it('recommends matching icon theme', () => {
-		expect(yumemitaThemeContribution.recommendedIconTheme).toBe(YUMEMITA_THEME_ID);
-		expect(yumemitaIconThemeContribution.id).toBe(YUMEMITA_THEME_ID);
+		expect(themeContribution.recommendedIconTheme).toBe(THEME_ID);
+		expect(iconThemeContribution.id).toBe(THEME_ID);
 	});
 });

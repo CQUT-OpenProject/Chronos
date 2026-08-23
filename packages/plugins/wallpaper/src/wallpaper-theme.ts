@@ -1,13 +1,8 @@
 import { argbFromRgb, QuantizerCelebi, Score } from '@ktibow/material-color-utilities-nightly';
-import type { CoursePaletteEntry } from '@chronos/core';
+import type { CoursePaletteEntry, DynamicColorAdapter } from '@chronos/core';
 import { coursePaletteFromSources, schemeAccentCssVars } from '@chronos/ui-kit';
 
 const MAX_EDGE = 128;
-
-let appliedKeys: string[] = [];
-let cachedUri: string | null = null;
-let cachedSeed: number | null = null;
-let cachedRanked: number[] | null = null;
 
 export function colorsFromImageBytes(bytes: Uint8ClampedArray): {
 	seed: number;
@@ -26,37 +21,59 @@ export function colorsFromImageBytes(bytes: Uint8ClampedArray): {
 	return { seed: ranked[0], ranked };
 }
 
-export function clearWallpaperTheme(target?: HTMLElement) {
-	const el = target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
-	if (!el) return;
-	for (const key of appliedKeys) {
-		el.style.removeProperty(key);
-	}
-	appliedKeys = [];
-}
+/**
+ * Creates an isolated dynamic-color adapter. All mutable state (applied CSS
+ * keys, seed cache) lives in the closure so concurrent plugin instances never
+ * share state across load/unload cycles — same isolation contract as
+ * `createWallpaperRuntime` (ADR 0016 §3).
+ */
+export function createWallpaperThemeAdapter(): DynamicColorAdapter {
+	let appliedKeys: string[] = [];
+	let cachedUri: string | null = null;
+	let cachedSeed: number | null = null;
+	let cachedRanked: number[] | null = null;
 
-export async function extractWallpaperSeed(uri: string): Promise<{
-	seed: number;
-	coursePalette: CoursePaletteEntry[];
-}> {
-	if (uri !== cachedUri || cachedSeed == null || cachedRanked == null) {
-		const { seed, ranked } = colorsFromImageBytes(await downsampleImageBytes(uri));
-		cachedUri = uri;
-		cachedSeed = seed;
-		cachedRanked = ranked;
+	function resolveTarget(target?: HTMLElement): HTMLElement | undefined {
+		return target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
 	}
-	return { seed: cachedSeed, coursePalette: coursePaletteFromSources(cachedRanked) };
-}
 
-export function paintWallpaperTheme(seed: number, isDark: boolean, target?: HTMLElement) {
-	const el = target ?? (typeof document !== 'undefined' ? document.documentElement : undefined);
-	if (!el) return;
-	const vars = schemeAccentCssVars(seed, isDark);
-	clearWallpaperTheme(el);
-	appliedKeys = Object.keys(vars);
-	for (const [key, value] of Object.entries(vars)) {
-		el.style.setProperty(key, value);
+	function clear(target?: HTMLElement): void {
+		const el = resolveTarget(target);
+		if (!el) return;
+		for (const key of appliedKeys) {
+			el.style.removeProperty(key);
+		}
+		appliedKeys = [];
 	}
+
+	async function extractSeed(
+		uri: string
+	): Promise<{ seed: number; coursePalette: readonly CoursePaletteEntry[] }> {
+		if (uri !== cachedUri || cachedSeed == null || cachedRanked == null) {
+			const { seed, ranked } = colorsFromImageBytes(await downsampleImageBytes(uri));
+			cachedUri = uri;
+			cachedSeed = seed;
+			cachedRanked = ranked;
+		}
+		return { seed: cachedSeed, coursePalette: coursePaletteFromSources(cachedRanked) };
+	}
+
+	function paint(seed: number, isDark: boolean, target?: HTMLElement): void {
+		const el = resolveTarget(target);
+		if (!el) return;
+		const vars = schemeAccentCssVars(seed, isDark);
+		clear(el);
+		appliedKeys = Object.keys(vars);
+		for (const [key, value] of Object.entries(vars)) {
+			el.style.setProperty(key, value);
+		}
+	}
+
+	return {
+		extractWallpaperSeed: extractSeed,
+		paintWallpaperTheme: paint,
+		clearWallpaperTheme: clear
+	};
 }
 
 async function downsampleImageBytes(uri: string): Promise<Uint8ClampedArray> {

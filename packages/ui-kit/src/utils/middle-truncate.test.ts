@@ -5,7 +5,6 @@ import {
 	toGraphemes,
 	truncateMiddleByFit
 } from './middle-truncate';
-
 /** Every grapheme is width 10; ellipsis is also one unit. */
 const unitMeasure = (text: string) => toGraphemes(text).length * 10;
 

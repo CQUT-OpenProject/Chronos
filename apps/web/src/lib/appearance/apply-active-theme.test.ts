@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { ChronosEngine } from '@chronos/core';
 import { m3DefaultTheme } from '@chronos/ui-kit';
-import { YUMEMITA_THEME_ID } from '@chronos/plugin-theme-yumemita';
+const YUMEMITA_THEME_ID = 'yumemita';
 import { applyActiveTheme } from './apply-active-theme';
 
 function createFakeElement() {

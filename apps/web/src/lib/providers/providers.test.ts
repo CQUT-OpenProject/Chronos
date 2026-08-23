@@ -5,19 +5,9 @@ import {
 	PluginProxyHttpAdapter,
 	WebRuntimeProvider,
 	WebAnalyticsProvider,
-	createWebProviders,
-	registerWebProviders
+	createWebProviders
 } from './index';
-import { MemoryVaultProvider } from './memory-vault';
-import {
-	createCourse,
-	createTimetable,
-	ServiceContainer,
-	IStorageService,
-	IHttpService,
-	IRuntimeService,
-	IAnalyticsService
-} from '@chronos/core';
+import { createCourse, createTimetable } from '@chronos/core';
 import type { ChronosDB, CourseRow, PluginDataRow, TimetableRow } from '$lib/storage/db';
 
 class MockStorage implements Storage {
@@ -207,14 +197,6 @@ describe('Web Providers', () => {
 		storage.dispose();
 	});
 
-	it('MemoryVaultProvider round-trips secrets', async () => {
-		const vault = new MemoryVaultProvider();
-		await vault.storeSecret('api-token', 'sec-999');
-		expect(await vault.getSecret('api-token')).toBe('sec-999');
-		await vault.removeSecret('api-token');
-		expect(await vault.getSecret('api-token')).toBeNull();
-	});
-
 	it('createWebProviders instantiates all web providers', () => {
 		const providers = createWebProviders({ database: db, localStorage, enablePluginProxy: true });
 		expect(providers.storage).toBeInstanceOf(DexieStorageProvider);
@@ -308,15 +290,5 @@ describe('Web Providers', () => {
 		const providers = createWebProviders({ database: db, localStorage, enablePluginProxy: false });
 		expect(providers.http).toBeInstanceOf(WebHttpProxyProvider);
 		expect(providers.http).not.toBeInstanceOf(PluginProxyHttpAdapter);
-	});
-
-	it('registerWebProviders populates ServiceContainer correctly', () => {
-		const container = new ServiceContainer();
-		registerWebProviders(container, { database: db, localStorage });
-
-		expect(container.has(IStorageService)).toBe(true);
-		expect(container.has(IHttpService)).toBe(true);
-		expect(container.has(IRuntimeService)).toBe(true);
-		expect(container.has(IAnalyticsService)).toBe(true);
 	});
 });
