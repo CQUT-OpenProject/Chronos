@@ -75,7 +75,10 @@ export default defineConfig({
 		__SVELTEKIT_EXPERIMENTAL_EXPLICIT_ENVIRONMENT_VARIABLES__: JSON.stringify(false)
 	},
 	staged: {
-		'*': 'vp check --fix'
+		// Plain .js is excluded: the only tracked .js files are the generated
+		// official-plugin bundles, which must never be reformatted after the
+		// build computed their manifest sha256 (see scripts/verify-official-plugins.ts).
+		'*.{ts,tsx,vue,svelte,json,css,html}': 'vp check --fix'
 	},
 	fmt: {
 		useTabs: true,
