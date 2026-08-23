@@ -97,6 +97,10 @@ export class EventPipeline implements Disposable {
 	}
 
 	// === 2. Waterfall Onion Middleware Pipeline ===
+	// FROZEN BASELINE — 引擎动作内部调用 waterfall/serial，但注册面当前零消费者
+	// （见 CONTEXT.md EventPipeline 段）。与 hosts/native-protocol.ts 同款到期条款：
+	// 不新增公开 API；若两个发布周期内仍无真实消费方，连同引擎动作中的
+	// guard/waterfall 包装一并整体移除，而非让休眠面长期挂在导出表面。
 	registerWaterfall<T = unknown, R = unknown>(
 		event: string,
 		handler: WaterfallHandler<T, R>
@@ -141,6 +145,7 @@ export class EventPipeline implements Disposable {
 	}
 
 	// === 3. Serial Guard Pipeline (Short-circuit on false) ===
+	// 同上：FROZEN BASELINE，到期即随 waterfall 一起移除。
 	registerSerial<T = unknown>(event: string, handler: SerialHandler<T>): Disposable {
 		let hooks = this.serialHooks.get(event);
 		if (!hooks) {

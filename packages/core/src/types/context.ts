@@ -2,7 +2,8 @@ import type { Course } from '../domain/course';
 import type { AcademicConfig, Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
 import type { Disposable, ServiceIdentifier } from './services';
-import type { ChronosSlotMap, LocalizedText, CourseBadge, ExportResult } from './slots';
+import type { ChronosSlotMap, LocalizedText, CourseBadge } from './slots';
+import type { ConfigSchema } from '../schema/schema';
 
 /** Plugin category classification */
 export type PluginCategory = 'source' | 'parser' | 'codec' | 'theme' | 'tool';
@@ -35,14 +36,6 @@ export interface ChronosPlugin<Config extends object = Record<string, unknown>> 
 	/** Plugin deactivation cleanup hook */
 	dispose?(): void | Promise<void>;
 }
-
-export interface ExportTransformContext {
-	readonly exporterId: string;
-	timetable: Timetable;
-	targetData: Record<string, unknown>;
-}
-
-export type ExportTransformHook = (ctx: ExportTransformContext) => void | Promise<void>;
 
 export interface ChronosContext<Config extends object = Record<string, unknown>> {
 	readonly pluginId: string;
@@ -141,10 +134,6 @@ export interface ChronosEvents {
 	'config:changed': { pluginId: string; config: Record<string, unknown> };
 	'slots:updated': void;
 	'badges:updated': { badges: Record<string, CourseBadge[]> };
-	'import:before': { sourceId: string };
-	'import:after': { sourceId: string; timetable: Timetable };
-	'export:before': { exporterId: string; timetable: Timetable };
-	'export:after': { exporterId: string; result: ExportResult };
 	'plugin:loaded': { pluginId: string };
 	'plugin:unloaded': { pluginId: string };
 	'dynamicColor:set': { blob: Blob | null };
