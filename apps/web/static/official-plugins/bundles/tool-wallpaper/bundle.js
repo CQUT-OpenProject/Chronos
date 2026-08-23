@@ -6730,10 +6730,10 @@ function Ts(e) {
 	return e ? "" : "bg-surface";
 }
 function Es(e) {
-	return e ? "bg-[var(--wallpaper-tint-sidebar)]" : "bg-surface";
+	return e ? "bg-[var(--dynamic-tint-sidebar)]" : "bg-surface";
 }
 function Ds(e) {
-	return e ? "timetable-wallpaper-body" : "bg-surface";
+	return e ? "timetable-dynamic-tint-body" : "bg-surface";
 }
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/TimetablePreviewGrid.svelte
@@ -6863,14 +6863,14 @@ function Bs(e, t) {
 				let i;
 				var a = M(r);
 				D(r), D(t), N((e) => {
-					Hr(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`, "svelte-1o3jcov"), i = z(r, "", i, { "font-size": `${I(n).placeholderPx ?? ""}px` }), _r(a, `此时段有 ${I(n).count ?? ""} 门课程重叠`);
+					Hr(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`), i = z(r, "", i, { "font-size": `${I(n).placeholderPx ?? ""}px` }), _r(a, `此时段有 ${I(n).count ?? ""} 门课程重叠`);
 				}, [() => w(I(n).corners)]), or("click", t, () => S(I(n).key)), R(e, t);
 			}, o = (e) => {
 				var t = js(), r = M(t);
 				let i;
 				var a = M(r);
 				D(r), D(t), N((e) => {
-					Hr(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`, "svelte-1o3jcov"), i = z(r, "", i, { "font-size": `${I(n).placeholderPx ?? ""}px` }), _r(a, `${I(n).count ?? ""} 门课程重叠`);
+					Hr(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`), i = z(r, "", i, { "font-size": `${I(n).placeholderPx ?? ""}px` }), _r(a, `${I(n).count ?? ""} 门课程重叠`);
 				}, [() => w(I(n).corners)]), R(e, t);
 			};
 			Tr(r, (e) => {
@@ -6935,7 +6935,7 @@ function Bs(e, t) {
 				Tr(d, (e) => {
 					I(n).teacher && e(f);
 				}), D(r), N((e) => {
-					Hr(r, 1, `course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left ${e ?? ""} ${I(n).displayModel.isInDisplayedWeek ? "" : "opacity-45"}`, "svelte-1o3jcov"), a = z(r, "", a, {
+					Hr(r, 1, `course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left ${e ?? ""} ${I(n).displayModel.isInDisplayedWeek ? "" : "opacity-45"}`), a = z(r, "", a, {
 						"--capsule": I(n).colors.background,
 						"--capsule-fg": I(n).colors.text
 					});
@@ -6997,7 +6997,7 @@ function Bs(e, t) {
 				Tr(u, (e) => {
 					I(n).teacher && e(d);
 				}), D(t), N((e) => {
-					Hr(t, 1, `course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left ${e ?? ""} ${I(n).displayModel.isInDisplayedWeek ? "" : "opacity-45"}`, "svelte-1o3jcov"), r = z(t, "", r, {
+					Hr(t, 1, `course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left ${e ?? ""} ${I(n).displayModel.isInDisplayedWeek ? "" : "opacity-45"}`), r = z(t, "", r, {
 						"--capsule": I(n).colors.background,
 						"--capsule-fg": I(n).colors.text
 					});
@@ -7016,7 +7016,7 @@ function Bs(e, t) {
 			height: `calc(var(--row-height) * ${I(r) ?? ""})`
 		})), R(e, i);
 	}), D(pe), Ir(pe, () => ee), D(le), D(ce), Ir(ce, () => te), D(ne), N((e, n) => {
-		Hr(ne, 1, `relative flex h-full min-h-0 w-full flex-1 flex-col ${I(_) ?? ""}`, "svelte-1o3jcov"), z(ne, `--row-height: ${I(b) ?? ""}; --sidebar-width: 3.25rem`), Hr(re, 1, `flex shrink-0 items-center py-2 ${e ?? ""}`, "svelte-1o3jcov"), _r(oe, t.gridModel.monthLabel), Hr(ce, 1, `min-h-0 flex-1 ${I(v) ? "overflow-hidden" : "overflow-y-auto"} ${n ?? ""}`, "svelte-1o3jcov"), ue = z(le, "", ue, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` }), fe = z(de, "", fe, {
+		Hr(ne, 1, `relative flex h-full min-h-0 w-full flex-1 flex-col ${I(_) ?? ""}`), z(ne, `--row-height: ${I(b) ?? ""}; --sidebar-width: 3.25rem`), Hr(re, 1, `flex shrink-0 items-center py-2 ${e ?? ""}`), _r(oe, t.gridModel.monthLabel), Hr(ce, 1, `min-h-0 flex-1 ${I(v) ? "overflow-hidden" : "overflow-y-auto"} ${n ?? ""}`), ue = z(le, "", ue, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` }), fe = z(de, "", fe, {
 			width: "var(--sidebar-width)",
 			height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})`
 		}), me = z(pe, "", me, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` });
@@ -7144,43 +7144,58 @@ function Ks(e, t) {
 	}), R(e, b), ze();
 }
 //#endregion
-//#region packages/plugins/wallpaper/src/storage.ts
-var qs = "tool-wallpaper", Js = "wallpaper_image";
-function Ys(e) {
+//#region packages/codec-kit/src/base64.ts
+var qs = 8192;
+function Js(e) {
 	let t = "";
-	for (let n = 0; n < e.length; n += 1) t += String.fromCharCode(e[n]);
-	return btoa(t);
+	for (let n = 0; n < e.length; n += qs) t += String.fromCharCode(...e.subarray(n, n + qs));
+	return t;
 }
-function Xs(e) {
+function Ys(e) {
+	return btoa(Js(e));
+}
+(() => {
+	let e = /* @__PURE__ */ new Uint32Array(256);
+	for (let t = 0; t < 256; t += 1) {
+		let n = t;
+		for (let e = 0; e < 8; e += 1) n = n & 1 ? n >>> 1 ^ 3988292384 : n >>> 1;
+		e[t] = n >>> 0;
+	}
+	return e;
+})();
+//#endregion
+//#region packages/plugins/wallpaper/src/storage.ts
+var Xs = "tool-wallpaper", Zs = "wallpaper_image";
+function Qs(e) {
 	return `data:${e.mimeType || "image/jpeg"};base64,${e.base64}`;
 }
-async function Zs(e) {
+async function $s(e) {
 	let t = await e.arrayBuffer();
 	return {
 		mimeType: e.type || "image/jpeg",
 		base64: Ys(new Uint8Array(t))
 	};
 }
-async function Qs(e, t = qs) {
-	let n = await e.getPluginData(t, Js);
-	return n?.base64 ? Xs(n) : null;
+async function ec(e, t = Xs) {
+	let n = await e.getPluginData(t, Zs);
+	return n?.base64 ? Qs(n) : null;
 }
-async function $s(e, t, n = qs) {
-	let r = await Zs(t);
-	return await e.setPluginData(n, Js, r), Xs(r);
+async function tc(e, t, n = Xs) {
+	let r = await $s(t);
+	return await e.setPluginData(n, Zs, r), Qs(r);
 }
-async function ec(e, t = qs) {
-	await e.deletePluginData(t, Js);
+async function nc(e, t = Xs) {
+	await e.deletePluginData(t, Zs);
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/runtime.svelte.ts
-var tc = /* @__PURE__ */ new Map();
-function nc(e = qs) {
-	let t = tc.get(e);
+var rc = /* @__PURE__ */ new Map();
+function ic(e = Xs) {
+	let t = rc.get(e);
 	if (!t) throw Error(`[WallpaperRuntime] not initialized for plugin "${e}"`);
 	return t;
 }
-function rc(e, t = qs) {
+function ac(e, t = Xs) {
 	let n = /* @__PURE__ */ Lt(null), r = null;
 	function i(e) {
 		j(n, e, !0);
@@ -7202,28 +7217,28 @@ function rc(e, t = qs) {
 				i(null);
 				return;
 			}
-			i(await Qs(e, t));
+			i(await ec(e, t));
 		},
 		async setWallpaper(n) {
 			if (!n) {
-				await ec(e, t), i(null);
+				await nc(e, t), i(null);
 				return;
 			}
-			i(await $s(e, n, t));
+			i(await tc(e, n, t));
 		},
 		setChangeHandler(e) {
 			r = e, e && e(I(n));
 		},
 		dispose() {
-			i(null), r = null, tc.get(t) === a && tc.delete(t);
+			i(null), r = null, rc.get(t) === a && rc.delete(t);
 		}
 	};
-	return tc.set(t, a), a;
+	return rc.set(t, a), a;
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/wallpaper-theme.ts
-var ic = 128;
-function ac(e) {
+var oc = 128;
+function sc(e) {
 	let t = [];
 	for (let n = 0; n < e.length; n += 4) {
 		let r = e[n], i = e[n + 1], a = e[n + 2];
@@ -7235,7 +7250,7 @@ function ac(e) {
 		ranked: n
 	};
 }
-function oc() {
+function cc() {
 	let e = [], t = null, n = null, r = null;
 	function i(e) {
 		return e ?? (typeof document < "u" ? document.documentElement : void 0);
@@ -7249,7 +7264,7 @@ function oc() {
 	}
 	async function o(e) {
 		if (e !== t || n == null || r == null) {
-			let { seed: i, ranked: a } = ac(await sc(e));
+			let { seed: i, ranked: a } = sc(await lc(e));
 			t = e, n = i, r = a;
 		}
 		return {
@@ -7270,29 +7285,55 @@ function oc() {
 		clearWallpaperTheme: a
 	};
 }
-async function sc(e) {
+async function lc(e) {
 	let t = new Image();
 	t.src = e, await t.decode();
-	let n = t.naturalWidth || t.width, r = t.naturalHeight || t.height, i = Math.min(1, ic / Math.max(n, r, 1)), a = Math.max(1, Math.round(n * i)), o = Math.max(1, Math.round(r * i)), s = document.createElement("canvas");
+	let n = t.naturalWidth || t.width, r = t.naturalHeight || t.height, i = Math.min(1, oc / Math.max(n, r, 1)), a = Math.max(1, Math.round(n * i)), o = Math.max(1, Math.round(r * i)), s = document.createElement("canvas");
 	s.width = a, s.height = o;
 	let c = s.getContext("2d");
 	if (!c) throw Error("Could not get canvas context");
 	return c.drawImage(t, 0, 0, a, o), c.getImageData(0, 0, a, o).data;
 }
 //#endregion
-//#region packages/plugins/wallpaper/src/create-wallpaper-plugin.ts
-var cc = "wallpaper", lc = ua({ wallpaper: {
-	type: "wallpaper-preview",
-	title: () => "选择壁纸图片",
-	description: () => "支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩",
-	accept: "image/*",
-	required: !1
-} });
-function uc() {
+//#region packages/plugins/wallpaper/src/messages.ts
+function uc(e) {
+	return ua({ wallpaper: {
+		type: "wallpaper-preview",
+		title: () => e("screen.field.wallpaper.title"),
+		description: () => e("screen.field.wallpaper.description"),
+		accept: "image/*",
+		required: !1
+	} });
+}
+var dc = {
+	"zh-cn": {
+		"plugin.name": "自定义壁纸",
+		"plugin.description": "自定义课表页壁纸，支持动态取色",
+		"theme.name": "壁纸",
+		"theme.description": "从当前壁纸提取配色",
+		"mine.title": "设置课表壁纸",
+		"mine.keywords": "壁纸,背景,图片,自定义,封面",
+		"screen.title": "设置课表壁纸",
+		"screen.field.wallpaper.title": "选择壁纸图片",
+		"screen.field.wallpaper.description": "支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩"
+	},
+	en: {
+		"plugin.name": "Custom Wallpaper",
+		"plugin.description": "Custom timetable wallpaper with dynamic color extraction",
+		"theme.name": "Wallpaper",
+		"theme.description": "Extract palette from the current wallpaper",
+		"mine.title": "Set timetable wallpaper",
+		"mine.keywords": "wallpaper,background,image,custom,cover",
+		"screen.title": "Set timetable wallpaper",
+		"screen.field.wallpaper.title": "Choose wallpaper image",
+		"screen.field.wallpaper.description": "PNG, JPG, or WebP images with automatic theme color extraction"
+	}
+}, fc = "wallpaper";
+function pc(e) {
 	return {
-		id: cc,
-		name: () => "壁纸",
-		description: () => "从当前壁纸提取配色",
+		id: fc,
+		name: () => e("theme.name"),
+		description: () => e("theme.description"),
 		supportsDynamicColor: !0,
 		workbenchColors: ha({
 			surface: "#f9f9fe",
@@ -7309,7 +7350,7 @@ function uc() {
 			surfaceVariant: "#24262e",
 			outline: "#334155"
 		}),
-		dynamicColorAdapter: oc(),
+		dynamicColorAdapter: cc(),
 		getTokens: (e) => ({
 			surface: e === "dark" ? "#1e2026" : "#f9f9fe",
 			onSurface: e === "dark" ? "#f8fafc" : "#2e333a",
@@ -7320,7 +7361,7 @@ function uc() {
 		})
 	};
 }
-async function dc(e, t) {
+async function mc(e, t) {
 	let n = t.wallpaper;
 	if (n instanceof Uint8Array) {
 		await e.setWallpaper(new Blob([new Uint8Array(n)]));
@@ -7328,61 +7369,60 @@ async function dc(e, t) {
 	}
 	n === null && await e.setWallpaper(null);
 }
-function fc(e = {}) {
-	let { screenComponent: t } = e;
+function hc(e = {}) {
+	let { screenComponent: t } = e, n;
 	return {
-		id: qs,
-		name: () => "自定义壁纸",
+		id: Xs,
+		name: () => n?.("plugin.name") ?? dc["zh-cn"]["plugin.name"],
 		version: "1.0.0",
-		description: () => "自定义课表页壁纸，支持动态取色",
+		description: () => n?.("plugin.description") ?? dc["zh-cn"]["plugin.description"],
 		category: "tool",
 		order: 40,
 		author: "Chronos Community",
 		homepage: "https://github.com/CQUT-OpenProject/Chronos",
-		configSchema: lc,
+		configSchema: uc((e) => dc["zh-cn"][e]),
 		defaultConfig: {},
 		async apply(e) {
-			let n = rc(e.service(fa), qs);
-			n.setChangeHandler((t) => {
+			e.i18n.registerMessages(dc);
+			let r = (t) => e.i18n.t(t);
+			n = r;
+			let i = uc(r), a = ac(e.service(fa), Xs);
+			a.setChangeHandler((t) => {
 				e.emit("dynamicColor:changed", { uri: t });
 			}), e.on("dynamicColor:set", async ({ blob: e }) => {
-				await n.setWallpaper(e);
+				await a.setWallpaper(e);
 			}), e.on("dynamicColor:hydrate", () => {
-				e.emit("dynamicColor:changed", { uri: n.uri });
+				e.emit("dynamicColor:changed", { uri: a.uri });
 			}), e.on("config:changed", async ({ pluginId: e, config: t }) => {
-				e === "tool-wallpaper" && await dc(n, t);
-			}), await n.syncFromStorage(!0), e.registerSlot("mine.item", {
+				e === "tool-wallpaper" && await mc(a, t);
+			}), await a.syncFromStorage(!0);
+			let o = r("mine.keywords").split(",").map((e) => e.trim()).filter(Boolean);
+			e.registerSlot("mine.item", {
 				id: "wallpaper",
 				sectionId: "appearance-feedback",
-				title: () => "设置课表壁纸",
+				title: () => r("mine.title"),
 				href: "/plugins/tool-wallpaper",
 				icon: "wallpaper",
 				iconTone: "primary",
-				keywords: [
-					"壁纸",
-					"背景",
-					"图片",
-					"自定义",
-					"封面"
-				],
+				keywords: o,
 				order: 30
 			}), e.registerSlot("shell.route.screen", {
-				id: qs,
-				title: () => "设置课表壁纸",
+				id: Xs,
+				title: () => r("screen.title"),
 				...t ? { component: t } : {},
-				schema: lc
+				schema: i
 			});
-			let r = uc();
-			e.registerSlot("theme.definition", r), e.addDisposable({ dispose: () => n.dispose() });
+			let s = pc(r);
+			e.registerSlot("theme.definition", s), e.addDisposable({ dispose: () => a.dispose() });
 		}
 	};
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/WallpaperScreen.svelte
-var pc = /* @__PURE__ */ L("<div class=\"relative flex min-h-0 flex-1 flex-col overflow-hidden\"><!></div>"), mc = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 items-center justify-center bg-canvas p-4\"><p class=\"m3-body-medium text-center text-on-surface-variant\">选择壁纸后，可在此预览应用效果</p></div>"), hc = /* @__PURE__ */ L("<button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface\">清除壁纸</button>"), gc = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 flex-col\"><input type=\"file\" accept=\"image/*\" class=\"hidden\"/> <!> <div class=\"bottom-bar\"><div class=\"mx-auto flex h-full w-full max-w-lg items-center gap-3\"><!> <button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary\"> </button></div></div></div>");
-function _c(e, t) {
+var gc = /* @__PURE__ */ L("<div class=\"relative flex min-h-0 flex-1 flex-col overflow-hidden\"><!></div>"), _c = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 items-center justify-center bg-canvas p-4\"><p class=\"m3-body-medium text-center text-on-surface-variant\">选择壁纸后，可在此预览应用效果</p></div>"), vc = /* @__PURE__ */ L("<button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface\">清除壁纸</button>"), yc = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 flex-col\"><input type=\"file\" accept=\"image/*\" class=\"hidden\"/> <!> <div class=\"bottom-bar\"><div class=\"mx-auto flex h-full w-full max-w-lg items-center gap-3\"><!> <button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary\"> </button></div></div></div>");
+function bc(e, t) {
 	Re(t, !0);
-	let n = nc(t.pluginId), r = /* @__PURE__ */ k(() => n.uri), i = /* @__PURE__ */ k(() => n.hasWallpaper), a = /* @__PURE__ */ k(() => t.controller.currentTimetable), o = /* @__PURE__ */ Lt(void 0);
+	let n = ic(t.pluginId), r = /* @__PURE__ */ k(() => n.uri), i = /* @__PURE__ */ k(() => n.hasWallpaper), a = /* @__PURE__ */ k(() => t.controller.currentTimetable), o = /* @__PURE__ */ Lt(void 0);
 	function s() {
 		I(o)?.click();
 	}
@@ -7404,10 +7444,10 @@ function _c(e, t) {
 	async function l() {
 		await n.setWallpaper(null);
 	}
-	var u = gc(), d = M(u);
+	var u = yc(), d = M(u);
 	Gr(d, (e) => j(o, e), () => I(o));
 	var f = $t(d, 2), p = (e) => {
-		var n = pc();
+		var n = gc();
 		Ks(M(n), {
 			get controller() {
 				return t.controller;
@@ -7419,13 +7459,13 @@ function _c(e, t) {
 			interactive: !1
 		}), D(n), R(e, n);
 	}, m = (e) => {
-		R(e, mc());
+		R(e, _c());
 	};
 	Tr(f, (e) => {
 		I(i) && I(a) ? e(p) : e(m, -1);
 	});
 	var h = $t(f, 2), g = M(h), _ = M(g), v = (e) => {
-		var t = hc();
+		var t = vc();
 		or("click", t, l), R(e, t);
 	};
 	Tr(_, (e) => {
@@ -7437,6 +7477,6 @@ function _c(e, t) {
 sr(["change", "click"]);
 //#endregion
 //#region packages/plugins/wallpaper/bundle/entry.ts
-var vc = fc({ screenComponent: Ws(_c) });
+var xc = hc({ screenComponent: Ws(bc) });
 //#endregion
-export { vc as default };
+export { xc as default };
