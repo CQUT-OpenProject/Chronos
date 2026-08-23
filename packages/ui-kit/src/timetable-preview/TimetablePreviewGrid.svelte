@@ -1,4 +1,5 @@
 <script lang="ts">
+	import './timetable-dynamic-tint.css';
 	import type { Attachment } from 'svelte/attachments';
 	import {
 		placeCapsules,
@@ -457,15 +458,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	.timetable-wallpaper-body {
-		background-image: linear-gradient(
-			90deg,
-			var(--wallpaper-tint-sidebar) 0,
-			var(--wallpaper-tint-sidebar) var(--sidebar-width),
-			var(--wallpaper-tint-grid) var(--sidebar-width),
-			var(--wallpaper-tint-grid) 100%
-		);
-	}
-</style>

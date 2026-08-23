@@ -1,0 +1,20 @@
+/* Neutral dynamic-background tint tokens for timetable grid chrome (host + plugins). */
+:root {
+	--dynamic-tint-sidebar: rgb(255 255 255 / 0.54);
+	--dynamic-tint-grid: rgb(255 255 255 / 0.38);
+}
+
+.dark {
+	--dynamic-tint-sidebar: rgb(24 24 27 / 0.72);
+	--dynamic-tint-grid: rgb(24 24 27 / 0.62);
+}
+
+.timetable-dynamic-tint-body {
+	background-image: linear-gradient(
+		90deg,
+		var(--dynamic-tint-sidebar) 0,
+		var(--dynamic-tint-sidebar) var(--sidebar-width),
+		var(--dynamic-tint-grid) var(--sidebar-width),
+		var(--dynamic-tint-grid) 100%
+	);
+}

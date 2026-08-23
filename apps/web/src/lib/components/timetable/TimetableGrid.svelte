@@ -486,15 +486,3 @@
 		{/if}
 	</button>
 {/snippet}
-
-<style>
-	.timetable-wallpaper-body {
-		background-image: linear-gradient(
-			90deg,
-			var(--wallpaper-tint-sidebar) 0,
-			var(--wallpaper-tint-sidebar) var(--sidebar-width),
-			var(--wallpaper-tint-grid) var(--sidebar-width),
-			var(--wallpaper-tint-grid) 100%
-		);
-	}
-</style>

@@ -5,9 +5,9 @@ export function timetableSolidBgClass(hasDynamicBackground: boolean): string {
 }
 
 export function timetableSidebarTintClass(hasDynamicBackground: boolean): string {
-	return hasDynamicBackground ? 'bg-[var(--wallpaper-tint-sidebar)]' : 'bg-surface';
+	return hasDynamicBackground ? 'bg-[var(--dynamic-tint-sidebar)]' : 'bg-surface';
 }
 
 export function timetableBodyTintClass(hasDynamicBackground: boolean): string {
-	return hasDynamicBackground ? 'timetable-wallpaper-body' : 'bg-surface';
+	return hasDynamicBackground ? 'timetable-dynamic-tint-body' : 'bg-surface';
 }
