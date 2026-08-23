@@ -10,7 +10,8 @@ import {
 	IHttpService,
 	IRuntimeService,
 	parseColorThemeJson,
-	parseIconThemeJson
+	parseIconThemeJson,
+	ScopedContext
 } from '@chronos/core';
 import { loadEsmPluginFromCode, validatePluginManifest } from './plugin-bundle';
 
@@ -281,18 +282,26 @@ export class OfficialPluginService implements Disposable {
 
 		const disposables: Disposable[] = [];
 
-		if (record.colorsJson) {
-			const theme = createThemeFromColorJson(parseColorThemeJson(JSON.parse(record.colorsJson)));
-			disposables.push(this.engine.themes.registerTheme(theme));
-			disposables.push(this.engine.slots.register('theme.definition', theme, manifest.id));
-		}
-
-		if (record.iconThemeJson) {
-			const iconTheme = createIconThemeFromJson(
-				parseIconThemeJson(JSON.parse(record.iconThemeJson))
-			);
-			disposables.push(this.engine.iconThemes.registerIconTheme(iconTheme));
-			disposables.push(this.engine.slots.register('theme.icon.definition', iconTheme, manifest.id));
+		if (record.colorsJson || record.iconThemeJson) {
+			// JSON-only 主题资产经 ScopedContext 注册：slots↔registry 配对逻辑单源
+			const ctx = new ScopedContext(manifest.id, this.engine);
+			if (record.colorsJson) {
+				disposables.push(
+					ctx.registerSlot(
+						'theme.definition',
+						createThemeFromColorJson(parseColorThemeJson(JSON.parse(record.colorsJson)))
+					)
+				);
+			}
+			if (record.iconThemeJson) {
+				disposables.push(
+					ctx.registerSlot(
+						'theme.icon.definition',
+						createIconThemeFromJson(parseIconThemeJson(JSON.parse(record.iconThemeJson)))
+					)
+				);
+			}
+			disposables.push({ dispose: () => ctx.dispose() });
 		}
 
 		if (record.code) {

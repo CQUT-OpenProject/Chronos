@@ -123,18 +123,9 @@
 		);
 	}
 
-	function resolveThemeIdForManifest(manifest: PluginManifest): string | null {
-		if (manifest.type !== 'theme') return null;
-		if (manifest.id.startsWith('theme-')) {
-			return manifest.id.slice('theme-'.length);
-		}
-		return manifest.id;
-	}
-
 	function isThemePluginInUse(manifest: PluginManifest, enabled: boolean): boolean {
-		if (!enabled || manifest.type !== 'theme') return false;
-		const themeId = resolveThemeIdForManifest(manifest);
-		return themeId !== null && activeColorSchemeId === themeId;
+		// themeId 由构建期从 colors JSON 显式写入，宿主不猜测 id 前缀
+		return Boolean(enabled && manifest.themeId && activeColorSchemeId === manifest.themeId);
 	}
 
 	async function handleInstall(manifest: PluginManifest, manifestUrl?: string) {

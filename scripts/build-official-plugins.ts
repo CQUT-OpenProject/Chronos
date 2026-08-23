@@ -95,6 +95,10 @@ for (const plugin of plugins) {
 		writeFileSync(resolve(outDir, colorsFileName), colorsContent, 'utf8');
 		manifest.colorsUrl = pluginAssetUrl(plugin.id, colorsFileName);
 		manifest.colorsSha256 = createHash('sha256').update(colorsContent).digest('hex');
+		const declaredId = (JSON.parse(colorsContent) as { id?: unknown }).id;
+		if (typeof declaredId === 'string' && declaredId) {
+			manifest.themeId = declaredId;
+		}
 	}
 
 	if (plugin.iconsJson && existsSync(plugin.iconsJson)) {
