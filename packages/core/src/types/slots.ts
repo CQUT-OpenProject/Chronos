@@ -10,7 +10,7 @@ export type LocalizedText = string | (() => string);
 export type ShellIconRef = string | import('../theme/icon-theme').ShellIconDescriptor;
 
 /** How the host groups import sources for copy and onboarding. */
-export type ImportKind = 'online' | 'file' | 'link';
+export type ImportKind = 'online' | 'file' | 'link' | 'custom';
 
 // 1. Import tab slot contribution specification (dynamic schema-driven interaction)
 export interface ImportTabSlotContribution<
@@ -19,10 +19,11 @@ export interface ImportTabSlotContribution<
 	id: string;
 	title: LocalizedText;
 	order?: number;
-	icon?: string;
+	icon?: ShellIconRef;
 	supportingText?: LocalizedText;
 	/** Host-facing capability tag for onboarding copy and import descriptions. */
 	importKind?: ImportKind;
+	badge?: LocalizedText;
 	/** Declare input fields required by the import source (credentials, captcha, campus select, HTML file, etc.) */
 	inputSchema?: ConfigSchema<FormState>;
 	defaultInput?: FormState;
@@ -33,19 +34,27 @@ export interface ImportTabSlotContribution<
 }
 
 // 2. Export action slot contribution specification
+export type ExportDisposition = 'clipboard' | 'download' | 'custom';
+
 export interface ExportResult {
-	filename: string;
+	filename?: string;
 	mimeType: string;
 	content: string | Uint8Array;
+	disposition?: ExportDisposition;
+	successMessage?: LocalizedText;
 }
 
 export interface ExportActionSlotContribution {
 	id: string;
 	title: LocalizedText;
 	order?: number;
-	icon?: string;
+	icon?: ShellIconRef;
+	description?: LocalizedText;
+	disposition?: ExportDisposition;
+	isPrimary?: boolean;
 	export(timetable: Timetable, ctx?: ChronosContext): Promise<ExportResult>;
 	estimateLength?(timetable: Timetable, ctx?: ChronosContext): Promise<number>;
+	checkWarning?(timetable: Timetable, ctx?: ChronosContext): Promise<string | null>;
 }
 
 // 3. Mine/Settings section and item slot contribution specification

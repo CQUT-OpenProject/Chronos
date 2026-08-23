@@ -78,16 +78,33 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 				id: 'share-link',
 				title: () => '复制课表分享链接',
 				order: 5,
+				disposition: 'clipboard',
+				isPrimary: true,
+				description: () => '生成紧凑分享口令并复制到剪贴板',
 				async export(timetable: Timetable): Promise<ExportResult> {
 					const link = await encodeShareLink(timetable);
 					const clipboardText = formatShareClipboardText(timetable.name, link);
 					return {
 						filename: 'share-link.txt',
 						mimeType: 'application/x-chronos-share-link',
-						content: clipboardText
+						content: clipboardText,
+						disposition: 'clipboard',
+						successMessage: () => '已复制课表链接'
 					};
 				},
-				estimateLength: estimateShareLinkLength
+				estimateLength: estimateShareLinkLength,
+				async checkWarning(timetable: Timetable): Promise<string | null> {
+					if (!timetable.courses?.length) return null;
+					try {
+						const length = await estimateShareLinkLength(timetable);
+						if (length > 2000) {
+							return '课表较大，部分应用可能截断链接内容，请注意核对导入结果';
+						}
+						return null;
+					} catch {
+						return null;
+					}
+				}
 			});
 		}
 	};
