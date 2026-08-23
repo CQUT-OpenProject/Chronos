@@ -13,6 +13,7 @@ import {
 	createCourse,
 	createTimetable,
 	coursePalette,
+	deriveWeekendViewPrefs,
 	normalizedCourseName,
 	IHttpService
 } from '@chronos/core';
@@ -222,8 +223,7 @@ export function parseCqutScheduleData(
 		courses,
 		academicConfig,
 		viewPrefs: {
-			showSaturday: courses.some((c) => c.dayOfWeek === 6),
-			showSunday: courses.some((c) => c.dayOfWeek === 7),
+			...deriveWeekendViewPrefs(courses),
 			showNonCurrentWeekCourses: false
 		},
 		importMetadata: {

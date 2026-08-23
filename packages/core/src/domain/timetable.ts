@@ -21,6 +21,20 @@ export interface TimetableViewPrefs {
 	showNonCurrentWeekCourses: boolean;
 }
 
+/**
+ * Derive initial weekend-column visibility from actual course occupancy.
+ * Single source for import-constructing plugins (source/codec); users may
+ * still override both flags afterwards via timetable details editing.
+ */
+export function deriveWeekendViewPrefs(
+	courses: ReadonlyArray<Pick<Course, 'dayOfWeek'>>
+): Pick<TimetableViewPrefs, 'showSaturday' | 'showSunday'> {
+	return {
+		showSaturday: courses.some((course) => course.dayOfWeek === 6),
+		showSunday: courses.some((course) => course.dayOfWeek === 7)
+	};
+}
+
 export interface ImportMetadata {
 	source: string;
 	campusId?: string;

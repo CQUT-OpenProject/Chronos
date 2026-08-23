@@ -130,6 +130,32 @@ describe('codec-qrcode high-compression serialization & slot execution', () => {
 		]);
 	});
 
+	it('derives weekend column visibility from course occupancy on import', async () => {
+		const mkCourse = (id: string, dayOfWeek: number) =>
+			createCourse({ id, name: `课程${dayOfWeek}`, dayOfWeek, startPeriod: 1, endPeriod: 2 });
+		const saturdayOnly = createTimetable({
+			id: 't-sat',
+			name: '仅周六课',
+			courses: [mkCourse('c1', 6)]
+		});
+		const restoredSat = await deserializeTimetableFromQr(
+			await serializeTimetableForQr(saturdayOnly)
+		);
+		expect(restoredSat.viewPrefs.showSaturday).toBe(true);
+		expect(restoredSat.viewPrefs.showSunday).toBe(false);
+
+		const weekdaysOnly = createTimetable({
+			id: 't-weekday',
+			name: '仅工作日课',
+			courses: [mkCourse('c2', 1), mkCourse('c3', 3)]
+		});
+		const restoredWeekdays = await deserializeTimetableFromQr(
+			await serializeTimetableForQr(weekdaysOnly)
+		);
+		expect(restoredWeekdays.viewPrefs.showSaturday).toBe(false);
+		expect(restoredWeekdays.viewPrefs.showSunday).toBe(false);
+	});
+
 	it('loads plugin, registers slots, and performs export and import', async () => {
 		const env = createMockEnv();
 		const engine = new ChronosEngine({ env });

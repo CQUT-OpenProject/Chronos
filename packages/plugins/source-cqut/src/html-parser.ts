@@ -4,6 +4,7 @@ import {
 	createTimetable,
 	defineSchema,
 	coursePalette,
+	deriveWeekendViewPrefs,
 	normalizedCourseName
 } from '@chronos/core';
 import {
@@ -208,8 +209,7 @@ export function parseHtmlTimetable(
 				: []
 		},
 		viewPrefs: {
-			showSaturday: courses.some((c) => c.dayOfWeek === 6),
-			showSunday: courses.some((c) => c.dayOfWeek === 7),
+			...deriveWeekendViewPrefs(courses),
 			showNonCurrentWeekCourses: false
 		},
 		importMetadata: options?.campusId

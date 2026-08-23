@@ -6,7 +6,13 @@ import type {
 	ExportResult,
 	ConfigSchema
 } from '@chronos/core';
-import { type ChronosMountable, createTimetable, createCourse, defineSchema } from '@chronos/core';
+import {
+	type ChronosMountable,
+	createTimetable,
+	createCourse,
+	defineSchema,
+	deriveWeekendViewPrefs
+} from '@chronos/core';
 import {
 	base64ToBytes,
 	bitmaskToWeeks,
@@ -141,6 +147,10 @@ export async function deserializeTimetableFromQr(rawText: string): Promise<Timet
 				startTime: p[1],
 				endTime: p[2]
 			}))
+		},
+		viewPrefs: {
+			...deriveWeekendViewPrefs(courses),
+			showNonCurrentWeekCourses: false
 		},
 		courses
 	});

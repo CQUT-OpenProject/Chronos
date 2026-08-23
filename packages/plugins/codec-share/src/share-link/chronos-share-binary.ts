@@ -10,6 +10,7 @@ import {
 	AcademicCalendarService,
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	coursePalette,
+	deriveWeekendViewPrefs,
 	normalizedCourseName,
 	normalizeTimetableName,
 	todayIsoDate,
@@ -429,8 +430,7 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 		},
 		importMetadata: { source: 'share-link' },
 		viewPrefs: {
-			showSaturday: courses.some((course) => course.dayOfWeek === 6),
-			showSunday: courses.some((course) => course.dayOfWeek === 7),
+			...deriveWeekendViewPrefs(courses),
 			showNonCurrentWeekCourses: false
 		}
 	};

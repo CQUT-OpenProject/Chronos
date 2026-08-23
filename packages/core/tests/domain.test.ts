@@ -3,6 +3,7 @@ import {
 	createCourse,
 	COURSE_REMARK_MAX_LENGTH,
 	createTimetable,
+	deriveWeekendViewPrefs,
 	normalizeTimetableName,
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	DEFAULT_TIMETABLE_NAME,
@@ -71,6 +72,23 @@ describe('Domain Models in @chronos/core', () => {
 		expect(timetable.viewPrefs.showSunday).toBe(true);
 		expect(timetable.viewPrefs.showNonCurrentWeekCourses).toBe(false);
 		expect(timetable.customMetadata?.['source-cqut']).toEqual({ campusId: 'huaxi' });
+	});
+
+	it('derives weekend view prefs from course occupancy', () => {
+		const mk = (dayOfWeek: number) => ({ dayOfWeek });
+		const saturdayOnly = deriveWeekendViewPrefs([mk(6)]);
+		expect(saturdayOnly).toEqual({ showSaturday: true, showSunday: false });
+
+		const sundayOnly = deriveWeekendViewPrefs([mk(7)]);
+		expect(sundayOnly).toEqual({ showSaturday: false, showSunday: true });
+
+		const both = deriveWeekendViewPrefs([mk(1), mk(6), mk(7)]);
+		expect(both).toEqual({ showSaturday: true, showSunday: true });
+
+		const weekdays = deriveWeekendViewPrefs([mk(1), mk(2), mk(3)]);
+		expect(weekdays).toEqual({ showSaturday: false, showSunday: false });
+
+		expect(deriveWeekendViewPrefs([])).toEqual({ showSaturday: false, showSunday: false });
 	});
 
 	it('provides valid default UserPreferences', () => {
