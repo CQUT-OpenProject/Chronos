@@ -1,9 +1,9 @@
+import { hostT } from '$lib/i18n/host-i18n.svelte';
 import {
 	resolveLocalizedText,
 	type ImportKind,
 	type ImportTabSlotContribution
 } from '@chronos/core';
-import { hostText } from '$lib/i18n/host-text';
 
 function resolveSlotTitle(slot: ImportTabSlotContribution): string {
 	return resolveLocalizedText(slot.title);
@@ -24,9 +24,9 @@ export function slotsHaveImportKind(
 export function formatImportMethodTitle(slot: ImportTabSlotContribution): string {
 	const title = resolveSlotTitle(slot);
 	if (slot.importKind === 'online') {
-		return hostText('transfer.import.method.onlineTitle', { title });
+		return hostT('transfer.import.method.onlineTitle', { title });
 	}
-	return hostText('transfer.import.method.title', { title });
+	return hostT('transfer.import.method.title', { title });
 }
 
 export function defaultImportMethodSubtitle(slot: ImportTabSlotContribution): string {
@@ -35,12 +35,12 @@ export function defaultImportMethodSubtitle(slot: ImportTabSlotContribution): st
 
 	switch (slot.importKind) {
 		case 'online':
-			return hostText('transfer.import.method.onlineSubtitle');
+			return hostT('transfer.import.method.onlineSubtitle');
 		case 'file':
-			return hostText('transfer.import.method.fileSubtitle');
+			return hostT('transfer.import.method.fileSubtitle');
 		case 'link':
 		default:
-			return hostText('transfer.import.method.linkSubtitle');
+			return hostT('transfer.import.method.linkSubtitle');
 	}
 }
 
@@ -48,14 +48,14 @@ function buildCapabilityLabels(slots: ReadonlyArray<ImportTabSlotContribution>):
 	const parts: string[] = [];
 	for (const slot of slots) {
 		if (slot.importKind === 'online') {
-			parts.push(hostText('transfer.import.capability.online', { title: resolveSlotTitle(slot) }));
+			parts.push(hostT('transfer.import.capability.online', { title: resolveSlotTitle(slot) }));
 		}
 	}
 	if (slotsHaveImportKind(slots, 'link')) {
-		parts.push(hostText('transfer.import.capability.shareCode'));
+		parts.push(hostT('transfer.import.capability.shareCode'));
 	}
 	if (slotsHaveImportKind(slots, 'file')) {
-		parts.push(hostText('transfer.import.capability.htmlFile'));
+		parts.push(hostT('transfer.import.capability.htmlFile'));
 	}
 	return parts;
 }
@@ -66,30 +66,30 @@ export function buildImportDescription(slots: ReadonlyArray<ImportTabSlotContrib
 	const hasFile = slotsHaveImportKind(slots, 'file');
 
 	if (onlineSlots.length === 0 && !hasLink && !hasFile) {
-		return hostText('transfer.import.description.linkOnly');
+		return hostT('transfer.import.description.linkOnly');
 	}
 
 	const parts: string[] = [];
 	for (const slot of onlineSlots) {
-		parts.push(hostText('transfer.import.capability.online', { title: resolveSlotTitle(slot) }));
+		parts.push(hostT('transfer.import.capability.online', { title: resolveSlotTitle(slot) }));
 	}
-	if (hasLink) parts.push(hostText('transfer.import.capability.shareCode'));
-	if (hasFile) parts.push(hostText('transfer.import.description.htmlPart'));
+	if (hasLink) parts.push(hostT('transfer.import.capability.shareCode'));
+	if (hasFile) parts.push(hostT('transfer.import.description.htmlPart'));
 
 	if (hasLink && !hasFile && onlineSlots.length === 0) {
-		return hostText('transfer.import.description.linkOnly');
+		return hostT('transfer.import.description.linkOnly');
 	}
 
-	return hostText('transfer.import.description.full', { parts: parts.join('、') });
+	return hostT('transfer.import.description.full', { parts: parts.join('、') });
 }
 
 export function buildOnboardingImportHighlight(
 	slots: ReadonlyArray<ImportTabSlotContribution>
 ): string {
 	const parts = buildCapabilityLabels(slots);
-	if (parts.length === 0) return hostText('transfer.import.onboarding.highlightFallback');
+	if (parts.length === 0) return hostT('transfer.import.onboarding.highlightFallback');
 	const suffix = slotsHaveImportKind(slots, 'online')
-		? hostText('transfer.import.onboarding.suffix.online')
-		: hostText('transfer.import.onboarding.suffix.default');
-	return hostText('transfer.import.onboarding.highlight', { parts: parts.join('、'), suffix });
+		? hostT('transfer.import.onboarding.suffix.online')
+		: hostT('transfer.import.onboarding.suffix.default');
+	return hostT('transfer.import.onboarding.highlight', { parts: parts.join('、'), suffix });
 }

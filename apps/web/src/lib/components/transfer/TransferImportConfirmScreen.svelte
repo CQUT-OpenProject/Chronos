@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import { ImportMode } from '$lib/domain/import-mode';
 	import {
@@ -11,7 +12,7 @@
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
 	import { snackbar, snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
+
 	import { DownloadFill } from '$lib/icons';
 	import { countDistinctCourseNames } from '@chronos/core';
 	import { MountableSlotOutlet, SchemaForm, type DateFieldLabels } from '@chronos/ui-kit';
@@ -49,13 +50,12 @@
 	let loading = $state(false);
 
 	const dateFieldLabels = $derived<DateFieldLabels>({
-		placeholder: hostTextRead(controller, 'ui.date.placeholder'),
-		today: hostTextRead(controller, 'ui.date.today'),
-		clear: hostTextRead(controller, 'ui.date.clear'),
-		confirm: hostTextRead(controller, 'ui.date.confirm'),
-		triggerEmpty: (label) => hostTextRead(controller, 'ui.date.trigger.empty', { label }),
-		triggerLabeled: (label, display) =>
-			hostTextRead(controller, 'ui.date.trigger.labeled', { label, display })
+		placeholder: hostT('ui.date.placeholder'),
+		today: hostT('ui.date.today'),
+		clear: hostT('ui.date.clear'),
+		confirm: hostT('ui.date.confirm'),
+		triggerEmpty: (label) => hostT('ui.date.trigger.empty', { label }),
+		triggerLabeled: (label, display) => hostT('ui.date.trigger.labeled', { label, display })
 	});
 
 	function analyticsImportMode(mode: ImportMode) {
@@ -63,11 +63,10 @@
 	}
 
 	function selectImportMode(mode: ImportMode) {
-		if (mode === ImportMode.OVERWRITE_CURRENT && !canOverwrite) {
+		if (!transfer.setImportMode(mode)) {
 			snackbarKey('transfer.confirm.noOverwrite');
 			return;
 		}
-		transfer.setImportMode(mode);
 		trackEvent('import_mode_select', { mode: analyticsImportMode(mode) });
 	}
 
@@ -105,13 +104,13 @@
 			onclick={handleConfirm}
 		>
 			{#if loading}
-				<span>{hostTextRead(controller, 'transfer.confirm.importing')}</span>
+				<span>{hostT('transfer.confirm.importing')}</span>
 			{:else}
 				<DownloadFill class="size-5" />
 				<span>
 					{transferState.importMode === ImportMode.AS_NEW
-						? hostTextRead(controller, 'transfer.confirm.asNew')
-						: hostTextRead(controller, 'transfer.confirm.overwrite')}
+						? hostT('transfer.confirm.asNew')
+						: hostT('transfer.confirm.overwrite')}
 				</span>
 			{/if}
 		</Button>
@@ -137,7 +136,7 @@
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
 							<span class="m3-body-small text-on-surface-variant">
-								{hostTextRead(controller, 'transfer.confirm.stats.courses')}
+								{hostT('transfer.confirm.stats.courses')}
 							</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{displayedCourseCount}</span
@@ -147,7 +146,7 @@
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
 							<span class="m3-body-small text-on-surface-variant">
-								{hostTextRead(controller, 'transfer.confirm.stats.startWeek')}
+								{hostT('transfer.confirm.stats.startWeek')}
 							</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{preview.academicConfig?.startWeek ?? 1}</span
@@ -157,7 +156,7 @@
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
 							<span class="m3-body-small text-on-surface-variant">
-								{hostTextRead(controller, 'transfer.confirm.stats.endWeek')}
+								{hostT('transfer.confirm.stats.endWeek')}
 							</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{preview.academicConfig?.endWeek ?? 20}</span
@@ -189,22 +188,22 @@
 
 			<div class="flex flex-col gap-3">
 				<h3 class="m3-title-medium px-1 text-on-surface">
-					{hostTextRead(controller, 'transfer.confirm.mode.heading')}
+					{hostT('transfer.confirm.mode.heading')}
 				</h3>
 
 				<div class="flex flex-col gap-2.5">
 					<SelectableOption
 						name="import-mode"
-						label={hostTextRead(controller, 'transfer.confirm.mode.asNew')}
+						label={hostT('transfer.confirm.mode.asNew')}
 						selected={transferState.importMode === ImportMode.AS_NEW}
 						onclick={() => selectImportMode(ImportMode.AS_NEW)}
 					/>
 
 					<SelectableOption
 						name="import-mode"
-						label={hostTextRead(controller, 'transfer.confirm.mode.overwrite')}
+						label={hostT('transfer.confirm.mode.overwrite')}
 						description={currentTimetableName
-							? hostTextRead(controller, 'transfer.confirm.mode.currentDesc', {
+							? hostT('transfer.confirm.mode.currentDesc', {
 									name: currentTimetableName
 								})
 							: undefined}

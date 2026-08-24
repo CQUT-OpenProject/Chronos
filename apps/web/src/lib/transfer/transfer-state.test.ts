@@ -1,5 +1,10 @@
 import { describe, expect, it, beforeEach, vi } from 'vite-plus/test';
+import { ImportMode } from '$lib/domain/import-mode';
 import { createTransferState } from './transfer-state.svelte';
+
+vi.mock('$lib/i18n/host-i18n.svelte', () => ({
+	hostT: (key: string) => key
+}));
 
 const finalizePreview = vi.fn(async (preview: { name: string }) => ({
 	...preview,
@@ -95,7 +100,7 @@ describe('createTransferState', () => {
 		finalizePreview.mockClear();
 		const importTimetable = vi.fn().mockResolvedValue(undefined);
 		const mockEngine = {
-			actions: { importTimetable },
+			importTimetable,
 			state: { currentTimetable: null },
 			services: { get: () => null }
 		} as unknown as Parameters<typeof createTransferState>[0];
@@ -123,7 +128,7 @@ describe('createTransferState', () => {
 	it('persists preview and confirms import through engine', async () => {
 		const importTimetable = vi.fn().mockResolvedValue(undefined);
 		const mockEngine = {
-			actions: { importTimetable },
+			importTimetable,
 			state: { currentTimetable: null },
 			services: { get: () => null }
 		} as unknown as Parameters<typeof createTransferState>[0];
@@ -149,45 +154,38 @@ describe('createTransferState', () => {
 		expect(controller.state.preview).toBeNull();
 	});
 
-	it('safely handles getExportMetadata when current timetable has no courses', async () => {
+	it('checkPrimaryExportWarning returns null when engine has no timetable', async () => {
 		const mockEngine = {
-			state: {
-				currentTimetable: {
-					id: 't1',
-					name: '空课表',
-					courses: [],
-					academicConfig: { termStartDate: '', startWeek: 1, endWeek: 20, periodTimes: [] }
-				}
-			}
+			state: { currentTimetable: null }
 		} as unknown as Parameters<typeof createTransferState>[0];
 
-		const controller = createTransferState(mockEngine);
-		const meta = await controller.getExportMetadata();
-		expect(meta.timetableName).toBe('空课表');
-		expect(meta.longLinkWarning).toBe(false);
-		expect(meta.warningMessage).toBeNull();
+		const { checkPrimaryExportWarning } = await import('$lib/transfer/transfer-state.svelte');
+		const warning = await checkPrimaryExportWarning(mockEngine!);
+		expect(warning).toBeNull();
 	});
 
-	it('returns warning when primary action checkWarning finds a warning', async () => {
+	it('rejects overwrite import mode when no current timetable exists', async () => {
+		const importTimetable = vi.fn().mockResolvedValue(undefined);
 		const mockEngine = {
-			state: {
-				currentTimetable: {
-					id: 't2',
-					name: '大课表',
-					courses: [{ id: '1' }],
-					academicConfig: {
-						termStartDate: '2026-03-02',
-						startWeek: 1,
-						endWeek: 20,
-						periodTimes: []
-					}
-				}
-			}
+			importTimetable,
+			state: { currentTimetable: null },
+			services: { get: () => null }
 		} as unknown as Parameters<typeof createTransferState>[0];
 
 		const controller = createTransferState(mockEngine);
-		const meta = await controller.getExportMetadata();
-		expect(meta.timetableName).toBe('大课表');
-		expect(typeof meta.longLinkWarning).toBe('boolean');
+		const sampleTimetable = {
+			id: 'preview-1',
+			name: 'Test Schedule',
+			courses: [{ id: 'c1' }],
+			academicConfig: { termStartDate: '2026-02-23', startWeek: 1, endWeek: 20, periodTimes: [] }
+		} as never;
+
+		controller.setDirectPreview(sampleTimetable, 'share-link');
+		expect(controller.setImportMode(ImportMode.OVERWRITE_CURRENT)).toBe(false);
+		expect(controller.state.importMode).toBe(ImportMode.AS_NEW);
+
+		const success = await controller.confirmImport();
+		expect(success).toBe(true);
+		expect(importTimetable).toHaveBeenCalledWith(sampleTimetable, { overwriteActive: false });
 	});
 });

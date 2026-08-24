@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { resolveLocalizedText } from '@chronos/core';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { TransferStateController } from '$lib/transfer/transfer-state.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
+
 	import { MountableSlotOutlet, SchemaForm } from '@chronos/ui-kit';
 
 	let {
@@ -54,7 +55,7 @@
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
 	<p class="m3-body-medium text-center text-on-surface-variant">
-		{hostTextRead(controller, 'transfer.import.intro')}
+		{hostT('transfer.import.intro')}
 	</p>
 
 	{#if useSegmentedTabs}
@@ -118,9 +119,7 @@
 						disabled={schemaLoading}
 						onclick={handleSchemaSubmit}
 					>
-						{schemaLoading
-							? hostTextRead(controller, 'transfer.import.fetching')
-							: hostTextRead(controller, 'transfer.import.submit')}
+						{schemaLoading ? hostT('transfer.import.fetching') : hostT('transfer.import.submit')}
 					</button>
 				</div>
 			</div>
@@ -128,7 +127,7 @@
 			<div
 				class="rounded-2xl border border-outline/30 bg-surface p-4 text-center text-on-surface-variant shadow-xs"
 			>
-				{hostTextRead(controller, 'transfer.import.noPlugin')}
+				{hostT('transfer.import.noPlugin')}
 			</div>
 		{/if}
 	</div>

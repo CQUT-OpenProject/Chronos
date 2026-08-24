@@ -4,6 +4,23 @@ import type { ChronosContext } from './context';
 import type { ConfigSchema } from '../schema/schema';
 import type { ThemeContribution } from './contributions';
 
+export type ImportSlotErrorKind =
+	| 'no-data'
+	| 'invalid-data'
+	| 'network'
+	| 'unsupported'
+	| 'unknown';
+
+export class ImportSlotError extends Error {
+	readonly kind: ImportSlotErrorKind;
+
+	constructor(kind: ImportSlotErrorKind, message: string) {
+		super(message);
+		this.name = 'ImportSlotError';
+		this.kind = kind;
+	}
+}
+
 export type LocalizedText = string | (() => string);
 
 /** Host registry key or structured shell icon descriptor. */
@@ -13,9 +30,7 @@ export type ShellIconRef = string | import('../theme/icon-theme').ShellIconDescr
 export type ImportKind = 'online' | 'file' | 'link' | 'custom';
 
 // 1. Import tab slot contribution specification (dynamic schema-driven interaction)
-export interface ImportTabSlotContribution<
-	FormState extends Record<string, unknown> = Record<string, unknown>
-> {
+export interface ImportTabSlotContribution<FormState extends object = Record<string, unknown>> {
 	id: string;
 	title: LocalizedText;
 	order?: number;

@@ -46,7 +46,7 @@ export async function dispatchPluginRequest(
 
 	const rateLimit = checkPluginRateLimit(pluginId, event.getClientAddress());
 	if (!rateLimit.allowed) {
-		return json(pluginServerError('Validation', '请求过于频繁，请稍后再试'), {
+		return json(pluginServerError('RateLimited', 'rate_limited'), {
 			status: 429,
 			headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) }
 		});

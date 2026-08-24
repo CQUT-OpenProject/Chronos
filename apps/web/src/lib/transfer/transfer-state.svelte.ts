@@ -1,10 +1,17 @@
+import { hostT } from '$lib/i18n/host-i18n.svelte';
 import { createSessionPreviewPersistence } from '$lib/client/preview-persistence';
 import type { Timetable } from '$lib/models/timetable';
 import { ImportMode } from '$lib/domain/import-mode';
-import { pickPrimary, resolveLocalizedText, type ChronosEngine } from '@chronos/core';
+import {
+	ImportSlotError,
+	pickPrimary,
+	resolveLocalizedText,
+	type ChronosEngine,
+	type ImportSlotErrorKind
+} from '@chronos/core';
 import { getDefaultImportSlot } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
-import { hostText } from '$lib/i18n/host-text';
+import { resolveDeepLinkImport } from '$lib/transfer/deep-link';
 
 export interface TransferPreviewState {
 	preview: Timetable | null;
@@ -26,6 +33,20 @@ function resolveConfirmDefaults(tabId: string): Record<string, unknown> {
 		return tab?.confirmDefaultInput ? { ...tab.confirmDefaultInput } : {};
 	} catch {
 		return {};
+	}
+}
+
+export async function checkPrimaryExportWarning(engine: ChronosEngine): Promise<string | null> {
+	const current = engine.state.currentTimetable;
+	if (!current) return null;
+	try {
+		const controller = getAppController();
+		const primaryAction = pickPrimary(controller.getSlots('export.action'));
+		if (!primaryAction?.checkWarning) return null;
+		const ctx = controller.getPluginContextForSlot('export.action', primaryAction.id);
+		return (await primaryAction.checkWarning(current, ctx)) ?? null;
+	} catch {
+		return null;
 	}
 }
 
@@ -51,8 +72,14 @@ export function createTransferState(engine?: ChronosEngine) {
 		clearMessages();
 	}
 
-	function setImportMode(mode: ImportMode) {
+	function setImportMode(mode: ImportMode): boolean {
+		if (mode === ImportMode.OVERWRITE_CURRENT && !engine?.state.currentTimetable) {
+			errorMessage = hostT('transfer.confirm.noOverwrite');
+			return false;
+		}
 		importMode = mode;
+		clearMessages();
+		return true;
 	}
 
 	function setConfirmInputs(inputs: Record<string, unknown>) {
@@ -87,12 +114,12 @@ export function createTransferState(engine?: ChronosEngine) {
 		const controller = getAppController();
 		const tab = controller.getSlots('import.source.tab').find((item) => item.id === tabId);
 		if (!tab) {
-			throw new Error(hostText('transfer.error.slotUnavailable'));
+			throw new ImportSlotError('unsupported', hostT('transfer.error.slotUnavailable'));
 		}
 		const ctx = controller.getPluginContextForSlot('import.source.tab', tabId);
 		const timetable = await tab.executeImport(inputs, ctx);
 		if (!timetable?.courses?.length) {
-			throw new Error(hostText('transfer.error.noCourses'));
+			throw new ImportSlotError('invalid-data', hostT('transfer.error.noCourses'));
 		}
 		return timetable;
 	}
@@ -106,9 +133,40 @@ export function createTransferState(engine?: ChronosEngine) {
 			confirmInputs = resolveConfirmDefaults(tabId);
 			return true;
 		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : hostText('transfer.error.fetchFailed');
+			errorMessage = err instanceof Error ? err.message : hostT('transfer.error.fetchFailed');
 			return false;
 		}
+	}
+
+	async function previewAndPersist(
+		tabId: string,
+		inputs: Record<string, unknown>
+	): Promise<{ ok: true } | { ok: false; kind: ImportSlotErrorKind }> {
+		clearMessages();
+		try {
+			const timetable = await executeSlotImport(tabId, inputs);
+			preview = timetable;
+			previewSlotId = tabId;
+			confirmInputs = resolveConfirmDefaults(tabId);
+			persistPreview();
+			return { ok: true };
+		} catch (err) {
+			const kind = err instanceof ImportSlotError ? err.kind : 'unknown';
+			return { ok: false, kind };
+		}
+	}
+
+	async function previewDeepLinkImport(
+		location: Pick<Location, 'hash' | 'search'>
+	): Promise<{ ok: true } | { ok: false; kind: ImportSlotErrorKind }> {
+		if (!engine) {
+			return { ok: false, kind: 'unknown' };
+		}
+		const match = resolveDeepLinkImport(engine.slots.get('import.source.tab'), location);
+		if (!match) {
+			return { ok: false, kind: 'no-data' };
+		}
+		return previewAndPersist(match.tab.id, match.inputs);
 	}
 
 	function persistPreview() {
@@ -139,7 +197,12 @@ export function createTransferState(engine?: ChronosEngine) {
 	async function confirmImport() {
 		clearMessages();
 		if (!preview || !previewSlotId) {
-			errorMessage = hostText('transfer.error.previewRequired');
+			errorMessage = hostT('transfer.error.previewRequired');
+			return false;
+		}
+
+		if (importMode === ImportMode.OVERWRITE_CURRENT && !engine?.state.currentTimetable) {
+			errorMessage = hostT('transfer.confirm.noOverwrite');
 			return false;
 		}
 
@@ -163,42 +226,15 @@ export function createTransferState(engine?: ChronosEngine) {
 			if (!engine) {
 				throw new Error('ChronosEngine is required for ingest');
 			}
-			await engine.actions.importTimetable(finalPreview, {
+			await engine.importTimetable(finalPreview, {
 				overwriteActive: importMode === ImportMode.OVERWRITE_CURRENT
 			});
 			clearPreview();
 			return true;
 		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : hostText('transfer.error.saveFailed');
+			errorMessage = err instanceof Error ? err.message : hostT('transfer.error.saveFailed');
 			return false;
 		}
-	}
-
-	async function getExportMetadata() {
-		if (!engine) {
-			return { timetableName: null, longLinkWarning: false, warningMessage: null };
-		}
-		const current = engine.state.currentTimetable;
-		if (!current) {
-			return { timetableName: null, longLinkWarning: false, warningMessage: null };
-		}
-		let warningMessage: string | null = null;
-		try {
-			const controller = getAppController();
-			const primaryAction = pickPrimary(controller.getSlots('export.action'));
-			if (primaryAction?.checkWarning) {
-				const ctx = controller.getPluginContextForSlot('export.action', primaryAction.id);
-				warningMessage = await primaryAction.checkWarning(current, ctx);
-			}
-		} catch {
-			warningMessage = null;
-		}
-
-		return {
-			timetableName: current.name,
-			longLinkWarning: Boolean(warningMessage),
-			warningMessage
-		};
 	}
 
 	return {
@@ -219,18 +255,19 @@ export function createTransferState(engine?: ChronosEngine) {
 		setDirectPreview,
 		previewWithSlot,
 		executeSlotImport,
+		previewAndPersist,
+		previewDeepLinkImport,
 		persistPreview,
 		loadPersistedPreview,
 		clearPersistedPreview,
-		confirmImport,
-		getExportMetadata
+		confirmImport
 	};
 }
 
 export type TransferStateController = ReturnType<typeof createTransferState>;
 
 export function resolveSlotTitle(slotId: string | null): string {
-	if (!slotId) return hostText('transfer.slot.unknown');
+	if (!slotId) return hostT('transfer.slot.unknown');
 	try {
 		const controller = getAppController();
 		const slot = controller.getSlotItem('import.source.tab', slotId);
@@ -241,4 +278,19 @@ export function resolveSlotTitle(slotId: string | null): string {
 		// Engine not ready
 	}
 	return slotId;
+}
+
+export function shareImportErrorSnackbarKey(kind: ImportSlotErrorKind): string {
+	switch (kind) {
+		case 'no-data':
+			return 'share.error.noData';
+		case 'invalid-data':
+			return 'share.error.invalidData';
+		case 'unsupported':
+			return 'share.error.parseFailed';
+		case 'network':
+			return 'share.error.parseFailed';
+		default:
+			return 'share.error.parseFailed';
+	}
 }

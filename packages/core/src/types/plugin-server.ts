@@ -22,7 +22,8 @@ export type PluginServerErrorKind =
 	| 'DataFormat'
 	| 'Auth'
 	| 'Network'
-	| 'Upstream';
+	| 'Upstream'
+	| 'RateLimited';
 
 export interface PluginServerError {
 	kind: PluginServerErrorKind;

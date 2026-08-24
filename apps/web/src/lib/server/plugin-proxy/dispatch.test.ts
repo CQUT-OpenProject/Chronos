@@ -86,7 +86,7 @@ describe('dispatchPluginRequest', () => {
 		expect(response.status).toBe(429);
 		expect(body).toEqual({
 			ok: false,
-			error: { kind: 'Validation', message: '请求过于频繁，请稍后再试' }
+			error: { kind: 'RateLimited', message: 'rate_limited' }
 		});
 	});
 
