@@ -55,7 +55,7 @@
 
 ### 7. 明确不做
 
-- **构建脚本元数据双源**（name/description 在插件源码与 `build-official-plugins.ts` 各一份）：分发元数据本属 catalog 层职责，插件源无法被 node 构建脚本安全 import（Svelte 依赖），维持现状。
+- **构建脚本元数据双源**（name/description 在插件源码与 `build-official-plugins.ts` 各一份）：分发元数据本属 catalog 层职责，插件源无法被 node 构建脚本安全 import（Svelte 依赖），维持现状。**Round 6（ADR 0027）已将 `version` 与 Tailwind 源目录映射收敛至 `official-plugins.config.ts` 单源；name/description 仍内嵌构建脚本。**
 - **codec-qrcode 包名/id 一致性**：纯命名问题，改动波及 catalog 与产物哈希，低价值高风险。
 
 ## 影响与收益

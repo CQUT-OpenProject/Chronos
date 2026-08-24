@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
-- **关联**: 落实 Round 5 C3 演进（保留 engine i18n 链）；扩展 ADR 0021 `LocalizedText` 消费模型
+- **关联**: 落实 Round 5 C3 演进（保留 engine i18n 链）；扩展 ADR 0021 `LocalizedText` 消费模型；**§D4 宿主桥接由 [ADR 0027](./0027-round6-architecture-subtraction.md) 修订**（移除 `i18nHandler` / `engine.t()`，宿主 Shell 改 `hostT`）
 - **范围**: `packages/core`, `packages/ui-kit`, `apps/web`, `packages/plugins/*`
 
 ---
@@ -32,7 +32,7 @@
 
 ### D4 — 宿主桥接
 
-语言切换 UI 同时更新 Paraglide runtime 与 `engine.setLocale`。`i18nHandler` 仅服务宿主 Paraglide key 回退；插件文案走 catalog。
+语言切换 UI 同时更新 Paraglide runtime 与 `engine.setLocale`。~~`i18nHandler` 仅服务宿主 Paraglide key 回退~~（**ADR 0027 已删除**）；宿主 Shell 文案经 `host-i18n.svelte.ts` 的 `hostT()` 走 `host-ui` catalog；插件文案走各自 catalog + `pluginText`。
 
 ### D5 — C3 处置
 
