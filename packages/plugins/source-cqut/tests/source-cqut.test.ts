@@ -29,30 +29,27 @@ function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 		text: async () => JSON.stringify({ studentName: '张三' }),
 		json: async <T = unknown>() =>
 			({
-				ok: true,
+				studentName: '张三',
+				campusId: 'huaxi',
+				campusPeriodTimes: {
+					huaxi: [{ index: 1, startTime: '08:30', endTime: '09:15' }]
+				},
 				payload: {
-					studentName: '张三',
-					campusId: 'huaxi',
-					campusPeriodTimes: {
-						huaxi: [{ index: 1, startTime: '08:30', endTime: '09:15' }]
-					},
-					payload: {
-						yearTerm: '2024-2025-2',
-						weekNum: '1',
-						termStartDate: '2025-02-24',
-						weekDayList: [{ weekDay: '1', weekDate: '02/24' }],
-						eventList: [
-							{
-								eventName: '高等数学',
-								memberName: '李老师',
-								address: '一教101',
-								weekDay: '1',
-								sessionStart: '1',
-								sessionList: ['1', '2'],
-								weekList: ['1', '2', '3']
-							}
-						]
-					}
+					yearTerm: '2024-2025-2',
+					weekNum: '1',
+					termStartDate: '2025-02-24',
+					weekDayList: [{ weekDay: '1', weekDate: '02/24' }],
+					eventList: [
+						{
+							eventName: '高等数学',
+							memberName: '李老师',
+							address: '一教101',
+							weekDay: '1',
+							sessionStart: '1',
+							sessionList: ['1', '2'],
+							weekList: ['1', '2', '3']
+						}
+					]
 				}
 			}) as T,
 		bytes: async () => new Uint8Array()
@@ -181,7 +178,7 @@ describe('cqutPlugin', () => {
 			ok: true,
 			headers: {},
 			text: async () => JSON.stringify(adapterPayload),
-			json: async <T = unknown>() => ({ ok: true, payload: adapterPayload }) as T,
+			json: async <T = unknown>() => adapterPayload as T,
 			bytes: async () => new Uint8Array()
 		};
 		const env = createMockEnv(httpResponse);

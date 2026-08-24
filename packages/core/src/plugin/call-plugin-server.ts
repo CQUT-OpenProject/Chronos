@@ -24,7 +24,10 @@ export async function callPluginServerJson<T>(
 	payload: unknown
 ): Promise<{ response: HttpResponse; body: PluginServerResponse<T> }> {
 	const response = await callPluginServer(http, pluginId, action, payload);
-	const body = parsePluginServerResponse<T>(await response.json());
+	const jsonBody = await response.json();
+	const body: PluginServerResponse<T> = response.ok
+		? { ok: true, payload: jsonBody as T }
+		: parsePluginServerResponse<T>(jsonBody);
 	return { response, body };
 }
 
