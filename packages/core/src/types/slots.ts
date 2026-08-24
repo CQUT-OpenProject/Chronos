@@ -29,6 +29,20 @@ export interface ImportTabSlotContribution<
 	defaultInput?: FormState;
 	/** Optional rich-UI component mounted via the single CHRONOS_MOUNTABLE protocol */
 	component?: import('./mountable').ChronosMountable;
+	/** Optional confirm-phase rich UI (mounted on the import confirm screen) */
+	confirmComponent?: import('./mountable').ChronosMountable;
+	/** Confirm-phase SchemaForm fallback when confirmComponent is absent */
+	confirmSchema?: ConfigSchema<FormState>;
+	/** Initial values for confirm-phase inputs */
+	confirmDefaultInput?: FormState;
+	/** Return an error message when confirm inputs are invalid; null when ready to import */
+	validateConfirmInputs?(inputs: FormState): string | null;
+	/** Merge confirm-phase inputs into preview before ingest */
+	finalizePreview?(
+		preview: Timetable,
+		confirmInputs: FormState,
+		ctx?: ChronosContext
+	): Timetable | Promise<Timetable>;
 	/**
 	 * Deep-link handshake: lets a host deep-link entry (e.g. a /s landing page)
 	 * dispatch generically without knowing any concrete slot id or input shape.

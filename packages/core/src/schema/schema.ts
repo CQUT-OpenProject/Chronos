@@ -7,6 +7,7 @@ export type SchemaType =
 	| 'boolean'
 	| 'select'
 	| 'file'
+	| 'date'
 	| 'array'
 	| 'object'
 	| 'timetable-preview'
@@ -29,6 +30,8 @@ export interface SchemaField<T = unknown> {
 	required?: boolean;
 	accept?: string; // Applicable to 'file' type, e.g. '.html,.htm'
 	options?: SelectOption[]; // Applicable to 'select' type
+	/** Select presentation; defaults to dropdown */
+	presentation?: 'dropdown' | 'radio';
 	/** Nested schema definition for array items (when type === 'array') */
 	itemSchema?: SchemaField<unknown>;
 	/** Nested properties schema definition (when type === 'object') */
@@ -77,6 +80,7 @@ export function extractDefaultValues<T extends object>(schema: ConfigSchema<T>):
 				case 'string':
 				case 'password':
 				case 'file':
+				case 'date':
 				default:
 					result[key] = '';
 					break;
@@ -146,6 +150,7 @@ export function validateConfig<T extends object>(
 				break;
 			case 'string':
 			case 'password':
+			case 'date':
 				if (typeof val !== 'string') {
 					errors[key] = 'Value must be a string';
 				}
