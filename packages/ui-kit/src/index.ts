@@ -2,6 +2,18 @@
 export * from './reactivity/engine-controller.svelte';
 export * from './theme/m3-theme';
 export { default as SchemaForm } from './schema-form/SchemaForm.svelte';
+export { default as DateField } from './form/DateField.svelte';
+export { default as Radio } from './form/Radio.svelte';
+export { default as SelectableOption } from './form/SelectableOption.svelte';
+export { default as RadioGroupField } from './form/RadioGroupField.svelte';
+export {
+	buildDateFieldTriggerLabel,
+	calendarDateToIso,
+	DEFAULT_DATE_FIELD_LABELS,
+	formatDateDisplay,
+	isoToCalendarDate,
+	type DateFieldLabels
+} from './form/date-field-utils';
 export { default as PluginScreenContainer } from './plugin-screen/PluginScreenContainer.svelte';
 export { default as MountableSlotOutlet } from './plugin-screen/MountableSlotOutlet.svelte';
 export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-slot';
