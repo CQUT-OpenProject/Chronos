@@ -5,7 +5,6 @@ import { createChronosAlias } from './scripts/resolve-chronos-aliases.ts';
 
 const chronosAlias = createChronosAlias();
 
-// @ts-expect-error vite-plus UserConfig inference exceeds TS stack depth for this monorepo config
 export default defineConfig({
 	defaultPackage: './apps/web',
 	resolve: {
@@ -109,7 +108,6 @@ export default defineConfig({
 		]
 	},
 	plugins: [
-		// @ts-expect-error @sveltejs/vite-plugin-svelte types mismatch after vite-plus bump
 		svelte({
 			compilerOptions: {
 				runes: true

@@ -1,0 +1,4 @@
+.generated/
+.cache/
+.dist/
+node_modules/

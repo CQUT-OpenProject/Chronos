@@ -33,7 +33,7 @@
 		"svelte": "^5.56.10",
 		"tsx": "^4.23.12",
 		"typescript": "^7.0.2",
-		"vite": "npm:@voidzero-dev/vite-plus-core@0.3.0",
+		"vite": "catalog:",
 		"vite-plus": "catalog:",
 		"vitest": "4.1.10"
 	}
