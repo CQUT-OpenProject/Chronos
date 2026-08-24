@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { ChronosEngine, type ChronosEnv, type UserPreferences } from '@chronos/core';
+import { ChronosEngine } from '@chronos/core';
+import { createMockEnv } from '@chronos/core/test-utils';
 import { wallpaperPlugin } from '../src/index';
 import { createWallpaperRuntime } from '../src/runtime.svelte';
 import { WALLPAPER_IMAGE_KEY, WALLPAPER_PLUGIN_ID } from '../src/storage';
@@ -10,49 +11,18 @@ const STORED_WALLPAPER = {
 };
 const EXPECTED_DATA_URI = 'data:image/png;base64,iVBORw0KGgo=';
 
-function createMockEnv(
+function createWallpaperMockEnv(
 	getPluginData: (pluginId: string, key: string) => Promise<unknown> = async () => null
-): ChronosEnv {
-	return {
-		platform: 'web',
-		http: { request: vi.fn() },
+) {
+	return createMockEnv({
 		storage: {
-			getTimetable: vi.fn(async () => null),
-			listTimetables: vi.fn(async () => []),
-			saveTimetable: vi.fn(async () => {}),
-			patchTimetable: vi.fn(async () => {}),
-			deleteTimetable: vi.fn(async () => {}),
-			getActiveTimetableId: vi.fn(async () => null),
-			setActiveTimetableId: vi.fn(async () => {}),
-			queryCourses: vi.fn(async () => []),
-			getPreferences: vi.fn(async (): Promise<UserPreferences> => ({
-				schemaVersion: 1,
-				themeMode: 'auto',
-				paletteMode: 'vibrant',
-				timetableLayoutMode: 'fixed',
-				capsuleCornerStyle: 'rounded',
-				hapticFeedbackEnabled: true
-			})),
-			savePreferences: vi.fn(async () => {}),
 			getPluginData: ((pluginId: string, key: string) =>
-				getPluginData(pluginId, key)) as ChronosEnv['storage']['getPluginData'],
-			setPluginData: vi.fn(async () => {}),
-			deletePluginData: vi.fn(async () => {})
-		},
-		vault: {
-			isSupported: vi.fn(async () => true),
-			storeSecret: vi.fn(async () => {}),
-			getSecret: vi.fn(async () => null),
-			removeSecret: vi.fn(async () => {})
-		},
-		runtime: {
-			setTimeout: vi.fn(),
-			clearTimeout: vi.fn(),
-			sha256: vi.fn(async () => ''),
-			encodeUtf8: vi.fn(),
-			decodeUtf8: vi.fn()
+				getPluginData(
+					pluginId,
+					key
+				)) as import('@chronos/core').ChronosEnv['storage']['getPluginData']
 		}
-	};
+	}).env;
 }
 
 describe('@chronos/plugin-wallpaper', () => {
@@ -67,7 +37,7 @@ describe('@chronos/plugin-wallpaper', () => {
 	});
 
 	it('registers mine.item, screen slot, and theme when loaded', async () => {
-		const env = createMockEnv();
+		const env = createWallpaperMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 
@@ -101,7 +71,7 @@ describe('@chronos/plugin-wallpaper', () => {
 
 	it('emits dynamicColor:changed with null uri when unloaded', async () => {
 		const getPluginData = vi.fn(async () => STORED_WALLPAPER);
-		const env = createMockEnv(getPluginData);
+		const env = createWallpaperMockEnv(getPluginData);
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 
@@ -127,7 +97,7 @@ describe('@chronos/plugin-wallpaper', () => {
 			}
 			return null;
 		});
-		const env = createMockEnv(getPluginData);
+		const env = createWallpaperMockEnv(getPluginData);
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 

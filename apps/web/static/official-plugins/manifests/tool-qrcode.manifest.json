@@ -14,7 +14,7 @@
 	"bundleFormat": "esm",
 	"minEngineVersion": "0.4.0",
 	"bundleUrl": "/official-plugins/bundles/tool-qrcode/bundle.js",
-	"sha256": "1d31290d2ca8916fa14ff03a7a63960c37c2d2e76a6fbb2928c0cfa0ca08fef7",
+	"sha256": "a8aba7d34e0c3d95e384cdc9cb33e3895fa4868f401a9f8d34db76e9fe3df736",
 	"cssUrl": "/official-plugins/bundles/tool-qrcode/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }

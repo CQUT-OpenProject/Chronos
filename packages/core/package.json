@@ -15,6 +15,11 @@
 			"types": "./src/theme/workbench-colors.ts",
 			"import": "./src/theme/workbench-colors.ts",
 			"default": "./src/theme/workbench-colors.ts"
+		},
+		"./test-utils": {
+			"types": "./src/test-utils/index.ts",
+			"import": "./src/test-utils/index.ts",
+			"default": "./src/test-utils/index.ts"
 		}
 	}
 }

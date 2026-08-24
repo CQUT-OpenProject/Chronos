@@ -49,14 +49,12 @@ function createMockEnv(httpRequest: HttpMock = vi.fn()) {
 	const env: ChronosEnv = {
 		platform: 'node',
 		http: {
-			request: httpRequest,
-			clearSession: vi.fn()
+			request: httpRequest
 		},
 		storage: {
 			getTimetable: async () => null,
 			listTimetables: async () => [],
 			saveTimetable: async () => {},
-			patchTimetable: async () => {},
 			deleteTimetable: async () => {},
 			getActiveTimetableId: async () => null,
 			setActiveTimetableId: async () => {},
@@ -85,14 +83,10 @@ function createMockEnv(httpRequest: HttpMock = vi.fn()) {
 			removeSecret: vi.fn()
 		},
 		runtime: {
-			setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms) as unknown as number,
-			clearTimeout: (h: number) => clearTimeout(h),
 			sha256: async (data: string) => {
 				const { createHash } = await import('node:crypto');
 				return createHash('sha256').update(data).digest('hex');
-			},
-			encodeUtf8: (s: string) => new TextEncoder().encode(s),
-			decodeUtf8: (b: Uint8Array) => new TextDecoder().decode(b)
+			}
 		}
 	};
 

@@ -15,12 +15,7 @@ const ASSET_FIELDS: ReadonlyArray<readonly [urlField: string, hashField: string]
 	['iconThemeUrl', 'iconThemeSha256']
 ];
 
-/** Official plugin manifest id → packages/plugins source directory name */
-const OFFICIAL_PLUGIN_SOURCE_DIRS: Record<string, string> = {
-	'theme-yumemita': 'theme-yumemita',
-	'tool-wallpaper': 'wallpaper',
-	'tool-qrcode': 'codec-qrcode'
-};
+import { OFFICIAL_PLUGIN_SOURCE_DIRS } from './official-plugins.config.ts';
 
 function verifyPluginTailwindSourceCoverage(
 	catalog: { manifests: string[] },

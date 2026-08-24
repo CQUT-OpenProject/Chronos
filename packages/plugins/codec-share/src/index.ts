@@ -1,11 +1,11 @@
-import type {
-	ChronosPlugin,
-	ChronosContext,
-	Timetable,
-	ExportResult,
-	ConfigSchema
+import {
+	defineChronosPlugin,
+	ImportSlotError,
+	registerImportTab,
+	type ChronosMountable,
+	type ExportResult,
+	type Timetable
 } from '@chronos/core';
-import { type ChronosMountable } from '@chronos/core';
 import {
 	decodeSharePayload,
 	encodeShareLink,
@@ -18,7 +18,11 @@ import {
 } from './share-link';
 import ShareLinkImportTab from './ShareLinkImportTab.svelte';
 import { mountableSvelteComponent } from '@chronos/ui-kit';
-import { createShareLinkImportSchema, SHARE_CODEC_MESSAGES } from './messages';
+import {
+	createShareLinkImportSchema,
+	SHARE_CODEC_MESSAGES,
+	type ShareLinkImportForm
+} from './messages';
 
 export type { ShareLinkImportForm } from './messages';
 
@@ -26,25 +30,19 @@ export interface CreateShareCodecPluginOptions {
 	shareComponent?: ChronosMountable;
 }
 
-export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = {}): ChronosPlugin {
+export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = {}) {
 	const { shareComponent = mountableSvelteComponent(ShareLinkImportTab) } = options;
-	let translate: ((key: string) => string) | undefined;
 
-	return {
+	return defineChronosPlugin({
 		id: 'codec-share',
-		name: () => translate?.('plugin.name') ?? SHARE_CODEC_MESSAGES['zh-cn']['plugin.name'],
-		version: '1.0.0',
-		description: () =>
-			translate?.('plugin.description') ?? SHARE_CODEC_MESSAGES['zh-cn']['plugin.description'],
+		messages: SHARE_CODEC_MESSAGES,
+		nameKey: 'plugin.name',
+		descriptionKey: 'plugin.description',
 		category: 'codec',
 		order: 30,
 		author: 'CQUT OpenProject',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
-
-		async apply(ctx: ChronosContext) {
-			ctx.i18n.registerMessages(SHARE_CODEC_MESSAGES);
-			const t = (key: string) => ctx.i18n.t(key);
-			translate = t;
+		async apply(ctx, t) {
 			const shareLinkImportSchema = createShareLinkImportSchema(t);
 			const decodeLabels: ShareDecodeLabels = {
 				'share.error.corrupted': t('share.error.corrupted'),
@@ -56,32 +54,36 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 				'share.clipboard.template': t('share.clipboard.template')
 			};
 
-			ctx.registerSlot('import.source.tab', {
+			registerImportTab<ShareLinkImportForm>(ctx, {
 				id: 'share-link',
 				title: () => t('import.tab.title'),
 				order: 15,
 				importKind: 'link',
 				component: shareComponent,
-				inputSchema: shareLinkImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+				inputSchema: shareLinkImportSchema,
 				deepLink: {
 					fromLocation(location) {
 						const payload = extractSharePayloadFromLocation(location as Location);
 						return payload ? { content: payload, fileContent: payload } : null;
 					}
 				},
-				async executeImport(inputs: Record<string, unknown>) {
+				async executeImport(inputs) {
 					const content =
 						(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
 					if (!content?.trim()) {
-						throw new Error(t('import.error.empty'));
+						throw new ImportSlotError('no-data', t('import.error.empty'));
 					}
 					const payload = extractSharePayloadFromText(content);
 					if (!payload) {
-						throw new Error(t('import.error.empty'));
+						throw new ImportSlotError('no-data', t('import.error.empty'));
 					}
 					const result = await decodeSharePayload(payload, decodeLabels);
 					if (!result.ok) {
-						throw new Error(result.errorMessage);
+						const kind =
+							result.errorMessage === decodeLabels['share.error.unsupported']
+								? 'unsupported'
+								: 'invalid-data';
+						throw new ImportSlotError(kind, result.errorMessage);
 					}
 					return result.value;
 				}
@@ -120,7 +122,7 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 				}
 			});
 		}
-	};
+	});
 }
 
 export const shareCodecPlugin = createShareCodecPlugin();

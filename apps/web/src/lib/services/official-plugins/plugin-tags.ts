@@ -1,4 +1,4 @@
-import { hostText } from '$lib/i18n/host-text';
+import { hostT } from '$lib/i18n/host-i18n.svelte';
 
 /** Preset plugin category tags shown in official plugin UI. */
 export const PLUGIN_CATEGORY_TAG_IDS = ['theme', 'source', 'tool', 'exporter', 'codec'] as const;
@@ -18,32 +18,32 @@ export function getPluginCategoryMeta(categoryOrType?: string): {
 	switch (categoryOrType) {
 		case 'theme':
 			return {
-				label: hostText('pluginTags.theme'),
+				label: hostT('pluginTags.theme'),
 				badgeClass: 'bg-tertiary-container/80 text-on-tertiary-container'
 			};
 		case 'source':
 			return {
-				label: hostText('pluginTags.source'),
+				label: hostT('pluginTags.source'),
 				badgeClass: 'bg-primary-container/80 text-on-primary-container'
 			};
 		case 'codec':
 			return {
-				label: hostText('pluginTags.codec'),
+				label: hostT('pluginTags.codec'),
 				badgeClass: 'bg-secondary-container/80 text-on-secondary-container'
 			};
 		case 'exporter':
 			return {
-				label: hostText('pluginTags.exporter'),
+				label: hostT('pluginTags.exporter'),
 				badgeClass: 'bg-secondary-container/80 text-on-secondary-container'
 			};
 		case 'tool':
 			return {
-				label: hostText('pluginTags.tool'),
+				label: hostT('pluginTags.tool'),
 				badgeClass: 'bg-surface-variant/80 text-on-surface-variant'
 			};
 		default:
 			return {
-				label: hostText('pluginTags.extension'),
+				label: hostT('pluginTags.extension'),
 				badgeClass: 'bg-surface-variant/80 text-on-surface-variant'
 			};
 	}

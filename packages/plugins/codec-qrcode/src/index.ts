@@ -1,16 +1,13 @@
-import type {
-	ChronosPlugin,
-	ChronosContext,
-	Timetable,
-	Course,
-	ExportResult,
-	ConfigSchema
-} from '@chronos/core';
 import {
-	type ChronosMountable,
+	defineChronosPlugin,
+	registerImportTab,
 	createTimetable,
 	createCourse,
-	deriveWeekendViewPrefs
+	deriveWeekendViewPrefs,
+	type ChronosMountable,
+	type Timetable,
+	type Course,
+	type ExportResult
 } from '@chronos/core';
 import {
 	base64ToBytes,
@@ -29,7 +26,8 @@ import {
 	createQrCodeImportSchema,
 	QR_CODEC_MESSAGES,
 	qrCodecLabels,
-	type QrCodecLabels
+	type QrCodecLabels,
+	type QrCodeImportForm
 } from './messages';
 
 export interface V2CompactQrPayload {
@@ -172,29 +170,23 @@ export interface CreateQrCodecPluginOptions {
 	importComponent?: ChronosMountable;
 }
 
-export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}): ChronosPlugin {
+export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}) {
 	const { importComponent = mountableSvelteComponent(QrCodeImportTab) } = options;
-	let translate: ((key: string) => string) | undefined;
 
-	return {
+	return defineChronosPlugin({
 		id: 'tool-qrcode',
-		name: () => translate?.('plugin.name') ?? QR_CODEC_MESSAGES['zh-cn']['plugin.name'],
-		version: '1.0.0',
-		description: () =>
-			translate?.('plugin.description') ?? QR_CODEC_MESSAGES['zh-cn']['plugin.description'],
+		messages: QR_CODEC_MESSAGES,
+		nameKey: 'plugin.name',
+		descriptionKey: 'plugin.description',
 		category: 'tool',
 		order: 35,
 		author: 'CQUT OpenProject',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
-
-		async apply(ctx: ChronosContext) {
-			ctx.i18n.registerMessages(QR_CODEC_MESSAGES);
-			const t = (key: string) => ctx.i18n.t(key);
-			translate = t;
+		async apply(ctx, t) {
 			const labels = qrCodecLabels(ctx.i18n.locale);
 			const qrCodeImportSchema = createQrCodeImportSchema(t);
 
-			ctx.registerSlot('import.source.tab', {
+			registerImportTab<QrCodeImportForm>(ctx, {
 				id: 'qrcode',
 				title: () => t('import.tab.title'),
 				order: 25,
@@ -202,8 +194,8 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}): C
 				badge: () => t('import.tab.badge'),
 				supportingText: () => t('import.tab.supporting'),
 				component: importComponent,
-				inputSchema: qrCodeImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-				async executeImport(inputs: Record<string, unknown>) {
+				inputSchema: qrCodeImportSchema,
+				async executeImport(inputs) {
 					const content =
 						(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
 					if (!content?.trim()) {
@@ -220,7 +212,7 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}): C
 				disposition: 'download',
 				isPrimary: false,
 				description: () => t('export.action.description'),
-				async export(timetable: Timetable, exportCtx?: ChronosContext): Promise<ExportResult> {
+				async export(timetable: Timetable, exportCtx) {
 					const targetTimetable = timetable ?? exportCtx?.state.currentTimetable;
 					if (!targetTimetable) {
 						throw new Error(t('export.error.noTimetable'));
@@ -238,7 +230,7 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}): C
 				}
 			});
 		}
-	};
+	});
 }
 
 export const qrCodecPlugin = createQrCodecPlugin();

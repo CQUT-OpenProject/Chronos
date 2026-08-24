@@ -1,12 +1,6 @@
-import { describe, expect, it, vi } from 'vite-plus/test';
-import {
-	ChronosEngine,
-	createTimetable,
-	createCourse,
-	type ChronosEnv,
-	type UserPreferences,
-	type Course
-} from '@chronos/core';
+import { describe, expect, it } from 'vite-plus/test';
+import { ChronosEngine, createTimetable, createCourse, type Course } from '@chronos/core';
+import { createMockEnv } from '@chronos/core/test-utils';
 import {
 	createQrCodecPlugin,
 	generateQrMatrix,
@@ -14,48 +8,6 @@ import {
 	serializeTimetableForQr,
 	deserializeTimetableFromQr
 } from '../src/index';
-
-function createMockEnv(): ChronosEnv {
-	return {
-		platform: 'web',
-		http: { request: vi.fn() },
-		storage: {
-			getTimetable: vi.fn(async () => null),
-			listTimetables: vi.fn(async () => []),
-			saveTimetable: vi.fn(async () => {}),
-			patchTimetable: vi.fn(async () => {}),
-			deleteTimetable: vi.fn(async () => {}),
-			getActiveTimetableId: vi.fn(async () => null),
-			setActiveTimetableId: vi.fn(async () => {}),
-			queryCourses: vi.fn(async () => []),
-			getPreferences: vi.fn(async (): Promise<UserPreferences> => ({
-				schemaVersion: 1,
-				themeMode: 'auto',
-				paletteMode: 'vibrant',
-				timetableLayoutMode: 'fixed',
-				capsuleCornerStyle: 'rounded',
-				hapticFeedbackEnabled: true
-			})),
-			savePreferences: vi.fn(async () => {}),
-			getPluginData: vi.fn(async () => null),
-			setPluginData: vi.fn(async () => {}),
-			deletePluginData: vi.fn(async () => {})
-		},
-		vault: {
-			isSupported: vi.fn(async () => true),
-			storeSecret: vi.fn(async () => {}),
-			getSecret: vi.fn(async () => null),
-			removeSecret: vi.fn(async () => {})
-		},
-		runtime: {
-			setTimeout: vi.fn(),
-			clearTimeout: vi.fn(),
-			sha256: vi.fn(async () => ''),
-			encodeUtf8: vi.fn(),
-			decodeUtf8: vi.fn()
-		}
-	};
-}
 
 describe('codec-qrcode generator (Version 1-40)', () => {
 	it('generates QR matrix with valid dimensions for standard texts', () => {
@@ -157,7 +109,7 @@ describe('codec-qrcode high-compression serialization & slot execution', () => {
 	});
 
 	it('loads plugin, registers slots, and performs export and import', async () => {
-		const env = createMockEnv();
+		const { env } = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 		const qrPlugin = createQrCodecPlugin();
@@ -213,7 +165,7 @@ describe('codec-qrcode high-compression serialization & slot execution', () => {
 	});
 
 	it('throws descriptive error on empty or invalid import inputs', async () => {
-		const env = createMockEnv();
+		const { env } = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 		const qrPlugin = createQrCodecPlugin();

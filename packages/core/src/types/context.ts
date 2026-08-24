@@ -2,7 +2,12 @@ import type { Course } from '../domain/course';
 import type { AcademicConfig, Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
 import type { Disposable, ServiceIdentifier } from './services';
-import type { ChronosSlotMap, LocalizedText, CourseBadge } from './slots';
+import type {
+	ChronosSlotMap,
+	LocalizedText,
+	CourseBadge,
+	ImportTabSlotContribution
+} from './slots';
 import type { ConfigSchema } from '../schema/schema';
 
 /** Plugin category classification */
@@ -91,9 +96,13 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 	};
 
 	/** Declarative hierarchical slot registration (auto-tracked and revoked on unload) */
-	registerSlot<K extends keyof ChronosSlotMap>(
+	registerSlot<K extends Exclude<keyof ChronosSlotMap, 'import.source.tab'>>(
 		slotName: K,
 		contribution: ChronosSlotMap[K] & { id: string }
+	): Disposable;
+	registerSlot<FormState extends object>(
+		slotName: 'import.source.tab',
+		contribution: ImportTabSlotContribution<FormState> & { id: string }
 	): Disposable;
 
 	/** Event bus listener (auto-tracked and revoked on unload) */

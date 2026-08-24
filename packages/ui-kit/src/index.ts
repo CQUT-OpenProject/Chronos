@@ -18,6 +18,12 @@ export { default as PluginScreenContainer } from './plugin-screen/PluginScreenCo
 export { default as MountableSlotOutlet } from './plugin-screen/MountableSlotOutlet.svelte';
 export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-slot';
 export { mountableSvelteComponent } from './plugin-screen/mountable-svelte';
+export { pluginText } from './i18n/plugin-text';
+export { CHRONOS_MOUNTABLE } from '@chronos/core';
+export type {
+	ImportTabComponentProps,
+	ImportTabTransferController
+} from './plugin-screen/import-tab-props';
 export { default as TimetableWallpaperLayer } from './timetable-preview/TimetableWallpaperLayer.svelte';
 export { default as TimetablePreviewGrid } from './timetable-preview/TimetablePreviewGrid.svelte';
 export { default as TimetableLivePreview } from './timetable-preview/TimetableLivePreview.svelte';

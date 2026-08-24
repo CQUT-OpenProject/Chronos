@@ -34,12 +34,11 @@ const THEME_COLORS_JSON = JSON.stringify({
 function createMockEnv() {
 	const env: ChronosEnv = {
 		platform: 'node',
-		http: { request: vi.fn(), clearSession: vi.fn() },
+		http: { request: vi.fn() },
 		storage: {
 			getTimetable: async () => null,
 			listTimetables: async () => [],
 			saveTimetable: async () => {},
-			patchTimetable: async () => {},
 			deleteTimetable: async () => {},
 			getActiveTimetableId: async () => null,
 			setActiveTimetableId: async () => {},
@@ -58,11 +57,7 @@ function createMockEnv() {
 			removeSecret: vi.fn()
 		},
 		runtime: {
-			setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms) as unknown as number,
-			clearTimeout: (h: number) => clearTimeout(h),
-			sha256: async () => 'hash',
-			encodeUtf8: (s: string) => new TextEncoder().encode(s),
-			decodeUtf8: (b: Uint8Array) => new TextDecoder().decode(b)
+			sha256: async () => 'hash'
 		}
 	};
 	return env;

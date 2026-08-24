@@ -1,38 +1,30 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import { cqutPluginText } from './plugin-text';
+	import { pluginText, type ImportTabComponentProps } from '@chronos/ui-kit';
+	import { SOURCE_CQUT_MESSAGES } from './messages';
 
-	interface Props {
-		controller?: ReactiveChronosController;
-		transfer: {
-			state: {
-				errorMessage: string | null;
-			};
-			previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean>;
-		};
-		onContinue: () => void;
-	}
+	const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
 
-	let { controller, transfer, onContinue }: Props = $props();
+	let { controller, transfer, onContinue }: ImportTabComponentProps = $props();
 	let loading = $state(false);
 	let account = $state('');
 	let password = $state('');
 	let passwordVisible = $state(false);
 	let isOnline = $state(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
-	const offlineMessage = $derived(cqutPluginText(controller, 'import.online.offline'));
-	const title = $derived(cqutPluginText(controller, 'import.online.tab.title'));
-	const intro = $derived(cqutPluginText(controller, 'import.online.intro'));
-	const accountLabel = $derived(cqutPluginText(controller, 'import.online.accountLabel'));
-	const passwordTitle = $derived(cqutPluginText(controller, 'import.online.field.password.title'));
+	function pt(key: keyof (typeof SOURCE_CQUT_MESSAGES)['zh-cn']) {
+		return pluginText(controller, SOURCE_CQUT_PLUGIN_ID, SOURCE_CQUT_MESSAGES, key);
+	}
+
+	const offlineMessage = $derived(pt('import.online.offline'));
+	const title = $derived(pt('import.online.tab.title'));
+	const intro = $derived(pt('import.online.intro'));
+	const accountLabel = $derived(pt('import.online.accountLabel'));
+	const passwordTitle = $derived(pt('import.online.field.password.title'));
 	const passwordToggleLabel = $derived(
-		cqutPluginText(
-			controller,
-			passwordVisible ? 'import.online.password.hide' : 'import.online.password.show'
-		)
+		pt(passwordVisible ? 'import.online.password.hide' : 'import.online.password.show')
 	);
 	const submitLabel = $derived(
-		cqutPluginText(controller, loading ? 'import.online.submit.loading' : 'import.online.submit')
+		pt(loading ? 'import.online.submit.loading' : 'import.online.submit')
 	);
 
 	$effect(() => {

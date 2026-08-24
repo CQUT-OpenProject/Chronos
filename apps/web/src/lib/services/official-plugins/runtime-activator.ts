@@ -81,7 +81,7 @@ export class OfficialPluginRuntimeActivator {
 		}
 		this.removeCss(pluginId);
 		if (options?.revertThemes && this.isInstalled(pluginId)) {
-			void this.engine.actions.revertToDefaultThemes();
+			void this.engine.revertToDefaultThemes();
 		}
 	}
 

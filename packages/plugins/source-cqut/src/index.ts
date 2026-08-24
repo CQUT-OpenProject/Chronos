@@ -1,22 +1,18 @@
-import type {
-	ChronosPlugin,
-	ChronosContext,
-	Timetable,
-	Course,
-	PeriodTime,
-	AcademicConfig,
-	ConfigSchema
+import type { ChronosContext, Timetable, Course, PeriodTime, AcademicConfig } from '@chronos/core';
+import {
+	defineChronosPlugin,
+	callPluginServerJson,
+	resolvePluginServerErrorMessage,
+	registerImportTab,
+	type ChronosMountable
 } from '@chronos/core';
-import { type ChronosMountable } from '@chronos/core';
 import {
 	createCourse,
 	createTimetable,
 	coursePalette,
 	deriveWeekendViewPrefs,
 	normalizedCourseName,
-	IHttpService,
-	parsePluginServerResponse,
-	pluginServerErrorMessage
+	IHttpService
 } from '@chronos/core';
 import {
 	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
@@ -30,7 +26,12 @@ import {
 	SOURCE_CQUT_MESSAGES,
 	type CqutImportForm
 } from './messages';
-import { parseHtmlTimetable, finalizeHtmlPreview } from './html-parser';
+import {
+	parseHtmlTimetable,
+	finalizeHtmlPreview,
+	type HtmlImportForm,
+	type HtmlConfirmForm
+} from './html-parser';
 
 const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
 
@@ -236,42 +237,34 @@ export interface CqutPluginConfig {
 	disabledSlots?: string[];
 }
 
-export function createCqutPlugin(
-	options: CreateCqutPluginOptions = {}
-): ChronosPlugin<CqutPluginConfig> {
+export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 	const {
 		onlineComponent = mountableSvelteComponent(CqutOnlineImportTab),
 		htmlComponent = mountableSvelteComponent(EduHtmlImportTab)
 	} = options;
-	let translate: ((key: string) => string) | undefined;
 
-	return {
+	return defineChronosPlugin<CqutPluginConfig>({
 		id: 'source-cqut',
-		name: () => translate?.('plugin.name') ?? SOURCE_CQUT_MESSAGES['zh-cn']['plugin.name'],
-		version: '1.0.0',
-		description: () =>
-			translate?.('plugin.description') ?? SOURCE_CQUT_MESSAGES['zh-cn']['plugin.description'],
+		messages: SOURCE_CQUT_MESSAGES,
+		nameKey: 'plugin.name',
+		descriptionKey: 'plugin.description',
 		category: 'source',
 		order: 10,
 		author: 'CQUT OpenProject',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 		allowedDomains: ['authserver.cqut.edu.cn', 'uis.cqut.edu.cn', 'timetable-cfc.cqut.edu.cn'],
-
-		apply(ctx: ChronosContext<CqutPluginConfig>) {
-			ctx.i18n.registerMessages(SOURCE_CQUT_MESSAGES);
-			const t = (key: string) => ctx.i18n.t(key);
-			translate = t;
+		apply(ctx, t) {
 			const cqutImportSchema = createCqutImportSchema(t);
 			const htmlImportSchema = createHtmlImportSchema(t);
 			const htmlConfirmSchema = createHtmlConfirmSchema(t);
 			const disabledSlots = new Set(ctx.config.disabledSlots ?? []);
 
 			async function doImport(
-				inputs: Record<string, unknown>,
-				context?: ChronosContext
+				inputs: CqutImportForm,
+				context?: ChronosContext<CqutPluginConfig>
 			): Promise<Timetable> {
 				const activeCtx = context ?? ctx;
-				const form = inputs as unknown as CqutImportForm;
+				const form = inputs;
 				const username = (form.username || form.account)?.trim();
 				const password = form.password;
 
@@ -282,71 +275,55 @@ export function createCqutPlugin(
 				activeCtx.actions.notify(t('import.online.notify.connecting'), 'info');
 
 				const http = activeCtx.service(IHttpService);
-				if (!http.proxy) {
-					throw new Error(t('import.online.error.proxyUnsupported'));
+				const { response, body } = await callPluginServerJson<CqutScheduleRawInput>(
+					http,
+					SOURCE_CQUT_PLUGIN_ID,
+					'preview',
+					{ account: username, password }
+				);
+
+				if (!response.ok || !body.ok) {
+					throw new Error(
+						resolvePluginServerErrorMessage(body, t('import.online.error.authFailed'))
+					);
 				}
 
-				const response = await http.proxy(SOURCE_CQUT_PLUGIN_ID, 'preview', {
-					account: username,
-					password
-				});
-
-				if (!response.ok) {
-					let errorMsg = t('import.online.error.authFailed');
-					try {
-						const errBody = parsePluginServerResponse(await response.json());
-						const message = pluginServerErrorMessage(errBody);
-						if (message) {
-							errorMsg = message;
-						}
-					} catch {
-						// Keep default error message
-					}
-					throw new Error(errorMsg);
-				}
-
-				const parsedJson = (await response.json()) as CqutScheduleRawInput;
-				return parseCqutScheduleData(parsedJson, username, DEFAULT_CQUT_CAMPUS_ID);
+				return parseCqutScheduleData(body.payload, username, DEFAULT_CQUT_CAMPUS_ID);
 			}
 
-			async function doHtmlImport(inputs: Record<string, unknown>): Promise<Timetable> {
-				const fileContent =
-					(inputs.file as string | undefined) ?? (inputs.fileContent as string | undefined);
+			async function doHtmlImport(inputs: HtmlImportForm): Promise<Timetable> {
+				const fileContent = inputs.file;
 				if (!fileContent || typeof fileContent !== 'string') {
 					throw new Error(t('import.html.error.invalidFile'));
 				}
-				const termStartDate = inputs.termStartDate as string | undefined;
-				const campusId = inputs.campusId as CqutCampusId | undefined;
 				return parseHtmlTimetable(fileContent, {
-					...(termStartDate ? { termStartDate } : {}),
-					...(campusId ? { campusId } : {})
+					campusId: DEFAULT_CQUT_CAMPUS_ID
 				});
 			}
 
 			if (!disabledSlots.has('cqut-online')) {
-				ctx.registerSlot('import.source.tab', {
+				registerImportTab<CqutImportForm>(ctx, {
 					id: 'cqut-online',
 					title: () => t('import.online.tab.title'),
 					order: 10,
 					importKind: 'online',
 					supportingText: () => t('import.online.tab.supporting'),
 					component: onlineComponent,
-					inputSchema: cqutImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-					executeImport: (inputs: Record<string, unknown>, context?: ChronosContext) =>
-						doImport(inputs, context)
+					inputSchema: cqutImportSchema,
+					executeImport: (inputs, context) => doImport(inputs, context)
 				});
 			}
 
 			if (!disabledSlots.has('edu-html')) {
-				ctx.registerSlot('import.source.tab', {
+				registerImportTab<HtmlImportForm & HtmlConfirmForm>(ctx, {
 					id: 'edu-html',
 					title: () => t('import.html.tab.title'),
 					order: 30,
 					importKind: 'file',
 					supportingText: () => t('import.html.tab.supporting'),
 					component: htmlComponent,
-					inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
-					confirmSchema: htmlConfirmSchema as unknown as ConfigSchema<Record<string, unknown>>,
+					inputSchema: htmlImportSchema,
+					confirmSchema: htmlConfirmSchema,
 					confirmDefaultInput: {
 						campusId: DEFAULT_CQUT_CAMPUS_ID,
 						termStartDate: ''
@@ -359,12 +336,12 @@ export function createCqutPlugin(
 						return null;
 					},
 					finalizePreview: (preview, inputs) =>
-						finalizeHtmlPreview(preview, inputs as import('./html-parser').HtmlConfirmForm),
-					executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
+						finalizeHtmlPreview(preview, inputs as HtmlConfirmForm),
+					executeImport: (inputs) => doHtmlImport(inputs)
 				});
 			}
 		}
-	};
+	});
 }
 
 export const cqutPlugin = createCqutPlugin();

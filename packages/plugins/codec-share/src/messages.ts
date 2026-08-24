@@ -2,6 +2,7 @@ import { defineSchema } from '@chronos/core';
 
 export interface ShareLinkImportForm {
 	content?: string;
+	fileContent?: string;
 }
 
 export function createShareLinkImportSchema(t: (key: string) => string) {

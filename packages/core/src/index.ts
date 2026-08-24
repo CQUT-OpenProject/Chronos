@@ -49,6 +49,11 @@ export * from './runtime/badge-manager';
 export * from './runtime/scoped-context';
 export * from './runtime/engine';
 
+// Plugin authoring
+export * from './plugin/define-chronos-plugin';
+export * from './plugin/call-plugin-server';
+export * from './plugin/register-import-tab';
+
 // Profile
 export * from './profile/profile';
 export * from './profile/profile-manager';

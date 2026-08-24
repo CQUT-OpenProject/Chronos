@@ -7,52 +7,16 @@ import { fileURLToPath } from 'node:url';
 import { createChronosAliasRecord } from './resolve-chronos-aliases.ts';
 import { CHRONOS_ENGINE_VERSION } from '../packages/core/src/types/official-plugins.ts';
 import { verifyOfficialPlugins } from './verify-official-plugins.ts';
+import { OFFICIAL_PLUGINS, OFFICIAL_PLUGIN_VERSION } from './official-plugins.config.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = resolve(root, 'dist/official-plugins');
 const staticBundleDir = resolve(root, 'apps/web/static/official-plugins/bundles');
 const manifestDir = resolve(root, 'apps/web/static/official-plugins/manifests');
 
-type PluginDef = {
-	id: string;
-	type: 'theme' | 'tool';
-	name: Record<string, string>;
-	description: Record<string, string>;
-	entry?: string;
-	colorsJson?: string;
-	iconsJson?: string;
-};
+type PluginDef = (typeof OFFICIAL_PLUGINS)[number];
 
-const plugins: PluginDef[] = [
-	{
-		id: 'theme-yumemita',
-		type: 'theme',
-		name: { 'zh-CN': 'YUMEMITA', en: 'YUMEMITA' },
-		description: { 'zh-CN': 'YUMEMITA 主题', en: 'YUMEMITA theme' },
-		colorsJson: resolve(root, 'packages/plugins/theme-yumemita/theme-yumemita.colors.json'),
-		iconsJson: resolve(root, 'packages/plugins/theme-yumemita/theme-yumemita.icons.json')
-	},
-	{
-		id: 'tool-wallpaper',
-		type: 'tool',
-		name: { 'zh-CN': '自定义壁纸', en: 'Custom Wallpaper' },
-		description: {
-			'zh-CN': '自定义课表页壁纸，支持动态取色',
-			en: 'Custom timetable wallpaper with dynamic color'
-		},
-		entry: resolve(root, 'packages/plugins/wallpaper/bundle/entry.ts')
-	},
-	{
-		id: 'tool-qrcode',
-		type: 'tool',
-		name: { 'zh-CN': '课表二维码', en: 'Timetable QR Code' },
-		description: {
-			'zh-CN': '生成课表分享二维码矢量图与扫码/图片识别导入',
-			en: 'Generate timetable QR codes and import via scan or image'
-		},
-		entry: resolve(root, 'packages/plugins/codec-qrcode/bundle/entry.ts')
-	}
-];
+const plugins: PluginDef[] = OFFICIAL_PLUGINS;
 
 mkdirSync(distDir, { recursive: true });
 mkdirSync(staticBundleDir, { recursive: true });
@@ -80,7 +44,7 @@ for (const plugin of plugins) {
 	const manifest: Record<string, unknown> = {
 		id: plugin.id,
 		name: plugin.name,
-		version: '1.0.0',
+		version: OFFICIAL_PLUGIN_VERSION,
 		description: plugin.description,
 		author: 'Chronos',
 		type: plugin.type,

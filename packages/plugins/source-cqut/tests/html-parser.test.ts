@@ -17,7 +17,6 @@ function createMockEnv(): ChronosEnv {
 			getTimetable: vi.fn(async () => null),
 			listTimetables: vi.fn(async () => []),
 			saveTimetable: vi.fn(async () => {}),
-			patchTimetable: vi.fn(async () => {}),
 			deleteTimetable: vi.fn(async () => {}),
 			getActiveTimetableId: vi.fn(async () => null),
 			setActiveTimetableId: vi.fn(async () => {}),
@@ -42,11 +41,7 @@ function createMockEnv(): ChronosEnv {
 			removeSecret: vi.fn(async () => {})
 		},
 		runtime: {
-			setTimeout: vi.fn(),
-			clearTimeout: vi.fn(),
-			sha256: vi.fn(async () => ''),
-			encodeUtf8: vi.fn(),
-			decodeUtf8: vi.fn()
+			sha256: vi.fn(async () => '')
 		}
 	};
 }

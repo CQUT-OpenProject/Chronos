@@ -1,32 +1,27 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '@chronos/ui-kit';
+	import { pluginText, type ImportTabComponentProps } from '@chronos/ui-kit';
 	import { decodeQrFromBlob } from './qr/qr-decode';
-	import { qrPluginText } from './plugin-text';
+	import { QR_CODEC_MESSAGES } from './messages';
 
-	interface Props {
-		controller?: ReactiveChronosController;
-		transfer: {
-			state: {
-				errorMessage: string | null;
-			};
-			previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean>;
-		};
-		onContinue: () => void;
-	}
+	const QR_CODEC_PLUGIN_ID = 'tool-qrcode';
 
-	let { controller, transfer, onContinue }: Props = $props();
+	let { controller, transfer, onContinue }: ImportTabComponentProps = $props();
 
 	let loading = $state(false);
 	let fileInputRef = $state<HTMLInputElement | null>(null);
 	let isDragging = $state(false);
 
-	const title = $derived(qrPluginText(controller, 'import.ui.title'));
-	const subtitle = $derived(qrPluginText(controller, 'import.ui.subtitle'));
-	const dropLabel = $derived(qrPluginText(controller, 'import.ui.dropLabel'));
-	const formats = $derived(qrPluginText(controller, 'import.ui.formats'));
-	const selectLabel = $derived(qrPluginText(controller, 'import.ui.select'));
-	const scanningLabel = $derived(qrPluginText(controller, 'import.ui.scanning'));
-	const dropAria = $derived(qrPluginText(controller, 'import.ui.dropAria'));
+	function pt(key: keyof (typeof QR_CODEC_MESSAGES)['zh-cn']) {
+		return pluginText(controller, QR_CODEC_PLUGIN_ID, QR_CODEC_MESSAGES, key);
+	}
+
+	const title = $derived(pt('import.ui.title'));
+	const subtitle = $derived(pt('import.ui.subtitle'));
+	const dropLabel = $derived(pt('import.ui.dropLabel'));
+	const formats = $derived(pt('import.ui.formats'));
+	const selectLabel = $derived(pt('import.ui.select'));
+	const scanningLabel = $derived(pt('import.ui.scanning'));
+	const dropAria = $derived(pt('import.ui.dropAria'));
 
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
@@ -38,15 +33,14 @@
 	async function processImageBlob(blob: Blob) {
 		loading = true;
 		try {
-			const text = await decodeQrFromBlob(blob, (key) => qrPluginText(controller, key));
+			const text = await decodeQrFromBlob(blob, (key) => pt(key));
 			const ok = await transfer.previewWithSlot('qrcode', {
 				content: text
 			});
 			if (ok) onContinue();
 			else notifyTransferMessages();
 		} catch (err) {
-			const msg =
-				err instanceof Error ? err.message : qrPluginText(controller, 'import.error.decodeFailed');
+			const msg = err instanceof Error ? err.message : pt('import.error.decodeFailed');
 			alert(msg);
 		} finally {
 			loading = false;

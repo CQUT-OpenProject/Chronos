@@ -1,28 +1,21 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import { cqutPluginText } from './plugin-text';
+	import { pluginText, type ImportTabComponentProps } from '@chronos/ui-kit';
+	import { SOURCE_CQUT_MESSAGES } from './messages';
 
-	interface Props {
-		controller?: ReactiveChronosController;
-		transfer: {
-			state: {
-				errorMessage: string | null;
-			};
-			previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean>;
-		};
-		onContinue: () => void;
-	}
+	const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
 
-	let { controller, transfer, onContinue }: Props = $props();
+	let { controller, transfer, onContinue }: ImportTabComponentProps = $props();
 
 	let fileInput: HTMLInputElement | undefined = $state();
 	let loading = $state(false);
 
-	const title = $derived(cqutPluginText(controller, 'import.html.tab.title'));
-	const intro = $derived(cqutPluginText(controller, 'import.html.intro'));
-	const submitLabel = $derived(
-		cqutPluginText(controller, loading ? 'import.html.submit.loading' : 'import.html.submit')
-	);
+	function pt(key: keyof (typeof SOURCE_CQUT_MESSAGES)['zh-cn']) {
+		return pluginText(controller, SOURCE_CQUT_PLUGIN_ID, SOURCE_CQUT_MESSAGES, key);
+	}
+
+	const title = $derived(pt('import.html.tab.title'));
+	const intro = $derived(pt('import.html.intro'));
+	const submitLabel = $derived(pt(loading ? 'import.html.submit.loading' : 'import.html.submit'));
 
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;

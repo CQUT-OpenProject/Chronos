@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import { TimetableLivePreview } from '@chronos/ui-kit';
+	import { TimetableLivePreview, pluginText } from '@chronos/ui-kit';
 	import { getWallpaperRuntime } from './runtime.svelte';
-	import { wallpaperPluginText } from './plugin-text';
+	import { WALLPAPER_MESSAGES } from './messages';
+	import { WALLPAPER_PLUGIN_ID } from './storage';
 
 	interface Props {
 		controller: ReactiveChronosController;
@@ -16,11 +17,13 @@
 	const hasWallpaper = $derived(runtime.hasWallpaper);
 	const timetable = $derived(controller.currentTimetable);
 
-	const previewEmpty = $derived(wallpaperPluginText(controller, 'screen.preview.empty'));
-	const clearLabel = $derived(wallpaperPluginText(controller, 'screen.action.clear'));
-	const pickLabel = $derived(
-		wallpaperPluginText(controller, hasWallpaper ? 'screen.action.repick' : 'screen.action.pick')
-	);
+	function pt(key: keyof (typeof WALLPAPER_MESSAGES)['zh-cn']) {
+		return pluginText(controller, WALLPAPER_PLUGIN_ID, WALLPAPER_MESSAGES, key);
+	}
+
+	const previewEmpty = $derived(pt('screen.preview.empty'));
+	const clearLabel = $derived(pt('screen.action.clear'));
+	const pickLabel = $derived(pt(hasWallpaper ? 'screen.action.repick' : 'screen.action.pick'));
 
 	let fileInput: HTMLInputElement | undefined = $state();
 
@@ -37,8 +40,8 @@
 		} catch (error) {
 			const msg =
 				error instanceof DOMException && error.name === 'QuotaExceededError'
-					? wallpaperPluginText(controller, 'screen.error.tooLarge')
-					: wallpaperPluginText(controller, 'screen.error.importFailed');
+					? pt('screen.error.tooLarge')
+					: pt('screen.error.importFailed');
 			try {
 				controller.getPluginContext(pluginId).actions.notify(msg, 'error');
 			} catch {

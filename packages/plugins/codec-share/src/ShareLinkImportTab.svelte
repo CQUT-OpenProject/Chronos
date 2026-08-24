@@ -1,26 +1,25 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import { sharePluginText } from './plugin-text';
+	import { pluginText, type ImportTabComponentProps } from '@chronos/ui-kit';
+	import { SHARE_CODEC_MESSAGES } from './messages';
 
-	interface Props {
-		controller?: ReactiveChronosController;
-		transfer: {
-			state: {
-				errorMessage: string | null;
-			};
-			previewWithSlot(tabId: string, inputs: Record<string, unknown>): Promise<boolean>;
-		};
-		onContinue: () => void;
-	}
+	const SHARE_CODEC_PLUGIN_ID = 'codec-share';
 
-	let { controller, transfer, onContinue }: Props = $props();
+	let { controller, transfer, onContinue }: ImportTabComponentProps = $props();
 
 	let loading = $state(false);
 
-	const title = $derived(sharePluginText(controller, 'import.ui.title'));
-	const subtitle = $derived(sharePluginText(controller, 'import.ui.subtitle'));
-	const loadingLabel = $derived(sharePluginText(controller, 'import.ui.loading'));
-	const clipboardLabel = $derived(sharePluginText(controller, 'import.ui.clipboard'));
+	const title = $derived(
+		pluginText(controller, SHARE_CODEC_PLUGIN_ID, SHARE_CODEC_MESSAGES, 'import.ui.title')
+	);
+	const subtitle = $derived(
+		pluginText(controller, SHARE_CODEC_PLUGIN_ID, SHARE_CODEC_MESSAGES, 'import.ui.subtitle')
+	);
+	const loadingLabel = $derived(
+		pluginText(controller, SHARE_CODEC_PLUGIN_ID, SHARE_CODEC_MESSAGES, 'import.ui.loading')
+	);
+	const clipboardLabel = $derived(
+		pluginText(controller, SHARE_CODEC_PLUGIN_ID, SHARE_CODEC_MESSAGES, 'import.ui.clipboard')
+	);
 
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
@@ -42,7 +41,12 @@
 			const msg =
 				err instanceof Error
 					? err.message
-					: sharePluginText(controller, 'import.ui.clipboardError');
+					: pluginText(
+							controller,
+							SHARE_CODEC_PLUGIN_ID,
+							SHARE_CODEC_MESSAGES,
+							'import.ui.clipboardError'
+						);
 			alert(msg);
 		} finally {
 			loading = false;

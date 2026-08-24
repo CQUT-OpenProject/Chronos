@@ -1,5 +1,9 @@
-import type { ChronosMountable, ChronosPlugin, ThemeContribution } from '@chronos/core';
-import { createWorkbenchColorsFromTokens, IStorageService } from '@chronos/core';
+import {
+	defineChronosPlugin,
+	createWorkbenchColorsFromTokens,
+	IStorageService
+} from '@chronos/core';
+import type { ChronosMountable, ThemeContribution } from '@chronos/core';
 import { createWallpaperRuntime, type WallpaperRuntime } from './runtime.svelte';
 import { WALLPAPER_PLUGIN_ID } from './storage';
 import { createWallpaperThemeAdapter } from './wallpaper-theme';
@@ -65,29 +69,24 @@ async function syncConfigWallpaper(
 	}
 }
 
-export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}): ChronosPlugin {
+export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}) {
 	const { screenComponent } = options;
-	let translate: ((key: string) => string) | undefined;
-	const fallbackT = (key: string) =>
-		WALLPAPER_MESSAGES['zh-cn'][key as keyof (typeof WALLPAPER_MESSAGES)['zh-cn']];
 
-	return {
+	return defineChronosPlugin({
 		id: WALLPAPER_PLUGIN_ID,
-		name: () => translate?.('plugin.name') ?? WALLPAPER_MESSAGES['zh-cn']['plugin.name'],
-		version: '1.0.0',
-		description: () =>
-			translate?.('plugin.description') ?? WALLPAPER_MESSAGES['zh-cn']['plugin.description'],
+		messages: WALLPAPER_MESSAGES,
+		nameKey: 'plugin.name',
+		descriptionKey: 'plugin.description',
 		category: 'tool',
 		order: 40,
 		author: 'Chronos Community',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
-		configSchema: createWallpaperScreenSchema(fallbackT),
-		defaultConfig: {},
+		configSchema: createWallpaperScreenSchema(
+			(key) => WALLPAPER_MESSAGES['zh-cn'][key as keyof (typeof WALLPAPER_MESSAGES)['zh-cn']]
+		),
+		defaultConfig: { wallpaper: null },
 
-		async apply(ctx) {
-			ctx.i18n.registerMessages(WALLPAPER_MESSAGES);
-			const t = (key: string) => ctx.i18n.t(key);
-			translate = t;
+		async apply(ctx, t) {
 			const wallpaperScreenSchema = createWallpaperScreenSchema(t);
 			const runtime = createWallpaperRuntime(ctx.service(IStorageService), WALLPAPER_PLUGIN_ID);
 
@@ -138,5 +137,5 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 
 			ctx.addDisposable({ dispose: () => runtime.dispose() });
 		}
-	};
+	});
 }

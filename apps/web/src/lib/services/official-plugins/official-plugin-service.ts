@@ -1,3 +1,4 @@
+import { hostT } from '$lib/i18n/host-i18n.svelte';
 import type { ChronosEngine, Disposable, PluginManifest } from '@chronos/core';
 import { PLUGIN_CONFIG_STORAGE_KEY } from '@chronos/core';
 import { OfficialPluginAssetPipeline } from './asset-pipeline';
@@ -6,7 +7,6 @@ import { OfficialPluginInstalledStore } from './installed-store';
 import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 import { OfficialPluginRuntimeActivator } from './runtime-activator';
 import { validatePluginManifest } from './plugin-bundle';
-import { hostText } from '$lib/i18n/host-text';
 
 export type { InstalledOfficialPluginRecord } from './official-plugin-types';
 
@@ -109,12 +109,9 @@ export class OfficialPluginService implements Disposable {
 		await this.runtimeActivator.activate(record);
 
 		if (manifest.type === 'theme') {
-			this.engine.actions.notify(hostText('plugins.notify.themeInstalled'), 'info');
+			this.engine.notify(hostT('plugins.notify.themeInstalled'), 'info');
 		} else {
-			this.engine.actions.notify(
-				hostText('plugins.notify.installed', { pluginId: manifest.id }),
-				'info'
-			);
+			this.engine.notify(hostT('plugins.notify.installed', { pluginId: manifest.id }), 'info');
 		}
 	}
 
@@ -122,7 +119,7 @@ export class OfficialPluginService implements Disposable {
 		await this.runtimeActivator.deactivate(pluginId, { revertThemes: true });
 		await this.installedStore.remove(pluginId);
 		await this.engine.storage.clearPluginData?.(pluginId);
-		this.engine.actions.notify(hostText('plugins.notify.uninstalled', { pluginId }), 'info');
+		this.engine.notify(hostT('plugins.notify.uninstalled', { pluginId }), 'info');
 	}
 
 	async enable(pluginId: string): Promise<void> {
@@ -137,7 +134,7 @@ export class OfficialPluginService implements Disposable {
 		if (updated) {
 			await this.runtimeActivator.activate(updated);
 		}
-		this.engine.actions.notify(hostText('plugins.notify.enabled', { pluginId }), 'info');
+		this.engine.notify(hostT('plugins.notify.enabled', { pluginId }), 'info');
 	}
 
 	async disable(pluginId: string): Promise<void> {
@@ -147,7 +144,7 @@ export class OfficialPluginService implements Disposable {
 		}
 		await this.installedStore.setEnabled(pluginId, false);
 		await this.runtimeActivator.deactivate(pluginId, { revertThemes: true });
-		this.engine.actions.notify(hostText('plugins.notify.disabled', { pluginId }), 'info');
+		this.engine.notify(hostT('plugins.notify.disabled', { pluginId }), 'info');
 	}
 
 	async getPluginConfig<T extends Record<string, unknown>>(pluginId: string): Promise<T | null> {
