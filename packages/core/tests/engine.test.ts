@@ -251,6 +251,48 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(pluginDispose).toHaveBeenCalled();
 	});
 
+	it('derives the active icon theme from the active color scheme', async () => {
+		const { env } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		expect(engine.state.activeIconThemeId).toBe('host-default');
+
+		const onIconChanged = vi.fn();
+		engine.on('iconTheme:changed', onIconChanged);
+
+		const iconDisposable = engine.iconThemes.registerIconTheme({
+			id: 'paired-icons',
+			name: 'Paired icons'
+		});
+		// 注册图标主题本身不改变派生结果
+		expect(engine.state.activeIconThemeId).toBe('host-default');
+
+		engine.themes.registerTheme({
+			id: 'paired',
+			name: 'Paired Theme',
+			workbenchColors: { light: {}, dark: {} },
+			recommendedIconTheme: 'paired-icons',
+			getTokens: () => ({
+				surface: '#ffffff',
+				onSurface: '#000000',
+				primary: '#0000ff',
+				onPrimary: '#ffffff',
+				surfaceVariant: '#eeeeee',
+				outline: '#cccccc'
+			})
+		});
+		engine.actions.setTheme('paired');
+		expect(engine.state.activeIconThemeId).toBe('paired-icons');
+		expect(onIconChanged).toHaveBeenLastCalledWith({ iconThemeId: 'paired-icons' });
+
+		// 推荐的图标主题被注销时回退 host-default
+		iconDisposable.dispose();
+		expect(engine.state.activeIconThemeId).toBe('host-default');
+
+		engine.dispose();
+	});
+
 	it('importTimetable saves, activates, and can overwrite the active id', async () => {
 		const { env, timetables } = createMockEnv();
 		const engine = new ChronosEngine({ env });

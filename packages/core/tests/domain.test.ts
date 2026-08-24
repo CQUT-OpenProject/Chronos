@@ -99,6 +99,5 @@ describe('Domain Models in @chronos/core', () => {
 		expect(DEFAULT_USER_PREFERENCES.timetableLayoutMode).toBe('fixed');
 		expect(DEFAULT_USER_PREFERENCES.capsuleCornerStyle).toBe('rounded');
 		expect(DEFAULT_USER_PREFERENCES.hapticFeedbackEnabled).toBe(true);
-		expect(DEFAULT_USER_PREFERENCES.visualIconThemeId).toBe('host-default');
 	});
 });

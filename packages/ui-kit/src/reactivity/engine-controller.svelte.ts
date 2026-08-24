@@ -67,7 +67,6 @@ export class ReactiveChronosController implements Disposable {
 			),
 			this.engine.on('preferences:updated', ({ preferences }: { preferences: UserPreferences }) => {
 				this.userPreferences = preferences;
-				this.activeIconThemeId = preferences.visualIconThemeId ?? 'host-default';
 			}),
 			this.engine.on(
 				'time:tick',
@@ -138,7 +137,7 @@ export class ReactiveChronosController implements Disposable {
 		this.activeWeek = this.engine.state.activeWeek;
 		this.currentPeriodIndex = this.engine.state.currentPeriodIndex;
 		this.activeThemeId = this.engine.state.activeThemeId;
-		this.activeIconThemeId = this.engine.state.userPreferences.visualIconThemeId ?? 'host-default';
+		this.activeIconThemeId = this.engine.state.activeIconThemeId;
 		this.userPreferences = this.engine.state.userPreferences;
 		this.currentLocale = this.engine.locale;
 		this.courseBadges = this.engine.badges.getAll();

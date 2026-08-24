@@ -13,8 +13,7 @@ import {
 	PALETTE_MODE_VIBRANT,
 	LEGACY_PALETTE_MODE_DYNAMIC,
 	matchesCourseQuery,
-	DEFAULT_VISUAL_THEME_ID,
-	HOST_DEFAULT_ICON_THEME_ID
+	DEFAULT_VISUAL_THEME_ID
 } from '@chronos/core';
 import { db, type ChronosDB } from '$lib/storage/db';
 import { courseToRow, timetableFromRow, timetableToRow, courseFromRow } from '$lib/storage/mappers';
@@ -27,7 +26,6 @@ const SETTINGS_KEYS = {
 	capsuleCornerStyle: 'chronos_preferences:capsule_corner_style',
 	hapticFeedbackEnabled: 'chronos_preferences:haptic_feedback_enabled',
 	visualThemeId: 'chronos_preferences:visual_theme_id',
-	visualIconThemeId: 'chronos_preferences:visual_icon_theme_id',
 	locale: 'chronos_preferences:locale'
 } as const;
 
@@ -261,9 +259,6 @@ export class DexieStorageProvider implements IStorageService {
 		const hapticFeedbackEnabled = hapticRaw !== '0' && hapticRaw !== 'false';
 		const visualThemeId =
 			this.localStore.getItem(SETTINGS_KEYS.visualThemeId)?.trim() || DEFAULT_VISUAL_THEME_ID;
-		const visualIconThemeId =
-			this.localStore.getItem(SETTINGS_KEYS.visualIconThemeId)?.trim() ||
-			HOST_DEFAULT_ICON_THEME_ID;
 		const locale = normalizeLocale(this.localStore.getItem(SETTINGS_KEYS.locale));
 
 		return {
@@ -274,7 +269,6 @@ export class DexieStorageProvider implements IStorageService {
 			capsuleCornerStyle,
 			hapticFeedbackEnabled,
 			visualThemeId,
-			visualIconThemeId,
 			...(locale ? { locale } : {})
 		};
 	}
@@ -302,9 +296,6 @@ export class DexieStorageProvider implements IStorageService {
 		}
 		if (patch.visualThemeId !== undefined) {
 			this.localStore.setItem(SETTINGS_KEYS.visualThemeId, patch.visualThemeId);
-		}
-		if (patch.visualIconThemeId !== undefined) {
-			this.localStore.setItem(SETTINGS_KEYS.visualIconThemeId, patch.visualIconThemeId);
 		}
 		if (patch.locale !== undefined) {
 			this.localStore.setItem(SETTINGS_KEYS.locale, patch.locale);

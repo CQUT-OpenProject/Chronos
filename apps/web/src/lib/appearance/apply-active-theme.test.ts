@@ -64,8 +64,7 @@ describe('applyActiveTheme', () => {
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
 						hapticFeedbackEnabled: true,
-						visualThemeId: 'm3-default',
-						visualIconThemeId: 'host-default'
+						visualThemeId: 'm3-default'
 					}),
 					savePreferences: async () => {},
 					getPluginData: async () => null,
@@ -130,8 +129,7 @@ describe('applyActiveTheme', () => {
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
 						hapticFeedbackEnabled: true,
-						visualThemeId: 'm3-default',
-						visualIconThemeId: 'host-default'
+						visualThemeId: 'm3-default'
 					}),
 					savePreferences: async () => {},
 					getPluginData: async () => null,

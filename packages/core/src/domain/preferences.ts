@@ -1,4 +1,4 @@
-import { DEFAULT_VISUAL_THEME_ID, HOST_DEFAULT_ICON_THEME_ID } from '../theme/theme-defaults';
+import { DEFAULT_VISUAL_THEME_ID } from '../theme/theme-defaults';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 export type PaletteMode = string;
@@ -22,8 +22,6 @@ export interface UserPreferences {
 	hapticFeedbackEnabled: boolean;
 	/** Active visual theme id (e.g. m3-default, yumemita). */
 	visualThemeId?: string;
-	/** Active icon theme id (host-default = slot defaults only). */
-	visualIconThemeId?: string;
 	/** UI locale (zh-cn | en). */
 	locale?: AppLocale;
 	customMetadata?: Record<string, unknown>;
@@ -36,6 +34,5 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
 	timetableLayoutMode: 'fixed',
 	capsuleCornerStyle: 'rounded',
 	hapticFeedbackEnabled: true,
-	visualThemeId: DEFAULT_VISUAL_THEME_ID,
-	visualIconThemeId: HOST_DEFAULT_ICON_THEME_ID
+	visualThemeId: DEFAULT_VISUAL_THEME_ID
 };

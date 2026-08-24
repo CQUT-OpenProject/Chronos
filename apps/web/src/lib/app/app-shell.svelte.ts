@@ -111,21 +111,11 @@ export function createAppShell() {
 
 	async function setColorScheme(schemeId: string) {
 		const patch = buildColorSchemePatch(schemeId);
-		const engine = getAppEngine();
-		const theme = engine.themes.getTheme(patch.visualThemeId);
-		const iconPatch: Partial<UserPreferences> = {
+		controller.setTheme(patch.themeId);
+		await updatePreferences({
 			paletteMode: patch.paletteMode,
 			visualThemeId: patch.visualThemeId
-		};
-		if (theme?.recommendedIconTheme && engine.iconThemes.getIconTheme(theme.recommendedIconTheme)) {
-			iconPatch.visualIconThemeId = theme.recommendedIconTheme;
-		}
-		controller.setTheme(patch.themeId);
-		await updatePreferences(iconPatch);
-	}
-
-	async function setIconTheme(iconThemeId: string) {
-		await updatePreferences({ visualIconThemeId: iconThemeId });
+		});
 	}
 
 	async function setVisualTheme(themeId: string) {
@@ -186,7 +176,6 @@ export function createAppShell() {
 		updatePreferences,
 		setThemeMode,
 		setColorScheme,
-		setIconTheme,
 		setVisualTheme,
 		setTimetableLayoutMode,
 		setPaletteMode,

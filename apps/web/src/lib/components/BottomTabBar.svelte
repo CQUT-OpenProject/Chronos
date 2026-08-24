@@ -30,11 +30,8 @@
 	}
 
 	function resolveTabIcon(tab: BottomTabSlotContribution, active: boolean) {
-		void controller.activeThemeId;
-		void controller.userPreferences;
-
 		const engine = getAppEngine();
-		const iconThemeId = controller.userPreferences?.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID;
+		const iconThemeId = controller.activeIconThemeId;
 		const iconTheme =
 			iconThemeId !== HOST_DEFAULT_ICON_THEME_ID
 				? engine.iconThemes.getIconTheme(iconThemeId)

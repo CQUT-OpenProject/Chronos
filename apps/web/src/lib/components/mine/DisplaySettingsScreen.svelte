@@ -2,7 +2,6 @@
 	import type { AppLocale } from '@chronos/core';
 	import {
 		DEFAULT_VISUAL_THEME_ID,
-		HOST_DEFAULT_ICON_THEME_ID,
 		resolveLocalizedText,
 		type CapsuleCornerStyle,
 		type ThemeMode,
@@ -28,31 +27,10 @@
 	);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const visualThemeId = $derived(shell.controller.activeThemeId);
-	const activeIconThemeId = $derived(
-		shell.controller.userPreferences?.visualIconThemeId ?? HOST_DEFAULT_ICON_THEME_ID
-	);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
 	const activeLocale = $derived(
 		normalizeAppLocale(shell.controller.userPreferences?.locale ?? shell.controller.currentLocale)
 	);
-
-	const iconThemeOptions = $derived.by(() => {
-		void shell.controller.slotVersion;
-		void shell.controller.currentLocale;
-		const builtin = {
-			id: HOST_DEFAULT_ICON_THEME_ID,
-			label: hostText('display.builtin.default'),
-			description: hostText('display.iconTheme.builtinDesc')
-		};
-		const pluginIconThemes = getAppEngine()
-			.iconThemes.getIconThemes()
-			.map((theme) => ({
-				id: theme.id,
-				label: resolveLocalizedText(theme.name),
-				description: resolveLocalizedText(theme.description)
-			}));
-		return [builtin, ...pluginIconThemes];
-	});
 
 	const colorSchemeOptions = $derived.by(() => {
 		void shell.controller.slotVersion;
@@ -148,12 +126,6 @@
 		);
 	}
 
-	async function selectIconTheme(iconThemeId: string) {
-		haptic.light();
-		trackEvent('settings_icon_theme_change', { iconThemeId });
-		await shell.setIconTheme(iconThemeId);
-	}
-
 	async function selectColorScheme(schemeId: string) {
 		const option = colorSchemeOptions.find((entry) => entry.id === schemeId);
 		if (!option || option.disabled) return;
@@ -230,22 +202,6 @@
 						disabled={option.disabled}
 						onchange={() => selectColorScheme(option.id)}
 					/>
-				{/snippet}
-			</MineRow>
-		{/each}
-	</MineSection>
-
-	<MineSection title={hostTextRead(shell.controller, 'display.section.iconTheme')}>
-		{#each iconThemeOptions as option (option.id)}
-			{@const selected = activeIconThemeId === option.id}
-			<MineRow
-				label={true}
-				title={option.label}
-				supporting={option.description}
-				onclick={() => selectIconTheme(option.id)}
-			>
-				{#snippet trailing()}
-					<Radio name="icon-theme" checked={selected} onchange={() => selectIconTheme(option.id)} />
 				{/snippet}
 			</MineRow>
 		{/each}
