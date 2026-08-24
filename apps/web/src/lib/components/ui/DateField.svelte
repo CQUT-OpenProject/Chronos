@@ -9,6 +9,8 @@
 		formatDateDisplay,
 		isoToCalendarDate
 	} from '$lib/components/ui/date-field-utils';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		label,
@@ -31,6 +33,7 @@
 	const fallbackId = `date-field-${Math.random().toString(36).slice(2, 9)}`;
 	const fieldId = $derived(id ?? fallbackId);
 	const labelId = $derived(`${fieldId}-label`);
+	const controller = getAppController();
 
 	let open = $state(false);
 	let draftIso = $state('');
@@ -99,7 +102,7 @@
 										displayValue ? 'text-on-surface' : 'text-on-surface-variant/60'
 									]}
 								>
-									{displayValue || '选择日期'}
+									{displayValue || hostTextRead(controller, 'ui.date.placeholder')}
 								</span>
 								<span class="m3-date-field-trigger" aria-hidden="true">
 									<CalendarMonth class="size-5" />
@@ -167,17 +170,21 @@
 							class="mt-3 flex items-center justify-between gap-2 border-t border-outline-variant/40 pt-3"
 						>
 							<div class="flex items-center gap-1">
-								<Button variant="text" class="h-9 px-3" onclick={selectToday}>今天</Button>
+								<Button variant="text" class="h-9 px-3" onclick={selectToday}>
+									{hostTextRead(controller, 'ui.date.today')}
+								</Button>
 								<Button
 									variant="text"
 									class="h-9 px-3 text-on-surface-variant"
 									disabled={!draftIso}
 									onclick={clearDate}
 								>
-									清除
+									{hostTextRead(controller, 'ui.date.clear')}
 								</Button>
 							</div>
-							<Button class="h-9 px-4" onclick={confirmSelection}>确认</Button>
+							<Button class="h-9 px-4" onclick={confirmSelection}>
+								{hostTextRead(controller, 'ui.date.confirm')}
+							</Button>
 						</div>
 					{/snippet}
 				</DatePicker.Calendar>

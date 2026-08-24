@@ -3,6 +3,8 @@
 	import { staticPath } from '$lib/config/static-path';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import { resolveFetchErrorMessage } from '$lib/client/fetch-error-message';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostText, hostTextRead } from '$lib/i18n/host-text';
 	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
@@ -12,6 +14,8 @@
 	}
 
 	type LoadState = 'loading' | 'ready' | 'error' | 'empty';
+
+	const controller = getAppController();
 
 	let licenses = $state<ThirdPartyLicense[]>([]);
 	let loadState = $state<LoadState>('loading');
@@ -24,7 +28,10 @@
 		try {
 			const response = await fetch(staticPath('/licenses/third-party.json'));
 			if (!response.ok) {
-				errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载第三方许可证列表');
+				errorMessage = resolveFetchErrorMessage(
+					!connectivity.isOnline,
+					hostText('about.licenses.thirdParty.loadFailed')
+				);
 				loadState = 'error';
 				return;
 			}
@@ -32,7 +39,10 @@
 			licenses = (await response.json()) as ThirdPartyLicense[];
 			loadState = licenses.length > 0 ? 'ready' : 'empty';
 		} catch {
-			errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载第三方许可证列表');
+			errorMessage = resolveFetchErrorMessage(
+				!connectivity.isOnline,
+				hostText('about.licenses.thirdParty.loadFailed')
+			);
 			loadState = 'error';
 		}
 	}
@@ -53,7 +63,10 @@
 		onRetry={loadLicenses}
 	/>
 {:else if loadState === 'empty'}
-	<FetchErrorState title="暂无许可证记录" description="未找到第三方依赖许可证数据。" />
+	<FetchErrorState
+		title={hostTextRead(controller, 'about.licenses.thirdParty.empty.title')}
+		description={hostTextRead(controller, 'about.licenses.thirdParty.empty.desc')}
+	/>
 {:else}
 	<ul class="flex flex-col divide-y divide-outline-variant/60">
 		{#each licenses as entry (entry.name)}

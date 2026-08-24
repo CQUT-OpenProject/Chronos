@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { Close, Search } from '$lib/icons';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		value = $bindable(''),
-		placeholder = '搜索...',
-		ariaLabel = placeholder,
+		placeholder,
+		ariaLabel,
 		class: className = ''
 	}: {
 		value?: string;
@@ -13,6 +15,14 @@
 		ariaLabel?: string;
 		class?: string;
 	} = $props();
+
+	const controller = getAppController();
+	const resolvedPlaceholder = $derived(
+		placeholder ?? hostTextRead(controller, 'ui.search.placeholder')
+	);
+	const resolvedAriaLabel = $derived(
+		ariaLabel ?? hostTextRead(controller, 'ui.search.placeholder')
+	);
 </script>
 
 <div
@@ -22,15 +32,15 @@
 	<input
 		type="search"
 		bind:value
-		{placeholder}
-		aria-label={ariaLabel}
+		placeholder={resolvedPlaceholder}
+		aria-label={resolvedAriaLabel}
 		class="m3-body-medium w-full border-none bg-transparent p-0 text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
 	/>
 	{#if value}
 		<IconButton
 			variant="standard"
 			size="sm"
-			ariaLabel="清空搜索"
+			ariaLabel={hostTextRead(controller, 'ui.search.clearAria')}
 			class="!size-6 !p-0 text-on-surface-variant hover:!bg-surface-variant/50"
 			onclick={() => (value = '')}
 		>

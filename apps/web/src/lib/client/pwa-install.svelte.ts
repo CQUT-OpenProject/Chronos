@@ -1,5 +1,5 @@
 import { trackEvent } from '$lib/client/analytics';
-import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 import {
 	isInstallPromptSnoozed,
 	parseSnoozedUntil,
@@ -9,7 +9,6 @@ import {
 import { isPwaStandalone, PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalone';
 
 const INSTALLED_KEY = 'chronos:pwa-installed';
-const OPEN_IN_APP_HINT = '如未自动跳转，请从程序坞、启动台或开始菜单手动打开 Chronos。';
 
 class PWAInstallController {
 	deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
@@ -273,7 +272,7 @@ class PWAInstallController {
 	openInApp() {
 		this.openInAppDialogOpen = false;
 		this.tryFocusInstalledAppWindow();
-		snackbar(OPEN_IN_APP_HINT);
+		snackbarKey('pwa.openInApp.hint');
 	}
 
 	snoozeInstallPrompt() {

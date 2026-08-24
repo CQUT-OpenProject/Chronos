@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { page } from '$app/state';
-	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import { PluginScreenContainer, resolvePluginScreenSlot } from '@chronos/ui-kit';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
-	const shell = getContext<AppShellController>('appShell');
 	const controller = getAppController();
 	const pluginId = $derived(page.params.pluginId ?? '');
 	const viewId = $derived(page.params.view || 'index');
@@ -20,7 +18,7 @@
 			? typeof screenSlot.title === 'function'
 				? screenSlot.title()
 				: screenSlot.title
-			: '插件页面'
+			: hostTextRead(controller, 'route.pluginPage')
 	);
 	const isRich = $derived(Boolean(screenSlot?.component));
 </script>

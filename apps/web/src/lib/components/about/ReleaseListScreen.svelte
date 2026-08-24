@@ -7,6 +7,8 @@
 		createReleaseListState,
 		type ReleaseListStateController
 	} from '$lib/content/releases/catalog-state.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
@@ -15,6 +17,8 @@
 
 	let { listState = createReleaseListState() }: { listState?: ReleaseListStateController } =
 		$props();
+
+	const controller = getAppController();
 
 	onMount(() => {
 		void listState.load();
@@ -30,7 +34,7 @@
 		<LoadingIndicator />
 	</div>
 {:else if listState.state.releases.length > 0}
-	<MineSection title="全部版本">
+	<MineSection title={hostTextRead(controller, 'about.release.list.heading')}>
 		{#each listState.state.releases as release (release.tagName)}
 			<MineRow
 				title={release.name || release.tagName}
@@ -43,7 +47,7 @@
 	<Card variant="filled" class="flex flex-col items-center gap-3 py-8 text-center">
 		<InfoFill class="h-8 w-8 text-on-surface-variant" />
 		<p class="m3-body-medium text-danger">
-			{listState.state.errorMessage ?? '暂无版本更新记录'}
+			{listState.state.errorMessage ?? hostTextRead(controller, 'about.release.list.empty')}
 		</p>
 	</Card>
 {/if}

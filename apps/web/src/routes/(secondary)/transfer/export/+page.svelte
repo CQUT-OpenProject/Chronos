@@ -3,6 +3,7 @@
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TransferExportScreen from '$lib/components/transfer/TransferExportScreen.svelte';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const controller = getAppController();
 	const engine = getAppEngine();
@@ -20,6 +21,6 @@
 	});
 </script>
 
-<SecondaryPageShell title="分享课程表" backHref="/mine">
+<SecondaryPageShell title={hostTextRead(controller, 'route.export')} backHref="/mine">
 	<TransferExportScreen warningMessage={exportWarning} />
 </SecondaryPageShell>

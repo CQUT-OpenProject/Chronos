@@ -12,6 +12,7 @@
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		screen,
@@ -62,7 +63,16 @@
 			: ''
 	);
 	const weekHeaderAriaLabel = $derived(
-		`第 ${displayedWeekNumber} 周，${weekRangeText}，点击返回本周`
+		hostTextRead(shell.controller, 'timetable.week.headerAria', {
+			week: displayedWeekNumber,
+			range: weekRangeText
+		})
+	);
+	const weekLabel = $derived(
+		hostTextRead(shell.controller, 'timetable.week.label', {
+			week: displayedWeekNumber,
+			today: headerTodayLabel ? ` ${headerTodayLabel}` : ''
+		})
 	);
 
 	function focusWeekSliderThumb() {
@@ -120,7 +130,7 @@
 					{#if weekGesture.weekSliderVisible && startWeek < endWeek}
 						<Slider
 							id="week-slider"
-							ariaLabel="选择教学周次"
+							ariaLabel={hostTextRead(shell.controller, 'timetable.week.sliderAria')}
 							bind:value={weekGesture.dragWeek}
 							min={startWeek}
 							max={endWeek}
@@ -141,7 +151,7 @@
 					<p
 						class="m3-body-medium truncate text-xs leading-tight text-on-surface-variant sm:text-sm"
 					>
-						第 {displayedWeekNumber} 周{headerTodayLabel ? ` ${headerTodayLabel}` : ''}
+						{weekLabel}
 					</p>
 				</div>
 			</div>
@@ -150,7 +160,7 @@
 			<IconButton
 				variant="tonal"
 				size="sm"
-				ariaLabel="编辑课表"
+				ariaLabel={hostTextRead(shell.controller, 'timetable.edit.aria')}
 				onclick={() => {
 					haptic.light();
 					onEditTimetableDetails();

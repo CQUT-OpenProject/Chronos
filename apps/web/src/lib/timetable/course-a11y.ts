@@ -1,8 +1,11 @@
 import type { Course } from '@chronos/core';
+import { hostText } from '$lib/i18n/host-text';
 import { timetableDayLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
 
 function formatPeriodRange(startPeriod: number, endPeriod: number): string {
-	return startPeriod === endPeriod ? `第 ${startPeriod} 节` : `第 ${startPeriod}-${endPeriod} 节`;
+	return startPeriod === endPeriod
+		? hostText('courseA11y.periodSingle', { n: startPeriod })
+		: hostText('courseA11y.periodRange', { start: startPeriod, end: endPeriod });
 }
 
 export function buildCourseCapsuleAriaLabel(
@@ -25,5 +28,5 @@ export function buildCourseCapsuleAriaLabel(
 }
 
 export function buildOverlapPlaceholderAriaLabel(count: number): string {
-	return `此时段有 ${count} 门课程重叠，点击展开`;
+	return hostText('courseA11y.overlap', { count });
 }

@@ -3,10 +3,13 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import DisplaySettingsScreen from '$lib/components/mine/DisplaySettingsScreen.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const shell = getContext<AppShellController>('appShell');
+	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title="显示设置" backHref="/mine">
+<SecondaryPageShell title={hostTextRead(controller, 'route.displaySettings')} backHref="/mine">
 	<DisplaySettingsScreen {shell} />
 </SecondaryPageShell>

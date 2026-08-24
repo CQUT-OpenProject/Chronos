@@ -1,5 +1,6 @@
 import { parseDate, type DateValue } from '@internationalized/date';
 import { formatSlashDate } from '@chronos/core';
+import { hostText } from '$lib/i18n/host-text';
 
 export function isoToCalendarDate(iso: string): DateValue | undefined {
 	const trimmed = iso.trim();
@@ -24,5 +25,7 @@ export function formatDateDisplay(iso: string): string {
 
 export function buildDateFieldTriggerLabel(label: string, iso: string): string {
 	const display = formatDateDisplay(iso);
-	return display ? `${label}：${display}` : `选择${label}`;
+	return display
+		? hostText('ui.date.trigger.labeled', { label, display })
+		: hostText('ui.date.trigger.empty', { label });
 }

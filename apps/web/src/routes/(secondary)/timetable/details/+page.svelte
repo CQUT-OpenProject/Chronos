@@ -6,8 +6,11 @@
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TimetableDetailsScreen from '$lib/components/timetable/TimetableDetailsScreen.svelte';
 	import { createTimetableDetailsEditor } from '$lib/timetable/timetable-details.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const shell = getContext<AppShellController>('appShell');
+	const controller = getAppController();
 	const timetable = $derived(shell.controller.currentTimetable);
 
 	const editor = createTimetableDetailsEditor(shell, () => goto(resolve('/')));
@@ -17,6 +20,6 @@
 	});
 </script>
 
-<SecondaryPageShell title="编辑课表" backHref="/" flush>
+<SecondaryPageShell title={hostTextRead(controller, 'route.timetableEdit')} backHref="/" flush>
 	<TimetableDetailsScreen {editor} />
 </SecondaryPageShell>

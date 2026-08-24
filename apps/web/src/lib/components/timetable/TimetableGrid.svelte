@@ -28,6 +28,7 @@
 		type CoursePaletteEntry
 	} from '@chronos/core';
 	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 	import {
 		timetableBodyTintClass,
 		timetableSidebarTintClass,
@@ -313,7 +314,7 @@
 			class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
 		>
 			<span>{gridModel.monthLabel}</span>
-			<span>月</span>
+			<span>{hostTextRead(controller, 'timetable.grid.monthSuffix')}</span>
 		</div>
 		<div class="flex min-w-0 flex-1">
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
@@ -339,11 +340,11 @@
 			? 'overflow-hidden'
 			: 'overflow-y-auto'} {timetableBodyTintClass(hasDynamicBackground)}"
 		role="region"
-		aria-label="本周课程表"
+		aria-label={hostTextRead(controller, 'timetable.grid.aria')}
 	>
 		<div class="flex" style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})">
 			<aside
-				aria-label="节次与时间"
+				aria-label={hostTextRead(controller, 'timetable.grid.periodsAria')}
 				class="shrink-0"
 				style:width="var(--sidebar-width)"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
@@ -395,7 +396,7 @@
 								onclick={() => expandSlot(item.key)}
 							>
 								<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
-									此时段有 {item.count} 门课程重叠
+									{hostTextRead(controller, 'timetable.grid.overlap', { count: item.count })}
 								</span>
 							</button>
 						{:else}

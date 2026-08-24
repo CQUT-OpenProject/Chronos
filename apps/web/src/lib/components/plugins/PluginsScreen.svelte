@@ -16,7 +16,8 @@
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
 	import PluginConfigModal from './PluginConfigModal.svelte';
-	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
+	import { hostText, hostTextRead } from '$lib/i18n/host-text';
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
 	import { DeleteFill, CheckCircleFill, TuneFill } from '$lib/icons';
@@ -101,6 +102,20 @@
 
 	const activeLocale = $derived(appController.currentLocale);
 
+	const tabSegments = $derived.by(() => {
+		void appController.currentLocale;
+		void appController.slotVersion;
+		return [
+			{
+				value: 'installed',
+				label: hostText('plugins.tab.installed', {
+					count: profileBuiltinPlugins.length + installedRecords.length
+				})
+			},
+			{ value: 'official', label: hostText('plugins.tab.official') }
+		];
+	});
+
 	function resolveManifestText(
 		value: string | Record<string, string> | (() => string) | undefined
 	): string {
@@ -129,7 +144,7 @@
 			refreshInstalled();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
-			snackbar(`安装失败: ${msg}`);
+			snackbarKey('snackbar.install.failed', { message: msg });
 		} finally {
 			operatingPluginId = null;
 		}
@@ -143,7 +158,7 @@
 	async function confirmThirdPartyInstall() {
 		const url = manifestUrlInput.trim();
 		if (!url) {
-			snackbar('请输入 manifest.json 链接');
+			snackbarKey('snackbar.manifestRequired');
 			return;
 		}
 		thirdPartyInstallDialogOpen = false;
@@ -154,7 +169,7 @@
 			activeTab = 'installed';
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
-			snackbar(`安装失败: ${msg}`);
+			snackbarKey('snackbar.install.failed', { message: msg });
 		} finally {
 			operatingPluginId = null;
 			manifestUrlInput = '';
@@ -176,7 +191,7 @@
 			refreshInstalled();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
-			snackbar(`卸载失败: ${msg}`);
+			snackbarKey('snackbar.uninstall.failed', { message: msg });
 		} finally {
 			operatingPluginId = null;
 		}
@@ -193,7 +208,7 @@
 			refreshInstalled();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
-			snackbar(`操作失败: ${msg}`);
+			snackbarKey('snackbar.toggle.failed', { message: msg });
 		} finally {
 			operatingPluginId = null;
 		}
@@ -216,20 +231,14 @@
 
 {#snippet thirdPartyImportFooter()}
 	<Button variant="outlined" class="w-full" onclick={promptThirdPartyInstall}>
-		从第三方链接导入
+		{hostTextRead(appController, 'plugins.thirdParty.import')}
 	</Button>
 {/snippet}
 
 <div class="flex h-full min-h-0 flex-col text-on-surface">
 	<div class="shrink-0 px-4 pt-3 pb-4">
 		<SegmentedControl
-			segments={[
-				{
-					value: 'installed',
-					label: `已安装 (${profileBuiltinPlugins.length + installedRecords.length})`
-				},
-				{ value: 'official', label: '官方插件' }
-			]}
+			segments={tabSegments}
 			value={activeTab}
 			onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
 		/>
@@ -239,9 +248,11 @@
 		<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="m3-section-title">Chronos 内置插件</h2>
+					<h2 class="m3-section-title">{hostTextRead(appController, 'plugins.builtin.heading')}</h2>
 					<span class="m3-label-small text-on-surface-variant"
-						>{profileBuiltinPlugins.length} 个</span
+						>{hostTextRead(appController, 'plugins.builtin.count', {
+							count: profileBuiltinPlugins.length
+						})}</span
 					>
 				</div>
 
@@ -281,11 +292,11 @@
 										onclick={() => handleOpenConfig(plugin.id, name, plugin.configSchema)}
 									>
 										<TuneFill class="mr-1 size-3.5" />
-										设置
+										{hostTextRead(appController, 'plugins.action.settings')}
 									</Button>
 								{:else}
 									<span class="m3-label-small text-[11px] text-on-surface-variant/80">
-										默认启用
+										{hostTextRead(appController, 'plugins.builtin.defaultEnabled')}
 									</span>
 								{/if}
 							</div>
@@ -296,17 +307,23 @@
 
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="m3-section-title">已安装的官方插件</h2>
-					<span class="m3-label-small text-on-surface-variant">{installedRecords.length} 个</span>
+					<h2 class="m3-section-title">
+						{hostTextRead(appController, 'plugins.installed.heading')}
+					</h2>
+					<span class="m3-label-small text-on-surface-variant"
+						>{hostTextRead(appController, 'plugins.builtin.count', {
+							count: installedRecords.length
+						})}</span
+					>
 				</div>
 
 				{#if installedRecords.length === 0}
 					<div
 						class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-8 text-center text-on-surface-variant"
 					>
-						<p class="m3-body-medium">暂无在线安装的官方插件</p>
+						<p class="m3-body-medium">{hostTextRead(appController, 'plugins.empty.installed')}</p>
 						<Button variant="text" class="mt-1 text-xs" onclick={() => (activeTab = 'official')}>
-							浏览官方插件
+							{hostTextRead(appController, 'plugins.empty.browse')}
 						</Button>
 					</div>
 				{:else}
@@ -340,7 +357,7 @@
 												<span
 													class="m3-label-small py-0.2 rounded-full bg-primary-container/80 px-1.5 text-[10px] font-medium text-on-primary-container"
 												>
-													使用中
+													{hostTextRead(appController, 'plugins.badge.inUse')}
 												</span>
 											{/if}
 										</div>
@@ -379,13 +396,13 @@
 													handleOpenConfig(record.manifest.id, name, record.manifest.configSchema)}
 											>
 												<TuneFill class="mr-0.5 size-3" />
-												设置
+												{hostTextRead(appController, 'plugins.action.settings')}
 											</Button>
 										{/if}
 										<IconButton
 											variant="danger"
 											size="sm"
-											ariaLabel="卸载插件"
+											ariaLabel={hostTextRead(appController, 'plugins.uninstall.aria')}
 											disabled={isBusy}
 											onclick={() => promptUninstall(record.manifest.id, name)}
 										>
@@ -404,10 +421,12 @@
 			<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
 				<section class="m3-section">
 					<div class="flex items-center gap-2 px-1">
-						<h2 class="m3-section-title">官方插件</h2>
+						<h2 class="m3-section-title">{hostTextRead(appController, 'plugins.tab.official')}</h2>
 						{#if catalogManifests.length > 0}
 							<span class="m3-label-small text-on-surface-variant">
-								{catalogManifests.length} 个
+								{hostTextRead(appController, 'plugins.builtin.count', {
+									count: catalogManifests.length
+								})}
 							</span>
 						{/if}
 					</div>
@@ -415,27 +434,31 @@
 					{#if loadingCatalog}
 						<div class="flex flex-col items-center justify-center py-12">
 							<LoadingIndicator size="large" />
-							<p class="m3-body-small mt-2 text-on-surface-variant">正在加载官方插件目录…</p>
+							<p class="m3-body-small mt-2 text-on-surface-variant">
+								{hostTextRead(appController, 'plugins.catalog.loading')}
+							</p>
 						</div>
 					{:else if catalogError}
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl border border-error/30 bg-error-container/20 p-6 text-center"
 						>
-							<p class="m3-body-medium font-medium text-error">无法加载官方插件目录</p>
+							<p class="m3-body-medium font-medium text-error">
+								{hostTextRead(appController, 'plugins.catalog.error.title')}
+							</p>
 							<p class="m3-body-small mt-1 text-on-surface-variant">{catalogError}</p>
 							<Button
 								variant="outlined"
 								class="mt-3 h-8 px-4 text-xs"
 								onclick={loadOfficialCatalog}
 							>
-								重试
+								{hostTextRead(appController, 'plugins.catalog.retry')}
 							</Button>
 						</div>
 					{:else if catalogManifests.length === 0}
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-12 text-center text-on-surface-variant"
 						>
-							<p class="m3-body-medium">暂无可用插件</p>
+							<p class="m3-body-medium">{hostTextRead(appController, 'plugins.catalog.empty')}</p>
 						</div>
 					{:else}
 						<div class="m3-section-surface divide-y divide-border/40">
@@ -485,7 +508,7 @@
 												class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
 											>
 												<CheckCircleFill class="size-3.5" />
-												已安装
+												{hostTextRead(appController, 'plugins.badge.installed')}
 											</span>
 										{:else}
 											<Button
@@ -494,7 +517,9 @@
 												disabled={isBusy}
 												onclick={() => handleInstall(manifest, entry.url)}
 											>
-												{isBusy ? '安装中…' : '安装'}
+												{isBusy
+													? hostTextRead(appController, 'plugins.action.installing')
+													: hostTextRead(appController, 'plugins.action.install')}
 											</Button>
 										{/if}
 									</div>
@@ -520,37 +545,51 @@
 
 <Dialog
 	bind:open={uninstallDialogOpen}
-	title="卸载插件？"
-	description="确定卸载「{uninstallTarget.name ||
-		uninstallTarget.id}」吗？卸载后相关功能与本地配置将被移除。"
+	title={hostTextRead(appController, 'plugins.uninstall.title')}
+	description={hostTextRead(appController, 'plugins.uninstall.desc', {
+		name: uninstallTarget.name || uninstallTarget.id
+	})}
 >
 	{#snippet footer()}
-		<Button variant="text" onclick={() => (uninstallDialogOpen = false)}>取消</Button>
-		<Button variant="danger" onclick={confirmUninstall}>卸载</Button>
+		<Button variant="text" onclick={() => (uninstallDialogOpen = false)}>
+			{hostTextRead(appController, 'common.cancel')}
+		</Button>
+		<Button variant="danger" onclick={confirmUninstall}>
+			{hostTextRead(appController, 'common.uninstall')}
+		</Button>
 	{/snippet}
 </Dialog>
 
-<Dialog bind:open={thirdPartyInstallDialogOpen} title="从第三方链接导入">
+<Dialog
+	bind:open={thirdPartyInstallDialogOpen}
+	title={hostTextRead(appController, 'plugins.thirdParty.title')}
+>
 	<div class="flex flex-col gap-3 py-2">
 		<div
 			class="flex flex-col gap-1.5 rounded-xl border border-error/30 bg-error-container/15 px-3 py-2.5"
 		>
-			<p class="m3-body-small font-medium text-on-surface">安装前请注意</p>
+			<p class="m3-body-small font-medium text-on-surface">
+				{hostTextRead(appController, 'plugins.thirdParty.warning.title')}
+			</p>
 			<ul class="m3-body-small list-disc space-y-1 pl-4 text-on-surface-variant">
-				<li>插件在本机进程内运行，权限与 Profile 内置插件相同</li>
-				<li>manifest 来自非官方目录来源时，请自行确认其可信</li>
-				<li>安装风险由您自行承担</li>
+				<li>{hostTextRead(appController, 'plugins.thirdParty.warning.line1')}</li>
+				<li>{hostTextRead(appController, 'plugins.thirdParty.warning.line2')}</li>
+				<li>{hostTextRead(appController, 'plugins.thirdParty.warning.line3')}</li>
 			</ul>
 		</div>
 		<input
 			class="m3-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary"
 			type="url"
-			placeholder="https://example.com/plugin.manifest.json"
+			placeholder={hostTextRead(appController, 'plugins.thirdParty.placeholder')}
 			bind:value={manifestUrlInput}
 		/>
 	</div>
 	{#snippet footer()}
-		<Button variant="text" onclick={() => (thirdPartyInstallDialogOpen = false)}>取消</Button>
-		<Button variant="filled" onclick={confirmThirdPartyInstall}>确认安装</Button>
+		<Button variant="text" onclick={() => (thirdPartyInstallDialogOpen = false)}>
+			{hostTextRead(appController, 'common.cancel')}
+		</Button>
+		<Button variant="filled" onclick={confirmThirdPartyInstall}>
+			{hostTextRead(appController, 'plugins.thirdParty.confirm')}
+		</Button>
 	{/snippet}
 </Dialog>

@@ -9,7 +9,8 @@
 	} from '@chronos/core';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
-	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import { snackbar, snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
+	import { hostText, hostTextRead } from '$lib/i18n/host-text';
 	import { DEFAULT_TIMETABLE_NAME, normalizeTimetableName } from '$lib/models/timetable';
 
 	let {
@@ -73,7 +74,7 @@
 
 	function withTimeout<T>(promise: Promise<T>, ms = 15000): Promise<T> {
 		return new Promise<T>((resolve, reject) => {
-			const timer = setTimeout(() => reject(new Error('导出耗时过长，请重试')), ms);
+			const timer = setTimeout(() => reject(new Error(hostText('transfer.export.timeout'))), ms);
 			promise.then(
 				(value) => {
 					clearTimeout(timer);
@@ -90,7 +91,7 @@
 	async function handleActionExport(action: ExportActionSlotContribution) {
 		const current = controller.currentTimetable;
 		if (!current) {
-			snackbar('当前没有可导出的课表');
+			snackbarKey('transfer.export.noTimetable');
 			return;
 		}
 		if (runningId) return;
@@ -105,9 +106,11 @@
 			if (disposition === 'clipboard') {
 				const text = typeof result.content === 'string' ? result.content : '';
 				const copied = await withTimeout(copyTextSafely(text));
-				if (!copied) throw new Error('复制失败，请手动复制后重试');
+				if (!copied) throw new Error(hostText('transfer.export.copyFailed'));
 				trackEvent('export_copy_link');
-				snackbar(resolveLocalizedText(result.successMessage) || '已复制课表链接');
+				snackbar(
+					resolveLocalizedText(result.successMessage) || hostText('transfer.export.linkCopied')
+				);
 				return;
 			}
 
@@ -115,7 +118,10 @@
 				downloadExportResult(result);
 				trackEvent('export_slot_execute_success', { actionId: action.id });
 				snackbar(
-					resolveLocalizedText(result.successMessage) || `已保存《${result.filename ?? '课表'}》`
+					resolveLocalizedText(result.successMessage) ||
+						hostText('transfer.export.fileSaved', {
+							filename: result.filename ?? hostText('timetable.defaultName')
+						})
 				);
 				return;
 			}
@@ -125,26 +131,31 @@
 			}
 		} catch (err: unknown) {
 			trackEvent('export_slot_execute_fail', { actionId: action.id });
-			snackbar(err instanceof Error ? err.message : '导出失败');
+			snackbar(err instanceof Error ? err.message : hostText('transfer.export.failed'));
 		} finally {
 			runningId = null;
 		}
 	}
 
 	function actionDescription(action: ExportActionSlotContribution): string {
-		return resolveLocalizedText(action.description) || '保存到本机，随时可以再导入';
+		return (
+			resolveLocalizedText(action.description) ||
+			hostTextRead(controller, 'transfer.export.defaultDesc')
+		);
 	}
 
 	function exportButtonLabel(action: ExportActionSlotContribution): string {
-		return `导出为 ${resolveLocalizedText(action.title)}`;
+		return hostText('transfer.export.button', { title: resolveLocalizedText(action.title) });
 	}
 </script>
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
 	<p class="m3-body-medium text-center text-on-surface-variant">
-		将「{currentTimetable
-			? normalizeTimetableName(currentTimetable.name)
-			: DEFAULT_TIMETABLE_NAME}」使用以下方式分享：
+		{hostTextRead(controller, 'transfer.export.intro', {
+			name: currentTimetable
+				? normalizeTimetableName(currentTimetable.name)
+				: DEFAULT_TIMETABLE_NAME
+		})}
 	</p>
 
 	{#if warningMessage}
@@ -175,14 +186,16 @@
 				disabled={runningId !== null || !currentTimetable}
 				onclick={() => handleActionExport(selectedAction)}
 			>
-				{runningId === selectedAction.id ? '导出中…' : exportButtonLabel(selectedAction)}
+				{runningId === selectedAction.id
+					? hostTextRead(controller, 'transfer.export.exporting')
+					: exportButtonLabel(selectedAction)}
 			</Button>
 		</div>
 	{:else}
 		<div
 			class="rounded-2xl border border-outline/30 bg-surface p-6 text-center text-on-surface-variant shadow-xs"
 		>
-			暂无可用的导出方式
+			{hostTextRead(controller, 'transfer.export.noMethod')}
 		</div>
 	{/if}
 </div>

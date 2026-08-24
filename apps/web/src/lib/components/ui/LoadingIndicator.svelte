@@ -1,11 +1,16 @@
 <script lang="ts">
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
+
 	let { class: className = '' }: { class?: string } = $props();
+
+	const controller = getAppController();
 </script>
 
 <div
 	class="inline-flex items-center justify-center p-2 {className}"
 	role="status"
-	aria-label="加载中"
+	aria-label={hostTextRead(controller, 'ui.loading.aria')}
 >
 	<svg
 		class="size-8 animate-spin text-brand"

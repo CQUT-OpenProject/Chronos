@@ -7,6 +7,8 @@
 		type ReleaseDetailStateController
 	} from '$lib/content/releases/catalog-state.svelte';
 	import { trackEvent } from '$lib/client/analytics';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
@@ -23,6 +25,8 @@
 		detailState?: ReleaseDetailStateController;
 	} = $props();
 
+	const controller = getAppController();
+
 	onMount(() => {
 		trackEvent('release_detail_open', { tag });
 		void detailState.load();
@@ -30,6 +34,10 @@
 
 	const htmlBody = $derived(
 		detailState.state.release?.body ? parseMarkdown(detailState.state.release.body) : ''
+	);
+
+	const emptyBodyHtml = $derived(
+		`<p>${hostTextRead(controller, 'about.release.detail.noBody')}</p>`
 	);
 </script>
 
@@ -44,21 +52,21 @@
 		<HighlightRowList>
 			<HighlightRow
 				icon={DescriptionFill}
-				title="版本标签"
+				title={hostTextRead(controller, 'about.release.detail.tag')}
 				subtitle={detailState.state.release.tagName}
 			/>
 			<HighlightRow
 				icon={CalendarMonthFill}
-				title="发布日期"
+				title={hostTextRead(controller, 'about.release.detail.published')}
 				subtitle={formatPublishedDate(detailState.state.release.publishedAt)}
 			/>
 		</HighlightRowList>
 
-		<MineSection title="更新内容">
+		<MineSection title={hostTextRead(controller, 'about.release.detail.changelog')}>
 			<div
 				class="markdown-prose markdown-prose--release prose prose-sm max-w-none px-2 dark:prose-invert"
 			>
-				{@html htmlBody || '<p>此 Release 没有正文内容。</p>'}
+				{@html htmlBody || emptyBodyHtml}
 			</div>
 		</MineSection>
 	</div>
@@ -66,7 +74,7 @@
 	<Card variant="filled" class="flex flex-col items-center gap-3 py-8 text-center">
 		<InfoFill class="h-8 w-8 text-on-surface-variant" />
 		<p class="m3-body-medium text-danger">
-			{detailState.state.errorMessage ?? '未获取到当前版本的 Release 信息'}
+			{detailState.state.errorMessage ?? hostTextRead(controller, 'about.release.detail.notFound')}
 		</p>
 	</Card>
 {/if}

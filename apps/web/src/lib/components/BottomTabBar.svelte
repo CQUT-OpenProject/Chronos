@@ -11,6 +11,7 @@
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { toAppPathname } from '$lib/navigation/app-pathname';
 	import { getAppController, getAppEngine } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 	import { resolveEffectiveThemeId } from '$lib/appearance/apply-active-theme';
 	import { resolveShellIcon, shellIconSizeClass } from '$lib/shell/resolve-shell-icon';
 	import ShellSvgIcon from '$lib/shell/ShellSvgIcon.svelte';
@@ -64,7 +65,10 @@
 </script>
 
 <div class="bottom-bar w-full flex-col justify-center">
-	<nav aria-label="主导航" class="flex h-full w-full max-w-md items-center justify-around">
+	<nav
+		aria-label={hostTextRead(controller, 'ui.nav.main')}
+		class="flex h-full w-full max-w-md items-center justify-around"
+	>
 		{#each sortedTabs as tab (tab.id)}
 			{@const active = isActive(tab.href)}
 			{@const icon = resolveTabIcon(tab, active)}

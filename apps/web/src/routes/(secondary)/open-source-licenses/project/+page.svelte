@@ -6,8 +6,12 @@
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostText, hostTextRead } from '$lib/i18n/host-text';
 
 	type LoadState = 'loading' | 'ready' | 'error';
+
+	const controller = getAppController();
 
 	let loadState = $state<LoadState>('loading');
 	let licenseText = $state('');
@@ -20,7 +24,10 @@
 		try {
 			const response = await fetch(staticPath('/licenses/project_license.txt'));
 			if (!response.ok) {
-				errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载许可证文本');
+				errorMessage = resolveFetchErrorMessage(
+					!connectivity.isOnline,
+					hostText('about.licenses.project.loadFailed')
+				);
 				loadState = 'error';
 				return;
 			}
@@ -28,7 +35,10 @@
 			licenseText = await response.text();
 			loadState = 'ready';
 		} catch {
-			errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载许可证文本');
+			errorMessage = resolveFetchErrorMessage(
+				!connectivity.isOnline,
+				hostText('about.licenses.project.loadFailed')
+			);
 			loadState = 'error';
 		}
 	}
@@ -38,7 +48,10 @@
 	});
 </script>
 
-<SecondaryPageShell title="本项目许可证" backHref="/open-source-licenses">
+<SecondaryPageShell
+	title={hostTextRead(controller, 'route.licenseProject')}
+	backHref="/open-source-licenses"
+>
 	{#if loadState === 'loading'}
 		<div class="flex items-center justify-center py-12">
 			<LoadingIndicator />

@@ -6,6 +6,7 @@
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import { MobileVibrateFill } from '$lib/icons';
 	import { haptic } from '$lib/haptic/haptic';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let { shell }: { shell: AppShellController } = $props();
 	const hapticFeedbackEnabled = $derived(
@@ -22,10 +23,10 @@
 </script>
 
 <div class="flex flex-col gap-5">
-	<MineSection title="触感反馈">
+	<MineSection title={hostTextRead(shell.controller, 'mine.feedback.section.haptic')}>
 		<MineRow
 			label={true}
-			title="振动反馈"
+			title={hostTextRead(shell.controller, 'mine.feedback.haptic.label')}
 			icon={MobileVibrateFill}
 			iconTone="primary"
 			onclick={() => toggleHapticFeedback(!hapticFeedbackEnabled)}

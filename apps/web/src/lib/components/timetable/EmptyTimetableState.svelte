@@ -4,6 +4,10 @@
 	import { trackEvent } from '$lib/client/analytics';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
+
+	const controller = getAppController();
 
 	function handleImportClick() {
 		trackEvent('empty_import_click');
@@ -20,19 +24,21 @@
 >
 	<img src={favicon} alt="" class="h-32 w-32" aria-hidden="true" />
 
-	<p class="m3-label-large text-brand">Chronos</p>
-	<h2 class="m3-headline-medium font-bold text-on-surface">还没有课程表</h2>
+	<p class="m3-label-large text-brand">{hostTextRead(controller, 'timetable.empty.brand')}</p>
+	<h2 class="m3-headline-medium font-bold text-on-surface">
+		{hostTextRead(controller, 'timetable.empty.title')}
+	</h2>
 
 	<div class="mt-4 flex flex-col items-center gap-3">
 		<Button variant="outlined" href={resolve('/transfer/import')} onclick={handleImportClick}>
-			导入课程表
+			{hostTextRead(controller, 'timetable.empty.import')}
 		</Button>
 		<button
 			type="button"
 			class="cursor-pointer text-sm font-medium text-on-surface-variant underline-offset-2 hover:text-on-surface hover:underline"
 			onclick={showImportGuide}
 		>
-			查看导入方式说明
+			{hostTextRead(controller, 'timetable.empty.guide')}
 		</button>
 	</div>
 </div>

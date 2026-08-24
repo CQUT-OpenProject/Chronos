@@ -3,6 +3,7 @@ import {
 	type ImportKind,
 	type ImportTabSlotContribution
 } from '@chronos/core';
+import { hostText } from '$lib/i18n/host-text';
 
 function resolveSlotTitle(slot: ImportTabSlotContribution): string {
 	return resolveLocalizedText(slot.title);
@@ -22,8 +23,10 @@ export function slotsHaveImportKind(
 
 export function formatImportMethodTitle(slot: ImportTabSlotContribution): string {
 	const title = resolveSlotTitle(slot);
-	if (slot.importKind === 'online') return `${title}在线导入`;
-	return `${title}导入`;
+	if (slot.importKind === 'online') {
+		return hostText('transfer.import.method.onlineTitle', { title });
+	}
+	return hostText('transfer.import.method.title', { title });
 }
 
 export function defaultImportMethodSubtitle(slot: ImportTabSlotContribution): string {
@@ -32,12 +35,12 @@ export function defaultImportMethodSubtitle(slot: ImportTabSlotContribution): st
 
 	switch (slot.importKind) {
 		case 'online':
-			return '输入账号密码，获取在线课表';
+			return hostText('transfer.import.method.onlineSubtitle');
 		case 'file':
-			return '从教务系统导出课表页面后，导入该 HTML 文件';
+			return hostText('transfer.import.method.fileSubtitle');
 		case 'link':
 		default:
-			return '粘贴他人分享的课表口令即可导入';
+			return hostText('transfer.import.method.linkSubtitle');
 	}
 }
 
@@ -45,14 +48,14 @@ function buildCapabilityLabels(slots: ReadonlyArray<ImportTabSlotContribution>):
 	const parts: string[] = [];
 	for (const slot of slots) {
 		if (slot.importKind === 'online') {
-			parts.push(`${resolveSlotTitle(slot)}在线导入`);
+			parts.push(hostText('transfer.import.capability.online', { title: resolveSlotTitle(slot) }));
 		}
 	}
 	if (slotsHaveImportKind(slots, 'link')) {
-		parts.push('分享口令');
+		parts.push(hostText('transfer.import.capability.shareCode'));
 	}
 	if (slotsHaveImportKind(slots, 'file')) {
-		parts.push('HTML 文件');
+		parts.push(hostText('transfer.import.capability.htmlFile'));
 	}
 	return parts;
 }
@@ -63,28 +66,30 @@ export function buildImportDescription(slots: ReadonlyArray<ImportTabSlotContrib
 	const hasFile = slotsHaveImportKind(slots, 'file');
 
 	if (onlineSlots.length === 0 && !hasLink && !hasFile) {
-		return '支持分享口令导入课表。';
+		return hostText('transfer.import.description.linkOnly');
 	}
 
 	const parts: string[] = [];
 	for (const slot of onlineSlots) {
-		parts.push(`${resolveSlotTitle(slot)}在线导入`);
+		parts.push(hostText('transfer.import.capability.online', { title: resolveSlotTitle(slot) }));
 	}
-	if (hasLink) parts.push('分享口令');
-	if (hasFile) parts.push('教务系统导出的 HTML 文件');
+	if (hasLink) parts.push(hostText('transfer.import.capability.shareCode'));
+	if (hasFile) parts.push(hostText('transfer.import.description.htmlPart'));
 
 	if (hasLink && !hasFile && onlineSlots.length === 0) {
-		return '支持分享口令导入课表。';
+		return hostText('transfer.import.description.linkOnly');
 	}
 
-	return `支持${parts.join('、')}。`;
+	return hostText('transfer.import.description.full', { parts: parts.join('、') });
 }
 
 export function buildOnboardingImportHighlight(
 	slots: ReadonlyArray<ImportTabSlotContribution>
 ): string {
 	const parts = buildCapabilityLabels(slots);
-	if (parts.length === 0) return '分享口令可导入';
-	const suffix = slotsHaveImportKind(slots, 'online') ? '均可' : '均可导入';
-	return `${parts.join('、')}${suffix}`;
+	if (parts.length === 0) return hostText('transfer.import.onboarding.highlightFallback');
+	const suffix = slotsHaveImportKind(slots, 'online')
+		? hostText('transfer.import.onboarding.suffix.online')
+		: hostText('transfer.import.onboarding.suffix.default');
+	return hostText('transfer.import.onboarding.highlight', { parts: parts.join('、'), suffix });
 }

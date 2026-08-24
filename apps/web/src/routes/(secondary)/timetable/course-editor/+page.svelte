@@ -7,8 +7,11 @@
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import CourseEditorScreen from '$lib/components/timetable/CourseEditorScreen.svelte';
 	import { createCourseEditor } from '$lib/timetable/course-editor.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const shell = getContext<AppShellController>('appShell');
+	const controller = getAppController();
 	const courseId = $derived(page.url.searchParams.get('courseId'));
 
 	const editor = createCourseEditor(
@@ -23,6 +26,6 @@
 	});
 </script>
 
-<SecondaryPageShell title="编辑课程" backHref="/" flush>
+<SecondaryPageShell title={hostTextRead(controller, 'route.courseEdit')} backHref="/" flush>
 	<CourseEditorScreen {editor} />
 </SecondaryPageShell>

@@ -9,8 +9,11 @@
 	import CourseDetailScreen from '$lib/components/timetable/CourseDetailScreen.svelte';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import { Edit } from '$lib/icons';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const shell = getContext<AppShellController>('appShell');
+	const controller = getAppController();
 	const courseId = $derived(page.url.searchParams.get('courseId'));
 
 	const course = $derived(
@@ -28,12 +31,21 @@
 
 {#snippet editAction()}
 	{#if course}
-		<IconButton variant="standard" size="sm" ariaLabel="编辑课程" onclick={editCourse}>
+		<IconButton
+			variant="standard"
+			size="sm"
+			ariaLabel={hostTextRead(controller, 'route.courseEditAria')}
+			onclick={editCourse}
+		>
 			<Edit class="size-[22px]" />
 		</IconButton>
 	{/if}
 {/snippet}
 
-<SecondaryPageShell title="课程详情" backHref="/" actions={editAction}>
+<SecondaryPageShell
+	title={hostTextRead(controller, 'route.courseDetail')}
+	backHref="/"
+	actions={editAction}
+>
 	<CourseDetailScreen {shell} {courseId} />
 </SecondaryPageShell>

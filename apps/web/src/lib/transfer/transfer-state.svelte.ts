@@ -4,6 +4,7 @@ import { ImportMode } from '$lib/domain/import-mode';
 import { pickPrimary, resolveLocalizedText, type ChronosEngine } from '@chronos/core';
 import { getDefaultImportSlot } from '$lib/config/features';
 import { getAppController } from '$lib/services/app-engine';
+import { hostText } from '$lib/i18n/host-text';
 
 export interface TransferPreviewState {
 	preview: Timetable | null;
@@ -62,12 +63,12 @@ export function createTransferState(engine?: ChronosEngine) {
 		const controller = getAppController();
 		const tab = controller.getSlots('import.source.tab').find((item) => item.id === tabId);
 		if (!tab) {
-			throw new Error('导入源不可用');
+			throw new Error(hostText('transfer.error.slotUnavailable'));
 		}
 		const ctx = controller.getPluginContextForSlot('import.source.tab', tabId);
 		const timetable = await tab.executeImport(inputs, ctx);
 		if (!timetable?.courses?.length) {
-			throw new Error('未识别到任何有效课程数据');
+			throw new Error(hostText('transfer.error.noCourses'));
 		}
 		return timetable;
 	}
@@ -80,7 +81,7 @@ export function createTransferState(engine?: ChronosEngine) {
 			previewSlotId = tabId;
 			return true;
 		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : '获取课表失败';
+			errorMessage = err instanceof Error ? err.message : hostText('transfer.error.fetchFailed');
 			return false;
 		}
 	}
@@ -111,7 +112,7 @@ export function createTransferState(engine?: ChronosEngine) {
 	async function confirmImport() {
 		clearMessages();
 		if (!preview) {
-			errorMessage = '请先获取课表';
+			errorMessage = hostText('transfer.error.previewRequired');
 			return false;
 		}
 
@@ -125,7 +126,7 @@ export function createTransferState(engine?: ChronosEngine) {
 			clearPreview();
 			return true;
 		} catch (err) {
-			errorMessage = err instanceof Error ? err.message : '保存课表失败';
+			errorMessage = err instanceof Error ? err.message : hostText('transfer.error.saveFailed');
 			return false;
 		}
 	}
@@ -184,7 +185,7 @@ export function createTransferState(engine?: ChronosEngine) {
 export type TransferStateController = ReturnType<typeof createTransferState>;
 
 export function resolveSlotTitle(slotId: string | null): string {
-	if (!slotId) return '未知来源';
+	if (!slotId) return hostText('transfer.slot.unknown');
 	try {
 		const controller = getAppController();
 		const slot = controller.getSlotItem('import.source.tab', slotId);

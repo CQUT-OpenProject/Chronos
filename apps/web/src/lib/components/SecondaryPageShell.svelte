@@ -5,6 +5,8 @@
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import { haptic } from '$lib/haptic/haptic';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		title,
@@ -19,12 +21,18 @@
 		flush?: boolean;
 		children?: import('svelte').Snippet;
 	} = $props();
+
+	const controller = getAppController();
 </script>
 
 <div class="relative z-[60] flex h-dvh flex-col overflow-hidden bg-canvas">
 	<TopAppBar {title} {actions} class="shrink-0">
 		{#snippet leading()}
-			<IconButton href={resolve(backHref as any)} ariaLabel="返回" onclick={() => haptic.light()}>
+			<IconButton
+				href={resolve(backHref as any)}
+				ariaLabel={hostTextRead(controller, 'ui.nav.back')}
+				onclick={() => haptic.light()}
+			>
 				<ArrowBack class="size-6 text-on-surface" />
 			</IconButton>
 		{/snippet}

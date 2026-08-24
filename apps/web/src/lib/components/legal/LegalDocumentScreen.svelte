@@ -5,6 +5,7 @@
 	import { parseMarkdown } from '$lib/content/markdown';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import { resolveFetchErrorMessage } from '$lib/client/fetch-error-message';
+	import { hostText } from '$lib/i18n/host-text';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
@@ -32,7 +33,10 @@
 		try {
 			const response = await fetch(staticPath(documentPath));
 			if (!response.ok) {
-				errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载文档内容');
+				errorMessage = resolveFetchErrorMessage(
+					!connectivity.isOnline,
+					hostText('legal.loadFailed')
+				);
 				loadState = 'error';
 				return;
 			}
@@ -41,7 +45,7 @@
 			htmlContent = parseMarkdown(markdown);
 			loadState = 'ready';
 		} catch {
-			errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, '无法加载文档内容');
+			errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, hostText('legal.loadFailed'));
 			loadState = 'error';
 		}
 	}

@@ -6,6 +6,7 @@ import { OfficialPluginInstalledStore } from './installed-store';
 import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 import { OfficialPluginRuntimeActivator } from './runtime-activator';
 import { validatePluginManifest } from './plugin-bundle';
+import { hostText } from '$lib/i18n/host-text';
 
 export type { InstalledOfficialPluginRecord } from './official-plugin-types';
 
@@ -108,17 +109,20 @@ export class OfficialPluginService implements Disposable {
 		await this.runtimeActivator.activate(record);
 
 		if (manifest.type === 'theme') {
-			this.engine.actions.notify('插件已安装并启用，可在「显示设置」中选择此外观主题', 'info');
+			this.engine.actions.notify(hostText('plugins.notify.themeInstalled'), 'info');
 		} else {
-			this.engine.actions.notify(`插件「${manifest.id}」已安装并启用`, 'info');
+			this.engine.actions.notify(
+				hostText('plugins.notify.installed', { pluginId: manifest.id }),
+				'info'
+			);
 		}
 	}
 
 	async uninstall(pluginId: string): Promise<void> {
-		await this.runtimeActivator.deactivate(pluginId);
+		await this.runtimeActivator.deactivate(pluginId, { revertThemes: true });
 		await this.installedStore.remove(pluginId);
 		await this.engine.storage.clearPluginData?.(pluginId);
-		this.engine.actions.notify(`插件「${pluginId}」已卸载`, 'info');
+		this.engine.actions.notify(hostText('plugins.notify.uninstalled', { pluginId }), 'info');
 	}
 
 	async enable(pluginId: string): Promise<void> {
@@ -133,7 +137,7 @@ export class OfficialPluginService implements Disposable {
 		if (updated) {
 			await this.runtimeActivator.activate(updated);
 		}
-		this.engine.actions.notify(`已启用插件「${pluginId}」`, 'info');
+		this.engine.actions.notify(hostText('plugins.notify.enabled', { pluginId }), 'info');
 	}
 
 	async disable(pluginId: string): Promise<void> {
@@ -142,8 +146,8 @@ export class OfficialPluginService implements Disposable {
 			throw new Error(`Plugin not installed: ${pluginId}`);
 		}
 		await this.installedStore.setEnabled(pluginId, false);
-		await this.runtimeActivator.deactivate(pluginId);
-		this.engine.actions.notify(`已停用插件「${pluginId}」`, 'info');
+		await this.runtimeActivator.deactivate(pluginId, { revertThemes: true });
+		this.engine.actions.notify(hostText('plugins.notify.disabled', { pluginId }), 'info');
 	}
 
 	async getPluginConfig<T extends Record<string, unknown>>(pluginId: string): Promise<T | null> {

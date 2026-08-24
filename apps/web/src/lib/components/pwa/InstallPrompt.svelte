@@ -5,7 +5,10 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
-	import { IosShareFill } from '$lib/icons';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
+
+	const controller = getAppController();
 
 	function goToInstallPage() {
 		trackEvent('pwa_install_cta_click');
@@ -17,49 +20,60 @@
 <!-- Already installed: open in standalone app -->
 <Dialog
 	bind:open={pwaInstallController.openInAppDialogOpen}
-	title="Chronos 已安装"
-	description="检测到您已安装 Chronos，建议在独立应用窗口中打开以获得完整体验。"
+	title={hostTextRead(controller, 'pwa.dialog.installed.title')}
+	description={hostTextRead(controller, 'pwa.dialog.installed.desc')}
 >
 	{#snippet footer()}
-		<Button variant="text" onclick={() => pwaInstallController.dismiss()}>继续在浏览器</Button>
-		<Button variant="filled" onclick={() => pwaInstallController.openInApp()}>在应用中打开</Button>
+		<Button variant="text" onclick={() => pwaInstallController.dismiss()}>
+			{hostTextRead(controller, 'pwa.dialog.installed.continueBrowser')}
+		</Button>
+		<Button variant="filled" onclick={() => pwaInstallController.openInApp()}>
+			{hostTextRead(controller, 'pwa.dialog.installed.openApp')}
+		</Button>
 	{/snippet}
 </Dialog>
 
 <!-- Android / Desktop Install Dialog -->
 <Dialog
 	bind:open={pwaInstallController.installDialogOpen}
-	title="安装 Chronos"
-	description="将 Chronos 添加到主屏幕后，可以快捷打开应用。"
+	title={hostTextRead(controller, 'pwa.dialog.install.title')}
+	description={hostTextRead(controller, 'pwa.dialog.install.desc')}
 >
 	{#snippet footer()}
-		<Button variant="text" onclick={() => pwaInstallController.snoozeInstallPrompt()}>稍后</Button>
-		<Button variant="filled" onclick={goToInstallPage}>安装</Button>
+		<Button variant="text" onclick={() => pwaInstallController.snoozeInstallPrompt()}>
+			{hostTextRead(controller, 'pwa.dialog.install.later')}
+		</Button>
+		<Button variant="filled" onclick={goToInstallPage}>
+			{hostTextRead(controller, 'pwa.dialog.install.action')}
+		</Button>
 	{/snippet}
 </Dialog>
 
 <!-- iOS Safari Guide Dialog -->
-<Dialog bind:open={pwaInstallController.iosGuideOpen} title="安装 Chronos">
+<Dialog
+	bind:open={pwaInstallController.iosGuideOpen}
+	title={hostTextRead(controller, 'pwa.dialog.install.title')}
+>
 	<div class="m3-body-medium flex flex-col gap-3 text-left leading-relaxed text-on-surface-variant">
-		<p>将 Chronos 添加到主屏幕后，可以快捷打开应用。</p>
+		<p>{hostTextRead(controller, 'pwa.dialog.install.descIos')}</p>
 		<ol class="flex flex-col gap-2 pt-1">
 			<li class="flex items-start gap-2">
 				<span class="m3-step-badge">1</span>
 				<span class="m3-body-medium">
-					点击 Safari 浏览器底部的 <strong class="inline-flex items-center gap-1 text-on-surface">
-						分享图标 <IosShareFill class="inline h-4 w-4 text-brand" />
-					</strong>
+					{hostTextRead(controller, 'pwa.dialog.ios.step1')}
 				</span>
 			</li>
 			<li class="flex items-start gap-2">
 				<span class="m3-step-badge">2</span>
 				<span class="m3-body-medium">
-					选择 <strong class="text-on-surface">“添加到主屏幕”</strong>
+					{hostTextRead(controller, 'pwa.dialog.ios.step2')}
 				</span>
 			</li>
 		</ol>
 	</div>
 	{#snippet footer()}
-		<Button variant="filled" onclick={goToInstallPage}>查看安装指引</Button>
+		<Button variant="filled" onclick={goToInstallPage}>
+			{hostTextRead(controller, 'pwa.dialog.ios.guide')}
+		</Button>
 	{/snippet}
 </Dialog>

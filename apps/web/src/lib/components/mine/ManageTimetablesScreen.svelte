@@ -5,6 +5,7 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		shell
@@ -40,13 +41,15 @@
 		disabled={timetables.length <= 1}
 		onclick={() => (deleteDialogOpen = true)}
 	>
-		删除课表
+		{hostTextRead(shell.controller, 'timetable.manage.delete')}
 	</Button>
 {/snippet}
 
 <FormScreenLayout footer={deleteFooter}>
 	<div class="flex flex-col gap-3">
-		<h3 class="m3-title-medium px-1 text-on-surface">我的课表</h3>
+		<h3 class="m3-title-medium px-1 text-on-surface">
+			{hostTextRead(shell.controller, 'timetable.manage.heading')}
+		</h3>
 
 		<div class="flex flex-col gap-2.5">
 			{#each timetables as timetable (timetable.id)}
@@ -54,7 +57,9 @@
 				<SelectableOption
 					name="current-timetable"
 					label={timetable.name}
-					description="{timetable.courseCount} 门课程"
+					description={hostTextRead(shell.controller, 'timetable.manage.courseCount', {
+						count: timetable.courseCount
+					})}
 					selected={isActive}
 					onclick={() => handleSwitch(timetable.id)}
 				/>
@@ -65,13 +70,19 @@
 
 <Dialog
 	bind:open={deleteDialogOpen}
-	title="删除课表？"
+	title={hostTextRead(shell.controller, 'timetable.manage.delete.title')}
 	description={selectedTimetable
-		? `确定删除「${selectedTimetable.name}」吗？删除后无法恢复。`
-		: '删除后无法恢复。'}
+		? hostTextRead(shell.controller, 'timetable.manage.delete.descNamed', {
+				name: selectedTimetable.name
+			})
+		: hostTextRead(shell.controller, 'timetable.manage.delete.descGeneric')}
 >
 	{#snippet footer()}
-		<Button variant="text" onclick={() => (deleteDialogOpen = false)}>取消</Button>
-		<Button variant="filled" onclick={confirmDelete}>删除</Button>
+		<Button variant="text" onclick={() => (deleteDialogOpen = false)}>
+			{hostTextRead(shell.controller, 'common.cancel')}
+		</Button>
+		<Button variant="filled" onclick={confirmDelete}>
+			{hostTextRead(shell.controller, 'common.delete')}
+		</Button>
 	{/snippet}
 </Dialog>

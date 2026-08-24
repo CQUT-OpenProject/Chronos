@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
-	import { dismissSnackbar, snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import { dismissSnackbar, snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import { estimateAppDataBytes, formatAppDataSize } from '$lib/storage/clear-app-data';
@@ -13,10 +13,10 @@
 		BUILD_TIME,
 		COPYRIGHT_HOLDER,
 		formatCopyrightYearRange,
-		PROJECT_INTRO,
 		PROJECT_LICENSE,
 		SOURCE_CODE_URL
 	} from '$lib/config/app-meta';
+	import { hostTextRead } from '$lib/i18n/host-text';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import AppHero from '$lib/components/AppHero.svelte';
@@ -39,7 +39,11 @@
 	let dataUsageBytes = $state<number | null>(null);
 
 	const dataUsageSupporting = $derived(
-		dataUsageBytes === null ? '正在计算占用…' : `当前占用 ${formatAppDataSize(dataUsageBytes)}`
+		dataUsageBytes === null
+			? hostTextRead(shell.controller, 'about.storage.calculating')
+			: hostTextRead(shell.controller, 'about.storage.usage', {
+					size: formatAppDataSize(dataUsageBytes)
+				})
 	);
 
 	async function refreshDataUsage() {
@@ -64,7 +68,7 @@
 			void goto(resolve('/about/easter-egg'));
 		} else if (clickCount >= 5) {
 			const remaining = 10 - clickCount;
-			snackbar(`再按 ${remaining} 次进入开发者页面`, undefined, 1500);
+			snackbarKey('about.easterEgg.hint', { remaining }, undefined, 1500);
 		}
 	}
 
@@ -75,9 +79,9 @@
 			await shell.clearAllData();
 			clearDialogOpen = false;
 			await refreshDataUsage();
-			snackbar('已清除所有数据');
+			snackbarKey('about.clear.success');
 		} catch {
-			snackbar('清除失败，请重试');
+			snackbarKey('about.clear.failed');
 		} finally {
 			clearing = false;
 		}
@@ -85,18 +89,18 @@
 </script>
 
 <div class="m3-stack">
-	<AppHero title="Chronos" subtitle={PROJECT_INTRO} />
+	<AppHero title="Chronos" subtitle={hostTextRead(shell.controller, 'meta.intro')} />
 
-	<MineSection title="版本信息">
+	<MineSection title={hostTextRead(shell.controller, 'about.section.version')}>
 		<MineRow
-			title="当前版本"
+			title={hostTextRead(shell.controller, 'about.version.current')}
 			supporting={APP_VERSION}
 			href={resolve('/about/update')}
 			icon={InfoFill}
 			iconTone="primary"
 		/>
 		<MineRow
-			title="构建时间"
+			title={hostTextRead(shell.controller, 'about.buildTime')}
 			supporting={formatBuildTime(BUILD_TIME)}
 			icon={ScheduleFill}
 			iconTone="secondary"
@@ -104,9 +108,9 @@
 		/>
 	</MineSection>
 
-	<MineSection title="存储占用情况">
+	<MineSection title={hostTextRead(shell.controller, 'about.section.storage')}>
 		<MineRow
-			title="清除所有数据"
+			title={hostTextRead(shell.controller, 'about.storage.clear')}
 			supporting={dataUsageSupporting}
 			icon={LayersClearFill}
 			iconTone="neutral"
@@ -114,27 +118,27 @@
 		/>
 	</MineSection>
 
-	<MineSection title="软件信息">
+	<MineSection title={hostTextRead(shell.controller, 'about.section.info')}>
 		<MineRow
-			title="服务协议"
+			title={hostTextRead(shell.controller, 'about.legal.terms')}
 			href={resolve('/legal/terms')}
 			icon={ArticleFill}
 			iconTone="tertiary"
 		/>
 		<MineRow
-			title="隐私政策"
+			title={hostTextRead(shell.controller, 'about.legal.privacy')}
 			href={resolve('/legal/privacy')}
 			icon={ShieldFill}
 			iconTone="tertiary"
 		/>
 		<MineRow
-			title="开源许可"
+			title={hostTextRead(shell.controller, 'about.legal.licenses')}
 			href={resolve('/open-source-licenses')}
 			icon={GavelFill}
 			iconTone="tertiary"
 		/>
 		<MineRow
-			title="源代码"
+			title={hostTextRead(shell.controller, 'about.source')}
 			href={SOURCE_CODE_URL}
 			target="_blank"
 			rel="noreferrer"
@@ -160,14 +164,16 @@
 
 <Dialog
 	bind:open={clearDialogOpen}
-	title="清除所有数据？"
-	description="将删除本设备上的所有课表、课程、壁纸、主题偏好与已保存的教务凭据。此操作不可恢复。"
+	title={hostTextRead(shell.controller, 'about.clear.title')}
+	description={hostTextRead(shell.controller, 'about.clear.desc')}
 >
 	{#snippet footer()}
-		<Button variant="text" onclick={() => (clearDialogOpen = false)} disabled={clearing}
-			>取消</Button
-		>
-		<Button variant="danger" disabled={clearing} onclick={confirmClear}>清除</Button>
+		<Button variant="text" onclick={() => (clearDialogOpen = false)} disabled={clearing}>
+			{hostTextRead(shell.controller, 'common.cancel')}
+		</Button>
+		<Button variant="danger" disabled={clearing} onclick={confirmClear}>
+			{hostTextRead(shell.controller, 'common.clear')}
+		</Button>
 	{/snippet}
 </Dialog>
 

@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 	import { CORE_SHELL_SUPPORT_SECTION_ID } from '$lib/boot/core-shell';
 	import { MINE_ITEM_ICON_MAP } from '$lib/boot/mine-icons';
 	import { CodeFill } from '$lib/icons';
@@ -66,7 +67,7 @@
 			if (!section) {
 				section = {
 					id: targetSectionId,
-					title: '扩展设置',
+					title: hostTextRead(controller, 'mine.section.fallback'),
 					items: []
 				};
 				sectionMap[targetSectionId] = section;
@@ -118,19 +119,31 @@
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 p-4 pt-3 pb-7 text-on-surface">
 	<div class="flex flex-col gap-3">
-		<h1 class="m3-page-title m3-headline-medium font-medium">我的</h1>
+		<h1 class="m3-page-title m3-headline-medium font-medium">
+			{hostTextRead(controller, 'mine.title')}
+		</h1>
 
-		<SearchField bind:value={searchQuery} placeholder="搜索设置..." ariaLabel="搜索设置" />
+		<SearchField
+			bind:value={searchQuery}
+			placeholder={hostTextRead(controller, 'mine.search.placeholder')}
+			ariaLabel={hostTextRead(controller, 'mine.search.ariaLabel')}
+		/>
 	</div>
 
 	{#if sections.length === 0}
 		<div class="flex flex-col items-center justify-center py-12 text-center">
-			<p class="m3-body-medium text-on-surface-variant">暂无设置项</p>
+			<p class="m3-body-medium text-on-surface-variant">
+				{hostTextRead(controller, 'mine.empty.noItems')}
+			</p>
 		</div>
 	{:else if filteredSections.length === 0}
 		<div class="flex flex-col items-center justify-center py-12 text-center">
-			<p class="m3-body-medium text-on-surface-variant">未找到“{searchQuery}”相关设置</p>
-			<Button variant="text" class="mt-2" onclick={() => (searchQuery = '')}>清空搜索词</Button>
+			<p class="m3-body-medium text-on-surface-variant">
+				{hostTextRead(controller, 'mine.search.noResults', { query: searchQuery })}
+			</p>
+			<Button variant="text" class="mt-2" onclick={() => (searchQuery = '')}>
+				{hostTextRead(controller, 'mine.search.clear')}
+			</Button>
 		</div>
 	{:else}
 		{#each filteredSections as section (section.id)}

@@ -29,6 +29,7 @@
 		DescriptionFill
 	} from '$lib/icons';
 	import { haptic } from '$lib/haptic/haptic';
+	import { hostText, hostTextRead } from '$lib/i18n/host-text';
 
 	const shell = getContext<AppShellController>('appShell');
 	const controller = getAppController();
@@ -40,18 +41,21 @@
 	const stepTitleId = 'onboarding-step-title';
 	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 
-	const layoutOptions = [
-		{
-			mode: 'fixed' as const,
-			label: '滚动查看',
-			description: '上下滚动查看全天课程，字体更大'
-		},
-		{
-			mode: 'compact' as const,
-			label: '一屏显示',
-			description: '一屏展示全天课程，无需滚动'
-		}
-	] as const;
+	const layoutOptions = $derived.by(() => {
+		void controller.currentLocale;
+		return [
+			{
+				mode: 'fixed' as const,
+				label: hostText('onboarding.layout.fixed.label'),
+				description: hostText('onboarding.layout.fixed.desc')
+			},
+			{
+				mode: 'compact' as const,
+				label: hostText('onboarding.layout.compact.label'),
+				description: hostText('onboarding.layout.compact.desc')
+			}
+		] as const;
+	});
 
 	$effect(() => {
 		if (!onboardingController.open) return;
@@ -171,7 +175,7 @@
 					class="cursor-pointer text-sm font-medium text-on-surface-variant hover:text-on-surface"
 					onclick={handleLater}
 				>
-					跳过
+					{hostTextRead(controller, 'onboarding.skip')}
 				</button>
 			</div>
 
@@ -185,8 +189,8 @@
 						{#if step === 0}
 							<div class="flex flex-1 flex-col items-center justify-center gap-4 text-center">
 								<AppHero
-									title="欢迎使用 Chronos"
-									subtitle="无广告 · 轻量化的课表体验"
+									title={hostTextRead(controller, 'onboarding.welcome.title')}
+									subtitle={hostTextRead(controller, 'onboarding.welcome.subtitle')}
 									titleId={stepTitleId}
 								/>
 							</div>
@@ -196,23 +200,23 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									功能亮点
+									{hostTextRead(controller, 'onboarding.highlights.title')}
 								</h2>
 								<HighlightRowList>
 									<HighlightRow
 										icon={DownloadFill}
-										title="多种导入方式"
+										title={hostTextRead(controller, 'onboarding.highlights.import.title')}
 										subtitle={onboardingImportHighlight}
 									/>
 									<HighlightRow
 										icon={PaletteFill}
-										title="主题与壁纸"
-										subtitle="浅色、深色或跟随系统，还能设置课表壁纸"
+										title={hostTextRead(controller, 'onboarding.highlights.theme.title')}
+										subtitle={hostTextRead(controller, 'onboarding.highlights.theme.subtitle')}
 									/>
 									<HighlightRow
 										icon={WifiOffFill}
-										title="完全离线可用"
-										subtitle="自动本地缓存，断网无网状态下仍可查课表"
+										title={hostTextRead(controller, 'onboarding.highlights.offline.title')}
+										subtitle={hostTextRead(controller, 'onboarding.highlights.offline.subtitle')}
 									/>
 								</HighlightRowList>
 							</div>
@@ -222,10 +226,10 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									选择主页显示样式
+									{hostTextRead(controller, 'onboarding.layout.title')}
 								</h2>
 								<p class="m3-body-small text-center text-on-surface-variant">
-									可随时在「显示设置」中更改。
+									{hostTextRead(controller, 'onboarding.layout.hint')}
 								</p>
 								<div class="flex flex-col gap-3">
 									{#each layoutOptions as option (option.mode)}
@@ -261,7 +265,7 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									如何导入课表？
+									{hostTextRead(controller, 'onboarding.import.title')}
 								</h2>
 								<div class="flex flex-col gap-3">
 									{#each importSlots as slot (slot.id)}
@@ -285,10 +289,10 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									安装到主屏幕
+									{hostTextRead(controller, 'onboarding.install.title')}
 								</h2>
 								<p class="m3-body-small text-center text-on-surface-variant">
-									添加到主屏幕后可快捷打开，并支持离线使用。
+									{hostTextRead(controller, 'onboarding.install.subtitle')}
 								</p>
 								<InstallGuideCard inOnboarding />
 							</div>
@@ -300,10 +304,10 @@
 									<DownloadFill class="h-8 w-8" />
 								</div>
 								<h2 id={stepTitleId} class="m3-headline-small font-semibold text-on-surface">
-									开始使用 Chronos
+									{hostTextRead(controller, 'onboarding.done.title')}
 								</h2>
 								<p class="m3-body-medium text-on-surface-variant">
-									导入课程表后即可查看每周课程安排。
+									{hostTextRead(controller, 'onboarding.done.subtitle')}
 								</p>
 							</div>
 						{/if}
@@ -315,26 +319,40 @@
 				class="flex flex-col gap-4 px-6 pt-2"
 				style:padding-bottom="calc(var(--tabbar-safe) + 1.25rem)"
 			>
-				<ol class="flex list-none justify-center gap-1.5" aria-label="引导步骤">
+				<ol
+					class="flex list-none justify-center gap-1.5"
+					aria-label={hostTextRead(controller, 'onboarding.steps.aria')}
+				>
 					{#each stepIndices as index}
 						<li
 							class="h-1.5 w-6 rounded-full transition-colors {index <= step
 								? 'bg-brand dark:bg-soft-blue'
 								: 'bg-outline-variant'}"
 							aria-current={index === step ? 'step' : undefined}
-							aria-label="第 {index + 1} 步，共 {stepIndices.length} 步"
+							aria-label={hostTextRead(controller, 'onboarding.steps.label', {
+								current: index + 1,
+								total: stepIndices.length
+							})}
 						></li>
 					{/each}
 				</ol>
 				<div class="flex gap-3">
 					{#if !isLastStep}
 						{#if step > 0}
-							<Button variant="text" class="flex-1" onclick={handleBack}>上一步</Button>
+							<Button variant="text" class="flex-1" onclick={handleBack}>
+								{hostTextRead(controller, 'onboarding.back')}
+							</Button>
 						{/if}
-						<Button variant="filled" class="flex-1" onclick={handleNext}>下一步</Button>
+						<Button variant="filled" class="flex-1" onclick={handleNext}>
+							{hostTextRead(controller, 'onboarding.next')}
+						</Button>
 					{:else}
-						<Button variant="text" class="flex-1" onclick={handleLater}>稍后再说</Button>
-						<Button variant="filled" class="flex-1" onclick={handleStartImport}>开始导入</Button>
+						<Button variant="text" class="flex-1" onclick={handleLater}>
+							{hostTextRead(controller, 'onboarding.later')}
+						</Button>
+						<Button variant="filled" class="flex-1" onclick={handleStartImport}>
+							{hostTextRead(controller, 'onboarding.startImport')}
+						</Button>
 					{/if}
 				</div>
 			</div>

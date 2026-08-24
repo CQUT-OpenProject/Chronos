@@ -12,6 +12,7 @@
 	import { trackEvent } from '$lib/client/analytics';
 	import { getAppEngine } from '$lib/services/app-engine';
 	import { APP_LOCALES, applyAppLocale, normalizeAppLocale } from '$lib/i18n/locale-sync';
+	import { hostText, hostTextRead } from '$lib/i18n/host-text';
 	import { BUILTIN_COLOR_SCHEME_VIBRANT, resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
@@ -37,10 +38,11 @@
 
 	const iconThemeOptions = $derived.by(() => {
 		void shell.controller.slotVersion;
+		void shell.controller.currentLocale;
 		const builtin = {
 			id: HOST_DEFAULT_ICON_THEME_ID,
-			label: '默认',
-			description: '使用应用内置导航图标'
+			label: hostText('display.builtin.default'),
+			description: hostText('display.iconTheme.builtinDesc')
 		};
 		const pluginIconThemes = getAppEngine()
 			.iconThemes.getIconThemes()
@@ -54,12 +56,13 @@
 
 	const colorSchemeOptions = $derived.by(() => {
 		void shell.controller.slotVersion;
+		void shell.controller.currentLocale;
 
 		const builtin = [
 			{
 				id: BUILTIN_COLOR_SCHEME_VIBRANT,
-				label: '默认',
-				description: '使用 Chronos 品牌配色',
+				label: hostText('display.builtin.default'),
+				description: hostText('display.colorScheme.builtinDesc'),
 				disabled: false
 			}
 		];
@@ -76,8 +79,8 @@
 						: Boolean(theme.disabled);
 				const defaultDesc = isDynamicTheme
 					? hasDynamicColorBackground
-						? '从当前壁纸提取配色'
-						: '请先设置壁纸后再使用'
+						? hostText('display.colorScheme.dynamicReady')
+						: hostText('display.colorScheme.dynamicBlocked')
 					: undefined;
 				const desc = resolveLocalizedText(theme.description, defaultDesc);
 
@@ -92,51 +95,58 @@
 		return [...builtin, ...pluginThemes];
 	});
 
-	const themeOptions = [
-		{
-			mode: 'light' as const,
-			label: '亮色主题'
-		},
-		{
-			mode: 'dark' as const,
-			label: '暗色主题'
-		},
-		{
-			mode: 'auto' as const,
-			label: '跟随系统'
-		}
-	] as const;
+	const themeOptions = $derived.by(() => {
+		void shell.controller.currentLocale;
+		return [
+			{ mode: 'light' as const, label: hostText('display.theme.light') },
+			{ mode: 'dark' as const, label: hostText('display.theme.dark') },
+			{ mode: 'auto' as const, label: hostText('display.theme.auto') }
+		] as const;
+	});
 
-	const layoutOptions = [
-		{
-			mode: 'fixed' as const,
-			label: '滚动查看',
-			description: '上下滚动查看完整课表，字体更大'
-		},
-		{
-			mode: 'compact' as const,
-			label: '一屏显示',
-			description: '一屏展示全天课程，无需滚动'
-		}
-	] as const;
+	const layoutOptions = $derived.by(() => {
+		void shell.controller.currentLocale;
+		return [
+			{
+				mode: 'fixed' as const,
+				label: hostText('display.layout.fixed.label'),
+				description: hostText('display.layout.fixed.desc')
+			},
+			{
+				mode: 'compact' as const,
+				label: hostText('display.layout.compact.label'),
+				description: hostText('display.layout.compact.desc')
+			}
+		] as const;
+	});
 
-	const capsuleCornerOptions = [
-		{
-			mode: 'rounded' as const,
-			label: '保留圆角',
-			description: '四周保留完整圆角，保持原生样式'
-		},
-		{
-			mode: 'pill' as const,
-			label: '合并圆角',
-			description: '相邻接触的课程边缘合并去圆角'
-		},
-		{
-			mode: 'sharp' as const,
-			label: '移除圆角',
-			description: '移除四周圆角，呈现利落直角'
-		}
-	] as const;
+	const capsuleCornerOptions = $derived.by(() => {
+		void shell.controller.currentLocale;
+		return [
+			{
+				mode: 'rounded' as const,
+				label: hostText('display.capsule.rounded.label'),
+				description: hostText('display.capsule.rounded.desc')
+			},
+			{
+				mode: 'pill' as const,
+				label: hostText('display.capsule.pill.label'),
+				description: hostText('display.capsule.pill.desc')
+			},
+			{
+				mode: 'sharp' as const,
+				label: hostText('display.capsule.sharp.label'),
+				description: hostText('display.capsule.sharp.desc')
+			}
+		] as const;
+	});
+
+	function localeLabel(locale: AppLocale): string {
+		return hostTextRead(
+			shell.controller,
+			locale === 'en' ? 'display.locale.en' : 'display.locale.zh-cn'
+		);
+	}
 
 	async function selectIconTheme(iconThemeId: string) {
 		haptic.light();
@@ -178,10 +188,10 @@
 </script>
 
 <div class="flex flex-col gap-5">
-	<MineSection title="语言">
+	<MineSection title={hostTextRead(shell.controller, 'display.section.locale')}>
 		{#each APP_LOCALES as option (option.id)}
 			{@const selected = activeLocale === option.id}
-			<MineRow label={true} title={option.label} onclick={() => selectLocale(option.id)}>
+			<MineRow label={true} title={localeLabel(option.id)} onclick={() => selectLocale(option.id)}>
 				{#snippet trailing()}
 					<Radio name="app-locale" checked={selected} onchange={() => selectLocale(option.id)} />
 				{/snippet}
@@ -189,7 +199,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title="主题模式">
+	<MineSection title={hostTextRead(shell.controller, 'display.section.themeMode')}>
 		{#each themeOptions as option (option.mode)}
 			{@const selected = themeMode === option.mode}
 			<MineRow label={true} title={option.label} onclick={() => selectThemeMode(option.mode)}>
@@ -204,7 +214,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title="配色方案">
+	<MineSection title={hostTextRead(shell.controller, 'display.section.colorScheme')}>
 		{#each colorSchemeOptions as option (option.id)}
 			{@const selected = activeColorSchemeId === option.id}
 			<MineRow
@@ -225,7 +235,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title="图标主题">
+	<MineSection title={hostTextRead(shell.controller, 'display.section.iconTheme')}>
 		{#each iconThemeOptions as option (option.id)}
 			{@const selected = activeIconThemeId === option.id}
 			<MineRow
@@ -241,7 +251,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title="主页显示样式">
+	<MineSection title={hostTextRead(shell.controller, 'display.section.layout')}>
 		{#each layoutOptions as option (option.mode)}
 			{@const selected = layoutMode === option.mode}
 			<MineRow
@@ -261,7 +271,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title="课程胶囊样式">
+	<MineSection title={hostTextRead(shell.controller, 'display.section.capsule')}>
 		{#each capsuleCornerOptions as option (option.mode)}
 			{@const selected = capsuleCornerStyle === option.mode}
 			<MineRow

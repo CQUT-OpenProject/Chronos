@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		label,
@@ -18,6 +20,10 @@
 		onchange?: (value: number) => void;
 		class?: string;
 	} = $props();
+
+	const controller = getAppController();
+	const decreaseAriaLabel = $derived(hostTextRead(controller, 'ui.stepper.decrease', { label }));
+	const increaseAriaLabel = $derived(hostTextRead(controller, 'ui.stepper.increase', { label }));
 
 	function clamp(next: number) {
 		return Math.min(Math.max(next, min), max);
@@ -43,7 +49,7 @@
 		<Button
 			variant="text"
 			class="size-8 min-w-8 px-0"
-			aria-label={`减少${label}`}
+			aria-label={decreaseAriaLabel}
 			disabled={value <= min}
 			onclick={() => step(-1)}
 		>
@@ -53,7 +59,7 @@
 		<Button
 			variant="text"
 			class="size-8 min-w-8 px-0"
-			aria-label={`增加${label}`}
+			aria-label={increaseAriaLabel}
 			disabled={value >= max}
 			onclick={() => step(1)}
 		>

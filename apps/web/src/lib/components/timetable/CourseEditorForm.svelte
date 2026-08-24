@@ -11,6 +11,8 @@
 	import FormCard from '$lib/components/ui/FormCard.svelte';
 	import StepperField from '$lib/components/ui/StepperField.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		draft = $bindable(),
@@ -21,6 +23,9 @@
 		maxPeriods?: number;
 		colors?: readonly CoursePaletteEntry[];
 	} = $props();
+
+	const controller = getAppController();
+	const optionalPlaceholder = $derived(hostTextRead(controller, 'course.form.optional'));
 
 	const selectedBackground = $derived(displaySwatchBackground(draft.color, colors));
 
@@ -37,19 +42,24 @@
 
 <div class="space-y-4">
 	<FormCard>
-		<TextField label="课程名称" bind:value={draft.name} />
-		<TextField label="教师" placeholder="选填" autocomplete="name" bind:value={draft.teacher} />
+		<TextField label={hostTextRead(controller, 'course.form.name')} bind:value={draft.name} />
 		<TextField
-			label="地点"
-			placeholder="选填"
+			label={hostTextRead(controller, 'course.form.teacher')}
+			placeholder={optionalPlaceholder}
+			autocomplete="name"
+			bind:value={draft.teacher}
+		/>
+		<TextField
+			label={hostTextRead(controller, 'course.form.location')}
+			placeholder={optionalPlaceholder}
 			autocomplete="address-line1"
 			bind:value={draft.location}
 		/>
 		<TextField
-			label="备注"
+			label={hostTextRead(controller, 'course.form.remark')}
 			multiline
 			rows={3}
-			placeholder="选填"
+			placeholder={optionalPlaceholder}
 			autocomplete="off"
 			maxlength={COURSE_REMARK_MAX_LENGTH}
 			bind:value={draft.remark}
@@ -57,9 +67,15 @@
 	</FormCard>
 
 	<FormCard>
-		<StepperField label="星期" bind:value={draft.dayOfWeek} min={1} max={7} embedded />
 		<StepperField
-			label="开始节次"
+			label={hostTextRead(controller, 'course.form.dayOfWeek')}
+			bind:value={draft.dayOfWeek}
+			min={1}
+			max={7}
+			embedded
+		/>
+		<StepperField
+			label={hostTextRead(controller, 'course.form.startPeriod')}
 			bind:value={draft.startPeriod}
 			min={1}
 			max={maxPeriods}
@@ -67,7 +83,7 @@
 			onchange={handleStartPeriodChange}
 		/>
 		<StepperField
-			label="结束节次"
+			label={hostTextRead(controller, 'course.form.endPeriod')}
 			bind:value={draft.endPeriod}
 			min={draft.startPeriod}
 			max={maxPeriods}

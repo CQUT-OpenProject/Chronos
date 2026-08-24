@@ -7,6 +7,7 @@
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TransferImportConfirmScreen from '$lib/components/transfer/TransferImportConfirmScreen.svelte';
+	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const engine = getAppEngine();
 	const transfer = createTransferState(engine);
@@ -33,7 +34,11 @@
 </script>
 
 {#if ready}
-	<SecondaryPageShell title="确认导入" backHref="/transfer/import" flush>
+	<SecondaryPageShell
+		title={hostTextRead(controller, 'route.importConfirm')}
+		backHref="/transfer/import"
+		flush
+	>
 		<TransferImportConfirmScreen {transfer} {currentTimetableName} onConfirm={handleConfirmed} />
 	</SecondaryPageShell>
 {/if}

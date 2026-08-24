@@ -1,8 +1,22 @@
+import { hostText } from '$lib/i18n/host-text';
+
 export const offlineCopy = {
-	snackbarOffline: '当前处于离线状态',
-	snackbarOnline: '网络已恢复',
-	fetchError: '当前处于离线状态，无法加载内容。连接网络后重试。',
-	fetchTitle: '当前处于离线状态',
-	fetchDescription: '无法加载内容。连接网络后重试。',
-	onlineImportBlocked: '在线导入需要网络连接。可改用「分享链接」或「HTML 文件」导入课表。'
+	get snackbarOffline() {
+		return hostText('offline.snackbar.offline');
+	},
+	get snackbarOnline() {
+		return hostText('offline.snackbar.online');
+	},
+	get fetchError() {
+		return hostText('offline.fetch.error');
+	},
+	get fetchTitle() {
+		return hostText('offline.fetch.title');
+	},
+	get fetchDescription() {
+		return hostText('offline.fetch.description');
+	},
+	get onlineImportBlocked() {
+		return hostText('offline.import.blocked');
+	}
 } as const;

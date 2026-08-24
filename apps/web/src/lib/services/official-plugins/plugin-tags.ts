@@ -1,3 +1,5 @@
+import { hostText } from '$lib/i18n/host-text';
+
 /** Preset plugin category tags shown in official plugin UI. */
 export const PLUGIN_CATEGORY_TAG_IDS = ['theme', 'source', 'tool', 'exporter', 'codec'] as const;
 
@@ -16,32 +18,32 @@ export function getPluginCategoryMeta(categoryOrType?: string): {
 	switch (categoryOrType) {
 		case 'theme':
 			return {
-				label: '主题',
+				label: hostText('pluginTags.theme'),
 				badgeClass: 'bg-tertiary-container/80 text-on-tertiary-container'
 			};
 		case 'source':
 			return {
-				label: '数据源',
+				label: hostText('pluginTags.source'),
 				badgeClass: 'bg-primary-container/80 text-on-primary-container'
 			};
 		case 'codec':
 			return {
-				label: '编解码',
+				label: hostText('pluginTags.codec'),
 				badgeClass: 'bg-secondary-container/80 text-on-secondary-container'
 			};
 		case 'exporter':
 			return {
-				label: '导出器',
+				label: hostText('pluginTags.exporter'),
 				badgeClass: 'bg-secondary-container/80 text-on-secondary-container'
 			};
 		case 'tool':
 			return {
-				label: '工具',
+				label: hostText('pluginTags.tool'),
 				badgeClass: 'bg-surface-variant/80 text-on-surface-variant'
 			};
 		default:
 			return {
-				label: '扩展',
+				label: hostText('pluginTags.extension'),
 				badgeClass: 'bg-surface-variant/80 text-on-surface-variant'
 			};
 	}

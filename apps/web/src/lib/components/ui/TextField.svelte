@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { HTMLInputAttributes, HTMLTextareaAttributes } from 'svelte/elements';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 	import { Visibility, VisibilityOff } from '$lib/icons';
 
 	let {
@@ -29,6 +31,7 @@
 	} & HTMLInputAttributes &
 		HTMLTextareaAttributes = $props();
 
+	const controller = getAppController();
 	const fallbackId = `text-field-${Math.random().toString(36).slice(2, 9)}`;
 	const fieldId = $derived(id ?? fallbackId);
 	let passwordVisible = $state(false);
@@ -38,6 +41,11 @@
 	const passwordToggleEnabled = $derived(showPasswordToggle ?? type === 'password');
 	const inputType = $derived(
 		type === 'password' && passwordToggleEnabled && passwordVisible ? 'text' : type
+	);
+	const passwordAriaLabel = $derived(
+		passwordVisible
+			? hostTextRead(controller, 'ui.password.hide')
+			: hostTextRead(controller, 'ui.password.show')
 	);
 
 	function handleInput(event: Event) {
@@ -75,7 +83,7 @@
 			/>
 			<IconButton
 				size="sm"
-				ariaLabel={passwordVisible ? '隐藏密码' : '显示密码'}
+				ariaLabel={passwordAriaLabel}
 				class="!size-8 text-on-surface-variant"
 				onclick={togglePasswordVisibility}
 			>

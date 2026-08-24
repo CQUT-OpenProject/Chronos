@@ -9,7 +9,9 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
-	import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+	import { snackbar, snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
+	import { getAppController } from '$lib/services/app-engine';
+	import { hostTextRead } from '$lib/i18n/host-text';
 	import { DownloadFill } from '$lib/icons';
 	import { countDistinctCourseNames } from '@chronos/core';
 
@@ -23,6 +25,7 @@
 		onConfirm: () => void;
 	} = $props();
 
+	const controller = getAppController();
 	const transferState = $derived(transfer.state);
 	const preview = $derived(transferState.preview);
 	const canOverwrite = $derived(Boolean(currentTimetableName));
@@ -38,7 +41,7 @@
 
 	function selectImportMode(mode: ImportMode) {
 		if (mode === ImportMode.OVERWRITE_CURRENT && !canOverwrite) {
-			snackbar('当前没有可覆盖的课程表');
+			snackbarKey('transfer.confirm.noOverwrite');
 			return;
 		}
 		transfer.setImportMode(mode);
@@ -47,7 +50,7 @@
 
 	async function handleConfirm() {
 		if (transferState.importMode === ImportMode.OVERWRITE_CURRENT && !canOverwrite) {
-			snackbar('当前没有可覆盖的课程表');
+			snackbarKey('transfer.confirm.noOverwrite');
 			return;
 		}
 		loading = true;
@@ -56,7 +59,7 @@
 			const ok = await transfer.confirmImport();
 			trackEvent('import_confirm', { mode, success: ok });
 			if (ok) {
-				snackbar('导入成功');
+				snackbarKey('transfer.confirm.success');
 				onConfirm();
 				return;
 			}
@@ -78,11 +81,13 @@
 			onclick={handleConfirm}
 		>
 			{#if loading}
-				<span>导入中…</span>
+				<span>{hostTextRead(controller, 'transfer.confirm.importing')}</span>
 			{:else}
 				<DownloadFill class="size-5" />
 				<span>
-					{transferState.importMode === ImportMode.AS_NEW ? '导入为新课程表' : '覆盖当前课程表'}
+					{transferState.importMode === ImportMode.AS_NEW
+						? hostTextRead(controller, 'transfer.confirm.asNew')
+						: hostTextRead(controller, 'transfer.confirm.overwrite')}
 				</span>
 			{/if}
 		</Button>
@@ -107,7 +112,9 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small text-on-surface-variant">课程数</span>
+							<span class="m3-body-small text-on-surface-variant">
+								{hostTextRead(controller, 'transfer.confirm.stats.courses')}
+							</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{displayedCourseCount}</span
 							>
@@ -115,7 +122,9 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small text-on-surface-variant">开始周</span>
+							<span class="m3-body-small text-on-surface-variant">
+								{hostTextRead(controller, 'transfer.confirm.stats.startWeek')}
+							</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{preview.academicConfig?.startWeek ?? 1}</span
 							>
@@ -123,7 +132,9 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small text-on-surface-variant">结束周</span>
+							<span class="m3-body-small text-on-surface-variant">
+								{hostTextRead(controller, 'transfer.confirm.stats.endWeek')}
+							</span>
 							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
 								>{preview.academicConfig?.endWeek ?? 20}</span
 							>
@@ -133,20 +144,26 @@
 			</Card>
 
 			<div class="flex flex-col gap-3">
-				<h3 class="m3-title-medium px-1 text-on-surface">导入方式</h3>
+				<h3 class="m3-title-medium px-1 text-on-surface">
+					{hostTextRead(controller, 'transfer.confirm.mode.heading')}
+				</h3>
 
 				<div class="flex flex-col gap-2.5">
 					<SelectableOption
 						name="import-mode"
-						label="作为新课程表导入"
+						label={hostTextRead(controller, 'transfer.confirm.mode.asNew')}
 						selected={transferState.importMode === ImportMode.AS_NEW}
 						onclick={() => selectImportMode(ImportMode.AS_NEW)}
 					/>
 
 					<SelectableOption
 						name="import-mode"
-						label="覆盖当前课程表"
-						description={currentTimetableName ? `当前课程表：${currentTimetableName}` : undefined}
+						label={hostTextRead(controller, 'transfer.confirm.mode.overwrite')}
+						description={currentTimetableName
+							? hostTextRead(controller, 'transfer.confirm.mode.currentDesc', {
+									name: currentTimetableName
+								})
+							: undefined}
 						disabled={!canOverwrite}
 						selected={transferState.importMode === ImportMode.OVERWRITE_CURRENT}
 						onclick={() => selectImportMode(ImportMode.OVERWRITE_CURRENT)}
