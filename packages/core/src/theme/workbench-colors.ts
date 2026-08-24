@@ -1,17 +1,12 @@
 /** Closed workbench color keys (VS Code–style semantic ids). */
 export const WORKBENCH_COLOR_KEYS = [
 	'color.surface',
-	'color.onSurface',
+	'color.on-surface',
 	'color.primary',
-	'color.onPrimary',
-	'color.surfaceVariant',
+	'color.on-primary',
+	'color.surface-variant',
 	'color.outline',
 	'color.secondary',
-	'color.onSecondary',
-	'color.primaryContainer',
-	'color.onPrimaryContainer',
-	'color.secondaryContainer',
-	'color.onSecondaryContainer',
 	'color.primary-dim',
 	'color.primary-container',
 	'color.on-primary-container',
@@ -52,17 +47,12 @@ export interface WorkbenchColorDefinition {
 
 export const WORKBENCH_COLOR_REGISTRY: Record<WorkbenchColorKey, WorkbenchColorDefinition> = {
 	'color.surface': { cssVar: '--color-surface' },
-	'color.onSurface': { cssVar: '--color-onSurface' },
+	'color.on-surface': { cssVar: '--color-on-surface' },
 	'color.primary': { cssVar: '--color-primary' },
-	'color.onPrimary': { cssVar: '--color-onPrimary' },
-	'color.surfaceVariant': { cssVar: '--color-surfaceVariant' },
+	'color.on-primary': { cssVar: '--color-on-primary' },
+	'color.surface-variant': { cssVar: '--color-surface-variant' },
 	'color.outline': { cssVar: '--color-outline' },
 	'color.secondary': { cssVar: '--color-secondary' },
-	'color.onSecondary': { cssVar: '--color-onSecondary' },
-	'color.primaryContainer': { cssVar: '--color-primaryContainer' },
-	'color.onPrimaryContainer': { cssVar: '--color-onPrimaryContainer' },
-	'color.secondaryContainer': { cssVar: '--color-secondaryContainer' },
-	'color.onSecondaryContainer': { cssVar: '--color-onSecondaryContainer' },
 	'color.primary-dim': { cssVar: '--color-primary-dim' },
 	'color.primary-container': { cssVar: '--color-primary-container' },
 	'color.on-primary-container': { cssVar: '--color-on-primary-container' },
@@ -93,10 +83,54 @@ export const WORKBENCH_COLOR_REGISTRY: Record<WorkbenchColorKey, WorkbenchColorD
 	'timetable.period.activeBackgroundImage': { cssVar: '--period-active-bg-image' }
 };
 
+/** Legacy camelCase registry keys accepted at read time and mapped to hyphenated keys. */
+const LEGACY_WORKBENCH_COLOR_ALIASES: Record<string, WorkbenchColorKey> = {
+	'color.onSurface': 'color.on-surface',
+	'color.onPrimary': 'color.on-primary',
+	'color.surfaceVariant': 'color.surface-variant',
+	'color.onSecondary': 'color.on-secondary',
+	'color.primaryContainer': 'color.primary-container',
+	'color.onPrimaryContainer': 'color.on-primary-container',
+	'color.secondaryContainer': 'color.secondary-container',
+	'color.onSecondaryContainer': 'color.on-secondary-container'
+};
+
 const REGISTRY_KEY_SET = new Set<string>(WORKBENCH_COLOR_KEYS);
 
 export function isWorkbenchColorKey(key: string): key is WorkbenchColorKey {
 	return REGISTRY_KEY_SET.has(key);
+}
+
+export function normalizeWorkbenchColorKey(key: string): {
+	key: string;
+	legacy: boolean;
+} {
+	const normalized = LEGACY_WORKBENCH_COLOR_ALIASES[key] ?? key;
+	return { key: normalized, legacy: normalized !== key };
+}
+
+export function normalizeWorkbenchColorKeys(input: Record<string, string>): {
+	colors: Record<string, string>;
+	warnings: string[];
+} {
+	const colors: Record<string, string> = {};
+	const warnings: string[] = [];
+	const seen = new Map<string, string>();
+
+	for (const [rawKey, value] of Object.entries(input)) {
+		const { key, legacy } = normalizeWorkbenchColorKey(rawKey);
+		if (legacy) {
+			warnings.push(`legacy key "${rawKey}" normalized to "${key}"`);
+		}
+		const previous = seen.get(key);
+		if (previous !== undefined && previous !== rawKey) {
+			warnings.push(`duplicate workbench color key "${key}" (last value wins)`);
+		}
+		seen.set(key, rawKey);
+		colors[key] = value;
+	}
+
+	return { colors, warnings };
 }
 
 export interface WorkbenchColorValidationResult {
@@ -123,7 +157,10 @@ export function validateWorkbenchColors(
 
 	if (!input) return { colors, warnings, errors };
 
-	for (const [key, value] of Object.entries(input)) {
+	const normalized = normalizeWorkbenchColorKeys(input);
+	warnings.push(...normalized.warnings);
+
+	for (const [key, value] of Object.entries(normalized.colors)) {
 		if (typeof value !== 'string') {
 			errors.push(`${label}: invalid value for "${key}"`);
 			continue;
@@ -168,13 +205,18 @@ export function workbenchColorsToDesignTokens(
 	return tokens;
 }
 
+function tokenKeyToWorkbenchColorKey(tokenKey: string): string {
+	const kebab = tokenKey.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+	return `color.${kebab}`;
+}
+
 export function designTokensToWorkbenchColors(
 	tokens: Record<string, string>
 ): Record<string, string> {
 	const colors: Record<string, string> = {};
 	for (const [key, value] of Object.entries(tokens)) {
 		if (typeof value === 'string' && value.length > 0) {
-			colors[`color.${key}`] = value;
+			colors[tokenKeyToWorkbenchColorKey(key)] = value;
 		}
 	}
 	return colors;

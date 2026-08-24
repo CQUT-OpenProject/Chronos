@@ -52,7 +52,6 @@ describe('applyActiveTheme', () => {
 					getTimetable: async () => null,
 					listTimetables: async () => [],
 					saveTimetable: async () => {},
-					patchTimetable: async () => {},
 					deleteTimetable: async () => {},
 					getActiveTimetableId: async () => null,
 					setActiveTimetableId: async () => {},
@@ -78,11 +77,7 @@ describe('applyActiveTheme', () => {
 					removeSecret: async () => {}
 				},
 				runtime: {
-					setTimeout: () => 0,
-					clearTimeout: () => {},
-					sha256: async () => '',
-					encodeUtf8: () => new Uint8Array(),
-					decodeUtf8: () => ''
+					sha256: async () => ''
 				}
 			}
 		});
@@ -117,7 +112,6 @@ describe('applyActiveTheme', () => {
 					getTimetable: async () => null,
 					listTimetables: async () => [],
 					saveTimetable: async () => {},
-					patchTimetable: async () => {},
 					deleteTimetable: async () => {},
 					getActiveTimetableId: async () => null,
 					setActiveTimetableId: async () => {},
@@ -143,11 +137,7 @@ describe('applyActiveTheme', () => {
 					removeSecret: async () => {}
 				},
 				runtime: {
-					setTimeout: () => 0,
-					clearTimeout: () => {},
-					sha256: async () => '',
-					encodeUtf8: () => new Uint8Array(),
-					decodeUtf8: () => ''
+					sha256: async () => ''
 				}
 			}
 		});

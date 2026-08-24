@@ -25,11 +25,11 @@
 		"light": {
 			"colors": {
 				"color.surface": "#ffffff",
-				"color.onSurface": "#2e333a",
-				"color.surfaceVariant": "#f1f5f9",
+				"color.on-surface": "#2e333a",
+				"color.surface-variant": "#f1f5f9",
 				"color.outline": "#cbd5e1",
 				"color.primary": "#2288dd",
-				"color.onPrimary": "#fff",
+				"color.on-primary": "#fff",
 				"color.primary-dim": "#2288dd",
 				"color.primary-container": "#2288dd",
 				"color.on-primary-container": "#fff",
@@ -54,11 +54,11 @@
 		"dark": {
 			"colors": {
 				"color.surface": "#1e2026",
-				"color.onSurface": "#f8fafc",
-				"color.surfaceVariant": "#24262e",
+				"color.on-surface": "#f8fafc",
+				"color.surface-variant": "#24262e",
 				"color.outline": "#334155",
 				"color.primary": "#2288dd",
-				"color.onPrimary": "#fff",
+				"color.on-primary": "#fff",
 				"color.primary-dim": "#2288dd",
 				"color.primary-container": "#2288dd",
 				"color.on-primary-container": "#fff",
