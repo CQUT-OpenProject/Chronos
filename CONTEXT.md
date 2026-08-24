@@ -65,8 +65,9 @@ Server-side plugin handlers expose HTTP actions via `/api/plugins/{pluginId}/{ac
 
 ## Plugin i18n
 
-- **Host shell**: Paraglide (`apps/web/messages/`, locales `zh-cn` / `en`).
-- **Plugins**: `ctx.i18n.registerMessages(catalog)` in `apply`; slots/schemas use `() => ctx.i18n.t('key')`.
+- **Host shell UI**: `host-ui` message catalog (`apps/web/src/lib/i18n/host-messages.ts`), registered on engine bootstrap; screens use `hostText` / `hostTextRead`. Paraglide handles cookie, `document.lang`, and URL de-localization only — locale switches do not reload the page.
+- **Host navigation slots**: `core-shell` plugin registers shell/mine keys from the same catalog subset.
+- **Plugins**: `ctx.i18n.registerMessages(catalog)` in `apply`; slots/schemas use `() => ctx.i18n.t('key')`; rich UI uses `translatePlugin` helpers (e.g. `plugin-text.ts`).
 - **Locale hub**: `ChronosEngine.setLocale` emits `i18n:localeChanged`; `ReactiveChronosController.slotVersion` increments so slot UI re-resolves `LocalizedText`.
 - See ADR 0024.
 
