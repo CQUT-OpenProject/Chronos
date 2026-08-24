@@ -53,7 +53,7 @@
 	let uninstallDialogOpen = $state(false);
 	let uninstallTarget = $state<{ id: string; name: string }>({ id: '', name: '' });
 
-	let thirdPartyInstallDialogOpen = $state(false);
+	let linkInstallDialogOpen = $state(false);
 	let manifestUrlInput = $state('');
 
 	function refreshInstalled() {
@@ -112,7 +112,7 @@
 					count: profileBuiltinPlugins.length + installedRecords.length
 				})
 			},
-			{ value: 'official', label: hostText('plugins.tab.official') }
+			{ value: 'official', label: hostText('plugins.tab.market') }
 		];
 	});
 
@@ -150,18 +150,18 @@
 		}
 	}
 
-	function promptThirdPartyInstall() {
+	function promptLinkInstall() {
 		manifestUrlInput = '';
-		thirdPartyInstallDialogOpen = true;
+		linkInstallDialogOpen = true;
 	}
 
-	async function confirmThirdPartyInstall() {
+	async function confirmLinkInstall() {
 		const url = manifestUrlInput.trim();
 		if (!url) {
 			snackbarKey('snackbar.manifestRequired');
 			return;
 		}
-		thirdPartyInstallDialogOpen = false;
+		linkInstallDialogOpen = false;
 		operatingPluginId = 'url-install';
 		try {
 			await officialPlugins.installFromManifestUrl(url);
@@ -229,9 +229,9 @@
 	}
 </script>
 
-{#snippet thirdPartyImportFooter()}
-	<Button variant="outlined" class="w-full" onclick={promptThirdPartyInstall}>
-		{hostTextRead(appController, 'plugins.thirdParty.import')}
+{#snippet linkImportFooter()}
+	<Button variant="outlined" class="w-full" onclick={promptLinkInstall}>
+		{hostTextRead(appController, 'plugins.link.open')}
 	</Button>
 {/snippet}
 
@@ -421,7 +421,9 @@
 			<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
 				<section class="m3-section">
 					<div class="flex items-center gap-2 px-1">
-						<h2 class="m3-section-title">{hostTextRead(appController, 'plugins.tab.official')}</h2>
+						<h2 class="m3-section-title">
+							{hostTextRead(appController, 'plugins.catalog.heading')}
+						</h2>
 						{#if catalogManifests.length > 0}
 							<span class="m3-label-small text-on-surface-variant">
 								{hostTextRead(appController, 'plugins.builtin.count', {
@@ -530,7 +532,7 @@
 				</section>
 			</div>
 			<ActionBottomBar>
-				{@render thirdPartyImportFooter()}
+				{@render linkImportFooter()}
 			</ActionBottomBar>
 		</div>
 	{/if}
@@ -560,36 +562,21 @@
 	{/snippet}
 </Dialog>
 
-<Dialog
-	bind:open={thirdPartyInstallDialogOpen}
-	title={hostTextRead(appController, 'plugins.thirdParty.title')}
->
+<Dialog bind:open={linkInstallDialogOpen} title={hostTextRead(appController, 'plugins.link.title')}>
 	<div class="flex flex-col gap-3 py-2">
-		<div
-			class="flex flex-col gap-1.5 rounded-xl border border-error/30 bg-error-container/15 px-3 py-2.5"
-		>
-			<p class="m3-body-small font-medium text-on-surface">
-				{hostTextRead(appController, 'plugins.thirdParty.warning.title')}
-			</p>
-			<ul class="m3-body-small list-disc space-y-1 pl-4 text-on-surface-variant">
-				<li>{hostTextRead(appController, 'plugins.thirdParty.warning.line1')}</li>
-				<li>{hostTextRead(appController, 'plugins.thirdParty.warning.line2')}</li>
-				<li>{hostTextRead(appController, 'plugins.thirdParty.warning.line3')}</li>
-			</ul>
-		</div>
 		<input
 			class="m3-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary"
 			type="url"
-			placeholder={hostTextRead(appController, 'plugins.thirdParty.placeholder')}
+			placeholder={hostTextRead(appController, 'plugins.link.placeholder')}
 			bind:value={manifestUrlInput}
 		/>
 	</div>
 	{#snippet footer()}
-		<Button variant="text" onclick={() => (thirdPartyInstallDialogOpen = false)}>
+		<Button variant="text" onclick={() => (linkInstallDialogOpen = false)}>
 			{hostTextRead(appController, 'common.cancel')}
 		</Button>
-		<Button variant="filled" onclick={confirmThirdPartyInstall}>
-			{hostTextRead(appController, 'plugins.thirdParty.confirm')}
+		<Button variant="filled" onclick={confirmLinkInstall}>
+			{hostTextRead(appController, 'plugins.link.confirm')}
 		</Button>
 	{/snippet}
 </Dialog>
