@@ -22,7 +22,13 @@ export const WALLPAPER_MESSAGES = {
 		'mine.keywords': '壁纸,背景,图片,自定义,封面',
 		'screen.title': '设置课表壁纸',
 		'screen.field.wallpaper.title': '选择壁纸图片',
-		'screen.field.wallpaper.description': '支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩'
+		'screen.field.wallpaper.description': '支持 PNG、JPG、WebP 格式图片，自动提取并应用主题色彩',
+		'screen.preview.empty': '选择壁纸后，可在此预览应用效果',
+		'screen.error.tooLarge': '此图片过大，无法导入',
+		'screen.error.importFailed': '壁纸导入失败，请重试',
+		'screen.action.clear': '清除壁纸',
+		'screen.action.repick': '重新选择',
+		'screen.action.pick': '选择壁纸'
 	},
 	en: {
 		'plugin.name': 'Custom Wallpaper',
@@ -34,6 +40,12 @@ export const WALLPAPER_MESSAGES = {
 		'screen.title': 'Set timetable wallpaper',
 		'screen.field.wallpaper.title': 'Choose wallpaper image',
 		'screen.field.wallpaper.description':
-			'PNG, JPG, or WebP images with automatic theme color extraction'
+			'PNG, JPG, or WebP images with automatic theme color extraction',
+		'screen.preview.empty': 'Choose a wallpaper to preview how it looks here',
+		'screen.error.tooLarge': 'This image is too large to import',
+		'screen.error.importFailed': 'Failed to import wallpaper. Please try again',
+		'screen.action.clear': 'Remove wallpaper',
+		'screen.action.repick': 'Choose again',
+		'screen.action.pick': 'Choose wallpaper'
 	}
 } as const;

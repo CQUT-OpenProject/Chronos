@@ -2,6 +2,7 @@
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
 	import { TimetableLivePreview } from '@chronos/ui-kit';
 	import { getWallpaperRuntime } from './runtime.svelte';
+	import { wallpaperPluginText } from './plugin-text';
 
 	interface Props {
 		controller: ReactiveChronosController;
@@ -14,6 +15,12 @@
 	const wallpaperUri = $derived(runtime.uri);
 	const hasWallpaper = $derived(runtime.hasWallpaper);
 	const timetable = $derived(controller.currentTimetable);
+
+	const previewEmpty = $derived(wallpaperPluginText(controller, 'screen.preview.empty'));
+	const clearLabel = $derived(wallpaperPluginText(controller, 'screen.action.clear'));
+	const pickLabel = $derived(
+		wallpaperPluginText(controller, hasWallpaper ? 'screen.action.repick' : 'screen.action.pick')
+	);
 
 	let fileInput: HTMLInputElement | undefined = $state();
 
@@ -30,8 +37,8 @@
 		} catch (error) {
 			const msg =
 				error instanceof DOMException && error.name === 'QuotaExceededError'
-					? '此图片过大，无法导入'
-					: '壁纸导入失败，请重试';
+					? wallpaperPluginText(controller, 'screen.error.tooLarge')
+					: wallpaperPluginText(controller, 'screen.error.importFailed');
 			try {
 				controller.getPluginContext(pluginId).actions.notify(msg, 'error');
 			} catch {
@@ -67,9 +74,7 @@
 		</div>
 	{:else}
 		<div class="flex min-h-0 flex-1 items-center justify-center bg-canvas p-4">
-			<p class="m3-body-medium text-center text-on-surface-variant">
-				选择壁纸后，可在此预览应用效果
-			</p>
+			<p class="m3-body-medium text-center text-on-surface-variant">{previewEmpty}</p>
 		</div>
 	{/if}
 
@@ -81,7 +86,7 @@
 					class="flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface"
 					onclick={clearWallpaper}
 				>
-					清除壁纸
+					{clearLabel}
 				</button>
 			{/if}
 			<button
@@ -89,7 +94,7 @@
 				class="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary"
 				onclick={onPickWallpaper}
 			>
-				{hasWallpaper ? '重新选择' : '选择壁纸'}
+				{pickLabel}
 			</button>
 		</div>
 	</div>

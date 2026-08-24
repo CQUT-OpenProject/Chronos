@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
+	import { cqutPluginText } from './plugin-text';
 
 	interface Props {
 		controller?: ReactiveChronosController;
@@ -12,12 +13,27 @@
 		onContinue: () => void;
 	}
 
-	let { transfer, onContinue }: Props = $props();
+	let { controller, transfer, onContinue }: Props = $props();
 	let loading = $state(false);
 	let account = $state('');
 	let password = $state('');
 	let passwordVisible = $state(false);
 	let isOnline = $state(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+	const offlineMessage = $derived(cqutPluginText(controller, 'import.online.offline'));
+	const title = $derived(cqutPluginText(controller, 'import.online.tab.title'));
+	const intro = $derived(cqutPluginText(controller, 'import.online.intro'));
+	const accountLabel = $derived(cqutPluginText(controller, 'import.online.accountLabel'));
+	const passwordTitle = $derived(cqutPluginText(controller, 'import.online.field.password.title'));
+	const passwordToggleLabel = $derived(
+		cqutPluginText(
+			controller,
+			passwordVisible ? 'import.online.password.hide' : 'import.online.password.show'
+		)
+	);
+	const submitLabel = $derived(
+		cqutPluginText(controller, loading ? 'import.online.submit.loading' : 'import.online.submit')
+	);
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
@@ -64,19 +80,17 @@
 	<div class="flex flex-col gap-4">
 		{#if !isOnline}
 			<div class="flex items-center gap-2 rounded-xl bg-error-container/40 p-3 text-error">
-				<span class="m3-body-small">当前处于离线模式，无法连接知行理工</span>
+				<span class="m3-body-small">{offlineMessage}</span>
 			</div>
 		{/if}
 		<div>
-			<h2 class="m3-title-medium text-on-surface">知行理工</h2>
-			<p class="m3-body-small mt-0.5 text-on-surface-variant">
-				请输入知行理工账号密码以获取在线课表。
-			</p>
+			<h2 class="m3-title-medium text-on-surface">{title}</h2>
+			<p class="m3-body-small mt-0.5 text-on-surface-variant">{intro}</p>
 		</div>
 
 		<div class="flex flex-col gap-3">
 			<div class="m3-form-field">
-				<label class="m3-field-label" for="import-account">工号 / 学号</label>
+				<label class="m3-field-label" for="import-account">{accountLabel}</label>
 				<input
 					id="import-account"
 					class="m3-form-field-input"
@@ -87,7 +101,7 @@
 				/>
 			</div>
 			<div class="m3-form-field">
-				<label class="m3-field-label" for="import-password">密码</label>
+				<label class="m3-field-label" for="import-password">{passwordTitle}</label>
 				<div class="m3-form-field-input-row">
 					<input
 						id="import-password"
@@ -100,7 +114,7 @@
 						type="button"
 						class="flex size-8 items-center justify-center text-on-surface-variant"
 						onclick={() => (passwordVisible = !passwordVisible)}
-						aria-label={passwordVisible ? '隐藏密码' : '显示密码'}
+						aria-label={passwordToggleLabel}
 					>
 						{#if passwordVisible}
 							<svg
@@ -137,7 +151,7 @@
 				disabled={onlineImportDisabled}
 				onclick={handleOnlinePreview}
 			>
-				{loading ? '获取中…' : '从此账号导入课表'}
+				{submitLabel}
 			</button>
 		</div>
 	</div>

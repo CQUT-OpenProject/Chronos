@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
+	import { cqutPluginText } from './plugin-text';
 
 	interface Props {
 		controller?: ReactiveChronosController;
@@ -12,16 +13,25 @@
 		onContinue: () => void;
 	}
 
-	let { transfer, onContinue }: Props = $props();
+	let { controller, transfer, onContinue }: Props = $props();
 
 	let fileInput: HTMLInputElement | undefined = $state();
 	let loading = $state(false);
 	let campusId = $state<'liangjiang' | 'huaxi'>('liangjiang');
 
-	const CAMPUS_OPTIONS = [
-		{ id: 'liangjiang', label: '两江校区' },
-		{ id: 'huaxi', label: '花溪校区' }
-	] as const;
+	const title = $derived(cqutPluginText(controller, 'import.html.tab.title'));
+	const intro = $derived(cqutPluginText(controller, 'import.html.intro'));
+	const campusLabel = $derived(cqutPluginText(controller, 'import.html.campusLabel'));
+	const campusOptions = $derived.by(() => [
+		{
+			id: 'liangjiang' as const,
+			label: cqutPluginText(controller, 'import.html.campus.liangjiang')
+		},
+		{ id: 'huaxi' as const, label: cqutPluginText(controller, 'import.html.campus.huaxi') }
+	]);
+	const submitLabel = $derived(
+		cqutPluginText(controller, loading ? 'import.html.submit.loading' : 'import.html.submit')
+	);
 
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
@@ -54,16 +64,16 @@
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
 		<div>
-			<h2 class="m3-title-medium text-on-surface">HTML 文件</h2>
-			<p class="m3-body-small mt-0.5 text-on-surface-variant">选择教务系统导出的 HTML 课表文件。</p>
+			<h2 class="m3-title-medium text-on-surface">{title}</h2>
+			<p class="m3-body-small mt-0.5 text-on-surface-variant">{intro}</p>
 		</div>
 		<label class="flex items-center gap-2 text-sm text-on-surface-variant">
-			<span>校区</span>
+			<span>{campusLabel}</span>
 			<select
 				bind:value={campusId}
 				class="m3-body-medium flex-1 rounded-lg border border-outline bg-surface px-3 py-2 text-on-surface outline-none"
 			>
-				{#each CAMPUS_OPTIONS as option (option.id)}
+				{#each campusOptions as option (option.id)}
 					<option value={option.id}>{option.label}</option>
 				{/each}
 			</select>
@@ -82,7 +92,7 @@
 				disabled={loading}
 				onclick={() => fileInput?.click()}
 			>
-				{loading ? '解析中…' : '选择 HTML 文件'}
+				{submitLabel}
 			</button>
 		</div>
 	</div>
