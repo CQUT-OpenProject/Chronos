@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { onMount } from 'svelte';
 	import { staticPath } from '$lib/config/static-path';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
@@ -7,7 +8,6 @@
 	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostText, hostTextRead } from '$lib/i18n/host-text';
 
 	type LoadState = 'loading' | 'ready' | 'error';
 
@@ -26,7 +26,7 @@
 			if (!response.ok) {
 				errorMessage = resolveFetchErrorMessage(
 					!connectivity.isOnline,
-					hostText('about.licenses.project.loadFailed')
+					hostT('about.licenses.project.loadFailed')
 				);
 				loadState = 'error';
 				return;
@@ -37,7 +37,7 @@
 		} catch {
 			errorMessage = resolveFetchErrorMessage(
 				!connectivity.isOnline,
-				hostText('about.licenses.project.loadFailed')
+				hostT('about.licenses.project.loadFailed')
 			);
 			loadState = 'error';
 		}
@@ -48,10 +48,7 @@
 	});
 </script>
 
-<SecondaryPageShell
-	title={hostTextRead(controller, 'route.licenseProject')}
-	backHref="/open-source-licenses"
->
+<SecondaryPageShell title={hostT('route.licenseProject')} backHref="/open-source-licenses">
 	{#if loadState === 'loading'}
 		<div class="flex items-center justify-center py-12">
 			<LoadingIndicator />

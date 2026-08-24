@@ -1,8 +1,7 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { Close, Search } from '$lib/icons';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
-	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		value = $bindable(''),
@@ -16,13 +15,8 @@
 		class?: string;
 	} = $props();
 
-	const controller = getAppController();
-	const resolvedPlaceholder = $derived(
-		placeholder ?? hostTextRead(controller, 'ui.search.placeholder')
-	);
-	const resolvedAriaLabel = $derived(
-		ariaLabel ?? hostTextRead(controller, 'ui.search.placeholder')
-	);
+	const resolvedPlaceholder = $derived(placeholder ?? hostT('ui.search.placeholder'));
+	const resolvedAriaLabel = $derived(ariaLabel ?? hostT('ui.search.placeholder'));
 </script>
 
 <div
@@ -40,7 +34,7 @@
 		<IconButton
 			variant="standard"
 			size="sm"
-			ariaLabel={hostTextRead(controller, 'ui.search.clearAria')}
+			ariaLabel={hostT('ui.search.clearAria')}
 			class="!size-6 !p-0 text-on-surface-variant hover:!bg-surface-variant/50"
 			onclick={() => (value = '')}
 		>

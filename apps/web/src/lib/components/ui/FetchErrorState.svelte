@@ -1,10 +1,9 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import { InfoFill, WifiOffFill } from '$lib/icons';
 	import { offlineCopy } from '$lib/platform/offline-copy';
-	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		offline = false,
@@ -18,13 +17,11 @@
 		onRetry?: () => void;
 	} = $props();
 
-	const controller = getAppController();
 	const resolvedTitle = $derived(
-		title ?? (offline ? offlineCopy.fetchTitle : hostTextRead(controller, 'ui.fetch.failed.title'))
+		title ?? (offline ? offlineCopy.fetchTitle : hostT('ui.fetch.failed.title'))
 	);
 	const resolvedDescription = $derived(
-		description ??
-			(offline ? offlineCopy.fetchDescription : hostTextRead(controller, 'ui.fetch.failed.desc'))
+		description ?? (offline ? offlineCopy.fetchDescription : hostT('ui.fetch.failed.desc'))
 	);
 </script>
 
@@ -40,7 +37,7 @@
 	</div>
 	{#if onRetry}
 		<Button variant="text" onclick={onRetry}>
-			{hostTextRead(controller, 'ui.fetch.retry')}
+			{hostT('ui.fetch.retry')}
 		</Button>
 	{/if}
 </Card>

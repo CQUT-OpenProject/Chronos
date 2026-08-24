@@ -1,7 +1,6 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { DateField as UiDateField, type DateFieldLabels } from '@chronos/ui-kit';
-	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		label,
@@ -23,17 +22,15 @@
 		labels?: DateFieldLabels;
 	} = $props();
 
-	const controller = getAppController();
 	const resolvedLabels = $derived<DateFieldLabels>(
 		labels ?? {
-			placeholder: hostTextRead(controller, 'ui.date.placeholder'),
-			today: hostTextRead(controller, 'ui.date.today'),
-			clear: hostTextRead(controller, 'ui.date.clear'),
-			confirm: hostTextRead(controller, 'ui.date.confirm'),
-			triggerEmpty: (fieldLabel) =>
-				hostTextRead(controller, 'ui.date.trigger.empty', { label: fieldLabel }),
+			placeholder: hostT('ui.date.placeholder'),
+			today: hostT('ui.date.today'),
+			clear: hostT('ui.date.clear'),
+			confirm: hostT('ui.date.confirm'),
+			triggerEmpty: (fieldLabel) => hostT('ui.date.trigger.empty', { label: fieldLabel }),
 			triggerLabeled: (fieldLabel, display) =>
-				hostTextRead(controller, 'ui.date.trigger.labeled', { label: fieldLabel, display })
+				hostT('ui.date.trigger.labeled', { label: fieldLabel, display })
 		}
 	);
 </script>

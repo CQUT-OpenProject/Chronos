@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { SchemaForm } from '@chronos/ui-kit';
@@ -9,7 +10,6 @@
 		getOfficialPluginService
 	} from '$lib/services/app-engine';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		open = $bindable(false),
@@ -66,28 +66,23 @@
 	}
 </script>
 
-<Dialog
-	bind:open
-	title={hostTextRead(appController, 'plugins.config.title', { name: pluginName || pluginId })}
->
+<Dialog bind:open title={hostT('plugins.config.title', { name: pluginName || pluginId })}>
 	<div class="max-h-[60vh] overflow-y-auto py-2">
 		{#if Object.keys(schema).length > 0}
 			<SchemaForm {schema} bind:value={formValues} disabled={saving} />
 		{:else}
 			<p class="m3-body-medium text-on-surface-variant">
-				{hostTextRead(appController, 'plugins.config.empty')}
+				{hostT('plugins.config.empty')}
 			</p>
 		{/if}
 	</div>
 
 	{#snippet footer()}
 		<Button variant="text" disabled={saving} onclick={() => (open = false)}>
-			{hostTextRead(appController, 'common.cancel')}
+			{hostT('common.cancel')}
 		</Button>
 		<Button variant="filled" disabled={saving} onclick={handleSave}>
-			{saving
-				? hostTextRead(appController, 'plugins.config.saving')
-				: hostTextRead(appController, 'plugins.config.save')}
+			{saving ? hostT('plugins.config.saving') : hostT('plugins.config.save')}
 		</Button>
 	{/snippet}
 </Dialog>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { slide } from 'svelte/transition';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { Course } from '@chronos/core';
@@ -8,10 +9,9 @@
 		resolveCoursePaint,
 		resolveLocalizedText
 	} from '@chronos/core';
-	import { timetableDayLabelRead } from '$lib/timetable/day-labels';
+	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import { getAppController } from '$lib/services/app-engine';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		shell,
@@ -41,14 +41,14 @@
 	});
 
 	function formatWeeks(weeks: number[]) {
-		if (weeks.length === 0) return hostTextRead(controller, 'course.detail.allWeeks');
+		if (weeks.length === 0) return hostT('course.detail.allWeeks');
 		return weeks.join(', ');
 	}
 
 	function formatPeriodRange(entry: Course) {
 		return entry.startPeriod === entry.endPeriod
-			? hostTextRead(controller, 'course.detail.periodSingle', { n: entry.startPeriod })
-			: hostTextRead(controller, 'course.detail.periodRange', {
+			? hostT('course.detail.periodSingle', { n: entry.startPeriod })
+			: hostT('course.detail.periodRange', {
 					start: entry.startPeriod,
 					end: entry.endPeriod
 				});
@@ -58,23 +58,23 @@
 		course
 			? [
 					{
-						label: hostTextRead(controller, 'course.detail.teacher'),
+						label: hostT('course.detail.teacher'),
 						value: course.teacher.trim() || '-'
 					},
 					{
-						label: hostTextRead(controller, 'course.detail.location'),
+						label: hostT('course.detail.location'),
 						value: course.location.trim() || '-'
 					},
 					{
-						label: hostTextRead(controller, 'course.detail.time'),
-						value: timetableDayLabelRead(controller, course.dayOfWeek)
+						label: hostT('course.detail.time'),
+						value: timetableDayLabel(course.dayOfWeek)
 					},
 					{
-						label: hostTextRead(controller, 'course.detail.periods'),
+						label: hostT('course.detail.periods'),
 						value: formatPeriodRange(course)
 					},
 					{
-						label: hostTextRead(controller, 'course.detail.weeks'),
+						label: hostT('course.detail.weeks'),
 						value: formatWeeks(course.weeks)
 					}
 				]
@@ -84,7 +84,7 @@
 
 {#if !courseId}
 	<p class="m3-body-medium text-on-surface-variant">
-		{hostTextRead(controller, 'course.detail.noId')}
+		{hostT('course.detail.noId')}
 	</p>
 {:else if course}
 	<div class="mb-6 flex items-center gap-3 py-2">
@@ -98,7 +98,7 @@
 
 	<section class="rounded-2xl bg-surface-variant/40 p-4">
 		<h3 class="m3-title-small mb-2 text-on-surface-variant">
-			{hostTextRead(controller, 'course.detail.basicInfo')}
+			{hostT('course.detail.basicInfo')}
 		</h3>
 		<div class="divide-y divide-outline-variant/60">
 			{#each detailRows as row (row.label)}
@@ -113,7 +113,7 @@
 	{#if courseActions.length > 0}
 		<section class="mt-4 rounded-2xl bg-surface-variant/40 p-4">
 			<h3 class="m3-title-small mb-2 text-on-surface-variant">
-				{hostTextRead(controller, 'course.detail.pluginActions')}
+				{hostT('course.detail.pluginActions')}
 			</h3>
 			<div class="flex flex-wrap gap-2">
 				{#each courseActions as action (action.id)}
@@ -138,12 +138,9 @@
 				class="m3-title-small flex w-full cursor-pointer items-center justify-between text-on-surface-variant"
 				onclick={() => (remarkExpanded = !remarkExpanded)}
 			>
-				<span>{hostTextRead(controller, 'course.detail.remark')}</span>
+				<span>{hostT('course.detail.remark')}</span>
 				<span class="m3-label-large text-brand">
-					{hostTextRead(
-						controller,
-						remarkExpanded ? 'course.detail.collapse' : 'course.detail.expand'
-					)}
+					{hostT(remarkExpanded ? 'course.detail.collapse' : 'course.detail.expand')}
 				</span>
 			</button>
 			{#if remarkExpanded}
@@ -155,6 +152,6 @@
 	{/if}
 {:else}
 	<p class="m3-body-medium text-on-surface-variant">
-		{hostTextRead(controller, 'course.detail.notFound')}
+		{hostT('course.detail.notFound')}
 	</p>
 {/if}

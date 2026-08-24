@@ -1,4 +1,5 @@
-import { hostText } from '$lib/i18n/host-text';
+import { hostT } from '$lib/i18n/host-i18n.svelte';
+
 import type { HostMessageKey } from '$lib/i18n/host-messages';
 
 export type SnackbarAction = { label: string; onClick: () => void };
@@ -50,7 +51,7 @@ export function snackbarKey(
 	duration = 4000,
 	priority: SnackbarPriority = 'polite'
 ) {
-	showSnackbar(hostText(key, params), action, duration, priority);
+	showSnackbar(hostT(key, params), action, duration, priority);
 }
 
 export function dismissSnackbar() {

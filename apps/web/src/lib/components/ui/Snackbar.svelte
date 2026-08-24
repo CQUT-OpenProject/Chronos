@@ -1,10 +1,7 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { snackbarStore } from './snackbar-state.svelte';
 	import Button from './Button.svelte';
-	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
-
-	const controller = getAppController();
 </script>
 
 {#if snackbarStore.open}
@@ -34,10 +31,10 @@
 				variant="text"
 				tone="inverse"
 				class="h-8 shrink-0 px-2 !text-inverse-on-surface/70"
-				aria-label={hostTextRead(controller, 'snackbar.closeAria')}
+				aria-label={hostT('snackbar.closeAria')}
 				onclick={() => (snackbarStore.open = false)}
 			>
-				{hostTextRead(controller, 'snackbar.close')}
+				{hostT('snackbar.close')}
 			</Button>
 		</div>
 	</div>

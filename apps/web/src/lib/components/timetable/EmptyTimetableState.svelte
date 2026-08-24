@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { resolve } from '$app/paths';
 	import favicon from '$lib/assets/favicon.svg';
 	import { trackEvent } from '$lib/client/analytics';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const controller = getAppController();
 
@@ -24,21 +24,21 @@
 >
 	<img src={favicon} alt="" class="h-32 w-32" aria-hidden="true" />
 
-	<p class="m3-label-large text-brand">{hostTextRead(controller, 'timetable.empty.brand')}</p>
+	<p class="m3-label-large text-brand">{hostT('timetable.empty.brand')}</p>
 	<h2 class="m3-headline-medium font-bold text-on-surface">
-		{hostTextRead(controller, 'timetable.empty.title')}
+		{hostT('timetable.empty.title')}
 	</h2>
 
 	<div class="mt-4 flex flex-col items-center gap-3">
 		<Button variant="outlined" href={resolve('/transfer/import')} onclick={handleImportClick}>
-			{hostTextRead(controller, 'timetable.empty.import')}
+			{hostT('timetable.empty.import')}
 		</Button>
 		<button
 			type="button"
 			class="cursor-pointer text-sm font-medium text-on-surface-variant underline-offset-2 hover:text-on-surface hover:underline"
 			onclick={showImportGuide}
 		>
-			{hostTextRead(controller, 'timetable.empty.guide')}
+			{hostT('timetable.empty.guide')}
 		</button>
 	</div>
 </div>

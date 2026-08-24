@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -7,7 +8,6 @@
 	import { createTransferState } from '$lib/transfer/transfer-state.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import TransferImportConfirmScreen from '$lib/components/transfer/TransferImportConfirmScreen.svelte';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const engine = getAppEngine();
 	const transfer = createTransferState(engine);
@@ -34,11 +34,7 @@
 </script>
 
 {#if ready}
-	<SecondaryPageShell
-		title={hostTextRead(controller, 'route.importConfirm')}
-		backHref="/transfer/import"
-		flush
-	>
+	<SecondaryPageShell title={hostT('route.importConfirm')} backHref="/transfer/import" flush>
 		<TransferImportConfirmScreen {transfer} {currentTimetableName} onConfirm={handleConfirmed} />
 	</SecondaryPageShell>
 {/if}

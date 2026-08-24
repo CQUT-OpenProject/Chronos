@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { onMount } from 'svelte';
 	import { staticPath } from '$lib/config/static-path';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
 	import { resolveFetchErrorMessage } from '$lib/client/fetch-error-message';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostText, hostTextRead } from '$lib/i18n/host-text';
+
 	import FetchErrorState from '$lib/components/ui/FetchErrorState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
@@ -30,7 +31,7 @@
 			if (!response.ok) {
 				errorMessage = resolveFetchErrorMessage(
 					!connectivity.isOnline,
-					hostText('about.licenses.thirdParty.loadFailed')
+					hostT('about.licenses.thirdParty.loadFailed')
 				);
 				loadState = 'error';
 				return;
@@ -41,7 +42,7 @@
 		} catch {
 			errorMessage = resolveFetchErrorMessage(
 				!connectivity.isOnline,
-				hostText('about.licenses.thirdParty.loadFailed')
+				hostT('about.licenses.thirdParty.loadFailed')
 			);
 			loadState = 'error';
 		}
@@ -64,8 +65,8 @@
 	/>
 {:else if loadState === 'empty'}
 	<FetchErrorState
-		title={hostTextRead(controller, 'about.licenses.thirdParty.empty.title')}
-		description={hostTextRead(controller, 'about.licenses.thirdParty.empty.desc')}
+		title={hostT('about.licenses.thirdParty.empty.title')}
+		description={hostT('about.licenses.thirdParty.empty.desc')}
 	/>
 {:else}
 	<ul class="flex flex-col divide-y divide-outline-variant/60">

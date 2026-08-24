@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import {
@@ -9,7 +10,7 @@
 	import { formatPublishedDate } from '$lib/content/releases/release-display';
 	import { APP_VERSION, SOURCE_CODE_URL } from '$lib/config/app-meta';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
+
 	import AppHero from '$lib/components/AppHero.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -48,16 +49,16 @@
 
 	const heroTitle = $derived(
 		updateState.state.hasUpdate
-			? hostTextRead(controller, 'about.update.title.new')
+			? hostT('about.update.title.new')
 			: updateState.state.checking
-				? hostTextRead(controller, 'about.update.title.checking')
-				: hostTextRead(controller, 'about.update.title.default')
+				? hostT('about.update.title.checking')
+				: hostT('about.update.title.default')
 	);
 
 	const heroSubtitle = $derived(
 		updateState.state.hasUpdate
-			? hostTextRead(controller, 'about.update.subtitle.new')
-			: hostTextRead(controller, 'about.update.subtitle.current', { version: APP_VERSION })
+			? hostT('about.update.subtitle.new')
+			: hostT('about.update.subtitle.current', { version: APP_VERSION })
 	);
 
 	function formatCheckTime(date: Date | null): string {
@@ -80,7 +81,7 @@
 		>
 			<LoadingIndicator />
 			<p class="m3-body-medium text-on-surface-variant">
-				{hostTextRead(controller, 'about.update.checking')}
+				{hostT('about.update.checking')}
 			</p>
 		</Card>
 	{:else if updateState.state.hasUpdate}
@@ -89,25 +90,25 @@
 				{#if updateState.state.latestRelease}
 					<HighlightRow
 						icon={Update}
-						title={hostTextRead(controller, 'about.update.latest')}
+						title={hostT('about.update.latest')}
 						subtitle={updateState.state.latestRelease.name ||
 							updateState.state.latestRelease.tagName}
 					/>
 					<HighlightRow
 						icon={CalendarMonthFill}
-						title={hostTextRead(controller, 'about.update.published')}
+						title={hostT('about.update.published')}
 						subtitle={formatPublishedDate(updateState.state.latestRelease.publishedAt)}
 					/>
 				{/if}
 				<HighlightRow
 					icon={InfoFill}
-					title={hostTextRead(controller, 'about.update.current')}
+					title={hostT('about.update.current')}
 					subtitle={`v${updateState.state.currentVersion}`}
 				/>
 			</HighlightRowList>
 
 			{#if htmlBody}
-				<MineSection title={hostTextRead(controller, 'about.update.changelog')}>
+				<MineSection title={hostT('about.update.changelog')}>
 					<div
 						class="markdown-prose markdown-prose--release prose prose-sm max-w-none px-2 dark:prose-invert"
 					>
@@ -125,8 +126,8 @@
 				>
 					<DownloadFill class="size-5" />
 					{updateState.state.updating
-						? hostTextRead(controller, 'about.update.installing')
-						: hostTextRead(controller, 'about.update.install')}
+						? hostT('about.update.installing')
+						: hostT('about.update.install')}
 				</Button>
 			</div>
 		</div>
@@ -136,7 +137,7 @@
 			<p class="m3-body-medium text-danger">{updateState.state.errorMessage}</p>
 			<Button variant="filled" onclick={() => void updateState.checkUpdate()} class="mt-2">
 				<Refresh class="size-4" />
-				{hostTextRead(controller, 'about.update.retry')}
+				{hostT('about.update.retry')}
 			</Button>
 		</Card>
 	{:else}
@@ -144,30 +145,30 @@
 			<CheckCircleFill class="h-10 w-10 text-primary" />
 			<div>
 				<h3 class="m3-title-medium text-on-surface">
-					{hostTextRead(controller, 'about.update.upToDate.title')}
+					{hostT('about.update.upToDate.title')}
 				</h3>
 				<p class="m3-body-small mt-1 text-on-surface-variant">
-					{hostTextRead(controller, 'about.update.upToDate.lastChecked', {
+					{hostT('about.update.upToDate.lastChecked', {
 						time: formatCheckTime(updateState.state.lastChecked)
 					})}
 				</p>
 			</div>
 			<Button variant="outlined" onclick={() => void updateState.checkUpdate()} class="mt-2">
 				<Refresh class="size-4" />
-				{hostTextRead(controller, 'about.update.recheck')}
+				{hostT('about.update.recheck')}
 			</Button>
 		</Card>
 	{/if}
 
-	<MineSection title={hostTextRead(controller, 'about.update.more.heading')}>
+	<MineSection title={hostT('about.update.more.heading')}>
 		<MineRow
-			title={hostTextRead(controller, 'about.update.more.history')}
+			title={hostT('about.update.more.history')}
 			href={resolve('/about/releases')}
 			icon={History}
 			iconTone="primary"
 		/>
 		<MineRow
-			title={hostTextRead(controller, 'about.update.more.repo')}
+			title={hostT('about.update.more.repo')}
 			supporting="CQUT-OpenProject/Chronos"
 			href={SOURCE_CODE_URL}
 			target="_blank"

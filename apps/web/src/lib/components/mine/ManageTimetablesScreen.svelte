@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		shell
@@ -41,14 +41,14 @@
 		disabled={timetables.length <= 1}
 		onclick={() => (deleteDialogOpen = true)}
 	>
-		{hostTextRead(shell.controller, 'timetable.manage.delete')}
+		{hostT('timetable.manage.delete')}
 	</Button>
 {/snippet}
 
 <FormScreenLayout footer={deleteFooter}>
 	<div class="flex flex-col gap-3">
 		<h3 class="m3-title-medium px-1 text-on-surface">
-			{hostTextRead(shell.controller, 'timetable.manage.heading')}
+			{hostT('timetable.manage.heading')}
 		</h3>
 
 		<div class="flex flex-col gap-2.5">
@@ -57,7 +57,7 @@
 				<SelectableOption
 					name="current-timetable"
 					label={timetable.name}
-					description={hostTextRead(shell.controller, 'timetable.manage.courseCount', {
+					description={hostT('timetable.manage.courseCount', {
 						count: timetable.courseCount
 					})}
 					selected={isActive}
@@ -70,19 +70,19 @@
 
 <Dialog
 	bind:open={deleteDialogOpen}
-	title={hostTextRead(shell.controller, 'timetable.manage.delete.title')}
+	title={hostT('timetable.manage.delete.title')}
 	description={selectedTimetable
-		? hostTextRead(shell.controller, 'timetable.manage.delete.descNamed', {
+		? hostT('timetable.manage.delete.descNamed', {
 				name: selectedTimetable.name
 			})
-		: hostTextRead(shell.controller, 'timetable.manage.delete.descGeneric')}
+		: hostT('timetable.manage.delete.descGeneric')}
 >
 	{#snippet footer()}
 		<Button variant="text" onclick={() => (deleteDialogOpen = false)}>
-			{hostTextRead(shell.controller, 'common.cancel')}
+			{hostT('common.cancel')}
 		</Button>
 		<Button variant="filled" onclick={confirmDelete}>
-			{hostTextRead(shell.controller, 'common.delete')}
+			{hostT('common.delete')}
 		</Button>
 	{/snippet}
 </Dialog>

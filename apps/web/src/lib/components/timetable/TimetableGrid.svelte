@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import {
 		placeCapsules,
@@ -11,7 +12,7 @@
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '@chronos/ui-kit/utils/middle-truncate';
-	import { timetableDayShortLabelRead } from '$lib/timetable/day-labels';
+	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,
 		buildOverlapPlaceholderAriaLabel
@@ -28,7 +29,7 @@
 		type CoursePaletteEntry
 	} from '@chronos/core';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
+
 	import {
 		timetableBodyTintClass,
 		timetableSidebarTintClass,
@@ -314,13 +315,13 @@
 			class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
 		>
 			<span>{gridModel.monthLabel}</span>
-			<span>{hostTextRead(controller, 'timetable.grid.monthSuffix')}</span>
+			<span>{hostT('timetable.grid.monthSuffix')}</span>
 		</div>
 		<div class="flex min-w-0 flex-1">
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
 					<span class="m3-body-small text-on-surface-variant"
-						>{timetableDayShortLabelRead(controller, day.dayOfWeek)}</span
+						>{timetableDayShortLabel(day.dayOfWeek)}</span
 					>
 					<div
 						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
@@ -340,11 +341,11 @@
 			? 'overflow-hidden'
 			: 'overflow-y-auto'} {timetableBodyTintClass(hasDynamicBackground)}"
 		role="region"
-		aria-label={hostTextRead(controller, 'timetable.grid.aria')}
+		aria-label={hostT('timetable.grid.aria')}
 	>
 		<div class="flex" style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})">
 			<aside
-				aria-label={hostTextRead(controller, 'timetable.grid.periodsAria')}
+				aria-label={hostT('timetable.grid.periodsAria')}
 				class="shrink-0"
 				style:width="var(--sidebar-width)"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
@@ -396,7 +397,7 @@
 								onclick={() => expandSlot(item.key)}
 							>
 								<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
-									{hostTextRead(controller, 'timetable.grid.overlap', { count: item.count })}
+									{hostT('timetable.grid.overlap', { count: item.count })}
 								</span>
 							</button>
 						{:else}

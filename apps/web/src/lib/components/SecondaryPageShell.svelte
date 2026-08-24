@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { Pathname } from '$app/types';
 	import { resolve } from '$app/paths';
 	import { ArrowBack } from '$lib/icons';
@@ -6,7 +7,6 @@
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		title,
@@ -30,7 +30,7 @@
 		{#snippet leading()}
 			<IconButton
 				href={resolve(backHref as any)}
-				ariaLabel={hostTextRead(controller, 'ui.nav.back')}
+				ariaLabel={hostT('ui.nav.back')}
 				onclick={() => haptic.light()}
 			>
 				<ArrowBack class="size-6 text-on-surface" />

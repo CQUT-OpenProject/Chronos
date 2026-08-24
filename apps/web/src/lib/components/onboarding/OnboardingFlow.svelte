@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { fade } from 'svelte/transition';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -29,7 +30,6 @@
 		DescriptionFill
 	} from '$lib/icons';
 	import { haptic } from '$lib/haptic/haptic';
-	import { hostText, hostTextRead } from '$lib/i18n/host-text';
 
 	const shell = getContext<AppShellController>('appShell');
 	const controller = getAppController();
@@ -42,17 +42,16 @@
 	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 
 	const layoutOptions = $derived.by(() => {
-		void controller.currentLocale;
 		return [
 			{
 				mode: 'fixed' as const,
-				label: hostText('onboarding.layout.fixed.label'),
-				description: hostText('onboarding.layout.fixed.desc')
+				label: hostT('onboarding.layout.fixed.label'),
+				description: hostT('onboarding.layout.fixed.desc')
 			},
 			{
 				mode: 'compact' as const,
-				label: hostText('onboarding.layout.compact.label'),
-				description: hostText('onboarding.layout.compact.desc')
+				label: hostT('onboarding.layout.compact.label'),
+				description: hostT('onboarding.layout.compact.desc')
 			}
 		] as const;
 	});
@@ -175,7 +174,7 @@
 					class="cursor-pointer text-sm font-medium text-on-surface-variant hover:text-on-surface"
 					onclick={handleLater}
 				>
-					{hostTextRead(controller, 'onboarding.skip')}
+					{hostT('onboarding.skip')}
 				</button>
 			</div>
 
@@ -189,8 +188,8 @@
 						{#if step === 0}
 							<div class="flex flex-1 flex-col items-center justify-center gap-4 text-center">
 								<AppHero
-									title={hostTextRead(controller, 'onboarding.welcome.title')}
-									subtitle={hostTextRead(controller, 'onboarding.welcome.subtitle')}
+									title={hostT('onboarding.welcome.title')}
+									subtitle={hostT('onboarding.welcome.subtitle')}
 									titleId={stepTitleId}
 								/>
 							</div>
@@ -200,23 +199,23 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									{hostTextRead(controller, 'onboarding.highlights.title')}
+									{hostT('onboarding.highlights.title')}
 								</h2>
 								<HighlightRowList>
 									<HighlightRow
 										icon={DownloadFill}
-										title={hostTextRead(controller, 'onboarding.highlights.import.title')}
+										title={hostT('onboarding.highlights.import.title')}
 										subtitle={onboardingImportHighlight}
 									/>
 									<HighlightRow
 										icon={PaletteFill}
-										title={hostTextRead(controller, 'onboarding.highlights.theme.title')}
-										subtitle={hostTextRead(controller, 'onboarding.highlights.theme.subtitle')}
+										title={hostT('onboarding.highlights.theme.title')}
+										subtitle={hostT('onboarding.highlights.theme.subtitle')}
 									/>
 									<HighlightRow
 										icon={WifiOffFill}
-										title={hostTextRead(controller, 'onboarding.highlights.offline.title')}
-										subtitle={hostTextRead(controller, 'onboarding.highlights.offline.subtitle')}
+										title={hostT('onboarding.highlights.offline.title')}
+										subtitle={hostT('onboarding.highlights.offline.subtitle')}
 									/>
 								</HighlightRowList>
 							</div>
@@ -226,10 +225,10 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									{hostTextRead(controller, 'onboarding.layout.title')}
+									{hostT('onboarding.layout.title')}
 								</h2>
 								<p class="m3-body-small text-center text-on-surface-variant">
-									{hostTextRead(controller, 'onboarding.layout.hint')}
+									{hostT('onboarding.layout.hint')}
 								</p>
 								<div class="flex flex-col gap-3">
 									{#each layoutOptions as option (option.mode)}
@@ -265,7 +264,7 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									{hostTextRead(controller, 'onboarding.import.title')}
+									{hostT('onboarding.import.title')}
 								</h2>
 								<div class="flex flex-col gap-3">
 									{#each importSlots as slot (slot.id)}
@@ -289,10 +288,10 @@
 									id={stepTitleId}
 									class="m3-headline-small text-center font-semibold text-on-surface"
 								>
-									{hostTextRead(controller, 'onboarding.install.title')}
+									{hostT('onboarding.install.title')}
 								</h2>
 								<p class="m3-body-small text-center text-on-surface-variant">
-									{hostTextRead(controller, 'onboarding.install.subtitle')}
+									{hostT('onboarding.install.subtitle')}
 								</p>
 								<InstallGuideCard inOnboarding />
 							</div>
@@ -304,10 +303,10 @@
 									<DownloadFill class="h-8 w-8" />
 								</div>
 								<h2 id={stepTitleId} class="m3-headline-small font-semibold text-on-surface">
-									{hostTextRead(controller, 'onboarding.done.title')}
+									{hostT('onboarding.done.title')}
 								</h2>
 								<p class="m3-body-medium text-on-surface-variant">
-									{hostTextRead(controller, 'onboarding.done.subtitle')}
+									{hostT('onboarding.done.subtitle')}
 								</p>
 							</div>
 						{/if}
@@ -321,7 +320,7 @@
 			>
 				<ol
 					class="flex list-none justify-center gap-1.5"
-					aria-label={hostTextRead(controller, 'onboarding.steps.aria')}
+					aria-label={hostT('onboarding.steps.aria')}
 				>
 					{#each stepIndices as index}
 						<li
@@ -329,7 +328,7 @@
 								? 'bg-brand dark:bg-soft-blue'
 								: 'bg-outline-variant'}"
 							aria-current={index === step ? 'step' : undefined}
-							aria-label={hostTextRead(controller, 'onboarding.steps.label', {
+							aria-label={hostT('onboarding.steps.label', {
 								current: index + 1,
 								total: stepIndices.length
 							})}
@@ -340,18 +339,18 @@
 					{#if !isLastStep}
 						{#if step > 0}
 							<Button variant="text" class="flex-1" onclick={handleBack}>
-								{hostTextRead(controller, 'onboarding.back')}
+								{hostT('onboarding.back')}
 							</Button>
 						{/if}
 						<Button variant="filled" class="flex-1" onclick={handleNext}>
-							{hostTextRead(controller, 'onboarding.next')}
+							{hostT('onboarding.next')}
 						</Button>
 					{:else}
 						<Button variant="text" class="flex-1" onclick={handleLater}>
-							{hostTextRead(controller, 'onboarding.later')}
+							{hostT('onboarding.later')}
 						</Button>
 						<Button variant="filled" class="flex-1" onclick={handleStartImport}>
-							{hostTextRead(controller, 'onboarding.startImport')}
+							{hostT('onboarding.startImport')}
 						</Button>
 					{/if}
 				</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { CourseDraft } from '$lib/models/drafts';
 	import { COURSE_REMARK_MAX_LENGTH } from '@chronos/core';
 	import {
@@ -12,7 +13,6 @@
 	import StepperField from '$lib/components/ui/StepperField.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		draft = $bindable(),
@@ -25,7 +25,7 @@
 	} = $props();
 
 	const controller = getAppController();
-	const optionalPlaceholder = $derived(hostTextRead(controller, 'course.form.optional'));
+	const optionalPlaceholder = $derived(hostT('course.form.optional'));
 
 	const selectedBackground = $derived(displaySwatchBackground(draft.color, colors));
 
@@ -42,21 +42,21 @@
 
 <div class="space-y-4">
 	<FormCard>
-		<TextField label={hostTextRead(controller, 'course.form.name')} bind:value={draft.name} />
+		<TextField label={hostT('course.form.name')} bind:value={draft.name} />
 		<TextField
-			label={hostTextRead(controller, 'course.form.teacher')}
+			label={hostT('course.form.teacher')}
 			placeholder={optionalPlaceholder}
 			autocomplete="name"
 			bind:value={draft.teacher}
 		/>
 		<TextField
-			label={hostTextRead(controller, 'course.form.location')}
+			label={hostT('course.form.location')}
 			placeholder={optionalPlaceholder}
 			autocomplete="address-line1"
 			bind:value={draft.location}
 		/>
 		<TextField
-			label={hostTextRead(controller, 'course.form.remark')}
+			label={hostT('course.form.remark')}
 			multiline
 			rows={3}
 			placeholder={optionalPlaceholder}
@@ -68,14 +68,14 @@
 
 	<FormCard>
 		<StepperField
-			label={hostTextRead(controller, 'course.form.dayOfWeek')}
+			label={hostT('course.form.dayOfWeek')}
 			bind:value={draft.dayOfWeek}
 			min={1}
 			max={7}
 			embedded
 		/>
 		<StepperField
-			label={hostTextRead(controller, 'course.form.startPeriod')}
+			label={hostT('course.form.startPeriod')}
 			bind:value={draft.startPeriod}
 			min={1}
 			max={maxPeriods}
@@ -83,7 +83,7 @@
 			onchange={handleStartPeriodChange}
 		/>
 		<StepperField
-			label={hostTextRead(controller, 'course.form.endPeriod')}
+			label={hostT('course.form.endPeriod')}
 			bind:value={draft.endPeriod}
 			min={draft.startPeriod}
 			max={maxPeriods}

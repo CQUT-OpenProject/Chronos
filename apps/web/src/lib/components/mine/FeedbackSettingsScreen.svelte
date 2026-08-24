@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import Switch from '$lib/components/ui/Switch.svelte';
@@ -6,7 +7,6 @@
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import { MobileVibrateFill } from '$lib/icons';
 	import { haptic } from '$lib/haptic/haptic';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let { shell }: { shell: AppShellController } = $props();
 	const hapticFeedbackEnabled = $derived(
@@ -23,10 +23,10 @@
 </script>
 
 <div class="flex flex-col gap-5">
-	<MineSection title={hostTextRead(shell.controller, 'mine.feedback.section.haptic')}>
+	<MineSection title={hostT('mine.feedback.section.haptic')}>
 		<MineRow
 			label={true}
-			title={hostTextRead(shell.controller, 'mine.feedback.haptic.label')}
+			title={hostT('mine.feedback.haptic.label')}
 			icon={MobileVibrateFill}
 			iconTone="primary"
 			onclick={() => toggleHapticFeedback(!hapticFeedbackEnabled)}

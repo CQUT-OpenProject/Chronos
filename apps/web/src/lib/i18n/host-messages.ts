@@ -1018,6 +1018,8 @@ Aside from GitHub Issues, this project has no other public feedback channels
 
 export const HOST_MESSAGES = { 'zh-cn': zhCn, en } as const;
 
+export const HOST_UI_PLUGIN_ID = 'host-ui';
+
 export type HostMessageKey = keyof typeof zhCn;
 
 export const CORE_SHELL_MESSAGE_KEYS = [

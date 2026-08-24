@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
@@ -16,7 +17,7 @@
 		PROJECT_LICENSE,
 		SOURCE_CODE_URL
 	} from '$lib/config/app-meta';
-	import { hostTextRead } from '$lib/i18n/host-text';
+
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import AppHero from '$lib/components/AppHero.svelte';
@@ -40,8 +41,8 @@
 
 	const dataUsageSupporting = $derived(
 		dataUsageBytes === null
-			? hostTextRead(shell.controller, 'about.storage.calculating')
-			: hostTextRead(shell.controller, 'about.storage.usage', {
+			? hostT('about.storage.calculating')
+			: hostT('about.storage.usage', {
 					size: formatAppDataSize(dataUsageBytes)
 				})
 	);
@@ -89,18 +90,18 @@
 </script>
 
 <div class="m3-stack">
-	<AppHero title="Chronos" subtitle={hostTextRead(shell.controller, 'meta.intro')} />
+	<AppHero title="Chronos" subtitle={hostT('meta.intro')} />
 
-	<MineSection title={hostTextRead(shell.controller, 'about.section.version')}>
+	<MineSection title={hostT('about.section.version')}>
 		<MineRow
-			title={hostTextRead(shell.controller, 'about.version.current')}
+			title={hostT('about.version.current')}
 			supporting={APP_VERSION}
 			href={resolve('/about/update')}
 			icon={InfoFill}
 			iconTone="primary"
 		/>
 		<MineRow
-			title={hostTextRead(shell.controller, 'about.buildTime')}
+			title={hostT('about.buildTime')}
 			supporting={formatBuildTime(BUILD_TIME)}
 			icon={ScheduleFill}
 			iconTone="secondary"
@@ -108,9 +109,9 @@
 		/>
 	</MineSection>
 
-	<MineSection title={hostTextRead(shell.controller, 'about.section.storage')}>
+	<MineSection title={hostT('about.section.storage')}>
 		<MineRow
-			title={hostTextRead(shell.controller, 'about.storage.clear')}
+			title={hostT('about.storage.clear')}
 			supporting={dataUsageSupporting}
 			icon={LayersClearFill}
 			iconTone="neutral"
@@ -118,27 +119,27 @@
 		/>
 	</MineSection>
 
-	<MineSection title={hostTextRead(shell.controller, 'about.section.info')}>
+	<MineSection title={hostT('about.section.info')}>
 		<MineRow
-			title={hostTextRead(shell.controller, 'about.legal.terms')}
+			title={hostT('about.legal.terms')}
 			href={resolve('/legal/terms')}
 			icon={ArticleFill}
 			iconTone="tertiary"
 		/>
 		<MineRow
-			title={hostTextRead(shell.controller, 'about.legal.privacy')}
+			title={hostT('about.legal.privacy')}
 			href={resolve('/legal/privacy')}
 			icon={ShieldFill}
 			iconTone="tertiary"
 		/>
 		<MineRow
-			title={hostTextRead(shell.controller, 'about.legal.licenses')}
+			title={hostT('about.legal.licenses')}
 			href={resolve('/open-source-licenses')}
 			icon={GavelFill}
 			iconTone="tertiary"
 		/>
 		<MineRow
-			title={hostTextRead(shell.controller, 'about.source')}
+			title={hostT('about.source')}
 			href={SOURCE_CODE_URL}
 			target="_blank"
 			rel="noreferrer"
@@ -164,15 +165,15 @@
 
 <Dialog
 	bind:open={clearDialogOpen}
-	title={hostTextRead(shell.controller, 'about.clear.title')}
-	description={hostTextRead(shell.controller, 'about.clear.desc')}
+	title={hostT('about.clear.title')}
+	description={hostT('about.clear.desc')}
 >
 	{#snippet footer()}
 		<Button variant="text" onclick={() => (clearDialogOpen = false)} disabled={clearing}>
-			{hostTextRead(shell.controller, 'common.cancel')}
+			{hostT('common.cancel')}
 		</Button>
 		<Button variant="danger" disabled={clearing} onclick={confirmClear}>
-			{hostTextRead(shell.controller, 'common.clear')}
+			{hostT('common.clear')}
 		</Button>
 	{/snippet}
 </Dialog>

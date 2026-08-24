@@ -27,7 +27,7 @@ export function syncParaglideLocale(locale: AppLocale): void {
 export async function applyAppLocale(engine: ChronosEngine, locale: AppLocale): Promise<void> {
 	engine.setLocale(locale);
 	syncParaglideLocale(locale);
-	await engine.actions.updatePreferences({ locale });
+	await engine.updatePreferences({ locale });
 }
 
 export function syncEngineLocaleFromPreferences(engine: ChronosEngine): void {

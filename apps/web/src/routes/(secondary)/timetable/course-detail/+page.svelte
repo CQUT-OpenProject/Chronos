@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
@@ -10,7 +11,6 @@
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import { Edit } from '$lib/icons';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const shell = getContext<AppShellController>('appShell');
 	const controller = getAppController();
@@ -34,7 +34,7 @@
 		<IconButton
 			variant="standard"
 			size="sm"
-			ariaLabel={hostTextRead(controller, 'route.courseEditAria')}
+			ariaLabel={hostT('route.courseEditAria')}
 			onclick={editCourse}
 		>
 			<Edit class="size-[22px]" />
@@ -42,10 +42,6 @@
 	{/if}
 {/snippet}
 
-<SecondaryPageShell
-	title={hostTextRead(controller, 'route.courseDetail')}
-	backHref="/"
-	actions={editAction}
->
+<SecondaryPageShell title={hostT('route.courseDetail')} backHref="/" actions={editAction}>
 	<CourseDetailScreen {shell} {courseId} />
 </SecondaryPageShell>

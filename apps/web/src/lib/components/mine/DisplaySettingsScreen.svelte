@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { AppLocale } from '@chronos/core';
 	import {
 		DEFAULT_VISUAL_THEME_ID,
@@ -11,7 +12,7 @@
 	import { trackEvent } from '$lib/client/analytics';
 	import { getAppEngine } from '$lib/services/app-engine';
 	import { APP_LOCALES, applyAppLocale, normalizeAppLocale } from '$lib/i18n/locale-sync';
-	import { hostText, hostTextRead } from '$lib/i18n/host-text';
+
 	import { BUILTIN_COLOR_SCHEME_VIBRANT, resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import Radio from '$lib/components/ui/Radio.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
@@ -39,8 +40,8 @@
 		const builtin = [
 			{
 				id: BUILTIN_COLOR_SCHEME_VIBRANT,
-				label: hostText('display.builtin.default'),
-				description: hostText('display.colorScheme.builtinDesc'),
+				label: hostT('display.builtin.default'),
+				description: hostT('display.colorScheme.builtinDesc'),
 				disabled: false
 			}
 		];
@@ -57,8 +58,8 @@
 						: Boolean(theme.disabled);
 				const defaultDesc = isDynamicTheme
 					? hasDynamicColorBackground
-						? hostText('display.colorScheme.dynamicReady')
-						: hostText('display.colorScheme.dynamicBlocked')
+						? hostT('display.colorScheme.dynamicReady')
+						: hostT('display.colorScheme.dynamicBlocked')
 					: undefined;
 				const desc = resolveLocalizedText(theme.description, defaultDesc);
 
@@ -76,9 +77,9 @@
 	const themeOptions = $derived.by(() => {
 		void shell.controller.currentLocale;
 		return [
-			{ mode: 'light' as const, label: hostText('display.theme.light') },
-			{ mode: 'dark' as const, label: hostText('display.theme.dark') },
-			{ mode: 'auto' as const, label: hostText('display.theme.auto') }
+			{ mode: 'light' as const, label: hostT('display.theme.light') },
+			{ mode: 'dark' as const, label: hostT('display.theme.dark') },
+			{ mode: 'auto' as const, label: hostT('display.theme.auto') }
 		] as const;
 	});
 
@@ -87,13 +88,13 @@
 		return [
 			{
 				mode: 'fixed' as const,
-				label: hostText('display.layout.fixed.label'),
-				description: hostText('display.layout.fixed.desc')
+				label: hostT('display.layout.fixed.label'),
+				description: hostT('display.layout.fixed.desc')
 			},
 			{
 				mode: 'compact' as const,
-				label: hostText('display.layout.compact.label'),
-				description: hostText('display.layout.compact.desc')
+				label: hostT('display.layout.compact.label'),
+				description: hostT('display.layout.compact.desc')
 			}
 		] as const;
 	});
@@ -103,27 +104,24 @@
 		return [
 			{
 				mode: 'rounded' as const,
-				label: hostText('display.capsule.rounded.label'),
-				description: hostText('display.capsule.rounded.desc')
+				label: hostT('display.capsule.rounded.label'),
+				description: hostT('display.capsule.rounded.desc')
 			},
 			{
 				mode: 'pill' as const,
-				label: hostText('display.capsule.pill.label'),
-				description: hostText('display.capsule.pill.desc')
+				label: hostT('display.capsule.pill.label'),
+				description: hostT('display.capsule.pill.desc')
 			},
 			{
 				mode: 'sharp' as const,
-				label: hostText('display.capsule.sharp.label'),
-				description: hostText('display.capsule.sharp.desc')
+				label: hostT('display.capsule.sharp.label'),
+				description: hostT('display.capsule.sharp.desc')
 			}
 		] as const;
 	});
 
 	function localeLabel(locale: AppLocale): string {
-		return hostTextRead(
-			shell.controller,
-			locale === 'en' ? 'display.locale.en' : 'display.locale.zh-cn'
-		);
+		return hostT(locale === 'en' ? 'display.locale.en' : 'display.locale.zh-cn');
 	}
 
 	async function selectColorScheme(schemeId: string) {
@@ -160,7 +158,7 @@
 </script>
 
 <div class="flex flex-col gap-5">
-	<MineSection title={hostTextRead(shell.controller, 'display.section.locale')}>
+	<MineSection title={hostT('display.section.locale')}>
 		{#each APP_LOCALES as option (option.id)}
 			{@const selected = activeLocale === option.id}
 			<MineRow label={true} title={localeLabel(option.id)} onclick={() => selectLocale(option.id)}>
@@ -171,7 +169,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title={hostTextRead(shell.controller, 'display.section.themeMode')}>
+	<MineSection title={hostT('display.section.themeMode')}>
 		{#each themeOptions as option (option.mode)}
 			{@const selected = themeMode === option.mode}
 			<MineRow label={true} title={option.label} onclick={() => selectThemeMode(option.mode)}>
@@ -186,7 +184,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title={hostTextRead(shell.controller, 'display.section.colorScheme')}>
+	<MineSection title={hostT('display.section.colorScheme')}>
 		{#each colorSchemeOptions as option (option.id)}
 			{@const selected = activeColorSchemeId === option.id}
 			<MineRow
@@ -207,7 +205,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title={hostTextRead(shell.controller, 'display.section.layout')}>
+	<MineSection title={hostT('display.section.layout')}>
 		{#each layoutOptions as option (option.mode)}
 			{@const selected = layoutMode === option.mode}
 			<MineRow
@@ -227,7 +225,7 @@
 		{/each}
 	</MineSection>
 
-	<MineSection title={hostTextRead(shell.controller, 'display.section.capsule')}>
+	<MineSection title={hostT('display.section.capsule')}>
 		{#each capsuleCornerOptions as option (option.mode)}
 			{@const selected = capsuleCornerStyle === option.mode}
 			<MineRow

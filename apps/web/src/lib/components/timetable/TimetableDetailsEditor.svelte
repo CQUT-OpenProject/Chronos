@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { TimetableDetailsController } from '$lib/timetable/timetable-details.svelte';
 	import { defaultPeriodTimes } from '$lib/models/defaults';
 	import { removePeriodAt, reindexPeriodTimes } from '$lib/timetable/timetable-mappers';
@@ -14,7 +15,6 @@
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import { DeleteFill } from '$lib/icons';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		editor
@@ -56,31 +56,31 @@
 	<div class="space-y-4">
 		<FormCard>
 			<TextField
-				label={hostTextRead(controller, 'timetable.details.name')}
+				label={hostT('timetable.details.name')}
 				autocomplete="name"
 				bind:value={draft.name}
 			/>
 			{#if showTermStart}
 				<DateField
-					label={hostTextRead(controller, 'timetable.details.termStart')}
+					label={hostT('timetable.details.termStart')}
 					bind:value={draft.academicConfig.termStartDate}
 				/>
 			{/if}
 		</FormCard>
 
-		<MineSection title={hostTextRead(controller, 'timetable.details.section.display')}>
-			<MineRow label title={hostTextRead(controller, 'timetable.details.showSaturday')}>
+		<MineSection title={hostT('timetable.details.section.display')}>
+			<MineRow label title={hostT('timetable.details.showSaturday')}>
 				{#snippet trailing()}
 					<Switch bind:checked={draft.viewPrefs.showSaturday} />
 				{/snippet}
 			</MineRow>
-			<MineRow label title={hostTextRead(controller, 'timetable.details.showSunday')}>
+			<MineRow label title={hostT('timetable.details.showSunday')}>
 				{#snippet trailing()}
 					<Switch bind:checked={draft.viewPrefs.showSunday} />
 				{/snippet}
 			</MineRow>
 			{#if showNonCurrentWeek}
-				<MineRow label title={hostTextRead(controller, 'timetable.details.showNonCurrentWeek')}>
+				<MineRow label title={hostT('timetable.details.showNonCurrentWeek')}>
 					{#snippet trailing()}
 						<Switch bind:checked={draft.viewPrefs.showNonCurrentWeekCourses} />
 					{/snippet}
@@ -91,13 +91,13 @@
 		{#if showWeekRange}
 			<FormCard>
 				<StepperField
-					label={hostTextRead(controller, 'timetable.details.startWeek')}
+					label={hostT('timetable.details.startWeek')}
 					bind:value={draft.academicConfig.startWeek}
 					min={1}
 					embedded
 				/>
 				<StepperField
-					label={hostTextRead(controller, 'timetable.details.endWeek')}
+					label={hostT('timetable.details.endWeek')}
 					bind:value={draft.academicConfig.endWeek}
 					min={draft.academicConfig.startWeek}
 					embedded
@@ -108,17 +108,17 @@
 		<div class="flex flex-col gap-2.5">
 			<div class="flex items-center justify-between px-1">
 				<h3 class="m3-title-medium">
-					{hostTextRead(controller, 'timetable.details.periods.heading')}
+					{hostT('timetable.details.periods.heading')}
 				</h3>
 				<Button variant="text" class="px-2" onclick={addPeriod}>
-					{hostTextRead(controller, 'timetable.details.periods.add')}
+					{hostT('timetable.details.periods.add')}
 				</Button>
 			</div>
 			{#each draft.academicConfig.periodTimes as period, index (period.index)}
 				<FormCard>
 					<div class="flex items-center justify-between px-4 py-2">
 						<span class="m3-body-medium text-on-surface-variant">
-							{hostTextRead(controller, 'timetable.details.periods.label', {
+							{hostT('timetable.details.periods.label', {
 								index: period.index
 							})}
 						</span>
@@ -126,7 +126,7 @@
 							variant="danger"
 							size="sm"
 							class="!size-8"
-							ariaLabel={hostTextRead(controller, 'timetable.details.periods.deleteAria', {
+							ariaLabel={hostT('timetable.details.periods.deleteAria', {
 								index: period.index
 							})}
 							onclick={() => removePeriod(index)}
@@ -136,13 +136,10 @@
 					</div>
 					<div class="grid grid-cols-2">
 						<TimeField
-							label={hostTextRead(controller, 'timetable.details.period.start')}
+							label={hostT('timetable.details.period.start')}
 							bind:value={period.startTime}
 						/>
-						<TimeField
-							label={hostTextRead(controller, 'timetable.details.period.end')}
-							bind:value={period.endTime}
-						/>
+						<TimeField label={hostT('timetable.details.period.end')} bind:value={period.endTime} />
 					</div>
 				</FormCard>
 			{/each}

@@ -7,6 +7,7 @@ import { initWebVitals } from '$lib/client/web-vitals';
 import { initNavigationStack } from '$lib/navigation/navigation-direction';
 import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
 import { ensureEngineReady } from '$lib/services/app-engine';
+import { configureHostI18n } from '$lib/i18n/host-i18n.svelte';
 import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 
 export type PlatformBootstrapDeps = {
@@ -30,7 +31,10 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		initNavigationStack(pathname);
 		connectivity.init();
 
-		void ensureEngineReady().then(() => {
+		void ensureEngineReady().then((engine) => {
+			configureHostI18n({
+				onLocaleChanged: (handler) => engine.events.on('i18n:localeChanged', handler)
+			});
 			deps.shell.init();
 			deps.timetableScreen.init(deps.shell);
 			void pwaInstallController.init();

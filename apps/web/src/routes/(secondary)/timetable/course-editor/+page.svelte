@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
@@ -8,7 +9,6 @@
 	import CourseEditorScreen from '$lib/components/timetable/CourseEditorScreen.svelte';
 	import { createCourseEditor } from '$lib/timetable/course-editor.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const shell = getContext<AppShellController>('appShell');
 	const controller = getAppController();
@@ -26,6 +26,6 @@
 	});
 </script>
 
-<SecondaryPageShell title={hostTextRead(controller, 'route.courseEdit')} backHref="/" flush>
+<SecondaryPageShell title={hostT('route.courseEdit')} backHref="/" flush>
 	<CourseEditorScreen {editor} />
 </SecondaryPageShell>

@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 	import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
+
 	import { CheckCircleFill, IosShareFill, RocketLaunchFill } from '$lib/icons';
 
 	let { inOnboarding = false }: { inOnboarding?: boolean } = $props();
@@ -40,13 +41,13 @@
 	<Card variant="filled" class="text-center">
 		<p class="m3-title-small flex items-center justify-center gap-2 text-brand">
 			<CheckCircleFill class="h-5 w-5" />
-			<span>{hostTextRead(controller, 'pwa.guide.installed.title')}</span>
+			<span>{hostT('pwa.guide.installed.title')}</span>
 		</p>
 		<p class="m3-body-small text-on-surface-variant">
 			{#if inOnboarding}
-				{hostTextRead(controller, 'pwa.guide.installed.onboarding')}
+				{hostT('pwa.guide.installed.onboarding')}
 			{:else}
-				{hostTextRead(controller, 'pwa.guide.installed.full')}
+				{hostT('pwa.guide.installed.full')}
 			{/if}
 		</p>
 	</Card>
@@ -54,10 +55,10 @@
 	<Card variant="filled" class="text-center">
 		<p class="m3-title-small flex items-center justify-center gap-2 text-brand">
 			<CheckCircleFill class="h-5 w-5" />
-			<span>{hostTextRead(controller, 'pwa.guide.local.title')}</span>
+			<span>{hostT('pwa.guide.local.title')}</span>
 		</p>
 		<p class="m3-body-small text-on-surface-variant">
-			{hostTextRead(controller, 'pwa.guide.local.onboarding')}
+			{hostT('pwa.guide.local.onboarding')}
 		</p>
 	</Card>
 {:else if pwaInstallController.isInstalledLocally}
@@ -65,57 +66,57 @@
 		<div class="flex flex-col gap-4">
 			<p class="m3-title-small flex items-center justify-center gap-2 text-brand">
 				<CheckCircleFill class="h-5 w-5" />
-				<span>{hostTextRead(controller, 'pwa.guide.installed.title')}</span>
+				<span>{hostT('pwa.guide.installed.title')}</span>
 			</p>
 			<p class="m3-body-small text-center text-on-surface-variant">
-				{hostTextRead(controller, 'pwa.guide.local.hint')}
+				{hostT('pwa.guide.local.hint')}
 			</p>
 			<Button variant="filled" class="w-full" onclick={() => pwaInstallController.openInApp()}>
 				<RocketLaunchFill class="size-5" />
-				<span>{hostTextRead(controller, 'pwa.guide.openApp')}</span>
+				<span>{hostT('pwa.guide.openApp')}</span>
 			</Button>
 		</div>
 	</Card>
 {:else if pwaInstallController.isMacSafari}
 	<Card variant="outlined">
 		<h3 class="m3-title-small mb-3 text-on-surface">
-			{hostTextRead(controller, 'pwa.guide.mac.title')}
+			{hostT('pwa.guide.mac.title')}
 		</h3>
 		<ol class="flex flex-col gap-3 text-on-surface-variant">
 			<li class="flex items-start gap-2.5">
 				<span class="m3-step-badge">1</span>
-				<span class="m3-body-small">{hostTextRead(controller, 'pwa.guide.mac.step1')}</span>
+				<span class="m3-body-small">{hostT('pwa.guide.mac.step1')}</span>
 			</li>
 			<li class="flex items-start gap-2.5">
 				<span class="m3-step-badge">2</span>
-				<span class="m3-body-small">{hostTextRead(controller, 'pwa.guide.mac.step2')}</span>
+				<span class="m3-body-small">{hostT('pwa.guide.mac.step2')}</span>
 			</li>
 			<li class="flex items-start gap-2.5">
 				<span class="m3-step-badge">3</span>
-				<span class="m3-body-small">{hostTextRead(controller, 'pwa.guide.mac.step3')}</span>
+				<span class="m3-body-small">{hostT('pwa.guide.mac.step3')}</span>
 			</li>
 		</ol>
 	</Card>
 {:else if pwaInstallController.isIOS}
 	<Card variant="outlined">
 		<h3 class="m3-title-small mb-3 text-on-surface">
-			{hostTextRead(controller, 'pwa.guide.ios.title')}
+			{hostT('pwa.guide.ios.title')}
 		</h3>
 		<ol class="flex flex-col gap-3 text-on-surface-variant">
 			<li class="flex items-start gap-2.5">
 				<span class="m3-step-badge">1</span>
 				<span class="m3-body-small">
-					{hostTextRead(controller, 'pwa.guide.ios.step1')}
+					{hostT('pwa.guide.ios.step1')}
 					<IosShareFill class="inline h-3.5 w-3.5 text-brand" />
 				</span>
 			</li>
 			<li class="flex items-start gap-2.5">
 				<span class="m3-step-badge">2</span>
-				<span class="m3-body-small">{hostTextRead(controller, 'pwa.guide.ios.step2')}</span>
+				<span class="m3-body-small">{hostT('pwa.guide.ios.step2')}</span>
 			</li>
 			<li class="flex items-start gap-2.5">
 				<span class="m3-step-badge">3</span>
-				<span class="m3-body-small">{hostTextRead(controller, 'pwa.guide.ios.step3')}</span>
+				<span class="m3-body-small">{hostT('pwa.guide.ios.step3')}</span>
 			</li>
 		</ol>
 	</Card>
@@ -123,15 +124,15 @@
 	<Card variant="outlined">
 		<div class="flex flex-col gap-4">
 			<Button variant="filled" class="w-full" onclick={handleInstallAction}>
-				<span>{hostTextRead(controller, 'pwa.guide.chrome.install')}</span>
+				<span>{hostT('pwa.guide.chrome.install')}</span>
 			</Button>
 
 			<div class="rounded-xl bg-surface-container-high/60 p-3.5 text-on-surface-variant">
 				<p class="m3-body-large text-on-surface">
-					{hostTextRead(controller, 'pwa.guide.chrome.hint.title')}
+					{hostT('pwa.guide.chrome.hint.title')}
 				</p>
 				<p class="m3-body-small">
-					{hostTextRead(controller, 'pwa.guide.chrome.hint.body')}
+					{hostT('pwa.guide.chrome.hint.body')}
 				</p>
 			</div>
 		</div>

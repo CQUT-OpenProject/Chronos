@@ -1,11 +1,12 @@
+import { hostT } from '$lib/i18n/host-i18n.svelte';
 import type { Course } from '@chronos/core';
-import { hostText } from '$lib/i18n/host-text';
+
 import { timetableDayLabel } from '$lib/timetable/day-labels';
 
 function formatPeriodRange(startPeriod: number, endPeriod: number): string {
 	return startPeriod === endPeriod
-		? hostText('courseA11y.periodSingle', { n: startPeriod })
-		: hostText('courseA11y.periodRange', { start: startPeriod, end: endPeriod });
+		? hostT('courseA11y.periodSingle', { n: startPeriod })
+		: hostT('courseA11y.periodRange', { start: startPeriod, end: endPeriod });
 }
 
 export function buildCourseCapsuleAriaLabel(
@@ -28,5 +29,5 @@ export function buildCourseCapsuleAriaLabel(
 }
 
 export function buildOverlapPlaceholderAriaLabel(count: number): string {
-	return hostText('courseA11y.overlap', { count });
+	return hostT('courseA11y.overlap', { count });
 }

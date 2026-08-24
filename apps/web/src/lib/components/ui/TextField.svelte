@@ -1,8 +1,7 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { HTMLInputAttributes, HTMLTextareaAttributes } from 'svelte/elements';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
-	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 	import { Visibility, VisibilityOff } from '$lib/icons';
 
 	let {
@@ -31,7 +30,6 @@
 	} & HTMLInputAttributes &
 		HTMLTextareaAttributes = $props();
 
-	const controller = getAppController();
 	const fallbackId = `text-field-${Math.random().toString(36).slice(2, 9)}`;
 	const fieldId = $derived(id ?? fallbackId);
 	let passwordVisible = $state(false);
@@ -43,9 +41,7 @@
 		type === 'password' && passwordToggleEnabled && passwordVisible ? 'text' : type
 	);
 	const passwordAriaLabel = $derived(
-		passwordVisible
-			? hostTextRead(controller, 'ui.password.hide')
-			: hostTextRead(controller, 'ui.password.show')
+		passwordVisible ? hostT('ui.password.hide') : hostT('ui.password.show')
 	);
 
 	function handleInput(event: Event) {

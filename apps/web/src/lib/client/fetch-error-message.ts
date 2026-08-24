@@ -1,5 +1,5 @@
-import { hostText } from '$lib/i18n/host-text';
+import { hostT } from '$lib/i18n/host-i18n.svelte';
 
 export function resolveFetchErrorMessage(offline: boolean, fallback?: string) {
-	return offline ? hostText('offline.fetch.error') : (fallback ?? hostText('common.loadFailed'));
+	return offline ? hostT('offline.fetch.error') : (fallback ?? hostT('common.loadFailed'));
 }

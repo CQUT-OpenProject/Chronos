@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { page } from '$app/state';
 	import { getAppController } from '$lib/services/app-engine';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import { PluginScreenContainer, resolvePluginScreenSlot } from '@chronos/ui-kit';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	const controller = getAppController();
 	const pluginId = $derived(page.params.pluginId ?? '');
@@ -18,7 +18,7 @@
 			? typeof screenSlot.title === 'function'
 				? screenSlot.title()
 				: screenSlot.title
-			: hostTextRead(controller, 'route.pluginPage')
+			: hostT('route.pluginPage')
 	);
 	const isRich = $derived(Boolean(screenSlot?.component));
 </script>

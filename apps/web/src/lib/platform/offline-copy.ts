@@ -1,22 +1,22 @@
-import { hostText } from '$lib/i18n/host-text';
+import { hostT } from '$lib/i18n/host-i18n.svelte';
 
 export const offlineCopy = {
 	get snackbarOffline() {
-		return hostText('offline.snackbar.offline');
+		return hostT('offline.snackbar.offline');
 	},
 	get snackbarOnline() {
-		return hostText('offline.snackbar.online');
+		return hostT('offline.snackbar.online');
 	},
 	get fetchError() {
-		return hostText('offline.fetch.error');
+		return hostT('offline.fetch.error');
 	},
 	get fetchTitle() {
-		return hostText('offline.fetch.title');
+		return hostT('offline.fetch.title');
 	},
 	get fetchDescription() {
-		return hostText('offline.fetch.description');
+		return hostT('offline.fetch.description');
 	},
 	get onlineImportBlocked() {
-		return hostText('offline.import.blocked');
+		return hostT('offline.import.blocked');
 	}
 } as const;

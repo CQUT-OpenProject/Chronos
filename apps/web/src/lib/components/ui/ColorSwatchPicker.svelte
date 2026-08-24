@@ -1,9 +1,8 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { CoursePaletteEntry } from '@chronos/core';
 	import { Check } from '$lib/icons';
 	import Card from '$lib/components/ui/Card.svelte';
-	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		label,
@@ -19,8 +18,7 @@
 		class?: string;
 	} = $props();
 
-	const controller = getAppController();
-	const resolvedLabel = $derived(label ?? hostTextRead(controller, 'ui.color.label'));
+	const resolvedLabel = $derived(label ?? hostT('ui.color.label'));
 	const labelId = `color-swatch-label-${Math.random().toString(36).slice(2, 9)}`;
 </script>
 
@@ -39,7 +37,7 @@
 					class="flex aspect-square max-w-11 min-w-0 flex-1 items-center justify-center rounded-full transition-colors hover:bg-on-surface/5 active:bg-on-surface/10"
 					role="radio"
 					aria-checked={isSelected}
-					aria-label={hostTextRead(controller, 'ui.color.selectAria', { color: color.background })}
+					aria-label={hostT('ui.color.selectAria', { color: color.background })}
 					onclick={() => onSelect(index)}
 				>
 					<span

@@ -22,7 +22,6 @@ function createTestEnv(): ChronosEnv {
 			getTimetable: vi.fn().mockResolvedValue(null),
 			listTimetables: vi.fn().mockResolvedValue([]),
 			saveTimetable: vi.fn().mockResolvedValue(undefined),
-			patchTimetable: vi.fn().mockResolvedValue(undefined),
 			deleteTimetable: vi.fn().mockResolvedValue(undefined),
 			getActiveTimetableId: vi.fn().mockResolvedValue(null),
 			setActiveTimetableId: vi.fn().mockResolvedValue(undefined),
@@ -40,11 +39,7 @@ function createTestEnv(): ChronosEnv {
 			removeSecret: vi.fn()
 		},
 		runtime: {
-			setTimeout: (h: () => void, ms?: number) => setTimeout(h, ms) as unknown as number,
-			clearTimeout: (h: number) => clearTimeout(h),
-			sha256: async () => '',
-			encodeUtf8: (s: string) => new TextEncoder().encode(s),
-			decodeUtf8: (b: Uint8Array) => new TextDecoder().decode(b)
+			sha256: async () => ''
 		}
 	};
 }

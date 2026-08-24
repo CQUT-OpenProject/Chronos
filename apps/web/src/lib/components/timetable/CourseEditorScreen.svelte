@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { CourseEditorController } from '$lib/timetable/course-editor.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import CourseEditorForm from '$lib/components/timetable/CourseEditorForm.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let { editor }: { editor: CourseEditorController } = $props();
 
@@ -26,7 +26,7 @@
 		<div class="flex w-full gap-3">
 			{#if draft.id}
 				<Button variant="danger" class="w-full flex-1" onclick={() => (deleteDialogOpen = true)}>
-					{hostTextRead(controller, 'course.editor.delete')}
+					{hostT('course.editor.delete')}
 				</Button>
 			{/if}
 			<Button
@@ -35,7 +35,7 @@
 				disabled={!editor.canSave}
 				onclick={editor.save}
 			>
-				{hostTextRead(controller, 'course.editor.save')}
+				{hostT('course.editor.save')}
 			</Button>
 		</div>
 	{/snippet}
@@ -51,21 +51,21 @@
 	{#if draft.id}
 		<Dialog
 			bind:open={deleteDialogOpen}
-			title={hostTextRead(controller, 'course.editor.delete.title')}
-			description={hostTextRead(controller, 'course.editor.delete.desc')}
+			title={hostT('course.editor.delete.title')}
+			description={hostT('course.editor.delete.desc')}
 		>
 			{#snippet footer()}
 				<Button variant="text" onclick={() => (deleteDialogOpen = false)}>
-					{hostTextRead(controller, 'common.cancel')}
+					{hostT('common.cancel')}
 				</Button>
 				<Button variant="filled" onclick={confirmDelete}>
-					{hostTextRead(controller, 'common.delete')}
+					{hostT('common.delete')}
 				</Button>
 			{/snippet}
 		</Dialog>
 	{/if}
 {:else}
 	<p class="m3-body-medium p-4 text-on-surface-variant">
-		{hostTextRead(controller, 'course.editor.notFound')}
+		{hostT('course.editor.notFound')}
 	</p>
 {/if}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { onMount } from 'svelte';
 	import {
 		getOfficialPluginService,
@@ -17,7 +18,7 @@
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
 	import PluginConfigModal from './PluginConfigModal.svelte';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
-	import { hostText, hostTextRead } from '$lib/i18n/host-text';
+
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
 	import { DeleteFill, CheckCircleFill, TuneFill } from '$lib/icons';
@@ -108,11 +109,11 @@
 		return [
 			{
 				value: 'installed',
-				label: hostText('plugins.tab.installed', {
+				label: hostT('plugins.tab.installed', {
 					count: profileBuiltinPlugins.length + installedRecords.length
 				})
 			},
-			{ value: 'official', label: hostText('plugins.tab.market') }
+			{ value: 'official', label: hostT('plugins.tab.market') }
 		];
 	});
 
@@ -231,7 +232,7 @@
 
 {#snippet linkImportFooter()}
 	<Button variant="outlined" class="w-full" onclick={promptLinkInstall}>
-		{hostTextRead(appController, 'plugins.link.open')}
+		{hostT('plugins.link.open')}
 	</Button>
 {/snippet}
 
@@ -248,9 +249,9 @@
 		<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="m3-section-title">{hostTextRead(appController, 'plugins.builtin.heading')}</h2>
+					<h2 class="m3-section-title">{hostT('plugins.builtin.heading')}</h2>
 					<span class="m3-label-small text-on-surface-variant"
-						>{hostTextRead(appController, 'plugins.builtin.count', {
+						>{hostT('plugins.builtin.count', {
 							count: profileBuiltinPlugins.length
 						})}</span
 					>
@@ -292,11 +293,11 @@
 										onclick={() => handleOpenConfig(plugin.id, name, plugin.configSchema)}
 									>
 										<TuneFill class="mr-1 size-3.5" />
-										{hostTextRead(appController, 'plugins.action.settings')}
+										{hostT('plugins.action.settings')}
 									</Button>
 								{:else}
 									<span class="m3-label-small text-[11px] text-on-surface-variant/80">
-										{hostTextRead(appController, 'plugins.builtin.defaultEnabled')}
+										{hostT('plugins.builtin.defaultEnabled')}
 									</span>
 								{/if}
 							</div>
@@ -308,10 +309,10 @@
 			<section class="m3-section">
 				<div class="flex items-center justify-between px-1">
 					<h2 class="m3-section-title">
-						{hostTextRead(appController, 'plugins.installed.heading')}
+						{hostT('plugins.installed.heading')}
 					</h2>
 					<span class="m3-label-small text-on-surface-variant"
-						>{hostTextRead(appController, 'plugins.builtin.count', {
+						>{hostT('plugins.builtin.count', {
 							count: installedRecords.length
 						})}</span
 					>
@@ -321,9 +322,9 @@
 					<div
 						class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-8 text-center text-on-surface-variant"
 					>
-						<p class="m3-body-medium">{hostTextRead(appController, 'plugins.empty.installed')}</p>
+						<p class="m3-body-medium">{hostT('plugins.empty.installed')}</p>
 						<Button variant="text" class="mt-1 text-xs" onclick={() => (activeTab = 'official')}>
-							{hostTextRead(appController, 'plugins.empty.browse')}
+							{hostT('plugins.empty.browse')}
 						</Button>
 					</div>
 				{:else}
@@ -357,7 +358,7 @@
 												<span
 													class="m3-label-small py-0.2 rounded-full bg-primary-container/80 px-1.5 text-[10px] font-medium text-on-primary-container"
 												>
-													{hostTextRead(appController, 'plugins.badge.inUse')}
+													{hostT('plugins.badge.inUse')}
 												</span>
 											{/if}
 										</div>
@@ -396,13 +397,13 @@
 													handleOpenConfig(record.manifest.id, name, record.manifest.configSchema)}
 											>
 												<TuneFill class="mr-0.5 size-3" />
-												{hostTextRead(appController, 'plugins.action.settings')}
+												{hostT('plugins.action.settings')}
 											</Button>
 										{/if}
 										<IconButton
 											variant="danger"
 											size="sm"
-											ariaLabel={hostTextRead(appController, 'plugins.uninstall.aria')}
+											ariaLabel={hostT('plugins.uninstall.aria')}
 											disabled={isBusy}
 											onclick={() => promptUninstall(record.manifest.id, name)}
 										>
@@ -422,11 +423,11 @@
 				<section class="m3-section">
 					<div class="flex items-center gap-2 px-1">
 						<h2 class="m3-section-title">
-							{hostTextRead(appController, 'plugins.catalog.heading')}
+							{hostT('plugins.catalog.heading')}
 						</h2>
 						{#if catalogManifests.length > 0}
 							<span class="m3-label-small text-on-surface-variant">
-								{hostTextRead(appController, 'plugins.builtin.count', {
+								{hostT('plugins.builtin.count', {
 									count: catalogManifests.length
 								})}
 							</span>
@@ -437,7 +438,7 @@
 						<div class="flex flex-col items-center justify-center py-12">
 							<LoadingIndicator size="large" />
 							<p class="m3-body-small mt-2 text-on-surface-variant">
-								{hostTextRead(appController, 'plugins.catalog.loading')}
+								{hostT('plugins.catalog.loading')}
 							</p>
 						</div>
 					{:else if catalogError}
@@ -445,7 +446,7 @@
 							class="flex flex-col items-center justify-center rounded-2xl border border-error/30 bg-error-container/20 p-6 text-center"
 						>
 							<p class="m3-body-medium font-medium text-error">
-								{hostTextRead(appController, 'plugins.catalog.error.title')}
+								{hostT('plugins.catalog.error.title')}
 							</p>
 							<p class="m3-body-small mt-1 text-on-surface-variant">{catalogError}</p>
 							<Button
@@ -453,14 +454,14 @@
 								class="mt-3 h-8 px-4 text-xs"
 								onclick={loadOfficialCatalog}
 							>
-								{hostTextRead(appController, 'plugins.catalog.retry')}
+								{hostT('plugins.catalog.retry')}
 							</Button>
 						</div>
 					{:else if catalogManifests.length === 0}
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-12 text-center text-on-surface-variant"
 						>
-							<p class="m3-body-medium">{hostTextRead(appController, 'plugins.catalog.empty')}</p>
+							<p class="m3-body-medium">{hostT('plugins.catalog.empty')}</p>
 						</div>
 					{:else}
 						<div class="m3-section-surface divide-y divide-border/40">
@@ -510,7 +511,7 @@
 												class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
 											>
 												<CheckCircleFill class="size-3.5" />
-												{hostTextRead(appController, 'plugins.badge.installed')}
+												{hostT('plugins.badge.installed')}
 											</span>
 										{:else}
 											<Button
@@ -520,8 +521,8 @@
 												onclick={() => handleInstall(manifest, entry.url)}
 											>
 												{isBusy
-													? hostTextRead(appController, 'plugins.action.installing')
-													: hostTextRead(appController, 'plugins.action.install')}
+													? hostT('plugins.action.installing')
+													: hostT('plugins.action.install')}
 											</Button>
 										{/if}
 									</div>
@@ -547,36 +548,36 @@
 
 <Dialog
 	bind:open={uninstallDialogOpen}
-	title={hostTextRead(appController, 'plugins.uninstall.title')}
-	description={hostTextRead(appController, 'plugins.uninstall.desc', {
+	title={hostT('plugins.uninstall.title')}
+	description={hostT('plugins.uninstall.desc', {
 		name: uninstallTarget.name || uninstallTarget.id
 	})}
 >
 	{#snippet footer()}
 		<Button variant="text" onclick={() => (uninstallDialogOpen = false)}>
-			{hostTextRead(appController, 'common.cancel')}
+			{hostT('common.cancel')}
 		</Button>
 		<Button variant="danger" onclick={confirmUninstall}>
-			{hostTextRead(appController, 'common.uninstall')}
+			{hostT('common.uninstall')}
 		</Button>
 	{/snippet}
 </Dialog>
 
-<Dialog bind:open={linkInstallDialogOpen} title={hostTextRead(appController, 'plugins.link.title')}>
+<Dialog bind:open={linkInstallDialogOpen} title={hostT('plugins.link.title')}>
 	<div class="flex flex-col gap-3 py-2">
 		<input
 			class="m3-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary"
 			type="url"
-			placeholder={hostTextRead(appController, 'plugins.link.placeholder')}
+			placeholder={hostT('plugins.link.placeholder')}
 			bind:value={manifestUrlInput}
 		/>
 	</div>
 	{#snippet footer()}
 		<Button variant="text" onclick={() => (linkInstallDialogOpen = false)}>
-			{hostTextRead(appController, 'common.cancel')}
+			{hostT('common.cancel')}
 		</Button>
 		<Button variant="filled" onclick={confirmLinkInstall}>
-			{hostTextRead(appController, 'plugins.link.confirm')}
+			{hostT('plugins.link.confirm')}
 		</Button>
 	{/snippet}
 </Dialog>

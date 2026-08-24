@@ -1,7 +1,6 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { getAppController } from '$lib/services/app-engine';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		label,
@@ -21,9 +20,8 @@
 		class?: string;
 	} = $props();
 
-	const controller = getAppController();
-	const decreaseAriaLabel = $derived(hostTextRead(controller, 'ui.stepper.decrease', { label }));
-	const increaseAriaLabel = $derived(hostTextRead(controller, 'ui.stepper.increase', { label }));
+	const decreaseAriaLabel = $derived(hostT('ui.stepper.decrease', { label }));
+	const increaseAriaLabel = $derived(hostT('ui.stepper.increase', { label }));
 
 	function clamp(next: number) {
 		return Math.min(Math.max(next, min), max);

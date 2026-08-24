@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
-	import { timetableDayLabelRead } from '$lib/timetable/day-labels';
+	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
 	import { formatWeekDateRange } from '@chronos/core';
@@ -12,7 +13,6 @@
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
-	import { hostTextRead } from '$lib/i18n/host-text';
 
 	let {
 		screen,
@@ -59,17 +59,17 @@
 	);
 	const headerTodayLabel = $derived(
 		displayedWeekNumber === screenState.academicWeek
-			? timetableDayLabelRead(shell.controller, dayOfWeekFromIso(screenState.today))
+			? timetableDayLabel(dayOfWeekFromIso(screenState.today))
 			: ''
 	);
 	const weekHeaderAriaLabel = $derived(
-		hostTextRead(shell.controller, 'timetable.week.headerAria', {
+		hostT('timetable.week.headerAria', {
 			week: displayedWeekNumber,
 			range: weekRangeText
 		})
 	);
 	const weekLabel = $derived(
-		hostTextRead(shell.controller, 'timetable.week.label', {
+		hostT('timetable.week.label', {
 			week: displayedWeekNumber,
 			today: headerTodayLabel ? ` ${headerTodayLabel}` : ''
 		})
@@ -130,7 +130,7 @@
 					{#if weekGesture.weekSliderVisible && startWeek < endWeek}
 						<Slider
 							id="week-slider"
-							ariaLabel={hostTextRead(shell.controller, 'timetable.week.sliderAria')}
+							ariaLabel={hostT('timetable.week.sliderAria')}
 							bind:value={weekGesture.dragWeek}
 							min={startWeek}
 							max={endWeek}
@@ -160,7 +160,7 @@
 			<IconButton
 				variant="tonal"
 				size="sm"
-				ariaLabel={hostTextRead(shell.controller, 'timetable.edit.aria')}
+				ariaLabel={hostT('timetable.edit.aria')}
 				onclick={() => {
 					haptic.light();
 					onEditTimetableDetails();

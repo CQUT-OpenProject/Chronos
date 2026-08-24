@@ -43,7 +43,9 @@ vi.mock('$lib/client/analytics', () => ({
 }));
 
 vi.mock('$lib/services/app-engine', () => ({
-	ensureEngineReady: vi.fn().mockResolvedValue({}),
+	ensureEngineReady: vi.fn().mockResolvedValue({
+		events: { on: vi.fn(() => ({ dispose: vi.fn() })) }
+	}),
 	getAppEngine: vi.fn(() => ({
 		themes: { getTheme: vi.fn() },
 		state: { activeThemeId: 'm3-default' },
