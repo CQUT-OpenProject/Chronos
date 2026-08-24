@@ -17,18 +17,9 @@
 
 	let fileInput: HTMLInputElement | undefined = $state();
 	let loading = $state(false);
-	let campusId = $state<'liangjiang' | 'huaxi'>('liangjiang');
 
 	const title = $derived(cqutPluginText(controller, 'import.html.tab.title'));
 	const intro = $derived(cqutPluginText(controller, 'import.html.intro'));
-	const campusLabel = $derived(cqutPluginText(controller, 'import.html.campusLabel'));
-	const campusOptions = $derived.by(() => [
-		{
-			id: 'liangjiang' as const,
-			label: cqutPluginText(controller, 'import.html.campus.liangjiang')
-		},
-		{ id: 'huaxi' as const, label: cqutPluginText(controller, 'import.html.campus.huaxi') }
-	]);
 	const submitLabel = $derived(
 		cqutPluginText(controller, loading ? 'import.html.submit.loading' : 'import.html.submit')
 	);
@@ -49,8 +40,7 @@
 			const fileContent = await file.text();
 			const ok = await transfer.previewWithSlot('edu-html', {
 				file: fileContent,
-				fileContent,
-				campusId
+				fileContent
 			});
 			if (ok) onContinue();
 			else notifyTransferMessages();
@@ -67,17 +57,6 @@
 			<h2 class="m3-title-medium text-on-surface">{title}</h2>
 			<p class="m3-body-small mt-0.5 text-on-surface-variant">{intro}</p>
 		</div>
-		<label class="flex items-center gap-2 text-sm text-on-surface-variant">
-			<span>{campusLabel}</span>
-			<select
-				bind:value={campusId}
-				class="m3-body-medium flex-1 rounded-lg border border-outline bg-surface px-3 py-2 text-on-surface outline-none"
-			>
-				{#each campusOptions as option (option.id)}
-					<option value={option.id}>{option.label}</option>
-				{/each}
-			</select>
-		</label>
 		<input
 			bind:this={fileInput}
 			type="file"

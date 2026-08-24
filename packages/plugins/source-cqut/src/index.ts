@@ -9,7 +9,6 @@ import type {
 } from '@chronos/core';
 import { type ChronosMountable } from '@chronos/core';
 import {
-	defineSchema,
 	createCourse,
 	createTimetable,
 	coursePalette,
@@ -24,8 +23,14 @@ import {
 	DEFAULT_CQUT_CAMPUS_ID,
 	type CqutCampusId
 } from './campus-period-times';
-import { htmlImportSchema, parseHtmlTimetable } from './html-parser';
-import { createCqutImportSchema, SOURCE_CQUT_MESSAGES, type CqutImportForm } from './messages';
+import {
+	createCqutImportSchema,
+	createHtmlConfirmSchema,
+	createHtmlImportSchema,
+	SOURCE_CQUT_MESSAGES,
+	type CqutImportForm
+} from './messages';
+import { parseHtmlTimetable, finalizeHtmlPreview } from './html-parser';
 
 const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
 
@@ -257,6 +262,8 @@ export function createCqutPlugin(
 			const t = (key: string) => ctx.i18n.t(key);
 			translate = t;
 			const cqutImportSchema = createCqutImportSchema(t);
+			const htmlImportSchema = createHtmlImportSchema(t);
+			const htmlConfirmSchema = createHtmlConfirmSchema(t);
 			const disabledSlots = new Set(ctx.config.disabledSlots ?? []);
 
 			async function doImport(
@@ -309,8 +316,11 @@ export function createCqutPlugin(
 					throw new Error(t('import.html.error.invalidFile'));
 				}
 				const termStartDate = inputs.termStartDate as string | undefined;
-				const campusId = (inputs.campusId as CqutCampusId | undefined) ?? DEFAULT_CQUT_CAMPUS_ID;
-				return parseHtmlTimetable(fileContent, { termStartDate, campusId });
+				const campusId = inputs.campusId as CqutCampusId | undefined;
+				return parseHtmlTimetable(fileContent, {
+					...(termStartDate ? { termStartDate } : {}),
+					...(campusId ? { campusId } : {})
+				});
 			}
 
 			if (!disabledSlots.has('cqut-online')) {
@@ -336,6 +346,20 @@ export function createCqutPlugin(
 					supportingText: () => t('import.html.tab.supporting'),
 					component: htmlComponent,
 					inputSchema: htmlImportSchema as unknown as ConfigSchema<Record<string, unknown>>,
+					confirmSchema: htmlConfirmSchema as unknown as ConfigSchema<Record<string, unknown>>,
+					confirmDefaultInput: {
+						campusId: DEFAULT_CQUT_CAMPUS_ID,
+						termStartDate: ''
+					},
+					validateConfirmInputs: (inputs) => {
+						const termStartDate = inputs.termStartDate as string | undefined;
+						if (!termStartDate?.trim()) {
+							return t('import.html.error.termStartRequired');
+						}
+						return null;
+					},
+					finalizePreview: (preview, inputs) =>
+						finalizeHtmlPreview(preview, inputs as import('./html-parser').HtmlConfirmForm),
 					executeImport: (inputs: Record<string, unknown>) => doHtmlImport(inputs)
 				});
 			}
@@ -351,5 +375,11 @@ export type {
 	OnlineSchedulePayload,
 	OnlineScheduleWeekDay
 } from './week-merge';
-export { htmlImportSchema, parseHtmlTimetable } from './html-parser';
-export type { HtmlImportForm } from './html-parser';
+export {
+	createHtmlImportSchema,
+	createHtmlConfirmSchema,
+	createCqutImportSchema,
+	SOURCE_CQUT_MESSAGES
+} from './messages';
+export { parseHtmlTimetable, finalizeHtmlPreview } from './html-parser';
+export type { HtmlImportForm, HtmlConfirmForm } from './html-parser';

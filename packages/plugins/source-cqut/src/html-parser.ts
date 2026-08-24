@@ -1,14 +1,13 @@
 import type { Timetable, Course } from '@chronos/core';
 import {
+	AcademicCalendarService,
 	createCourse,
 	createTimetable,
-	defineSchema,
 	coursePalette,
 	deriveWeekendViewPrefs,
 	normalizedCourseName
 } from '@chronos/core';
 import {
-	CQUT_CAMPUSES,
 	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
 	DEFAULT_CQUT_CAMPUS_ID,
 	type CqutCampusId
@@ -19,29 +18,51 @@ type WeekParity = 'ALL' | 'ODD' | 'EVEN';
 
 export interface HtmlImportForm {
 	file?: string;
-	campusId?: CqutCampusId;
 }
 
-export const htmlImportSchema = defineSchema<HtmlImportForm>({
-	campusId: {
-		type: 'select',
-		title: () => '校区',
-		description: () => '课表对应的校区（决定节次时间）',
-		default: DEFAULT_CQUT_CAMPUS_ID,
-		required: true,
-		options: Object.entries(CQUT_CAMPUSES).map(([id, campus]) => ({
-			value: id,
-			label: () => campus.apiName
-		}))
-	},
-	file: {
-		type: 'file',
-		title: () => '选择 HTML 文件',
-		description: () => '请选择从 CQUT 教务系统导出的 HTML 课表文件',
-		accept: '.html,.htm,text/html',
-		required: true
+export interface HtmlConfirmForm {
+	campusId?: CqutCampusId;
+	termStartDate?: string;
+}
+
+const calendarService = new AcademicCalendarService();
+
+export function finalizeHtmlPreview(
+	preview: Timetable,
+	confirmInputs: HtmlConfirmForm,
+	referenceDate = new Date().toISOString().slice(0, 10)
+): Timetable {
+	const campusId = confirmInputs.campusId ?? DEFAULT_CQUT_CAMPUS_ID;
+	const rawTermStartDate = confirmInputs.termStartDate?.trim() ?? '';
+	if (!rawTermStartDate) {
+		throw new Error('请选择学期起始日期');
 	}
-});
+
+	const termStartDate = calendarService.normalizeTermStartDate(rawTermStartDate, referenceDate);
+	const periodTimes = CQUT_DEFAULT_CAMPUS_PERIOD_TIMES[campusId].map((period) => ({ ...period }));
+
+	return {
+		...preview,
+		academicConfig: {
+			...preview.academicConfig,
+			termStartDate,
+			periodTimes
+		},
+		importMetadata: {
+			...preview.importMetadata,
+			source: 'FILE_HTML',
+			campusId
+		},
+		customMetadata: {
+			...preview.customMetadata,
+			'source-cqut': {
+				...(preview.customMetadata?.['source-cqut'] as Record<string, unknown> | undefined),
+				source: 'FILE_HTML',
+				campusId
+			}
+		}
+	};
+}
 
 function parseHtmlDoc(html: string): Document {
 	if (typeof DOMParser !== 'undefined') {

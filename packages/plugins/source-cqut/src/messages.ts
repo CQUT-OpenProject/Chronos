@@ -1,4 +1,6 @@
 import { defineSchema } from '@chronos/core';
+import { DEFAULT_CQUT_CAMPUS_ID } from './campus-period-times';
+import type { HtmlConfirmForm, HtmlImportForm } from './html-parser';
 
 export interface CqutImportForm {
 	username?: string;
@@ -18,6 +20,41 @@ export function createCqutImportSchema(t: (key: string) => string) {
 			type: 'password',
 			title: () => t('import.online.field.password.title'),
 			placeholder: () => t('import.online.field.password.placeholder'),
+			required: true
+		}
+	});
+}
+
+export function createHtmlImportSchema(t: (key: string) => string) {
+	return defineSchema<HtmlImportForm>({
+		file: {
+			type: 'file',
+			title: () => t('import.html.field.file.title'),
+			description: () => t('import.html.field.file.description'),
+			accept: '.html,.htm,text/html',
+			required: true
+		}
+	});
+}
+
+export function createHtmlConfirmSchema(t: (key: string) => string) {
+	return defineSchema<HtmlConfirmForm>({
+		campusId: {
+			type: 'select',
+			presentation: 'radio',
+			title: () => t('import.html.confirm.campusPeriodTitle'),
+			description: () => t('import.html.confirm.campusPeriodHint'),
+			default: DEFAULT_CQUT_CAMPUS_ID,
+			required: true,
+			options: [
+				{ value: 'liangjiang', label: () => t('import.html.campus.liangjiang') },
+				{ value: 'huaxi', label: () => t('import.html.campus.huaxi') }
+			]
+		},
+		termStartDate: {
+			type: 'date',
+			title: () => t('import.html.confirm.termStartLabel'),
+			description: () => t('import.html.confirm.termStartHint'),
 			required: true
 		}
 	});
@@ -53,6 +90,13 @@ export const SOURCE_CQUT_MESSAGES = {
 		'import.html.campus.huaxi': '花溪校区',
 		'import.html.submit.loading': '解析中…',
 		'import.html.submit': '选择 HTML 文件',
+		'import.html.field.file.title': '选择 HTML 文件',
+		'import.html.field.file.description': '请选择从 CQUT 教务系统导出的 HTML 课表文件',
+		'import.html.confirm.campusPeriodTitle': '节次时间',
+		'import.html.confirm.campusPeriodHint': '课表对应的校区（决定节次时间）',
+		'import.html.confirm.termStartLabel': '学期起始日期',
+		'import.html.confirm.termStartHint': 'HTML 导入需要指定本学期第一周的周一日期。',
+		'import.html.error.termStartRequired': '请选择学期起始日期',
 		'timetable.defaultName': '重庆理工大学课表',
 		'timetable.studentSuffix': '的课表'
 	},
@@ -86,6 +130,15 @@ export const SOURCE_CQUT_MESSAGES = {
 		'import.html.campus.huaxi': 'Huaxi campus',
 		'import.html.submit.loading': 'Parsing…',
 		'import.html.submit': 'Choose HTML file',
+		'import.html.field.file.title': 'Choose HTML file',
+		'import.html.field.file.description':
+			'Select an HTML timetable file exported from the academic system.',
+		'import.html.confirm.campusPeriodTitle': 'Period times',
+		'import.html.confirm.campusPeriodHint': 'Campus for this timetable (determines period times).',
+		'import.html.confirm.termStartLabel': 'Term start date',
+		'import.html.confirm.termStartHint':
+			'HTML import requires the Monday date of the first week of this term.',
+		'import.html.error.termStartRequired': 'Choose the term start date',
 		'timetable.defaultName': 'CQUT Timetable',
 		'timetable.studentSuffix': "'s timetable"
 	}

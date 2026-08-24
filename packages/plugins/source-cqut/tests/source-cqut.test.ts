@@ -272,6 +272,9 @@ describe('cqutPlugin', () => {
 
 		expect(engine.slots.getSlotItem('import.source.tab', 'cqut-online')).toBeUndefined();
 		expect(engine.slots.getSlotItem('import.source.tab', 'edu-html')).toBeDefined();
+		const eduHtmlSlot = engine.slots.getSlotItem('import.source.tab', 'edu-html');
+		expect(eduHtmlSlot?.confirmSchema).toBeDefined();
+		expect(typeof eduHtmlSlot?.finalizePreview).toBe('function');
 
 		handle.dispose();
 	});

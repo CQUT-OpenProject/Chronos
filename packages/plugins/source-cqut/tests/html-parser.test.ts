@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vite-plus/test';
 import { ChronosEngine, type ChronosEnv, type UserPreferences } from '@chronos/core';
 import { parseHTML } from 'linkedom';
 import { cqutPlugin } from '../src/index';
-import { parseHtmlTimetable } from '../src/html-parser';
+import { parseHtmlTimetable, finalizeHtmlPreview } from '../src/html-parser';
 
 function customDocParser(html: string): Document {
 	const { document } = parseHTML(html);
@@ -97,6 +97,28 @@ describe('cqut html parser', () => {
 		expect(timetable.viewPrefs.showSunday).toBe(false);
 	});
 
+	it('parses educational HTML timetable structure without campus options', () => {
+		const timetable = parseHtmlTimetable(sampleHtml, { customDocParser });
+		expect(timetable.academicConfig.periodTimes).toEqual([]);
+		expect(timetable.importMetadata).toBeUndefined();
+	});
+
+	it('finalizes preview with campus period times and term start date', () => {
+		const preview = parseHtmlTimetable(sampleHtml, { customDocParser });
+		const finalized = finalizeHtmlPreview(
+			preview,
+			{ campusId: 'huaxi', termStartDate: '2025-02-24' },
+			'2025-02-20'
+		);
+		expect(finalized.academicConfig.termStartDate).toBe('2025-02-24');
+		expect(finalized.academicConfig.periodTimes).toHaveLength(10);
+		expect(finalized.importMetadata?.campusId).toBe('huaxi');
+		expect(finalized.customMetadata?.['source-cqut']).toEqual({
+			source: 'FILE_HTML',
+			campusId: 'huaxi'
+		});
+	});
+
 	it('loads cqut plugin and registers edu-html import tab', async () => {
 		const env = createMockEnv();
 		const engine = new ChronosEngine({ env });
@@ -106,6 +128,8 @@ describe('cqut html parser', () => {
 		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'edu-html');
 		expect(sourceSlot).toBeDefined();
 		expect(sourceSlot?.inputSchema).toBeDefined();
+		expect(sourceSlot?.confirmSchema).toBeDefined();
+		expect(typeof sourceSlot?.finalizePreview).toBe('function');
 
 		Object.defineProperty(globalThis, 'DOMParser', {
 			value: class {
