@@ -151,7 +151,7 @@ describe('OfficialPluginRuntimeActivator', () => {
 		expect(engine.isPluginLoaded('test-plugin')).toBe(false);
 	});
 
-	it('calls revertToDefaultThemes when deactivating installed plugin', async () => {
+	it('does not call revertToDefaultThemes when re-activating on boot', async () => {
 		const revertSpy = vi.spyOn(engine, 'revertToDefaultThemes');
 		installed.add('test-plugin');
 
@@ -173,7 +173,32 @@ describe('OfficialPluginRuntimeActivator', () => {
 			installedAt: 1
 		});
 
-		await activator.deactivate('test-plugin');
+		expect(revertSpy).not.toHaveBeenCalled();
+	});
+
+	it('calls revertToDefaultThemes when deactivating installed plugin with revertThemes', async () => {
+		const revertSpy = vi.spyOn(engine, 'revertToDefaultThemes');
+		installed.add('test-plugin');
+
+		await activator.activate({
+			manifest: {
+				id: 'test-plugin',
+				name: { 'zh-CN': 'T' },
+				version: '1',
+				description: { 'zh-CN': 'T' },
+				author: 'Chronos',
+				type: 'tool',
+				bundleFormat: 'esm',
+				minEngineVersion: '0.3.0',
+				bundleUrl: '/b.js',
+				sha256: 'x'
+			},
+			code: SAMPLE_BUNDLE,
+			enabled: true,
+			installedAt: 1
+		});
+
+		await activator.deactivate('test-plugin', { revertThemes: true });
 		expect(revertSpy).toHaveBeenCalled();
 	});
 });

@@ -122,6 +122,12 @@ describe('Web Providers', () => {
 		expect(prefs.timetableLayoutMode).toBe('compact');
 	});
 
+	it('DexieStorageProvider persists locale preference', async () => {
+		const storage = new DexieStorageProvider(db, localStorage);
+		await storage.savePreferences({ locale: 'en' });
+		expect((await storage.getPreferences()).locale).toBe('en');
+	});
+
 	it('DexieStorageProvider persists timetables, courses, and plugin data', async () => {
 		const storage = new DexieStorageProvider(db, localStorage);
 

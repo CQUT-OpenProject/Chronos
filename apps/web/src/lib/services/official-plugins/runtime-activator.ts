@@ -73,14 +73,14 @@ export class OfficialPluginRuntimeActivator {
 		return composite;
 	}
 
-	async deactivate(pluginId: string): Promise<void> {
+	async deactivate(pluginId: string, options?: { revertThemes?: boolean }): Promise<void> {
 		const handle = this.activeHandles.get(pluginId);
 		if (handle) {
 			handle.dispose();
 			this.activeHandles.delete(pluginId);
 		}
 		this.removeCss(pluginId);
-		if (this.isInstalled(pluginId)) {
+		if (options?.revertThemes && this.isInstalled(pluginId)) {
 			void this.engine.actions.revertToDefaultThemes();
 		}
 	}

@@ -27,7 +27,8 @@ const SETTINGS_KEYS = {
 	capsuleCornerStyle: 'chronos_preferences:capsule_corner_style',
 	hapticFeedbackEnabled: 'chronos_preferences:haptic_feedback_enabled',
 	visualThemeId: 'chronos_preferences:visual_theme_id',
-	visualIconThemeId: 'chronos_preferences:visual_icon_theme_id'
+	visualIconThemeId: 'chronos_preferences:visual_icon_theme_id',
+	locale: 'chronos_preferences:locale'
 } as const;
 
 function normalizeThemeMode(raw: string | null): import('@chronos/core').ThemeMode {
@@ -53,6 +54,12 @@ function normalizeCornerStyle(raw: string | null): import('@chronos/core').Capsu
 	if (value === 'sharp') return 'sharp';
 	if (value === 'pill') return 'pill';
 	return 'rounded';
+}
+
+function normalizeLocale(raw: string | null): import('@chronos/core').AppLocale | undefined {
+	if (raw?.toLowerCase() === 'en') return 'en';
+	if (raw?.toLowerCase() === 'zh-cn') return 'zh-cn';
+	return undefined;
 }
 
 /**
@@ -257,6 +264,7 @@ export class DexieStorageProvider implements IStorageService {
 		const visualIconThemeId =
 			this.localStore.getItem(SETTINGS_KEYS.visualIconThemeId)?.trim() ||
 			HOST_DEFAULT_ICON_THEME_ID;
+		const locale = normalizeLocale(this.localStore.getItem(SETTINGS_KEYS.locale));
 
 		return {
 			schemaVersion: CURRENT_PREFERENCES_SCHEMA_VERSION,
@@ -266,7 +274,8 @@ export class DexieStorageProvider implements IStorageService {
 			capsuleCornerStyle,
 			hapticFeedbackEnabled,
 			visualThemeId,
-			visualIconThemeId
+			visualIconThemeId,
+			...(locale ? { locale } : {})
 		};
 	}
 
@@ -296,6 +305,9 @@ export class DexieStorageProvider implements IStorageService {
 		}
 		if (patch.visualIconThemeId !== undefined) {
 			this.localStore.setItem(SETTINGS_KEYS.visualIconThemeId, patch.visualIconThemeId);
+		}
+		if (patch.locale !== undefined) {
+			this.localStore.setItem(SETTINGS_KEYS.locale, patch.locale);
 		}
 
 		this.notifyChange({ type: 'preferences', key: 'preferences' });
