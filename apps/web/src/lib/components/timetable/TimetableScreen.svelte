@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
-	import { timetableDayLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
+	import { timetableDayLabelRead } from '$lib/timetable/day-labels';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
 	import { formatWeekDateRange } from '@chronos/core';
@@ -59,7 +59,7 @@
 	);
 	const headerTodayLabel = $derived(
 		displayedWeekNumber === screenState.academicWeek
-			? timetableDayLabel(dayOfWeekFromIso(screenState.today))
+			? timetableDayLabelRead(shell.controller, dayOfWeekFromIso(screenState.today))
 			: ''
 	);
 	const weekHeaderAriaLabel = $derived(

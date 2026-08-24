@@ -1,6 +1,6 @@
 import type { Course } from '@chronos/core';
 import { hostText } from '$lib/i18n/host-text';
-import { timetableDayLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
+import { timetableDayLabel } from '$lib/timetable/day-labels';
 
 function formatPeriodRange(startPeriod: number, endPeriod: number): string {
 	return startPeriod === endPeriod

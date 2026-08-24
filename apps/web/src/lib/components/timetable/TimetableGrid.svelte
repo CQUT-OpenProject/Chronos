@@ -11,7 +11,7 @@
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '@chronos/ui-kit/utils/middle-truncate';
-	import { timetableDayShortLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
+	import { timetableDayShortLabelRead } from '$lib/timetable/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,
 		buildOverlapPlaceholderAriaLabel
@@ -320,7 +320,7 @@
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
 					<span class="m3-body-small text-on-surface-variant"
-						>{timetableDayShortLabel(day.dayOfWeek)}</span
+						>{timetableDayShortLabelRead(controller, day.dayOfWeek)}</span
 					>
 					<div
 						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday

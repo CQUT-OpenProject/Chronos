@@ -8,7 +8,7 @@
 		resolveCoursePaint,
 		resolveLocalizedText
 	} from '@chronos/core';
-	import { timetableDayLabel } from '@chronos/ui-kit/timetable-preview/day-labels';
+	import { timetableDayLabelRead } from '$lib/timetable/day-labels';
 	import { getAppController } from '$lib/services/app-engine';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { hostTextRead } from '$lib/i18n/host-text';
@@ -67,7 +67,7 @@
 					},
 					{
 						label: hostTextRead(controller, 'course.detail.time'),
-						value: timetableDayLabel(course.dayOfWeek)
+						value: timetableDayLabelRead(controller, course.dayOfWeek)
 					},
 					{
 						label: hostTextRead(controller, 'course.detail.periods'),
