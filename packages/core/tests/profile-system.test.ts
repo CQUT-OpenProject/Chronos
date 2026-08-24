@@ -40,7 +40,6 @@ describe('Profile System and Layered Config', () => {
 					getTimetable: vi.fn().mockResolvedValue(null),
 					listTimetables: vi.fn().mockResolvedValue([]),
 					saveTimetable: vi.fn().mockResolvedValue(undefined),
-					patchTimetable: vi.fn().mockResolvedValue(undefined),
 					deleteTimetable: vi.fn().mockResolvedValue(undefined),
 					getActiveTimetableId: vi.fn().mockResolvedValue(null),
 					setActiveTimetableId: vi.fn().mockResolvedValue(undefined),
@@ -65,11 +64,7 @@ describe('Profile System and Layered Config', () => {
 					removeSecret: vi.fn()
 				},
 				runtime: {
-					setTimeout: (h, ms) => setTimeout(h, ms) as unknown as number,
-					clearTimeout: (h) => clearTimeout(h),
-					sha256: async () => '',
-					encodeUtf8: (s) => new TextEncoder().encode(s),
-					decodeUtf8: (b) => new TextDecoder().decode(b)
+					sha256: async () => ''
 				}
 			}
 		});

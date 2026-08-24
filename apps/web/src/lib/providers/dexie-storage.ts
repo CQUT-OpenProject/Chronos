@@ -198,19 +198,6 @@ export class DexieStorageProvider implements IStorageService {
 		}
 	}
 
-	async patchTimetable(id: string, patch: Partial<Timetable>): Promise<void> {
-		const existing = await this.getTimetable(id);
-		if (!existing) return;
-
-		const merged: Timetable = {
-			...existing,
-			...patch,
-			updatedAt: Date.now()
-		};
-
-		await this.saveTimetable(merged);
-	}
-
 	async deleteTimetable(id: string): Promise<void> {
 		try {
 			await this.database.transaction(

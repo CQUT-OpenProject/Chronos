@@ -230,24 +230,13 @@ describe('Web Providers', () => {
 		).rejects.toThrow(/not in the allowed proxy whitelist/);
 	});
 
-	it('WebRuntimeProvider supports encoding, decoding, hashing, and timers', async () => {
+	it('WebRuntimeProvider supports sha256 hashing', async () => {
 		const runtime = new WebRuntimeProvider();
 		expect(runtime.platform).toBe('web');
-
-		const encoded = runtime.encodeUtf8('Chronos Runtime');
-		expect(runtime.decodeUtf8(encoded)).toBe('Chronos Runtime');
 
 		const hash = await runtime.sha256('Chronos');
 		expect(hash).toBeDefined();
 		expect(hash.length).toBe(64);
-
-		let timerFired = false;
-		const handle = runtime.setTimeout(() => {
-			timerFired = true;
-		}, 10);
-		expect(handle).toBeDefined();
-		runtime.clearTimeout(handle);
-		expect(timerFired).toBe(false);
 	});
 
 	it('WebAnalyticsProvider routes events cleanly', () => {

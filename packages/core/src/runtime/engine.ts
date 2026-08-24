@@ -35,12 +35,17 @@ import {
 	parsePeriodRanges
 } from '../engine/period-clock';
 import { I18nCatalog, interpolateMessage } from '../i18n/i18n-catalog';
+import type { ThemeContribution } from '../types/contributions';
 
 export interface ChronosEngineOptions {
 	env: ChronosEnv;
 	services?: ServiceContainer;
 	initialLocale?: string;
-	i18nHandler?: (key: string, params?: Record<string, unknown>) => string;
+	presetThemes?: ThemeContribution[];
+	presetI18nCatalogs?: Array<{
+		pluginId: string;
+		messages: Record<string, Record<string, string>>;
+	}>;
 	onNotification?: (message: string, type: 'info' | 'warn' | 'error') => void;
 }
 
@@ -55,7 +60,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	readonly i18nCatalog: I18nCatalog;
 
 	private _locale: string;
-	private _i18nHandler?: (key: string, params?: Record<string, unknown>) => string;
 	private _onNotification?: (message: string, type: 'info' | 'warn' | 'error') => void;
 
 	private _currentTimetable: Timetable | null = null;
@@ -84,7 +88,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		}
 		this.services = options.services ?? new ServiceContainer();
 		this._locale = options.initialLocale ?? 'zh-cn';
-		this._i18nHandler = options.i18nHandler;
 		this._onNotification = options.onNotification;
 		this.i18nCatalog = new I18nCatalog();
 
@@ -105,6 +108,13 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 
 		this.env = options.env;
 		this.registerEnvProviders(this.env);
+
+		for (const theme of options.presetThemes ?? []) {
+			this.themes.registerTheme(theme);
+		}
+		for (const { pluginId, messages } of options.presetI18nCatalogs ?? []) {
+			this.i18nCatalog.register(pluginId, messages);
+		}
 	}
 
 	private storageSubscription?: Disposable;
@@ -123,11 +133,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		if (!this.services.has(IRuntimeService) && env.runtime) {
 			this.services.register(IRuntimeService, {
 				platform: env.platform,
-				setTimeout: env.runtime.setTimeout.bind(env.runtime),
-				clearTimeout: env.runtime.clearTimeout.bind(env.runtime),
-				sha256: env.runtime.sha256.bind(env.runtime),
-				encodeUtf8: env.runtime.encodeUtf8.bind(env.runtime),
-				decodeUtf8: env.runtime.decodeUtf8.bind(env.runtime)
+				sha256: env.runtime.sha256.bind(env.runtime)
 			});
 		}
 		if (!this.services.has(IAnalyticsService) && env.analytics) {
@@ -146,16 +152,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	setLocale(locale: string): void {
 		this._locale = locale;
 		this.events.emit('i18n:localeChanged', { locale });
-	}
-
-	t(key: string, params?: Record<string, unknown>): string {
-		if (this._i18nHandler) {
-			return this._i18nHandler(key, params);
-		}
-		if (params && typeof params.default === 'string') {
-			return params.default;
-		}
-		return key;
 	}
 
 	translateForPlugin(pluginId: string, key: string, params?: Record<string, unknown>): string {
@@ -181,7 +177,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		};
 	}
 
-	get actions() {
+	get actions(): EngineContextHost['actions'] {
 		return {
 			createTimetable: this.createTimetable.bind(this),
 			importTimetable: this.importTimetable.bind(this),
@@ -193,13 +189,12 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			deleteCourse: this.deleteCourse.bind(this),
 			setTheme: this.setTheme.bind(this),
 			updatePreferences: this.updatePreferences.bind(this),
-			clearAllData: this.clearAllData.bind(this),
-			notify: this.notify.bind(this),
-			revertToDefaultThemes: this.revertToDefaultThemes.bind(this)
+			revertToDefaultThemes: this.revertToDefaultThemes.bind(this),
+			notify: this.notify.bind(this)
 		};
 	}
 
-	async refreshTimetables(): Promise<void> {
+	private async refreshTimetables(): Promise<void> {
 		this._timetables = await this.storage.listTimetables();
 		this.events.emit('timetables:updated', { timetables: this._timetables });
 	}
@@ -473,6 +468,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		);
 	}
 
+	// C1 suspended: saveCourse/deleteCourse use serial/waterfall guards; align updateCourse when C1 resolves.
 	async updateCourse(courseId: string, patch: Partial<Course>): Promise<void> {
 		if (!this._currentTimetable) {
 			throw new Error('No active timetable to update course');

@@ -54,12 +54,6 @@ function createNativeHostEnv(): ChronosEnv {
 			saveTimetable: async (timetable: Timetable) => {
 				timetables.set(timetable.id, timetable);
 			},
-			patchTimetable: async (id: string, patch: Partial<Timetable>) => {
-				const existing = timetables.get(id);
-				if (existing) {
-					timetables.set(id, { ...existing, ...patch, updatedAt: Date.now() });
-				}
-			},
 			deleteTimetable: async (id: string) => {
 				timetables.delete(id);
 			},
@@ -89,17 +83,13 @@ function createNativeHostEnv(): ChronosEnv {
 			removeSecret: vi.fn(async () => {})
 		},
 		runtime: {
-			setTimeout: (handler, timeoutMs) => setTimeout(handler, timeoutMs) as unknown as number,
-			clearTimeout: (handle) => clearTimeout(handle),
 			sha256: async (data: string | Uint8Array) => {
 				const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
 				const hashBuf = await crypto.subtle.digest('SHA-256', bytes as unknown as ArrayBuffer);
 				return Array.from(new Uint8Array(hashBuf))
 					.map((b) => b.toString(16).padStart(2, '0'))
 					.join('');
-			},
-			encodeUtf8: (str) => new TextEncoder().encode(str),
-			decodeUtf8: (bytes) => new TextDecoder().decode(bytes)
+			}
 		}
 	};
 }

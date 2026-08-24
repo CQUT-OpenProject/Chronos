@@ -21,8 +21,6 @@ export interface HttpRequestOptions {
 	method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD';
 	headers?: Record<string, string>;
 	body?: string | Uint8Array;
-	useSession?: boolean;
-	sessionId?: string;
 	bypassCors?: boolean;
 	timeoutMs?: number;
 }
@@ -45,7 +43,6 @@ export interface IHttpService {
 		payload: unknown,
 		options?: { timeoutMs?: number; signal?: AbortSignal }
 	): Promise<HttpResponse>;
-	clearSession?(sessionId: string): Promise<void>;
 }
 export const IHttpService = createServiceIdentifier<IHttpService>('http');
 
@@ -62,7 +59,6 @@ export interface IStorageService {
 		Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>
 	>;
 	saveTimetable(timetable: Timetable): Promise<void>;
-	patchTimetable(id: string, patch: Partial<Timetable>): Promise<void>;
 	deleteTimetable(id: string): Promise<void>;
 	getActiveTimetableId(): Promise<string | null>;
 	setActiveTimetableId(id: string): Promise<void>;
@@ -100,11 +96,7 @@ export const IVaultService = createServiceIdentifier<IVaultService>('vault');
 // 4. Platform runtime baseline service definition (unifies Native / Web API differences)
 export interface IRuntimeService {
 	platform: 'web' | 'ios' | 'android' | 'node';
-	setTimeout(handler: () => void, timeoutMs: number): number;
-	clearTimeout(handle: number): void;
 	sha256(data: string | Uint8Array): Promise<string>;
-	encodeUtf8(str: string): Uint8Array;
-	decodeUtf8(bytes: Uint8Array): string;
 }
 export const IRuntimeService = createServiceIdentifier<IRuntimeService>('runtime');
 

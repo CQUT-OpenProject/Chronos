@@ -17,7 +17,6 @@ function createMockHost() {
 		getTimetable: vi.fn(),
 		listTimetables: vi.fn(),
 		saveTimetable: vi.fn(),
-		patchTimetable: vi.fn(),
 		deleteTimetable: vi.fn(),
 		getActiveTimetableId: vi.fn(),
 		setActiveTimetableId: vi.fn(),
@@ -59,11 +58,7 @@ function createMockHost() {
 			removeSecret: vi.fn()
 		},
 		runtime: {
-			setTimeout: (h, ms) => setTimeout(h, ms) as unknown as number,
-			clearTimeout: (h) => clearTimeout(h),
-			sha256: async () => '',
-			encodeUtf8: (s) => new TextEncoder().encode(s),
-			decodeUtf8: (b) => new TextDecoder().decode(b)
+			sha256: async () => ''
 		}
 	};
 

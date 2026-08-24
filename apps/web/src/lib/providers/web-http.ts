@@ -139,8 +139,4 @@ export class WebHttpProxyProvider implements IHttpService {
 			}
 		}
 	}
-
-	async clearSession(_sessionId: string): Promise<void> {
-		// Session isolation cleanup hook if supported by server proxy
-	}
 }

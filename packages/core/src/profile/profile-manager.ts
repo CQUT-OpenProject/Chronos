@@ -28,7 +28,7 @@ export class ProfileManager implements Disposable {
 
 		// 2. Apply user preferences preset if specified
 		if (profile.preferences) {
-			await this.engine.actions.updatePreferences(profile.preferences);
+			await this.engine.updatePreferences(profile.preferences);
 		}
 
 		// 3. Assemble and activate plugins according to profile configuration

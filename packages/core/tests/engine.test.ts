@@ -32,10 +32,6 @@ function createMockEnv() {
 			saveTimetable: async (t: Timetable) => {
 				timetables.set(t.id, t);
 			},
-			patchTimetable: async (id: string, patch: Partial<Timetable>) => {
-				const existing = timetables.get(id);
-				if (existing) timetables.set(id, { ...existing, ...patch });
-			},
 			deleteTimetable: async (id: string) => {
 				timetables.delete(id);
 			},
@@ -68,11 +64,7 @@ function createMockEnv() {
 			removeSecret: vi.fn()
 		},
 		runtime: {
-			setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms) as unknown as number,
-			clearTimeout: (h: number) => clearTimeout(h),
-			sha256: async () => 'hash',
-			encodeUtf8: (s: string) => new TextEncoder().encode(s),
-			decodeUtf8: (b: Uint8Array) => new TextDecoder().decode(b)
+			sha256: async () => 'hash'
 		}
 	};
 
@@ -114,12 +106,12 @@ describe('ChronosEngine in @chronos/core', () => {
 		const engine = new ChronosEngine({ env });
 		await engine.init();
 
-		const tt = await engine.actions.createTimetable('新课表');
+		const tt = await engine.createTimetable('新课表');
 		expect(engine.state.currentTimetable?.id).toBe(tt.id);
 		expect(engine.state.currentTimetable?.name).toBe('新课表');
 
-		const tt2 = await engine.actions.createTimetable('第二张课表');
-		await engine.actions.switchTimetable(tt2.id);
+		const tt2 = await engine.createTimetable('第二张课表');
+		await engine.switchTimetable(tt2.id);
 		expect(engine.state.currentTimetable?.id).toBe(tt2.id);
 	});
 
@@ -142,14 +134,14 @@ describe('ChronosEngine in @chronos/core', () => {
 			endPeriod: 2
 		});
 
-		await engine.actions.saveCourse(course);
+		await engine.saveCourse(course);
 		expect(engine.state.currentTimetable?.courses.length).toBe(1);
 		expect(engine.state.currentTimetable?.courses[0]!.name).toBe('大学物理');
 
-		await engine.actions.updateCourse('c1', { teacher: '李老师' });
+		await engine.updateCourse('c1', { teacher: '李老师' });
 		expect(engine.state.currentTimetable?.courses[0]!.teacher).toBe('李老师');
 
-		await engine.actions.deleteCourse('c1');
+		await engine.deleteCourse('c1');
 		expect(engine.state.currentTimetable?.courses.length).toBe(0);
 	});
 
@@ -164,15 +156,15 @@ describe('ChronosEngine in @chronos/core', () => {
 		engine.on('preferences:updated', onPrefUpdated);
 		engine.on('theme:changed', onThemeChanged);
 
-		await engine.actions.updatePreferences({ themeMode: 'dark' });
+		await engine.updatePreferences({ themeMode: 'dark' });
 		expect(engine.state.userPreferences.themeMode).toBe('dark');
 		expect(onPrefUpdated).toHaveBeenCalled();
 
-		await engine.actions.updatePreferences({ timetableLayoutMode: 'compact' });
+		await engine.updatePreferences({ timetableLayoutMode: 'compact' });
 		expect(engine.state.userPreferences.timetableLayoutMode).toBe('compact');
 		expect(engine.state.userPreferences.themeMode).toBe('dark');
 
-		engine.actions.setTheme('catppuccin');
+		engine.setTheme('catppuccin');
 		expect(engine.state.activeThemeId).toBe('catppuccin');
 		expect(onThemeChanged).toHaveBeenCalledWith({ themeId: 'catppuccin' });
 	});
@@ -282,7 +274,7 @@ describe('ChronosEngine in @chronos/core', () => {
 				outline: '#cccccc'
 			})
 		});
-		engine.actions.setTheme('paired');
+		engine.setTheme('paired');
 		expect(engine.state.activeIconThemeId).toBe('paired-icons');
 		expect(onIconChanged).toHaveBeenLastCalledWith({ iconThemeId: 'paired-icons' });
 
@@ -323,7 +315,7 @@ describe('ChronosEngine in @chronos/core', () => {
 			importMetadata: { source: 'FILE_HTML', campusId: 'huaxi' }
 		});
 
-		const saved = await engine.actions.importTimetable(incoming, { overwriteActive: true });
+		const saved = await engine.importTimetable(incoming, { overwriteActive: true });
 		expect(saved.id).toBe('active-1');
 		expect(timetables.get('active-1')?.name).toBe('导入课表');
 		expect(engine.state.currentTimetable?.id).toBe('active-1');

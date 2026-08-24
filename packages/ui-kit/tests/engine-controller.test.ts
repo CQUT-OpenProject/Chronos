@@ -40,10 +40,6 @@ function createMockEnv(): ChronosEnv {
 			saveTimetable: vi.fn(async (t: Timetable) => {
 				timetables.set(t.id, t);
 			}),
-			patchTimetable: vi.fn(async (id: string, patch: Partial<Timetable>) => {
-				const existing = timetables.get(id);
-				if (existing) timetables.set(id, { ...existing, ...patch });
-			}),
 			deleteTimetable: vi.fn(async (id: string) => {
 				timetables.delete(id);
 			}),
@@ -74,11 +70,7 @@ function createMockEnv(): ChronosEnv {
 			removeSecret: vi.fn(async () => {})
 		},
 		runtime: {
-			setTimeout: vi.fn((cb: () => void) => setTimeout(() => cb(), 0) as unknown as number),
-			clearTimeout: vi.fn((id: number) => clearTimeout(id)),
-			sha256: vi.fn(async () => 'mock-hash'),
-			encodeUtf8: vi.fn((s: string) => new TextEncoder().encode(s)),
-			decodeUtf8: vi.fn((b: Uint8Array) => new TextDecoder().decode(b))
+			sha256: vi.fn(async () => 'mock-hash')
 		}
 	};
 }

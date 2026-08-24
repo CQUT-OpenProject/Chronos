@@ -10,7 +10,6 @@ import {
 
 import { OfficialPluginService } from '$lib/services/official-plugins/official-plugin-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
-import * as m from '$lib/paraglide/messages.js';
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 let sharedEngine: ChronosEngine | null = null;
@@ -22,16 +21,7 @@ let profileManager: ProfileManager | null = null;
 import { bindAnalyticsPort } from '$lib/client/analytics';
 import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
 import { syncEngineLocaleFromPreferences } from '$lib/i18n/locale-sync';
-import { HOST_MESSAGES } from '$lib/i18n/host-messages';
-import { HOST_UI_PLUGIN_ID } from '$lib/i18n/host-text';
-
-let hostUiCatalogRegistered = false;
-
-function registerHostUiCatalog(engine: ChronosEngine): void {
-	if (hostUiCatalogRegistered) return;
-	engine.i18nCatalog.register(HOST_UI_PLUGIN_ID, HOST_MESSAGES);
-	hostUiCatalogRegistered = true;
-}
+import { HOST_MESSAGES, HOST_UI_PLUGIN_ID } from '$lib/i18n/host-messages';
 
 function createEngine(options?: WebProviderOptions): ChronosEngine {
 	const env = createWebChronosEnv({
@@ -39,30 +29,17 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 		enablePluginProxy: profileHasServerPlugins()
 	});
 	bindAnalyticsPort(env.analytics);
-	const engine = new ChronosEngine({
+	return new ChronosEngine({
 		env,
 		initialLocale: baseLocale ?? 'zh-cn',
-		i18nHandler: (key, params) => {
-			const messageFn = (m as Record<string, unknown>)[key];
-			if (typeof messageFn === 'function') {
-				return (messageFn as (p?: Record<string, unknown>) => string)(params);
-			}
-			if (params && typeof params.default === 'string') {
-				return params.default;
-			}
-			return key;
-		},
+		presetThemes: [m3DefaultTheme],
+		presetI18nCatalogs: [{ pluginId: HOST_UI_PLUGIN_ID, messages: HOST_MESSAGES }],
 		onNotification: (message) => {
 			if (typeof window !== 'undefined') {
 				snackbar(message);
 			}
 		}
 	});
-
-	engine.themes.registerTheme(m3DefaultTheme);
-	registerHostUiCatalog(engine);
-
-	return engine;
 }
 
 async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
@@ -79,9 +56,9 @@ async function bootstrapEngine(engine: ChronosEngine): Promise<void> {
 	syncEngineLocaleFromPreferences(engine);
 	const visualThemeId = prefs?.visualThemeId ?? DEFAULT_VISUAL_THEME_ID;
 	if (engine.themes.getTheme(visualThemeId)) {
-		engine.actions.setTheme(visualThemeId);
+		engine.setTheme(visualThemeId);
 	} else if (engine.themes.getTheme(DEFAULT_VISUAL_THEME_ID)) {
-		engine.actions.setTheme(DEFAULT_VISUAL_THEME_ID);
+		engine.setTheme(DEFAULT_VISUAL_THEME_ID);
 	}
 }
 
@@ -132,13 +109,13 @@ export function getProfileBuiltinPlugins(): ChronosPlugin[] {
 
 export async function resetAppToInitialState(): Promise<void> {
 	const engine = await ensureEngineReady();
-	await engine.actions.clearAllData();
+	await engine.clearAllData();
 	await getOfficialPluginService().resetAfterFactoryClear();
 	const profile = resolveActiveProfile();
 	if (profileManager) {
 		await profileManager.applyProfile(profile, availablePlugins);
 	}
-	engine.actions.setTheme(profile.defaultTheme ?? DEFAULT_VISUAL_THEME_ID);
+	engine.setTheme(profile.defaultTheme ?? DEFAULT_VISUAL_THEME_ID);
 	engine.events.emit('dynamicColor:hydrate', undefined);
 }
 
@@ -152,5 +129,4 @@ export function resetAppEngine(): void {
 	sharedEngine?.dispose();
 	sharedEngine = null;
 	engineInitPromise = null;
-	hostUiCatalogRegistered = false;
 }

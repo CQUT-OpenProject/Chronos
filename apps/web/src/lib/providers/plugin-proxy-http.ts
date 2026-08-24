@@ -77,8 +77,4 @@ export class PluginProxyHttpAdapter implements IHttpService {
 			if (timeoutId) clearTimeout(timeoutId);
 		}
 	}
-
-	async clearSession(sessionId: string): Promise<void> {
-		return this.inner.clearSession?.(sessionId);
-	}
 }

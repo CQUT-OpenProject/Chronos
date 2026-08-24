@@ -57,15 +57,12 @@ export function createNativeHostEnv(
 					'http',
 					'request',
 					[url, opts]
-				),
-			clearSession: (sessionId: string): Promise<void> =>
-				bridge.callNative<string, void>('http', 'clearSession', sessionId)
+				)
 		},
 		storage: {
 			getTimetable: (id: string) => bridge.callNative('storage', 'getTimetable', { id }),
 			listTimetables: () => bridge.callNative('storage', 'listTimetables'),
 			saveTimetable: (tt) => bridge.callNative('storage', 'saveTimetable', tt),
-			patchTimetable: (id, patch) => bridge.callNative('storage', 'patchTimetable', { id, patch }),
 			deleteTimetable: (id) => bridge.callNative('storage', 'deleteTimetable', { id }),
 			getActiveTimetableId: () => bridge.callNative('storage', 'getActiveTimetableId'),
 			setActiveTimetableId: (id) => bridge.callNative('storage', 'setActiveTimetableId', { id }),
@@ -87,17 +84,9 @@ export function createNativeHostEnv(
 			removeSecret: (k) => bridge.callNative('vault', 'removeSecret', { key: k })
 		},
 		runtime: {
-			setTimeout: (fn, ms) => {
-				return setTimeout(fn, ms) as unknown as number;
-			},
-			clearTimeout: (h) => {
-				clearTimeout(h);
-			},
 			sha256: async (data) => {
 				return bridge.callNative('runtime', 'sha256', { data });
-			},
-			encodeUtf8: (str) => new TextEncoder().encode(str),
-			decodeUtf8: (bytes) => new TextDecoder().decode(bytes)
+			}
 		}
 	};
 }

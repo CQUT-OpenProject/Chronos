@@ -23,7 +23,6 @@ export type ChronosEnvStorage = Pick<
 	| 'getTimetable'
 	| 'listTimetables'
 	| 'saveTimetable'
-	| 'patchTimetable'
 	| 'deleteTimetable'
 	| 'getActiveTimetableId'
 	| 'setActiveTimetableId'
@@ -51,8 +50,6 @@ export interface ChronosEnv {
 			payload: unknown,
 			options?: { timeoutMs?: number; signal?: AbortSignal }
 		): Promise<HttpResponse>;
-		/** Clear session cookies for the specified sessionId */
-		clearSession?(sessionId: string): Promise<void>;
 	};
 
 	/** Structured persistence repository */
@@ -71,10 +68,6 @@ export interface ChronosEnv {
 
 	/** Host baseline runtime capabilities (Native hosts like JSCore/QuickJS must provide these) */
 	runtime: {
-		setTimeout(handler: () => void, timeoutMs: number): number;
-		clearTimeout(handle: number): void;
 		sha256(data: string | Uint8Array): Promise<string>;
-		encodeUtf8(str: string): Uint8Array;
-		decodeUtf8(bytes: Uint8Array): string;
 	};
 }

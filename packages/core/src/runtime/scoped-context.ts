@@ -26,7 +26,6 @@ export interface EngineContextHost {
 	readonly env: ChronosEnv;
 	readonly i18nCatalog: I18nCatalog;
 	readonly locale: string;
-	t(key: string, params?: Record<string, unknown>): string;
 	translateForPlugin(pluginId: string, key: string, params?: Record<string, unknown>): string;
 	readonly state: {
 		readonly currentTimetable: Readonly<Timetable> | null;

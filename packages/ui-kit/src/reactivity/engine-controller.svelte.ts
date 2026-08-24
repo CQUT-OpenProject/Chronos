@@ -146,35 +146,35 @@ export class ReactiveChronosController implements Disposable {
 
 	// Action proxies
 	async createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable> {
-		return this.engine.actions.createTimetable(name, config);
+		return this.engine.createTimetable(name, config);
 	}
 
 	async switchTimetable(timetableId: string): Promise<void> {
-		return this.engine.actions.switchTimetable(timetableId);
+		return this.engine.switchTimetable(timetableId);
 	}
 
 	async deleteTimetable(timetableId: string): Promise<void> {
-		return this.engine.actions.deleteTimetable(timetableId);
+		return this.engine.deleteTimetable(timetableId);
 	}
 
 	async saveCurrentTimetableDetails(patch: Partial<Timetable>): Promise<void> {
-		return this.engine.actions.saveCurrentTimetableDetails(patch);
+		return this.engine.saveCurrentTimetableDetails(patch);
 	}
 
 	async saveCourse(course: Course): Promise<void> {
-		return this.engine.actions.saveCourse(course);
+		return this.engine.saveCourse(course);
 	}
 
 	async updateCourse(courseId: string, patch: Partial<Course>): Promise<void> {
-		return this.engine.actions.updateCourse(courseId, patch);
+		return this.engine.updateCourse(courseId, patch);
 	}
 
 	async deleteCourse(courseId: string): Promise<void> {
-		return this.engine.actions.deleteCourse(courseId);
+		return this.engine.deleteCourse(courseId);
 	}
 
 	setTheme(themeId: string): void {
-		this.engine.actions.setTheme(themeId);
+		this.engine.setTheme(themeId);
 	}
 
 	setDisplayedWeek(week: number): void {
@@ -186,16 +186,16 @@ export class ReactiveChronosController implements Disposable {
 	}
 
 	async updatePreferences(patch: Partial<UserPreferences>): Promise<void> {
-		return this.engine.actions.updatePreferences(patch);
+		return this.engine.updatePreferences(patch);
 	}
 
 	async clearAllData(): Promise<void> {
-		await this.engine.actions.clearAllData();
+		await this.engine.clearAllData();
 		this.syncAllState();
 	}
 
 	notify(message: string, type: 'info' | 'warn' | 'error' = 'info'): void {
-		this.engine.actions.notify(message, type);
+		this.engine.notify(message, type);
 	}
 
 	updateTime(now?: Date): void {
