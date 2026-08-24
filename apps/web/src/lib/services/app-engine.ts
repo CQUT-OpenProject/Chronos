@@ -22,6 +22,16 @@ let profileManager: ProfileManager | null = null;
 import { bindAnalyticsPort } from '$lib/client/analytics';
 import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
 import { syncEngineLocaleFromPreferences } from '$lib/i18n/locale-sync';
+import { HOST_MESSAGES } from '$lib/i18n/host-messages';
+import { HOST_UI_PLUGIN_ID } from '$lib/i18n/host-text';
+
+let hostUiCatalogRegistered = false;
+
+function registerHostUiCatalog(engine: ChronosEngine): void {
+	if (hostUiCatalogRegistered) return;
+	engine.i18nCatalog.register(HOST_UI_PLUGIN_ID, HOST_MESSAGES);
+	hostUiCatalogRegistered = true;
+}
 
 function createEngine(options?: WebProviderOptions): ChronosEngine {
 	const env = createWebChronosEnv({
@@ -50,6 +60,7 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 	});
 
 	engine.themes.registerTheme(m3DefaultTheme);
+	registerHostUiCatalog(engine);
 
 	return engine;
 }
@@ -141,4 +152,5 @@ export function resetAppEngine(): void {
 	sharedEngine?.dispose();
 	sharedEngine = null;
 	engineInitPromise = null;
+	hostUiCatalogRegistered = false;
 }

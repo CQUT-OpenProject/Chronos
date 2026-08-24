@@ -1,3 +1,6 @@
+import { hostText } from '$lib/i18n/host-text';
+import type { HostMessageKey } from '$lib/i18n/host-messages';
+
 export type SnackbarAction = { label: string; onClick: () => void };
 export type SnackbarPriority = 'polite' | 'assertive';
 
@@ -15,7 +18,7 @@ export const snackbarStore = $state<{
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
-export function snackbar(
+function showSnackbar(
 	message: string,
 	action?: SnackbarAction,
 	duration = 4000,
@@ -29,6 +32,25 @@ export function snackbar(
 	timer = setTimeout(() => {
 		snackbarStore.open = false;
 	}, duration);
+}
+
+export function snackbar(
+	message: string,
+	action?: SnackbarAction,
+	duration = 4000,
+	priority: SnackbarPriority = 'polite'
+) {
+	showSnackbar(message, action, duration, priority);
+}
+
+export function snackbarKey(
+	key: HostMessageKey,
+	params?: Record<string, unknown>,
+	action?: SnackbarAction,
+	duration = 4000,
+	priority: SnackbarPriority = 'polite'
+) {
+	showSnackbar(hostText(key, params), action, duration, priority);
 }
 
 export function dismissSnackbar() {
