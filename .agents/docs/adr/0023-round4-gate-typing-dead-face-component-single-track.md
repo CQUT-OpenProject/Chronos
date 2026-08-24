@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
+- **关联提交**: `10a2dce`, `3b48c31`, `fd161e3`, `a95f6a0`, `b8e2ea4`, `bf46ba3`, `7b4ad50`, `bea097c`, `dadd7aa`, `51d5fa7`, `e4e3c99`, `5ccc819`, `09d43c3`
 - **关联**: 执行 2026-08-23 架构评审候选 1–8；闭环 ADR 0009 §4「全仓严格 TypeScript 编译」的历史欠账；部分修订 CONTEXT.md EventPipeline 段的保留决策
 - **范围**: `vite.config.ts`, `packages/core`, `packages/ui-kit`, `packages/plugins/*`, `apps/web`, `scripts/*`
 
@@ -75,3 +76,9 @@
 
 - 手动回归：壁纸安装/取色/卸载回退、知行理工在线导入、分享链接与二维码导入导出、官方插件安装卸载
 - 两个发布周期后复审 serial/waterfall 与 queryCourses 的 FROZEN/RESERVED 状态
+
+---
+
+## 修订记录
+
+- 2026-08-24 · [ADR 0027](./0027-round6-architecture-subtraction.md)：闭环本文 §7 构建元数据双源（version 改单源）。

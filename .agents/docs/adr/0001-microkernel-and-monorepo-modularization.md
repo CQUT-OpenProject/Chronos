@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-19
-- **关联提交**: `693797e`, `40eada3`, `918c252`, `345e1b9`, `0dad3ef`, `6b28539`, `200cf04`, `1fe7ebc`
+- **关联提交**: `693797e`, `40eada3`, `97592eb`, `5c2fa30`, `bc3dc5c`, `918c252`, `c5e45ca`, `345e1b9`, `0dad3ef`, `6b28539`, `fd30d9d`, `900fbfc`, `b493c43`, `1fe7ebc`, `200cf04`, `852ddca`, `1471fa2`, `29ba0ba`, `1c7096c`
 - **范围**: 全仓架构拓扑 (`packages/core`, `packages/ui-kit`, `packages/plugins/*`, `apps/web`)
 
 ---

@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
+- **关联提交**: `dd87c35`, `dcf87e6`, `6ad1d6c`, `27076d1`, `4ac2df3`, `5ac598b`
 - **关联**: 落实 [ADR 0003](./0003-hierarchical-slot-registry-and-extensibility.md) 的消费侧闭环；兑现 CONTEXT.md 冲突策略表「Coexist; sorted by order」的既有承诺
 - **范围**: `packages/core/src/types/slots`, `packages/core/src/runtime/hierarchical-slot-registry`, `packages/ui-kit`, `apps/web`
 

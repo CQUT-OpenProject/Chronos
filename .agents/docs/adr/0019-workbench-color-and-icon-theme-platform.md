@@ -2,6 +2,7 @@
 
 - **状态**: Accepted（图标主题独立偏好轨道已由 [ADR 0026](./0026-icon-theme-follows-color-scheme.md) 撤销）
 - **日期**: 2026-08-22
+- **关联提交**: `5846ecb`, `ff1ddcc`, `10e85c2`, `9170c20`, `8cc140d`, `bb0a961`, `d94af98`
 - **范围**: `packages/core/src/theme`, `packages/core/src/runtime/icon-theme-registry.ts`, `apps/web/src/lib/appearance`, `apps/web/src/lib/shell`, `apps/web/src/lib/services/official-plugins`
 
 > **注意**：本文档中「用户偏好 `visualIconThemeId` 独立切换图标主题」的决策已被 ADR 0026 取代。图标主题现由 active 配色主题的 `recommendedIconTheme` 派生，不再持久化用户偏好；`IconThemeContribution` / JSON 交付管线保持不变。
@@ -47,3 +48,9 @@ ADR 0018 在 `ThemeContribution.shell` 上叠加 `customCssVars` 与 `bottomTabI
 ## 取代
 
 - **ADR 0018** 中 `shell.customCssVars`、`shell.bottomTabIcons` 及「图标由 active color theme 提供」的描述已被本 ADR 取代；Shell CSS 变量仍通过 workbench color key 写入。
+
+---
+
+## 修订记录
+
+- 2026-08-24 · [ADR 0026](./0026-icon-theme-follows-color-scheme.md)：撤销本文「图标主题独立偏好轨道」（`visualIconThemeId`）；图标主题改由 active 配色主题的 `recommendedIconTheme` 派生。

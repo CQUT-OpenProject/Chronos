@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-24
+- **关联提交**: `c834023`, `3ce1d8c`, `3076a87`, `9375f15`, `ddcc841`, `e3909c1`, `7e728c0`, `3eeefa0`, `72e624d`
 - **关联**: 执行第六轮架构深化计划（`DEEPENING-PLAN.md`）；**部分修订** [ADR 0024](./0024-plugin-message-catalog-i18n.md) §D4 宿主桥接；**延续** [ADR 0023](./0023-round4-gate-typing-dead-face-component-single-track.md) FROZEN BASELINE（C1 挂起）；**闭环** [ADR 0023](./0023-round4-gate-typing-dead-face-component-single-track.md) §7 构建元数据双源（version 单源）
 - **范围**: `packages/core`, `packages/ui-kit`, `packages/plugins/*`, `apps/web`, `scripts/*`
 
@@ -49,13 +50,13 @@ Round 4–5 后门禁与插槽单轨已稳，但架构评审仍指出六类可�
 
 ### C8 — 端口休眠成员修剪
 
-| 成员 | 处置 |
-| ---- | ---- |
-| `ChronosEnv.vault` | 改为可选；engine 仅 `env.vault` 存在时注册 `IVaultService` |
-| `IHttp.clearSession` / `useSession` / `sessionId` | 删除 |
-| `IStorage.patchTimetable` | 删除 |
-| `IRuntime` `setTimeout`/`clearTimeout`/`encodeUtf8`/`decodeUtf8` | 删除，保留 `platform` + `sha256` |
-| `queryCourses` | **不动**（RESERVED） |
+| 成员                                                             | 处置                                                       |
+| ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| `ChronosEnv.vault`                                               | 改为可选；engine 仅 `env.vault` 存在时注册 `IVaultService` |
+| `IHttp.clearSession` / `useSession` / `sessionId`                | 删除                                                       |
+| `IStorage.patchTimetable`                                        | 删除                                                       |
+| `IRuntime` `setTimeout`/`clearTimeout`/`encodeUtf8`/`decodeUtf8` | 删除，保留 `platform` + `sha256`                           |
+| `queryCourses`                                                   | **不动**（RESERVED）                                       |
 
 ### C3 — 宿主页翻译收口为 `hostT`
 
@@ -78,15 +79,15 @@ Round 4–5 后门禁与插槽单轨已稳，但架构评审仍指出六类可�
 
 ### C6 — 插件作者工厂
 
-| 能力 | 位置 |
-| ---- | ---- |
-| `defineChronosPlugin` | `packages/core/src/plugin/define-chronos-plugin.ts` — 自动 `registerMessages`；`name`/`description` 惰性解析 |
-| `registerImportTab<FormState>` | `packages/core/src/plugin/register-import-tab.ts` — 泛型 `inputSchema` 无 `as unknown as ConfigSchema` |
-| `callPluginServer` / `callPluginServerJson` | `packages/core/src/plugin/call-plugin-server.ts` |
-| `createMockEnv` | `@chronos/core/test-utils` |
-| `pluginText` | `packages/ui-kit/src/i18n/plugin-text.ts` |
-| `ImportTabComponentProps` | `packages/ui-kit/src/plugin-screen/import-tab-props.ts` |
-| 官方插件清单 | `scripts/official-plugins.config.ts` — build/verify 共读；`OFFICIAL_PLUGIN_VERSION` 单源 |
+| 能力                                        | 位置                                                                                                         |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `defineChronosPlugin`                       | `packages/core/src/plugin/define-chronos-plugin.ts` — 自动 `registerMessages`；`name`/`description` 惰性解析 |
+| `registerImportTab<FormState>`              | `packages/core/src/plugin/register-import-tab.ts` — 泛型 `inputSchema` 无 `as unknown as ConfigSchema`       |
+| `callPluginServer` / `callPluginServerJson` | `packages/core/src/plugin/call-plugin-server.ts`                                                             |
+| `createMockEnv`                             | `@chronos/core/test-utils`                                                                                   |
+| `pluginText`                                | `packages/ui-kit/src/i18n/plugin-text.ts`                                                                    |
+| `ImportTabComponentProps`                   | `packages/ui-kit/src/plugin-screen/import-tab-props.ts`                                                      |
+| 官方插件清单                                | `scripts/official-plugins.config.ts` — build/verify 共读；`OFFICIAL_PLUGIN_VERSION` 单源                     |
 
 四内置插件（codec-qrcode、codec-share、source-cqut、wallpaper）迁移至 `defineChronosPlugin`；删除 4 份 `plugin-text.ts`。
 

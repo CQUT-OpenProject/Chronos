@@ -11,7 +11,7 @@ Registered on `ServiceContainer`. Hosts bootstrap them once; runtime code reads 
 | `IHttpService`      | Network + optional session                                                                                                                      |
 | `IStorageService`   | Timetables, preferences, wallpaper, plugin KV                                                                                                   |
 | `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                   |
-| `IRuntimeService`   | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                  |
+| `IRuntimeService`   | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                     |
 | `IAnalyticsService` | Optional product analytics (registered via `ChronosEnv.analytics` → container; screens may still call `$lib/client/analytics` during migration) |
 
 `ChronosEnv` is only a host bootstrap adapter (web + native). After construction, `registerEnvProviders` copies ports into the container. All hosts must pass `env` at construction (no container-only facade).

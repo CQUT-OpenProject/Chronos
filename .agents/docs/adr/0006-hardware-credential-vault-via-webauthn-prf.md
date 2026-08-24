@@ -2,7 +2,7 @@
 
 - **状态**: Accepted（Web 实现层已由 [ADR 0017](./0017-webauthn-credential-retirement.md) Superseded；`IVaultService` 端口保留）
 - **日期**: 2026-08-20
-- **关联提交**: `b11d372`, `8729d1f`, `34a7e74`
+- **关联提交**: `8729d1f`, `b11d372`, `34a7e74`
 - **范围**: 安全与凭据管理 (`packages/core/src/types/services.ts`, `apps/web/src/lib/providers/webauthn-vault.ts`, `apps/web/src/lib/client/credential-migration.ts`)
 
 ---
@@ -44,3 +44,9 @@ flowchart TD
 
 - **Hardware Isolation（硬件级安全）**：即便本地存储被非法 dump，缺乏硬件安全芯片与生物认证亦无法解密凭据；
 - **Zero Host Leak（无泄露）**：宿主仅提供保险箱计算能力，不保存用户密码明文。
+
+---
+
+## 修订记录
+
+- 2026-08-22 · [ADR 0017](./0017-webauthn-credential-retirement.md)：本文 Web 实现层（WebAuthn PRF 保险箱）被标记为 Superseded；`IVaultService` 端口保留。

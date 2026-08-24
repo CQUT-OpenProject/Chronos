@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-22
+- **关联提交**: `8ea553e`, `87782bf`, `9b6f595`, `e0975d4`, `b74bbe5`, `2fbd925`
 - **关联**: 闭环 [ADR 0014](./0014-wallpaper-official-marketplace-only.md) 待办；收敛 [ADR 0005](./0005-unified-event-pipeline.md)、[ADR 0008](./0008-host-decoupling-and-deep-ingest-seam.md)、[ADR 0013](./0013-import-pipeline-slot-closure-and-deep-convergence.md) 残留缝隙
 - **范围**: 构建与分发 (`scripts/build-official-plugins.ts`, `apps/web/static/official-plugins`)、凭据与导入管道 (`apps/web/src/lib/transfer`, `apps/web/src/lib/client/credential-vault`, `packages/core/src/types/slots`)、宿主胶水与配置 (`apps/web/src/lib/app`, `apps/web/src/lib/appearance`, `apps/web/vite.config.ts`, `packages/core/src/runtime/scoped-context`)、插件规范 (`packages/plugins/source-cqut/src/campus-period-times`, `packages/plugins/codec-share`, `packages/plugins/wallpaper`, `packages/ui-kit/src/plugin-screen`)
 
@@ -106,3 +107,9 @@ flowchart TD
 - `minEngineVersion` 运行时校验与 `catalog version:2`（承接 ADR 0012，后续）
 - `wallpaper runtime` 真正多实例隔离（当前工厂仍委托单例，下迭代完成）
 - `codec-share` 将 `brotli-wasm` 拆为 Vite 动态 chunk 首选 `deflate`，进一步瘦身
+
+---
+
+## 修订记录
+
+- 2026-08-22 · [ADR 0017](./0017-webauthn-credential-retirement.md)：撤销本文 §2（凭据缝隙上移）在 Web 端的落地，Web 凭据功能整体退役。

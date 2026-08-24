@@ -2,6 +2,7 @@
 
 - **状态**: Accepted（待办由 [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md) 闭环）
 - **日期**: 2026-08-22
+- **关联提交**: `1f44246`, `e0571e5`, `424385b`, `67019cc`
 - **关联**: 收敛 [ADR 0007](./0007-plugin-profile-and-preset-assembly.md) 装配边界；依赖 [ADR 0011](./0011-single-track-official-plugin-install.md)、[ADR 0012](./0012-online-plugin-rich-ui-via-esm-and-controlled-preview.md)（`865bb1861` 起）、[ADR 0013](./0013-import-pipeline-slot-closure-and-deep-convergence.md)
 - **范围**: Profile 装配与官方插件分发 (`apps/web/src/lib/boot`, `packages/plugins/wallpaper`, `packages/ui-kit`, `scripts/build-official-plugins.ts`, `apps/web/static/official-plugins`)
 
@@ -111,3 +112,9 @@ flowchart TD
 - `minEngineVersion` 运行时校验与 catalog `version:2`（承接 ADR 0012 后续项，本次不动）；
 - `app-shell` 壁纸事件桥的远期事件化下沉（与取色链路一并评估）；
 - ADR 0007 装配图中的 `theme-yumemita, wallpaper` 示例已过时，本文生效时同步勘误。
+
+---
+
+## 修订记录
+
+- 2026-08-22 · [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md) §1：闭环本文 §3 构建 CSS 归属待办。

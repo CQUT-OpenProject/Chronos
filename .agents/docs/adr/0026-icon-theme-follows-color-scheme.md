@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-24
+- **关联提交**: `d06f326`, `f6159bc`
 - **关联**: 部分取代 ADR 0019（图标主题独立偏好轨道）；延续 ADR 0018 的 Shell 图标契约
 - **范围**: `packages/core/src/runtime/engine.ts`, `packages/core/src/domain/preferences.ts`, `apps/web/src/lib/app/app-shell.svelte.ts`, `apps/web/src/lib/appearance`, `apps/web/src/lib/components`
 

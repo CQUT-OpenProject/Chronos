@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-19
-- **关联提交**: `2337936`, `0f5ccf0`, `d14074f`, `28e4bcb`
+- **关联提交**: `7adc168`, `edfe4d9`, `c5b6fec`, `2337936`, `3f69668`, `0f5ccf0`, `889a50a`, `b99ac8c`, `d14074f`
 - **范围**: 核心服务契约 (`packages/core/src/types/services.ts`, `packages/core/src/runtime/service-container.ts`)
 
 ---

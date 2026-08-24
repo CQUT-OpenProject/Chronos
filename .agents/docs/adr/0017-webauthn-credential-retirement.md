@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-22
+- **关联提交**: `567a2e7`, `4a69a9f`
 - **关联**: 退役 [ADR 0006](./0006-hardware-credential-vault-via-webauthn-prf.md) Web 实现层；撤销 [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md) §2 凭据缝隙上移在 Web 端的落地
 - **范围**: `packages/plugins/source-cqut`, `apps/web/src/lib/transfer`, `apps/web/src/lib/client`, `apps/web/src/lib/providers`, `packages/core/src/types`
 

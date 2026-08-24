@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-22
+- **关联提交**: `25d7dd9`, `cddb950`, `b52f53a`, `9de056d`, `6a1a639`, `88d56a1`, `5fa79ad`, `0f2f02e`, `b14afc1`
 - **关联**: 闭环 [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md) 后续项；**部分修订** [ADR 0013](./0013-import-pipeline-slot-closure-and-deep-convergence.md) §2 壁纸事件策略
 - **范围**: `packages/core`, `packages/plugins/wallpaper`, `packages/ui-kit`, `apps/web`, `scripts/resolve-chronos-aliases.ts`
 

@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-22
+- **关联提交**: `324d295`, `b516c98`, `12aae54`, `18f1324`
 - **关联**: 细化 [ADR 0003](./0003-hierarchical-slot-registry-and-extensibility.md)、[ADR 0009](./0009-deep-architecture-convergence-and-dead-code-purge.md)、[ADR 0012](./0012-online-plugin-rich-ui-via-esm-and-controlled-preview.md)
 - **范围**: 导入插槽体系、微内核事件与徽章契约、ESM 单轨加载与宿主解耦 (`packages/core`, `packages/plugins/*`, `apps/web`)
 
@@ -108,3 +109,9 @@ flowchart TD
 ## 结论与后续
 
 本决策使得 Chronos 导入体系彻底实现了**插件自包含富 UI 挂载**与**微内核完全解耦**。任何第三方或高校插件均可通过相同模式声明自身的导入卡片富 UI 或 Schema 降级，宿主无需改动任何代码。
+
+---
+
+## 修订记录
+
+- 2026-08-22 · [ADR 0016](./0016-round3-convergence-and-deprecated-removal.md) §2：将本文 §2 的 wallpaper 专用事件策略修订为泛化 `dynamicColor:*` 内核契约。

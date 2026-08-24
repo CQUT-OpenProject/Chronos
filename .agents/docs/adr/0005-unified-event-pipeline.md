@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-20
-- **关联提交**: `27e60aa`, `addfe45`, `e164593`
+- **关联提交**: `27e60aa`, `e164593`
 - **范围**: 事件通信与数据流水线 (`packages/core/src/runtime/event-pipeline.ts`)
 
 ---

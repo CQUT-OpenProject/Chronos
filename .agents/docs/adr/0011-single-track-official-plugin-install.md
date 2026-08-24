@@ -2,7 +2,8 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-21
-- **取代**: ADR 0004 中 Worker 沙箱双轨部分（双轨模型退役，Profile 内置轨保留）
+- **关联提交**: `4feb4ae`, `e857c4f`, `dcfafbf`, `fa0ec2d`, `88b0ce4`, `d9467dd`, `a322953`, `3e42a35`, `6a473e8`, `2e2d4d1`, `be6f41c`, `07e0262`, `4606533`, `a4f5365`, `a7cb155`
+- **关联**: 取代 ADR 0004 中 Worker 沙箱双轨部分（双轨模型退役，Profile 内置轨保留）
 - **范围**: 插件安装与激活 (`packages/core`, `apps/web/src/lib/services/official-plugins`)
 
 ---

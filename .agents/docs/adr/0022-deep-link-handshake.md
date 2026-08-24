@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
+- **关联提交**: `4d54649`, `6ad1d6c`, `4ac2df3`
 - **关联**: 深化 [ADR 0013](./0013-import-pipeline-slot-closure-and-deep-convergence.md) 的导入插槽闭环；对齐 [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md)「宿主零特判」主线
 - **范围**: `packages/core/src/types/slots`, `packages/plugins/codec-share`, `apps/web/src/lib/transfer`, `apps/web/src/routes/s`, `apps/web/src/lib/config/features.ts`
 

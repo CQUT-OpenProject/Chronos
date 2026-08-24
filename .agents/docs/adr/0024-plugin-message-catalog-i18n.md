@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
+- **关联提交**: `450d2c5`, `943b5f5`, `481a3b6`, `d5622ef`, `318db1a`, `8886125`, `689c87f`, `7d3ed9d`, `2d967a5`, `50dc61d`
 - **关联**: 落实 Round 5 C3 演进（保留 engine i18n 链）；扩展 ADR 0021 `LocalizedText` 消费模型；**§D4 宿主桥接由 [ADR 0027](./0027-round6-architecture-subtraction.md) 修订**（移除 `i18nHandler` / `engine.t()`，宿主 Shell 改 `hostT`）
 - **范围**: `packages/core`, `packages/ui-kit`, `apps/web`, `packages/plugins/*`
 
@@ -53,3 +54,9 @@
 - `vp check` / `vp test` 全绿
 - 切换 en/zh-cn 后插槽标题随 `slotVersion` 更新
 - `grep 'plugin\.inject\|pendingPlugins'` 零残留（除 ADR 历史引用）
+
+---
+
+## 修订记录
+
+- 2026-08-24 · [ADR 0027](./0027-round6-architecture-subtraction.md)：部分修订本文 §D4 宿主桥接（宿主翻译收口为 `hostT` 响应式模块）。

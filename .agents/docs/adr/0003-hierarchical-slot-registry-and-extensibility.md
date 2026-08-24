@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-19
-- **关联提交**: `b12292e`, `80880b4`, `d72b3bb`, `6fc60c5`, `66726a6`, `addfe45`
+- **关联提交**: `b12292e`, `80880b4`, `f39eebf`, `01a216e`, `655ecf2`, `d72b3bb`, `6fc60c5`, `8915681`, `37eb623`, `addfe45`, `66726a6`, `4d4bf3e`, `ff8b017`, `a402807`, `96594bc`, `137c903`, `9d941e8`, `273155a`, `bc4da7c`
 - **范围**: 扩展点机制 (`packages/core/src/types/slots.ts`, `packages/core/src/runtime/hierarchical-slot-registry.ts`)
 
 ---

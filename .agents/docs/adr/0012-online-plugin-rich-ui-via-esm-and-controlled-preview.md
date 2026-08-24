@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-22
+- **关联提交**: `7b4d8fa`, `d360fcf`, `5001d27`, `28e6833`, `3091159`, `865bb18`, `c2bc5c7`, `eca940a`, `1d53d9c`, `c388671`
 - **关联**: 细化 [ADR 0003](./0003-hierarchical-slot-registry-and-extensibility.md) 与 [ADR 0011](./0011-single-track-official-plugin-install.md)
 - **范围**: 插件 UI 能力、打包与加载 (`packages/core`, `packages/ui-kit`, `packages/plugins/wallpaper`, `apps/web`, `scripts/build-official-plugins.ts`, `apps/web/static/official-plugins`)
 

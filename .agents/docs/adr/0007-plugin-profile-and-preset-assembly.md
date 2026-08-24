@@ -2,7 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-20
-- **关联提交**: `80919e1`, `da2613c`, `6dd6a94`, `c03d2dc`
+- **关联提交**: `80919e1`, `fb61543`, `aee351d`, `da2613c`, `6dd6a94`, `79b343a`, `c03d2dc`, `d401a93`, `ea55fac`
 - **范围**: 发行与预设装配体系 (`packages/core/src/profile/profile.ts`, `apps/web/src/lib/boot/profile-registry.ts`)
 
 ---

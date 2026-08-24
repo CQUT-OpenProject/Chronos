@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
+- **关联提交**: `2a37e7d`, `4a5feda`, `faca0ab`, `c9a8131`, `4f30afc`, `23fd807`
 - **范围**: `packages/codec-kit`（新增）, `packages/plugins/codec-share`, `packages/plugins/codec-qrcode`
 
 ---

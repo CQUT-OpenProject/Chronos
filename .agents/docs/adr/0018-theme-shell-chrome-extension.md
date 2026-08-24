@@ -2,6 +2,7 @@
 
 - **状态**: Superseded by [ADR 0019](./0019-workbench-color-and-icon-theme-platform.md)
 - **日期**: 2026-08-22
+- **关联提交**: `279b31f`
 - **范围**: `packages/core/src/types/contributions.ts`, `apps/web/src/lib/appearance`, `apps/web/src/lib/shell`, `apps/web/src/lib/components/BottomTabBar.svelte`
 
 > **注意**：本文档记录的历史决策已被 ADR 0019 取代。Shell 样式现通过 `workbenchColors` 封闭键写入；底栏图标由 `IconThemeContribution` 提供（ADR 0026 起跟随配色方案的 `recommendedIconTheme` 派生，无独立用户偏好）。

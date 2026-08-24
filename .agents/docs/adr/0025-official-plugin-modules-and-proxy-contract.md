@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
+- **关联提交**: `7fe3892`, `1b47f77`, `8cc2b02`, `a92b2dc`
 - **关联**: 闭环架构评审候选 1–2；衔接 ADR 0011、0023 §5、0002、0008
 - **范围**: `apps/web/src/lib/services/official-plugins`, `packages/core/src/types/plugin-server.ts`, `apps/web/src/lib/server/plugin-proxy`, `apps/web/src/lib/providers/plugin-proxy-http.ts`, `packages/plugins/source-cqut`
 
