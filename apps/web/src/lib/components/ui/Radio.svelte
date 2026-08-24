@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Radio as UiRadio } from '@chronos/ui-kit';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	let {
@@ -19,34 +20,4 @@
 	} & HTMLInputAttributes = $props();
 </script>
 
-<div
-	class="relative flex size-10 items-center justify-center rounded-full transition-colors {disabled
-		? ''
-		: 'focus-within:bg-on-surface/10 hover:bg-on-surface/5'} {className}"
->
-	<input
-		type="radio"
-		{name}
-		{value}
-		{checked}
-		{disabled}
-		{onchange}
-		{...props}
-		class="peer sr-only"
-	/>
-	<div
-		class="relative flex size-5 items-center justify-center rounded-full border-2 transition-colors duration-200 {disabled
-			? 'border-on-surface/38'
-			: checked
-				? 'border-brand'
-				: 'border-on-surface-variant/70'}"
-	>
-		<div
-			class="size-2.5 rounded-full {disabled
-				? 'bg-on-surface/38'
-				: 'bg-brand'} transition-transform duration-200 ease-out {checked
-				? 'scale-100'
-				: 'scale-0'}"
-		></div>
-	</div>
-</div>
+<UiRadio bind:checked {disabled} {name} {value} {onchange} class={className} {...props} />

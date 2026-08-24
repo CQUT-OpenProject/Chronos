@@ -14,6 +14,7 @@
 	import { hostTextRead } from '$lib/i18n/host-text';
 	import { DownloadFill } from '$lib/icons';
 	import { countDistinctCourseNames } from '@chronos/core';
+	import { MountableSlotOutlet, SchemaForm, type DateFieldLabels } from '@chronos/ui-kit';
 
 	let {
 		transfer,
@@ -28,12 +29,34 @@
 	const controller = getAppController();
 	const transferState = $derived(transfer.state);
 	const preview = $derived(transferState.preview);
+	const activeSlot = $derived(
+		transferState.previewSlotId
+			? controller.getSlotItem('import.source.tab', transferState.previewSlotId)
+			: undefined
+	);
+	const hasConfirmPhase = $derived(
+		Boolean(activeSlot?.confirmComponent || activeSlot?.confirmSchema)
+	);
+	const confirmValidationError = $derived.by(() => {
+		if (!activeSlot?.validateConfirmInputs) return null;
+		return activeSlot.validateConfirmInputs(transferState.confirmInputs);
+	});
 	const canOverwrite = $derived(Boolean(currentTimetableName));
 	const displayedCourseCount = $derived.by(() => {
 		if (!preview) return 0;
 		return countDistinctCourseNames(preview.courses);
 	});
 	let loading = $state(false);
+
+	const dateFieldLabels = $derived<DateFieldLabels>({
+		placeholder: hostTextRead(controller, 'ui.date.placeholder'),
+		today: hostTextRead(controller, 'ui.date.today'),
+		clear: hostTextRead(controller, 'ui.date.clear'),
+		confirm: hostTextRead(controller, 'ui.date.confirm'),
+		triggerEmpty: (label) => hostTextRead(controller, 'ui.date.trigger.empty', { label }),
+		triggerLabeled: (label, display) =>
+			hostTextRead(controller, 'ui.date.trigger.labeled', { label, display })
+	});
 
 	function analyticsImportMode(mode: ImportMode) {
 		return mode === ImportMode.AS_NEW ? 'as_new' : 'overwrite';
@@ -76,7 +99,8 @@
 		<Button
 			variant="filled"
 			disabled={loading ||
-				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT)}
+				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
+				Boolean(confirmValidationError)}
 			class="m3-body-large h-12 w-full shadow-xs"
 			onclick={handleConfirm}
 		>
@@ -142,6 +166,26 @@
 					</div>
 				</div>
 			</Card>
+
+			{#if hasConfirmPhase}
+				<div class="flex flex-col gap-3">
+					{#if activeSlot?.confirmComponent}
+						<MountableSlotOutlet
+							component={activeSlot.confirmComponent}
+							props={{ controller, transfer }}
+							class="w-full"
+						/>
+					{:else if activeSlot?.confirmSchema}
+						<SchemaForm
+							schema={activeSlot.confirmSchema}
+							value={transferState.confirmInputs}
+							onValueChange={(next) => transfer.setConfirmInputs(next)}
+							{dateFieldLabels}
+							{controller}
+						/>
+					{/if}
+				</div>
+			{/if}
 
 			<div class="flex flex-col gap-3">
 				<h3 class="m3-title-medium px-1 text-on-surface">

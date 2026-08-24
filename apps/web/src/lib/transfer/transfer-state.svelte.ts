@@ -10,6 +10,7 @@ export interface TransferPreviewState {
 	preview: Timetable | null;
 	selectedSlotId: string | undefined;
 	previewSlotId: string | null;
+	confirmInputs: Record<string, unknown>;
 	importMode: ImportMode;
 	errorMessage: string | null;
 }
@@ -18,10 +19,21 @@ function resolveInitialSlotId(): string | undefined {
 	return getDefaultImportSlot();
 }
 
+function resolveConfirmDefaults(tabId: string): Record<string, unknown> {
+	try {
+		const controller = getAppController();
+		const tab = controller.getSlotItem('import.source.tab', tabId);
+		return tab?.confirmDefaultInput ? { ...tab.confirmDefaultInput } : {};
+	} catch {
+		return {};
+	}
+}
+
 export function createTransferState(engine?: ChronosEngine) {
 	let selectedSlotId = $state(resolveInitialSlotId());
 	let preview = $state<Timetable | null>(null);
 	let previewSlotId = $state<string | null>(null);
+	let confirmInputs = $state<Record<string, unknown>>({});
 	let importMode = $state<ImportMode>(ImportMode.AS_NEW);
 	let errorMessage = $state<string | null>(null);
 
@@ -35,6 +47,7 @@ export function createTransferState(engine?: ChronosEngine) {
 		selectedSlotId = slotId;
 		preview = null;
 		previewSlotId = null;
+		confirmInputs = {};
 		clearMessages();
 	}
 
@@ -42,9 +55,19 @@ export function createTransferState(engine?: ChronosEngine) {
 		importMode = mode;
 	}
 
+	function setConfirmInputs(inputs: Record<string, unknown>) {
+		const next = { ...confirmInputs, ...inputs };
+		const changed = (Object.keys(inputs) as Array<keyof typeof inputs>).some(
+			(key) => confirmInputs[key as string] !== next[key as string]
+		);
+		if (!changed) return;
+		confirmInputs = next;
+	}
+
 	function clearPreview() {
 		preview = null;
 		previewSlotId = null;
+		confirmInputs = {};
 		persistence.clear();
 		clearMessages();
 	}
@@ -53,6 +76,7 @@ export function createTransferState(engine?: ChronosEngine) {
 		clearMessages();
 		preview = t;
 		previewSlotId = slotId;
+		confirmInputs = resolveConfirmDefaults(slotId);
 		return true;
 	}
 
@@ -79,6 +103,7 @@ export function createTransferState(engine?: ChronosEngine) {
 			const timetable = await executeSlotImport(tabId, inputs);
 			preview = timetable;
 			previewSlotId = tabId;
+			confirmInputs = resolveConfirmDefaults(tabId);
 			return true;
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : hostText('transfer.error.fetchFailed');
@@ -91,7 +116,8 @@ export function createTransferState(engine?: ChronosEngine) {
 		persistence.save({
 			preview,
 			slotId: previewSlotId,
-			importMode
+			importMode,
+			confirmInputs
 		});
 		return true;
 	}
@@ -102,6 +128,7 @@ export function createTransferState(engine?: ChronosEngine) {
 		preview = snapshot.preview;
 		previewSlotId = snapshot.slotId;
 		importMode = snapshot.importMode;
+		confirmInputs = snapshot.confirmInputs ?? resolveConfirmDefaults(snapshot.slotId);
 		return true;
 	}
 
@@ -111,16 +138,32 @@ export function createTransferState(engine?: ChronosEngine) {
 
 	async function confirmImport() {
 		clearMessages();
-		if (!preview) {
+		if (!preview || !previewSlotId) {
 			errorMessage = hostText('transfer.error.previewRequired');
 			return false;
 		}
 
 		try {
+			const controller = getAppController();
+			const tab = controller.getSlotItem('import.source.tab', previewSlotId);
+			if (tab?.validateConfirmInputs) {
+				const validationError = tab.validateConfirmInputs(confirmInputs);
+				if (validationError) {
+					errorMessage = validationError;
+					return false;
+				}
+			}
+
+			let finalPreview = preview;
+			if (tab?.finalizePreview) {
+				const ctx = controller.getPluginContextForSlot('import.source.tab', previewSlotId);
+				finalPreview = await tab.finalizePreview(preview, confirmInputs, ctx);
+			}
+
 			if (!engine) {
 				throw new Error('ChronosEngine is required for ingest');
 			}
-			await engine.actions.importTimetable(preview, {
+			await engine.actions.importTimetable(finalPreview, {
 				overwriteActive: importMode === ImportMode.OVERWRITE_CURRENT
 			});
 			clearPreview();
@@ -164,12 +207,14 @@ export function createTransferState(engine?: ChronosEngine) {
 				preview,
 				selectedSlotId,
 				previewSlotId,
+				confirmInputs,
 				importMode,
 				errorMessage
 			};
 		},
 		setSelectedSlotId,
 		setImportMode,
+		setConfirmInputs,
 		clearPreview,
 		setDirectPreview,
 		previewWithSlot,
