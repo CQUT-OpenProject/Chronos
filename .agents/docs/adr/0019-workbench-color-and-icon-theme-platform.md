@@ -1,8 +1,10 @@
 # ADR 0019: Workbench 配色与图标主题平台
 
-- **状态**: Accepted
+- **状态**: Accepted（图标主题独立偏好轨道已由 [ADR 0026](./0026-icon-theme-follows-color-scheme.md) 撤销）
 - **日期**: 2026-08-22
 - **范围**: `packages/core/src/theme`, `packages/core/src/runtime/icon-theme-registry.ts`, `apps/web/src/lib/appearance`, `apps/web/src/lib/shell`, `apps/web/src/lib/services/official-plugins`
+
+> **注意**：本文档中「用户偏好 `visualIconThemeId` 独立切换图标主题」的决策已被 ADR 0026 取代。图标主题现由 active 配色主题的 `recommendedIconTheme` 派生，不再持久化用户偏好；`IconThemeContribution` / JSON 交付管线保持不变。
 
 ---
 
@@ -23,14 +25,14 @@ ADR 0018 在 `ThemeContribution.shell` 上叠加 `customCssVars` 与 `bottomTabI
 
 ### 图标主题（Icon Theme）
 
-- 新增 `IconThemeContribution` + `IconThemeRegistry`；用户偏好 `visualIconThemeId`（默认 `host-default`）。
+- 新增 `IconThemeContribution` + `IconThemeRegistry`；用户偏好 `visualIconThemeId`（默认 `host-default`）。（已被 ADR 0026 撤销：改为派生，见「推荐配对」）
 - 底栏图标由 **active icon theme** 的 `bottomTabIcons[tabId]` 提供，而非 color theme。
 - `ShellIconDescriptor` 支持 `registry` / `svg` / `url`；宿主 `resolveShellIcon` + `ShellSvgIcon` 渲染。
 - 官方插件通过 `icons.json` 交付；manifest 使用 `colorsUrl` / `iconThemeUrl`（JSON-only 主题可无 JS bundle）。
 
 ### 推荐配对
 
-- Color theme 可选 `recommendedIconTheme`；用户选择配色方案时，若目标图标主题已注册则自动切换（`setColorScheme`）。
+- Color theme 可选 `recommendedIconTheme`；用户选择配色方案时，若目标图标主题已注册则自动切换（`setColorScheme`）。（ADR 0026 起为唯一机制：图标主题完全由该配对派生）
 
 ---
 

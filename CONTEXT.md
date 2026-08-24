@@ -23,7 +23,7 @@ Core owns the shapes. Web Dexie / Share codecs are strict Zod adapters (schemaVe
 - **Timetable**: courses, `academicConfig` (including `periodTimes`), `viewPrefs`, optional `importMetadata`, optional `customMetadata`.
 - **ImportMetadata**: `{ source: string; campusId?: string }`. Campus period tables live in `customMetadata['source-cqut']`, not on `importMetadata`.
 - **Weekend columns**: initial `showSaturday` / `showSunday` derive from course occupancy via core `deriveWeekendViewPrefs` — import-constructing plugins must use it; users override afterwards in details editing.
-- **UserPreferences** tokens: theme `light` \| `dark` \| `auto`; palette `vibrant` \| `wallpaper`; layout `fixed` \| `compact`; corners `rounded` \| `sharp` \| `pill`; `visualThemeId`; `visualIconThemeId`; optional `locale` (`zh-cn` \| `en`).
+- **UserPreferences** tokens: theme `light` \| `dark` \| `auto`; palette `vibrant` \| `wallpaper`; layout `fixed` \| `compact`; corners `rounded` \| `sharp` \| `pill`; `visualThemeId`; optional `locale` (`zh-cn` \| `en`). Active icon theme is **derived**, never stored: engine resolves it from the active theme's `recommendedIconTheme` (fallback `host-default`) — see ADR 0026.
 
 ## Period clock
 
@@ -88,7 +88,7 @@ No global conflict arbitrator. Behavior by resource type:
 | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Multi-contribution slots (`import.source.tab`, `mine.*`, `export.action`) | Coexist; sorted by `order`                                                                                       |
 | `timetable.cell.badge`                                                    | Aggregate all contributors (**RESERVED** — pipeline live, zero producers; `BadgeManager` early-exits when empty) |
-| Color / icon themes                                                       | Register many; user picks one via preferences                                                                    |
+| Color / icon themes                                                       | Register many; user picks the color scheme, its `recommendedIconTheme` supplies icons (ADR 0026)                 |
 | Same `contribution.id` under one slot                                     | Last registration wins (warned in dev)                                                                           |
 | Same `plugin.id` reload                                                   | Unload then load                                                                                                 |
 | Profile builtin vs official install overlap                               | Builtin wins; official record deduped                                                                            |
