@@ -2,7 +2,6 @@ import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 import { ChronosEngine } from '@chronos/core';
 import type { ChronosEnv } from '@chronos/core';
 import { DEFAULT_USER_PREFERENCES } from '@chronos/core';
-import { loadEsmPluginFromCode } from './plugin-bundle';
 import { OfficialPluginRuntimeActivator } from './runtime-activator';
 
 const SAMPLE_BUNDLE = `

@@ -6,8 +6,7 @@ import {
 	deriveWeekendViewPrefs,
 	type ChronosMountable,
 	type Timetable,
-	type Course,
-	type ExportResult
+	type Course
 } from '@chronos/core';
 import {
 	base64ToBytes,
