@@ -10,14 +10,14 @@
 
 ## 背景与问题
 
-课表壁纸插件是历史上胶水最重的插件，经多轮收敛才达成「宿主零特判」：
+壁纸插件是历史上在宿主里留下专门代码最多的插件，此前经过多轮清理才实现「宿主零特判」（宿主代码中不出现针对具体插件的特殊处理）：
 
 1. **存储端口特化**（ADR 0008）：`IStorageService.getWallpaper/setWallpaper` 剥离为插件命名空间 KV；
 2. **影子模型与 Dexie 残余**（ADR 0010）：删除 `AppState.wallpaperUri` 与 `wallpapers` 表；
 3. **富 UI 回归插件**（ADR 0012 / `865bb1861`）：此前在线 bundle 无法携带 Svelte 组件，壁纸 UI 被迫宿主硬编码于 `/wallpaper` 路由与 `WallpaperScreen.svelte`；ESM 自包含编译落地后组件回归插件，宿主路由删除；
 4. **私有事件剥离**（ADR 0013）：`wallpaper:set/changed/hydrate` 经模块增强声明，微内核事件总线恢复纯粹。
 
-但装配位置从未调整：三个 Profile 预设均强制预装 `tool-wallpaper`，同时它又列在官方 catalog 中，形成同一插件的双轨生命周期：
+但它的装配位置一直没有调整：三个 Profile 预设都强制预装 `tool-wallpaper`，而它同时又列在官方 catalog 中——同一个插件存在「预装」与「在线安装」两条并行的管理路径，由此产生三个问题：
 
 | #   | 问题                            | 后果                                                                                                                 |
 | :-- | :------------------------------ | :------------------------------------------------------------------------------------------------------------------- |
@@ -61,7 +61,7 @@ flowchart TD
 
 ### 3. 构建脚本 CSS 归属缺陷修复（待办）
 
-`scripts/build-official-plugins.ts` 全部插件共享 `distDir` 且 `emptyOutDir:false`，CSS 归属靠「抓目录里任意 `.css`」（L101-113），前一插件的样式残留会被记到后一插件头上——当前两份 manifest 的 `cssSha256` 完全相同（`85d2e211…`）即为该缺陷实证。修复：
+`scripts/build-official-plugins.ts` 让全部插件共享同一个 `distDir` 且 `emptyOutDir:false`，CSS 归属靠「抓取目录里任意 `.css` 文件」（L101-113）。因此前一个插件残留的样式会被算到后一个插件头上——当前两份 manifest 的 `cssSha256` 完全相同（`85d2e211…`），就是这个缺陷的证据。修复方式：
 
 - 每个插件使用隔离子目录 `dist/official-plugins/<id>/` 构建（或每次构建前清空 distDir），构建后仅取本插件产出的 CSS，再拷贝至 static 目录并计算哈希；
 - 重新执行 `vp run build:official-plugins`，核对两份 manifest 哈希互异且与产物一致。
@@ -87,10 +87,10 @@ flowchart TD
 
 ## 影响与收益
 
-- **Profile 纯粹化**：预设仅保留高校必需能力（core-shell / source-cqut / codec-share），发行产物瘦身约 188 kB，回归 ADR 0007「零冗余」初衷；
-- **单轨生命周期**：壁纸与 YUMEMITA 同轨，安装/启停/卸载状态唯一由 `OfficialPluginService` 管理，「已安装即不可安装」的市场矛盾消除；
-- **富 UI 通道泛化**：PluginScreenContainer mountable 分支使任意官方插件可自包含交付 Svelte 富界面，宿主 boot 层不再出现「替插件传组件」的胶水文件；
-- **工程闭环**：构建脚本 CSS 归属缺陷顺带修复，manifest 双哈希恢复可信。
+- **Profile 更精简**：预设只保留高校必需能力（core-shell / source-cqut / codec-share），发行产物减小约 188 kB，符合 ADR 0007「零冗余」的初衷；
+- **管理路径唯一**：壁纸与 YUMEMITA 走同一条在线分发路径，安装/启停/卸载状态只由 `OfficialPluginService` 管理，「已内置所以不可安装」的市场矛盾消除；
+- **富 UI 通道可复用**：PluginScreenContainer 的 mountable 分支让任何官方插件都能自带 Svelte 富界面交付，宿主 boot 层不再出现「替插件传组件」的中转文件；
+- **构建可信**：构建脚本 CSS 归属缺陷一并修复，manifest 双哈希恢复可信。
 
 ---
 

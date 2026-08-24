@@ -10,24 +10,24 @@
 
 ## 背景与问题
 
-随着 ADR 0012 引入了在线插件富 UI（ESM 编译 Svelte 自包含挂载能力），系统架构中仍存在几处关键的历史技术债务与双轨现象：
+ADR 0012 引入在线插件富 UI（ESM 编译 Svelte 的自包含挂载能力）之后，架构中仍存在几处历史遗留问题与「双轨现象」（同一功能存在两套做法）：
 
-1. **导入管道“插槽未闭环”**：
-   - 宿主 `TransferImportScreen.svelte` 内部硬编码了针对 `cqut-online`（知行理工表单）、`share-link`（剪贴板卡片）、`edu-html`（HTML 文件选择）三条专用分支与手写逻辑；
-   - 历史上曾尝试通过 `inputSchema` 驱动，但因通用 `SchemaForm` 无法表达 Material 3 精细表单卡片、离线提示、WebAuthn PRF 凭据列表及快捷验证、一键剪贴板导入等富交互，被迫回退为手写 UI；
-   - 导致无法零改动接入第三方课表源插件，宿主导入状态层 `transfer-state.svelte.ts` 存在针对具体插件的硬编码与逆向常量 import。
+1. **导入管道没有完全走插槽**：
+   - 宿主 `TransferImportScreen.svelte` 内部硬编码了三条专用分支与手写逻辑，分别对应 `cqut-online`（知行理工表单）、`share-link`（剪贴板卡片）、`edu-html`（HTML 文件选择）；
+   - 历史上曾尝试改由 `inputSchema` 驱动，但通用 `SchemaForm` 表达不了 Material 3 风格的精细表单卡片、离线提示、WebAuthn PRF 凭据列表与快捷验证、一键剪贴板导入等富交互，只能退回手写 UI；
+   - 结果是第三方课表源插件无法零改动接入；宿主导入状态层 `transfer-state.svelte.ts` 里也存在针对具体插件的硬编码和对插件常量的反向 import。
 
-2. **壁纸私有事件污染微内核核心事件总线**：
-   - `wallpaper:set`、`wallpaper:changed`、`wallpaper:hydrate` 硬编码在 `@chronos/core` 的 `ChronosEvents` 接口中，破坏了内核的业务无关性与纯粹性。
+2. **壁纸私有事件写进了微内核**：
+   - `wallpaper:set`、`wallpaper:changed`、`wallpaper:hydrate` 三个事件硬编码在 `@chronos/core` 的 `ChronosEvents` 接口中。内核应当与具体业务无关，这破坏了它的通用性。
 
-3. **徽章系统双轨契约**：
-   - 微内核同时保留了已废弃的 `CourseBadgeContribution`（通过 `projectBadges` 计算）与 ADR 0003 插槽契约 `CourseBadgeSlotContribution`，造成维护冗余。
+3. **徽章系统有两套契约**：
+   - 微内核同时保留了已废弃的 `CourseBadgeContribution`（通过 `projectBadges` 计算）与 ADR 0003 的插槽契约 `CourseBadgeSlotContribution`，两套并存造成重复维护。
 
-4. **插件加载器遗留 CJS eval 兼容层**：
-   - `plugin-bundle.ts` 仍保留 `parseCjsBundle` / `isLikelyCjs` / `new Function` 兜底与正则替换，未彻底实现纯 ESM 单轨。
+4. **插件加载器残留 CJS eval 兼容层**：
+   - `plugin-bundle.ts` 仍保留 `parseCjsBundle` / `isLikelyCjs` / `new Function` 兜底与正则替换代码，还没有成为纯 ESM 单一路径。
 
-5. **宿主层逆向依赖与死代码**：
-   - `app-shell.svelte.ts` 在 `clearAllData` 中直接调用 `source-cqut` 的私有凭据存储 key；壁纸插件内部残留未使用的存储函数。
+5. **宿主层的反向依赖与死代码**：
+   - `app-shell.svelte.ts` 在 `clearAllData` 中直接引用了 `source-cqut` 插件私有的凭据存储 key；壁纸插件内部还残留未使用的存储函数。
 
 ---
 
@@ -66,24 +66,24 @@ flowchart TD
 - 在 `@chronos/plugin-source-cqut` 中创建 [`CqutOnlineImportTab.svelte`](file:///Users/uednd/code/Chronos/packages/plugins/source-cqut/src/CqutOnlineImportTab.svelte)（知行理工账号密码登录、离线提示、WebAuthn 凭据列表、验证与清除）与 [`EduHtmlImportTab.svelte`](file:///Users/uednd/code/Chronos/packages/plugins/source-cqut/src/EduHtmlImportTab.svelte)（教务系统 HTML 文件选择与解析）；
 - 在 `@chronos/plugin-codec-share` 中创建 [`ShareLinkImportTab.svelte`](file:///Users/uednd/code/Chronos/packages/plugins/codec-share/src/ShareLinkImportTab.svelte)（剪贴板一键读取与口令解析）；
 - 插件在 `apply()` 注册 `import.source.tab` 插槽时挂载 `component` 与 `inputSchema`（作为降级兜底）；
-- `TransferImportScreen.svelte` 改造为按 `activeSlot.component` 动态挂载，无组件时回退 `SchemaForm`，**消除所有硬编码源分支，且 100% 保持 UI 布局与交互体验像素级一致**；
-- `transfer-state.svelte.ts` 收敛为通用的 `previewWithSlot(tabId, inputs)` 单出口，移除对插件常量的逆向依赖。
+- `TransferImportScreen.svelte` 改为按 `activeSlot.component` 动态挂载组件，没有组件时回退到 `SchemaForm`；**删除了全部硬编码的来源分支，同时 UI 布局与交互体验保持像素级一致**；
+- `transfer-state.svelte.ts` 收拢为通用出口 `previewWithSlot(tabId, inputs)`，移除对插件常量的反向依赖。
 
-### 2. Wallpaper 事件微内核剥离
+### 2. 壁纸事件移出微内核
 
-- 从 `@chronos/core` 的 `ChronosEvents` 移除 `wallpaper:set`、`wallpaper:changed`、`wallpaper:hydrate`；
-- 在 `@chronos/plugin-wallpaper` 中利用 TypeScript 模块增强（`declare module '@chronos/core'`）将私有事件扩展至 `CustomChronosEvents`。
+- 从 `@chronos/core` 的 `ChronosEvents` 中删除 `wallpaper:set`、`wallpaper:changed`、`wallpaper:hydrate`；
+- 在 `@chronos/plugin-wallpaper` 中通过 TypeScript 模块增强（`declare module '@chronos/core'`）把这些私有事件扩展到 `CustomChronosEvents`，事件定义归插件所有。
 
-### 3. 徽章系统双轨合一
+### 3. 徽章契约合并为一套
 
-- 彻底删除已废弃的 `CourseBadgeContribution` 及 `projectBadges`，统一微内核徽章契约为 `CourseBadgeSlotContribution`；
-- `BadgeManager` 适配单契约与上下文同步计算；
-- `ScopedContext.registerSlot('timetable.cell.badge')` 自动路由注册至 `host.badges`。
+- 删除已废弃的 `CourseBadgeContribution` 及 `projectBadges`，微内核徽章契约统一为 `CourseBadgeSlotContribution`；
+- `BadgeManager` 改为只适配这一套契约并结合上下文同步计算；
+- `ScopedContext.registerSlot('timetable.cell.badge')` 注册时自动路由到 `host.badges`。
 
-### 4. 在线插件 ESM 加载器单轨化
+### 4. 在线插件加载器只保留 ESM 一条路径
 
 - 移除 `plugin-bundle.ts` 中的 `new Function` / `parseCjsBundle` / CJS eval 回退代码；
-- 浏览器环境下使用 Blob URL ESM 动态加载，Node / Vitest 测试环境下使用 Data URL ESM 动态加载；
+- 浏览器环境使用 Blob URL 动态加载 ESM，Node / Vitest 测试环境使用 Data URL 动态加载 ESM；
 - `validatePluginManifest` 严格校验 `bundleFormat === 'esm'`。
 
 ### 5. 宿主层解耦与死代码清理
@@ -108,7 +108,7 @@ flowchart TD
 
 ## 结论与后续
 
-本决策使得 Chronos 导入体系彻底实现了**插件自包含富 UI 挂载**与**微内核完全解耦**。任何第三方或高校插件均可通过相同模式声明自身的导入卡片富 UI 或 Schema 降级，宿主无需改动任何代码。
+本决策完成后，Chronos 的导入体系实现了**插件自带富 UI 挂载**，微内核不再包含任何具体导入源的知识。任何第三方或高校插件都可以用同样的方式声明自己的导入卡片富 UI（或 Schema 降级版本），宿主不需要为此修改任何代码。
 
 ---
 

@@ -10,12 +10,12 @@
 
 ## 背景与问题
 
-ADR 0004 为第三方市场插件引入 Web Worker 沙箱双轨，带来：
+ADR 0004 为第三方市场插件引入 Web Worker 沙箱，形成「沙箱 + 进程内」两套并存机制，带来：
 
 1. Worker + JSON-RPC 与进程内 `ScopedContext` 两套生命周期，维护成本高；
-2. 市场 bundle 与 workspace 源码双产物；
-3. 沙箱 API 裁剪（无 pipeline hook、无 Svelte 路由），插件开发体验差；
-4. 产品方向调整为无在线市场、官方 manifest 链接安装、用户自担风险。
+2. 同一插件需要维护 workspace 源码与市场静态 bundle 两份产物；
+3. 沙箱内 API 受限（无 pipeline hook、无 Svelte 路由），插件开发体验差；
+4. 产品方向调整为：不做在线市场，改为官方 manifest 链接安装、用户自担风险。
 
 ---
 
@@ -59,6 +59,6 @@ flowchart TD
 
 ## 影响与收益
 
-- **Concept Collapse**：插件激活收敛为单一路径，slot owner 跟踪一致；
+- **路径单一**：插件激活只有一条路径，slot owner 追踪行为一致；
 - **开发体验**：官方插件 bundle 与 workspace 源码同源，build 脚本生成 manifest + sha256；
 - **产品对齐**：无市场运营成本，官方 catalog + 链接安装满足可选扩展需求。

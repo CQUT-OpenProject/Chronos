@@ -9,12 +9,12 @@
 
 ## 背景与问题
 
-在项目向插件化演进的过程中，遗留了若干未完全消除的「双轨实现」与「侵入式胶水代码」：
+在项目向插件化演进的过程中，还遗留了一些「双轨实现」（同一个功能同时存在两套做法）与「侵入式胶水代码」（宿主里为个别插件专门写的连接代码）：
 
-1. **导入来源三套枚举双轨**：`TimetableImportSource`（Web）、`TransferImportSource`（预览持久化）与插件槽位 ID（`cqut-online`, `edu-html`, `share-link`）并存，导入控制器需要反复转译；
-2. **存储端口特化污染**：`IStorageService` 暴露了特定插件专属方法 `getWallpaper?()` 与 `setWallpaper?()`；
-3. **特定高校 UI 胶水侵入宿主**：宿主课表详情编辑和确认页直接硬编码了 `OnlineCampusPeriodSection`（CQUT 校区单选），导致通用节次时间无法自主编辑；
-4. **影子模型与死代码残留**：Web 宿主重复声明了教务数据模型，且遗留了未被引用的 `ChronosTimetableShareLinkCodec` 与孤立的 `lib/parsers/`。
+1. **导入来源有三套并行的标识**：`TimetableImportSource`（Web 层枚举）、`TransferImportSource`（预览持久化用）与插件槽位 ID（`cqut-online`, `edu-html`, `share-link`）并存，导入控制器需要在三者之间反复转换；
+2. **存储端口混入了插件专属方法**：`IStorageService` 暴露了只服务壁纸插件的 `getWallpaper?()` 与 `setWallpaper?()`；
+3. **特定高校的 UI 写死在宿主里**：宿主课表详情编辑和确认页直接硬编码了 `OnlineCampusPeriodSection`（CQUT 校区单选组件），导致通用节次时间无法自由编辑；
+4. **重复的数据模型与无引用代码**：Web 宿主重复声明了一份教务数据模型，且遗留了未被引用的 `ChronosTimetableShareLinkCodec` 与孤立的 `lib/parsers/` 目录。
 
 ---
 
@@ -34,13 +34,13 @@ flowchart TD
 
 ### 1. 全槽位驱动导入摄取（Deep Ingest Seam）
 
-- 彻底废除 `TimetableImportSource` 与 `TransferImportSource` 枚举，统一使用 `importMetadata.source: string` 与槽位 ID 驱动；
-- 移除宿主对特定源的硬编码转译，导入源完全由 `import.source.tab` 插槽元数据声明。
+- 删除 `TimetableImportSource` 与 `TransferImportSource` 两个枚举，统一使用 `importMetadata.source: string` 与槽位 ID 标识导入来源；
+- 移除宿主对特定导入源的硬编码转换，导入源完全由 `import.source.tab` 插槽元数据声明。
 
 ### 2. 存储端口与主题能力纯粹化
 
-- 从 `IStorageService` 与 `ChronosEnv` 彻底剥离 `getWallpaper/setWallpaper` 方法，插件私有数据一律通过 `getPluginData/setPluginData` 命名空间 KV 存储；
-- 移除主题设置中的 `theme.id === 'wallpaper'` 特判，改为基于 `ThemeContribution.supportsDynamicColor` 声明式属性驱动。
+- 从 `IStorageService` 与 `ChronosEnv` 移除 `getWallpaper/setWallpaper` 方法；壁纸等插件私有数据一律通过 `getPluginData/setPluginData` 的命名空间 KV 存储；
+- 移除主题设置中的 `theme.id === 'wallpaper'` 特判，改为读取 `ThemeContribution.supportsDynamicColor` 声明式属性来决定是否启用动态取色。
 
 ### 3. 解耦特定高校 UI 并清理死代码
 
@@ -52,15 +52,15 @@ flowchart TD
 
 ## 影响与收益
 
-- **High Signal & Clean Surface（高信噪比与干净表面）**：消除了所有双轨枚举与历史松散字符串联合，包导出接口显著收敛；
-- **Zero Host Coupling（宿主零特定源耦合）**：接入新高校或新视觉插件无需触碰宿主核心代码。
+- **接口面更小**：删除了所有双轨枚举和历史遗留的松散字符串联合类型，包的公开导出明显减少；
+- **宿主与具体来源解耦**：接入新高校或新视觉插件不需要修改宿主核心代码。
 
 ---
 
 ## 演进复盘与反思 (Lessons Learned)
 
-结合自 `6c23e91` 以来的提交变更轨迹，架构演进过程中曾出现以下拉锯与经验沉淀：
+结合自 `6c23e91` 以来的提交变更轨迹，架构演进过程中有以下反复与经验：
 
-1. **通用动态表单 vs 原生交互体验**：曾尝试将所有导入源统一强制由 `SchemaForm` 动态渲染，但在教务认证（密码脱敏、剪贴板读取、记住密码多选等）复杂场景下体验受限且存在双向绑定同步缺陷，最终确定「标准插件使用 `SchemaForm`，高定制核心导入保留 M3 原生表单结构」的分级策略；
-2. **作息映射自闭环原则**：作息表推算应完全在高校源插件内部闭环（挂载至 `customMetadata['source-cqut']`），宿主不应保留 `OnlineCampusPeriodSection` 等特化选择器，而是将节次时间以通用表格形式开放给用户自由编辑；
-3. **收敛分享媒介单一出口**：分享短链（Brotli + Varint 紧凑二进制）作为统一核心媒介，果断移除 JSON 导出以避免内部模型泄露与多头兼容维护。
+1. **通用动态表单 vs 原生交互体验**：曾尝试把所有导入源统一交给 `SchemaForm` 动态渲染，但教务认证场景（密码脱敏、剪贴板读取、记住密码多选等）交互复杂，体验受限且存在双向绑定同步缺陷。最终确定的策略是分级处理：标准插件使用 `SchemaForm`，高定制的核心导入保留 M3 原生表单结构；
+2. **作息数据由源插件自己管理**：校区作息表的推算与存储完全放在高校源插件内部（挂载至 `customMetadata['source-cqut']`），宿主不保留 `OnlineCampusPeriodSection` 这类专属选择器，只以通用表格形式让用户自由编辑节次时间；
+3. **分享媒介只用一种**：分享短链（Brotli + Varint 紧凑二进制）是唯一的对外分享格式，移除 JSON 导出，避免内部模型外泄和多种格式的重复维护。

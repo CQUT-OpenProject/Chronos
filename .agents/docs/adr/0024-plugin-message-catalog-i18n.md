@@ -10,22 +10,22 @@
 
 ## 背景与问题
 
-宿主 Shell 已用 Paraglide（`apps/web/messages/`），插件插槽文案仍多为硬编码中文 `() => '...'`。引擎层保留了 `setLocale` / `ctx.i18n` / `i18n:localeChanged` 链，但生产零流量。Round 5 审计建议删除；产品目标是通过插件实现多语言，需正式契约而非休眠 API。
+宿主 Shell 已使用 Paraglide 管理文案（`apps/web/messages/`），但插件插槽的文案大多还是硬编码中文的 `() => '...'`。引擎层保留了 `setLocale` / `ctx.i18n` / `i18n:localeChanged` 这条链路，但生产环境没有流量经过它。Round 5 审计建议删除该链路；而产品目标恰是通过插件实现多语言，因此需要的是一份正式契约（message catalog，按键值组织的多语言文案表），而不是一个休眠 API。
 
 ## 架构决策
 
 ### D1 — Message catalog 模型
 
-插件在 `apply(ctx)` 内调用 `ctx.i18n.registerMessages(catalog)`：
+插件在 `apply(ctx)` 内调用 `ctx.i18n.registerMessages(catalog)` 注册自己的 message catalog：
 
-- `catalog`: `Record<locale, Record<key, string>>`
-- key 在引擎内自动加 `pluginId:` 命名空间
-- 插槽 / schema 使用 `() => ctx.i18n.t('import.title')`
-- `registerMessages` 返回 `Disposable`；`unloadPlugin` 时移除该插件条目
+- `catalog` 的类型为 `Record<locale, Record<key, string>>`
+- 引擎自动给每个 key 加上 `pluginId:` 命名空间前缀
+- 插槽与 schema 经 `() => ctx.i18n.t('import.title')` 取文案
+- `registerMessages` 返回 `Disposable`；执行 `unloadPlugin` 时会一并移除该插件的条目
 
 ### D2 — LocalizedText
 
-保留 `string | (() => string)`。推荐函数体内调用 `ctx.i18n.t`。`resolveLocalizedText` 可选 `locale` 参数；locale 切换经 `i18n:localeChanged` → `slotVersion++` 触发重算。
+保留 `string | (() => string)` 类型。推荐在函数体内调用 `ctx.i18n.t` 取文案。`resolveLocalizedText` 接受可选的 `locale` 参数；locale 切换后经 `i18n:localeChanged` → `slotVersion++` 触发文案重算。
 
 ### D3 — Locale 规范
 
@@ -37,22 +37,22 @@
 
 ### D5 — C3 处置
 
-**不删除** engine i18n 链；定义为 RESERVED 并接通最小闭环（catalog + setLocale + localeChanged）。
+**不删除** engine i18n 链。将其定义为 RESERVED（预留状态），并接通最小闭环（catalog + setLocale + localeChanged）。
 
 ### D6 — Plugin activation
 
-移除 `plugin.inject` / `ctx.inject` 第二套 DI（Round 5 C1）；激活单轨 `loadPlugin` → `apply(ScopedContext)`。
+移除第二套 DI（依赖注入）机制 `plugin.inject` / `ctx.inject`（Round 5 C1）。插件激活收敛为单轨：`loadPlugin` → `apply(ScopedContext)`。
 
 ## 插件作者指南
 
-1. 在 `apply` 首行 `registerMessages({ 'zh-cn': {...}, en: {...} })`
-2. 模块级 `defineSchema` 改为 `createXxxSchema(t)` factory，在 `apply` 内实例化
+1. 在 `apply` 首行调用 `registerMessages({ 'zh-cn': {...}, en: {...} })`
+2. 模块级 `defineSchema` 改为 `createXxxSchema(t)` 工厂函数，在 `apply` 内实例化
 3. 卸载插件时 catalog 自动清理，无需手动处理
 
 ## 验证
 
 - `vp check` / `vp test` 全绿
-- 切换 en/zh-cn 后插槽标题随 `slotVersion` 更新
+- 切换 en/zh-cn 后，插槽标题随 `slotVersion` 更新
 - `grep 'plugin\.inject\|pendingPlugins'` 零残留（除 ADR 历史引用）
 
 ---

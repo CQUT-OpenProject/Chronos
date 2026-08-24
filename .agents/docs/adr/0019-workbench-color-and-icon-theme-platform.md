@@ -11,7 +11,7 @@
 
 ## 背景与问题
 
-ADR 0018 在 `ThemeContribution.shell` 上叠加 `customCssVars` 与 `bottomTabIcons`，配色与 Shell 图标耦合在同一贡献上，且 CSS 变量键名无封闭注册表。应用尚无用户，可一次性切换到 VS Code 式「配色主题 + 图标主题」分离模型。
+ADR 0018 在 `ThemeContribution.shell` 上叠加了 `customCssVars` 与 `bottomTabIcons`，导致配色与 Shell 图标耦合在同一个贡献对象上，且 CSS 变量键名没有封闭的注册表（任何字符串都能写入）。当时应用尚无用户，可以一次性切换到类似 VS Code 的「配色主题 + 图标主题」分离模型。
 
 ---
 
@@ -40,8 +40,8 @@ ADR 0018 在 `ThemeContribution.shell` 上叠加 `customCssVars` 与 `bottomTabI
 ## 影响与收益
 
 - 配色与图标解耦，契约与 VS Code 主题平台对齐；
-- 封闭 workbench key 防止随意 CSS 变量污染；
-- JSON-only 官方主题减少 bundle 体积与跨 bundle Svelte 运行时风险。
+- workbench 颜色键是封闭集合，防止主题随意写入 CSS 变量；
+- JSON-only 官方主题不需要 JS bundle，体积更小，也没有跨 bundle 加载 Svelte 运行时的风险。
 
 ---
 

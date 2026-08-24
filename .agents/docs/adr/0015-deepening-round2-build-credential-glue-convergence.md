@@ -10,7 +10,7 @@
 
 ## 背景与问题
 
-ADR 0014 完成壁纸退役 Profile 与 mountable 富 UI 通道后，审计仍发现 6 类「已收敛 90% 但差最后一公里」的浅层实现与双轨残留：
+ADR 0014 完成壁纸退役 Profile 与 mountable 富 UI 通道后，审计仍发现 6 类「大部分已清理、但还差最后一步」的浅层实现与双轨残留：
 
 | #   | 类别          | 位置                                                                                                                                                              | 现象                                                                                 |
 | --- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -21,7 +21,7 @@ ADR 0014 完成壁纸退役 Profile 与 mountable 富 UI 通道后，审计仍�
 | 5   | 插件体积/重复 | `codec-share` 1.43 MB brotli-wasm 阻塞 `apply()`；`share-campus.ts` 与 `campus-period-times.ts` 各存一份 `huaxi/liangjiang` 10 节次                               | 体积转嫁首屏，校区数据双源                                                           |
 | 6   | 运行时深度    | `runtime.svelte.ts:11 storageRef` 模块级单例；`PluginScreenContainer.svelte:18` duck-typing                                                                       | 跨 `load/unload` 串扰，误判风险；`storage.delete('__config__')` 可误删配置           |
 
-YUMEMITA 已验证在线分发闭环，剩余债务需一次收敛至「深模块、小接口、高内聚」。
+YUMEMITA 已验证在线分发可以走通，剩余问题需要在这一次重构中清理干净。目标是：每个模块自己完成自己的事情，对外只暴露小而明确的接口。
 
 ---
 
@@ -60,7 +60,7 @@ flowchart TD
 - `packages/core/src/types/slots.ts:12` 扩展 `ImportTabSlotContribution.credential?: { recordKey, vaultKey }`。
 - `packages/plugins/source-cqut/src/index.ts:404` 注册 `cqut-online` 时声明 `credential: { recordKey: 'credential-record', vaultKey: 'source-cqut:password' }`。
 - `apps/web/src/lib/client/credential-vault.ts` 新增 `createGenericCredentialVault({ storage, pluginId, recordKey, vaultKey })`，`storage.delete('__config__')` 受保护。
-- `apps/web/src/lib/transfer/transfer-state.svelte.ts` 移除 `@chronos/plugin-source-cqut` 硬编码，改为 `engine.slots.get('import.source.tab')` 动态解析 `credential` 元数据 + `engine.slots.resolveOwner` 求插件 ID，`slotVersion` 驱动的 `$effect` 自动重建 vault；`previewFromClipboard/previewOnline/previewFromHtmlFile` 收敛为 `previewWithSlot` 薄包装（标 `@deprecated`）。
+- `apps/web/src/lib/transfer/transfer-state.svelte.ts` 移除对 `@chronos/plugin-source-cqut` 的硬编码，改为：通过 `engine.slots.get('import.source.tab')` 动态读取 `credential` 元数据，用 `engine.slots.resolveOwner` 解析所属插件 ID；由 `slotVersion` 驱动的 `$effect` 会在插槽变化时自动重建 vault。原有的 `previewFromClipboard/previewOnline/previewFromHtmlFile` 收拢为 `previewWithSlot` 的薄包装（标记 `@deprecated`）。
 
 ### 3. 宿主胶水深化清理
 
@@ -72,19 +72,19 @@ flowchart TD
 
 ### 4. 插件规范收敛
 
-- **校区单一真相归属插件**：`CQUT_CAMPUSES / CQUT_DEFAULT_CAMPUS_PERIOD_TIMES / inferCampusIdFromCourses / campusIdToShareIndex` 等收敛于 `packages/plugins/source-cqut/src/campus-period-times.ts`（`@chronos/core` 保持零高校特化）；`codec-share/src/share-link/share-campus.ts` 改为 `export * from '@chronos/plugin-source-cqut/campus-period-times'` re-export，新增 `package.json:campus-period-times` 导出与 `vite.config.ts` 别名。
-- **体积**：`packages/plugins/codec-share/src/share-link/share-link-brotli.ts` 新增 `SHARE_LINK_VERSION_DEFLATE=2` 与 `isDeflateSupported() = isBrowser && CompressionStream`，`compressShareAdaptive / decompressShareAdaptive` 优先 `CompressionStream('deflate')`（浏览器零额外体积）回退 `brotli-wasm` 懒加载；`chronos-share-link-codec.ts` 支持 `1.`/`2.` 双版本前缀与校验互异，`estimateShareLinkLength` 不再阻塞；`codec-share/src/index.ts` 移除 `await ensureShareLinkBrotliReady()` 同步阻塞。
-- **运行时与容器**：`runtime.svelte.ts` 新增 `CHRONOS_MOUNTABLE = Symbol.for('chronos.mountable')` 与 `createWallpaperRuntime(storage, pluginId)` 工厂（委托全局单例，下迭代完全隔离）；`PluginScreenContainer.svelte:18` 改为 `Symbol.for('chronos.mountable')` 显式判定 + `try/catch` 挂载/卸载保护；`bundle/entry.ts` 增加 ` [Symbol.for('chronos.mountable')]: true`。
-- **存储保护**：`scoped-context.ts:74` 禁止 `delete('__config__')` 并 warn。
+- **校区数据只有一份**：`CQUT_CAMPUSES / CQUT_DEFAULT_CAMPUS_PERIOD_TIMES / inferCampusIdFromCourses / campusIdToShareIndex` 等校区数据与换算逻辑统一放在 `packages/plugins/source-cqut/src/campus-period-times.ts`（`@chronos/core` 保持零高校特化）；`codec-share/src/share-link/share-campus.ts` 改为 `export * from '@chronos/plugin-source-cqut/campus-period-times'` 转发导出，并在 `package.json` 新增 `campus-period-times` 导出、在 `vite.config.ts` 新增别名。
+- **体积**：`packages/plugins/codec-share/src/share-link/share-link-brotli.ts` 新增 `SHARE_LINK_VERSION_DEFLATE=2` 与 `isDeflateSupported() = isBrowser && CompressionStream`。`compressShareAdaptive / decompressShareAdaptive` 优先使用浏览器原生的 `CompressionStream('deflate')`（不增加任何体积），不支持时才懒加载回退到 `brotli-wasm`；`chronos-share-link-codec.ts` 同时支持 `1.`/`2.` 两种版本前缀且两版校验值不同；`estimateShareLinkLength` 不再被阻塞；`codec-share/src/index.ts` 移除了同步等待 brotli 就绪的 `await ensureShareLinkBrotliReady()`。
+- **运行时与容器**：`runtime.svelte.ts` 新增 `CHRONOS_MOUNTABLE = Symbol.for('chronos.mountable')` 标识与 `createWallpaperRuntime(storage, pluginId)` 工厂（当前仍委托全局单例，下一迭代改为完全隔离）；`PluginScreenContainer.svelte:18` 改用该 Symbol 显式判定组件类型，并用 `try/catch` 保护挂载/卸载；`bundle/entry.ts` 增加 ` [Symbol.for('chronos.mountable')]: true` 标记。
+- **存储保护**：`scoped-context.ts:74` 禁止插件调用 `delete('__config__')` 并给出警告。
 
 ---
 
 ## 影响与收益
 
-- **Locality**：凭据键名、校区表、取色适配器各自收敛于 `source-cqut`/`wallpaper`，`@chronos/core` 保持零高校特化与零 DOM；新增高校仅新增插件 + `credential` 元数据。
-- **Depth**：`build-official-plugins` 接口承诺可信双哈希无需调用者二次校验；`ImportTabSlotContribution` 与 `ThemeContribution` 小接口承载大行为，`删除测试`通过（删 `source-cqut` 宿主不残留 import，删构建脚本不分散校验）。
-- **Leverage**：`CompressionStream` 首包减体积、`dist/<id>/` 隔离使后续任意官方插件零额外校验，`mountable` 通道使任意 Svelte 富 UI 官方插件零宿主改动。
-- **工程**：`vp check` / `vp test 86/86` / `build:official-plugins` 哈希互异 / `apps/web build` 全绿。
+- **职责归位**：凭据键名、校区表、取色适配器分别归入 `source-cqut` 与 `wallpaper` 插件；`@chronos/core` 不含任何高校特化逻辑、零 DOM 依赖。新增一所高校只需要新增插件并声明 `credential` 元数据。
+- **接口可信**：`build-official-plugins` 保证产出的双哈希正确，调用方不需要自己再校验一遍；`ImportTabSlotContribution` 与 `ThemeContribution` 用小接口承载了完整行为。「删除测试」通过——删掉 `source-cqut` 后宿主不残留任何 import，删掉构建脚本后校验逻辑不会散落各处。
+- **可复用**：`CompressionStream` 优先策略减小首包体积；`dist/<id>/` 隔离让后续任何官方插件构建都无需额外处理；mountable 通道让任意含 Svelte 富 UI 的官方插件接入时宿主零改动。
+- **工程**：`vp check` / `vp test 86/86` / `build:official-plugins` 哈希互异 / `apps/web build` 全部通过。
 
 ---
 

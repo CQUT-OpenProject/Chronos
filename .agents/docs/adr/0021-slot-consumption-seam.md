@@ -12,27 +12,27 @@
 
 插槽的排序契约早已写入 CONTEXT.md，但实现散落在消费端：
 
-1. `HierarchicalSlotRegistry.get()` 本就按 `(order ?? 50)` 稳定排序返回，而 BottomTabBar、MineScreen（×2）、TransferExportScreen、transfer-state 仍各自再做一次冗余排序——魔法数 50 散落 5 处。
-2. LocalizedText 三元解析（`typeof x === 'function' ? x() : x`）在宿主各屏重复 ~9 处。
-3. mountable 挂载协议（Symbol 判定 + try/catch mount/unmount）在 PluginScreenContainer 与 TransferImportScreen 近乎逐行复制两份。
-4. primary 选择（`find(isPrimary) ?? sort[0]`）在 transfer-state 与 TransferExportScreen 双写。
-5. ui-kit `SlotOutlet` 导出但零消费者——一个没有适配器的假想缝隙。
+1. `HierarchicalSlotRegistry.get()` 本来就按 `(order ?? 50)` 做稳定排序后返回，但 BottomTabBar、MineScreen（两处）、TransferExportScreen、transfer-state 又各自再排一次——默认值 50 这个魔法数在 5 个地方重复出现。
+2. LocalizedText 的解析逻辑（`typeof x === 'function' ? x() : x`）在宿主各屏重复了约 9 处。
+3. mountable 挂载协议（Symbol 判定 + try/catch 包裹的 mount/unmount）在 PluginScreenContainer 与 TransferImportScreen 里几乎逐行复制了两份。
+4. 主操作选择逻辑（`find(isPrimary) ?? sort[0]`）在 transfer-state 与 TransferExportScreen 各写了一份。
+5. ui-kit 导出了 `SlotOutlet` 组件但没有任何消费者——它对应一个并不存在的使用场景。
 
 ## 架构决策
 
-1. **排序以 registry 为唯一真相**：`get()` 返回稳定排序副本即为契约；删除全部消费端二次排序；`order ?? 50` 字面量只允许存在于 registry。
-2. **core 新增纯函数 helper**：
-   - `resolveLocalizedText(text, fallback?)` —— LocalizedText 解析唯一实现；
-   - `pickPrimary(items)` —— 主操作选择唯一实现。
-3. **ui-kit 新增 `MountableSlotOutlet.svelte`**：mountable 生命周期（isChronosMountable 判定、try/catch mount/unmount）单一实现；PluginScreenContainer 与 TransferImportScreen 均委托该组件。两个真实消费者使缝隙成立。
-4. **删除 SlotOutlet**：各屏均有定制渲染诉求且无任何采用者——删除直到出现真实需求（缝隙的位置是设计决策，不是预付款）。
-5. MineScreen 分组后不再重排：section/item 插入序即 registry 排序序。
+1. **排序以 registry 为唯一依据**：`get()` 返回的稳定排序副本就是契约；删除所有消费端的二次排序；`order ?? 50` 这个字面量只允许出现在 registry 里。
+2. **core 新增纯函数工具**：
+   - `resolveLocalizedText(text, fallback?)` —— LocalizedText 解析的唯一实现；
+   - `pickPrimary(items)` —— 主操作选择的唯一实现。
+3. **ui-kit 新增 `MountableSlotOutlet.svelte`**：mountable 的完整生命周期（isChronosMountable 判定、try/catch 包裹的 mount/unmount）只在这一个组件里实现；PluginScreenContainer 与 TransferImportScreen 都委托给它。有两个真实消费者，这个抽象才成立。
+4. **删除 SlotOutlet**：各屏幕都有定制渲染需求且没有任何使用方——在真实需求出现之前先删除（要不要留扩展点是设计决策，不是提前占位）。
+5. MineScreen 分组后不再重新排序：section/item 的插入顺序即 registry 排序顺序。
 
 ## 影响与收益
 
-- **Leverage**：新插槽家族零样板接入——排序、文本解析、主操作选择免费获得一致语义。
-- **Locality**：顺序/解析 bug 只能出现在一处；`vp test` 对 registry 排序与 helper 的单测即覆盖全部消费屏。
-- 删除测试通过：SlotOutlet 移除无任何调用方破裂。
+- **接入成本低**：新增一类插槽时零样板代码——排序、文本解析、主操作选择自动获得一致语义。
+- **问题只会出现在一处**：顺序或解析相关的 bug 只可能在唯一实现里出现；`vp test` 对 registry 排序与工具函数的单测即可覆盖全部消费屏幕。
+- 删除测试通过：移除 SlotOutlet 后没有任何调用方报错。
 
 ## 验证
 

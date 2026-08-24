@@ -9,7 +9,7 @@
 
 ## 背景与问题
 
-ADR 0009 完成导入管道插槽化与排版跨层清理后，宿主层仍残留多处「影子状态」与浅层双轨实现，导致 Svelte 视图与微内核数据源之间多一层无效同步：
+ADR 0009 完成导入管道插槽化与排版跨层清理后，宿主层仍残留多处「影子状态」（视图层自己保存的、与引擎数据重复的一份状态）和浅层双轨实现，导致 Svelte 视图与微内核数据源之间多出一层无效同步：
 
 1. **`AppState` 影子模型**：`apps/web/src/lib/models/app-state.ts` 将 `ReactiveChronosController` 已有字段再包装为 `appState`，并携带已失效的 `wallpaperUri` 等字段；
 2. **Dexie `wallpapers` 废弃表**：壁纸已迁移至 `IStorageService` 命名空间 KV（`getPluginData` / `setPluginData`），Dexie 特化方法与表定义成为死代码；
@@ -88,11 +88,11 @@ flowchart TD
 
 ## 影响与收益
 
-- **Single Source of Truth**：Svelte 视图与测试均直连 `ReactiveChronosController`，消除影子同步层；
-- **Storage Port Purity**：Dexie 层仅保留课表、课程与 `pluginData` 三张表，无插件特化方法；
-- **Boot Sequence Clarity**：引擎启动路径单一，Profile 装配负责全部内置插槽注册；
-- **Hash Consistency**：槽位键格式统一，胶囊布局与网格展示共用同一键空间；
-- **Dependency Direction**：Marketplace 服务不再依赖宿主 appearance 模块，主题回退逻辑自闭环于引擎 actions。
+- **状态单一来源**：Svelte 视图与测试均直连 `ReactiveChronosController`，删除了重复的同步层；
+- **存储端口干净**：Dexie 层只保留课表、课程与 `pluginData` 三张表，没有插件专属方法；
+- **启动路径清晰**：引擎启动路径只有一条，全部内置插槽注册由 Profile 装配负责；
+- **键格式一致**：槽位键格式统一，胶囊布局与网格展示使用同一套键；
+- **依赖方向正确**：Marketplace 服务不再依赖宿主 appearance 模块，主题回退逻辑通过引擎 actions 完成。
 
 ---
 

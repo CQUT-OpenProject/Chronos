@@ -11,15 +11,15 @@
 
 此前项目中同时存在 `EventBus`（简单的事件订阅广播）与 `DataPipeline`（数据变换链条）两套独立机制：
 
-1. 双轨机制功能重叠，开发者容易混淆何时使用 `emit`，何时使用 `pipeline.transform`；
-2. 缺少并发安全控制（如串行异步调用保护与瀑布流中间件拦截）；
-3. 增加了引擎核心概念复杂度。
+1. 两套机制功能重叠，开发者容易混淆何时使用 `emit`、何时使用 `pipeline.transform`；
+2. 缺少并发安全控制（例如防止同一个动作被并发重复执行的串行保护，以及按顺序依次加工数据的拦截链）；
+3. 增加了引擎核心概念的复杂度。
 
 ---
 
 ## 架构决策
 
-彻底废除 `EventBus` 与 `Pipeline`，收敛为统一的深模块 `EventPipeline`：
+废除 `EventBus` 与 `Pipeline`，两者合并为一个统一的 `EventPipeline`：
 
 ```mermaid
 flowchart LR
@@ -37,14 +37,14 @@ flowchart LR
 
 ### 2. 接口极简化
 
-`ChronosEngine` 将 `events` 与 `pipeline` 指向同一个 `EventPipeline` 实例，提供极低学习成本的单接口支撑。
+`ChronosEngine` 将 `events` 与 `pipeline` 指向同一个 `EventPipeline` 实例，只暴露一个接口。
 
 ---
 
 ## 影响与收益
 
-- **Concept Collapse（概念折叠）**：删除 2 个分散的浅模块，收敛为 1 个高杠杆的深度调度核心；
-- **Deterministic Flow（确定性流程）**：插件拦截与事件触发具备严格的执行顺序保证。
+- **概念更少**：删除 2 个功能重叠的浅模块，只保留 1 个事件调度核心；
+- **顺序可预期**：插件拦截与事件触发有明确的执行顺序保证。
 
 ---
 
