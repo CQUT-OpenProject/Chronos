@@ -314,4 +314,44 @@ describe('OfficialPluginService', () => {
 		expect(service.listInstalled()).toHaveLength(0);
 		expect(service.isPluginActive('test-plugin')).toBe(false);
 	});
+
+	it('installs from manifest URL', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Link' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Link plugin' },
+			author: 'Community',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '0.3.0',
+			bundleUrl: 'bundle.js',
+			sha256: hash
+		};
+		const manifestUrl = 'https://cdn.example.com/plugins/link/manifest.json';
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === manifestUrl) {
+				return httpResponse({ json: async <T>() => manifest as T });
+			}
+			if (url === 'https://cdn.example.com/plugins/link/bundle.js') {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.installFromManifestUrl(manifestUrl);
+		expect(engine.isPluginLoaded('test-plugin')).toBe(true);
+		expect(httpRequest).toHaveBeenCalledWith(
+			'https://cdn.example.com/plugins/link/bundle.js',
+			expect.anything()
+		);
+	});
+
+	it('rejects invalid manifest install URLs', async () => {
+		await expect(service.installFromManifestUrl('javascript:alert(1)')).rejects.toThrow(
+			/http or https/
+		);
+	});
 });

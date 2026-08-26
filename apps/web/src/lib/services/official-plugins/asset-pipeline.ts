@@ -2,36 +2,42 @@ import type { PluginManifest } from '@chronos/core';
 import { IHttpService, IRuntimeService } from '@chronos/core';
 import type { ChronosEngine } from '@chronos/core';
 import type { OfficialPluginAssets } from './official-plugin-types';
+import { resolveManifestForDownload } from './manifest-url';
 
 export class OfficialPluginAssetPipeline {
 	constructor(private readonly engine: ChronosEngine) {}
 
-	async download(manifest: PluginManifest): Promise<OfficialPluginAssets> {
+	async download(manifest: PluginManifest, manifestUrl?: string): Promise<OfficialPluginAssets> {
+		const resolvedManifest = resolveManifestForDownload(manifest, manifestUrl);
 		let code: string | null = null;
 		let colorsJson: string | null = null;
 		let iconThemeJson: string | null = null;
 		let cssCode: string | null = null;
 
-		if (manifest.colorsUrl) {
+		if (resolvedManifest.colorsUrl) {
 			colorsJson = await this.downloadTextAsset(
-				manifest.colorsUrl,
-				manifest.colorsSha256,
+				resolvedManifest.colorsUrl,
+				resolvedManifest.colorsSha256,
 				'colors'
 			);
 		}
 
-		if (manifest.iconThemeUrl) {
+		if (resolvedManifest.iconThemeUrl) {
 			iconThemeJson = await this.downloadTextAsset(
-				manifest.iconThemeUrl,
-				manifest.iconThemeSha256,
+				resolvedManifest.iconThemeUrl,
+				resolvedManifest.iconThemeSha256,
 				'icon theme'
 			);
 		}
 
-		if (manifest.bundleUrl) {
-			code = await this.downloadTextAsset(manifest.bundleUrl, manifest.sha256, 'bundle');
-			const cssUrl = manifest.cssUrl;
-			const cssSha256 = manifest.cssSha256;
+		if (resolvedManifest.bundleUrl) {
+			code = await this.downloadTextAsset(
+				resolvedManifest.bundleUrl,
+				resolvedManifest.sha256,
+				'bundle'
+			);
+			const cssUrl = resolvedManifest.cssUrl;
+			const cssSha256 = resolvedManifest.cssSha256;
 			if (cssUrl) {
 				cssCode = await this.downloadTextAsset(cssUrl, cssSha256, 'css');
 			}

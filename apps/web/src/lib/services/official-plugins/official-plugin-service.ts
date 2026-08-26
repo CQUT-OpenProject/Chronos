@@ -6,6 +6,7 @@ import { OfficialPluginCatalogClient } from './catalog-client';
 import { OfficialPluginInstalledStore } from './installed-store';
 import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 import { OfficialPluginRuntimeActivator } from './runtime-activator';
+import { assertValidManifestInstallUrl } from './manifest-url';
 import { validatePluginManifest } from './plugin-bundle';
 
 export type { InstalledOfficialPluginRecord } from './official-plugin-types';
@@ -82,13 +83,14 @@ export class OfficialPluginService implements Disposable {
 	}
 
 	async installFromManifestUrl(manifestUrl: string): Promise<void> {
+		assertValidManifestInstallUrl(manifestUrl);
 		const manifest = await this.fetchManifest(manifestUrl);
 		await this.install(manifest, manifestUrl);
 	}
 
 	async install(manifest: PluginManifest, manifestUrl?: string): Promise<void> {
 		validatePluginManifest(manifest);
-		const assets = await this.assetPipeline.download(manifest);
+		const assets = await this.assetPipeline.download(manifest, manifestUrl);
 
 		const record: InstalledOfficialPluginRecord = {
 			manifest,
