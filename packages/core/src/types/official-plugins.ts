@@ -27,8 +27,6 @@ export interface PluginManifest {
 	themeId?: string;
 	iconThemeUrl?: string;
 	iconThemeSha256?: string;
-	/** Optional Ed25519 signature (future verification). */
-	signature?: string;
 	allowedDomains?: string[];
 	configSchema?: ConfigSchema<Record<string, unknown>>;
 	icon?: string;
