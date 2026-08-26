@@ -1,0 +1,53 @@
+{
+	"name": "@chronos/web",
+	"private": true,
+	"version": "0.3.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vp dev .",
+		"build": "vp build .",
+		"build:pages": "CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-cqut-offline vp build . && cp build/404.html build/index.html",
+		"preview": "vp preview .",
+		"prepare": "vp config && node --experimental-strip-types scripts/emit-profile-artifacts.ts && svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "vp test -- --run"
+	},
+	"dependencies": {
+		"@chronos/core": "workspace:*",
+		"@chronos/ui-kit": "workspace:*",
+		"@chronos/plugin-source-cqut": "workspace:*",
+		"@chronos/plugin-codec-share": "workspace:*",
+		"@internationalized/date": "^3.12.3",
+		"@material-symbols-svg/svelte": "^0.13.0",
+		"bits-ui": "^2.18.1",
+		"dexie": "^4.4.5",
+		"marked": "^18.0.9",
+		"posthog-js": "^1.417.1",
+		"swiper": "^14.1.0",
+		"vite-plugin-functions-mixins": "^0.4.1",
+		"web-vitals": "^6.1.1",
+		"workbox-window": "^7.4.1",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@chronos/plugin-wallpaper": "workspace:*",
+		"@inlang/paraglide-js": "^2.24.1",
+		"@sveltejs/adapter-static": "^3.0.10",
+		"@sveltejs/adapter-vercel": "^6.3.3",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.3.0",
+		"@tailwindcss/forms": "^0.5.11",
+		"@tailwindcss/typography": "^0.5.19",
+		"@tailwindcss/vite": "^4.3.0",
+		"@types/node": "^24",
+		"@vite-pwa/sveltekit": "^1.1.0",
+		"svelte": "^5.56.9",
+		"svelte-check": "^4.7.6",
+		"tailwindcss": "^4.3.0",
+		"typescript": "^7.0.2",
+		"vite": "catalog:",
+		"vite-plus": "catalog:",
+		"@chronos/plugin-theme-yumemita": "workspace:*"
+	}
+}

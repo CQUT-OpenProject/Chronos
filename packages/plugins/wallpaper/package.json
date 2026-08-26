@@ -1,0 +1,34 @@
+{
+	"name": "@chronos/plugin-wallpaper",
+	"version": "0.1.0",
+	"type": "module",
+	"main": "./src/index.ts",
+	"module": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"import": "./src/index.ts",
+			"default": "./src/index.ts"
+		},
+		"./wallpaper-theme": {
+			"types": "./src/wallpaper-theme.ts",
+			"import": "./src/wallpaper-theme.ts",
+			"default": "./src/wallpaper-theme.ts"
+		},
+		"./WallpaperScreen": {
+			"types": "./src/WallpaperScreen.svelte",
+			"import": "./src/WallpaperScreen.svelte",
+			"default": "./src/WallpaperScreen.svelte"
+		}
+	},
+	"dependencies": {
+		"@chronos/codec-kit": "workspace:*",
+		"@chronos/core": "workspace:*",
+		"@chronos/ui-kit": "workspace:*",
+		"@ktibow/material-color-utilities-nightly": "^0.4.1772748028000"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	}
+}

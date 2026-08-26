@@ -2,16 +2,15 @@
 import { execFileSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import zlib from 'node:zlib';
-import type { Course } from '../src/lib/models/course.ts';
-import { TimetableImportSource, createTimetable } from '../src/lib/models/timetable.ts';
-import { encodeTimetableToBinary } from '../src/lib/parsers/share-link/chronos-share-binary.ts';
-import { appendCrc32 } from '../src/lib/parsers/share-link/crc32.ts';
+import type { Course } from '../packages/core/src/index.ts';
+import { createTimetable } from '../packages/core/src/index.ts';
+import { encodeTimetableToBinary } from '../packages/plugins/codec-share/src/share-link/chronos-share-binary.ts';
+import { appendCrc32 } from '../packages/codec-kit/src/index.ts';
 import {
 	brotliCompressShare,
 	brotliDecompressShare,
 	ensureShareLinkBrotliReady
-} from '../src/lib/parsers/share-link/share-link-brotli.ts';
-import { deflateSync, inflateSync } from 'fflate';
+} from '../packages/plugins/codec-share/src/share-link/share-link-brotli.ts';
 
 interface BenchmarkCase {
 	label: string;
@@ -131,8 +130,8 @@ function runCase(testCase: BenchmarkCase): BenchmarkResult[] {
 	results.push(
 		bench(
 			'deflate:9',
-			(data) => deflateSync(data, { level: 9 }),
-			(data) => inflateSync(data),
+			(data) => zlib.deflateSync(data, { level: 9 }),
+			(data) => zlib.inflateSync(data),
 			input
 		)
 	);
@@ -141,8 +140,8 @@ function runCase(testCase: BenchmarkCase): BenchmarkResult[] {
 		results.push(
 			bench(
 				`deflate:${level}`,
-				(data) => deflateSync(data, { level }),
-				(data) => inflateSync(data),
+				(data) => zlib.deflateSync(data, { level }),
+				(data) => zlib.inflateSync(data),
 				input
 			)
 		);
@@ -243,7 +242,7 @@ function sampleTimetable() {
 			endWeek: 20,
 			periodTimes: []
 		},
-		importMetadata: { source: TimetableImportSource.SHARED_JSON }
+		importMetadata: { source: 'SHARED_JSON' }
 	});
 }
 
@@ -299,7 +298,7 @@ function createLargeTimetable(count: number) {
 			endWeek: 20,
 			periodTimes: []
 		},
-		importMetadata: { source: TimetableImportSource.SHARED_JSON }
+		importMetadata: { source: 'SHARED_JSON' }
 	});
 }
 
@@ -433,7 +432,7 @@ function createCqutLargeTimetable() {
 			endWeek: 21,
 			periodTimes: []
 		},
-		importMetadata: { source: TimetableImportSource.SHARED_JSON }
+		importMetadata: { source: 'SHARED_JSON' }
 	});
 }
 

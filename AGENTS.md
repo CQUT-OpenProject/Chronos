@@ -30,13 +30,14 @@ release. Add a tool name to select part of the graph. For example, run
 
 Chronos is a PWA timetable app.
 
-- Stack: TypeScript, Svelte 5, SvelteKit, Tailwind CSS 4, Vercel
+- Stack: TypeScript, Svelte 5, SvelteKit, Tailwind CSS 4
 - Data & i18n: Dexie (Client-side), Paraglide (en / zh-cn), PostHog
 - Package Manager: Use `vp` (Vite+) CLI only (do not invoke pnpm / npm / yarn directly)
+- Developer docs: See `CONTRIBUTING.md` at the repository root
 
 ## Write Code
 
-Plan first; do NOT rush to code. After planning and before making any code edits, read `.agents/skills/tobelazy/SKILL.md`.
+Plan first; do NOT rush to code. Before planning, read `.agents/skills/tobelazy/SKILL.md`.
 
 ## Response Format
 

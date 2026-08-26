@@ -1,0 +1,84 @@
+{
+	"id": "yumemita",
+	"name": { "zh-CN": "YUMEMITA", "en": "YUMEMITA" },
+	"className": "theme-yumemita",
+	"recommendedIconTheme": "yumemita",
+	"coursePalette": {
+		"light": [
+			{ "background": "#FFEE55", "foreground": "#1a1a1a" },
+			{ "background": "#FFBBCC", "foreground": "#1a1a1a" },
+			{ "background": "#4477CC", "foreground": "#fff" },
+			{ "background": "#9977CC", "foreground": "#fff" },
+			{ "background": "#EE5577", "foreground": "#fff" },
+			{ "background": "#4D5B4C", "foreground": "#fff" }
+		],
+		"dark": [
+			{ "background": "#FFEE55", "foreground": "#1a1a1a" },
+			{ "background": "#FFBBCC", "foreground": "#1a1a1a" },
+			{ "background": "#4477CC", "foreground": "#fff" },
+			{ "background": "#9977CC", "foreground": "#fff" },
+			{ "background": "#EE5577", "foreground": "#fff" },
+			{ "background": "#4D5B4C", "foreground": "#fff" }
+		]
+	},
+	"variants": {
+		"light": {
+			"colors": {
+				"color.surface": "#ffffff",
+				"color.on-surface": "#2e333a",
+				"color.surface-variant": "#f1f5f9",
+				"color.outline": "#cbd5e1",
+				"color.primary": "#2288dd",
+				"color.on-primary": "#fff",
+				"color.primary-dim": "#2288dd",
+				"color.primary-container": "#2288dd",
+				"color.on-primary-container": "#fff",
+				"color.inverse-primary": "#2288dd",
+				"color.secondary": "#ff7788",
+				"color.secondary-dim": "#ff7788",
+				"color.on-secondary": "#fff",
+				"color.secondary-container": "#ff7788",
+				"color.on-secondary-container": "#fff",
+				"color.secondary-container-subtle": "#ff7788",
+				"color.on-secondary-container-subtle": "#fff",
+				"color.primary-container-subtle": "#2288dd",
+				"color.on-primary-container-subtle": "#fff",
+				"shell.bottomTab.activeBackground": "transparent",
+				"shell.bottomTab.activeForeground": "#2288dd",
+				"leadingIcon.background": "color-mix(in srgb, #ff7788 75%, transparent)",
+				"leadingIcon.color": "#fff",
+				"timetable.period.activeBackground": "transparent",
+				"timetable.period.activeBackgroundImage": "linear-gradient(to bottom, #ff7788, #2288dd)"
+			}
+		},
+		"dark": {
+			"colors": {
+				"color.surface": "#1e2026",
+				"color.on-surface": "#f8fafc",
+				"color.surface-variant": "#24262e",
+				"color.outline": "#334155",
+				"color.primary": "#2288dd",
+				"color.on-primary": "#fff",
+				"color.primary-dim": "#2288dd",
+				"color.primary-container": "#2288dd",
+				"color.on-primary-container": "#fff",
+				"color.inverse-primary": "#2288dd",
+				"color.secondary": "#ff7788",
+				"color.secondary-dim": "#ff7788",
+				"color.on-secondary": "#fff",
+				"color.secondary-container": "#ff7788",
+				"color.on-secondary-container": "#fff",
+				"color.secondary-container-subtle": "#ff7788",
+				"color.on-secondary-container-subtle": "#fff",
+				"color.primary-container-subtle": "#2288dd",
+				"color.on-primary-container-subtle": "#fff",
+				"shell.bottomTab.activeBackground": "transparent",
+				"shell.bottomTab.activeForeground": "#2288dd",
+				"leadingIcon.background": "color-mix(in srgb, #ff7788 75%, transparent)",
+				"leadingIcon.color": "#fff",
+				"timetable.period.activeBackground": "transparent",
+				"timetable.period.activeBackgroundImage": "linear-gradient(to bottom, #ff7788, #2288dd)"
+			}
+		}
+	}
+}

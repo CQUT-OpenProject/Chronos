@@ -1,0 +1,56 @@
+# ADR 0019: Workbench 配色与图标主题平台
+
+- **状态**: Accepted（图标主题独立偏好轨道已由 [ADR 0026](./0026-icon-theme-follows-color-scheme.md) 撤销）
+- **日期**: 2026-08-22
+- **关联提交**: `5846ecb`, `ff1ddcc`, `10e85c2`, `9170c20`, `8cc140d`, `bb0a961`, `d94af98`
+- **范围**: `packages/core/src/theme`, `packages/core/src/runtime/icon-theme-registry.ts`, `apps/web/src/lib/appearance`, `apps/web/src/lib/shell`, `apps/web/src/lib/services/official-plugins`
+
+> **注意**：本文档中「用户偏好 `visualIconThemeId` 独立切换图标主题」的决策已被 ADR 0026 取代。图标主题现由 active 配色主题的 `recommendedIconTheme` 派生，不再持久化用户偏好；`IconThemeContribution` / JSON 交付管线保持不变。
+
+---
+
+## 背景与问题
+
+ADR 0018 在 `ThemeContribution.shell` 上叠加了 `customCssVars` 与 `bottomTabIcons`，导致配色与 Shell 图标耦合在同一个贡献对象上，且 CSS 变量键名没有封闭的注册表（任何字符串都能写入）。当时应用尚无用户，可以一次性切换到类似 VS Code 的「配色主题 + 图标主题」分离模型。
+
+---
+
+## 架构决策
+
+### 配色主题（Color Theme）
+
+- `ThemeContribution` **必须**提供 `workbenchColors: { light, dark }`，键为 `WORKBENCH_COLOR_REGISTRY` 中的封闭语义 id（如 `color.primary`、`shell.bottomTab.activeBackground`）。
+- 官方插件通过 `colors.json` 交付；`createThemeFromColorJson` 解析并校验。
+- `applyActiveTheme` 经 `resolveThemeWorkbenchColors` + `applyWorkbenchColors` 写入 `documentElement` CSS 变量。
+- 移除 `customCssVars`、`shell` 子对象及 `enrichThemeContribution` 兼容层。
+
+### 图标主题（Icon Theme）
+
+- 新增 `IconThemeContribution` + `IconThemeRegistry`；用户偏好 `visualIconThemeId`（默认 `host-default`）。（已被 ADR 0026 撤销：改为派生，见「推荐配对」）
+- 底栏图标由 **active icon theme** 的 `bottomTabIcons[tabId]` 提供，而非 color theme。
+- `ShellIconDescriptor` 支持 `registry` / `svg` / `url`；宿主 `resolveShellIcon` + `ShellSvgIcon` 渲染。
+- 官方插件通过 `icons.json` 交付；manifest 使用 `colorsUrl` / `iconThemeUrl`（JSON-only 主题可无 JS bundle）。
+
+### 推荐配对
+
+- Color theme 可选 `recommendedIconTheme`；用户选择配色方案时，若目标图标主题已注册则自动切换（`setColorScheme`）。（ADR 0026 起为唯一机制：图标主题完全由该配对派生）
+
+---
+
+## 影响与收益
+
+- 配色与图标解耦，契约与 VS Code 主题平台对齐；
+- workbench 颜色键是封闭集合，防止主题随意写入 CSS 变量；
+- JSON-only 官方主题不需要 JS bundle，体积更小，也没有跨 bundle 加载 Svelte 运行时的风险。
+
+---
+
+## 取代
+
+- **ADR 0018** 中 `shell.customCssVars`、`shell.bottomTabIcons` 及「图标由 active color theme 提供」的描述已被本 ADR 取代；Shell CSS 变量仍通过 workbench color key 写入。
+
+---
+
+## 修订记录
+
+- 2026-08-24 · [ADR 0026](./0026-icon-theme-follows-color-scheme.md)：撤销本文「图标主题独立偏好轨道」（`visualIconThemeId`）；图标主题改由 active 配色主题的 `recommendedIconTheme` 派生。

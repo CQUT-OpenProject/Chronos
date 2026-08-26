@@ -1,0 +1,154 @@
+@import 'tailwindcss';
+@source '..';
+@source '../../../../packages/ui-kit/src';
+@source '../../../../packages/plugins/wallpaper/src';
+@source '../../../../packages/plugins/codec-qrcode/src';
+@source '../../../../packages/plugins/source-cqut/src';
+@source '../../../../packages/plugins/codec-share/src';
+@import '../../../../packages/ui-kit/src/timetable-preview/timetable-dynamic-tint.css';
+@import '../lib/m3/generated-theme.css';
+@import '../lib/content/markdown-prose.css';
+@import 'swiper/css';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-danger: #e60012;
+}
+
+@theme inline {
+	--color-canvas: var(--color-canvas);
+	--color-ink: var(--color-ink);
+	--color-success: var(--color-success);
+	--color-warning: var(--color-warning);
+	--color-border: var(--color-border-subtle);
+}
+
+@layer tokens {
+	:root {
+		--color-canvas: #f0f4f8;
+		--color-ink: #0b1f33;
+		--color-success: #15803d;
+		--color-warning: #b45309;
+
+		/* Elevated cards/lists: white on canvas (light), lifted surface on canvas (dark) */
+		--color-surface: #ffffff;
+		--color-surface-container: #ffffff;
+		--color-surface-container-high: #f1f5f9;
+		/* Softer borders — less visual separation than raw M3 outline tokens */
+		--color-outline: #cbd5e1;
+		--color-outline-variant: #e2e8f0;
+		--color-border-subtle: #d4e0eb;
+	}
+
+	.dark {
+		--color-canvas: #121316;
+		--color-ink: #f8fafc;
+		--color-success: #4ade80;
+		--color-warning: #fbbf24;
+
+		--color-surface: #1e2026;
+		--color-surface-container: #1e2026;
+		--color-surface-container-high: #24262e;
+		--color-outline: #334155;
+		--color-outline-variant: #2e3038;
+		--color-border-subtle: #2e3038;
+	}
+
+	.period-active {
+		background-color: var(--period-active-bg, var(--color-brand));
+		background-image: var(--period-active-bg-image, none);
+		color: var(--color-on-primary);
+	}
+
+	/* Light: raw course paint. Dark: 42%/18% course mix (was layout blendColors 0.58/0.18). */
+	.course-capsule {
+		background-color: var(--capsule);
+		color: var(--capsule-fg);
+		border-color: color-mix(in srgb, var(--capsule-fg) 18%, transparent);
+	}
+
+	.dark .course-capsule {
+		background-color: color-mix(in srgb, var(--capsule) 42%, var(--color-surface));
+		color: color-mix(in srgb, var(--capsule) 18%, var(--color-on-surface));
+		border-color: color-mix(in srgb, currentColor 18%, transparent);
+	}
+}
+
+@layer base {
+	html {
+		font-size: 15px;
+		line-height: 1.47;
+		touch-action: pan-x pan-y;
+	}
+
+	@media (min-width: 768px) {
+		html {
+			font-size: 16px;
+		}
+	}
+
+	@media (min-width: 1366px) {
+		html {
+			font-size: 17px;
+		}
+	}
+
+	:root {
+		--topbar-safe: env(safe-area-inset-top, 0px);
+		--tabbar-safe: env(safe-area-inset-bottom, 0px);
+		--spacing-topbar: 4.5rem;
+		--spacing-tabbar: 4.25rem;
+		--top-bar-height: calc(var(--spacing-topbar) + var(--topbar-safe));
+		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
+	}
+
+	@media (max-height: 720px) {
+		:root {
+			--spacing-topbar: 3.75rem;
+			--spacing-tabbar: 3.625rem;
+		}
+	}
+
+	@media (max-height: 560px) {
+		:root {
+			--spacing-topbar: 3.25rem;
+			--spacing-tabbar: 3.125rem;
+		}
+	}
+
+	* {
+		scrollbar-width: none;
+	}
+
+	*::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+@layer components {
+	.tab-bar-wrapper {
+		position: fixed;
+		inset-inline: 0;
+		bottom: 0;
+		z-index: 15;
+	}
+
+	.bottom-bar {
+		@apply flex h-[var(--bottom-bar-height)] shrink-0 items-center border-t border-border/60 px-3 pb-[var(--tabbar-safe)] sm:px-4;
+		background-color: var(--shell-bottom-bar-bg, var(--color-surface-container));
+	}
+
+	.shell-bottom-tab-active {
+		background-color: var(--shell-bottom-tab-active-bg, var(--color-primary-container));
+		color: var(--shell-bottom-tab-active-fg, var(--color-on-primary-container));
+	}
+
+	.m3-top-app-bar {
+		@apply flex min-h-[var(--top-bar-height)] shrink-0 items-center px-3 pb-0 sm:px-4;
+		padding-top: var(--topbar-safe);
+		background-color: var(--shell-top-bar-bg, transparent);
+	}
+}

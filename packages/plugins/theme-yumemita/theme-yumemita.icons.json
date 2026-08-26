@@ -1,0 +1,22 @@
+{
+	"id": "yumemita",
+	"name": { "zh-CN": "YUMEMITA", "en": "YUMEMITA" },
+	"bottomTabIcons": {
+		"mine": {
+			"icon": {
+				"type": "svg",
+				"markup": "<svg viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"yumemita-ufo-rim\" x1=\"3\" y1=\"12\" x2=\"21\" y2=\"14.5\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"#62E8FF\" /><stop offset=\"1\" stop-color=\"#00ACC1\" /></linearGradient><linearGradient id=\"yumemita-ufo-dome\" x1=\"7\" y1=\"5.5\" x2=\"17\" y2=\"11\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"#FF9EC4\" /><stop offset=\"1\" stop-color=\"#C77DFF\" /></linearGradient><linearGradient id=\"yumemita-ufo-light\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop stop-color=\"#FFE566\" /><stop offset=\"1\" stop-color=\"#FF9800\" /></linearGradient></defs><ellipse cx=\"6\" cy=\"16.6\" rx=\"1.35\" ry=\"1.05\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"9\" cy=\"17.1\" rx=\"1.45\" ry=\"1.15\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"12\" cy=\"17.3\" rx=\"1.55\" ry=\"1.25\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"15\" cy=\"17.1\" rx=\"1.45\" ry=\"1.15\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"18\" cy=\"16.6\" rx=\"1.35\" ry=\"1.05\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"12\" cy=\"13.4\" rx=\"9\" ry=\"3.7\" fill=\"url(#yumemita-ufo-rim)\" /><ellipse cx=\"12\" cy=\"9.4\" rx=\"5.1\" ry=\"4.1\" fill=\"url(#yumemita-ufo-dome)\" /><path d=\"M15.6 7.1c1.1-1.4 2.4-1.6 3.2-0.8\" stroke=\"#00B8D4\" stroke-width=\"0.85\" stroke-linecap=\"round\" fill=\"none\" /><circle cx=\"18.9\" cy=\"5.7\" r=\"1.05\" fill=\"#FFE566\" /></svg>",
+				"size": "large",
+				"rotation": 25,
+				"opacity": 0.82
+			},
+			"iconFill": {
+				"type": "svg",
+				"markup": "<svg viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"yumemita-ufo-rim\" x1=\"3\" y1=\"12\" x2=\"21\" y2=\"14.5\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"#62E8FF\" /><stop offset=\"1\" stop-color=\"#00ACC1\" /></linearGradient><linearGradient id=\"yumemita-ufo-dome\" x1=\"7\" y1=\"5.5\" x2=\"17\" y2=\"11\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"#FF9EC4\" /><stop offset=\"1\" stop-color=\"#C77DFF\" /></linearGradient><linearGradient id=\"yumemita-ufo-light\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop stop-color=\"#FFE566\" /><stop offset=\"1\" stop-color=\"#FF9800\" /></linearGradient></defs><ellipse cx=\"6\" cy=\"16.6\" rx=\"1.35\" ry=\"1.05\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"9\" cy=\"17.1\" rx=\"1.45\" ry=\"1.15\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"12\" cy=\"17.3\" rx=\"1.55\" ry=\"1.25\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"15\" cy=\"17.1\" rx=\"1.45\" ry=\"1.15\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"18\" cy=\"16.6\" rx=\"1.35\" ry=\"1.05\" fill=\"url(#yumemita-ufo-light)\" /><ellipse cx=\"12\" cy=\"13.4\" rx=\"9\" ry=\"3.7\" fill=\"url(#yumemita-ufo-rim)\" /><ellipse cx=\"12\" cy=\"9.4\" rx=\"5.1\" ry=\"4.1\" fill=\"url(#yumemita-ufo-dome)\" /><path d=\"M15.6 7.1c1.1-1.4 2.4-1.6 3.2-0.8\" stroke=\"#00B8D4\" stroke-width=\"0.85\" stroke-linecap=\"round\" fill=\"none\" /><circle cx=\"18.9\" cy=\"5.7\" r=\"1.05\" fill=\"#FFE566\" /></svg>",
+				"size": "large",
+				"rotation": 25,
+				"opacity": 1
+			}
+		}
+	}
+}

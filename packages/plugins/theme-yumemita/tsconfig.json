@@ -1,0 +1,10 @@
+{
+	"extends": "../../../tsconfig.json",
+	"compilerOptions": {
+		"resolveJsonModule": true,
+		"paths": {
+			"@chronos/core": ["../../../packages/core/src/index.ts"]
+		}
+	},
+	"include": ["src/**/*", "tests/**/*", "*.json"]
+}

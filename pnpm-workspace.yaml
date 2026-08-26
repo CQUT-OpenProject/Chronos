@@ -1,22 +1,27 @@
+packages:
+  - 'packages/*'
+  - 'packages/plugins/*'
+  - 'apps/*'
+  - '.'
+
 allowBuilds:
   core-js: false
   esbuild: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
+  vite: npm:@voidzero-dev/vite-plus-core@0.3.0
   vitest: 4.1.10
-  vite-plus: 0.2.9
-  '@vitest/browser-playwright': 4.1.10
+  vite-plus: 0.3.0
 minimumReleaseAgeExclude:
-  - '@voidzero-dev/vite-plus-core@0.2.9'
-  - '@voidzero-dev/vite-plus-darwin-arm64@0.2.9'
-  - '@voidzero-dev/vite-plus-darwin-x64@0.2.9'
-  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.2.9'
-  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.2.9'
-  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.2.9'
-  - '@voidzero-dev/vite-plus-linux-x64-musl@0.2.9'
-  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.2.9'
-  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.2.9'
-  - vite-plus@0.2.9
+  - '@voidzero-dev/vite-plus-core@0.3.0'
+  - '@voidzero-dev/vite-plus-darwin-arm64@0.3.0'
+  - '@voidzero-dev/vite-plus-darwin-x64@0.3.0'
+  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.3.0'
+  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.3.0'
+  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.3.0'
+  - '@voidzero-dev/vite-plus-linux-x64-musl@0.3.0'
+  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.3.0'
+  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.3.0'
+  - vite-plus@0.3.0
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'

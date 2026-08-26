@@ -28,15 +28,14 @@ jobs:
 
       - run: vp install
 
-      # GitHub Pages 没有服务端，/api/cqut/preview 无法运行，adapter-static 也无法
-      # 预渲染这个 POST 接口，构建前把它移除，仅影响本次临时 checkout。
-      - run: rm -rf src/routes/api
-
       - run: vp run build:pages
+        env:
+          CHRONOS_PROFILE: chronos-cqut-offline
+          CHRONOS_DEPLOY_TARGET: pages
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: apps/web/build
 
   deploy:
     needs: build
