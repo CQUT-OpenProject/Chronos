@@ -1,3 +1,52 @@
+# 部署指南
+
+面对不同的部署需求，Chronos 支持通过两个独立的、互不绑定的环境变量导出不同的应用形态：
+
+| 环境变量                | 控制什么                                 |
+| ----------------------- | ---------------------------------------- |
+| `CHRONOS_PROFILE`       | **产品变体**：默认装配的插件             |
+| `CHRONOS_DEPLOY_TARGET` | **部署目标**：SvelteKit 适配器与产物形态 |
+
+### 内置 Profile（CHRONOS_PROFILE）
+
+Chronos 内置以下三种配置文件，可按需选择或自行创造新的 profile：
+
+| Profile                | 定位               | 知行理工导入 | 教务 HTML 导入 | 分享链接导入 |  服务端插件   |
+| ---------------------- | ------------------ | :----------: | :------------: | :----------: | :-----------: |
+| `chronos-default`      | Chronos 标准开源版 |      ✗       |       ✗        |      ✓       |      无       |
+| `chronos-cqut-offline` | 重庆理工大学离线版 |      ✗       |       ✓        |      ✓       |      无       |
+| `chronos-cqut`         | 重庆理工大学在线版 |      ✓       |       ✓        |      ✓       | `source-cqut` |
+
+本地按 profile 构建：
+
+```sh
+vp run build:cqut            # chronos-cqut
+vp run build:cqut-offline    # chronos-cqut-offline
+vp run build:default         # chronos-default
+```
+
+> [!IMPORTANT]
+> Chronos 深度适配 Vercel，强烈推荐使用 Vercel 部署
+
+### 部署目标（CHRONOS_DEPLOY_TARGET）
+
+| Target  | 部署平台     | 适配器           | 产物                       | 服务端能力       |
+| ------- | ------------ | ---------------- | -------------------------- | ---------------- |
+| 不设置  | Vercel       | `adapter-vercel` | Serverless 函数 + 静态资源 | 支持插件代理 API |
+| `pages` | Github Pages | `adapter-static` | 纯静态文件                 | 无               |
+
+### 所有环境变量
+
+默认配置下，Chronos 不需要配置任何环境变量即可正常部署，以下变量仅在本地开发或特定构建场景下使用：
+
+| 变量                    | 作用域 | 说明                                                                                                             |
+| ----------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
+| `CHRONOS_PROFILE`       | 构建时 | 产品 profile，见上表；Vercel 默认 `chronos-cqut`，Pages 默认 `chronos-cqut-offline`                              |
+| `CHRONOS_DEPLOY_TARGET` | 构建时 | 设为 `pages` 时构建 GitHub Pages 静态版，默认不设置则构建 Vercel 版                                              |
+| `ORIGIN`                | 运行时 | SvelteKit 标准变量，用于 CSRF 校验等场景。本地开发一般无需配置；若部署后出现 origin 相关报错，可设为站点完整 URL |
+| `PUBLIC_POSTHOG_KEY`    | 构建时 | PostHog 项目密钥；留空则构建期剔除埋点（GitHub Pages、自行部署默认不启用）                                       |
+| `PUBLIC_POSTHOG_HOST`   | 运行时 | PostHog API 地址                                                                                                 |
+
 # 参与贡献
 
 Chronos 开发文档。架构决策见 [`.agents/docs/adr/`](.agents/docs/adr/README.md)。
