@@ -7,23 +7,7 @@
 	"scripts": {
 		"dev": "vp -C apps/web dev",
 		"build": "vp -C apps/web build",
-		"build:cqut": "CHRONOS_PROFILE=chronos-cqut vp -C apps/web build",
-		"build:cqut-offline": "CHRONOS_PROFILE=chronos-cqut-offline vp -C apps/web build",
-		"build:default": "CHRONOS_PROFILE=chronos-default vp -C apps/web build",
-		"build:pages": "CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-cqut-offline vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html",
-		"preview": "vp -C apps/web preview",
-		"prepare": "vp config && node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && (cd apps/web && svelte-kit sync || echo '')",
-		"check": "(cd apps/web && svelte-kit sync) && vp check",
-		"check:watch": "(cd apps/web && svelte-kit sync) && svelte-check --tsconfig ./apps/web/tsconfig.json --watch",
-		"lint": "vp fmt --check . && vp lint .",
-		"format": "vp fmt .",
-		"test:unit": "(cd apps/web && vp test)",
-		"test": "(cd apps/web && vp test -- --run)",
-		"theme:generate": "node --experimental-strip-types scripts/generate-theme-tokens.ts",
-		"icons:png": "node --experimental-strip-types scripts/generate-icons.ts",
-		"bench:share-link": "tsx scripts/share-link-compression-benchmark.ts",
-		"build:official-plugins": "node --experimental-strip-types scripts/build-official-plugins.ts",
-		"verify:official-plugins": "node --experimental-strip-types scripts/verify-official-plugins.ts"
+		"prepare": "vp config && node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && (cd apps/web && svelte-kit sync || echo '')"
 	},
 	"devDependencies": {
 		"@resvg/resvg-js": "^2.6.2",

@@ -80,7 +80,60 @@ export default defineConfig({
 		// build computed their manifest sha256 (see scripts/verify-official-plugins.ts).
 		'*.{ts,tsx,vue,svelte,json,css,html}': 'vp check --fix'
 	},
+	run: {
+		tasks: {
+			// dev/build stay in package.json: vercel.json invokes them via pnpm.
+			preview: {
+				command: 'vp -C apps/web preview',
+				cache: false
+			},
+			'build:cqut': {
+				command: 'CHRONOS_PROFILE=chronos-cqut vp -C apps/web build',
+				env: ['CHRONOS_PROFILE']
+			},
+			'build:cqut-offline': {
+				command: 'CHRONOS_PROFILE=chronos-cqut-offline vp -C apps/web build',
+				env: ['CHRONOS_PROFILE']
+			},
+			'build:default': {
+				command: 'CHRONOS_PROFILE=chronos-default vp -C apps/web build',
+				env: ['CHRONOS_PROFILE']
+			},
+			'build:pages': {
+				command:
+					'CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-cqut-offline vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html',
+				env: ['CHRONOS_DEPLOY_TARGET', 'CHRONOS_PROFILE']
+			},
+			check: '(cd apps/web && svelte-kit sync) && vp check',
+			'check:watch': {
+				command:
+					'(cd apps/web && svelte-kit sync) && svelte-check --tsconfig ./apps/web/tsconfig.json --watch',
+				cache: false
+			},
+			lint: 'vp fmt --check . && vp lint .',
+			format: 'vp fmt .',
+			test: {
+				command: 'vp test -- --run',
+				cwd: 'apps/web'
+			},
+			'theme:generate': 'node --experimental-strip-types scripts/generate-theme-tokens.ts',
+			'icons:png': 'node --experimental-strip-types scripts/generate-icons.ts',
+			'bench:share-link': {
+				command: 'tsx scripts/share-link-compression-benchmark.ts',
+				cache: false
+			},
+			'build:official-plugins': 'node --experimental-strip-types scripts/build-official-plugins.ts',
+			'verify:official-plugins':
+				'node --experimental-strip-types scripts/verify-official-plugins.ts'
+		}
+	},
 	lint: {
+		ignorePatterns: [
+			'apps/web/static/official-plugins/bundles/**',
+			'**/*.bundle.js',
+			'dist/**',
+			'.svelte-kit/'
+		],
 		options: {
 			typeAware: true,
 			typeCheck: true
@@ -104,7 +157,8 @@ export default defineConfig({
 			'bun.lockb',
 			'**/static/',
 			'**/.svelte-kit/',
-			'**/node_modules/'
+			'**/node_modules/',
+			'/drizzle/'
 		]
 	},
 	plugins: [

@@ -1,4 +1,0 @@
-apps/web/static/official-plugins/bundles/**
-dist/**
-**/*.bundle.js
-.svelte-kit/
