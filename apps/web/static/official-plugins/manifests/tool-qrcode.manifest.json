@@ -1,0 +1,20 @@
+{
+	"id": "tool-qrcode",
+	"name": {
+		"zh-CN": "导出为二维码",
+		"en": "Timetable QR Code"
+	},
+	"version": "1.0.0",
+	"description": {
+		"zh-CN": "生成课表分享二维码矢量图与扫码/图片识别导入",
+		"en": "Generate timetable QR codes and import via scan or image"
+	},
+	"author": "Chronos",
+	"type": "tool",
+	"bundleFormat": "esm",
+	"minEngineVersion": "0.4.0",
+	"bundleUrl": "/official-plugins/bundles/tool-qrcode/bundle.js",
+	"sha256": "2f98da2bca5e2d275fcad77a371687cb9801c37b90ba9437182c9a5bc0341403",
+	"cssUrl": "/official-plugins/bundles/tool-qrcode/bundle.css",
+	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
+}

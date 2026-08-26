@@ -1,0 +1,2 @@
+export const PLUGIN_RATE_LIMIT_MAX = 8;
+export const PLUGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;

@@ -1,0 +1,56 @@
+{
+	"name": "@chronos/plugin-source-cqut",
+	"version": "0.1.0",
+	"type": "module",
+	"main": "./src/index.ts",
+	"module": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"import": "./src/index.ts",
+			"default": "./src/index.ts"
+		},
+		"./week-merge": {
+			"types": "./src/week-merge.ts",
+			"import": "./src/week-merge.ts",
+			"default": "./src/week-merge.ts"
+		},
+		"./server/config": {
+			"types": "./server/config.ts",
+			"import": "./server/config.ts",
+			"default": "./server/config.ts"
+		},
+		"./server": {
+			"types": "./server/index.ts",
+			"import": "./server/index.ts",
+			"default": "./server/index.ts"
+		},
+		"./CqutOnlineImportTab": {
+			"types": "./src/CqutOnlineImportTab.svelte",
+			"import": "./src/CqutOnlineImportTab.svelte",
+			"default": "./src/CqutOnlineImportTab.svelte"
+		},
+		"./EduHtmlImportTab": {
+			"types": "./src/EduHtmlImportTab.svelte",
+			"import": "./src/EduHtmlImportTab.svelte",
+			"default": "./src/EduHtmlImportTab.svelte"
+		},
+		"./campus-period-times": {
+			"types": "./src/campus-period-times.ts",
+			"import": "./src/campus-period-times.ts",
+			"default": "./src/campus-period-times.ts"
+		}
+	},
+	"dependencies": {
+		"@chronos/core": "workspace:*",
+		"@chronos/ui-kit": "workspace:*",
+		"@cqut-openproject/cas-sdk": "github:CQUT-OpenProject/CAS-SDK#1.0.0",
+		"@sveltejs/kit": "^2.63.0",
+		"undici": "^8.10.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"linkedom": "^0.18.13"
+	}
+}

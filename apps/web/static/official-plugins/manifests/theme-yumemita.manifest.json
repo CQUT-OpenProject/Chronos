@@ -1,0 +1,21 @@
+{
+	"id": "theme-yumemita",
+	"name": {
+		"zh-CN": "YUMEMITA",
+		"en": "YUMEMITA"
+	},
+	"version": "1.0.0",
+	"description": {
+		"zh-CN": "YUMEMITA 主题",
+		"en": "YUMEMITA theme"
+	},
+	"author": "Chronos",
+	"type": "theme",
+	"bundleFormat": "esm",
+	"minEngineVersion": "0.4.0",
+	"colorsUrl": "/official-plugins/bundles/theme-yumemita/colors.json",
+	"colorsSha256": "397ffed9f7704d28127db074dea18ec9323f2c5f9a4b70375297e65257e98a3d",
+	"themeId": "yumemita",
+	"iconThemeUrl": "/official-plugins/bundles/theme-yumemita/icons.json",
+	"iconThemeSha256": "1fef532812af55ba51b176ab7e6d6b7ffa07df1834078b140fb7c533619090ed"
+}

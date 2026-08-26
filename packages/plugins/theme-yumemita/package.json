@@ -1,0 +1,12 @@
+{
+	"name": "@chronos/plugin-theme-yumemita",
+	"version": "0.1.0",
+	"type": "module",
+	"exports": {
+		"./colors.json": "./theme-yumemita.colors.json",
+		"./icons.json": "./theme-yumemita.icons.json"
+	},
+	"devDependencies": {
+		"@chronos/core": "workspace:*"
+	}
+}
