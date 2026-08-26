@@ -41,6 +41,7 @@ const zhCn = {
 	'snackbar.uninstall.failed': '卸载失败: {message}',
 	'snackbar.toggle.failed': '操作失败: {message}',
 	'snackbar.manifestRequired': '请输入 manifest.json 链接',
+	'snackbar.manifestInvalid': '请输入有效的 http 或 https manifest 链接',
 
 	// display
 	'display.section.locale': '语言',
@@ -93,6 +94,7 @@ const zhCn = {
 	'plugins.uninstall.aria': '卸载插件',
 	'plugins.link.title': '从链接安装',
 	'plugins.link.confirm': '确认安装',
+	'plugins.link.installing': '正在从链接安装…',
 	'plugins.link.placeholder': 'https://example.com/plugin.manifest.json',
 	'plugins.notify.themeInstalled': '插件已安装并启用，可在「显示设置」中选择此外观主题',
 	'plugins.notify.installed': '插件「{pluginId}」已安装并启用',
@@ -545,6 +547,7 @@ const en = {
 	'snackbar.uninstall.failed': 'Uninstall failed: {message}',
 	'snackbar.toggle.failed': 'Action failed: {message}',
 	'snackbar.manifestRequired': 'Enter a manifest.json URL',
+	'snackbar.manifestInvalid': 'Enter a valid http or https manifest URL',
 
 	// display
 	'display.section.locale': 'Language',
@@ -598,6 +601,7 @@ const en = {
 	'plugins.uninstall.aria': 'Uninstall plugin',
 	'plugins.link.title': 'Install from link',
 	'plugins.link.confirm': 'Confirm install',
+	'plugins.link.installing': 'Installing from link…',
 	'plugins.link.placeholder': 'https://example.com/plugin.manifest.json',
 	'plugins.notify.themeInstalled':
 		'Plugin installed and enabled. Choose this theme in Display settings.',

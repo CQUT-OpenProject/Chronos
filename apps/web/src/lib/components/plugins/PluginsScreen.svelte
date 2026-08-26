@@ -21,6 +21,7 @@
 
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
+	import { assertValidManifestInstallUrl } from '$lib/services/official-plugins/manifest-url';
 	import { DeleteFill, CheckCircleFill, TuneFill } from '$lib/icons';
 
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
@@ -55,6 +56,7 @@
 	let uninstallTarget = $state<{ id: string; name: string }>({ id: '', name: '' });
 
 	let linkInstallDialogOpen = $state(false);
+	let linkInstallInProgress = $state(false);
 	let manifestUrlInput = $state('');
 
 	function refreshInstalled() {
@@ -162,18 +164,28 @@
 			snackbarKey('snackbar.manifestRequired');
 			return;
 		}
-		linkInstallDialogOpen = false;
+
+		try {
+			assertValidManifestInstallUrl(url);
+		} catch {
+			snackbarKey('snackbar.manifestInvalid');
+			return;
+		}
+
+		linkInstallInProgress = true;
 		operatingPluginId = 'url-install';
 		try {
 			await officialPlugins.installFromManifestUrl(url);
 			refreshInstalled();
 			activeTab = 'installed';
+			linkInstallDialogOpen = false;
+			manifestUrlInput = '';
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			snackbarKey('snackbar.install.failed', { message: msg });
 		} finally {
+			linkInstallInProgress = false;
 			operatingPluginId = null;
-			manifestUrlInput = '';
 		}
 	}
 
@@ -323,9 +335,14 @@
 						class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-8 text-center text-on-surface-variant"
 					>
 						<p class="m3-body-medium">{hostT('plugins.empty.installed')}</p>
-						<Button variant="text" class="mt-1 text-xs" onclick={() => (activeTab = 'official')}>
-							{hostT('plugins.empty.browse')}
-						</Button>
+						<div class="mt-2 flex flex-wrap items-center justify-center gap-2">
+							<Button variant="text" class="text-xs" onclick={() => (activeTab = 'official')}>
+								{hostT('plugins.empty.browse')}
+							</Button>
+							<Button variant="outlined" class="text-xs" onclick={promptLinkInstall}>
+								{hostT('plugins.link.open')}
+							</Button>
+						</div>
 					</div>
 				{:else}
 					<div class="m3-section-surface divide-y divide-border/40">
@@ -566,18 +583,29 @@
 <Dialog bind:open={linkInstallDialogOpen} title={hostT('plugins.link.title')}>
 	<div class="flex flex-col gap-3 py-2">
 		<input
-			class="m3-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary"
+			class="m3-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary disabled:opacity-60"
 			type="url"
 			placeholder={hostT('plugins.link.placeholder')}
 			bind:value={manifestUrlInput}
+			disabled={linkInstallInProgress}
 		/>
+		{#if linkInstallInProgress}
+			<div class="flex items-center gap-2 text-on-surface-variant">
+				<LoadingIndicator size="small" />
+				<span class="m3-body-small">{hostT('plugins.link.installing')}</span>
+			</div>
+		{/if}
 	</div>
 	{#snippet footer()}
-		<Button variant="text" onclick={() => (linkInstallDialogOpen = false)}>
+		<Button
+			variant="text"
+			disabled={linkInstallInProgress}
+			onclick={() => (linkInstallDialogOpen = false)}
+		>
 			{hostT('common.cancel')}
 		</Button>
-		<Button variant="filled" onclick={confirmLinkInstall}>
-			{hostT('plugins.link.confirm')}
+		<Button variant="filled" disabled={linkInstallInProgress} onclick={confirmLinkInstall}>
+			{linkInstallInProgress ? hostT('plugins.action.installing') : hostT('plugins.link.confirm')}
 		</Button>
 	{/snippet}
 </Dialog>
