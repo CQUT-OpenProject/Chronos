@@ -18,6 +18,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CHRONOS_PROFILE: chronos-cqut-offline
+      CHRONOS_DEPLOY_TARGET: pages
     steps:
       - uses: actions/checkout@v4
 
@@ -29,9 +32,6 @@ jobs:
       - run: vp install
 
       - run: vp run build:pages
-        env:
-          CHRONOS_PROFILE: chronos-cqut-offline
-          CHRONOS_DEPLOY_TARGET: pages
 
       - uses: actions/upload-pages-artifact@v3
         with:
