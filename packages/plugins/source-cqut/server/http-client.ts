@@ -17,6 +17,25 @@ function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export async function withNetworkRetry<T>(
+	signal: AbortSignal | undefined,
+	executeOnce: () => Promise<T>
+): Promise<T> {
+	let lastError: unknown;
+	for (let attempt = 1; attempt <= NETWORK_RETRY_COUNT; attempt++) {
+		try {
+			return await executeOnce();
+		} catch (error) {
+			lastError = error;
+			if (signal?.aborted || attempt >= NETWORK_RETRY_COUNT || !isTransientNetworkError(error)) {
+				throw error;
+			}
+			await sleep(HTTP_RETRY_DELAY_MS);
+		}
+	}
+	throw lastError;
+}
+
 function mergeSignals(signals: AbortSignal[]): AbortSignal {
 	if (signals.length === 1) return signals[0]!;
 	const controller = new AbortController();
@@ -57,35 +76,19 @@ export async function request(
 		return response;
 	};
 
-	const executeWithNetworkRetry = async (): Promise<Response> => {
-		let lastError: unknown;
-		for (let attempt = 1; attempt <= NETWORK_RETRY_COUNT; attempt++) {
-			try {
-				return await executeOnce();
-			} catch (error) {
-				lastError = error;
-				if (signal.aborted || attempt >= NETWORK_RETRY_COUNT || !isTransientNetworkError(error)) {
-					throw error;
-				}
-				await sleep(HTTP_RETRY_DELAY_MS);
-			}
-		}
-		throw lastError;
-	};
-
 	if (!options.retryOnServerError) {
-		return executeWithNetworkRetry();
+		return withNetworkRetry(signal, executeOnce);
 	}
 
 	try {
-		const response = await executeWithNetworkRetry();
+		const response = await withNetworkRetry(signal, executeOnce);
 		if (response.status < 500) return response;
 	} catch (error) {
 		if (signal.aborted) throw error;
 	}
 
 	await sleep(HTTP_RETRY_DELAY_MS);
-	return executeWithNetworkRetry();
+	return withNetworkRetry(signal, executeOnce);
 }
 
 export async function requestStep(

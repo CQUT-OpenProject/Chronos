@@ -1,8 +1,17 @@
 import { createServer, type Server } from 'node:http';
-import { afterEach, describe, expect, it } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { CAS_APPLICATION_CODE, TIMETABLE_SESSION_COOKIE } from './config';
 import { loginCas } from './cas-auth';
 import { CookieJar } from './cookie-jar';
+
+vi.mock('./config', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./config')>();
+	return {
+		...original,
+		HTTP_RETRY_DELAY_MS: 0,
+		NETWORK_RETRY_COUNT: 2
+	};
+});
 
 const TEST_ACCOUNT = '20210001';
 const TEST_PASSWORD = 'encrypted-password';
@@ -154,5 +163,64 @@ describe('loginCas', () => {
 		if (!result.ok) {
 			expect(result.error.message).toBe('需要验证码，当前版本暂不支持');
 		}
+	});
+
+	it('retries transient CAS fetch errors and still completes login', async () => {
+		let casLoginAttempts = 0;
+		server = createServer((req, res) => {
+			const host = req.headers.host ?? '127.0.0.1';
+			const url = new URL(req.url ?? '/', `http://${host}`);
+
+			if (url.pathname === '/center-auth-server/sso/doLogin' && req.method === 'POST') {
+				res.setHeader('Content-Type', 'application/json;charset=utf-8');
+				res.setHeader('Set-Cookie', 'auth_server_token=uis-token; Path=/');
+				res.end(JSON.stringify({ code: 200, msg: '登录成功' }));
+				return;
+			}
+
+			if (
+				url.pathname === `/center-auth-server/${CAS_APPLICATION_CODE}/cas/login` &&
+				req.method === 'GET'
+			) {
+				casLoginAttempts++;
+				if (casLoginAttempts === 1) {
+					res.destroy();
+					return;
+				}
+				const cookie = req.headers.cookie ?? '';
+				if (!cookie.includes('auth_server_token=')) {
+					res.setHeader('Content-Type', 'text/html;charset=utf-8');
+					res.end('<html><form id="casLoginForm"></form></html>');
+					return;
+				}
+				const redirect = new URL(`${baseUrl}/api/auth/casLogin`);
+				redirect.searchParams.set('ticket', TEST_TICKET);
+				res.statusCode = 302;
+				res.setHeader('Location', redirect.toString());
+				res.end();
+				return;
+			}
+
+			if (url.pathname === '/api/auth/casLogin' && req.method === 'GET') {
+				res.statusCode = 302;
+				res.setHeader('Set-Cookie', `${TIMETABLE_SESSION_COOKIE}=session-123; Path=/; HttpOnly`);
+				res.setHeader('Location', `${baseUrl}/`);
+				res.end();
+				return;
+			}
+
+			res.statusCode = 404;
+			res.end();
+		});
+		await new Promise<void>((resolve) => server!.listen(0, '127.0.0.1', resolve));
+		const address = server.address();
+		if (!address || typeof address === 'string') throw new Error('no address');
+		baseUrl = `http://127.0.0.1:${address.port}`;
+
+		const jar = new CookieJar();
+		const result = await loginCas(jar, TEST_ACCOUNT, TEST_PASSWORD, undefined, overrides());
+		expect(result.ok).toBe(true);
+		expect(casLoginAttempts).toBeGreaterThanOrEqual(2);
+		expect(jar.hasCookie('127.0.0.1', TIMETABLE_SESSION_COOKIE)).toBe(true);
 	});
 });

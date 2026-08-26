@@ -17,7 +17,7 @@ import {
 } from './config';
 import type { CookieJar } from './cookie-jar';
 import { getCqutDispatcher } from './dispatcher';
-import { requestStep } from './http-client';
+import { requestStep, withNetworkRetry } from './http-client';
 import { toUpstreamNetworkError } from './upstream-error';
 
 export interface CasLoginOverrides {
@@ -29,15 +29,17 @@ export interface CasLoginOverrides {
 
 function createUndiciFetcher(): Fetcher {
 	return async (req: HttpRequest): Promise<HttpResponse> => {
-		const undiciInit: UndiciRequestInit = {
-			method: req.method ?? 'GET',
-			headers: req.headers,
-			body: req.body,
-			redirect: req.redirect ?? 'follow',
-			signal: req.signal,
-			dispatcher: getCqutDispatcher()
-		};
-		const res = await undiciFetch(req.url, undiciInit);
+		const res = await withNetworkRetry(req.signal, async () => {
+			const undiciInit: UndiciRequestInit = {
+				method: req.method ?? 'GET',
+				headers: req.headers,
+				body: req.body,
+				redirect: req.redirect ?? 'follow',
+				signal: req.signal,
+				dispatcher: getCqutDispatcher()
+			};
+			return undiciFetch(req.url, undiciInit);
+		});
 
 		const headers: Record<string, string | string[]> = {};
 		res.headers.forEach((value, key) => {
