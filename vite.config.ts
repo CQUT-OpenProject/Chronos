@@ -82,7 +82,7 @@ export default defineConfig({
 	},
 	run: {
 		tasks: {
-			// dev/build stay in package.json: vercel.json invokes them via pnpm.
+			// dev/build stay in package.json; apps/web/vercel.json configures Vercel deploy.
 			preview: {
 				command: 'vp -C apps/web preview',
 				cache: false
