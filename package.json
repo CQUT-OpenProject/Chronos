@@ -7,7 +7,7 @@
 	"scripts": {
 		"dev": "vp -C apps/web dev",
 		"build": "vp -C apps/web build",
-		"prepare": "vp config && node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && (cd apps/web && svelte-kit sync || echo '')"
+		"prepare": "vp config && node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && (cd apps/web && svelte-kit sync || echo '') && ln -sfn apps/web/.svelte-kit .svelte-kit"
 	},
 	"devDependencies": {
 		"@resvg/resvg-js": "^2.6.2",

@@ -3,8 +3,8 @@
 	"framework": "sveltekit-1",
 	"regions": ["sin1"],
 	"installCommand": "corepack enable && corepack prepare pnpm@11.20.0 --activate && pnpm -C ../.. install --frozen-lockfile",
-	"buildCommand": "vp build .",
-	"devCommand": "vp dev . -- --port $PORT",
+	"buildCommand": "cd ../.. && vp -C apps/web build",
+	"devCommand": "cd ../.. && vp -C apps/web dev -- --port $PORT",
 	"headers": [
 		{
 			"source": "/sw.js",
