@@ -33,6 +33,7 @@ Chronos is a PWA timetable app.
 - Stack: TypeScript, Svelte 5, SvelteKit, Tailwind CSS 4
 - Data & i18n: Dexie (Client-side), Paraglide (en / zh-cn), PostHog
 - Package Manager: Use `vp` (Vite+) CLI only (do not invoke pnpm / npm / yarn directly)
+- Developer docs: See `CONTRIBUTING.md` at the repository root
 
 ## Write Code
 

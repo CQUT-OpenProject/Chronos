@@ -65,6 +65,10 @@ Chronos 不需要配置任何环境变量即可正常部署，以下变量仅在
 
 详见应用内「关于 → 隐私政策」，或 [`static/legal/privacy-policy.md`](static/legal/privacy-policy.md)。
 
+## 参与贡献
+
+开发环境、架构说明、插件作者指南与参考契约见 [CONTRIBUTING.md](CONTRIBUTING.md)。架构决策记录位于 [`.agents/docs/adr/`](.agents/docs/adr/README.md)。
+
 ## 切换到旧版
 
 **Chronos-Android** 位于 `legacy` 分支，目前已停止维护

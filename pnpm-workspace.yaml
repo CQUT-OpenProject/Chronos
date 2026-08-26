@@ -2,7 +2,6 @@ packages:
   - 'packages/*'
   - 'packages/plugins/*'
   - 'apps/*'
-  - 'website'
   - '.'
 
 allowBuilds:
