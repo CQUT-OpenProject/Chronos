@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "vp dev .",
 		"build": "vp build .",
-		"build:pages": "CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-cqut-offline vp build . && cp build/404.html build/index.html",
+		"build:pages": "CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-default vp build . && cp build/404.html build/index.html",
 		"preview": "vp preview .",
 		"prepare": "vp config && node --experimental-strip-types scripts/emit-profile-artifacts.ts && svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
 		define: {
 			__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
 			__CHRONOS_PROFILE__: JSON.stringify(
-				process.env.CHRONOS_PROFILE ?? (isPagesBuild ? 'chronos-cqut-offline' : 'chronos-cqut')
+				process.env.CHRONOS_PROFILE ?? (isPagesBuild ? 'chronos-default' : 'chronos-cqut')
 			),
 			__ANALYTICS_ENABLED__: JSON.stringify(
 				mode === 'test' || Boolean(env.PUBLIC_POSTHOG_KEY?.trim())

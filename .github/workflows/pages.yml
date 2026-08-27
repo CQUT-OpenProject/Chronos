@@ -19,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      CHRONOS_PROFILE: chronos-cqut-offline
+      CHRONOS_PROFILE: chronos-default
       CHRONOS_DEPLOY_TARGET: pages
     steps:
       - uses: actions/checkout@v4
