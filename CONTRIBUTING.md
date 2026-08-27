@@ -11,7 +11,7 @@
 
 Chronos 内置以下三种配置文件，可按需选择或自行创造新的 profile：
 
-| Profile                | 定位               | 知行理工导入 | 教务 HTML 导入 | 分享链接导入 |  服务端插件   |
+| Profile                | 定位               | 知行理工导入 | 教务 HTML 导入 | 分享口令导入 |  服务端插件   |
 | ---------------------- | ------------------ | :----------: | :------------: | :----------: | :-----------: |
 | `chronos-default`      | Chronos 标准开源版 |      ✗       |       ✗        |      ✓       |      无       |
 | `chronos-cqut-offline` | 重庆理工大学离线版 |      ✗       |       ✓        |      ✓       |      无       |
@@ -97,10 +97,6 @@ packages/codec-kit        共享字节编解码原语（非插件）
 scripts                   官方插件构建/校验、主题令牌、别名解析
 .agents/docs/adr          架构决策记录
 ```
-
-### Profile 与部署
-
-- `chronos-cqut`（默认 Vercel 版）：支持在线导入；`chronos-cqut-offline`（Pages 静态版）；`chronos-default`（开源通用）。经环境变量 `CHRONOS_PROFILE` 选择，详见根 README 的部署指南。
 
 ### 提交约定
 
