@@ -7,6 +7,7 @@ export * from './domain/preferences';
 // Engine
 export * from './engine/date';
 export * from './engine/calendar';
+export * from './engine/holiday-calendar';
 export * from './engine/slot-key';
 export * from './engine/grid';
 export * from './engine/display-models';
@@ -14,6 +15,9 @@ export * from './engine/capsule-layout';
 export * from './engine/palette';
 export * from './engine/timetable-layout';
 export * from './engine/period-clock';
+
+// Shell
+export * from './shell/host-tab-routes';
 
 // Schema
 export * from './schema/schema';

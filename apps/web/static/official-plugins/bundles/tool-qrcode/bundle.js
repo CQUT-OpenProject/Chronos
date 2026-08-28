@@ -1559,7 +1559,11 @@ function xr(e) {
 			termStartDate: e.academicConfig?.termStartDate ?? "",
 			startWeek: e.academicConfig?.startWeek ?? 1,
 			endWeek: e.academicConfig?.endWeek ?? 20,
-			periodTimes: e.academicConfig?.periodTimes ?? []
+			periodTimes: e.academicConfig?.periodTimes ?? [],
+			...e.academicConfig?.holidayCalendar ? { holidayCalendar: {
+				...e.academicConfig.holidayCalendar,
+				holidays: [...e.academicConfig.holidayCalendar.holidays]
+			} } : {}
 		},
 		viewPrefs: {
 			showSaturday: e.viewPrefs?.showSaturday ?? !0,
@@ -6236,8 +6240,8 @@ function ga(e) {
 }
 var _a = {
 	"zh-cn": {
-		"plugin.name": "导出为二维码",
-		"plugin.description": "导出为二维码生成与识别导入",
+		"plugin.name": "二维码",
+		"plugin.description": "通过二维码导入/导出课表",
 		"import.tab.title": "二维码",
 		"import.tab.badge": "图片",
 		"import.tab.supporting": "选择或扫描导出为二维码图片进行导入",
@@ -6264,8 +6268,8 @@ var _a = {
 		"decode.noQrFound": "未能从该图片中识别出有效的二维码或当前浏览器不支持原生扫码识别"
 	},
 	en: {
-		"plugin.name": "Timetable QR Code",
-		"plugin.description": "Generate and scan timetable QR codes",
+		"plugin.name": "QR Code",
+		"plugin.description": "Import and export timetables via QR codes",
 		"import.tab.title": "QR code",
 		"import.tab.badge": "Image",
 		"import.tab.supporting": "Select or scan a timetable QR code image to import",

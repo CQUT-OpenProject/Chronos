@@ -28,7 +28,7 @@ const defaultProfile: ChronosProfile = {
 
 const cqutProfile: ChronosProfile = {
 	profileId: 'chronos-cqut',
-	name: '重庆理工大学定制版',
+	name: '重庆理工大学在线版',
 	version: '0.3.0',
 	description: '专为重庆理工大学定制，内置知行理工教务直连与校区专属节次',
 	defaultTheme: DEFAULT_VISUAL_THEME_ID,

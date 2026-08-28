@@ -8,9 +8,9 @@
 		type TimetableCourseDisplayModel,
 		type TimetableGridModel
 	} from '@chronos/core';
-	import { timetableDayShortLabel } from './day-labels';
+	import { timetableDayColumnHeaderLabel } from './day-labels';
 	import MiddleTruncateText from './MiddleTruncateText.svelte';
-	import { createSizedCanvasMeasurer, fitFontSizePx } from '../utils/middle-truncate';
+	import { createFitWidthFontAttachment } from '../utils/fit-width-font.svelte';
 	import {
 		timetableBodyTintClass,
 		timetableSidebarTintClass,
@@ -133,51 +133,6 @@
 		return () => clearTimeout(timeoutId);
 	});
 
-	function fitWidthFont(
-		getParams: () => { lines: string[]; maxFontPx: number; fromParent?: boolean }
-	): Attachment<HTMLElement> {
-		return (node) => {
-			const apply = () => {
-				const { lines, maxFontPx, fromParent = false } = getParams();
-				const contents = lines.filter((line) => line.length > 0);
-				const box = fromParent ? (node.parentElement ?? node) : node;
-				let available = box.clientWidth;
-				if (fromParent) {
-					const style = getComputedStyle(node);
-					available -=
-						(Number.parseFloat(style.paddingLeft) || 0) +
-						(Number.parseFloat(style.paddingRight) || 0);
-					available = Math.max(0, available);
-				}
-				if (available <= 0 || contents.length === 0) return;
-				const measurerForSize = createSizedCanvasMeasurer(node);
-				const fontPx = fitFontSizePx(
-					available,
-					(size) => {
-						const measure = measurerForSize(size);
-						return Math.max(...contents.map((line) => measure(line)));
-					},
-					maxFontPx,
-					FIT_MIN_FONT_PX
-				);
-				node.style.fontSize = `${fontPx}px`;
-			};
-			let observed: Element | null = null;
-			const observer = new ResizeObserver(apply);
-			$effect(() => {
-				const { fromParent = false } = getParams();
-				const target = fromParent ? (node.parentElement ?? node) : node;
-				if (observed !== target) {
-					observer.disconnect();
-					observer.observe(target);
-					observed = target;
-				}
-				apply();
-			});
-			return () => observer.disconnect();
-		};
-	}
-
 	function expandSlot(key: string) {
 		if (onExpandSlot) {
 			onExpandSlot(key);
@@ -238,13 +193,15 @@
 		<div class="flex min-w-0 flex-1">
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
-					<span class="m3-body-small text-on-surface-variant"
-						>{timetableDayShortLabel(day.dayOfWeek)}</span
-					>
+					<span class="m3-body-small max-w-full truncate text-on-surface-variant">
+						{timetableDayColumnHeaderLabel(day)}
+					</span>
 					<div
 						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
 							? 'bg-brand text-on-primary'
-							: 'text-on-surface'}"
+							: day.holiday
+								? 'text-on-surface-variant'
+								: 'text-on-surface'}"
 					>
 						{dayOfMonth(day.date)}
 					</div>
@@ -294,6 +251,16 @@
 				class="relative min-w-0 flex-1"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
+				{#each gridModel.visibleDays as day, columnIndex (day.dayOfWeek)}
+					{#if day.holiday}
+						<div
+							class="pointer-events-none absolute top-0 bg-surface-container-low/60"
+							style:left="{(columnIndex / visibleDayCount) * 100}%"
+							style:width="{100 / visibleDayCount}%"
+							style:height="100%"
+						></div>
+					{/if}
+				{/each}
 				{#each placements as item (item.key)}
 					{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
 					<div
@@ -335,7 +302,11 @@
 									type="button"
 									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
 										item.corners
-									)} {item.displayModel.isInDisplayedWeek ? '' : 'opacity-45'}"
+									)} {item.displayModel.isHolidayMuted
+										? 'opacity-40'
+										: item.displayModel.isInDisplayedWeek
+											? ''
+											: 'opacity-45'}"
 									style:--capsule={item.colors.background}
 									style:--capsule-fg={item.colors.text}
 									onclick={() => onCourseClick?.(item.course)}
@@ -347,7 +318,7 @@
 												style:background-color="color-mix(in srgb, currentColor 12%, transparent)"
 												style:color="color-mix(in srgb, currentColor 80%, transparent)"
 												style:font-size="{item.scale.badgePx}px"
-												{@attach fitWidthFont(() => ({
+												{@attach createFitWidthFontAttachment(() => ({
 													lines: [badgeText],
 													maxFontPx: item.scale.badgePx,
 													fromParent: true
@@ -367,7 +338,7 @@
 											class="mt-1.5 shrink-0 overflow-hidden leading-tight"
 											style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {item
 												.locationMetrics.fontPx}px; height: {item.locationMetrics.heightPx}px"
-											{@attach fitWidthFont(() => ({
+											{@attach createFitWidthFontAttachment(() => ({
 												lines: item.locationLines,
 												maxFontPx: item.locationMetrics.fontPx
 											}))}
@@ -382,7 +353,7 @@
 											class="mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap"
 											style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {item
 												.scale.detailPx}px"
-											{@attach fitWidthFont(() => ({
+											{@attach createFitWidthFontAttachment(() => ({
 												lines: [item.teacher],
 												maxFontPx: item.scale.detailPx
 											}))}
@@ -395,7 +366,11 @@
 								<div
 									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
 										item.corners
-									)} {item.displayModel.isInDisplayedWeek ? '' : 'opacity-45'}"
+									)} {item.displayModel.isHolidayMuted
+										? 'opacity-40'
+										: item.displayModel.isInDisplayedWeek
+											? ''
+											: 'opacity-45'}"
 									style:--capsule={item.colors.background}
 									style:--capsule-fg={item.colors.text}
 								>
@@ -406,7 +381,7 @@
 												style:background-color="color-mix(in srgb, currentColor 12%, transparent)"
 												style:color="color-mix(in srgb, currentColor 80%, transparent)"
 												style:font-size="{item.scale.badgePx}px"
-												{@attach fitWidthFont(() => ({
+												{@attach createFitWidthFontAttachment(() => ({
 													lines: [badgeText],
 													maxFontPx: item.scale.badgePx,
 													fromParent: true
@@ -426,7 +401,7 @@
 											class="mt-1.5 shrink-0 overflow-hidden leading-tight"
 											style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {item
 												.locationMetrics.fontPx}px; height: {item.locationMetrics.heightPx}px"
-											{@attach fitWidthFont(() => ({
+											{@attach createFitWidthFontAttachment(() => ({
 												lines: item.locationLines,
 												maxFontPx: item.locationMetrics.fontPx
 											}))}
@@ -441,7 +416,7 @@
 											class="mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap"
 											style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {item
 												.scale.detailPx}px"
-											{@attach fitWidthFont(() => ({
+											{@attach createFitWidthFontAttachment(() => ({
 												lines: [item.teacher],
 												maxFontPx: item.scale.detailPx
 											}))}

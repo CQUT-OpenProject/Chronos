@@ -354,4 +354,232 @@ describe('OfficialPluginService', () => {
 			/http or https/
 		);
 	});
+
+	it('detects catalog updates for installed plugins', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const installedManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '0.3.0',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+		const remoteManifest: PluginManifest = {
+			...installedManifest,
+			version: '2.0.0'
+		};
+		const manifestUrl = '/official-plugins/manifests/test.manifest.json';
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === '/official-plugins/catalog.json') {
+				return httpResponse({
+					json: async <T>() =>
+						({
+							version: 1,
+							updatedAt: Date.now(),
+							manifests: [manifestUrl]
+						}) as T
+				});
+			}
+			if (url === manifestUrl) {
+				return httpResponse({ json: async <T>() => remoteManifest as T });
+			}
+			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.install(installedManifest, manifestUrl);
+
+		const offers = await service.checkForUpdates();
+		expect(offers).toHaveLength(1);
+		expect(offers[0]).toMatchObject({
+			pluginId: 'test-plugin',
+			currentVersion: '1.0.0',
+			latestVersion: '2.0.0',
+			manifestUrl
+		});
+	});
+
+	it('detects link-installed plugin updates via manifestUrl', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const installedManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Link' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Link plugin' },
+			author: 'Community',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '0.3.0',
+			bundleUrl: 'bundle.js',
+			sha256: hash
+		};
+		const remoteManifest: PluginManifest = {
+			...installedManifest,
+			version: '1.1.0'
+		};
+		const manifestUrl = 'https://cdn.example.com/plugins/link/manifest.json';
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === '/official-plugins/catalog.json') {
+				return httpResponse({
+					json: async <T>() =>
+						({
+							version: 1,
+							updatedAt: Date.now(),
+							manifests: []
+						}) as T
+				});
+			}
+			if (url === manifestUrl) {
+				return httpResponse({ json: async <T>() => remoteManifest as T });
+			}
+			if (url === 'https://cdn.example.com/plugins/link/bundle.js') {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.install(installedManifest, manifestUrl);
+
+		const offers = await service.checkForUpdates();
+		expect(offers).toHaveLength(1);
+		expect(offers[0]?.latestVersion).toBe('1.1.0');
+	});
+
+	it('updates installed plugin and preserves plugin data', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const installedManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '0.3.0',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+		const remoteManifest: PluginManifest = {
+			...installedManifest,
+			version: '2.0.0'
+		};
+		const manifestUrl = '/official-plugins/manifests/test.manifest.json';
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			if (url === manifestUrl) {
+				return httpResponse({ json: async <T>() => remoteManifest as T });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.install(installedManifest, manifestUrl);
+		await engine.storage.setPluginData('test-plugin', 'wallpaper_image', { base64: 'keep-me' });
+
+		await service.updateInstalled('test-plugin', manifestUrl);
+
+		expect(service.getInstalled('test-plugin')?.manifest.version).toBe('2.0.0');
+		expect(await engine.storage.getPluginData('test-plugin', 'wallpaper_image')).toEqual({
+			base64: 'keep-me'
+		});
+	});
+
+	it('update keeps disabled plugins inactive', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const installedManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '0.3.0',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+		const remoteManifest: PluginManifest = {
+			...installedManifest,
+			version: '2.0.0'
+		};
+		const manifestUrl = '/official-plugins/manifests/test.manifest.json';
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			if (url === manifestUrl) {
+				return httpResponse({ json: async <T>() => remoteManifest as T });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.install(installedManifest, manifestUrl);
+		await service.disable('test-plugin');
+		expect(engine.isPluginLoaded('test-plugin')).toBe(false);
+
+		await service.updateInstalled('test-plugin', manifestUrl);
+
+		expect(service.getInstalled('test-plugin')?.manifest.version).toBe('2.0.0');
+		expect(service.getInstalled('test-plugin')?.enabled).toBe(false);
+		expect(engine.isPluginLoaded('test-plugin')).toBe(false);
+	});
+
+	it('uses prefetched catalog manifests without refetching catalog', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const installedManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			minEngineVersion: '0.3.0',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+		const remoteManifest: PluginManifest = {
+			...installedManifest,
+			version: '2.0.0'
+		};
+		const manifestUrl = '/official-plugins/manifests/test.manifest.json';
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.install(installedManifest, manifestUrl);
+		httpRequest.mockClear();
+
+		const offers = await service.checkForUpdates(
+			'/official-plugins/catalog.json',
+			new Map([
+				[
+					'test-plugin',
+					{
+						manifest: remoteManifest,
+						manifestUrl
+					}
+				]
+			])
+		);
+
+		expect(offers).toHaveLength(1);
+		expect(httpRequest).not.toHaveBeenCalled();
+	});
 });

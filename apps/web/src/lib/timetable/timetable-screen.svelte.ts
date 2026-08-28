@@ -3,13 +3,14 @@ import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { trackEvent } from '$lib/client/analytics';
 import {
 	AcademicCalendarService,
-	computeDelayUntilNextCurrentTimeRefreshMillis,
+	createDayClock,
 	computeTimetableWeekLayout,
 	currentTimeMinutes,
 	findCurrentPeriodIndex,
 	formatWeekDateRange,
 	parsePeriodRanges,
 	todayIsoDate,
+	type DayClockHandle,
 	type Timetable,
 	type TimetableCourseDisplayModel,
 	type TimetableGridModel,
@@ -31,12 +32,6 @@ let displayedWeekMemory = 1;
 let displayedWeekTimetableIdMemory: string | null = null;
 
 let sharedTimetableScreen: TimetableScreenController | null = null;
-
-function computeDelayUntilNextMidnightMillis(now = new Date()): number {
-	const nextMidnight = new Date(now);
-	nextMidnight.setHours(24, 0, 0, 0);
-	return Math.max(nextMidnight.getTime() - now.getTime(), 1_000);
-}
 
 interface TimetableScreenState {
 	currentTimetable: Timetable | null;
@@ -80,8 +75,7 @@ function createTimetableScreen() {
 	let cachedToday = '';
 	const cachedWeekLayouts = new SvelteMap<number, TimetableWeekLayoutResult>();
 
-	let todayTimer: ReturnType<typeof setTimeout> | null = null;
-	let periodTimer: ReturnType<typeof setTimeout> | null = null;
+	let dayClock: DayClockHandle | null = null;
 
 	function currentTimetable(): Timetable | null {
 		return shellRef?.controller.currentTimetable ?? null;
@@ -98,6 +92,15 @@ function createTimetableScreen() {
 			recompute();
 			notify();
 		});
+	});
+
+	$effect(() => {
+		const shell = shellRef;
+		if (!shell || !dayClock) return;
+		const timetable = shell.controller.currentTimetable;
+		void timetable?.id;
+		void timetable?.academicConfig.periodTimes;
+		dayClock.reschedule();
 	});
 
 	function notify() {
@@ -160,36 +163,22 @@ function createTimetableScreen() {
 		weekCourseDisplayModels = nextWeekCourseDisplayModels;
 	}
 
-	function scheduleTodayRefresh() {
-		if (todayTimer) clearTimeout(todayTimer);
-		const delay = computeDelayUntilNextMidnightMillis(new Date());
-		todayTimer = setTimeout(() => {
-			today = todayIsoDate();
-			now = new Date();
-			recompute();
-			notify();
-			scheduleTodayRefresh();
-		}, delay);
-	}
-
-	function schedulePeriodRefresh() {
-		if (periodTimer) clearTimeout(periodTimer);
-		const timetable = currentTimetable();
-		const periods = timetable?.academicConfig.periodTimes ?? [];
-		const parsed = parsePeriodRanges(periods);
-		const delay = computeDelayUntilNextCurrentTimeRefreshMillis(new Date(), parsed);
-		periodTimer = setTimeout(() => {
-			now = new Date();
-			notify();
-			schedulePeriodRefresh();
-		}, delay);
-	}
-
 	function init(shell: AppShellController) {
 		if (shellRef) return;
 		shellRef = shell;
-		scheduleTodayRefresh();
-		schedulePeriodRefresh();
+		dayClock = createDayClock({
+			getPeriodTimes: () => currentTimetable()?.academicConfig.periodTimes ?? [],
+			onMidnight: () => {
+				today = todayIsoDate();
+				now = new Date();
+				recompute();
+				notify();
+			},
+			onPeriodBoundary: () => {
+				now = new Date();
+				notify();
+			}
+		});
 	}
 
 	function refresh() {
@@ -198,11 +187,9 @@ function createTimetableScreen() {
 	}
 
 	function destroy() {
+		dayClock?.dispose();
+		dayClock = null;
 		shellRef = null;
-		if (todayTimer) clearTimeout(todayTimer);
-		if (periodTimer) clearTimeout(periodTimer);
-		todayTimer = null;
-		periodTimer = null;
 	}
 
 	function setDisplayedWeek(week: number) {

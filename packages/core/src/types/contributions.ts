@@ -2,14 +2,7 @@ import type { Course } from '../domain/course';
 import type { CoursePaletteEntry } from '../engine/palette';
 import type { DesignTokens, CoursePaint, LocalizedText } from './slots';
 
-export type {
-	DesignTokens,
-	CoursePaint,
-	CourseBadge,
-	CourseBadgeSlotContribution,
-	ExportResult,
-	ShellIconRef
-} from './slots';
+export type { DesignTokens, CoursePaint, CourseBadgeSlotContribution } from './slots';
 
 export interface ThemeWorkbenchColors {
 	light: Record<string, string>;

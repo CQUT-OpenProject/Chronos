@@ -9,9 +9,13 @@
 		resolveCoursePaint,
 		resolveLocalizedText
 	} from '@chronos/core';
+	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import { getAppController } from '$lib/services/app-engine';
 	import Button from '$lib/components/ui/Button.svelte';
+
+	const HEADLINE_SMALL_FONT_PX = 24;
+	const FIT_MIN_FONT_PX = 12;
 
 	let {
 		shell,
@@ -87,19 +91,25 @@
 		{hostT('course.detail.noId')}
 	</p>
 {:else if course}
-	<div class="mb-6 flex items-center gap-3 py-2">
+	<div class="mb-6 flex min-w-0 items-center gap-3 py-2">
 		<span
 			class="course-capsule size-3 shrink-0 rounded-full"
 			style:--capsule={paint?.background}
 			style:--capsule-fg={paint?.foreground}
 		></span>
-		<h2 class="m3-headline-small flex-1 font-bold text-on-surface">{course.name}</h2>
+		<h2
+			class="m3-headline-small min-w-0 flex-1 font-bold whitespace-nowrap text-on-surface"
+			{@attach createFitWidthFontAttachment(() => ({
+				lines: [course.name],
+				maxFontPx: HEADLINE_SMALL_FONT_PX,
+				minFontPx: FIT_MIN_FONT_PX
+			}))}
+		>
+			{course.name}
+		</h2>
 	</div>
 
 	<section class="rounded-2xl bg-surface-variant/40 p-4">
-		<h3 class="m3-title-small mb-2 text-on-surface-variant">
-			{hostT('course.detail.basicInfo')}
-		</h3>
 		<div class="divide-y divide-outline-variant/60">
 			{#each detailRows as row (row.label)}
 				<div class="m3-body-medium flex items-center justify-between gap-4 py-2.5">

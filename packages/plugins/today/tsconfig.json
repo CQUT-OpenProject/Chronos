@@ -1,0 +1,9 @@
+{
+	"extends": "../../../tsconfig.json",
+	"compilerOptions": {
+		"paths": {
+			"@chronos/core": ["../../../packages/core/src/index.ts"]
+		}
+	},
+	"include": ["src/**/*", "bundle/**/*", "tests/**/*"]
+}

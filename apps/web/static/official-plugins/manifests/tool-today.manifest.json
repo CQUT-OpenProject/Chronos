@@ -1,0 +1,20 @@
+{
+	"id": "tool-today",
+	"name": {
+		"zh-CN": "今日",
+		"en": "Today"
+	},
+	"version": "1.0.0",
+	"description": {
+		"zh-CN": "快速查看当天课程",
+		"en": "Bottom tab showing today's courses"
+	},
+	"author": "Chronos",
+	"type": "tool",
+	"bundleFormat": "esm",
+	"minEngineVersion": "0.4.0",
+	"bundleUrl": "/official-plugins/bundles/tool-today/bundle.js",
+	"sha256": "14b26282996390b36004e6f117fdba8bfd7e0f76e04de352be47cc66fed98ec9",
+	"cssUrl": "/official-plugins/bundles/tool-today/bundle.css",
+	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
+}

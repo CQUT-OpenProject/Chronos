@@ -101,7 +101,7 @@ export default defineConfig({
 			},
 			'build:pages': {
 				command:
-					'CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-cqut-offline vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html',
+					'node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && (cd apps/web && svelte-kit sync) && vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html',
 				env: ['CHRONOS_DEPLOY_TARGET', 'CHRONOS_PROFILE']
 			},
 			check: '(cd apps/web && svelte-kit sync) && vp check',
@@ -123,6 +123,8 @@ export default defineConfig({
 				cache: false
 			},
 			'build:official-plugins': 'node --experimental-strip-types scripts/build-official-plugins.ts',
+			'fetch:holiday-cn-fallback':
+				'node --experimental-strip-types scripts/fetch-holiday-cn-fallback.ts',
 			'verify:official-plugins':
 				'node --experimental-strip-types scripts/verify-official-plugins.ts'
 		}

@@ -156,6 +156,18 @@ importers:
 
   packages/core: {}
 
+  packages/plugins/calendar-holidays:
+    dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@chronos/ui-kit':
+        specifier: workspace:*
+        version: link:../../ui-kit
+      svelte:
+        specifier: ^5.0.0
+        version: 5.56.10(@typescript-eslint/types@8.66.0)
+
   packages/plugins/codec-qrcode:
     dependencies:
       '@chronos/codec-kit':
@@ -220,6 +232,18 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
+
+  packages/plugins/today:
+    dependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@chronos/ui-kit':
+        specifier: workspace:*
+        version: link:../../ui-kit
+      svelte:
+        specifier: ^5.0.0
+        version: 5.56.10(@typescript-eslint/types@8.66.0)
 
   packages/plugins/wallpaper:
     dependencies:

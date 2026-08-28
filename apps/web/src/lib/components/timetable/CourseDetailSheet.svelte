@@ -1,20 +1,24 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
-	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import CourseDetailScreen from '$lib/components/timetable/CourseDetailScreen.svelte';
+	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import { Edit } from '$lib/icons';
-	import { getAppController } from '$lib/services/app-engine';
+
+	let {
+		open = $bindable(false),
+		courseId = $bindable<string | null>(null)
+	}: {
+		open?: boolean;
+		courseId?: string | null;
+	} = $props();
 
 	const shell = getContext<AppShellController>('appShell');
-	const controller = getAppController();
-	const courseId = $derived(page.url.searchParams.get('courseId'));
 
 	const course = $derived(
 		courseId
@@ -22,8 +26,15 @@
 			: null
 	);
 
+	function handleOpenChangeComplete(isOpen: boolean) {
+		if (!isOpen && !open) {
+			courseId = null;
+		}
+	}
+
 	function editCourse() {
 		if (!course) return;
+		open = false;
 		trackEvent('course_editor_open', { trigger: 'detail_page' });
 		goto(resolve(`/timetable/course-editor?courseId=${encodeURIComponent(course.id)}`));
 	}
@@ -42,6 +53,15 @@
 	{/if}
 {/snippet}
 
-<SecondaryPageShell title={hostT('route.courseDetail')} backHref="/" actions={editAction}>
-	<CourseDetailScreen {shell} {courseId} />
-</SecondaryPageShell>
+<BottomSheet
+	bind:open
+	title={hostT('route.courseDetail')}
+	actions={editAction}
+	onOpenChangeComplete={handleOpenChangeComplete}
+>
+	<div class="p-4">
+		{#key courseId}
+			<CourseDetailScreen {shell} {courseId} />
+		{/key}
+	</div>
+</BottomSheet>

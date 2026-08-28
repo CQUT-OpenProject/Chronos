@@ -14,7 +14,6 @@
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import { DeleteFill } from '$lib/icons';
-	import { getAppController } from '$lib/services/app-engine';
 
 	let {
 		editor
@@ -22,7 +21,6 @@
 		editor: TimetableDetailsController;
 	} = $props();
 
-	const controller = getAppController();
 	const draft = $derived(editor.draft);
 
 	const showTermStart = $derived(Boolean(draft));
