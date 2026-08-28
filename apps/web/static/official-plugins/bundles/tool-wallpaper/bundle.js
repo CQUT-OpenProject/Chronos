@@ -6775,20 +6775,44 @@ function js(e, t) {
 	}), R(e, o), ze();
 }
 //#endregion
+//#region packages/ui-kit/src/utils/fit-width-font.svelte.ts
+var Ms = 6;
+function Ns(e) {
+	return (t) => {
+		let n = () => {
+			let { lines: n, maxFontPx: r, minFontPx: i = Ms, fromParent: a = !1 } = e(), o = n.filter((e) => e.length > 0), s = (a ? t.parentElement ?? t : t).clientWidth;
+			if (a) {
+				let e = getComputedStyle(t);
+				s -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0), s = Math.max(0, s);
+			}
+			if (s <= 0 || o.length === 0) return;
+			let c = ks(t), l = Os(s, (e) => {
+				let t = c(e);
+				return Math.max(...o.map((e) => t(e)));
+			}, r, i);
+			t.style.fontSize = `${l}px`;
+		}, r = null, i = new ResizeObserver(n);
+		return un(() => {
+			let { fromParent: a = !1 } = e(), o = a ? t.parentElement ?? t : t;
+			r !== o && (i.disconnect(), i.observe(o), r = o), n();
+		}), () => i.disconnect();
+	};
+}
+//#endregion
 //#region packages/ui-kit/src/timetable-preview/timetable-grid-chrome.ts
-function Ms(e) {
+function Ps(e) {
 	return e ? "" : "bg-surface";
 }
-function Ns(e) {
+function Fs(e) {
 	return e ? "bg-[var(--dynamic-tint-sidebar)]" : "bg-surface";
 }
-function Ps(e) {
+function Is(e) {
 	return e ? "timetable-dynamic-tint-body" : "bg-surface";
 }
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/TimetablePreviewGrid.svelte
-var Fs = /* @__PURE__ */ L("<div class=\"flex min-w-0 flex-1 flex-col items-center\"><span class=\"m3-body-small max-w-full truncate text-on-surface-variant\"> </span> <div> </div></div>"), Is = /* @__PURE__ */ L("<div class=\"flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center\"><div><span class=\"m3-body-medium font-bold\"> </span> <span> <br/> </span></div></div>"), Ls = /* @__PURE__ */ L("<div class=\"pointer-events-none absolute top-0 bg-surface-container-low/60\"></div>"), Rs = /* @__PURE__ */ L("<button type=\"button\"><span class=\"text-on-surface-variant\"> </span></button>"), zs = /* @__PURE__ */ L("<div><span class=\"text-on-surface-variant\"> </span></div>"), Bs = /* @__PURE__ */ L("<span class=\"mb-0.5 flex w-full shrink-0 justify-center\"><span class=\"max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap\"> </span></span>"), Vs = /* @__PURE__ */ L("<div class=\"overflow-hidden whitespace-nowrap\"> </div>"), Hs = /* @__PURE__ */ L("<div class=\"mt-1.5 shrink-0 overflow-hidden leading-tight\"></div>"), Us = /* @__PURE__ */ L("<div class=\"mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap\"> </div>"), Ws = /* @__PURE__ */ L("<button type=\"button\"><!> <!> <!> <!></button>"), Gs = /* @__PURE__ */ L("<div><!> <!> <!> <!></div>"), Ks = /* @__PURE__ */ L("<div class=\"absolute box-border overflow-hidden\"><!></div>"), qs = /* @__PURE__ */ L("<div><div><div class=\"m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant\"><span> </span> <span>月</span></div> <div class=\"flex min-w-0 flex-1\"></div></div> <div role=\"region\" aria-label=\"课表预览\"><div class=\"flex\"><aside aria-label=\"节次与时间\" class=\"shrink-0\"></aside> <div class=\"relative min-w-0 flex-1\"><!> <!></div></div></div></div>");
-function Js(e, t) {
+var Ls = /* @__PURE__ */ L("<div class=\"flex min-w-0 flex-1 flex-col items-center\"><span class=\"m3-body-small max-w-full truncate text-on-surface-variant\"> </span> <div> </div></div>"), Rs = /* @__PURE__ */ L("<div class=\"flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center\"><div><span class=\"m3-body-medium font-bold\"> </span> <span> <br/> </span></div></div>"), zs = /* @__PURE__ */ L("<div class=\"pointer-events-none absolute top-0 bg-surface-container-low/60\"></div>"), Bs = /* @__PURE__ */ L("<button type=\"button\"><span class=\"text-on-surface-variant\"> </span></button>"), Vs = /* @__PURE__ */ L("<div><span class=\"text-on-surface-variant\"> </span></div>"), Hs = /* @__PURE__ */ L("<span class=\"mb-0.5 flex w-full shrink-0 justify-center\"><span class=\"max-w-full rounded-lg px-1.5 py-0.5 whitespace-nowrap\"> </span></span>"), Us = /* @__PURE__ */ L("<div class=\"overflow-hidden whitespace-nowrap\"> </div>"), Ws = /* @__PURE__ */ L("<div class=\"mt-1.5 shrink-0 overflow-hidden leading-tight\"></div>"), Gs = /* @__PURE__ */ L("<div class=\"mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap\"> </div>"), Ks = /* @__PURE__ */ L("<button type=\"button\"><!> <!> <!> <!></button>"), qs = /* @__PURE__ */ L("<div><!> <!> <!> <!></div>"), Js = /* @__PURE__ */ L("<div class=\"absolute box-border overflow-hidden\"><!></div>"), Ys = /* @__PURE__ */ L("<div><div><div class=\"m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant\"><span> </span> <span>月</span></div> <div class=\"flex min-w-0 flex-1\"></div></div> <div role=\"region\" aria-label=\"课表预览\"><div class=\"flex\"><aside aria-label=\"节次与时间\" class=\"shrink-0\"></aside> <div class=\"relative min-w-0 flex-1\"><!> <!></div></div></div></div>");
+function Xs(e, t) {
 	Re(t, !0);
 	let n = qr(t, "hasDynamicBackground", 3, !1), r = qr(t, "layoutMode", 3, "fixed"), i = qr(t, "capsuleCornerStyle", 3, "rounded"), a = qr(t, "interactive", 3, !1), o = qr(t, "isCurrentWeek", 3, !1), s = qr(t, "courseBadges", 19, () => ({})), c = /* @__PURE__ */ Lt(0), l = /* @__PURE__ */ Lt(0), u = /* @__PURE__ */ Lt(Ut(/* @__PURE__ */ new Set())), d = /* @__PURE__ */ Lt(Ut(/* @__PURE__ */ new Date())), f = /* @__PURE__ */ k(() => t.expandedSlots ?? I(u)), p = /* @__PURE__ */ k(() => t.gridModel.visibleDays.length), m = /* @__PURE__ */ k(() => I(p) > 0 ? I(c) / I(p) : 0), h = /* @__PURE__ */ k(() => ua(t.gridModel.periods)), g = /* @__PURE__ */ k(() => Bi({
 		courseDisplayModels: t.courseDisplayModels,
@@ -6799,7 +6823,7 @@ function Js(e, t) {
 		paletteCourses: t.paletteCourses,
 		layoutMode: r(),
 		capsuleCornerStyle: i()
-	})), _ = /* @__PURE__ */ k(() => Ms(n())), v = /* @__PURE__ */ k(() => r() === "compact"), y = /* @__PURE__ */ k(() => t.currentPeriodIndex === void 0 ? o() ? fa(I(h), da(I(d))) : null : t.currentPeriodIndex), b = /* @__PURE__ */ k(() => !I(v) || I(l) <= 0 || t.gridModel.displayedPeriodCount <= 0 ? "5.5rem" : `${I(l) / t.gridModel.displayedPeriodCount}px`);
+	})), _ = /* @__PURE__ */ k(() => Ps(n())), v = /* @__PURE__ */ k(() => r() === "compact"), y = /* @__PURE__ */ k(() => t.currentPeriodIndex === void 0 ? o() ? fa(I(h), da(I(d))) : null : t.currentPeriodIndex), b = /* @__PURE__ */ k(() => !I(v) || I(l) <= 0 || t.gridModel.displayedPeriodCount <= 0 ? "5.5rem" : `${I(l) / t.gridModel.displayedPeriodCount}px`);
 	un(() => {
 		if (t.currentPeriodIndex !== void 0 || !o()) return;
 		let e, n = () => {
@@ -6826,33 +6850,12 @@ function Js(e, t) {
 		return n(), () => clearTimeout(e);
 	});
 	function x(e) {
-		return (t) => {
-			let n = () => {
-				let { lines: n, maxFontPx: r, fromParent: i = !1 } = e(), a = n.filter((e) => e.length > 0), o = (i ? t.parentElement ?? t : t).clientWidth;
-				if (i) {
-					let e = getComputedStyle(t);
-					o -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0), o = Math.max(0, o);
-				}
-				if (o <= 0 || a.length === 0) return;
-				let s = ks(t), c = Os(o, (e) => {
-					let t = s(e);
-					return Math.max(...a.map((e) => t(e)));
-				}, r, 6);
-				t.style.fontSize = `${c}px`;
-			}, r = null, i = new ResizeObserver(n);
-			return un(() => {
-				let { fromParent: a = !1 } = e(), o = a ? t.parentElement ?? t : t;
-				r !== o && (i.disconnect(), i.observe(o), r = o), n();
-			}), () => i.disconnect();
-		};
-	}
-	function S(e) {
 		t.onExpandSlot ? t.onExpandSlot(e) : j(u, /* @__PURE__ */ new Set([...I(u), e]), !0);
 	}
-	function C(e) {
+	function S(e) {
 		return e.slice(8, 10);
 	}
-	function w(e) {
+	function C(e) {
 		return [
 			e.topLeft ? "rounded-tl-xl" : null,
 			e.topRight ? "rounded-tr-xl" : null,
@@ -6860,14 +6863,14 @@ function Js(e, t) {
 			e.bottomRight ? "rounded-br-xl" : null
 		].filter((e) => e != null).join(" ");
 	}
-	let ee = (e) => {
+	let w = (e) => {
 		let t = () => {
 			j(c, e.clientWidth, !0);
 		};
 		t();
 		let n = new ResizeObserver(t);
 		return n.observe(e), () => n.disconnect();
-	}, te = (e) => {
+	}, ee = (e) => {
 		let t = e;
 		j(l, t.clientHeight, !0);
 		let n = new ResizeObserver(() => {
@@ -6877,36 +6880,36 @@ function Js(e, t) {
 			n.disconnect();
 		};
 	};
-	var ne = qs(), re = M(ne), ie = M(re), ae = M(ie), oe = M(ae, !0);
-	D(ae), Ae(2), D(ie);
-	var se = $t(ie, 2);
-	jr(se, 21, () => t.gridModel.visibleDays, (e) => e.dayOfWeek, (e, t) => {
-		var n = Fs(), r = M(n), i = M(r, !0);
+	var te = Ys(), ne = M(te), re = M(ne), ie = M(re), ae = M(ie, !0);
+	D(ie), Ae(2), D(re);
+	var oe = $t(re, 2);
+	jr(oe, 21, () => t.gridModel.visibleDays, (e) => e.dayOfWeek, (e, t) => {
+		var n = Ls(), r = M(n), i = M(r, !0);
 		D(r);
 		var a = $t(r, 2), o = M(a, !0);
 		D(a), D(n), N((e, n) => {
 			vr(i, e), Ur(a, 1, `m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full ${I(t).isToday ? "bg-brand text-on-primary" : I(t).holiday ? "text-on-surface-variant" : "text-on-surface"}`), vr(o, n);
-		}, [() => ps(I(t)), () => C(I(t).date)]), R(e, n);
-	}), D(se), D(re);
-	var ce = $t(re, 2), le = M(ce);
-	let ue;
-	var de = M(le);
-	let fe;
-	jr(de, 21, () => t.gridModel.periods, (e) => e.index, (e, t) => {
+		}, [() => ps(I(t)), () => S(I(t).date)]), R(e, n);
+	}), D(oe), D(ne);
+	var se = $t(ne, 2), ce = M(se);
+	let le;
+	var ue = M(ce);
+	let de;
+	jr(ue, 21, () => t.gridModel.periods, (e) => e.index, (e, t) => {
 		let n = /* @__PURE__ */ k(() => o() && I(t).index === I(y));
-		var r = Is(), i = M(r), a = M(i), s = M(a, !0);
+		var r = Rs(), i = M(r), a = M(i), s = M(a, !0);
 		D(a);
 		var c = $t(a, 2), l = M(c, !0), u = $t(l, 2, !0);
 		D(c), D(i), D(r), N(() => {
 			Ur(i, 1, `flex h-full w-full flex-col items-center justify-center rounded-2xl ${I(n) ? "period-active" : ""}`), vr(s, I(t).index), Ur(c, 1, `m3-caption mt-1 leading-tight ${I(n) ? "" : "text-on-surface-variant"}`), vr(l, I(t).startTime), vr(u, I(t).endTime);
 		}), R(e, r);
-	}), D(de);
-	var pe = $t(de, 2);
-	let me;
-	var he = M(pe);
-	jr(he, 19, () => t.gridModel.visibleDays, (e) => e.dayOfWeek, (e, t, n) => {
+	}), D(ue);
+	var fe = $t(ue, 2);
+	let pe;
+	var me = M(fe);
+	jr(me, 19, () => t.gridModel.visibleDays, (e) => e.dayOfWeek, (e, t, n) => {
 		var r = hr(), i = Qt(r), a = (e) => {
-			var t = Ls();
+			var t = zs();
 			let r;
 			N(() => r = z(t, "", r, {
 				left: `${I(n) / I(p) * 100}%`,
@@ -6917,25 +6920,25 @@ function Js(e, t) {
 		Er(i, (e) => {
 			I(t).holiday && e(a);
 		}), R(e, r);
-	}), jr($t(he, 2), 17, () => I(g), (e) => e.key, (e, n) => {
+	}), jr($t(me, 2), 17, () => I(g), (e) => e.key, (e, n) => {
 		let r = /* @__PURE__ */ k(() => I(n).geometry.endPeriod - I(n).geometry.startPeriod + 1);
-		var i = Ks();
+		var i = Js();
 		let o;
 		var c = M(i), l = (e) => {
 			var t = hr(), r = Qt(t), i = (e) => {
-				var t = Rs(), r = M(t);
+				var t = Bs(), r = M(t);
 				let i;
 				var a = M(r);
 				D(r), D(t), N((e) => {
 					Ur(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`), i = z(r, "", i, { "font-size": `${I(n).placeholderPx ?? ""}px` }), vr(a, `此时段有 ${I(n).count ?? ""} 门课程重叠`);
-				}, [() => w(I(n).corners)]), or("click", t, () => S(I(n).key)), R(e, t);
+				}, [() => C(I(n).corners)]), or("click", t, () => x(I(n).key)), R(e, t);
 			}, o = (e) => {
-				var t = zs(), r = M(t);
+				var t = Vs(), r = M(t);
 				let i;
 				var a = M(r);
 				D(r), D(t), N((e) => {
 					Ur(t, 1, `flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center ${e ?? ""}`), i = z(r, "", i, { "font-size": `${I(n).placeholderPx ?? ""}px` }), vr(a, `${I(n).count ?? ""} 门课程重叠`);
-				}, [() => w(I(n).corners)]), R(e, t);
+				}, [() => C(I(n).corners)]), R(e, t);
 			};
 			Er(r, (e) => {
 				a() ? e(i) : e(o, -1);
@@ -6943,13 +6946,13 @@ function Js(e, t) {
 		}, u = (e) => {
 			let r = /* @__PURE__ */ k(() => s()[I(n).course.id] ?? []), i = /* @__PURE__ */ k(() => I(n).badgeLabel || I(r)[0]?.text);
 			var o = hr(), c = Qt(o), l = (e) => {
-				var r = Ws();
+				var r = Ks();
 				let a;
 				var o = M(r), s = (e) => {
-					var t = Bs(), r = M(t);
+					var t = Hs(), r = M(t);
 					let a;
 					var o = M(r, !0);
-					D(r), Lr(r, () => x(() => ({
+					D(r), Lr(r, () => Ns(() => ({
 						lines: [I(i)],
 						maxFontPx: I(n).scale.badgePx,
 						fromParent: !0
@@ -6975,11 +6978,11 @@ function Js(e, t) {
 					}
 				});
 				var l = $t(c, 2), u = (e) => {
-					var t = Hs();
+					var t = Ws();
 					jr(t, 21, () => I(n).locationLines, Dr, (e, t) => {
-						var n = Vs(), r = M(n, !0);
+						var n = Us(), r = M(n, !0);
 						D(n), N(() => vr(r, I(t))), R(e, n);
-					}), D(t), Lr(t, () => x(() => ({
+					}), D(t), Lr(t, () => Ns(() => ({
 						lines: I(n).locationLines,
 						maxFontPx: I(n).locationMetrics.fontPx
 					}))), N(() => z(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${I(n).locationMetrics.fontPx ?? ""}px; height: ${I(n).locationMetrics.heightPx ?? ""}px`)), R(e, t);
@@ -6988,8 +6991,8 @@ function Js(e, t) {
 					I(n).locationLines.length > 0 && e(u);
 				});
 				var d = $t(l, 2), f = (e) => {
-					var t = Us(), r = M(t, !0);
-					D(t), Lr(t, () => x(() => ({
+					var t = Gs(), r = M(t, !0);
+					D(t), Lr(t, () => Ns(() => ({
 						lines: [I(n).teacher],
 						maxFontPx: I(n).scale.detailPx
 					}))), N(() => {
@@ -7003,15 +7006,15 @@ function Js(e, t) {
 						"--capsule": I(n).colors.background,
 						"--capsule-fg": I(n).colors.text
 					});
-				}, [() => w(I(n).corners)]), or("click", r, () => t.onCourseClick?.(I(n).course)), R(e, r);
+				}, [() => C(I(n).corners)]), or("click", r, () => t.onCourseClick?.(I(n).course)), R(e, r);
 			}, u = (e) => {
-				var t = Gs();
+				var t = qs();
 				let r;
 				var a = M(t), o = (e) => {
-					var t = Bs(), r = M(t);
+					var t = Hs(), r = M(t);
 					let a;
 					var o = M(r, !0);
-					D(r), Lr(r, () => x(() => ({
+					D(r), Lr(r, () => Ns(() => ({
 						lines: [I(i)],
 						maxFontPx: I(n).scale.badgePx,
 						fromParent: !0
@@ -7037,11 +7040,11 @@ function Js(e, t) {
 					}
 				});
 				var c = $t(s, 2), l = (e) => {
-					var t = Hs();
+					var t = Ws();
 					jr(t, 21, () => I(n).locationLines, Dr, (e, t) => {
-						var n = Vs(), r = M(n, !0);
+						var n = Us(), r = M(n, !0);
 						D(n), N(() => vr(r, I(t))), R(e, n);
-					}), D(t), Lr(t, () => x(() => ({
+					}), D(t), Lr(t, () => Ns(() => ({
 						lines: I(n).locationLines,
 						maxFontPx: I(n).locationMetrics.fontPx
 					}))), N(() => z(t, `color: color-mix(in srgb, currentColor 80%, transparent); font-size: ${I(n).locationMetrics.fontPx ?? ""}px; height: ${I(n).locationMetrics.heightPx ?? ""}px`)), R(e, t);
@@ -7050,8 +7053,8 @@ function Js(e, t) {
 					I(n).locationLines.length > 0 && e(l);
 				});
 				var u = $t(c, 2), d = (e) => {
-					var t = Us(), r = M(t, !0);
-					D(t), Lr(t, () => x(() => ({
+					var t = Gs(), r = M(t, !0);
+					D(t), Lr(t, () => Ns(() => ({
 						lines: [I(n).teacher],
 						maxFontPx: I(n).scale.detailPx
 					}))), N(() => {
@@ -7065,7 +7068,7 @@ function Js(e, t) {
 						"--capsule": I(n).colors.background,
 						"--capsule-fg": I(n).colors.text
 					});
-				}, [() => w(I(n).corners)]), R(e, t);
+				}, [() => C(I(n).corners)]), R(e, t);
 			};
 			Er(c, (e) => {
 				a() ? e(l) : e(u, -1);
@@ -7079,21 +7082,21 @@ function Js(e, t) {
 			width: `${I(n).geometry.widthPercent ?? ""}%`,
 			height: `calc(var(--row-height) * ${I(r) ?? ""})`
 		})), R(e, i);
-	}), D(pe), Lr(pe, () => ee), D(le), D(ce), Lr(ce, () => te), D(ne), N((e, n) => {
-		Ur(ne, 1, `relative flex h-full min-h-0 w-full flex-1 flex-col ${I(_) ?? ""}`), z(ne, `--row-height: ${I(b) ?? ""}; --sidebar-width: 3.25rem`), Ur(re, 1, `flex shrink-0 items-center py-2 ${e ?? ""}`), vr(oe, t.gridModel.monthLabel), Ur(ce, 1, `min-h-0 flex-1 ${I(v) ? "overflow-hidden" : "overflow-y-auto"} ${n ?? ""}`), ue = z(le, "", ue, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` }), fe = z(de, "", fe, {
+	}), D(fe), Lr(fe, () => w), D(ce), D(se), Lr(se, () => ee), D(te), N((e, n) => {
+		Ur(te, 1, `relative flex h-full min-h-0 w-full flex-1 flex-col ${I(_) ?? ""}`), z(te, `--row-height: ${I(b) ?? ""}; --sidebar-width: 3.25rem`), Ur(ne, 1, `flex shrink-0 items-center py-2 ${e ?? ""}`), vr(ae, t.gridModel.monthLabel), Ur(se, 1, `min-h-0 flex-1 ${I(v) ? "overflow-hidden" : "overflow-y-auto"} ${n ?? ""}`), le = z(ce, "", le, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` }), de = z(ue, "", de, {
 			width: "var(--sidebar-width)",
 			height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})`
-		}), me = z(pe, "", me, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` });
-	}, [() => Ns(n()), () => Ps(n())]), R(e, ne), ze();
+		}), pe = z(fe, "", pe, { height: `calc(var(--row-height) * ${t.gridModel.displayedPeriodCount ?? ""})` });
+	}, [() => Fs(n()), () => Is(n())]), R(e, te), ze();
 }
 sr(["click"]);
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/TimetableWallpaperLayer.svelte
-var Ys = /* @__PURE__ */ L("<div class=\"absolute inset-0\"></div>"), Xs = /* @__PURE__ */ L("<div class=\"relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden\"><!> <!></div>");
-function Zs(e, t) {
+var Zs = /* @__PURE__ */ L("<div class=\"absolute inset-0\"></div>"), Qs = /* @__PURE__ */ L("<div class=\"relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden\"><!> <!></div>");
+function $s(e, t) {
 	let n = qr(t, "wallpaperUri", 3, null);
-	var r = Xs(), i = M(r), a = (e) => {
-		var t = Ys();
+	var r = Qs(), i = M(r), a = (e) => {
+		var t = Zs();
 		let r;
 		N(() => r = z(t, "", r, {
 			"background-image": `url("${n()}")`,
@@ -7118,7 +7121,7 @@ function Zs(e, t) {
 sr(["change"]), sr(["click"]), sr(["click"]), sr(["click"]);
 //#endregion
 //#region packages/ui-kit/src/plugin-screen/mountable-svelte.ts
-function Qs(e) {
+function ec(e) {
 	return {
 		[ga]: !0,
 		mount(t, n) {
@@ -7134,7 +7137,7 @@ function Qs(e) {
 }
 //#endregion
 //#region packages/ui-kit/src/i18n/plugin-text.ts
-function $s(e, t, n, r) {
+function tc(e, t, n, r) {
 	let i = n["zh-cn"][r] ?? n.en?.[r] ?? String(r);
 	if (!e) return i;
 	e.slotVersion;
@@ -7143,8 +7146,8 @@ function $s(e, t, n, r) {
 }
 //#endregion
 //#region packages/ui-kit/src/timetable-preview/TimetableLivePreview.svelte
-var ec = /* @__PURE__ */ L("<div class=\"flex min-h-[12rem] items-center justify-center p-8\"><p class=\"m3-body-medium text-center text-on-surface-variant\">暂无课表，导入后可预览效果</p></div>");
-function tc(e, t) {
+var nc = /* @__PURE__ */ L("<div class=\"flex min-h-[12rem] items-center justify-center p-8\"><p class=\"m3-body-medium text-center text-on-surface-variant\">暂无课表，导入后可预览效果</p></div>");
+function rc(e, t) {
 	Re(t, !0);
 	let n = qr(t, "hasDynamicBackground", 3, !1), r = qr(t, "dynamicColorUri", 3, null), i = qr(t, "interactive", 3, !1), a = new pi(), o = /* @__PURE__ */ k(() => t.controller.currentTimetable), s = /* @__PURE__ */ k(fi), c = /* @__PURE__ */ k(() => I(o) ? a.calculateAcademicWeek(I(s), I(o).academicConfig) : null), l = /* @__PURE__ */ k(() => t.controller.displayedWeek ?? t.controller.activeWeek ?? I(c) ?? 1), u = /* @__PURE__ */ k(() => I(l) === (I(c) ?? t.controller.activeWeek ?? 1)), d = /* @__PURE__ */ k(() => t.controller.currentPeriodIndex), f = /* @__PURE__ */ k(() => t.controller.userPreferences?.timetableLayoutMode ?? "fixed"), p = /* @__PURE__ */ k(() => t.controller.userPreferences?.capsuleCornerStyle ?? "rounded"), m = /* @__PURE__ */ k(() => t.controller.coursePalette.length > 0 ? t.controller.coursePalette : Yr), h = /* @__PURE__ */ k(() => I(o)?.courses ?? []), g = /* @__PURE__ */ k(() => t.controller.courseBadges ?? {}), _ = /* @__PURE__ */ k(() => I(o) ? ca({
 		timetable: I(o),
@@ -7159,14 +7162,14 @@ function tc(e, t) {
 	var b = hr(), x = Qt(b), S = (e) => {
 		{
 			let t = /* @__PURE__ */ k(() => n() && r() ? r() : null);
-			Zs(e, {
+			$s(e, {
 				get wallpaperUri() {
 					return I(t);
 				},
 				children: (e, t) => {
 					{
 						let t = /* @__PURE__ */ k(() => n() && !!r());
-						Js(e, {
+						Xs(e, {
 							get displayedWeek() {
 								return I(l);
 							},
@@ -7210,7 +7213,7 @@ function tc(e, t) {
 			});
 		}
 	}, C = (e) => {
-		R(e, ec());
+		R(e, nc());
 	};
 	Er(x, (e) => {
 		I(o) && I(v) ? e(S) : e(C, -1);
@@ -7218,14 +7221,14 @@ function tc(e, t) {
 }
 //#endregion
 //#region packages/codec-kit/src/base64.ts
-var nc = 8192;
-function rc(e) {
+var ic = 8192;
+function ac(e) {
 	let t = "";
-	for (let n = 0; n < e.length; n += nc) t += String.fromCharCode(...e.subarray(n, n + nc));
+	for (let n = 0; n < e.length; n += ic) t += String.fromCharCode(...e.subarray(n, n + ic));
 	return t;
 }
-function ic(e) {
-	return btoa(rc(e));
+function oc(e) {
+	return btoa(ac(e));
 }
 (() => {
 	let e = /* @__PURE__ */ new Uint32Array(256);
@@ -7238,37 +7241,37 @@ function ic(e) {
 })();
 //#endregion
 //#region packages/plugins/wallpaper/src/storage.ts
-var ac = "tool-wallpaper", oc = "wallpaper_image";
-function sc(e) {
+var sc = "tool-wallpaper", cc = "wallpaper_image";
+function lc(e) {
 	return `data:${e.mimeType || "image/jpeg"};base64,${e.base64}`;
 }
-async function cc(e) {
+async function uc(e) {
 	let t = await e.arrayBuffer();
 	return {
 		mimeType: e.type || "image/jpeg",
-		base64: ic(new Uint8Array(t))
+		base64: oc(new Uint8Array(t))
 	};
 }
-async function lc(e, t = ac) {
-	let n = await e.getPluginData(t, oc);
-	return n?.base64 ? sc(n) : null;
+async function dc(e, t = sc) {
+	let n = await e.getPluginData(t, cc);
+	return n?.base64 ? lc(n) : null;
 }
-async function uc(e, t, n = ac) {
-	let r = await cc(t);
-	return await e.setPluginData(n, oc, r), sc(r);
+async function fc(e, t, n = sc) {
+	let r = await uc(t);
+	return await e.setPluginData(n, cc, r), lc(r);
 }
-async function dc(e, t = ac) {
-	await e.deletePluginData(t, oc);
+async function pc(e, t = sc) {
+	await e.deletePluginData(t, cc);
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/runtime.svelte.ts
-var fc = /* @__PURE__ */ new Map();
-function pc(e = ac) {
-	let t = fc.get(e);
+var mc = /* @__PURE__ */ new Map();
+function hc(e = sc) {
+	let t = mc.get(e);
 	if (!t) throw Error(`[WallpaperRuntime] not initialized for plugin "${e}"`);
 	return t;
 }
-function mc(e, t = ac) {
+function gc(e, t = sc) {
 	let n = /* @__PURE__ */ Lt(null), r = null;
 	function i(e) {
 		j(n, e, !0);
@@ -7290,28 +7293,28 @@ function mc(e, t = ac) {
 				i(null);
 				return;
 			}
-			i(await lc(e, t));
+			i(await dc(e, t));
 		},
 		async setWallpaper(n) {
 			if (!n) {
-				await dc(e, t), i(null);
+				await pc(e, t), i(null);
 				return;
 			}
-			i(await uc(e, n, t));
+			i(await fc(e, n, t));
 		},
 		setChangeHandler(e) {
 			r = e, e && e(I(n));
 		},
 		dispose() {
-			i(null), r = null, fc.get(t) === a && fc.delete(t);
+			i(null), r = null, mc.get(t) === a && mc.delete(t);
 		}
 	};
-	return fc.set(t, a), a;
+	return mc.set(t, a), a;
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/wallpaper-theme.ts
-var hc = 128;
-function gc(e) {
+var _c = 128;
+function vc(e) {
 	let t = [];
 	for (let n = 0; n < e.length; n += 4) {
 		let r = e[n], i = e[n + 1], a = e[n + 2];
@@ -7323,7 +7326,7 @@ function gc(e) {
 		ranked: n
 	};
 }
-function _c() {
+function yc() {
 	let e = [], t = null, n = null, r = null;
 	function i(e) {
 		return e ?? (typeof document < "u" ? document.documentElement : void 0);
@@ -7337,7 +7340,7 @@ function _c() {
 	}
 	async function o(e) {
 		if (e !== t || n == null || r == null) {
-			let { seed: i, ranked: a } = gc(await vc(e));
+			let { seed: i, ranked: a } = vc(await bc(e));
 			t = e, n = i, r = a;
 		}
 		return {
@@ -7358,10 +7361,10 @@ function _c() {
 		clearWallpaperTheme: a
 	};
 }
-async function vc(e) {
+async function bc(e) {
 	let t = new Image();
 	t.src = e, await t.decode();
-	let n = t.naturalWidth || t.width, r = t.naturalHeight || t.height, i = Math.min(1, hc / Math.max(n, r, 1)), a = Math.max(1, Math.round(n * i)), o = Math.max(1, Math.round(r * i)), s = document.createElement("canvas");
+	let n = t.naturalWidth || t.width, r = t.naturalHeight || t.height, i = Math.min(1, _c / Math.max(n, r, 1)), a = Math.max(1, Math.round(n * i)), o = Math.max(1, Math.round(r * i)), s = document.createElement("canvas");
 	s.width = a, s.height = o;
 	let c = s.getContext("2d");
 	if (!c) throw Error("Could not get canvas context");
@@ -7369,7 +7372,7 @@ async function vc(e) {
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/messages.ts
-function yc(e) {
+function xc(e) {
 	return pa({ wallpaper: {
 		type: "wallpaper-preview",
 		title: () => e("screen.field.wallpaper.title"),
@@ -7378,7 +7381,7 @@ function yc(e) {
 		required: !1
 	} });
 }
-var bc = {
+var Sc = {
 	"zh-cn": {
 		"plugin.name": "自定义壁纸",
 		"plugin.description": "自定义课表页壁纸，支持动态取色",
@@ -7413,10 +7416,10 @@ var bc = {
 		"screen.action.repick": "Choose again",
 		"screen.action.pick": "Choose wallpaper"
 	}
-}, xc = "wallpaper";
-function Sc(e) {
+}, Cc = "wallpaper";
+function wc(e) {
 	return {
-		id: xc,
+		id: Cc,
 		name: () => e("theme.name"),
 		description: () => e("theme.description"),
 		supportsDynamicColor: !0,
@@ -7435,7 +7438,7 @@ function Sc(e) {
 			surfaceVariant: "#24262e",
 			outline: "#334155"
 		}),
-		dynamicColorAdapter: _c(),
+		dynamicColorAdapter: yc(),
 		getTokens: (e) => ({
 			surface: e === "dark" ? "#1e2026" : "#f9f9fe",
 			onSurface: e === "dark" ? "#f8fafc" : "#2e333a",
@@ -7446,7 +7449,7 @@ function Sc(e) {
 		})
 	};
 }
-async function Cc(e, t) {
+async function Tc(e, t) {
 	let n = t.wallpaper;
 	if (n instanceof Uint8Array) {
 		await e.setWallpaper(new Blob([new Uint8Array(n)]));
@@ -7454,21 +7457,21 @@ async function Cc(e, t) {
 	}
 	n === null && await e.setWallpaper(null);
 }
-function wc(e = {}) {
+function Ec(e = {}) {
 	let { screenComponent: t } = e;
 	return xa({
-		id: ac,
-		messages: bc,
+		id: sc,
+		messages: Sc,
 		nameKey: "plugin.name",
 		descriptionKey: "plugin.description",
 		category: "tool",
 		order: 40,
 		author: "Chronos Community",
 		homepage: "https://github.com/CQUT-OpenProject/Chronos",
-		configSchema: yc((e) => bc["zh-cn"][e]),
+		configSchema: xc((e) => Sc["zh-cn"][e]),
 		defaultConfig: { wallpaper: null },
 		async apply(e, n) {
-			let r = yc(n), i = mc(e.service(ha), ac);
+			let r = xc(n), i = gc(e.service(ha), sc);
 			i.setChangeHandler((t) => {
 				e.emit("dynamicColor:changed", { uri: t });
 			}), e.on("dynamicColor:set", async ({ blob: e }) => {
@@ -7476,7 +7479,7 @@ function wc(e = {}) {
 			}), e.on("dynamicColor:hydrate", () => {
 				e.emit("dynamicColor:changed", { uri: i.uri });
 			}), e.on("config:changed", async ({ pluginId: e, config: t }) => {
-				e === "tool-wallpaper" && await Cc(i, t);
+				e === "tool-wallpaper" && await Tc(i, t);
 			}), await i.syncFromStorage(!0);
 			let a = n("mine.keywords").split(",").map((e) => e.trim()).filter(Boolean);
 			e.registerSlot("mine.item", {
@@ -7489,24 +7492,24 @@ function wc(e = {}) {
 				keywords: a,
 				order: 30
 			}), e.registerSlot("shell.route.screen", {
-				id: ac,
+				id: sc,
 				title: () => n("screen.title"),
 				...t ? { component: t } : {},
 				schema: r
 			});
-			let o = Sc(n);
+			let o = wc(n);
 			e.registerSlot("theme.definition", o), e.addDisposable({ dispose: () => i.dispose() });
 		}
 	});
 }
 //#endregion
 //#region packages/plugins/wallpaper/src/WallpaperScreen.svelte
-var Tc = /* @__PURE__ */ L("<div class=\"relative flex min-h-0 flex-1 flex-col overflow-hidden\"><!></div>"), Ec = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 items-center justify-center bg-canvas p-4\"><p class=\"m3-body-medium text-center text-on-surface-variant\"> </p></div>"), Dc = /* @__PURE__ */ L("<button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface\"> </button>"), Oc = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 flex-col\"><input type=\"file\" accept=\"image/*\" class=\"hidden\"/> <!> <div class=\"bottom-bar\"><div class=\"mx-auto flex h-full w-full max-w-lg items-center gap-3\"><!> <button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary\"> </button></div></div></div>");
-function kc(e, t) {
+var Dc = /* @__PURE__ */ L("<div class=\"relative flex min-h-0 flex-1 flex-col overflow-hidden\"><!></div>"), Oc = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 items-center justify-center bg-canvas p-4\"><p class=\"m3-body-medium text-center text-on-surface-variant\"> </p></div>"), kc = /* @__PURE__ */ L("<button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface\"> </button>"), Ac = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 flex-col\"><input type=\"file\" accept=\"image/*\" class=\"hidden\"/> <!> <div class=\"bottom-bar\"><div class=\"mx-auto flex h-full w-full max-w-lg items-center gap-3\"><!> <button type=\"button\" class=\"flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary\"> </button></div></div></div>");
+function jc(e, t) {
 	Re(t, !0);
-	let n = pc(t.pluginId), r = /* @__PURE__ */ k(() => n.uri), i = /* @__PURE__ */ k(() => n.hasWallpaper), a = /* @__PURE__ */ k(() => t.controller.currentTimetable);
+	let n = hc(t.pluginId), r = /* @__PURE__ */ k(() => n.uri), i = /* @__PURE__ */ k(() => n.hasWallpaper), a = /* @__PURE__ */ k(() => t.controller.currentTimetable);
 	function o(e) {
-		return $s(t.controller, ac, bc, e);
+		return tc(t.controller, sc, Sc, e);
 	}
 	let s = /* @__PURE__ */ k(() => o("screen.preview.empty")), c = /* @__PURE__ */ k(() => o("screen.action.clear")), l = /* @__PURE__ */ k(() => o(I(i) ? "screen.action.repick" : "screen.action.pick")), u = /* @__PURE__ */ Lt(void 0);
 	function d() {
@@ -7530,11 +7533,11 @@ function kc(e, t) {
 	async function p() {
 		await n.setWallpaper(null);
 	}
-	var m = Oc(), h = M(m);
+	var m = Ac(), h = M(m);
 	Kr(h, (e) => j(u, e), () => I(u));
 	var g = $t(h, 2), _ = (e) => {
-		var n = Tc();
-		tc(M(n), {
+		var n = Dc();
+		rc(M(n), {
 			get controller() {
 				return t.controller;
 			},
@@ -7545,14 +7548,14 @@ function kc(e, t) {
 			interactive: !1
 		}), D(n), R(e, n);
 	}, v = (e) => {
-		var t = Ec(), n = M(t), r = M(n, !0);
+		var t = Oc(), n = M(t), r = M(n, !0);
 		D(n), D(t), N(() => vr(r, I(s))), R(e, t);
 	};
 	Er(g, (e) => {
 		I(i) && I(a) ? e(_) : e(v, -1);
 	});
 	var y = $t(g, 2), b = M(y), x = M(b), S = (e) => {
-		var t = Dc(), n = M(t, !0);
+		var t = kc(), n = M(t, !0);
 		D(t), N(() => vr(n, I(c))), or("click", t, p), R(e, t);
 	};
 	Er(x, (e) => {
@@ -7564,6 +7567,6 @@ function kc(e, t) {
 sr(["change", "click"]);
 //#endregion
 //#region packages/plugins/wallpaper/bundle/entry.ts
-var Ac = wc({ screenComponent: Qs(kc) });
+var Mc = Ec({ screenComponent: ec(jc) });
 //#endregion
-export { Ac as default };
+export { Mc as default };
