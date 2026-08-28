@@ -1,9 +1,9 @@
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/constants.js
-var e = Symbol("uninitialized"), t = "http://www.w3.org/1999/xhtml", n = Array.isArray, r = Array.prototype.indexOf, i = Array.prototype.includes, a = Array.from, o = Object.defineProperty, s = Object.getOwnPropertyDescriptor, c = Object.getOwnPropertyDescriptors, l = Object.prototype, u = Array.prototype, d = Object.getPrototypeOf, f = Object.isExtensible, p = () => {};
-function m(e) {
+var e = {}, t = Symbol("uninitialized"), n = Array.isArray, r = Array.prototype.indexOf, i = Array.prototype.includes, a = Array.from, o = Object.defineProperty, s = Object.getOwnPropertyDescriptor, c = Object.prototype, l = Array.prototype, u = Object.getPrototypeOf, d = Object.isExtensible, f = () => {};
+function p(e) {
 	for (var t = 0; t < e.length; t++) e[t]();
 }
-function h() {
+function m() {
 	var e, t;
 	return {
 		promise: new Promise((n, r) => {
@@ -13,100 +13,149 @@ function h() {
 		reject: t
 	};
 }
-var g = 1024, _ = 2048, v = 4096, y = 8192, ee = 16384, b = 32768, x = 1 << 25, S = 65536, C = 1 << 19, te = 1 << 20, ne = 65536, re = 1 << 21, ie = 1 << 22, ae = 1 << 23, oe = Symbol("$state"), se = Symbol(""), ce = Symbol("attributes"), le = Symbol("class"), ue = Symbol("style"), de = Symbol("text"), fe = new class extends Error {
+var h = 1024, g = 2048, _ = 4096, v = 8192, y = 16384, b = 32768, x = 1 << 25, S = 65536, C = 1 << 19, w = 1 << 20, ee = 1 << 25, te = 65536, ne = 1 << 21, re = 1 << 22, ie = 1 << 23, T = Symbol("$state"), ae = Symbol("attributes"), oe = Symbol("class"), se = Symbol("style"), ce = Symbol("text"), le = new class extends Error {
 	name = "StaleReactionError";
 	message = "The reaction that called `getAbortSignal()` was re-run or destroyed";
 }();
 globalThis.document?.contentType;
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/errors.js
-function pe() {
+function ue() {
 	throw Error("https://svelte.dev/e/async_derived_orphan");
 }
-function me() {
+function de(e, t, n) {
+	throw Error("https://svelte.dev/e/each_key_duplicate");
+}
+function fe() {
 	throw Error("https://svelte.dev/e/effect_update_depth_exceeded");
 }
-function he() {
+function pe() {
 	throw Error("https://svelte.dev/e/state_descriptors_fixed");
 }
-function ge() {
+function me() {
 	throw Error("https://svelte.dev/e/state_prototype_fixed");
 }
-function _e() {
+function he() {
 	throw Error("https://svelte.dev/e/state_unsafe_mutation");
 }
-function ve() {
+function ge() {
 	throw Error("https://svelte.dev/e/svelte_boundary_reset_onerror");
 }
-function ye() {
+function _e() {
 	console.warn("https://svelte.dev/e/derived_inert");
 }
-function be() {
+function ve(e) {
+	console.warn("https://svelte.dev/e/hydration_mismatch");
+}
+function ye() {
 	console.warn("https://svelte.dev/e/svelte_boundary_reset_noop");
 }
 //#endregion
+//#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/hydration.js
+var E = !1;
+function be(e) {
+	E = e;
+}
+var D;
+function xe(t) {
+	if (t === null) throw ve(), e;
+	return D = t;
+}
+function Se() {
+	return xe(/* @__PURE__ */ Wt(D));
+}
+function O(t) {
+	if (E) {
+		if (/* @__PURE__ */ Wt(D) !== null) throw ve(), e;
+		D = t;
+	}
+}
+function Ce(e = 1) {
+	if (E) {
+		for (var t = e, n = D; t--;) n = /* @__PURE__ */ Wt(n);
+		D = n;
+	}
+}
+function we(e = !0) {
+	for (var t = 0, n = D;;) {
+		if (n.nodeType === 8) {
+			var r = n.data;
+			if (r === "]") {
+				if (t === 0) return n;
+				--t;
+			} else (r === "[" || r === "[!" || r[0] === "[" && !isNaN(Number(r.slice(1)))) && (t += 1);
+		}
+		var i = /* @__PURE__ */ Wt(n);
+		e && n.remove(), n = i;
+	}
+}
+function Te(t) {
+	if (!t || t.nodeType !== 8) throw ve(), e;
+	return t.data;
+}
+//#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/equality.js
-function xe(e) {
+function Ee(e) {
 	return e === this.v;
 }
-function Se(e, t) {
+function De(e, t) {
 	return e == e ? e !== t || typeof e == "object" && !!e || typeof e == "function" : t == t;
 }
-function Ce(e) {
-	return !Se(e, this.v);
+function Oe(e) {
+	return !De(e, this.v);
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/context.js
-var w = null;
-function we(e) {
-	w = e;
+var ke = null;
+function Ae(e) {
+	ke = e;
 }
-function Te(e, t = !1, n) {
-	w = {
-		p: w,
+function je(e, t = !1, n) {
+	ke = {
+		p: ke,
 		i: !1,
 		c: null,
 		e: null,
 		s: e,
 		x: null,
-		r: M,
+		r: P,
 		l: null
 	};
 }
-function Ee(e) {
-	var t = w, n = t.e;
+function Me(e) {
+	var t = ke, n = t.e;
 	if (n !== null) {
 		t.e = null;
-		for (var r of n) Ut(r);
+		for (var r of n) tn(r);
 	}
-	return e !== void 0 && (t.x = e), t.i = !0, w = t.p, e ?? {};
+	return e !== void 0 && (t.x = e), t.i = !0, ke = t.p, e ?? {};
 }
-function De() {
+function Ne() {
 	return !0;
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/task.js
-var Oe = [];
-function ke() {
-	var e = Oe;
-	Oe = [], m(e);
+var Pe = [];
+function Fe() {
+	var e = Pe;
+	Pe = [], p(e);
 }
-function Ae(e) {
-	if (Oe.length === 0 && !at) {
-		var t = Oe;
+function Ie(e) {
+	if (Pe.length === 0 && !ft) {
+		var t = Pe;
 		queueMicrotask(() => {
-			t === Oe && ke();
+			t === Pe && Fe();
 		});
 	}
-	Oe.push(e);
+	Pe.push(e);
 }
-function je(e) {
-	var t = M;
-	if (t === null) return k.f |= ae, e;
+function Le(e) {
+	var t = P;
+	if (t === null) return N.f |= ie, e;
 	if (!(t.f & 32768) && !(t.f & 4)) throw e;
-	Me(e, t);
+	Re(e, t);
 }
-function Me(e, t) {
+function Re(e, t) {
 	if (!(t !== null && t.f & 16384)) {
 		for (; t !== null;) {
 			if (t.f & 128) {
@@ -125,285 +174,316 @@ function Me(e, t) {
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/status.js
-var Ne = ~(_ | v | g);
-function T(e, t) {
-	e.f = e.f & Ne | t;
+var ze = ~(g | _ | h);
+function k(e, t) {
+	e.f = e.f & ze | t;
 }
-function Pe(e) {
-	e.f & 512 || e.deps === null ? T(e, g) : T(e, v);
+function Be(e) {
+	e.f & 512 || e.deps === null ? k(e, h) : k(e, _);
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/utils.js
-function Fe(e) {
-	if (e !== null) for (let t of e) !(t.f & 2) || !(t.f & 65536) || (t.f ^= ne, Fe(t.deps));
+function Ve(e) {
+	if (e !== null) for (let t of e) !(t.f & 2) || !(t.f & 65536) || (t.f ^= te, Ve(t.deps));
 }
-function Ie(e, t, n) {
-	e.f & 2048 ? t.add(e) : e.f & 4096 && n.add(e), Fe(e.deps), T(e, g);
+function He(e, t, n) {
+	e.f & 2048 ? t.add(e) : e.f & 4096 && n.add(e), Ve(e.deps), k(e, h);
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/elements/bindings/shared.js
-function Le(e) {
-	var t = k, n = M;
-	j(null), dn(null);
+function Ue(e) {
+	var t = N, n = P;
+	wn(null), Tn(null);
 	try {
 		return e();
 	} finally {
-		j(t), dn(n);
+		wn(t), Tn(n);
 	}
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/reactivity/create-subscriber.js
-function Re(e) {
-	let t = 0, n = xt(0), r;
+function We(e) {
+	let t = 0, n = Ot(0), r;
 	return () => {
-		Vt() && (I(n), qt(() => (t === 0 && (r = On(() => e(() => Tt(n)))), t += 1, () => {
-			Ae(() => {
-				--t, t === 0 && (r?.(), r = void 0, Tt(n));
+		$t() && (L(n), an(() => (t === 0 && (r = Un(() => e(() => Pt(n)))), t += 1, () => {
+			Ie(() => {
+				--t, t === 0 && (r?.(), r = void 0, Pt(n));
 			});
 		})));
 	};
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/blocks/boundary.js
-var ze = S | C;
-function Be(e, t, n, r) {
-	new Ve(e, t, n, r);
+var Ge = S | C;
+function Ke(e, t, n, r) {
+	new qe(e, t, n, r);
 }
-var Ve = class {
+var qe = class {
 	parent;
 	is_pending = !1;
 	transform_error;
 	#e;
-	#t;
+	#t = E ? D : null;
 	#n;
 	#r;
-	#i = null;
+	#i;
 	#a = null;
 	#o = null;
 	#s = null;
-	#c = 0;
+	#c = null;
 	#l = 0;
-	#u = !1;
-	#d = /* @__PURE__ */ new Set();
+	#u = 0;
+	#d = !1;
 	#f = /* @__PURE__ */ new Set();
-	#p = null;
-	#m = Re(() => (this.#p = xt(this.#c), () => {
-		this.#p = null;
+	#p = /* @__PURE__ */ new Set();
+	#m = null;
+	#h = We(() => (this.#m = Ot(this.#l), () => {
+		this.#m = null;
 	}));
 	constructor(e, t, n, r) {
-		this.#e = e, this.#t = t, this.#n = (e) => {
-			var t = M;
+		this.#e = e, this.#n = t, this.#r = (e) => {
+			var t = P;
 			t.b = this, t.f |= 128, n(e);
-		}, this.parent = M.b, this.transform_error = r ?? this.parent?.transform_error ?? ((e) => e), this.#r = Yt(() => {
-			this.#g();
-		}, ze);
+		}, this.parent = P.b, this.transform_error = r ?? this.parent?.transform_error ?? ((e) => e), this.#i = sn(() => {
+			if (E) {
+				let e = this.#t;
+				Se();
+				let t = e.data === "[!";
+				if (e.data.startsWith("[?")) {
+					let t = JSON.parse(e.data.slice(2));
+					this.#_(t);
+				} else t ? this.#y() : this.#g();
+			} else this.#b();
+		}, Ge), E && (this.#e = D);
 	}
-	#h(e) {
+	#g() {
+		try {
+			this.#a = cn(() => this.#r(this.#e));
+		} catch (e) {
+			this.error(e);
+		}
+	}
+	#_(e) {
+		let t = this.#n.failed, { reset: n, invoke_onerror: r } = this.#v(e);
+		Ie(r), t && (this.#s = cn(() => {
+			t(this.#e, () => e, () => n);
+		}));
+	}
+	#v(e) {
 		var t = !1, n = !1;
 		let r = () => {
 			if (t) {
-				be();
+				ye();
 				return;
 			}
-			t = !0, n && ve(), this.#o !== null && rn(this.#o, () => {
-				this.#o = null;
-			}), this.#v(() => {
-				this.#g();
+			t = !0, n && ge(), this.#s !== null && mn(this.#s, () => {
+				this.#s = null;
+			}), this.#S(() => {
+				this.#b();
 			});
 		};
 		return {
 			reset: r,
 			invoke_onerror: () => {
 				try {
-					n = !0, this.#t.onerror?.(e, r), n = !1;
+					n = !0, this.#n.onerror?.(e, r), n = !1;
 				} catch (e) {
-					Me(e, this.#r && this.#r.parent);
+					Re(e, this.#i && this.#i.parent);
 				}
 			}
 		};
 	}
-	#g() {
+	#y() {
+		let e = this.#n.pending;
+		e && (this.is_pending = !0, this.#o = cn(() => e(this.#e)), Ie(() => {
+			var e = this.#c = document.createDocumentFragment(), t = Ht();
+			e.append(t), this.#a = this.#S(() => cn(() => this.#r(t))), this.#u === 0 && (this.#e.before(e), this.#c = null, mn(this.#o, () => {
+				this.#o = null;
+			}), this.#x(A));
+		}));
+	}
+	#b() {
 		try {
-			if (this.is_pending = this.has_pending_snippet(), this.#l = 0, this.#c = 0, this.#i = Xt(() => {
-				this.#n(this.#e);
-			}), this.#l > 0) {
-				var e = this.#s = document.createDocumentFragment();
-				on(this.#i, e);
-				let t = this.#t.pending;
-				this.#a = Xt(() => t(this.#e));
-			} else this.#_(E);
+			if (this.is_pending = this.has_pending_snippet(), this.#u = 0, this.#l = 0, this.#a = cn(() => {
+				this.#r(this.#e);
+			}), this.#u > 0) {
+				var e = this.#c = document.createDocumentFragment();
+				vn(this.#a, e);
+				let t = this.#n.pending;
+				this.#o = cn(() => t(this.#e));
+			} else this.#x(A);
 		} catch (e) {
 			this.error(e);
 		}
 	}
-	#_(e) {
-		this.is_pending = !1, e.transfer_effects(this.#d, this.#f);
+	#x(e) {
+		this.is_pending = !1, e.transfer_effects(this.#f, this.#p);
 	}
 	defer_effect(e) {
-		Ie(e, this.#d, this.#f);
+		He(e, this.#f, this.#p);
 	}
 	is_rendered() {
 		return !this.is_pending && (!this.parent || this.parent.is_rendered());
 	}
 	has_pending_snippet() {
-		return !!this.#t.pending;
+		return !!this.#n.pending;
 	}
-	#v(e) {
-		var t = M, n = k, r = w;
-		dn(this.#r), j(this.#r), we(this.#r.ctx);
+	#S(e) {
+		var t = P, n = N, r = ke;
+		Tn(this.#i), wn(this.#i), Ae(this.#i.ctx);
 		try {
-			return dt.ensure(), e();
+			return vt.ensure(), e();
 		} catch (e) {
-			return je(e), null;
+			return Le(e), null;
 		} finally {
-			dn(t), j(n), we(r);
+			Tn(t), wn(n), Ae(r);
 		}
 	}
-	#y(e, t) {
+	#C(e, t) {
 		if (!this.has_pending_snippet()) {
-			this.parent && this.parent.#y(e, t);
+			this.parent && this.parent.#C(e, t);
 			return;
 		}
-		this.#l += e, this.#l === 0 && (this.#_(t), this.#a && rn(this.#a, () => {
-			this.#a = null;
-		}), this.#s &&= (this.#e.before(this.#s), null));
+		this.#u += e, this.#u === 0 && (this.#x(t), this.#o && mn(this.#o, () => {
+			this.#o = null;
+		}), this.#c &&= (this.#e.before(this.#c), null));
 	}
 	update_pending_count(e, t) {
-		this.#y(e, t), this.#c += e, !(!this.#p || this.#u) && (this.#u = !0, Ae(() => {
-			this.#u = !1, this.#p && Ct(this.#p, this.#c);
+		this.#C(e, t), this.#l += e, !(!this.#m || this.#d) && (this.#d = !0, Ie(() => {
+			this.#d = !1, this.#m && Mt(this.#m, this.#l);
 		}));
 	}
 	get_effect_pending() {
-		return this.#m(), I(this.#p);
+		return this.#h(), L(this.#m);
 	}
 	error(e) {
-		if (!this.#t.onerror && !this.#t.failed) throw e;
-		E?.is_fork ? (this.#i && E.skip_effect(this.#i), this.#a && E.skip_effect(this.#a), this.#o && E.skip_effect(this.#o), E.oncommit(() => {
-			this.#b(e);
-		})) : this.#b(e);
+		if (!this.#n.onerror && !this.#n.failed) throw e;
+		A?.is_fork ? (this.#a && A.skip_effect(this.#a), this.#o && A.skip_effect(this.#o), this.#s && A.skip_effect(this.#s), A.oncommit(() => {
+			this.#w(e);
+		})) : this.#w(e);
 	}
-	#b(e) {
-		this.#i &&= (en(this.#i), null), this.#a &&= (en(this.#a), null), this.#o &&= (en(this.#o), null);
-		let t = this.#t.failed, n = (e) => {
-			let { reset: n, invoke_onerror: r } = this.#h(e);
-			r(), t && (this.#o = this.#v(() => {
+	#w(e) {
+		this.#a &&= (M(this.#a), null), this.#o &&= (M(this.#o), null), this.#s &&= (M(this.#s), null), E && (xe(this.#t), Ce(), xe(we()));
+		let t = this.#n.failed, n = (e) => {
+			let { reset: n, invoke_onerror: r } = this.#v(e);
+			r(), t && (this.#s = this.#S(() => {
 				try {
-					return Xt(() => {
-						var r = M;
+					return cn(() => {
+						var r = P;
 						r.b = this, r.f |= 128, t(this.#e, () => e, () => n);
 					});
 				} catch (e) {
-					return Me(e, this.#r.parent), null;
+					return Re(e, this.#i.parent), null;
 				}
 			}));
 		};
-		Ae(() => {
+		Ie(() => {
 			var t;
 			try {
 				t = this.transform_error(e);
 			} catch (e) {
-				Me(e, this.#r && this.#r.parent);
+				Re(e, this.#i && this.#i.parent);
 				return;
 			}
-			typeof t == "object" && t && typeof t.then == "function" ? t.then(n, (e) => Me(e, this.#r && this.#r.parent)) : n(t);
+			typeof t == "object" && t && typeof t.then == "function" ? t.then(n, (e) => Re(e, this.#i && this.#i.parent)) : n(t);
 		});
 	}
 };
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/async.js
-function He(e, t, n, r) {
-	let i = De() ? Ke : Xe;
+function Je(e, t, n, r) {
+	let i = Ne() ? Qe : nt;
 	var a = e.filter((e) => !e.settled), o = t.map(i);
 	if (n.length === 0 && a.length === 0) {
 		r(o);
 		return;
 	}
-	var s = M, c = Ue(), l = a.length === 1 ? a[0].promise : a.length > 1 ? Promise.all(a.map((e) => e.promise)) : null;
+	var s = P, c = Ye(), l = a.length === 1 ? a[0].promise : a.length > 1 ? Promise.all(a.map((e) => e.promise)) : null;
 	function u(e) {
 		if (!(s.f & 16384)) {
 			c();
 			try {
 				r([...o, ...e]);
 			} catch (e) {
-				Me(e, s);
+				Re(e, s);
 			}
-			We();
+			Xe();
 		}
 	}
-	var d = Ge();
+	var d = Ze();
 	if (n.length === 0) {
 		l.then(() => u([])).finally(d);
 		return;
 	}
 	function f() {
-		Promise.all(n.map((e) => /* @__PURE__ */ Je(e))).then(u).catch((e) => Me(e, s)).finally(d);
+		Promise.all(n.map((e) => /* @__PURE__ */ et(e))).then(u).catch((e) => Re(e, s)).finally(d);
 	}
 	l ? l.then(() => {
-		c(), f(), We();
+		c(), f(), Xe();
 	}) : f();
 }
-function Ue() {
-	var e = M, t = k, n = w, r = E;
+function Ye() {
+	var e = P, t = N, n = ke, r = A;
 	return function(i = !0) {
-		dn(e), j(t), we(n), i && !(e.f & 16384) && (r?.activate(), r?.apply());
+		Tn(e), wn(t), Ae(n), i && !(e.f & 16384) && (r?.activate(), r?.apply());
 	};
 }
-function We(e = !0) {
-	dn(null), j(null), we(null), e && E?.deactivate();
+function Xe(e = !0) {
+	Tn(null), wn(null), Ae(null), e && A?.deactivate();
 }
-function Ge() {
-	var e = M, t = e.b, n = E, r = !!t?.is_rendered();
+function Ze() {
+	var e = P, t = e.b, n = A, r = !!t?.is_rendered();
 	return t?.update_pending_count(1, n), n.increment(r, e), () => {
 		t?.update_pending_count(-1, n), n.decrement(r, e);
 	};
 }
 /*#__NO_SIDE_EFFECTS__*/
-function Ke(t) {
-	var n = 2 | _;
-	return M !== null && (M.f |= C), {
-		ctx: w,
+function Qe(e) {
+	var n = 2 | g;
+	return P !== null && (P.f |= C), {
+		ctx: ke,
 		deps: null,
 		effects: null,
-		equals: xe,
+		equals: Ee,
 		f: n,
-		fn: t,
+		fn: e,
 		reactions: null,
 		rv: 0,
-		v: e,
+		v: t,
 		wv: 0,
-		parent: M,
+		parent: P,
 		ac: null
 	};
 }
-var qe = Symbol("obsolete");
+var $e = Symbol("obsolete");
 /*#__NO_SIDE_EFFECTS__*/
-function Je(t, n, r) {
-	let i = M;
-	i === null && pe();
-	var a = void 0, o = xt(e), s = !k, c = /* @__PURE__ */ new Set();
-	return Kt(() => {
-		var e = M, n = h();
+function et(e, n, r) {
+	let i = P;
+	i === null && ue();
+	var a = void 0, o = Ot(t), s = !N, c = /* @__PURE__ */ new Set();
+	return rn(() => {
+		var t = P, n = m();
 		a = n.promise;
 		try {
-			Promise.resolve(t()).then(n.resolve, (e) => {
-				e !== fe && n.reject(e);
-			}).finally(We);
+			Promise.resolve(e()).then(n.resolve, (e) => {
+				e !== le && n.reject(e);
+			}).finally(Xe);
 		} catch (e) {
-			n.reject(e), We();
+			n.reject(e), Xe();
 		}
-		var r = E;
+		var r = A;
 		if (s) {
-			if (e.f & 32768) var l = Ge();
-			if (i.b?.is_rendered()) r.async_deriveds.get(e)?.reject(qe);
-			else for (let e of c.values()) e.reject(qe);
-			c.add(n), r.async_deriveds.set(e, n);
+			if (t.f & 32768) var l = Ze();
+			if (i.b?.is_rendered()) r.async_deriveds.get(t)?.reject($e);
+			else for (let e of c.values()) e.reject($e);
+			c.add(n), r.async_deriveds.set(t, n);
 		}
 		let u = (e, t = void 0) => {
-			l?.(), c.delete(n), t !== qe && (r.activate(), t ? (o.f |= ae, Ct(o, t)) : (o.f & 8388608 && (o.f ^= ae), Ct(o, e)), r.deactivate());
+			l?.(), c.delete(n), t !== $e && (r.activate(), t ? (o.f |= ie, Mt(o, t)) : (o.f & 8388608 && (o.f ^= ie), Mt(o, e)), r.deactivate());
 		};
 		n.promise.then(u, (e) => u(null, e || "unknown"));
-	}), Ht(() => {
-		for (let e of c) e.reject(qe);
+	}), en(() => {
+		for (let e of c) e.reject($e);
 	}), new Promise((e) => {
 		function t(n) {
 			function r() {
@@ -415,53 +495,53 @@ function Je(t, n, r) {
 	});
 }
 /*#__NO_SIDE_EFFECTS__*/
-function Ye(e) {
-	let t = /* @__PURE__ */ Ke(e);
-	return pn(t), t;
+function tt(e) {
+	let t = /* @__PURE__ */ Qe(e);
+	return Dn(t), t;
 }
 /*#__NO_SIDE_EFFECTS__*/
-function Xe(e) {
-	let t = /* @__PURE__ */ Ke(e);
-	return t.equals = Ce, t;
+function nt(e) {
+	let t = /* @__PURE__ */ Qe(e);
+	return t.equals = Oe, t;
 }
-function Ze(e) {
+function rt(e) {
 	var t = e.effects;
 	if (t !== null) {
 		e.effects = null;
-		for (var n = 0; n < t.length; n += 1) en(t[n]);
+		for (var n = 0; n < t.length; n += 1) M(t[n]);
 	}
 }
-function Qe(t) {
-	var n, r = M, i = t.parent;
-	if (!ln && i !== null && t.v !== e && i.f & 24576) return ye(), t.v;
-	dn(i);
+function it(e) {
+	var n, r = P, i = e.parent;
+	if (!xn && i !== null && e.v !== t && i.f & 24576) return _e(), e.v;
+	Tn(i);
 	try {
-		t.f &= ~ne, Ze(t), n = Sn(t);
+		e.f &= ~te, rt(e), n = Ln(e);
 	} finally {
-		dn(r);
+		Tn(r);
 	}
 	return n;
 }
-function $e(e) {
-	var t = Qe(e);
-	if (!e.equals(t) && (e.wv = yn(), (!E?.is_fork || e.deps === null) && (E === null ? e.v = t : (E.capture(e, t, !0), rt?.capture(e, t, !0)), e.deps === null))) {
-		T(e, g);
+function at(e) {
+	var t = it(e);
+	if (!e.equals(t) && (e.wv = Pn(), (!A?.is_fork || e.deps === null) && (A === null ? e.v = t : (A.capture(e, t, !0), lt?.capture(e, t, !0)), e.deps === null))) {
+		k(e, h);
 		return;
 	}
-	ln || (D === null ? Pe(e) : (Vt() || E?.is_fork) && D.set(e, t));
+	xn || (ut === null ? Be(e) : ($t() || A?.is_fork) && ut.set(e, t));
 }
-function et(e) {
-	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && Le(() => {
-		t.ac.abort(fe), t.ac = null;
-	}), t.fn !== null && (t.teardown = p), wn(t, 0), Qt(t));
+function ot(e) {
+	if (e.effects !== null) for (let t of e.effects) (t.teardown || t.ac) && (t.teardown?.(), t.ac !== null && Ue(() => {
+		t.ac.abort(le), t.ac = null;
+	}), t.fn !== null && (t.teardown = f), zn(t, 0), un(t));
 }
-function tt(e) {
-	if (e.effects !== null) for (let t of e.effects) t.teardown && t.fn !== null && Tn(t);
+function st(e) {
+	if (e.effects !== null) for (let t of e.effects) t.teardown && t.fn !== null && Bn(t);
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/batch.js
-var nt = null, E = null, rt = null, D = null, it = null, at = !1, ot = !1, st = null, ct = null, lt = 0, ut = 1, dt = class t {
-	id = ut++;
+var ct = null, A = null, lt = null, ut = null, dt = null, ft = !1, pt = !1, mt = null, ht = null, gt = 0, _t = 1, vt = class e {
+	id = _t++;
 	#e = !1;
 	linked = !0;
 	#t = null;
@@ -483,7 +563,7 @@ var nt = null, E = null, rt = null, D = null, it = null, at = !1, ot = !1, st = 
 	is_fork = !1;
 	#m = !1;
 	constructor() {
-		nt === null ? nt = this : (nt.#n = this, this.#t = nt), nt = this;
+		ct === null ? ct = this : (ct.#n = this, this.#t = ct), ct = this;
 	}
 	#h() {
 		if (this.is_fork) return !0;
@@ -509,31 +589,31 @@ var nt = null, E = null, rt = null, D = null, it = null, at = !1, ot = !1, st = 
 		var n = this.#f.get(e);
 		if (n) {
 			this.#f.delete(e);
-			for (var r of n.d) T(r, _), t(r);
-			for (r of n.m) T(r, v), t(r);
+			for (var r of n.d) k(r, g), t(r);
+			for (r of n.m) k(r, _), t(r);
 		}
 		this.#p.add(e);
 	}
 	#g() {
-		this.#e = !0, lt++ > 1e3 && (this.#x(), ft());
-		for (let e of this.#u) this.#d.delete(e), T(e, _), this.schedule(e);
-		for (let e of this.#d) T(e, v), this.schedule(e);
-		let e = this.#c;
+		this.#e = !0, gt++ > 1e3 && (this.#x(), yt());
+		for (let e of this.#u) this.#d.delete(e), k(e, g), this.schedule(e);
+		for (let e of this.#d) k(e, _), this.schedule(e);
+		let t = this.#c;
 		this.#c = [], this.apply();
-		var n = st = [], r = [], i = ct = [];
-		for (let t of e) try {
-			this.#_(t, n, r);
-		} catch (e) {
-			throw _t(t), this.#h() || this.discard(), e;
+		var n = mt = [], r = [], i = ht = [];
+		for (let e of t) try {
+			this.#_(e, n, r);
+		} catch (t) {
+			throw wt(e), this.#h() || this.discard(), t;
 		}
-		if (E = null, i.length > 0) {
-			var a = t.ensure();
+		if (A = null, i.length > 0) {
+			var a = e.ensure();
 			for (let e of i) a.schedule(e);
 		}
-		if (st = null, ct = null, this.#h()) {
+		if (mt = null, ht = null, this.#h()) {
 			this.#b(r), this.#b(n);
-			for (let [e, t] of this.#f) gt(e, t);
-			i.length > 0 && E.#g();
+			for (let [e, t] of this.#f) Ct(e, t);
+			i.length > 0 && A.#g();
 			return;
 		}
 		let o = this.#v();
@@ -543,22 +623,22 @@ var nt = null, E = null, rt = null, D = null, it = null, at = !1, ot = !1, st = 
 		}
 		this.#u.clear(), this.#d.clear();
 		for (let e of this.#r) e(this);
-		this.#r.clear(), rt = this, mt(r), mt(n), rt = null, this.#s?.resolve();
-		var s = E;
+		this.#r.clear(), lt = this, xt(r), xt(n), lt = null, this.#s?.resolve();
+		var s = A;
 		if (this.#a === 0 && (this.#c.length === 0 || s !== null) && this.#x(), this.#c.length > 0) {
 			if (s !== null) {
 				let e = s;
 				e.#c.push(...this.#c.filter((t) => !e.#c.includes(t)));
 			} else s = this;
 		}
-		s !== null && (yt.clear(), s.#g());
+		s !== null && (Et.clear(), s.#g());
 	}
 	#_(e, t, n) {
-		e.f ^= g;
+		e.f ^= h;
 		for (var r = e.first; r !== null;) {
 			var i = r.f, a = !!(i & 96);
 			if (!(a && i & 1024 || i & 8192 || this.#f.has(r)) && r.fn !== null) {
-				a ? r.f ^= g : i & 4 ? t.push(r) : bn(r) && (i & 16 && this.#d.add(r), Tn(r));
+				a ? r.f ^= h : i & 4 ? t.push(r) : Fn(r) && (i & 16 && this.#d.add(r), Bn(r));
 				var o = r.first;
 				if (o !== null) {
 					r = o;
@@ -598,36 +678,36 @@ var nt = null, E = null, rt = null, D = null, it = null, at = !1, ot = !1, st = 
 				if (r & 2) t(e);
 				else {
 					var i = e;
-					r & 4194320 && !this.async_deriveds.has(i) && (this.#d.delete(i), T(i, _), this.schedule(i));
+					r & 4194320 && !this.async_deriveds.has(i) && (this.#d.delete(i), k(i, g), this.schedule(i));
 				}
 			}
 		};
 		for (let e of this.current.keys()) t(e);
-		this.oncommit(() => e.discard()), e.#x(), E = this, this.#g();
+		this.oncommit(() => e.discard()), e.#x(), A = this, this.#g();
 	}
 	#b(e) {
-		for (var t = 0; t < e.length; t += 1) Ie(e[t], this.#u, this.#d);
+		for (var t = 0; t < e.length; t += 1) He(e[t], this.#u, this.#d);
 	}
-	capture(t, n, r = !1) {
-		t.v !== e && !this.previous.has(t) && this.previous.set(t, t.v), t.f & 8388608 || (this.current.set(t, [n, r]), D?.set(t, n)), this.is_fork || (t.v = n);
+	capture(e, n, r = !1) {
+		e.v !== t && !this.previous.has(e) && this.previous.set(e, e.v), e.f & 8388608 || (this.current.set(e, [n, r]), ut?.set(e, n)), this.is_fork || (e.v = n);
 	}
 	activate() {
-		E = this;
+		A = this;
 	}
 	deactivate() {
-		E = null, D = null;
+		A = null, ut = null;
 	}
 	flush() {
 		try {
-			ot = !0, E = this, this.#g();
+			pt = !0, A = this, this.#g();
 		} finally {
-			lt = 0, it = null, st = null, ct = null, ot = !1, E = null, D = null, yt.clear();
+			gt = 0, dt = null, mt = null, ht = null, pt = !1, A = null, ut = null, Et.clear();
 		}
 	}
 	discard() {
 		for (let e of this.#i) e(this);
 		this.#i.clear();
-		for (let e of this.async_deriveds.values()) e.reject(qe);
+		for (let e of this.async_deriveds.values()) e.reject($e);
 		this.#x(), this.#s?.resolve();
 	}
 	register_created_effect(e) {
@@ -644,7 +724,7 @@ var nt = null, E = null, rt = null, D = null, it = null, at = !1, ot = !1, st = 
 			let e = this.#o.get(t) ?? 0;
 			e === 1 ? this.#o.delete(t) : this.#o.set(t, e - 1);
 		}
-		this.#m || (this.#m = !0, Ae(() => {
+		this.#m || (this.#m = !0, Ie(() => {
 			this.#m = !1, this.linked && this.flush();
 		}));
 	}
@@ -660,32 +740,32 @@ var nt = null, E = null, rt = null, D = null, it = null, at = !1, ot = !1, st = 
 		this.#i.add(e);
 	}
 	settled() {
-		return (this.#s ??= h()).promise;
+		return (this.#s ??= m()).promise;
 	}
 	static ensure() {
-		if (E === null) {
-			let e = E = new t();
-			!ot && Ae(() => {
-				e.#e || e.flush();
+		if (A === null) {
+			let t = A = new e();
+			!pt && Ie(() => {
+				t.#e || t.flush();
 			});
 		}
-		return E;
+		return A;
 	}
 	apply() {
-		D = null;
+		ut = null;
 	}
 	schedule(e) {
-		if (it = e, e.b?.is_pending && e.f & 16777228 && !(e.f & 32768)) {
+		if (dt = e, e.b?.is_pending && e.f & 16777228 && !(e.f & 32768)) {
 			e.b.defer_effect(e);
 			return;
 		}
 		for (var t = e; t.parent !== null;) {
 			t = t.parent;
 			var n = t.f;
-			if (st !== null && t === M && (k === null || !(k.f & 2))) return;
+			if (mt !== null && t === P && (N === null || !(N.f & 2))) return;
 			if (n & 96) {
 				if (!(n & 1024)) return;
-				t.f ^= g;
+				t.f ^= h;
 			}
 		}
 		this.#c.push(t);
@@ -693,167 +773,172 @@ var nt = null, E = null, rt = null, D = null, it = null, at = !1, ot = !1, st = 
 	#x() {
 		if (this.linked) {
 			var e = this.#t, t = this.#n;
-			e === null || (e.#n = t), t === null ? nt = e : t.#t = e, this.linked = !1;
+			e === null || (e.#n = t), t === null ? ct = e : t.#t = e, this.linked = !1;
 		}
 	}
 };
-function ft() {
+function yt() {
 	try {
-		me();
+		fe();
 	} catch (e) {
-		Me(e, it);
+		Re(e, dt);
 	}
 }
-var pt = null;
-function mt(e) {
+var bt = null;
+function xt(e) {
 	var t = e.length;
 	if (t !== 0) {
 		for (var n = 0; n < t;) {
 			var r = e[n++];
-			if (!(r.f & 24576) && bn(r) && (pt = /* @__PURE__ */ new Set(), Tn(r), r.deps === null && r.first === null && r.nodes === null && r.teardown === null && r.ac === null && nn(r), pt?.size > 0)) {
-				yt.clear();
-				for (let e of pt) {
+			if (!(r.f & 24576) && Fn(r) && (bt = /* @__PURE__ */ new Set(), Bn(r), r.deps === null && r.first === null && r.nodes === null && r.teardown === null && r.ac === null && pn(r), bt?.size > 0)) {
+				Et.clear();
+				for (let e of bt) {
 					if (e.f & 24576) continue;
 					let t = [e], n = e.parent;
-					for (; n !== null;) pt.has(n) && (pt.delete(n), t.push(n)), n = n.parent;
+					for (; n !== null;) bt.has(n) && (bt.delete(n), t.push(n)), n = n.parent;
 					for (let e = t.length - 1; e >= 0; e--) {
 						let n = t[e];
-						n.f & 24576 || Tn(n);
+						n.f & 24576 || Bn(n);
 					}
 				}
-				pt.clear();
+				bt.clear();
 			}
 		}
-		pt = null;
+		bt = null;
 	}
 }
-function ht(e) {
-	E.schedule(e);
+function St(e) {
+	A.schedule(e);
 }
-function gt(e, t) {
+function Ct(e, t) {
 	if (!(e.f & 32 && e.f & 1024)) {
-		e.f & 2048 ? t.d.push(e) : e.f & 4096 && t.m.push(e), T(e, g);
-		for (var n = e.first; n !== null;) gt(n, t), n = n.next;
+		e.f & 2048 ? t.d.push(e) : e.f & 4096 && t.m.push(e), k(e, h);
+		for (var n = e.first; n !== null;) Ct(n, t), n = n.next;
 	}
 }
-function _t(e) {
-	T(e, g);
-	for (var t = e.first; t !== null;) _t(t), t = t.next;
+function wt(e) {
+	k(e, h);
+	for (var t = e.first; t !== null;) wt(t), t = t.next;
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/sources.js
-var vt = /* @__PURE__ */ new Set(), yt = /* @__PURE__ */ new Map(), bt = !1;
-function xt(e, t) {
+var Tt = /* @__PURE__ */ new Set(), Et = /* @__PURE__ */ new Map(), Dt = !1;
+function Ot(e, t) {
 	return {
 		f: 0,
 		v: e,
 		reactions: null,
-		equals: xe,
+		equals: Ee,
 		rv: 0,
 		wv: 0
 	};
 }
 /*#__NO_SIDE_EFFECTS__*/
-function St(e, t) {
-	let n = xt(e, t);
-	return pn(n), n;
+function kt(e, t) {
+	let n = Ot(e, t);
+	return Dn(n), n;
 }
-function O(e, t, n = !1) {
-	return k !== null && (!A || k.f & 131072) && De() && k.f & 4325394 && (fn === null || !fn.has(e)) && _e(), Ct(e, n ? Dt(t) : t, ct);
+/*#__NO_SIDE_EFFECTS__*/
+function At(e, t = !1, n = !0) {
+	let r = Ot(e);
+	return t || (r.equals = Oe), r;
 }
-function Ct(e, t, n = null) {
+function jt(e, t, n = !1) {
+	return N !== null && (!Cn || N.f & 131072) && Ne() && N.f & 4325394 && (En === null || !En.has(e)) && he(), Mt(e, n ? It(t) : t, ht);
+}
+function Mt(e, t, n = null) {
 	if (!e.equals(t)) {
-		ln ? yt.set(e, t) : yt.has(e) || yt.set(e, e.v);
-		var r = dt.ensure();
+		xn ? Et.set(e, t) : Et.has(e) || Et.set(e, e.v);
+		var r = vt.ensure();
 		if (r.capture(e, t), e.f & 2) {
 			let t = e;
-			e.f & 2048 && Qe(t), D === null && Pe(t);
+			e.f & 2048 && it(t), ut === null && Be(t);
 		}
-		e.wv = yn(), Et(e, _, n), De() && M !== null && M.f & 1024 && !(M.f & 96) && (F === null ? mn([e]) : F.push(e)), !r.is_fork && vt.size > 0 && !bt && wt();
+		e.wv = Pn(), Ft(e, g, n), Ne() && P !== null && P.f & 1024 && !(P.f & 96) && (On === null ? kn([e]) : On.push(e)), !r.is_fork && Tt.size > 0 && !Dt && Nt();
 	}
 	return t;
 }
-function wt() {
-	bt = !1;
-	for (let e of vt) {
-		e.f & 1024 && T(e, v);
+function Nt() {
+	Dt = !1;
+	for (let e of Tt) {
+		e.f & 1024 && k(e, _);
 		let t;
 		try {
-			t = bn(e);
+			t = Fn(e);
 		} catch {
 			t = !0;
 		}
-		t && Tn(e);
+		t && Bn(e);
 	}
-	vt.clear();
+	Tt.clear();
 }
-function Tt(e) {
-	O(e, e.v + 1);
+function Pt(e) {
+	jt(e, e.v + 1);
 }
-function Et(e, t, n) {
+function Ft(e, t, n) {
 	var r = e.reactions;
-	if (r !== null) for (var i = De(), a = r.length, o = 0; o < a; o++) {
+	if (r !== null) for (var i = Ne(), a = r.length, o = 0; o < a; o++) {
 		var s = r[o], c = s.f;
-		if (!(!i && s === M)) {
-			var l = (c & _) === 0;
-			if (l && T(s, t), c & 131072) vt.add(s);
+		if (!(!i && s === P)) {
+			var l = (c & g) === 0;
+			if (l && k(s, t), c & 131072) Tt.add(s);
 			else if (c & 2) {
 				var u = s;
-				D?.delete(u), c & 65536 || (c & 512 && (M === null || !(M.f & 2097152)) && (s.f |= ne), Et(u, v, n));
+				ut?.delete(u), c & 65536 || (c & 512 && (P === null || !(P.f & 2097152)) && (s.f |= te), Ft(u, _, n));
 			} else if (l) {
 				var d = s;
-				c & 16 && pt !== null && pt.add(d), n === null ? ht(d) : n.push(d);
+				c & 16 && bt !== null && bt.add(d), n === null ? St(d) : n.push(d);
 			}
 		}
 	}
 }
-function Dt(t) {
-	if (typeof t != "object" || !t || oe in t) return t;
-	let r = d(t);
-	if (r !== l && r !== u) return t;
-	var i = /* @__PURE__ */ new Map(), a = n(t), o = /* @__PURE__ */ St(0), c = null, f = _n, p = (e) => {
-		if (_n === f) return e();
-		var t = k, n = _n;
-		j(null), vn(f);
+function It(e) {
+	if (typeof e != "object" || !e || T in e) return e;
+	let r = u(e);
+	if (r !== c && r !== l) return e;
+	var i = /* @__PURE__ */ new Map(), a = n(e), o = /* @__PURE__ */ kt(0), d = null, f = Mn, p = (e) => {
+		if (Mn === f) return e();
+		var t = N, n = Mn;
+		wn(null), Nn(f);
 		var r = e();
-		return j(t), vn(n), r;
+		return wn(t), Nn(n), r;
 	};
-	return a && i.set("length", /* @__PURE__ */ St(t.length, c)), new Proxy(t, {
+	return a && i.set("length", /* @__PURE__ */ kt(e.length, d)), new Proxy(e, {
 		defineProperty(e, t, n) {
-			(!("value" in n) || n.configurable === !1 || n.enumerable === !1 || n.writable === !1) && he();
+			(!("value" in n) || n.configurable === !1 || n.enumerable === !1 || n.writable === !1) && pe();
 			var r = i.get(t);
 			return r === void 0 ? p(() => {
-				var e = /* @__PURE__ */ St(n.value, c);
+				var e = /* @__PURE__ */ kt(n.value, d);
 				return i.set(t, e), e;
-			}) : O(r, n.value, !0), !0;
+			}) : jt(r, n.value, !0), !0;
 		},
-		deleteProperty(t, n) {
+		deleteProperty(e, n) {
 			var r = i.get(n);
 			if (r === void 0) {
-				if (n in t) {
-					let t = p(() => /* @__PURE__ */ St(e, c));
-					i.set(n, t), Tt(o);
+				if (n in e) {
+					let e = p(() => /* @__PURE__ */ kt(t, d));
+					i.set(n, e), Pt(o);
 				}
-			} else O(r, e), Tt(o);
+			} else jt(r, t), Pt(o);
 			return !0;
 		},
 		get(n, r, a) {
-			if (r === oe) return t;
-			var o = i.get(r), l = r in n;
-			if (o === void 0 && (!l || s(n, r)?.writable) && (o = p(() => /* @__PURE__ */ St(Dt(l ? n[r] : e), c)), i.set(r, o)), o !== void 0) {
-				var u = I(o);
-				return u === e ? void 0 : u;
+			if (r === T) return e;
+			var o = i.get(r), c = r in n;
+			if (o === void 0 && (!c || s(n, r)?.writable) && (o = p(() => /* @__PURE__ */ kt(It(c ? n[r] : t), d)), i.set(r, o)), o !== void 0) {
+				var l = L(o);
+				return l === t ? void 0 : l;
 			}
 			return Reflect.get(n, r, a);
 		},
-		getOwnPropertyDescriptor(t, n) {
-			var r = Reflect.getOwnPropertyDescriptor(t, n);
+		getOwnPropertyDescriptor(e, n) {
+			var r = Reflect.getOwnPropertyDescriptor(e, n);
 			if (r && "value" in r) {
 				var a = i.get(n);
-				a && (r.value = I(a));
+				a && (r.value = L(a));
 			} else if (r === void 0) {
 				var o = i.get(n), s = o?.v;
-				if (o !== void 0 && s !== e) return {
+				if (o !== void 0 && s !== t) return {
 					enumerable: !0,
 					configurable: !0,
 					value: s,
@@ -862,91 +947,131 @@ function Dt(t) {
 			}
 			return r;
 		},
-		has(t, n) {
-			if (n === oe) return !0;
-			var r = i.get(n), a = r !== void 0 && r.v !== e || Reflect.has(t, n);
-			return (r !== void 0 || M !== null && (!a || s(t, n)?.writable)) && (r === void 0 && (r = p(() => /* @__PURE__ */ St(a ? Dt(t[n]) : e, c)), i.set(n, r)), I(r) === e) ? !1 : a;
+		has(e, n) {
+			if (n === T) return !0;
+			var r = i.get(n), a = r !== void 0 && r.v !== t || Reflect.has(e, n);
+			return (r !== void 0 || P !== null && (!a || s(e, n)?.writable)) && (r === void 0 && (r = p(() => /* @__PURE__ */ kt(a ? It(e[n]) : t, d)), i.set(n, r)), L(r) === t) ? !1 : a;
 		},
-		set(t, n, r, l) {
-			var u = i.get(n), d = n in t;
-			if (a && n === "length") for (var f = r; f < u.v; f += 1) {
+		set(e, n, r, c) {
+			var l = i.get(n), u = n in e;
+			if (a && n === "length") for (var f = r; f < l.v; f += 1) {
 				var m = i.get(f + "");
-				m === void 0 ? f in t && (m = p(() => /* @__PURE__ */ St(e, c)), i.set(f + "", m)) : O(m, e);
+				m === void 0 ? f in e && (m = p(() => /* @__PURE__ */ kt(t, d)), i.set(f + "", m)) : jt(m, t);
 			}
-			if (u === void 0) (!d || s(t, n)?.writable) && (u = p(() => /* @__PURE__ */ St(void 0, c)), O(u, Dt(r)), i.set(n, u));
+			if (l === void 0) (!u || s(e, n)?.writable) && (l = p(() => /* @__PURE__ */ kt(void 0, d)), jt(l, It(r)), i.set(n, l));
 			else {
-				d = u.v !== e;
-				var h = p(() => Dt(r));
-				O(u, h);
+				u = l.v !== t;
+				var h = p(() => It(r));
+				jt(l, h);
 			}
-			var g = Reflect.getOwnPropertyDescriptor(t, n);
-			if (g?.set && g.set.call(l, r), !d) {
+			var g = Reflect.getOwnPropertyDescriptor(e, n);
+			if (g?.set && g.set.call(c, r), !u) {
 				if (a && typeof n == "string") {
 					var _ = i.get("length"), v = Number(n);
-					Number.isInteger(v) && v >= _.v && O(_, v + 1);
+					Number.isInteger(v) && v >= _.v && jt(_, v + 1);
 				}
-				Tt(o);
+				Pt(o);
 			}
 			return !0;
 		},
-		ownKeys(t) {
-			I(o);
-			var n = Reflect.ownKeys(t).filter((t) => {
-				var n = i.get(t);
-				return n === void 0 || n.v !== e;
+		ownKeys(e) {
+			L(o);
+			var n = Reflect.ownKeys(e).filter((e) => {
+				var n = i.get(e);
+				return n === void 0 || n.v !== t;
 			});
-			for (var [r, a] of i) a.v !== e && !(r in t) && n.push(r);
+			for (var [r, a] of i) a.v !== t && !(r in e) && n.push(r);
 			return n;
 		},
 		setPrototypeOf() {
-			ge();
+			me();
 		}
 	});
 }
-var Ot, kt, At, jt;
-function Mt() {
-	if (Ot === void 0) {
-		Ot = window, kt = /Firefox/.test(navigator.userAgent);
+var Lt, Rt, zt, Bt;
+function Vt() {
+	if (Lt === void 0) {
+		Lt = window, Rt = /Firefox/.test(navigator.userAgent);
 		var e = Element.prototype, t = Node.prototype, n = Text.prototype;
-		At = s(t, "firstChild").get, jt = s(t, "nextSibling").get, f(e) && (e[le] = void 0, e[ce] = null, e[ue] = void 0, e.__e = void 0), f(n) && (n[de] = void 0);
+		zt = s(t, "firstChild").get, Bt = s(t, "nextSibling").get, d(e) && (e[oe] = void 0, e[ae] = null, e[se] = void 0, e.__e = void 0), d(n) && (n[ce] = void 0);
 	}
 }
-function Nt(e = "") {
+function Ht(e = "") {
 	return document.createTextNode(e);
 }
 /*@__NO_SIDE_EFFECTS__*/
-function Pt(e) {
-	return At.call(e);
+function Ut(e) {
+	return zt.call(e);
 }
 /*@__NO_SIDE_EFFECTS__*/
-function Ft(e) {
-	return jt.call(e);
+function Wt(e) {
+	return Bt.call(e);
 }
-function It(e, t) {
-	return /* @__PURE__ */ Pt(e);
+function j(e, t) {
+	if (!E) return /* @__PURE__ */ Ut(e);
+	var n = /* @__PURE__ */ Ut(D);
+	if (n === null) n = D.appendChild(Ht());
+	else if (t && n.nodeType !== 3) {
+		var r = Ht();
+		return n?.before(r), xe(r), r;
+	}
+	return t && Xt(n), xe(n), n;
 }
-function Lt(e, t = 1, n = !1) {
-	let r = e;
-	for (; t--;) r = /* @__PURE__ */ Ft(r);
-	return r;
+function Gt(e, t = !1) {
+	if (!E) {
+		var n = /* @__PURE__ */ Ut(e);
+		return n instanceof Comment && n.data === "" ? /* @__PURE__ */ Wt(n) : n;
+	}
+	if (t) {
+		if (D?.nodeType !== 3) {
+			var r = Ht();
+			return D?.before(r), xe(r), r;
+		}
+		Xt(D);
+	}
+	return D;
 }
-function Rt(e, t, n) {
+function Kt(e, t = 1, n = !1) {
+	let r = E ? D : e;
+	for (var i; t--;) i = r, r = /* @__PURE__ */ Wt(r);
+	if (!E) return r;
+	if (n) {
+		if (r?.nodeType !== 3) {
+			var a = Ht();
+			return r === null ? i?.after(a) : r.before(a), xe(a), a;
+		}
+		Xt(r);
+	}
+	return xe(r), r;
+}
+function qt(e) {
+	e.textContent = "";
+}
+function Jt() {
+	return !1;
+}
+function Yt(e, t, n) {
 	return t == null || t === "http://www.w3.org/1999/xhtml" ? n ? document.createElement(e, { is: n }) : document.createElement(e) : n ? document.createElementNS(t, e, { is: n }) : document.createElementNS(t, e);
+}
+function Xt(e) {
+	if (e.nodeValue.length < 65536) return;
+	let t = e.nextSibling;
+	for (; t !== null && t.nodeType === 3;) t.remove(), e.nodeValue += t.nodeValue, t = e.nextSibling;
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/reactivity/effects.js
-function zt(e, t) {
+function Zt(e, t) {
 	var n = t.last;
 	n === null ? t.last = t.first = e : (n.next = e, e.prev = n, t.last = e);
 }
-function Bt(e, t) {
-	var n = M;
-	n !== null && n.f & 8192 && (e |= y);
+function Qt(e, t) {
+	var n = P;
+	n !== null && n.f & 8192 && (e |= v);
 	var r = {
-		ctx: w,
+		ctx: ke,
 		deps: null,
 		nodes: null,
-		f: e | _ | 512,
+		f: e | g | 512,
 		first: null,
 		fn: t,
 		last: null,
@@ -958,336 +1083,330 @@ function Bt(e, t) {
 		wv: 0,
 		ac: null
 	};
-	E?.register_created_effect(r);
+	A?.register_created_effect(r);
 	var i = r;
-	if (e & 4) st === null ? dt.ensure().schedule(r) : st.push(r);
+	if (e & 4) mt === null ? vt.ensure().schedule(r) : mt.push(r);
 	else if (t !== null) {
 		try {
-			Tn(r);
+			Bn(r);
 		} catch (e) {
-			throw en(r), e;
+			throw M(r), e;
 		}
 		i.deps === null && i.teardown === null && i.nodes === null && i.first === i.last && !(i.f & 524288) && (i = i.first, e & 16 && e & 65536 && i !== null && (i.f |= S));
 	}
-	if (i !== null && (i.parent = n, n !== null && zt(i, n), k !== null && k.f & 2 && !(e & 64))) {
-		var a = k;
+	if (i !== null && (i.parent = n, n !== null && Zt(i, n), N !== null && N.f & 2 && !(e & 64))) {
+		var a = N;
 		(a.effects ??= []).push(i);
 	}
 	return r;
 }
-function Vt() {
-	return k !== null && !A;
+function $t() {
+	return N !== null && !Cn;
 }
-function Ht(e) {
-	let t = Bt(8, null);
-	return T(t, g), t.teardown = e, t;
+function en(e) {
+	let t = Qt(8, null);
+	return k(t, h), t.teardown = e, t;
 }
-function Ut(e) {
-	return Bt(4 | te, e);
+function tn(e) {
+	return Qt(4 | w, e);
 }
-function Wt(e) {
-	dt.ensure();
-	let t = Bt(64 | C, e);
+function nn(e) {
+	vt.ensure();
+	let t = Qt(64 | C, e);
 	return (e = {}) => new Promise((n) => {
-		e.outro ? rn(t, () => {
-			en(t), n(void 0);
-		}) : (en(t), n(void 0));
+		e.outro ? mn(t, () => {
+			M(t), n(void 0);
+		}) : (M(t), n(void 0));
 	});
 }
-function Gt(e) {
-	return Bt(4, e);
+function rn(e) {
+	return Qt(re | C, e);
 }
-function Kt(e) {
-	return Bt(ie | C, e);
+function an(e, t = 0) {
+	return Qt(8 | t, e);
 }
-function qt(e, t = 0) {
-	return Bt(8 | t, e);
-}
-function Jt(e, t = [], n = [], r = []) {
-	He(r, t, n, (t) => {
-		Bt(8, () => {
-			e(...t.map(I));
+function on(e, t = [], n = [], r = []) {
+	Je(r, t, n, (t) => {
+		Qt(8, () => {
+			e(...t.map(L));
 		});
 	});
 }
-function Yt(e, t = 0) {
-	return Bt(16 | t, e);
+function sn(e, t = 0) {
+	return Qt(16 | t, e);
 }
-function Xt(e) {
-	return Bt(32 | C, e);
+function cn(e) {
+	return Qt(32 | C, e);
 }
-function Zt(e) {
+function ln(e) {
 	var t = e.teardown;
 	if (t !== null) {
-		let e = ln, n = k;
-		un(!0), j(null);
+		let e = xn, n = N;
+		Sn(!0), wn(null);
 		try {
 			t.call(null);
 		} finally {
-			un(e), j(n);
+			Sn(e), wn(n);
 		}
 	}
 }
-function Qt(e, t = !1) {
+function un(e, t = !1) {
 	var n = e.first;
 	for (e.first = e.last = null; n !== null;) {
 		let e = n.ac;
-		e !== null && Le(() => {
-			e.abort(fe);
+		e !== null && Ue(() => {
+			e.abort(le);
 		});
 		var r = n.next;
-		n.f & 64 ? n.parent = null : en(n, t), n = r;
+		n.f & 64 ? n.parent = null : M(n, t), n = r;
 	}
 }
-function $t(e) {
+function dn(e) {
 	for (var t = e.first; t !== null;) {
 		var n = t.next;
-		t.f & 32 || en(t), t = n;
+		t.f & 32 || M(t), t = n;
 	}
 }
-function en(e, t = !0) {
+function M(e, t = !0) {
 	var n = !1;
-	(t || e.f & 262144) && e.nodes !== null && e.nodes.end !== null && (tn(e.nodes.start, e.nodes.end), n = !0), e.f |= x, Qt(e, t && !n), wn(e, 0);
+	(t || e.f & 262144) && e.nodes !== null && e.nodes.end !== null && (fn(e.nodes.start, e.nodes.end), n = !0), e.f |= x, un(e, t && !n), zn(e, 0);
 	var r = e.nodes && e.nodes.t;
 	if (r !== null) for (let e of r) e.stop();
-	Zt(e), e.f ^= x, e.f |= ee;
+	ln(e), e.f ^= x, e.f |= y;
 	var i = e.parent;
-	i !== null && i.first !== null && nn(e), e.next = e.prev = e.teardown = e.ctx = e.deps = e.fn = e.nodes = e.ac = e.b = null;
+	i !== null && i.first !== null && pn(e), e.next = e.prev = e.teardown = e.ctx = e.deps = e.fn = e.nodes = e.ac = e.b = null;
 }
-function tn(e, t) {
+function fn(e, t) {
 	for (; e !== null;) {
-		var n = e === t ? null : /* @__PURE__ */ Ft(e);
+		var n = e === t ? null : /* @__PURE__ */ Wt(e);
 		e.remove(), e = n;
 	}
 }
-function nn(e) {
+function pn(e) {
 	var t = e.parent, n = e.prev, r = e.next;
 	n !== null && (n.next = r), r !== null && (r.prev = n), t !== null && (t.first === e && (t.first = r), t.last === e && (t.last = n));
 }
-function rn(e, t, n = !0) {
+function mn(e, t, n = !0) {
 	var r = [];
-	an(e, r, !0);
+	hn(e, r, !0);
 	var i = () => {
-		n && en(e), t && t();
+		n && M(e), t && t();
 	}, a = r.length;
 	if (a > 0) {
 		var o = () => --a || i();
 		for (var s of r) s.out(o);
 	} else i();
 }
-function an(e, t, n) {
+function hn(e, t, n) {
 	if (!(e.f & 8192)) {
-		e.f ^= y;
+		e.f ^= v;
 		var r = e.nodes && e.nodes.t;
 		if (r !== null) for (let e of r) (e.is_global || n) && t.push(e);
 		for (var i = e.first; i !== null;) {
 			var a = i.next;
 			if (!(i.f & 64)) {
 				var o = !!(i.f & 65536) || !!(i.f & 32) && !!(e.f & 16);
-				an(i, t, o ? n : !1);
+				hn(i, t, o ? n : !1);
 			}
 			i = a;
 		}
 	}
 }
-function on(e, t) {
+function gn(e) {
+	_n(e, !0);
+}
+function _n(e, t) {
+	if (e.f & 8192) {
+		e.f ^= v, e.f & 1024 || (k(e, g), vt.ensure().schedule(e));
+		for (var n = e.first; n !== null;) {
+			var r = n.next, i = !!(n.f & 65536) || !!(n.f & 32);
+			_n(n, i ? t : !1), n = r;
+		}
+		var a = e.nodes && e.nodes.t;
+		if (a !== null) for (let e of a) (e.is_global || t) && e.in();
+	}
+}
+function vn(e, t) {
 	if (e.nodes) for (var n = e.nodes.start, r = e.nodes.end; n !== null;) {
-		var i = n === r ? null : /* @__PURE__ */ Ft(n);
+		var i = n === r ? null : /* @__PURE__ */ Wt(n);
 		t.append(n), n = i;
 	}
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/legacy.js
-var sn = null, cn = !1, ln = !1;
-function un(e) {
-	ln = e;
+var yn = null, bn = !1, xn = !1;
+function Sn(e) {
+	xn = e;
 }
-var k = null, A = !1;
-function j(e) {
-	k = e;
+var N = null, Cn = !1;
+function wn(e) {
+	N = e;
 }
-var M = null;
-function dn(e) {
-	M = e;
+var P = null;
+function Tn(e) {
+	P = e;
 }
-var fn = null;
-function pn(e) {
-	k !== null && (fn ??= /* @__PURE__ */ new Set()).add(e);
+var En = null;
+function Dn(e) {
+	N !== null && (En ??= /* @__PURE__ */ new Set()).add(e);
 }
-var N = null, P = 0, F = null;
-function mn(e) {
-	F = e;
+var F = null, I = 0, On = null;
+function kn(e) {
+	On = e;
 }
-var hn = 1, gn = 0, _n = gn;
-function vn(e) {
-	_n = e;
+var An = 1, jn = 0, Mn = jn;
+function Nn(e) {
+	Mn = e;
 }
-function yn() {
-	return ++hn;
+function Pn() {
+	return ++An;
 }
-function bn(e) {
+function Fn(e) {
 	var t = e.f;
 	if (t & 2048) return !0;
-	if (t & 2 && (e.f &= ~ne), t & 4096) {
+	if (t & 2 && (e.f &= ~te), t & 4096) {
 		for (var n = e.deps, r = n.length, i = 0; i < r; i++) {
 			var a = n[i];
-			if (bn(a) && $e(a), a.wv > e.wv) return !0;
+			if (Fn(a) && at(a), a.wv > e.wv) return !0;
 		}
-		t & 512 && D === null && T(e, g);
+		t & 512 && ut === null && k(e, h);
 	}
 	return !1;
 }
-function xn(e, t, n = !0) {
+function In(e, t, n = !0) {
 	var r = e.reactions;
-	if (r !== null && !(fn !== null && fn.has(e))) for (var i = 0; i < r.length; i++) {
+	if (r !== null && !(En !== null && En.has(e))) for (var i = 0; i < r.length; i++) {
 		var a = r[i];
-		a.f & 2 ? xn(a, t, !1) : t === a && (n ? T(a, _) : a.f & 1024 && T(a, v), ht(a));
+		a.f & 2 ? In(a, t, !1) : t === a && (n ? k(a, g) : a.f & 1024 && k(a, _), St(a));
 	}
 }
-function Sn(e) {
-	var t = N, n = P, r = F, i = k, a = fn, o = w, s = A, c = _n, l = e.f;
-	N = null, P = 0, F = null, k = l & 96 ? null : e, fn = null, we(e.ctx), A = !1, _n = ++gn, e.ac !== null && (Le(() => {
-		e.ac.abort(fe);
+function Ln(e) {
+	var t = F, n = I, r = On, i = N, a = En, o = ke, s = Cn, c = Mn, l = e.f;
+	F = null, I = 0, On = null, N = l & 96 ? null : e, En = null, Ae(e.ctx), Cn = !1, Mn = ++jn, e.ac !== null && (Ue(() => {
+		e.ac.abort(le);
 	}), e.ac = null);
 	try {
-		e.f |= re;
+		e.f |= ne;
 		var u = e.fn, d = u();
 		e.f |= b;
-		var f = e.deps, p = E?.is_fork;
-		if (N !== null) {
+		var f = e.deps, p = A?.is_fork;
+		if (F !== null) {
 			var m;
-			if (p || wn(e, P), f !== null && P > 0) for (f.length = P + N.length, m = 0; m < N.length; m++) f[P + m] = N[m];
-			else e.deps = f = N;
-			if (Vt() && e.f & 512) for (m = P; m < f.length; m++) (f[m].reactions ??= []).push(e);
-		} else !p && f !== null && P < f.length && (wn(e, P), f.length = P);
-		if (De() && F !== null && !A && f !== null && !(e.f & 6146)) for (m = 0; m < F.length; m++) xn(F[m], e);
+			if (p || zn(e, I), f !== null && I > 0) for (f.length = I + F.length, m = 0; m < F.length; m++) f[I + m] = F[m];
+			else e.deps = f = F;
+			if ($t() && e.f & 512) for (m = I; m < f.length; m++) (f[m].reactions ??= []).push(e);
+		} else !p && f !== null && I < f.length && (zn(e, I), f.length = I);
+		if (Ne() && On !== null && !Cn && f !== null && !(e.f & 6146)) for (m = 0; m < On.length; m++) In(On[m], e);
 		if (i !== null && i !== e) {
-			if (gn++, i.deps !== null) for (let e = 0; e < n; e += 1) i.deps[e].rv = gn;
-			if (t !== null) for (let e of t) e.rv = gn;
-			F !== null && (r === null ? r = F : r.push(...F));
+			if (jn++, i.deps !== null) for (let e = 0; e < n; e += 1) i.deps[e].rv = jn;
+			if (t !== null) for (let e of t) e.rv = jn;
+			On !== null && (r === null ? r = On : r.push(...On));
 		}
-		return e.f & 8388608 && (e.f ^= ae), d;
+		return e.f & 8388608 && (e.f ^= ie), d;
 	} catch (e) {
-		return je(e);
+		return Le(e);
 	} finally {
-		e.f ^= re, N = t, P = n, F = r, k = i, fn = a, we(o), A = s, _n = c;
+		e.f ^= ne, F = t, I = n, On = r, N = i, En = a, Ae(o), Cn = s, Mn = c;
 	}
 }
-function Cn(t, n) {
+function Rn(e, n) {
 	let a = n.reactions;
 	if (a !== null) {
-		var o = r.call(a, t);
+		var o = r.call(a, e);
 		if (o !== -1) {
 			var s = a.length - 1;
 			s === 0 ? a = n.reactions = null : (a[o] = a[s], a.pop());
 		}
 	}
-	if (a === null && n.f & 2 && (N === null || !i.call(N, n))) {
+	if (a === null && n.f & 2 && (F === null || !i.call(F, n))) {
 		var c = n;
-		c.f & 512 && (c.f ^= 512, c.f &= ~ne), c.v !== e && Pe(c), c.ac !== null && Le(() => {
-			c.ac.abort(fe), c.ac = null, T(c, _);
-		}), et(c), wn(c, 0);
+		c.f & 512 && (c.f ^= 512, c.f &= ~te), c.v !== t && Be(c), c.ac !== null && Ue(() => {
+			c.ac.abort(le), c.ac = null, k(c, g);
+		}), ot(c), zn(c, 0);
 	}
 }
-function wn(e, t) {
+function zn(e, t) {
 	var n = e.deps;
-	if (n !== null) for (var r = t; r < n.length; r++) Cn(e, n[r]);
+	if (n !== null) for (var r = t; r < n.length; r++) Rn(e, n[r]);
 }
-function Tn(e) {
+function Bn(e) {
 	var t = e.f;
 	if (!(t & 16384)) {
-		T(e, g);
-		var n = M, r = cn;
-		M = e, cn = !(t & 96);
+		k(e, h);
+		var n = P, r = bn;
+		P = e, bn = !(t & 96);
 		try {
-			t & 16777232 ? $t(e) : Qt(e), Zt(e);
-			var i = Sn(e);
-			e.teardown = typeof i == "function" ? i : null, e.wv = hn;
+			t & 16777232 ? dn(e) : un(e), ln(e);
+			var i = Ln(e);
+			e.teardown = typeof i == "function" ? i : null, e.wv = An;
 		} finally {
-			cn = r, M = n;
+			bn = r, P = n;
 		}
 	}
 }
-function I(e) {
+function L(e) {
 	var t = !!(e.f & 2);
-	if (sn?.add(e), k !== null && !A && !(M !== null && M.f & 16384) && (fn === null || !fn.has(e))) {
-		var n = k.deps;
-		if (k.f & 2097152) e.rv < gn && (e.rv = gn, N === null && n !== null && n[P] === e ? P++ : N === null ? N = [e] : N.push(e));
+	if (yn?.add(e), N !== null && !Cn && !(P !== null && P.f & 16384) && (En === null || !En.has(e))) {
+		var n = N.deps;
+		if (N.f & 2097152) e.rv < jn && (e.rv = jn, F === null && n !== null && n[I] === e ? I++ : F === null ? F = [e] : F.push(e));
 		else {
-			k.deps ??= [], i.call(k.deps, e) || k.deps.push(e);
+			N.deps ??= [], i.call(N.deps, e) || N.deps.push(e);
 			var r = e.reactions;
-			r === null ? e.reactions = [k] : i.call(r, k) || r.push(k);
+			r === null ? e.reactions = [N] : i.call(r, N) || r.push(N);
 		}
 	}
-	if (ln && yt.has(e)) return yt.get(e);
+	if (xn && Et.has(e)) return Et.get(e);
 	if (t) {
 		var a = e;
-		if (ln) {
+		if (xn) {
 			var o = a.v;
-			return (!(a.f & 1024) && a.reactions !== null || Dn(a)) && (o = Qe(a)), yt.set(a, o), o;
+			return (!(a.f & 1024) && a.reactions !== null || Hn(a)) && (o = it(a)), Et.set(a, o), o;
 		}
-		var s = !(a.f & 512) && !A && k !== null && (cn || !!(k.f & 512)), c = (a.f & b) === 0;
-		bn(a) && (s && (a.f |= 512), $e(a)), s && !c && (tt(a), En(a));
+		var s = !(a.f & 512) && !Cn && N !== null && (bn || !!(N.f & 512)), c = (a.f & b) === 0;
+		Fn(a) && (s && (a.f |= 512), at(a)), s && !c && (st(a), Vn(a));
 	}
-	if (D?.has(e)) return D.get(e);
+	if (ut?.has(e)) return ut.get(e);
 	if (e.f & 8388608) throw e.v;
 	return e.v;
 }
-function En(e) {
-	if (e.f |= 512, e.deps !== null) for (let t of e.deps) (t.reactions ??= []).push(e), t.f & 2 && !(t.f & 512) && (tt(t), En(t));
+function Vn(e) {
+	if (e.f |= 512, e.deps !== null) for (let t of e.deps) (t.reactions ??= []).push(e), t.f & 2 && !(t.f & 512) && (st(t), Vn(t));
 }
-function Dn(t) {
-	if (t.v === e) return !0;
-	if (t.deps === null) return !1;
-	for (let e of t.deps) if (yt.has(e) || e.f & 2 && Dn(e)) return !0;
+function Hn(e) {
+	if (e.v === t) return !0;
+	if (e.deps === null) return !1;
+	for (let t of e.deps) if (Et.has(t) || t.f & 2 && Hn(t)) return !0;
 	return !1;
 }
-function On(e) {
-	var t = A;
+function Un(e) {
+	var t = Cn;
 	try {
-		return A = !0, e();
+		return Cn = !0, e();
 	} finally {
-		A = t;
+		Cn = t;
 	}
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/elements/events.js
-var kn = Symbol("events"), An = /* @__PURE__ */ new Set(), jn = /* @__PURE__ */ new Set();
-function Mn(e, t, n, r = {}) {
-	function i(e) {
-		if (r.capture || Rn.call(t, e), !e.cancelBubble) return Le(() => n?.call(this, e));
-	}
-	return e.startsWith("pointer") || e.startsWith("touch") || e === "wheel" ? Ae(() => {
-		t.addEventListener(e, i, r);
-	}) : t.addEventListener(e, i, r), i;
+var Wn = Symbol("events"), Gn = /* @__PURE__ */ new Set(), Kn = /* @__PURE__ */ new Set();
+function qn(e, t, n) {
+	(t[Wn] ??= {})[e] = n;
 }
-function Nn(e, t, n, r, i) {
-	var a = {
-		capture: r,
-		passive: i
-	}, o = Mn(e, t, n, a);
-	(t === document.body || t === window || t === document || t instanceof HTMLMediaElement) && Ht(() => {
-		t.removeEventListener(e, o, a);
-	});
+function Jn(e) {
+	for (var t = 0; t < e.length; t++) Gn.add(e[t]);
+	for (var n of Kn) n(e);
 }
-function Pn(e, t, n) {
-	(t[kn] ??= {})[e] = n;
-}
-function Fn(e) {
-	for (var t = 0; t < e.length; t++) An.add(e[t]);
-	for (var n of jn) n(e);
-}
-var In = null, Ln = !1;
-function Rn(e) {
+var Yn = null, Xn = !1;
+function Zn(e) {
 	var t = this, n = t.ownerDocument, r = e.type, i = e.composedPath?.() || [], a = i[0] || e.target;
-	In = e, Ln || (Ln = !0, setTimeout(() => {
-		Ln = !1, In = null;
+	Yn = e, Xn || (Xn = !0, setTimeout(() => {
+		Xn = !1, Yn = null;
 	}));
-	var s = 0, c = In === e && e[kn];
+	var s = 0, c = Yn === e && e[Wn];
 	if (c) {
 		var l = i.indexOf(c);
 		if (l !== -1 && (t === document || t === window)) {
-			e[kn] = t;
+			e[Wn] = t;
 			return;
 		}
 		var u = i.indexOf(t);
@@ -1301,12 +1420,12 @@ function Rn(e) {
 				return a || n;
 			}
 		});
-		var d = k, f = M;
-		j(null), dn(null);
+		var d = N, f = P;
+		wn(null), Tn(null);
 		try {
 			for (var p, m = []; a !== null && a !== t;) {
 				try {
-					var h = a[kn]?.[r];
+					var h = a[Wn]?.[r];
 					h != null && (!a.disabled || e.target === a) && h.call(a, e);
 				} catch (e) {
 					p ? m.push(e) : p = e;
@@ -1321,24 +1440,24 @@ function Rn(e) {
 				throw p;
 			}
 		} finally {
-			e[kn] = t, delete e.currentTarget, j(d), dn(f);
+			e[Wn] = t, delete e.currentTarget, wn(d), Tn(f);
 		}
 	}
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/reconciler.js
-var zn = globalThis?.window?.trustedTypes && /* @__PURE__ */ globalThis.window.trustedTypes.createPolicy("svelte-trusted-html", { createHTML: (e) => e });
-function Bn(e) {
-	return zn?.createHTML(e) ?? e;
+var Qn = globalThis?.window?.trustedTypes && /* @__PURE__ */ globalThis.window.trustedTypes.createPolicy("svelte-trusted-html", { createHTML: (e) => e });
+function $n(e) {
+	return Qn?.createHTML(e) ?? e;
 }
-function Vn(e) {
-	var t = Rt("template");
-	return t.innerHTML = Bn(e.replaceAll("<!>", "<!---->")), t.content;
+function er(e) {
+	var t = Yt("template");
+	return t.innerHTML = $n(e.replaceAll("<!>", "<!---->")), t.content;
 }
 //#endregion
 //#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/template.js
-function Hn(e, t) {
-	var n = M;
+function tr(e, t) {
+	var n = P;
 	n.nodes === null && (n.nodes = {
 		start: e,
 		end: t,
@@ -1347,150 +1466,334 @@ function Hn(e, t) {
 	});
 }
 /*#__NO_SIDE_EFFECTS__*/
-function Un(e, t) {
+function nr(e, t) {
 	var n = !!(t & 1), r = !!(t & 2), i, a = !e.startsWith("<!>");
 	return () => {
-		i === void 0 && (i = Vn(a ? e : "<!>" + e), n || (i = /* @__PURE__ */ Pt(i)));
-		var t = r || kt ? document.importNode(i, !0) : i.cloneNode(!0);
+		if (E) return tr(D, null), D;
+		i === void 0 && (i = er(a ? e : "<!>" + e), n || (i = /* @__PURE__ */ Ut(i)));
+		var t = r || Rt ? document.importNode(i, !0) : i.cloneNode(!0);
 		if (n) {
-			var o = /* @__PURE__ */ Pt(t), s = t.lastChild;
-			Hn(o, s);
-		} else Hn(t, t);
+			var o = /* @__PURE__ */ Ut(t), s = t.lastChild;
+			tr(o, s);
+		} else tr(t, t);
 		return t;
 	};
 }
-function Wn(e, t) {
+function rr() {
+	if (E) return tr(D, null), D;
+	var e = document.createDocumentFragment(), t = document.createComment(""), n = Ht();
+	return e.append(t, n), tr(t, n), e;
+}
+function ir(e, t) {
+	if (E) {
+		var n = P;
+		(!(n.f & 32768) || n.nodes.end === null) && (n.nodes.end = D), Se();
+		return;
+	}
 	e !== null && e.before(t);
 }
 [.../* @__PURE__ */ "allowfullscreen.async.autofocus.autoplay.checked.controls.default.disabled.formnovalidate.indeterminate.inert.ismap.loop.multiple.muted.nomodule.novalidate.open.playsinline.readonly.required.reversed.seamless.selected.webkitdirectory.defer.disablepictureinpicture.disableremoteplayback".split(".")];
-var Gn = ["touchstart", "touchmove"];
-function Kn(e) {
-	return Gn.includes(e);
+var ar = ["touchstart", "touchmove"];
+function or(e) {
+	return ar.includes(e);
 }
-function qn(e, t) {
+function sr(e, t) {
 	var n = t == null ? "" : typeof t == "object" ? `${t}` : t;
-	n !== (e[de] ??= e.nodeValue) && (e[de] = n, e.nodeValue = `${n}`);
+	n !== (e[ce] ??= e.nodeValue) && (e[ce] = n, e.nodeValue = `${n}`);
 }
-function Jn(e, t) {
-	return Xn(e, t);
+function cr(e, t) {
+	return ur(e, t);
 }
-var Yn = /* @__PURE__ */ new Map();
-function Xn(e, { target: t, anchor: n, props: r = {}, events: i, context: o, intro: s = !0, transformError: c }) {
-	Mt();
-	var l = void 0, u = Wt(() => {
-		var s = n ?? t.appendChild(Nt());
-		Be(s, { pending: () => {} }, (t) => {
-			Te({});
-			var n = w;
-			o && (n.c = o), i && (r.$$events = i), l = e(t, r) || {}, Ee();
-		}, c);
-		var u = /* @__PURE__ */ new Set(), d = (e) => {
-			for (var n = 0; n < e.length; n++) {
-				var r = e[n];
-				if (!u.has(r)) {
-					u.add(r);
-					var i = Kn(r);
-					for (let e of [t, document]) {
-						var a = Yn.get(e);
-						a === void 0 && (a = /* @__PURE__ */ new Map(), Yn.set(e, a));
+var lr = /* @__PURE__ */ new Map();
+function ur(t, { target: n, anchor: r, props: i = {}, events: o, context: s, intro: c = !0, transformError: l }) {
+	Vt();
+	var u = void 0, d = nn(() => {
+		var c = r ?? n.appendChild(Ht());
+		Ke(c, { pending: () => {} }, (n) => {
+			je({});
+			var r = ke;
+			if (s && (r.c = s), o && (i.$$events = o), E && tr(n, null), u = t(n, i) || {}, E && (P.nodes.end = D, D === null || D.nodeType !== 8 || D.data !== "]")) throw ve(), e;
+			Me();
+		}, l);
+		var d = /* @__PURE__ */ new Set(), f = (e) => {
+			for (var t = 0; t < e.length; t++) {
+				var r = e[t];
+				if (!d.has(r)) {
+					d.add(r);
+					var i = or(r);
+					for (let e of [n, document]) {
+						var a = lr.get(e);
+						a === void 0 && (a = /* @__PURE__ */ new Map(), lr.set(e, a));
 						var o = a.get(r);
-						o === void 0 ? (e.addEventListener(r, Rn, { passive: i }), a.set(r, 1)) : a.set(r, o + 1);
+						o === void 0 ? (e.addEventListener(r, Zn, { passive: i }), a.set(r, 1)) : a.set(r, o + 1);
 					}
 				}
 			}
 		};
-		return d(a(An)), jn.add(d), () => {
-			for (var e of u) for (let n of [t, document]) {
-				var r = Yn.get(n), i = r.get(e);
-				--i == 0 ? (n.removeEventListener(e, Rn), r.delete(e), r.size === 0 && Yn.delete(n)) : r.set(e, i);
+		return f(a(Gn)), Kn.add(f), () => {
+			for (var e of d) for (let r of [n, document]) {
+				var t = lr.get(r), i = t.get(e);
+				--i == 0 ? (r.removeEventListener(e, Zn), t.delete(e), t.size === 0 && lr.delete(r)) : t.set(e, i);
 			}
-			jn.delete(d), s !== n && s.parentNode?.removeChild(s);
+			Kn.delete(f), c !== r && c.parentNode?.removeChild(c);
 		};
 	});
-	return Zn.set(l, u), l;
+	return dr.set(u, d), u;
 }
-var Zn = /* @__PURE__ */ new WeakMap();
-function Qn(e, t) {
-	let n = Zn.get(e);
-	return n ? (Zn.delete(e), n(t)) : Promise.resolve();
+var dr = /* @__PURE__ */ new WeakMap();
+function fr(e, t) {
+	let n = dr.get(e);
+	return n ? (dr.delete(e), n(t)) : Promise.resolve();
 }
 //#endregion
-//#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/shared/attributes.js
-var $n = [..." 	\n\r\f\xA0\v﻿"];
-function er(e, t, n) {
-	var r = e == null ? "" : "" + e;
-	if (t && (r = r ? r + " " + t : t), n) {
-		for (var i of Object.keys(n)) if (n[i]) r = r ? r + " " + i : i;
-		else if (r.length) for (var a = i.length, o = 0; (o = r.indexOf(i, o)) >= 0;) {
-			var s = o + a;
-			(o === 0 || $n.includes(r[o - 1])) && (s === r.length || $n.includes(r[s])) ? r = (o === 0 ? "" : r.substring(0, o)) + r.substring(s + 1) : o = s;
+//#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/blocks/branches.js
+var pr = class {
+	anchor;
+	#e = /* @__PURE__ */ new Map();
+	#t = /* @__PURE__ */ new Map();
+	#n = /* @__PURE__ */ new Map();
+	#r = /* @__PURE__ */ new Set();
+	#i = !0;
+	constructor(e, t = !0) {
+		this.anchor = e, this.#i = t;
+	}
+	#a = (e) => {
+		if (this.#e.has(e)) {
+			var t = this.#e.get(e), n = this.#t.get(t);
+			if (n) gn(n), this.#r.delete(t);
+			else {
+				var r = this.#n.get(t);
+				r && (gn(r.effect), this.#t.set(t, r.effect), this.#n.delete(t), r.fragment.lastChild.remove(), this.anchor.before(r.fragment), n = r.effect);
+			}
+			for (let [t, n] of this.#e) {
+				if (this.#e.delete(t), t === e) break;
+				let r = this.#n.get(n);
+				r && (M(r.effect), this.#n.delete(n));
+			}
+			for (let [e, r] of this.#t) {
+				if (e === t || this.#r.has(e)) continue;
+				let i = () => {
+					if (Array.from(this.#e.values()).includes(e)) {
+						var t = document.createDocumentFragment();
+						vn(r, t), t.append(Ht()), this.#n.set(e, {
+							effect: r,
+							fragment: t
+						});
+					} else M(r);
+					this.#r.delete(e), this.#t.delete(e);
+				};
+				this.#i || !n ? (this.#r.add(e), mn(r, i, !1)) : i();
+			}
+		}
+	};
+	#o = (e) => {
+		this.#e.delete(e);
+		let t = Array.from(this.#e.values());
+		for (let [e, n] of this.#n) t.includes(e) || (M(n.effect), this.#n.delete(e));
+	};
+	ensure(e, t) {
+		var n = A, r = Jt();
+		if (t && !this.#t.has(e) && !this.#n.has(e)) {
+			if (r) {
+				var i = document.createDocumentFragment(), a = Ht();
+				i.append(a), this.#n.set(e, {
+					effect: cn(() => t(a)),
+					fragment: i
+				});
+			} else this.#t.set(e, cn(() => t(this.anchor)));
+		}
+		if (this.#e.set(n, e), r) {
+			for (let [t, r] of this.#t) t === e ? n.unskip_effect(r) : n.skip_effect(r);
+			for (let [t, r] of this.#n) t === e ? n.unskip_effect(r.effect) : n.skip_effect(r.effect);
+			n.oncommit(this.#a), n.ondiscard(this.#o);
+		} else E && (this.anchor = D), this.#a(n);
+	}
+};
+//#endregion
+//#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/blocks/if.js
+function mr(e, t, n = !1) {
+	var r;
+	E && (r = D, Se());
+	var i = new pr(e), a = n ? S : 0;
+	function o(e, t) {
+		if (E) {
+			var n = Te(r);
+			if (e !== parseInt(n.substring(1))) {
+				var a = we();
+				xe(a), i.anchor = a, be(!1), i.ensure(e, t), be(!0);
+				return;
+			}
+		}
+		i.ensure(e, t);
+	}
+	sn(() => {
+		var e = !1;
+		t((t, n = 0) => {
+			e = !0, o(n, t);
+		}), e || o(-1, null);
+	}, a);
+}
+//#endregion
+//#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/blocks/each.js
+function hr(e, t, n) {
+	for (var r = [], i = t.length, o, s = t.length, c = 0; c < i; c++) {
+		let n = t[c];
+		mn(n, () => {
+			if (o) {
+				if (o.pending.delete(n), o.done.add(n), o.pending.size === 0) {
+					var t = e.outrogroups;
+					gr(e, a(o.done)), t.delete(o), t.size === 0 && (e.outrogroups = null);
+				}
+			} else --s;
+		}, !1);
+	}
+	if (s === 0) {
+		var l = r.length === 0 && n !== null && e.pending.size === 0;
+		if (l) {
+			var u = n, d = u.parentNode;
+			qt(d), d.append(u), e.items.clear();
+		}
+		gr(e, t, !l);
+	} else o = {
+		pending: new Set(t),
+		done: /* @__PURE__ */ new Set()
+	}, (e.outrogroups ??= /* @__PURE__ */ new Set()).add(o);
+}
+function gr(e, t, n = !0) {
+	var r;
+	if (e.pending.size > 0) {
+		r = /* @__PURE__ */ new Set();
+		for (let t of e.pending.values()) for (let n of t) r.add(e.items.get(n).e);
+	}
+	for (var i = 0; i < t.length; i++) {
+		var a = t[i];
+		r?.has(a) ? (a.f |= ee, vn(a, document.createDocumentFragment())) : M(t[i], n);
+	}
+}
+var _r;
+function vr(e, t, r, i, o, s = null) {
+	var c = e, l = /* @__PURE__ */ new Map();
+	if (t & 4) {
+		var u = e;
+		c = E ? xe(/* @__PURE__ */ Ut(u)) : u.appendChild(Ht());
+	}
+	E && Se();
+	var d = null, f = /* @__PURE__ */ nt(() => {
+		var e = r();
+		return n(e) ? e : e == null ? [] : a(e);
+	}), p, m = /* @__PURE__ */ new Map(), h = !0;
+	function g(e) {
+		v.effect.f & 16384 || (v.pending.delete(e), v.fallback = d, br(v, p, c, t, i), d !== null && (p.length === 0 ? d.f & 33554432 ? (d.f ^= ee, Sr(d, null, c)) : gn(d) : mn(d, () => {
+			d = null;
+		})));
+	}
+	function _(e) {
+		v.pending.delete(e);
+	}
+	var v = {
+		effect: sn(() => {
+			p = L(f);
+			var e = p.length;
+			let n = !1;
+			E && Te(c) === "[!" != (e === 0) && (c = we(), xe(c), be(!1), n = !0);
+			for (var a = /* @__PURE__ */ new Set(), u = A, v = Jt(), y = 0; y < e; y += 1) {
+				E && D.nodeType === 8 && D.data === "]" && (c = D, n = !0, be(!1));
+				var b = p[y], x = i(b, y), S = h ? null : l.get(x);
+				S ? (S.v && Mt(S.v, b), S.i && Mt(S.i, y), v && u.unskip_effect(S.e)) : (S = xr(l, h ? c : _r ??= Ht(), b, x, y, o, t, r), h || (S.e.f |= ee), l.set(x, S)), a.add(x);
+			}
+			if (e === 0 && s && !d && (h ? d = cn(() => s(c)) : (d = cn(() => s(_r ??= Ht())), d.f |= ee)), e > a.size && de("", "", ""), E && e > 0 && xe(we()), !h) {
+				if (m.set(u, a), v) {
+					for (let [e, t] of l) a.has(e) || u.skip_effect(t.e);
+					u.oncommit(g), u.ondiscard(_);
+				} else g(u);
+			}
+			n && be(!0), L(f);
+		}),
+		flags: t,
+		items: l,
+		pending: m,
+		outrogroups: null,
+		fallback: d
+	};
+	h = !1, E && (c = D);
+}
+function yr(e) {
+	for (; e !== null && !(e.f & 32);) e = e.next;
+	return e;
+}
+function br(e, t, n, r, i) {
+	var o = !!(r & 8), s = t.length, c = e.items, l = yr(e.effect.first), u, d = null, f, p = [], m = [], h, g, _, v;
+	if (o) for (v = 0; v < s; v += 1) h = t[v], g = i(h, v), _ = c.get(g).e, _.f & 33554432 || (_.nodes?.a?.measure(), (f ??= /* @__PURE__ */ new Set()).add(_));
+	for (v = 0; v < s; v += 1) {
+		if (h = t[v], g = i(h, v), _ = c.get(g).e, e.outrogroups !== null) for (let t of e.outrogroups) t.pending.delete(_), t.done.delete(_);
+		if (_.f & 8192 && (gn(_), o && (_.nodes?.a?.unfix(), (f ??= /* @__PURE__ */ new Set()).delete(_))), _.f & 33554432) {
+			if (_.f ^= ee, _ === l) Sr(_, null, n);
+			else {
+				var y = d ? d.next : l;
+				_ === e.effect.last && (e.effect.last = _.prev), _.prev && (_.prev.next = _.next), _.next && (_.next.prev = _.prev), Cr(e, d, _), Cr(e, _, y), Sr(_, y, n), d = _, p = [], m = [], l = yr(d.next);
+				continue;
+			}
+		}
+		if (_ !== l) {
+			if (u !== void 0 && u.has(_)) {
+				if (p.length < m.length) {
+					var b = m[0], x;
+					d = b.prev;
+					var S = p[0], C = p[p.length - 1];
+					for (x = 0; x < p.length; x += 1) Sr(p[x], b, n);
+					for (x = 0; x < m.length; x += 1) u.delete(m[x]);
+					Cr(e, S.prev, C.next), Cr(e, d, S), Cr(e, C, b), l = b, d = C, --v, p = [], m = [];
+				} else u.delete(_), Sr(_, l, n), Cr(e, _.prev, _.next), Cr(e, _, d === null ? e.effect.first : d.next), Cr(e, d, _), d = _;
+				continue;
+			}
+			for (p = [], m = []; l !== null && l !== _;) (u ??= /* @__PURE__ */ new Set()).add(l), m.push(l), l = yr(l.next);
+			if (l === null) continue;
+		}
+		_.f & 33554432 || p.push(_), d = _, l = yr(_.next);
+	}
+	if (e.outrogroups !== null) {
+		for (let t of e.outrogroups) t.pending.size === 0 && (gr(e, a(t.done)), e.outrogroups?.delete(t));
+		e.outrogroups.size === 0 && (e.outrogroups = null);
+	}
+	if (l !== null || u !== void 0) {
+		var w = [];
+		if (u !== void 0) for (_ of u) _.f & 8192 || w.push(_);
+		for (; l !== null;) !(l.f & 8192) && l !== e.fallback && w.push(l), l = yr(l.next);
+		var te = w.length;
+		if (te > 0) {
+			var ne = r & 4 && s === 0 ? n : null;
+			if (o) {
+				for (v = 0; v < te; v += 1) w[v].nodes?.a?.measure();
+				for (v = 0; v < te; v += 1) w[v].nodes?.a?.fix();
+			}
+			hr(e, w, ne);
 		}
 	}
-	return r === "" ? null : r;
+	o && Ie(() => {
+		if (f !== void 0) for (_ of f) _.nodes?.a?.apply();
+	});
 }
-//#endregion
-//#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/elements/class.js
-function tr(e, t, n, r, i, a) {
-	var o = e[le];
-	if (o !== n || o === void 0) {
-		var s = er(n, r, a);
-		s == null ? e.removeAttribute("class") : t ? e.className = s : e.setAttribute("class", s), e[le] = n;
-	} else if (a && i !== a) for (var c in a) {
-		var l = !!a[c];
-		(i == null || l !== !!i[c]) && e.classList.toggle(c, l);
-	}
-	return a;
-}
-//#endregion
-//#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/elements/attributes.js
-var nr = Symbol("is custom element"), rr = Symbol("is html");
-function ir(e, t, n, r) {
-	var i = ar(e);
-	i[t] !== (i[t] = n) && (t === "loading" && (e[se] = n), n == null ? e.removeAttribute(t) : typeof n != "string" && sr(e).includes(t) ? e[t] = n : e.setAttribute(t, n));
-}
-function ar(e) {
-	return e[ce] ??= {
-		[nr]: e.nodeName.includes("-"),
-		[rr]: e.namespaceURI === t
+function xr(e, t, n, r, i, a, o, s) {
+	var c = o & 1 ? o & 16 ? Ot(n) : /* @__PURE__ */ At(n, !1, !1) : null, l = o & 2 ? Ot(i) : null;
+	return {
+		v: c,
+		i: l,
+		e: cn(() => (a(t, c ?? n, l ?? i, s), () => {
+			e.delete(r);
+		}))
 	};
 }
-var or = /* @__PURE__ */ new Map();
-function sr(e) {
-	var t = e.getAttribute("is") || e.nodeName, n = or.get(t);
-	if (n) return n;
-	or.set(t, n = []);
-	for (var r, i = e, a = Element.prototype; a !== i;) {
-		for (var o in r = c(i), r) r[o].set && o !== "innerHTML" && o !== "textContent" && o !== "innerText" && n.push(o);
-		i = d(i);
+function Sr(e, t, n) {
+	if (e.nodes) for (var r = e.nodes.start, i = e.nodes.end, a = t && !(t.f & 33554432) ? t.nodes.start : n; r !== null;) {
+		var o = /* @__PURE__ */ Wt(r);
+		if (a.before(r), r === i) return;
+		r = o;
 	}
-	return n;
 }
-//#endregion
-//#region node_modules/.pnpm/svelte@5.56.10_@typescript-eslint+types@8.66.0/node_modules/svelte/src/internal/client/dom/elements/bindings/this.js
-function cr(e, t) {
-	return e === t || e?.[oe] === t;
+function Cr(e, t, n) {
+	t === null ? e.effect.first = n : t.next = n, n === null ? e.effect.last = t : n.prev = t;
 }
-function lr(e = {}, t, n, r) {
-	var i = w.r, a = M;
-	return Gt(() => {
-		var o, s;
-		return qt(() => {
-			o = s, s = r?.() || [], On(() => {
-				cr(n(...s), e) || (t(e, ...s), o && cr(n(...o), e) && t(null, ...o));
-			});
-		}), () => {
-			let r = a;
-			for (; r !== i && r.parent !== null && r.parent.f & 33554432;) r = r.parent;
-			let o = () => {
-				s && cr(n(...s), e) && t(null, ...s);
-			}, c = r.teardown;
-			r.teardown = () => {
-				o(), c?.();
-			};
-		};
-	}), e;
-}
-var ur = [
+var wr = [
 	["#EADDFF", "#21005D"],
 	["#FFDBC9", "#311100"],
 	["#C4EED0", "#072711"],
@@ -1499,118 +1802,132 @@ var ur = [
 	["#F6E1B0", "#241A00"],
 	["#A9F0E4", "#00201C"],
 	["#DCE9A1", "#181E00"]
-], dr = ur.map(([e, t]) => ({
+].map(([e, t]) => ({
 	background: e,
 	foreground: t
-})), fr = /\s+/g;
-function pr(e) {
-	let t = 0;
-	for (let n = 0; n < e.length; n += 1) t = t * 31 + e.charCodeAt(n) | 0;
-	return t;
-}
-function mr(e) {
-	return e.replace(/^【调】/, "").replace(/[★☆〇■◆]$/u, "").trim().replace(fr, " ");
-}
-function hr(e) {
-	return ur[Math.abs(pr(e) % ur.length)] ?? ur[0];
-}
-new Map(dr.map((e, t) => [e.background.toLowerCase(), t]));
+}));
+new Map(wr.map((e, t) => [e.background.toLowerCase(), t]));
 //#endregion
-//#region packages/core/src/domain/course.ts
-function gr(e) {
-	let t = e.name ? mr(e.name) : "", [n, r] = t ? hr(t) : ["#EADDFF", "#21005D"];
-	return {
-		teacher: "",
-		location: "",
-		weeks: [],
-		remark: "",
-		color: e.color || n,
-		textColor: e.textColor || (e.color ? void 0 : r),
-		...e
-	};
+//#region packages/core/src/engine/date.ts
+function Tr(e) {
+	let t = e.trim(), n = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
+	if (!n) throw Error(`Invalid ISO date: ${e}`);
+	let [, r, i, a] = n;
+	return new Date(Date.UTC(Number(r), Number(i) - 1, Number(a), 12));
 }
-function _r(e) {
-	return {
-		showSaturday: e.some((e) => e.dayOfWeek === 6),
-		showSunday: e.some((e) => e.dayOfWeek === 7)
-	};
+function Er(e) {
+	return `${e.getUTCFullYear()}-${String(e.getUTCMonth() + 1).padStart(2, "0")}-${String(e.getUTCDate()).padStart(2, "0")}`;
 }
-var vr = "未命名课表";
-function yr(e) {
-	let t = e.trim();
-	return t.length > 0 ? t : vr;
+function Dr(e) {
+	let t = new Date(e.getTime()), n = t.getUTCDay(), r = n === 0 ? -6 : 1 - n;
+	return t.setUTCDate(t.getUTCDate() + r), t;
 }
-function br(e) {
-	if (!e) return;
-	let t = e.source.trim() || "UNKNOWN", n = e.campusId?.trim();
-	return n ? {
-		source: t,
-		campusId: n
-	} : { source: t };
+function Or(e, t) {
+	let n = new Date(e.getTime());
+	return n.setUTCDate(n.getUTCDate() + t), n;
 }
-function xr(e) {
-	let t = Date.now(), n = br(e.importMetadata), r = e.courses ?? [];
-	return {
-		schemaVersion: e.schemaVersion ?? 1,
-		id: e.id,
-		name: yr(e.name),
-		courses: r,
-		academicConfig: {
-			termStartDate: e.academicConfig?.termStartDate ?? "",
-			startWeek: e.academicConfig?.startWeek ?? 1,
-			endWeek: e.academicConfig?.endWeek ?? 20,
-			periodTimes: e.academicConfig?.periodTimes ?? [],
-			...e.academicConfig?.holidayCalendar ? { holidayCalendar: {
-				...e.academicConfig.holidayCalendar,
-				holidays: [...e.academicConfig.holidayCalendar.holidays]
-			} } : {}
-		},
-		viewPrefs: {
-			showSaturday: e.viewPrefs?.showSaturday ?? !0,
-			showSunday: e.viewPrefs?.showSunday ?? !0,
-			showNonCurrentWeekCourses: e.viewPrefs?.showNonCurrentWeekCourses ?? !1
-		},
-		createdAt: e.createdAt ?? t,
-		updatedAt: e.updatedAt ?? t,
-		...n ? { importMetadata: n } : {},
-		...e.customMetadata ? { customMetadata: { ...e.customMetadata } } : {}
-	};
+function kr(e, t) {
+	return Or(e, t * 7);
+}
+function Ar(e, t) {
+	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+}
+function jr(e, t) {
+	return e.getTime() < t.getTime();
+}
+function Mr(e) {
+	return Er(Dr(Tr(e)));
+}
+function Nr(e = /* @__PURE__ */ new Date()) {
+	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
 }
 //#endregion
-//#region packages/core/src/schema/schema.ts
-function Sr(e) {
-	return e;
+//#region packages/core/src/engine/calendar.ts
+var Pr = class {
+	normalizeTermStartDate(e, t) {
+		let n = Tr(Mr(t));
+		if (!e || !e.trim()) return Er(Dr(n));
+		try {
+			return Er(Dr(Tr(e)));
+		} catch {
+			return Er(Dr(this.inferTermStartDateFromTermName(e) || n));
+		}
+	}
+	inferTermStartDateFromTermName(e) {
+		let t = /(20\d{2})\D+(20\d{2})[^\d]*([12])/.exec(e);
+		if (!t) return null;
+		let n = Number.parseInt(t[1] ?? "", 10), r = Number.parseInt(t[2] ?? "", 10), i = Number.parseInt(t[3] ?? "", 10);
+		return Number.isNaN(n) || Number.isNaN(r) || Number.isNaN(i) ? null : i === 1 ? new Date(Date.UTC(n, 8, 1, 12)) : i === 2 ? new Date(Date.UTC(r, 2, 1, 12)) : null;
+	}
+	calculateAcademicWeek(e, t) {
+		let n = t ?? {
+			termStartDate: "",
+			startWeek: 1,
+			endWeek: 20,
+			periodTimes: []
+		}, r = Tr(this.normalizeTermStartDate(n.termStartDate, e)), i = Tr(e);
+		if (jr(i, r)) return n.startWeek;
+		let a = Ar(r, i);
+		return Math.min(Math.max(n.startWeek + a, n.startWeek), n.endWeek);
+	}
+	resolveWeekStart(e, t, n) {
+		return Er(kr(Tr(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
+	}
+	resolveCourseDate(e, t, n, r) {
+		return Er(Or(Tr(this.resolveWeekStart(e, t, r)), n - 1));
+	}
+};
+//#endregion
+//#region packages/core/src/engine/holiday-calendar.ts
+function Fr(e, t = Nr()) {
+	let n = new Pr(), r = Tr(n.resolveWeekStart(e, e.startWeek, t)), i = Or(Tr(n.resolveWeekStart(e, e.endWeek, t)), 6);
+	return {
+		startDate: Er(r),
+		endDate: Er(i)
+	};
+}
+function Ir(e, t, n = Nr()) {
+	let { startDate: r, endDate: i } = Fr(t, n);
+	return e.filter((e) => e.date >= r && e.date <= i);
+}
+function Lr(e, t = Nr()) {
+	let { startDate: n, endDate: r } = Fr(e, t), i = Number.parseInt(n.slice(0, 4), 10), a = Number.parseInt(r.slice(0, 4), 10), o = /* @__PURE__ */ new Set();
+	for (let e = i; e <= a; e += 1) o.add(e);
+	return o.size === 0 && o.add(Number.parseInt(t.slice(0, 4), 10)), [...o].sort((e, t) => e - t);
 }
 //#endregion
-//#region packages/core/src/types/mountable.ts
-var Cr = Symbol.for("chronos.mountable");
+//#region packages/core/src/types/services.ts
+function Rr(e) {
+	return { key: e };
+}
+var zr = Rr("http"), Br = Rr("storage"), Vr = Symbol.for("chronos.mountable");
 new Set(/* @__PURE__ */ "color.surface,color.on-surface,color.primary,color.on-primary,color.surface-variant,color.outline,color.secondary,color.primary-dim,color.primary-container,color.on-primary-container,color.inverse-primary,color.secondary-dim,color.on-secondary,color.secondary-container,color.on-secondary-container,color.primary-container-subtle,color.on-primary-container-subtle,color.secondary-container-subtle,color.on-secondary-container-subtle,shell.bottomTab.activeBackground,shell.bottomTab.activeForeground,shell.bottomBar.background,shell.topBar.background,leadingIcon.background,leadingIcon.color,leadingIcon.backgroundPrimary,leadingIcon.colorPrimary,leadingIcon.backgroundSecondary,leadingIcon.colorSecondary,leadingIcon.backgroundTertiary,leadingIcon.colorTertiary,leadingIcon.backgroundNeutral,leadingIcon.colorNeutral,timetable.period.activeBackground,timetable.period.activeBackgroundImage".split(","));
-function wr(e) {
+function Hr(e) {
 	return `color.${e.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()}`;
 }
-function Tr(e) {
+function Ur(e) {
 	let t = {};
-	for (let [n, r] of Object.entries(e)) typeof r == "string" && r.length > 0 && (t[wr(n)] = r);
+	for (let [n, r] of Object.entries(e)) typeof r == "string" && r.length > 0 && (t[Hr(n)] = r);
 	return t;
 }
-function Er(e, t) {
+function Wr(e, t) {
 	return {
-		light: Tr(e),
-		dark: Tr(t)
+		light: Ur(e),
+		dark: Ur(t)
 	};
 }
 //#endregion
 //#region packages/core/src/plugin/define-chronos-plugin.ts
-function Dr(e, t, n = "zh-cn") {
+function Gr(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
-function Or(e) {
+function Kr(e) {
 	let t;
 	return {
 		id: e.id,
-		name: () => t?.(e.nameKey) ?? Dr(e.messages, e.nameKey),
+		name: () => t?.(e.nameKey) ?? Gr(e.messages, e.nameKey),
 		version: e.version ?? "1.0.0",
-		description: e.descriptionKey ? () => t?.(e.descriptionKey) ?? Dr(e.messages, e.descriptionKey) : void 0,
+		description: e.descriptionKey ? () => t?.(e.descriptionKey) ?? Gr(e.messages, e.descriptionKey) : void 0,
 		category: e.category,
 		order: e.order,
 		author: e.author,
@@ -1627,31 +1944,26 @@ function Or(e) {
 	};
 }
 //#endregion
-//#region packages/core/src/plugin/register-import-tab.ts
-function kr(e, t) {
-	return e.registerSlot("import.source.tab", t);
-}
-//#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/utils/math_utils.js
-function L(e) {
+function R(e) {
 	return e < 0 ? -1 : e === 0 ? 0 : 1;
 }
-function Ar(e, t, n) {
+function qr(e, t, n) {
 	return (1 - n) * e + n * t;
 }
-function jr(e, t, n) {
+function Jr(e, t, n) {
 	return n < e ? e : n > t ? t : n;
 }
-function R(e, t, n) {
+function z(e, t, n) {
 	return n < e ? e : n > t ? t : n;
 }
-function Mr(e) {
+function Yr(e) {
 	return e %= 360, e < 0 && (e += 360), e;
 }
-function z(e) {
+function Xr(e) {
 	return e %= 360, e < 0 && (e += 360), e;
 }
-function Nr(e, t) {
+function Zr(e, t) {
 	return [
 		e[0] * t[0][0] + e[1] * t[0][1] + e[2] * t[0][2],
 		e[0] * t[1][0] + e[1] * t[1][1] + e[2] * t[1][2],
@@ -1660,7 +1972,7 @@ function Nr(e, t) {
 }
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/utils/color_utils.js
-var Pr = [
+var Qr = [
 	[
 		.41233895,
 		.35762064,
@@ -1676,7 +1988,7 @@ var Pr = [
 		.11916382,
 		.95034478
 	]
-], Fr = [
+], $r = [
 	[
 		3.2413774792388685,
 		-1.5376652402851851,
@@ -1692,106 +2004,106 @@ var Pr = [
 		-.20395524564742123,
 		1.0571799111220335
 	]
-], Ir = [
+], ei = [
 	95.047,
 	100,
 	108.883
 ];
-function Lr(e, t, n) {
+function ti(e, t, n) {
 	return (255 << 24 | (e & 255) << 16 | (t & 255) << 8 | n & 255) >>> 0;
 }
-function Rr(e) {
-	return Lr(Xr(e[0]), Xr(e[1]), Xr(e[2]));
+function ni(e) {
+	return ti(mi(e[0]), mi(e[1]), mi(e[2]));
 }
-function zr(e) {
+function ri(e) {
 	return e >> 16 & 255;
 }
-function Br(e) {
+function ii(e) {
 	return e >> 8 & 255;
 }
-function Vr(e) {
+function ai(e) {
 	return e & 255;
 }
-function Hr(e, t, n) {
-	let r = Fr, i = r[0][0] * e + r[0][1] * t + r[0][2] * n, a = r[1][0] * e + r[1][1] * t + r[1][2] * n, o = r[2][0] * e + r[2][1] * t + r[2][2] * n;
-	return Lr(Xr(i), Xr(a), Xr(o));
+function oi(e, t, n) {
+	let r = $r, i = r[0][0] * e + r[0][1] * t + r[0][2] * n, a = r[1][0] * e + r[1][1] * t + r[1][2] * n, o = r[2][0] * e + r[2][1] * t + r[2][2] * n;
+	return ti(mi(i), mi(a), mi(o));
 }
-function Ur(e) {
-	return Nr([
-		Yr(zr(e)),
-		Yr(Br(e)),
-		Yr(Vr(e))
-	], Pr);
+function si(e) {
+	return Zr([
+		pi(ri(e)),
+		pi(ii(e)),
+		pi(ai(e))
+	], Qr);
 }
-function Wr(e) {
-	let t = Yr(zr(e)), n = Yr(Br(e)), r = Yr(Vr(e)), i = Pr, a = i[0][0] * t + i[0][1] * n + i[0][2] * r, o = i[1][0] * t + i[1][1] * n + i[1][2] * r, s = i[2][0] * t + i[2][1] * n + i[2][2] * r, c = Ir, l = a / c[0], u = o / c[1], d = s / c[2], f = Qr(l), p = Qr(u), m = Qr(d);
+function ci(e) {
+	let t = pi(ri(e)), n = pi(ii(e)), r = pi(ai(e)), i = Qr, a = i[0][0] * t + i[0][1] * n + i[0][2] * r, o = i[1][0] * t + i[1][1] * n + i[1][2] * r, s = i[2][0] * t + i[2][1] * n + i[2][2] * r, c = ei, l = a / c[0], u = o / c[1], d = s / c[2], f = gi(l), p = gi(u), m = gi(d);
 	return [
 		116 * p - 16,
 		500 * (f - p),
 		200 * (p - m)
 	];
 }
-function Gr(e) {
-	let t = Xr(qr(e));
-	return Lr(t, t, t);
+function li(e) {
+	let t = mi(di(e));
+	return ti(t, t, t);
 }
-function Kr(e) {
-	let t = Ur(e)[1];
-	return 116 * Qr(t / 100) - 16;
+function ui(e) {
+	let t = si(e)[1];
+	return 116 * gi(t / 100) - 16;
 }
-function qr(e) {
-	return 100 * $r((e + 16) / 116);
+function di(e) {
+	return 100 * _i((e + 16) / 116);
 }
-function Jr(e) {
-	return Qr(e / 100) * 116 - 16;
+function fi(e) {
+	return gi(e / 100) * 116 - 16;
 }
-function Yr(e) {
+function pi(e) {
 	let t = e / 255;
 	return t <= .040449936 ? t / 12.92 * 100 : ((t + .055) / 1.055) ** 2.4 * 100;
 }
-function Xr(e) {
+function mi(e) {
 	let t = e / 100, n = 0;
-	return n = t <= .0031308 ? t * 12.92 : 1.055 * t ** (1 / 2.4) - .055, jr(0, 255, Math.round(n * 255));
+	return n = t <= .0031308 ? t * 12.92 : 1.055 * t ** (1 / 2.4) - .055, Jr(0, 255, Math.round(n * 255));
 }
-function Zr() {
-	return Ir;
+function hi() {
+	return ei;
 }
-function Qr(e) {
+function gi(e) {
 	return e > .008856451679035631 ? e ** (1 / 3) : (903.2962962962963 * e + 16) / 116;
 }
-function $r(e) {
+function _i(e) {
 	let t = e * e * e;
 	return t > .008856451679035631 ? t : (116 * e - 16) / 903.2962962962963;
 }
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/hct/viewing_conditions.js
-var ei = class e {
-	static make(t = Zr(), n = 200 / Math.PI * qr(50) / 100, r = 50, i = 2, a = !1) {
-		let o = t, s = o[0] * .401288 + o[1] * .650173 + o[2] * -.051461, c = o[0] * -.250268 + o[1] * 1.204414 + o[2] * .045854, l = o[0] * -.002079 + o[1] * .048952 + o[2] * .953127, u = .8 + i / 10, d = u >= .9 ? Ar(.59, .69, (u - .9) * 10) : Ar(.525, .59, (u - .8) * 10), f = a ? 1 : u * (1 - 1 / 3.6 * Math.exp((-n - 42) / 92));
+var vi = class e {
+	static make(t = hi(), n = 200 / Math.PI * di(50) / 100, r = 50, i = 2, a = !1) {
+		let o = t, s = o[0] * .401288 + o[1] * .650173 + o[2] * -.051461, c = o[0] * -.250268 + o[1] * 1.204414 + o[2] * .045854, l = o[0] * -.002079 + o[1] * .048952 + o[2] * .953127, u = .8 + i / 10, d = u >= .9 ? qr(.59, .69, (u - .9) * 10) : qr(.525, .59, (u - .8) * 10), f = a ? 1 : u * (1 - 1 / 3.6 * Math.exp((-n - 42) / 92));
 		f = f > 1 ? 1 : f < 0 ? 0 : f;
 		let p = u, m = [
 			100 / s * f + 1 - f,
 			100 / c * f + 1 - f,
 			100 / l * f + 1 - f
-		], h = 1 / (5 * n + 1), g = h * h * h * h, _ = 1 - g, v = g * n + .1 * _ * _ * Math.cbrt(5 * n), y = qr(r) / t[1], ee = 1.48 + Math.sqrt(y), b = .725 / y ** .2, x = b, S = [
+		], h = 1 / (5 * n + 1), g = h * h * h * h, _ = 1 - g, v = g * n + .1 * _ * _ * Math.cbrt(5 * n), y = di(r) / t[1], b = 1.48 + Math.sqrt(y), x = .725 / y ** .2, S = x, C = [
 			(v * m[0] * s / 100) ** .42,
 			(v * m[1] * c / 100) ** .42,
 			(v * m[2] * l / 100) ** .42
-		], C = [
-			400 * S[0] / (S[0] + 27.13),
-			400 * S[1] / (S[1] + 27.13),
-			400 * S[2] / (S[2] + 27.13)
-		], te = (2 * C[0] + C[1] + .05 * C[2]) * b;
-		return new e(y, te, b, x, d, p, m, v, v ** .25, ee);
+		], w = [
+			400 * C[0] / (C[0] + 27.13),
+			400 * C[1] / (C[1] + 27.13),
+			400 * C[2] / (C[2] + 27.13)
+		], ee = (2 * w[0] + w[1] + .05 * w[2]) * x;
+		return new e(y, ee, x, S, d, p, m, v, v ** .25, b);
 	}
 	constructor(e, t, n, r, i, a, o, s, c, l) {
 		this.n = e, this.aw = t, this.nbb = n, this.ncb = r, this.c = i, this.nc = a, this.rgbD = o, this.fl = s, this.fLRoot = c, this.z = l;
 	}
 };
-ei.DEFAULT = ei.make();
+vi.DEFAULT = vi.make();
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/hct/cam16.js
-var ti = class e {
+var yi = class e {
 	constructor(e, t, n, r, i, a, o, s, c) {
 		this.hue = e, this.chroma = t, this.j = n, this.q = r, this.m = i, this.s = a, this.jstar = o, this.astar = s, this.bstar = c;
 	}
@@ -1800,21 +2112,21 @@ var ti = class e {
 		return 1.41 * Math.sqrt(t * t + n * n + r * r) ** .63;
 	}
 	static fromInt(t) {
-		return e.fromIntInViewingConditions(t, ei.DEFAULT);
+		return e.fromIntInViewingConditions(t, vi.DEFAULT);
 	}
 	static fromIntInViewingConditions(t, n) {
-		let r = (t & 16711680) >> 16, i = (t & 65280) >> 8, a = t & 255, o = Yr(r), s = Yr(i), c = Yr(a), l = .41233895 * o + .35762064 * s + .18051042 * c, u = .2126 * o + .7152 * s + .0722 * c, d = .01932141 * o + .11916382 * s + .95034478 * c, f = .401288 * l + .650173 * u - .051461 * d, p = -.250268 * l + 1.204414 * u + .045854 * d, m = -.002079 * l + .048952 * u + .953127 * d, h = n.rgbD[0] * f, g = n.rgbD[1] * p, _ = n.rgbD[2] * m, v = (n.fl * Math.abs(h) / 100) ** .42, y = (n.fl * Math.abs(g) / 100) ** .42, ee = (n.fl * Math.abs(_) / 100) ** .42, b = L(h) * 400 * v / (v + 27.13), x = L(g) * 400 * y / (y + 27.13), S = L(_) * 400 * ee / (ee + 27.13), C = (11 * b + -12 * x + S) / 11, te = (b + x - 2 * S) / 9, ne = (20 * b + 20 * x + 21 * S) / 20, re = (40 * b + 20 * x + S) / 20, ie = z(Math.atan2(te, C) * 180 / Math.PI), ae = ie * Math.PI / 180, oe = 100 * (re * n.nbb / n.aw) ** +(n.c * n.z), se = 4 / n.c * Math.sqrt(oe / 100) * (n.aw + 4) * n.fLRoot, ce = ie < 20.14 ? ie + 360 : ie, le = (5e4 / 13 * (.25 * (Math.cos(ce * Math.PI / 180 + 2) + 3.8)) * n.nc * n.ncb * Math.sqrt(C * C + te * te) / (ne + .305)) ** .9 * (1.64 - .29 ** n.n) ** .73, ue = le * Math.sqrt(oe / 100), de = ue * n.fLRoot, fe = 50 * Math.sqrt(le * n.c / (n.aw + 4)), pe = (1 + 100 * .007) * oe / (1 + .007 * oe), me = 1 / .0228 * Math.log(1 + .0228 * de), he = me * Math.cos(ae), ge = me * Math.sin(ae);
-		return new e(ie, ue, oe, se, de, fe, pe, he, ge);
+		let r = (t & 16711680) >> 16, i = (t & 65280) >> 8, a = t & 255, o = pi(r), s = pi(i), c = pi(a), l = .41233895 * o + .35762064 * s + .18051042 * c, u = .2126 * o + .7152 * s + .0722 * c, d = .01932141 * o + .11916382 * s + .95034478 * c, f = .401288 * l + .650173 * u - .051461 * d, p = -.250268 * l + 1.204414 * u + .045854 * d, m = -.002079 * l + .048952 * u + .953127 * d, h = n.rgbD[0] * f, g = n.rgbD[1] * p, _ = n.rgbD[2] * m, v = (n.fl * Math.abs(h) / 100) ** .42, y = (n.fl * Math.abs(g) / 100) ** .42, b = (n.fl * Math.abs(_) / 100) ** .42, x = R(h) * 400 * v / (v + 27.13), S = R(g) * 400 * y / (y + 27.13), C = R(_) * 400 * b / (b + 27.13), w = (11 * x + -12 * S + C) / 11, ee = (x + S - 2 * C) / 9, te = (20 * x + 20 * S + 21 * C) / 20, ne = (40 * x + 20 * S + C) / 20, re = Xr(Math.atan2(ee, w) * 180 / Math.PI), ie = re * Math.PI / 180, T = 100 * (ne * n.nbb / n.aw) ** +(n.c * n.z), ae = 4 / n.c * Math.sqrt(T / 100) * (n.aw + 4) * n.fLRoot, oe = re < 20.14 ? re + 360 : re, se = (5e4 / 13 * (.25 * (Math.cos(oe * Math.PI / 180 + 2) + 3.8)) * n.nc * n.ncb * Math.sqrt(w * w + ee * ee) / (te + .305)) ** .9 * (1.64 - .29 ** n.n) ** .73, ce = se * Math.sqrt(T / 100), le = ce * n.fLRoot, ue = 50 * Math.sqrt(se * n.c / (n.aw + 4)), de = (1 + 100 * .007) * T / (1 + .007 * T), fe = 1 / .0228 * Math.log(1 + .0228 * le), pe = fe * Math.cos(ie), me = fe * Math.sin(ie);
+		return new e(re, ce, T, ae, le, ue, de, pe, me);
 	}
 	static fromJch(t, n, r) {
-		return e.fromJchInViewingConditions(t, n, r, ei.DEFAULT);
+		return e.fromJchInViewingConditions(t, n, r, vi.DEFAULT);
 	}
 	static fromJchInViewingConditions(t, n, r, i) {
 		let a = 4 / i.c * Math.sqrt(t / 100) * (i.aw + 4) * i.fLRoot, o = n * i.fLRoot, s = n / Math.sqrt(t / 100), c = 50 * Math.sqrt(s * i.c / (i.aw + 4)), l = r * Math.PI / 180, u = (1 + 100 * .007) * t / (1 + .007 * t), d = 1 / .0228 * Math.log(1 + .0228 * o), f = d * Math.cos(l), p = d * Math.sin(l);
 		return new e(r, n, t, a, o, c, u, f, p);
 	}
 	static fromUcs(t, n, r) {
-		return e.fromUcsInViewingConditions(t, n, r, ei.DEFAULT);
+		return e.fromUcsInViewingConditions(t, n, r, vi.DEFAULT);
 	}
 	static fromUcsInViewingConditions(t, n, r, i) {
 		let a = n, o = r, s = Math.sqrt(a * a + o * o), c = (Math.exp(s * .0228) - 1) / .0228 / i.fLRoot, l = 180 / Math.PI * Math.atan2(o, a);
@@ -1823,25 +2135,25 @@ var ti = class e {
 		return e.fromJchInViewingConditions(u, c, l, i);
 	}
 	toInt() {
-		return this.viewed(ei.DEFAULT);
+		return this.viewed(vi.DEFAULT);
 	}
 	viewed(e) {
-		let t = ((this.chroma === 0 || this.j === 0 ? 0 : this.chroma / Math.sqrt(this.j / 100)) / (1.64 - .29 ** e.n) ** .73) ** (1 / .9), n = this.hue * Math.PI / 180, r = .25 * (Math.cos(n + 2) + 3.8), i = e.aw * (this.j / 100) ** (1 / e.c / e.z), a = 5e4 / 13 * r * e.nc * e.ncb, o = i / e.nbb, s = Math.sin(n), c = Math.cos(n), l = 23 * (o + .305) * t / (23 * a + 11 * t * c + 108 * t * s), u = l * c, d = l * s, f = (460 * o + 451 * u + 288 * d) / 1403, p = (460 * o - 891 * u - 261 * d) / 1403, m = (460 * o - 220 * u - 6300 * d) / 1403, h = Math.max(0, 27.13 * Math.abs(f) / (400 - Math.abs(f))), g = L(f) * (100 / e.fl) * h ** (1 / .42), _ = Math.max(0, 27.13 * Math.abs(p) / (400 - Math.abs(p))), v = L(p) * (100 / e.fl) * _ ** (1 / .42), y = Math.max(0, 27.13 * Math.abs(m) / (400 - Math.abs(m))), ee = L(m) * (100 / e.fl) * y ** (1 / .42), b = g / e.rgbD[0], x = v / e.rgbD[1], S = ee / e.rgbD[2];
-		return Hr(1.86206786 * b - 1.01125463 * x + .14918677 * S, .38752654 * b + .62144744 * x - .00897398 * S, -.0158415 * b - .03412294 * x + 1.04996444 * S);
+		let t = ((this.chroma === 0 || this.j === 0 ? 0 : this.chroma / Math.sqrt(this.j / 100)) / (1.64 - .29 ** e.n) ** .73) ** (1 / .9), n = this.hue * Math.PI / 180, r = .25 * (Math.cos(n + 2) + 3.8), i = e.aw * (this.j / 100) ** (1 / e.c / e.z), a = 5e4 / 13 * r * e.nc * e.ncb, o = i / e.nbb, s = Math.sin(n), c = Math.cos(n), l = 23 * (o + .305) * t / (23 * a + 11 * t * c + 108 * t * s), u = l * c, d = l * s, f = (460 * o + 451 * u + 288 * d) / 1403, p = (460 * o - 891 * u - 261 * d) / 1403, m = (460 * o - 220 * u - 6300 * d) / 1403, h = Math.max(0, 27.13 * Math.abs(f) / (400 - Math.abs(f))), g = R(f) * (100 / e.fl) * h ** (1 / .42), _ = Math.max(0, 27.13 * Math.abs(p) / (400 - Math.abs(p))), v = R(p) * (100 / e.fl) * _ ** (1 / .42), y = Math.max(0, 27.13 * Math.abs(m) / (400 - Math.abs(m))), b = R(m) * (100 / e.fl) * y ** (1 / .42), x = g / e.rgbD[0], S = v / e.rgbD[1], C = b / e.rgbD[2];
+		return oi(1.86206786 * x - 1.01125463 * S + .14918677 * C, .38752654 * x + .62144744 * S - .00897398 * C, -.0158415 * x - .03412294 * S + 1.04996444 * C);
 	}
 	static fromXyzInViewingConditions(t, n, r, i) {
-		let a = .401288 * t + .650173 * n - .051461 * r, o = -.250268 * t + 1.204414 * n + .045854 * r, s = -.002079 * t + .048952 * n + .953127 * r, c = i.rgbD[0] * a, l = i.rgbD[1] * o, u = i.rgbD[2] * s, d = (i.fl * Math.abs(c) / 100) ** .42, f = (i.fl * Math.abs(l) / 100) ** .42, p = (i.fl * Math.abs(u) / 100) ** .42, m = L(c) * 400 * d / (d + 27.13), h = L(l) * 400 * f / (f + 27.13), g = L(u) * 400 * p / (p + 27.13), _ = (11 * m + -12 * h + g) / 11, v = (m + h - 2 * g) / 9, y = (20 * m + 20 * h + 21 * g) / 20, ee = (40 * m + 20 * h + g) / 20, b = Math.atan2(v, _) * 180 / Math.PI, x = b < 0 ? b + 360 : b >= 360 ? b - 360 : b, S = x * Math.PI / 180, C = 100 * (ee * i.nbb / i.aw) ** +(i.c * i.z), te = 4 / i.c * Math.sqrt(C / 100) * (i.aw + 4) * i.fLRoot, ne = x < 20.14 ? x + 360 : x, re = (5e4 / 13 * (1 / 4 * (Math.cos(ne * Math.PI / 180 + 2) + 3.8)) * i.nc * i.ncb * Math.sqrt(_ * _ + v * v) / (y + .305)) ** .9 * (1.64 - .29 ** i.n) ** .73, ie = re * Math.sqrt(C / 100), ae = ie * i.fLRoot, oe = 50 * Math.sqrt(re * i.c / (i.aw + 4)), se = (1 + 100 * .007) * C / (1 + .007 * C), ce = Math.log(1 + .0228 * ae) / .0228, le = ce * Math.cos(S), ue = ce * Math.sin(S);
-		return new e(x, ie, C, te, ae, oe, se, le, ue);
+		let a = .401288 * t + .650173 * n - .051461 * r, o = -.250268 * t + 1.204414 * n + .045854 * r, s = -.002079 * t + .048952 * n + .953127 * r, c = i.rgbD[0] * a, l = i.rgbD[1] * o, u = i.rgbD[2] * s, d = (i.fl * Math.abs(c) / 100) ** .42, f = (i.fl * Math.abs(l) / 100) ** .42, p = (i.fl * Math.abs(u) / 100) ** .42, m = R(c) * 400 * d / (d + 27.13), h = R(l) * 400 * f / (f + 27.13), g = R(u) * 400 * p / (p + 27.13), _ = (11 * m + -12 * h + g) / 11, v = (m + h - 2 * g) / 9, y = (20 * m + 20 * h + 21 * g) / 20, b = (40 * m + 20 * h + g) / 20, x = Math.atan2(v, _) * 180 / Math.PI, S = x < 0 ? x + 360 : x >= 360 ? x - 360 : x, C = S * Math.PI / 180, w = 100 * (b * i.nbb / i.aw) ** +(i.c * i.z), ee = 4 / i.c * Math.sqrt(w / 100) * (i.aw + 4) * i.fLRoot, te = S < 20.14 ? S + 360 : S, ne = (5e4 / 13 * (1 / 4 * (Math.cos(te * Math.PI / 180 + 2) + 3.8)) * i.nc * i.ncb * Math.sqrt(_ * _ + v * v) / (y + .305)) ** .9 * (1.64 - .29 ** i.n) ** .73, re = ne * Math.sqrt(w / 100), ie = re * i.fLRoot, T = 50 * Math.sqrt(ne * i.c / (i.aw + 4)), ae = (1 + 100 * .007) * w / (1 + .007 * w), oe = Math.log(1 + .0228 * ie) / .0228, se = oe * Math.cos(C), ce = oe * Math.sin(C);
+		return new e(S, re, w, ee, ie, T, ae, se, ce);
 	}
 	xyzInViewingConditions(e) {
-		let t = ((this.chroma === 0 || this.j === 0 ? 0 : this.chroma / Math.sqrt(this.j / 100)) / (1.64 - .29 ** e.n) ** .73) ** (1 / .9), n = this.hue * Math.PI / 180, r = .25 * (Math.cos(n + 2) + 3.8), i = e.aw * (this.j / 100) ** (1 / e.c / e.z), a = 5e4 / 13 * r * e.nc * e.ncb, o = i / e.nbb, s = Math.sin(n), c = Math.cos(n), l = 23 * (o + .305) * t / (23 * a + 11 * t * c + 108 * t * s), u = l * c, d = l * s, f = (460 * o + 451 * u + 288 * d) / 1403, p = (460 * o - 891 * u - 261 * d) / 1403, m = (460 * o - 220 * u - 6300 * d) / 1403, h = Math.max(0, 27.13 * Math.abs(f) / (400 - Math.abs(f))), g = L(f) * (100 / e.fl) * h ** (1 / .42), _ = Math.max(0, 27.13 * Math.abs(p) / (400 - Math.abs(p))), v = L(p) * (100 / e.fl) * _ ** (1 / .42), y = Math.max(0, 27.13 * Math.abs(m) / (400 - Math.abs(m))), ee = L(m) * (100 / e.fl) * y ** (1 / .42), b = g / e.rgbD[0], x = v / e.rgbD[1], S = ee / e.rgbD[2];
+		let t = ((this.chroma === 0 || this.j === 0 ? 0 : this.chroma / Math.sqrt(this.j / 100)) / (1.64 - .29 ** e.n) ** .73) ** (1 / .9), n = this.hue * Math.PI / 180, r = .25 * (Math.cos(n + 2) + 3.8), i = e.aw * (this.j / 100) ** (1 / e.c / e.z), a = 5e4 / 13 * r * e.nc * e.ncb, o = i / e.nbb, s = Math.sin(n), c = Math.cos(n), l = 23 * (o + .305) * t / (23 * a + 11 * t * c + 108 * t * s), u = l * c, d = l * s, f = (460 * o + 451 * u + 288 * d) / 1403, p = (460 * o - 891 * u - 261 * d) / 1403, m = (460 * o - 220 * u - 6300 * d) / 1403, h = Math.max(0, 27.13 * Math.abs(f) / (400 - Math.abs(f))), g = R(f) * (100 / e.fl) * h ** (1 / .42), _ = Math.max(0, 27.13 * Math.abs(p) / (400 - Math.abs(p))), v = R(p) * (100 / e.fl) * _ ** (1 / .42), y = Math.max(0, 27.13 * Math.abs(m) / (400 - Math.abs(m))), b = R(m) * (100 / e.fl) * y ** (1 / .42), x = g / e.rgbD[0], S = v / e.rgbD[1], C = b / e.rgbD[2];
 		return [
-			1.86206786 * b - 1.01125463 * x + .14918677 * S,
-			.38752654 * b + .62144744 * x - .00897398 * S,
-			-.0158415 * b - .03412294 * x + 1.04996444 * S
+			1.86206786 * x - 1.01125463 * S + .14918677 * C,
+			.38752654 * x + .62144744 * S - .00897398 * C,
+			-.0158415 * x - .03412294 * S + 1.04996444 * C
 		];
 	}
-}, ni = class e {
+}, bi = class e {
 	static sanitizeRadians(e) {
 		return (e + Math.PI * 8) % (Math.PI * 2);
 	}
@@ -1851,10 +2163,10 @@ var ti = class e {
 	}
 	static chromaticAdaptation(e) {
 		let t = Math.abs(e) ** .42;
-		return L(e) * 400 * t / (t + 27.13);
+		return R(e) * 400 * t / (t + 27.13);
 	}
 	static hueOf(t) {
-		let n = Nr(t, e.SCALED_DISCOUNT_FROM_LINRGB), r = e.chromaticAdaptation(n[0]), i = e.chromaticAdaptation(n[1]), a = e.chromaticAdaptation(n[2]), o = (11 * r + -12 * i + a) / 11, s = (r + i - 2 * a) / 9;
+		let n = Zr(t, e.SCALED_DISCOUNT_FROM_LINRGB), r = e.chromaticAdaptation(n[0]), i = e.chromaticAdaptation(n[1]), a = e.chromaticAdaptation(n[2]), o = (11 * r + -12 * i + a) / 11, s = (r + i - 2 * a) / 9;
 		return Math.atan2(s, o);
 	}
 	static areInCyclicOrder(t, n, r) {
@@ -1961,35 +2273,35 @@ var ti = class e {
 	}
 	static inverseChromaticAdaptation(e) {
 		let t = Math.abs(e), n = Math.max(0, 27.13 * t / (400 - t));
-		return L(e) * n ** (1 / .42);
+		return R(e) * n ** (1 / .42);
 	}
 	static findResultByJ(t, n, r) {
-		let i = Math.sqrt(r) * 11, a = ei.DEFAULT, o = 1 / (1.64 - .29 ** a.n) ** .73, s = .25 * (Math.cos(t + 2) + 3.8) * (5e4 / 13) * a.nc * a.ncb, c = Math.sin(t), l = Math.cos(t);
+		let i = Math.sqrt(r) * 11, a = vi.DEFAULT, o = 1 / (1.64 - .29 ** a.n) ** .73, s = .25 * (Math.cos(t + 2) + 3.8) * (5e4 / 13) * a.nc * a.ncb, c = Math.sin(t), l = Math.cos(t);
 		for (let t = 0; t < 5; t++) {
-			let u = i / 100, d = ((n === 0 || i === 0 ? 0 : n / Math.sqrt(u)) * o) ** (1 / .9), f = a.aw * u ** (1 / a.c / a.z) / a.nbb, p = 23 * (f + .305) * d / (23 * s + 11 * d * l + 108 * d * c), m = p * l, h = p * c, g = (460 * f + 451 * m + 288 * h) / 1403, _ = (460 * f - 891 * m - 261 * h) / 1403, v = (460 * f - 220 * m - 6300 * h) / 1403, y = Nr([
+			let u = i / 100, d = ((n === 0 || i === 0 ? 0 : n / Math.sqrt(u)) * o) ** (1 / .9), f = a.aw * u ** (1 / a.c / a.z) / a.nbb, p = 23 * (f + .305) * d / (23 * s + 11 * d * l + 108 * d * c), m = p * l, h = p * c, g = (460 * f + 451 * m + 288 * h) / 1403, _ = (460 * f - 891 * m - 261 * h) / 1403, v = (460 * f - 220 * m - 6300 * h) / 1403, y = Zr([
 				e.inverseChromaticAdaptation(g),
 				e.inverseChromaticAdaptation(_),
 				e.inverseChromaticAdaptation(v)
 			], e.LINRGB_FROM_SCALED_DISCOUNT);
 			if (y[0] < 0 || y[1] < 0 || y[2] < 0) return 0;
-			let ee = e.Y_FROM_LINRGB[0], b = e.Y_FROM_LINRGB[1], x = e.Y_FROM_LINRGB[2], S = ee * y[0] + b * y[1] + x * y[2];
-			if (S <= 0) return 0;
-			if (t === 4 || Math.abs(S - r) < .002) return y[0] > 100.01 || y[1] > 100.01 || y[2] > 100.01 ? 0 : Rr(y);
-			i -= (S - r) * i / (2 * S);
+			let b = e.Y_FROM_LINRGB[0], x = e.Y_FROM_LINRGB[1], S = e.Y_FROM_LINRGB[2], C = b * y[0] + x * y[1] + S * y[2];
+			if (C <= 0) return 0;
+			if (t === 4 || Math.abs(C - r) < .002) return y[0] > 100.01 || y[1] > 100.01 || y[2] > 100.01 ? 0 : ni(y);
+			i -= (C - r) * i / (2 * C);
 		}
 		return 0;
 	}
 	static solveToInt(t, n, r) {
-		if (n < 1e-4 || r < 1e-4 || r > 99.9999) return Gr(r);
-		t = z(t);
-		let i = t / 180 * Math.PI, a = qr(r), o = e.findResultByJ(i, n, a);
-		return o === 0 ? Rr(e.bisectToLimit(a, i)) : o;
+		if (n < 1e-4 || r < 1e-4 || r > 99.9999) return li(r);
+		t = Xr(t);
+		let i = t / 180 * Math.PI, a = di(r), o = e.findResultByJ(i, n, a);
+		return o === 0 ? ni(e.bisectToLimit(a, i)) : o;
 	}
 	static solveToCam(t, n, r) {
-		return ti.fromInt(e.solveToInt(t, n, r));
+		return yi.fromInt(e.solveToInt(t, n, r));
 	}
 };
-ni.SCALED_DISCOUNT_FROM_LINRGB = [
+bi.SCALED_DISCOUNT_FROM_LINRGB = [
 	[
 		.001200833568784504,
 		.002389694492170889,
@@ -2005,7 +2317,7 @@ ni.SCALED_DISCOUNT_FROM_LINRGB = [
 		.0005364214359186694,
 		.0032979401770712076
 	]
-], ni.LINRGB_FROM_SCALED_DISCOUNT = [
+], bi.LINRGB_FROM_SCALED_DISCOUNT = [
 	[
 		1373.2198709594231,
 		-1100.4251190754821,
@@ -2021,11 +2333,11 @@ ni.SCALED_DISCOUNT_FROM_LINRGB = [
 		-57.173814538844006,
 		308.7233197812385
 	]
-], ni.Y_FROM_LINRGB = [
+], bi.Y_FROM_LINRGB = [
 	.2126,
 	.7152,
 	.0722
-], ni.CRITICAL_PLANES = [
+], bi.CRITICAL_PLANES = [
 	.015176349177441876,
 	.045529047532325624,
 	.07588174588720938,
@@ -2286,7 +2598,7 @@ ni.SCALED_DISCOUNT_FROM_LINRGB = [
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/hct/hct.js
 var B = class e {
 	static from(t, n, r) {
-		return new e(ni.solveToInt(t, n, r));
+		return new e(bi.solveToInt(t, n, r));
 	}
 	static fromInt(t) {
 		return new e(t);
@@ -2298,19 +2610,19 @@ var B = class e {
 		return this.internalHue;
 	}
 	set hue(e) {
-		this.setInternalState(ni.solveToInt(e, this.internalChroma, this.internalTone));
+		this.setInternalState(bi.solveToInt(e, this.internalChroma, this.internalTone));
 	}
 	get chroma() {
 		return this.internalChroma;
 	}
 	set chroma(e) {
-		this.setInternalState(ni.solveToInt(this.internalHue, e, this.internalTone));
+		this.setInternalState(bi.solveToInt(this.internalHue, e, this.internalTone));
 	}
 	get tone() {
 		return this.internalTone;
 	}
 	set tone(e) {
-		this.setInternalState(ni.solveToInt(this.internalHue, this.internalChroma, e));
+		this.setInternalState(bi.solveToInt(this.internalHue, this.internalChroma, e));
 	}
 	setValue(e, t) {
 		this[e] = t;
@@ -2329,20 +2641,20 @@ var B = class e {
 	}
 	constructor(e) {
 		this.argb = e;
-		let t = ti.fromInt(e);
-		this.internalHue = t.hue, this.internalChroma = t.chroma, this.internalTone = Kr(e), this.argb = e;
+		let t = yi.fromInt(e);
+		this.internalHue = t.hue, this.internalChroma = t.chroma, this.internalTone = ui(e), this.argb = e;
 	}
 	setInternalState(e) {
-		let t = ti.fromInt(e);
-		this.internalHue = t.hue, this.internalChroma = t.chroma, this.internalTone = Kr(e), this.argb = e;
+		let t = yi.fromInt(e);
+		this.internalHue = t.hue, this.internalChroma = t.chroma, this.internalTone = ui(e), this.argb = e;
 	}
 	inViewingConditions(t) {
-		let n = ti.fromInt(this.toInt()).xyzInViewingConditions(t), r = ti.fromXyzInViewingConditions(n[0], n[1], n[2], ei.make());
-		return e.from(r.hue, r.chroma, Jr(n[1]));
+		let n = yi.fromInt(this.toInt()).xyzInViewingConditions(t), r = yi.fromXyzInViewingConditions(n[0], n[1], n[2], vi.make());
+		return e.from(r.hue, r.chroma, fi(n[1]));
 	}
 }, V = class e {
 	static ratioOfTones(t, n) {
-		return t = R(0, 100, t), n = R(0, 100, n), e.ratioOfYs(qr(t), qr(n));
+		return t = z(0, 100, t), n = z(0, 100, n), e.ratioOfYs(di(t), di(n));
 	}
 	static ratioOfYs(e, t) {
 		let n = e > t ? e : t, r = n === t ? e : t;
@@ -2350,16 +2662,16 @@ var B = class e {
 	}
 	static lighter(t, n) {
 		if (t < 0 || t > 100) return -1;
-		let r = qr(t), i = n * (r + 5) - 5, a = e.ratioOfYs(i, r), o = Math.abs(a - n);
+		let r = di(t), i = n * (r + 5) - 5, a = e.ratioOfYs(i, r), o = Math.abs(a - n);
 		if (a < n && o > .04) return -1;
-		let s = Jr(i) + .4;
+		let s = fi(i) + .4;
 		return s < 0 || s > 100 ? -1 : s;
 	}
 	static darker(t, n) {
 		if (t < 0 || t > 100) return -1;
-		let r = qr(t), i = (r + 5) / n - 5, a = e.ratioOfYs(r, i), o = Math.abs(a - n);
+		let r = di(t), i = (r + 5) / n - 5, a = e.ratioOfYs(r, i), o = Math.abs(a - n);
 		if (a < n && o > .04) return -1;
-		let s = Jr(i) - .4;
+		let s = fi(i) - .4;
 		return s < 0 || s > 100 ? -1 : s;
 	}
 	static lighterUnsafe(t, n) {
@@ -2370,7 +2682,7 @@ var B = class e {
 		let r = e.darker(t, n);
 		return r < 0 ? 0 : r;
 	}
-}, ri = class e {
+}, xi = class e {
 	static isDisliked(e) {
 		let t = Math.round(e.hue) >= 90 && Math.round(e.hue) <= 111, n = Math.round(e.chroma) > 16, r = Math.round(e.tone) < 65;
 		return t && n && r;
@@ -2381,12 +2693,12 @@ var B = class e {
 };
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/dynamic_color.js
-function ii(e, t, n) {
+function Si(e, t, n) {
 	if (e.name !== n.name) throw Error(`Attempting to extend color ${e.name} with color ${n.name} of different name for spec version ${t}.`);
 	if (e.isBackground !== n.isBackground) throw Error(`Attempting to extend color ${e.name} as a ${e.isBackground ? "background" : "foreground"} with color ${n.name} as a ${n.isBackground ? "background" : "foreground"} for spec version ${t}.`);
 }
 function H(e, t, n) {
-	return ii(e, t, n), U.fromPalette({
+	return Si(e, t, n), U.fromPalette({
 		name: e.name,
 		palette: (r) => r.specVersion >= t ? n.palette(r) : e.palette(r),
 		tone: (r) => r.specVersion >= t ? n.tone(r) : e.tone(r),
@@ -2447,11 +2759,11 @@ var U = class e {
 	getHct(e) {
 		let t = this.hctCache.get(e);
 		if (t != null) return t;
-		let n = li(e.specVersion).getHct(e, this);
+		let n = Di(e.specVersion).getHct(e, this);
 		return this.hctCache.size > 4 && this.hctCache.clear(), this.hctCache.set(e, n), n;
 	}
 	getTone(e) {
-		return li(e.specVersion).getTone(e, this);
+		return Di(e.specVersion).getTone(e, this);
 	}
 	static foregroundTone(t, n) {
 		let r = V.lighterUnsafe(t, n), i = V.darkerUnsafe(t, n), a = V.ratioOfTones(r, t), o = V.ratioOfTones(i, t);
@@ -2470,7 +2782,7 @@ var U = class e {
 	static enableLightForeground(t) {
 		return e.tonePrefersLightForeground(t) && !e.toneAllowsLightForeground(t) ? 49 : t;
 	}
-}, ai = class {
+}, Ci = class {
 	getHct(e, t) {
 		let n = t.getTone(e);
 		return t.palette(e).getHct(n);
@@ -2486,7 +2798,7 @@ var U = class e {
 					V.ratioOfTones(t, m) < o && (m = U.foregroundTone(t, o)), V.ratioOfTones(t, h) < s && (h = U.foregroundTone(t, s)), n && (m = U.foregroundTone(t, o), h = U.foregroundTone(t, s));
 				}
 			}
-			return (h - m) * p < o && (h = R(0, 100, m + o * p), (h - m) * p >= o || (m = R(0, 100, h - o * p))), 50 <= m && m < 60 ? p > 0 ? (m = 60, h = Math.max(h, m + o * p)) : (m = 49, h = Math.min(h, m + o * p)) : 50 <= h && h < 60 && (c ? p > 0 ? (m = 60, h = Math.max(h, m + o * p)) : (m = 49, h = Math.min(h, m + o * p)) : h = p > 0 ? 60 : 49), f ? m : h;
+			return (h - m) * p < o && (h = z(0, 100, m + o * p), (h - m) * p >= o || (m = z(0, 100, h - o * p))), 50 <= m && m < 60 ? p > 0 ? (m = 60, h = Math.max(h, m + o * p)) : (m = 49, h = Math.min(h, m + o * p)) : 50 <= h && h < 60 && (c ? p > 0 ? (m = 60, h = Math.max(h, m + o * p)) : (m = 49, h = Math.min(h, m + o * p)) : h = p > 0 ? 60 : 49), f ? m : h;
 		}
 		{
 			let r = t.tone(e);
@@ -2499,7 +2811,7 @@ var U = class e {
 			return f !== -1 && m.push(f), p !== -1 && m.push(p), U.tonePrefersLightForeground(c) || U.tonePrefersLightForeground(l) ? f < 0 ? 100 : f : m.length === 1 ? m[0] : p < 0 ? 0 : p;
 		}
 	}
-}, oi = class {
+}, wi = class {
 	getHct(e, t) {
 		let n = t.palette(e), r = t.getTone(e), i = n.hue, a = n.chroma * (t.chromaMultiplier ? t.chromaMultiplier(e) : 1);
 		return B.from(i, a, r);
@@ -2508,29 +2820,29 @@ var U = class e {
 		let n = t.toneDeltaPair ? t.toneDeltaPair(e) : void 0;
 		if (n) {
 			let r = n.roleA, i = n.roleB, a = n.polarity, o = n.constraint, s = a === "darker" || a === "relative_lighter" && e.isDark || a === "relative_darker" && !e.isDark ? -n.delta : n.delta, c = t.name === r.name, l = c ? r : i, u = c ? i : r, d = l.tone(e), f = u.getTone(e), p = s * (c ? 1 : -1);
-			if (o === "exact" ? d = R(0, 100, f + p) : o === "nearer" ? d = p > 0 ? R(0, 100, R(f, f + p, d)) : R(0, 100, R(f + p, f, d)) : o === "farther" && (d = p > 0 ? R(f + p, 100, d) : R(0, f + p, d)), t.background && t.contrastCurve) {
+			if (o === "exact" ? d = z(0, 100, f + p) : o === "nearer" ? d = p > 0 ? z(0, 100, z(f, f + p, d)) : z(0, 100, z(f + p, f, d)) : o === "farther" && (d = p > 0 ? z(f + p, 100, d) : z(0, f + p, d)), t.background && t.contrastCurve) {
 				let n = t.background(e), r = t.contrastCurve(e);
 				if (n && r) {
 					let t = n.getTone(e), i = r.get(e.contrastLevel);
 					d = V.ratioOfTones(t, d) >= i && e.contrastLevel >= 0 ? d : U.foregroundTone(t, i);
 				}
 			}
-			return t.isBackground && !t.name.endsWith("_fixed_dim") && (d = d >= 57 ? R(65, 100, d) : R(0, 49, d)), d;
+			return t.isBackground && !t.name.endsWith("_fixed_dim") && (d = d >= 57 ? z(65, 100, d) : z(0, 49, d)), d;
 		}
 		{
 			let n = t.tone(e);
 			if (t.background == null || t.background(e) === void 0 || t.contrastCurve == null || t.contrastCurve(e) === void 0) return n;
 			let r = t.background(e).getTone(e), i = t.contrastCurve(e).get(e.contrastLevel);
-			if (n = V.ratioOfTones(r, n) >= i && e.contrastLevel >= 0 ? n : U.foregroundTone(r, i), t.isBackground && !t.name.endsWith("_fixed_dim") && (n = n >= 57 ? R(65, 100, n) : R(0, 49, n)), t.secondBackground == null || t.secondBackground(e) === void 0) return n;
+			if (n = V.ratioOfTones(r, n) >= i && e.contrastLevel >= 0 ? n : U.foregroundTone(r, i), t.isBackground && !t.name.endsWith("_fixed_dim") && (n = n >= 57 ? z(65, 100, n) : z(0, 49, n)), t.secondBackground == null || t.secondBackground(e) === void 0) return n;
 			let [a, o] = [t.background, t.secondBackground], [s, c] = [a(e).getTone(e), o(e).getTone(e)], [l, u] = [Math.max(s, c), Math.min(s, c)];
 			if (V.ratioOfTones(l, n) >= i && V.ratioOfTones(u, n) >= i) return n;
 			let d = V.lighter(l, i), f = V.darker(u, i), p = [];
 			return d !== -1 && p.push(d), f !== -1 && p.push(f), U.tonePrefersLightForeground(s) || U.tonePrefersLightForeground(c) ? d < 0 ? 100 : d : p.length === 1 ? p[0] : f < 0 ? 0 : f;
 		}
 	}
-}, si = new ai(), ci = new oi();
-function li(e) {
-	return e === "2021" ? si : ci;
+}, Ti = new Ci(), Ei = new wi();
+function Di(e) {
+	return e === "2021" ? Ti : Ei;
 }
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/palettes/tonal_palette.js
@@ -2543,7 +2855,7 @@ var W = class e {
 		return new e(t.hue, t.chroma, t);
 	}
 	static fromHueAndChroma(t, n) {
-		let r = new ui(t, n).create();
+		let r = new Oi(t, n).create();
 		return new e(t, n, r);
 	}
 	constructor(e, t, n) {
@@ -2560,7 +2872,7 @@ var W = class e {
 		let n = e >>> 16 & 255, r = e >>> 8 & 255, i = e & 255, a = t >>> 16 & 255, o = t >>> 8 & 255, s = t & 255, c = Math.round((n + a) / 2), l = Math.round((r + o) / 2), u = Math.round((i + s) / 2);
 		return (255 << 24 | (c & 255) << 16 | (l & 255) << 8 | u & 255) >>> 0;
 	}
-}, ui = class {
+}, Oi = class {
 	constructor(e, t) {
 		this.hue = e, this.requestedChroma = t, this.chromaCache = /* @__PURE__ */ new Map(), this.maxChromaValue = 200;
 	}
@@ -2583,7 +2895,7 @@ var W = class e {
 		let t = B.from(this.hue, this.maxChromaValue, e).chroma;
 		return this.chromaCache.set(e, t), t;
 	}
-}, di = class e {
+}, ki = class e {
 	constructor(e) {
 		this.input = e, this.hctsByTempCache = [], this.hctsByHueCache = [], this.tempsByHctCache = /* @__PURE__ */ new Map(), this.inputRelativeTemperatureCache = -1, this.complementCache = null;
 	}
@@ -2601,12 +2913,12 @@ var W = class e {
 	analogous(e = 5, t = 12) {
 		let n = Math.round(this.input.hue), r = this.hctsByHue[n], i = this.relativeTemperature(r), a = [r], o = 0;
 		for (let e = 0; e < 360; e++) {
-			let t = Mr(n + e), r = this.hctsByHue[t], a = this.relativeTemperature(r), s = Math.abs(a - i);
+			let t = Yr(n + e), r = this.hctsByHue[t], a = this.relativeTemperature(r), s = Math.abs(a - i);
 			i = a, o += s;
 		}
 		let s = 1, c = o / t, l = 0;
 		for (i = this.relativeTemperature(r); a.length < t;) {
-			let e = Mr(n + s), r = this.hctsByHue[e], o = this.relativeTemperature(r), u = Math.abs(o - i);
+			let e = Yr(n + s), r = this.hctsByHue[e], o = this.relativeTemperature(r), u = Math.abs(o - i);
 			l += u;
 			let d = a.length * c, f = l >= d, p = 1;
 			for (; f && a.length < t;) {
@@ -2637,7 +2949,7 @@ var W = class e {
 		if (this.complementCache != null) return this.complementCache;
 		let t = this.coldest.hue, n = this.tempsByHct.get(this.coldest), r = this.warmest.hue, i = this.tempsByHct.get(this.warmest) - n, a = e.isBetween(this.input.hue, t, r), o = a ? r : t, s = a ? t : r, c = 1e3, l = this.hctsByHue[Math.round(this.input.hue)], u = 1 - this.inputRelativeTemperature;
 		for (let t = 0; t <= 360; t += 1) {
-			let r = z(o + 1 * t);
+			let r = Xr(o + 1 * t);
 			if (!e.isBetween(r, o, s)) continue;
 			let a = this.hctsByHue[Math.round(r)], d = (this.tempsByHct.get(a) - n) / i, f = Math.abs(u - d);
 			f < c && (c = f, l = a);
@@ -2670,15 +2982,15 @@ var W = class e {
 		return t < n ? t <= e && e <= n : t <= e || e <= n;
 	}
 	static rawTemperature(e) {
-		let t = Wr(e.toInt()), n = z(Math.atan2(t[2], t[1]) * 180 / Math.PI);
-		return -.5 + .02 * Math.sqrt(t[1] * t[1] + t[2] * t[2]) ** 1.07 * Math.cos(z(n - 50) * Math.PI / 180);
+		let t = ci(e.toInt()), n = Xr(Math.atan2(t[2], t[1]) * 180 / Math.PI);
+		return -.5 + .02 * Math.sqrt(t[1] * t[1] + t[2] * t[2]) ** 1.07 * Math.cos(Xr(n - 50) * Math.PI / 180);
 	}
 }, G = class {
 	constructor(e, t, n, r) {
 		this.low = e, this.normal = t, this.medium = n, this.high = r;
 	}
 	get(e) {
-		return e <= -1 ? this.low : e < 0 ? Ar(this.low, this.normal, (e - -1) / 1) : e < .5 ? Ar(this.normal, this.medium, (e - 0) / .5) : e < 1 ? Ar(this.medium, this.high, (e - .5) / .5) : this.high;
+		return e <= -1 ? this.low : e < 0 ? qr(this.low, this.normal, (e - -1) / 1) : e < .5 ? qr(this.normal, this.medium, (e - 0) / .5) : e < 1 ? qr(this.medium, this.high, (e - .5) / .5) : this.high;
 	}
 }, K = class {
 	constructor(e, t, n, r, i, a) {
@@ -2690,13 +3002,13 @@ var W = class e {
 })(q ||= {});
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/color_spec_2021.js
-function fi(e) {
+function Ai(e) {
 	return e.variant === q.FIDELITY || e.variant === q.CONTENT;
 }
 function J(e) {
 	return e.variant === q.MONOCHROME;
 }
-function pi(e, t, n, r) {
+function ji(e, t, n, r) {
 	let i = n, a = B.from(e, t, n);
 	if (a.chroma < t) {
 		let n = a.chroma;
@@ -2709,7 +3021,7 @@ function pi(e, t, n, r) {
 	}
 	return i;
 }
-var mi = class {
+var Mi = class {
 	primaryPaletteKeyColor() {
 		return U.fromPalette({
 			name: "primary_palette_key_color",
@@ -2941,7 +3253,7 @@ var mi = class {
 		return U.fromPalette({
 			name: "primary_container",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => fi(e) ? e.sourceColorHct.tone : J(e) ? e.isDark ? 85 : 25 : e.isDark ? 30 : 90,
+			tone: (e) => Ai(e) ? e.sourceColorHct.tone : J(e) ? e.isDark ? 85 : 25 : e.isDark ? 30 : 90,
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => new G(1, 1, 3, 4.5),
@@ -2952,7 +3264,7 @@ var mi = class {
 		return U.fromPalette({
 			name: "on_primary_container",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => fi(e) ? U.foregroundTone(this.primaryContainer().tone(e), 4.5) : J(e) ? e.isDark ? 0 : 100 : e.isDark ? 90 : 30,
+			tone: (e) => Ai(e) ? U.foregroundTone(this.primaryContainer().tone(e), 4.5) : J(e) ? e.isDark ? 0 : 100 : e.isDark ? 90 : 30,
 			background: (e) => this.primaryContainer(),
 			contrastCurve: (e) => new G(3, 4.5, 7, 11)
 		});
@@ -2993,7 +3305,7 @@ var mi = class {
 			palette: (e) => e.secondaryPalette,
 			tone: (e) => {
 				let t = e.isDark ? 30 : 90;
-				return J(e) ? e.isDark ? 30 : 85 : fi(e) ? pi(e.secondaryPalette.hue, e.secondaryPalette.chroma, t, !e.isDark) : t;
+				return J(e) ? e.isDark ? 30 : 85 : Ai(e) ? ji(e.secondaryPalette.hue, e.secondaryPalette.chroma, t, !e.isDark) : t;
 			},
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
@@ -3005,7 +3317,7 @@ var mi = class {
 		return U.fromPalette({
 			name: "on_secondary_container",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => J(e) ? e.isDark ? 90 : 10 : fi(e) ? U.foregroundTone(this.secondaryContainer().tone(e), 4.5) : e.isDark ? 90 : 30,
+			tone: (e) => J(e) ? e.isDark ? 90 : 10 : Ai(e) ? U.foregroundTone(this.secondaryContainer().tone(e), 4.5) : e.isDark ? 90 : 30,
 			background: (e) => this.secondaryContainer(),
 			contrastCurve: (e) => new G(3, 4.5, 7, 11)
 		});
@@ -3037,9 +3349,9 @@ var mi = class {
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => {
 				if (J(e)) return e.isDark ? 60 : 49;
-				if (!fi(e)) return e.isDark ? 30 : 90;
+				if (!Ai(e)) return e.isDark ? 30 : 90;
 				let t = e.tertiaryPalette.getHct(e.sourceColorHct.tone);
-				return ri.fixIfDisliked(t).tone;
+				return xi.fixIfDisliked(t).tone;
 			},
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
@@ -3051,7 +3363,7 @@ var mi = class {
 		return U.fromPalette({
 			name: "on_tertiary_container",
 			palette: (e) => e.tertiaryPalette,
-			tone: (e) => J(e) ? e.isDark ? 0 : 100 : fi(e) ? U.foregroundTone(this.tertiaryContainer().tone(e), 4.5) : e.isDark ? 90 : 30,
+			tone: (e) => J(e) ? e.isDark ? 0 : 100 : Ai(e) ? U.foregroundTone(this.tertiaryContainer().tone(e), 4.5) : e.isDark ? 90 : 30,
 			background: (e) => this.tertiaryContainer(),
 			contrastCurve: (e) => new G(3, 4.5, 7, 11)
 		});
@@ -3230,12 +3542,12 @@ var mi = class {
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/color_spec_2025.js
 function Y(e, t = 0, n = 100, r = 1) {
-	return R(t, n, gi(e.hue, e.chroma * r, 100, !0));
+	return z(t, n, Pi(e.hue, e.chroma * r, 100, !0));
 }
-function hi(e, t = 0, n = 100) {
-	return R(t, n, gi(e.hue, e.chroma, 0, !1));
+function Ni(e, t = 0, n = 100) {
+	return z(t, n, Pi(e.hue, e.chroma, 0, !1));
 }
-function gi(e, t, n, r) {
+function Pi(e, t, n, r) {
 	let i = n, a = B.from(e, t, i);
 	for (; a.chroma < t && !(n < 0 || n > 100);) {
 		n += r ? -1 : 1;
@@ -3247,7 +3559,7 @@ function gi(e, t, n, r) {
 function X(e) {
 	return e === 1.5 ? new G(1.5, 1.5, 3, 5.5) : e === 3 ? new G(3, 3, 4.5, 7) : e === 4.5 ? new G(4.5, 4.5, 7, 11) : e === 6 ? new G(6, 6, 7, 11) : e === 7 ? new G(7, 7, 11, 21) : e === 9 ? new G(9, 9, 11, 21) : e === 11 ? new G(11, 11, 21, 21) : e === 21 ? new G(21, 21, 21, 21) : new G(e, e, 7, 21);
 }
-var _i = class extends mi {
+var Fi = class extends Mi {
 	surface() {
 		let e = U.fromPalette({
 			name: "surface",
@@ -3489,7 +3801,7 @@ var _i = class extends mi {
 		let e = U.fromPalette({
 			name: "primary_container",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => e.platform === "watch" ? 30 : e.variant === q.NEUTRAL ? e.isDark ? 30 : 90 : e.variant === q.TONAL_SPOT ? e.isDark ? hi(e.primaryPalette, 35, 93) : Y(e.primaryPalette, 0, 90) : e.variant === q.EXPRESSIVE ? e.isDark ? Y(e.primaryPalette, 30, 93) : Y(e.primaryPalette, 78, B.isCyan(e.primaryPalette.hue) ? 88 : 90) : e.isDark ? hi(e.primaryPalette, 66, 93) : Y(e.primaryPalette, 66, B.isCyan(e.primaryPalette.hue) ? 88 : 93),
+			tone: (e) => e.platform === "watch" ? 30 : e.variant === q.NEUTRAL ? e.isDark ? 30 : 90 : e.variant === q.TONAL_SPOT ? e.isDark ? Ni(e.primaryPalette, 35, 93) : Y(e.primaryPalette, 0, 90) : e.variant === q.EXPRESSIVE ? e.isDark ? Y(e.primaryPalette, 30, 93) : Y(e.primaryPalette, 78, B.isCyan(e.primaryPalette.hue) ? 88 : 90) : e.isDark ? Ni(e.primaryPalette, 66, 93) : Y(e.primaryPalette, 66, B.isCyan(e.primaryPalette.hue) ? 88 : 93),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			toneDeltaPair: (e) => e.platform === "phone" ? void 0 : new K(this.primaryContainer(), this.primaryDim(), 10, "darker", !0, "farther"),
@@ -3565,7 +3877,7 @@ var _i = class extends mi {
 		let e = U.fromPalette({
 			name: "secondary",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => e.platform === "watch" ? e.variant === q.NEUTRAL ? 90 : Y(e.secondaryPalette, 0, 90) : e.variant === q.NEUTRAL ? e.isDark ? hi(e.secondaryPalette, 0, 98) : Y(e.secondaryPalette) : e.variant === q.VIBRANT ? Y(e.secondaryPalette, 0, e.isDark ? 90 : 98) : e.isDark ? 80 : Y(e.secondaryPalette),
+			tone: (e) => e.platform === "watch" ? e.variant === q.NEUTRAL ? 90 : Y(e.secondaryPalette, 0, 90) : e.variant === q.NEUTRAL ? e.isDark ? Ni(e.secondaryPalette, 0, 98) : Y(e.secondaryPalette) : e.variant === q.VIBRANT ? Y(e.secondaryPalette, 0, e.isDark ? 90 : 98) : e.isDark ? 80 : Y(e.secondaryPalette),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? X(4.5) : X(7),
@@ -3597,7 +3909,7 @@ var _i = class extends mi {
 		let e = U.fromPalette({
 			name: "secondary_container",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => e.platform === "watch" ? 30 : e.variant === q.VIBRANT ? e.isDark ? hi(e.secondaryPalette, 30, 40) : Y(e.secondaryPalette, 84, 90) : e.variant === q.EXPRESSIVE ? e.isDark ? 15 : Y(e.secondaryPalette, 90, 95) : e.isDark ? 25 : 90,
+			tone: (e) => e.platform === "watch" ? 30 : e.variant === q.VIBRANT ? e.isDark ? Ni(e.secondaryPalette, 30, 40) : Y(e.secondaryPalette, 84, 90) : e.variant === q.EXPRESSIVE ? e.isDark ? 15 : Y(e.secondaryPalette, 90, 95) : e.isDark ? 25 : 90,
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			toneDeltaPair: (e) => e.platform === "watch" ? new K(this.secondaryContainer(), this.secondaryDim(), 10, "darker", !0, "farther") : void 0,
@@ -3761,7 +4073,7 @@ var _i = class extends mi {
 		let e = U.fromPalette({
 			name: "error",
 			palette: (e) => e.errorPalette,
-			tone: (e) => e.platform === "phone" ? e.isDark ? hi(e.errorPalette, 0, 98) : Y(e.errorPalette) : hi(e.errorPalette),
+			tone: (e) => e.platform === "phone" ? e.isDark ? Ni(e.errorPalette, 0, 98) : Y(e.errorPalette) : Ni(e.errorPalette),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : this.surfaceContainerHigh(),
 			contrastCurve: (e) => e.platform === "phone" ? X(4.5) : X(7),
@@ -3773,7 +4085,7 @@ var _i = class extends mi {
 		return U.fromPalette({
 			name: "error_dim",
 			palette: (e) => e.errorPalette,
-			tone: (e) => hi(e.errorPalette),
+			tone: (e) => Ni(e.errorPalette),
 			isBackground: !0,
 			background: (e) => this.surfaceContainerHigh(),
 			contrastCurve: (e) => X(4.5),
@@ -3793,7 +4105,7 @@ var _i = class extends mi {
 		let e = U.fromPalette({
 			name: "error_container",
 			palette: (e) => e.errorPalette,
-			tone: (e) => e.platform === "watch" ? 30 : e.isDark ? hi(e.errorPalette, 30, 93) : Y(e.errorPalette, 0, 90),
+			tone: (e) => e.platform === "watch" ? 30 : e.isDark ? Ni(e.errorPalette, 30, 93) : Y(e.errorPalette, 0, 90),
 			isBackground: !0,
 			background: (e) => e.platform === "phone" ? this.highestSurface(e) : void 0,
 			toneDeltaPair: (e) => e.platform === "watch" ? new K(this.errorContainer(), this.errorDim(), 10, "darker", !0, "farther") : void 0,
@@ -3832,13 +4144,13 @@ var _i = class extends mi {
 };
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/color_spec_2026.js
-function vi(e, t = 0, n = 100, r = 1) {
-	return R(t, n, bi(e.hue, e.chroma * r, 100, !0));
+function Ii(e, t = 0, n = 100, r = 1) {
+	return z(t, n, Ri(e.hue, e.chroma * r, 100, !0));
 }
-function yi(e, t = 0, n = 100) {
-	return R(t, n, bi(e.hue, e.chroma, 0, !1));
+function Li(e, t = 0, n = 100) {
+	return z(t, n, Ri(e.hue, e.chroma, 0, !1));
 }
-function bi(e, t, n, r) {
+function Ri(e, t, n, r) {
 	let i = n, a = B.from(e, t, i);
 	for (; a.chroma < t && !(n < 0 || n > 100);) {
 		n += r ? -1 : 1;
@@ -3850,7 +4162,7 @@ function bi(e, t, n, r) {
 function Z(e) {
 	return e === 1.5 ? new G(1.5, 1.5, 3, 5.5) : e === 3 ? new G(3, 3, 4.5, 7) : e === 4.5 ? new G(4.5, 4.5, 7, 11) : e === 6 ? new G(6, 6, 7, 11) : e === 7 ? new G(7, 7, 11, 21) : e === 9 ? new G(9, 9, 11, 21) : e === 11 ? new G(11, 11, 21, 21) : e === 21 ? new G(21, 21, 21, 21) : new G(e, e, 7, 21);
 }
-var xi = class extends _i {
+var zi = class extends Fi {
 	surface() {
 		let e = U.fromPalette({
 			name: "surface",
@@ -4013,7 +4325,7 @@ var xi = class extends _i {
 		let e = U.fromPalette({
 			name: "primary_container",
 			palette: (e) => e.primaryPalette,
-			tone: (e) => !e.isDark && e.sourceColorHct.chroma <= 12 ? 90 : e.sourceColorHct.tone > 55 ? R(61, 90, e.sourceColorHct.tone) : R(30, 49, e.sourceColorHct.tone),
+			tone: (e) => !e.isDark && e.sourceColorHct.chroma <= 12 ? 90 : e.sourceColorHct.tone > 55 ? z(61, 90, e.sourceColorHct.tone) : z(30, 49, e.sourceColorHct.tone),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Z(1.5) : void 0
@@ -4083,7 +4395,7 @@ var xi = class extends _i {
 		let e = U.fromPalette({
 			name: "secondary",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => e.isDark ? yi(e.secondaryPalette) : vi(e.secondaryPalette),
+			tone: (e) => e.isDark ? Li(e.secondaryPalette) : Ii(e.secondaryPalette),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => Z(4.5),
@@ -4104,7 +4416,7 @@ var xi = class extends _i {
 		let e = U.fromPalette({
 			name: "secondary_container",
 			palette: (e) => e.secondaryPalette,
-			tone: (e) => e.isDark ? yi(e.secondaryPalette, 20, 49) : vi(e.secondaryPalette, 61, 90),
+			tone: (e) => e.isDark ? Li(e.secondaryPalette, 20, 49) : Ii(e.secondaryPalette, 61, 90),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Z(1.5) : void 0
@@ -4194,7 +4506,7 @@ var xi = class extends _i {
 			palette: (e) => e.tertiaryPalette,
 			tone: (e) => {
 				let t = e.sourceColorHcts[1] ?? e.sourceColorHct;
-				return t.tone > 55 ? R(61, 90, t.tone) : R(20, 49, t.tone);
+				return t.tone > 55 ? z(61, 90, t.tone) : z(20, 49, t.tone);
 			},
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
@@ -4262,7 +4574,7 @@ var xi = class extends _i {
 		let e = U.fromPalette({
 			name: "error",
 			palette: (e) => e.errorPalette,
-			tone: (e) => vi(e.errorPalette),
+			tone: (e) => Ii(e.errorPalette),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => Z(4.5),
@@ -4283,7 +4595,7 @@ var xi = class extends _i {
 		let e = U.fromPalette({
 			name: "error_container",
 			palette: (e) => e.errorPalette,
-			tone: (e) => e.isDark ? yi(e.errorPalette) : vi(e.errorPalette),
+			tone: (e) => e.isDark ? Li(e.errorPalette) : Ii(e.errorPalette),
 			isBackground: !0,
 			background: (e) => this.highestSurface(e),
 			contrastCurve: (e) => e.contrastLevel > 0 ? Z(1.5) : void 0
@@ -4553,7 +4865,7 @@ var xi = class extends _i {
 		return e.colorSpec.highestSurface(t);
 	}
 };
-Q.contentAccentToneDelta = 15, Q.colorSpec = new xi(), Q.primaryPaletteKeyColor = Q.colorSpec.primaryPaletteKeyColor(), Q.secondaryPaletteKeyColor = Q.colorSpec.secondaryPaletteKeyColor(), Q.tertiaryPaletteKeyColor = Q.colorSpec.tertiaryPaletteKeyColor(), Q.neutralPaletteKeyColor = Q.colorSpec.neutralPaletteKeyColor(), Q.neutralVariantPaletteKeyColor = Q.colorSpec.neutralVariantPaletteKeyColor(), Q.background = Q.colorSpec.background(), Q.onBackground = Q.colorSpec.onBackground(), Q.surface = Q.colorSpec.surface(), Q.surfaceDim = Q.colorSpec.surfaceDim(), Q.surfaceBright = Q.colorSpec.surfaceBright(), Q.surfaceContainerLowest = Q.colorSpec.surfaceContainerLowest(), Q.surfaceContainerLow = Q.colorSpec.surfaceContainerLow(), Q.surfaceContainer = Q.colorSpec.surfaceContainer(), Q.surfaceContainerHigh = Q.colorSpec.surfaceContainerHigh(), Q.surfaceContainerHighest = Q.colorSpec.surfaceContainerHighest(), Q.onSurface = Q.colorSpec.onSurface(), Q.surfaceVariant = Q.colorSpec.surfaceVariant(), Q.onSurfaceVariant = Q.colorSpec.onSurfaceVariant(), Q.inverseSurface = Q.colorSpec.inverseSurface(), Q.inverseOnSurface = Q.colorSpec.inverseOnSurface(), Q.outline = Q.colorSpec.outline(), Q.outlineVariant = Q.colorSpec.outlineVariant(), Q.shadow = Q.colorSpec.shadow(), Q.scrim = Q.colorSpec.scrim(), Q.surfaceTint = Q.colorSpec.surfaceTint(), Q.primary = Q.colorSpec.primary(), Q.onPrimary = Q.colorSpec.onPrimary(), Q.primaryContainer = Q.colorSpec.primaryContainer(), Q.onPrimaryContainer = Q.colorSpec.onPrimaryContainer(), Q.inversePrimary = Q.colorSpec.inversePrimary(), Q.secondary = Q.colorSpec.secondary(), Q.onSecondary = Q.colorSpec.onSecondary(), Q.secondaryContainer = Q.colorSpec.secondaryContainer(), Q.onSecondaryContainer = Q.colorSpec.onSecondaryContainer(), Q.tertiary = Q.colorSpec.tertiary(), Q.onTertiary = Q.colorSpec.onTertiary(), Q.tertiaryContainer = Q.colorSpec.tertiaryContainer(), Q.onTertiaryContainer = Q.colorSpec.onTertiaryContainer(), Q.error = Q.colorSpec.error(), Q.onError = Q.colorSpec.onError(), Q.errorContainer = Q.colorSpec.errorContainer(), Q.onErrorContainer = Q.colorSpec.onErrorContainer(), Q.primaryFixed = Q.colorSpec.primaryFixed(), Q.primaryFixedDim = Q.colorSpec.primaryFixedDim(), Q.onPrimaryFixed = Q.colorSpec.onPrimaryFixed(), Q.onPrimaryFixedVariant = Q.colorSpec.onPrimaryFixedVariant(), Q.secondaryFixed = Q.colorSpec.secondaryFixed(), Q.secondaryFixedDim = Q.colorSpec.secondaryFixedDim(), Q.onSecondaryFixed = Q.colorSpec.onSecondaryFixed(), Q.onSecondaryFixedVariant = Q.colorSpec.onSecondaryFixedVariant(), Q.tertiaryFixed = Q.colorSpec.tertiaryFixed(), Q.tertiaryFixedDim = Q.colorSpec.tertiaryFixedDim(), Q.onTertiaryFixed = Q.colorSpec.onTertiaryFixed(), Q.onTertiaryFixedVariant = Q.colorSpec.onTertiaryFixedVariant();
+Q.contentAccentToneDelta = 15, Q.colorSpec = new zi(), Q.primaryPaletteKeyColor = Q.colorSpec.primaryPaletteKeyColor(), Q.secondaryPaletteKeyColor = Q.colorSpec.secondaryPaletteKeyColor(), Q.tertiaryPaletteKeyColor = Q.colorSpec.tertiaryPaletteKeyColor(), Q.neutralPaletteKeyColor = Q.colorSpec.neutralPaletteKeyColor(), Q.neutralVariantPaletteKeyColor = Q.colorSpec.neutralVariantPaletteKeyColor(), Q.background = Q.colorSpec.background(), Q.onBackground = Q.colorSpec.onBackground(), Q.surface = Q.colorSpec.surface(), Q.surfaceDim = Q.colorSpec.surfaceDim(), Q.surfaceBright = Q.colorSpec.surfaceBright(), Q.surfaceContainerLowest = Q.colorSpec.surfaceContainerLowest(), Q.surfaceContainerLow = Q.colorSpec.surfaceContainerLow(), Q.surfaceContainer = Q.colorSpec.surfaceContainer(), Q.surfaceContainerHigh = Q.colorSpec.surfaceContainerHigh(), Q.surfaceContainerHighest = Q.colorSpec.surfaceContainerHighest(), Q.onSurface = Q.colorSpec.onSurface(), Q.surfaceVariant = Q.colorSpec.surfaceVariant(), Q.onSurfaceVariant = Q.colorSpec.onSurfaceVariant(), Q.inverseSurface = Q.colorSpec.inverseSurface(), Q.inverseOnSurface = Q.colorSpec.inverseOnSurface(), Q.outline = Q.colorSpec.outline(), Q.outlineVariant = Q.colorSpec.outlineVariant(), Q.shadow = Q.colorSpec.shadow(), Q.scrim = Q.colorSpec.scrim(), Q.surfaceTint = Q.colorSpec.surfaceTint(), Q.primary = Q.colorSpec.primary(), Q.onPrimary = Q.colorSpec.onPrimary(), Q.primaryContainer = Q.colorSpec.primaryContainer(), Q.onPrimaryContainer = Q.colorSpec.onPrimaryContainer(), Q.inversePrimary = Q.colorSpec.inversePrimary(), Q.secondary = Q.colorSpec.secondary(), Q.onSecondary = Q.colorSpec.onSecondary(), Q.secondaryContainer = Q.colorSpec.secondaryContainer(), Q.onSecondaryContainer = Q.colorSpec.onSecondaryContainer(), Q.tertiary = Q.colorSpec.tertiary(), Q.onTertiary = Q.colorSpec.onTertiary(), Q.tertiaryContainer = Q.colorSpec.tertiaryContainer(), Q.onTertiaryContainer = Q.colorSpec.onTertiaryContainer(), Q.error = Q.colorSpec.error(), Q.onError = Q.colorSpec.onError(), Q.errorContainer = Q.colorSpec.errorContainer(), Q.onErrorContainer = Q.colorSpec.onErrorContainer(), Q.primaryFixed = Q.colorSpec.primaryFixed(), Q.primaryFixedDim = Q.colorSpec.primaryFixedDim(), Q.onPrimaryFixed = Q.colorSpec.onPrimaryFixed(), Q.onPrimaryFixedVariant = Q.colorSpec.onPrimaryFixedVariant(), Q.secondaryFixed = Q.colorSpec.secondaryFixed(), Q.secondaryFixedDim = Q.colorSpec.secondaryFixedDim(), Q.onSecondaryFixed = Q.colorSpec.onSecondaryFixed(), Q.onSecondaryFixedVariant = Q.colorSpec.onSecondaryFixedVariant(), Q.tertiaryFixed = Q.colorSpec.tertiaryFixed(), Q.tertiaryFixedDim = Q.colorSpec.tertiaryFixedDim(), Q.onTertiaryFixed = Q.colorSpec.onTertiaryFixed(), Q.onTertiaryFixedVariant = Q.colorSpec.onTertiaryFixedVariant();
 //#endregion
 //#region node_modules/.pnpm/@ktibow+material-color-utilities-nightly@0.4.1772748028000/node_modules/@ktibow/material-color-utilities-nightly/dynamiccolor/dynamic_scheme.js
 var $ = class e {
@@ -4566,7 +4878,7 @@ var $ = class e {
 			this.sourceColorHct = t.sourceColorHcts[0], this.sourceColorHcts = t.sourceColorHcts;
 		} else if (t.sourceColorHct) this.sourceColorHct = t.sourceColorHct, this.sourceColorHcts = [t.sourceColorHct];
 		else throw Error("sourceColorHct or sourceColorHcts required");
-		this.sourceColorArgb = this.sourceColorHct.toInt(), this.variant = t.variant, this.contrastLevel = t.contrastLevel, this.isDark = t.isDark, this.platform = t.platform ?? "phone", this.specVersion = e.maybeFallbackSpecVersion(t.specVersion ?? "2021", this.variant), this.primaryPalette = t.primaryPalette ?? Ei(this.specVersion).getPrimaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.secondaryPalette = t.secondaryPalette ?? Ei(this.specVersion).getSecondaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.tertiaryPalette = t.tertiaryPalette ?? Ei(this.specVersion).getTertiaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.neutralPalette = t.neutralPalette ?? Ei(this.specVersion).getNeutralPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.neutralVariantPalette = t.neutralVariantPalette ?? Ei(this.specVersion).getNeutralVariantPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.errorPalette = t.errorPalette ?? Ei(this.specVersion).getErrorPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel) ?? W.fromHueAndChroma(25, 84), this.colors = new Q();
+		this.sourceColorArgb = this.sourceColorHct.toInt(), this.variant = t.variant, this.contrastLevel = t.contrastLevel, this.isDark = t.isDark, this.platform = t.platform ?? "phone", this.specVersion = e.maybeFallbackSpecVersion(t.specVersion ?? "2021", this.variant), this.primaryPalette = t.primaryPalette ?? Wi(this.specVersion).getPrimaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.secondaryPalette = t.secondaryPalette ?? Wi(this.specVersion).getSecondaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.tertiaryPalette = t.tertiaryPalette ?? Wi(this.specVersion).getTertiaryPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.neutralPalette = t.neutralPalette ?? Wi(this.specVersion).getNeutralPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.neutralVariantPalette = t.neutralVariantPalette ?? Wi(this.specVersion).getNeutralVariantPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel), this.errorPalette = t.errorPalette ?? Wi(this.specVersion).getErrorPalette(this.variant, this.sourceColorHct, this.isDark, this.platform, this.contrastLevel) ?? W.fromHueAndChroma(25, 84), this.colors = new Q();
 	}
 	toString() {
 		let e = this.sourceColorHcts.length <= 1 ? "" : `sourceColorHctList=[${this.sourceColorHcts.map((e) => e.toString()).join(", ")}], `;
@@ -4574,12 +4886,12 @@ var $ = class e {
 	}
 	static getPiecewiseHue(e, t, n) {
 		let r = Math.min(t.length - 1, n.length), i = e.hue;
-		for (let e = 0; e < r; e++) if (i >= t[e] && i < t[e + 1]) return z(n[e]);
+		for (let e = 0; e < r; e++) if (i >= t[e] && i < t[e + 1]) return Xr(n[e]);
 		return i;
 	}
 	static getRotatedHue(t, n, r) {
 		let i = e.getPiecewiseHue(t, n, r);
-		return Math.min(n.length - 1, r.length) <= 0 && (i = 0), z(t.hue + i);
+		return Math.min(n.length - 1, r.length) <= 0 && (i = 0), Xr(t.hue + i);
 	}
 	getArgb(e) {
 		return e.getArgb(this);
@@ -4774,17 +5086,17 @@ var $ = class e {
 	}
 };
 $.DEFAULT_SPEC_VERSION = "2021", $.DEFAULT_PLATFORM = "phone";
-var Si = class {
+var Bi = class {
 	getPrimaryPalette(e, t, n, r, i) {
 		switch (e) {
 			case q.CONTENT:
 			case q.FIDELITY: return W.fromHueAndChroma(t.hue, t.chroma);
-			case q.FRUIT_SALAD: return W.fromHueAndChroma(z(t.hue - 50), 48);
+			case q.FRUIT_SALAD: return W.fromHueAndChroma(Xr(t.hue - 50), 48);
 			case q.MONOCHROME: return W.fromHueAndChroma(t.hue, 0);
 			case q.NEUTRAL: return W.fromHueAndChroma(t.hue, 12);
 			case q.RAINBOW: return W.fromHueAndChroma(t.hue, 48);
 			case q.TONAL_SPOT: return W.fromHueAndChroma(t.hue, 36);
-			case q.EXPRESSIVE: return W.fromHueAndChroma(z(t.hue + 240), 40);
+			case q.EXPRESSIVE: return W.fromHueAndChroma(Xr(t.hue + 240), 40);
 			case q.VIBRANT: return W.fromHueAndChroma(t.hue, 200);
 			default: throw Error(`Unsupported variant: ${e}`);
 		}
@@ -4793,7 +5105,7 @@ var Si = class {
 		switch (e) {
 			case q.CONTENT:
 			case q.FIDELITY: return W.fromHueAndChroma(t.hue, Math.max(t.chroma - 32, t.chroma * .5));
-			case q.FRUIT_SALAD: return W.fromHueAndChroma(z(t.hue - 50), 36);
+			case q.FRUIT_SALAD: return W.fromHueAndChroma(Xr(t.hue - 50), 36);
 			case q.MONOCHROME: return W.fromHueAndChroma(t.hue, 0);
 			case q.NEUTRAL: return W.fromHueAndChroma(t.hue, 8);
 			case q.RAINBOW: return W.fromHueAndChroma(t.hue, 16);
@@ -4845,13 +5157,13 @@ var Si = class {
 	}
 	getTertiaryPalette(e, t, n, r, i) {
 		switch (e) {
-			case q.CONTENT: return W.fromHct(ri.fixIfDisliked(new di(t).analogous(3, 6)[2]));
-			case q.FIDELITY: return W.fromHct(ri.fixIfDisliked(new di(t).complement));
+			case q.CONTENT: return W.fromHct(xi.fixIfDisliked(new ki(t).analogous(3, 6)[2]));
+			case q.FIDELITY: return W.fromHct(xi.fixIfDisliked(new ki(t).complement));
 			case q.FRUIT_SALAD: return W.fromHueAndChroma(t.hue, 36);
 			case q.MONOCHROME: return W.fromHueAndChroma(t.hue, 0);
 			case q.NEUTRAL: return W.fromHueAndChroma(t.hue, 16);
 			case q.RAINBOW:
-			case q.TONAL_SPOT: return W.fromHueAndChroma(z(t.hue + 60), 24);
+			case q.TONAL_SPOT: return W.fromHueAndChroma(Xr(t.hue + 60), 24);
 			case q.EXPRESSIVE: return W.fromHueAndChroma($.getRotatedHue(t, [
 				0,
 				21,
@@ -4906,7 +5218,7 @@ var Si = class {
 			case q.NEUTRAL: return W.fromHueAndChroma(t.hue, 2);
 			case q.RAINBOW: return W.fromHueAndChroma(t.hue, 0);
 			case q.TONAL_SPOT: return W.fromHueAndChroma(t.hue, 6);
-			case q.EXPRESSIVE: return W.fromHueAndChroma(z(t.hue + 15), 8);
+			case q.EXPRESSIVE: return W.fromHueAndChroma(Xr(t.hue + 15), 8);
 			case q.VIBRANT: return W.fromHueAndChroma(t.hue, 10);
 			default: throw Error(`Unsupported variant: ${e}`);
 		}
@@ -4920,13 +5232,13 @@ var Si = class {
 			case q.NEUTRAL: return W.fromHueAndChroma(t.hue, 2);
 			case q.RAINBOW: return W.fromHueAndChroma(t.hue, 0);
 			case q.TONAL_SPOT: return W.fromHueAndChroma(t.hue, 8);
-			case q.EXPRESSIVE: return W.fromHueAndChroma(z(t.hue + 15), 12);
+			case q.EXPRESSIVE: return W.fromHueAndChroma(Xr(t.hue + 15), 12);
 			case q.VIBRANT: return W.fromHueAndChroma(t.hue, 12);
 			default: throw Error(`Unsupported variant: ${e}`);
 		}
 	}
 	getErrorPalette(e, t, n, r, i) {}
-}, Ci = class e extends Si {
+}, Vi = class e extends Bi {
 	getPrimaryPalette(e, t, n, r, i) {
 		switch (e) {
 			case q.NEUTRAL: return W.fromHueAndChroma(t.hue, r === "phone" ? B.isBlue(t.hue) ? 12 : 8 : B.isBlue(t.hue) ? 16 : 12);
@@ -5147,74 +5459,74 @@ var Si = class {
 			default: return super.getErrorPalette(e, t, n, r, i);
 		}
 	}
-}, wi = new Si(), Ti = new Ci();
-function Ei(e) {
-	return e === "2025" ? Ti : wi;
+}, Hi = new Bi(), Ui = new Vi();
+function Wi(e) {
+	return e === "2025" ? Ui : Hi;
 }
 //#endregion
 //#region packages/ui-kit/src/theme/m3-theme.ts
-var Di = new Q(), Oi = U.fromPalette({
+var Gi = new Q(), Ki = U.fromPalette({
 	name: "on_on_primary",
 	palette: (e) => e.primaryPalette,
-	background: () => Di.onPrimary(),
+	background: () => Gi.onPrimary(),
 	contrastCurve: () => new G(6, 6, 7, 11)
-}), ki = U.fromPalette({
+}), qi = U.fromPalette({
 	name: "primary_container_subtle",
 	palette: (e) => e.primaryPalette,
 	isBackground: !0,
-	background: (e) => Di.highestSurface(e),
+	background: (e) => Gi.highestSurface(e),
 	contrastCurve: () => void 0
-}), Ai = U.fromPalette({
+}), Ji = U.fromPalette({
 	name: "on_primary_container_subtle",
 	palette: (e) => e.primaryPalette,
-	background: () => ki,
+	background: () => qi,
 	contrastCurve: () => new G(6, 6, 7, 11)
-}), ji = U.fromPalette({
+}), Yi = U.fromPalette({
 	name: "secondary_container_subtle",
 	palette: (e) => e.secondaryPalette,
 	isBackground: !0,
-	background: (e) => Di.highestSurface(e),
+	background: (e) => Gi.highestSurface(e),
 	contrastCurve: () => void 0
-}), Mi = U.fromPalette({
+}), Xi = U.fromPalette({
 	name: "on_secondary_container_subtle",
 	palette: (e) => e.secondaryPalette,
-	background: () => ji,
+	background: () => Yi,
 	contrastCurve: () => new G(6, 6, 7, 11)
-}), Ni = U.fromPalette({
+}), Zi = U.fromPalette({
 	name: "tertiary_container_subtle",
 	palette: (e) => e.tertiaryPalette,
 	isBackground: !0,
-	background: (e) => Di.highestSurface(e),
+	background: (e) => Gi.highestSurface(e),
 	contrastCurve: () => void 0
-}), Pi = U.fromPalette({
+}), Qi = U.fromPalette({
 	name: "on_tertiary_container_subtle",
 	palette: (e) => e.tertiaryPalette,
-	background: () => Ni,
+	background: () => Zi,
 	contrastCurve: () => new G(6, 6, 7, 11)
-}), Fi = U.fromPalette({
+}), $i = U.fromPalette({
 	name: "error_container_subtle",
 	palette: (e) => e.errorPalette,
 	isBackground: !0,
-	background: (e) => Di.highestSurface(e),
+	background: (e) => Gi.highestSurface(e),
 	contrastCurve: () => void 0
-}), Ii = U.fromPalette({
+}), ea = U.fromPalette({
 	name: "on_error_container_subtle",
 	palette: (e) => e.errorPalette,
-	background: () => Fi,
+	background: () => $i,
 	contrastCurve: () => new G(6, 6, 7, 11)
-}), Li = [
-	...Di.allColors.filter((e) => e.name !== "background" && e.name !== "on_background"),
-	Di.shadow(),
-	Di.scrim(),
-	Oi,
-	ki,
-	Ai,
-	ji,
-	Mi,
-	Ni,
-	Pi,
-	Fi,
-	Ii
+}), ta = [
+	...Gi.allColors.filter((e) => e.name !== "background" && e.name !== "on_background"),
+	Gi.shadow(),
+	Gi.scrim(),
+	Ki,
+	qi,
+	Ji,
+	Yi,
+	Xi,
+	Zi,
+	Qi,
+	$i,
+	ea
 ];
 [
 	{
@@ -5234,11 +5546,11 @@ var Di = new Q(), Oi = U.fromPalette({
 		source: "surface-container-low"
 	}
 ].filter((e) => e.name !== "surface-variant");
-function Ri(e) {
+function na(e) {
 	let t = (e & 16777215).toString(16).padStart(6, "0");
 	return t[0] === t[1] && t[2] === t[3] && t[4] === t[5] ? `#${t[0]}${t[2]}${t[4]}` : `#${t}`;
 }
-function zi(e) {
+function ra(e) {
 	let t = e.replace("#", "").trim();
 	if (t.length === 3) {
 		let e = t[0] + t[0], n = t[1] + t[1], r = t[2] + t[2];
@@ -5246,10 +5558,10 @@ function zi(e) {
 	}
 	return t.length === 6 ? Number.parseInt(`ff${t}`, 16) : t.length === 8 ? Number.parseInt(t, 16) : null;
 }
-function Bi(e) {
+function ia(e) {
 	return e.replaceAll("_", "-");
 }
-function Vi(e, t) {
+function aa(e, t) {
 	return new $({
 		sourceColorHcts: [B.fromInt(e)],
 		variant: q.TONAL_SPOT,
@@ -5258,11 +5570,11 @@ function Vi(e, t) {
 		isDark: t
 	});
 }
-function Hi(e, t) {
-	let n = e === "dark", r = Vi((t ? zi(t) : null) ?? 4278216887, n), i = {};
-	for (let e of Li) {
-		let t = Bi(e.name);
-		i[t] = Ri(e.getArgb(r));
+function oa(e, t) {
+	let n = e === "dark", r = aa((t ? ra(t) : null) ?? 4278216887, n), i = {};
+	for (let e of ta) {
+		let t = ia(e.name);
+		i[t] = na(e.getArgb(r));
 	}
 	return {
 		surface: i.surface ?? (n ? "#141318" : "#fef7ff"),
@@ -5276,26 +5588,26 @@ function Hi(e, t) {
 }
 //#endregion
 //#region packages/ui-kit/src/plugin-screen/PluginScreenContainer.svelte
-Er(Hi("light"), Hi("dark")), typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Fn(["input"]), Fn(["change"]), Fn(["change"]), Fn(["change"]), Fn(["click"]), Fn(["change"]), Fn(["click"]), Fn(["click"]), Fn(["click"]);
+Wr(oa("light"), oa("dark")), typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Jn(["input"]), Jn(["change"]), Jn(["change"]), Jn(["change"]), Jn(["click"]), Jn(["change"]), Jn(["click"]), Jn(["click"]), Jn(["click"]);
 //#endregion
 //#region packages/ui-kit/src/plugin-screen/mountable-svelte.ts
-function Ui(e) {
+function sa(e) {
 	return {
-		[Cr]: !0,
+		[Vr]: !0,
 		mount(t, n) {
-			let r = Jn(e, {
+			let r = cr(e, {
 				target: t,
 				props: n
 			});
 			return { unmount: () => {
-				Qn(r);
+				fr(r);
 			} };
 		}
 	};
 }
 //#endregion
 //#region packages/ui-kit/src/i18n/plugin-text.ts
-function Wi(e, t, n, r) {
+function ca(e, t, n, r) {
 	let i = n["zh-cn"][r] ?? n.en?.[r] ?? String(r);
 	if (!e) return i;
 	e.slotVersion;
@@ -5303,1193 +5615,658 @@ function Wi(e, t, n, r) {
 	return a === r ? i : a;
 }
 //#endregion
-//#region packages/codec-kit/src/deflate.ts
-async function Gi(e) {
-	if (typeof CompressionStream > "u") {
-		let t = await import(
-			/* @vite-ignore */
-			["node", "zlib"].join(":")
-);
-		return new Uint8Array(t.deflateRawSync(Buffer.from(e)));
-	}
-	let t = new ReadableStream({ start(t) {
-		t.enqueue(e), t.close();
-	} }).pipeThrough(new CompressionStream("deflate-raw"));
-	return new Uint8Array(await new Response(t).arrayBuffer());
-}
-async function Ki(e) {
-	if (typeof DecompressionStream > "u") {
-		let t = await import(
-			/* @vite-ignore */
-			["node", "zlib"].join(":")
-);
-		return new Uint8Array(t.inflateRawSync(Buffer.from(e)));
-	}
-	let t = new ReadableStream({ start(t) {
-		t.enqueue(e), t.close();
-	} }).pipeThrough(new DecompressionStream("deflate-raw"));
-	return new Uint8Array(await new Response(t).arrayBuffer());
-}
-//#endregion
-//#region packages/codec-kit/src/base64.ts
-var qi = 8192;
-function Ji(e) {
-	let t = "";
-	for (let n = 0; n < e.length; n += qi) t += String.fromCharCode(...e.subarray(n, n + qi));
-	return t;
-}
-function Yi(e) {
-	let t = new Uint8Array(e.length);
-	for (let n = 0; n < e.length; n += 1) t[n] = e.charCodeAt(n);
-	return t;
-}
-function Xi(e) {
-	return btoa(Ji(e));
-}
-function Zi(e) {
-	return Yi(atob(e));
-}
-(() => {
-	let e = /* @__PURE__ */ new Uint32Array(256);
-	for (let t = 0; t < 256; t += 1) {
-		let n = t;
-		for (let e = 0; e < 8; e += 1) n = n & 1 ? n >>> 1 ^ 3988292384 : n >>> 1;
-		e[t] = n >>> 0;
-	}
-	return e;
-})();
-function Qi(e) {
-	let t = e.filter((e) => e < 1 || e > 32);
-	if (t.length > 0) throw RangeError(`week out of range: ${t.join(", ")}`);
-}
-function $i(e) {
-	Qi(e);
-	let t = 0;
-	for (let n of e) t |= 1 << n - 1;
-	return t >>> 0;
-}
-function ea(e) {
-	let t = [];
-	for (let n = 1; n <= 32; n += 1) e & 1 << n - 1 && t.push(n);
-	return t;
-}
-//#endregion
-//#region packages/codec-kit/src/interner.ts
-var ta = class {
-	strings = [];
-	index = /* @__PURE__ */ new Map();
-	maxEntries;
-	constructor(e = {}) {
-		this.maxEntries = e.maxEntries ?? Infinity, e.seed !== void 0 && this.intern(e.seed);
-	}
-	intern(e) {
-		let t = e?.trim() ?? "";
-		if (!t) return -1;
-		let n = this.index.get(t);
-		if (n !== void 0) return n;
-		if (this.strings.length >= this.maxEntries) throw RangeError("string table overflow");
-		let r = this.strings.length;
-		return this.strings.push(t), this.index.set(t, r), r;
-	}
-}, na = /* @__PURE__ */ new Uint8Array(512), ra = /* @__PURE__ */ new Uint8Array(256);
-(() => {
-	let e = 1;
-	for (let t = 0; t < 255; t++) na[t] = e, na[t + 255] = e, ra[e] = t, e <<= 1, e & 256 && (e ^= 285);
-})();
-function ia(e, t) {
-	return e === 0 || t === 0 ? 0 : na[ra[e] + ra[t]];
-}
-function aa(e) {
-	let t = new Uint8Array([1]);
-	for (let n = 0; n < e; n++) {
-		let e = new Uint8Array(t.length + 1);
-		for (let r = 0; r < t.length; r++) e[r] ^= ia(t[r], na[n]), e[r + 1] ^= t[r];
-		t = e;
-	}
-	return t;
-}
-function oa(e, t) {
-	let n = aa(t), r = new Uint8Array(t);
-	for (let i = 0; i < e.length; i++) {
-		let a = e[i] ^ r[0];
-		for (let e = 0; e < t - 1; e++) r[e] = r[e + 1] ^ ia(n[e + 1], a);
-		r[t - 1] = ia(n[t], a);
-	}
-	return r;
-}
-var sa = [
-	{
-		eccPerBlock: 7,
-		blocks: [{
-			count: 1,
-			totalCodewords: 26,
-			dataCodewords: 19
-		}]
-	},
-	{
-		eccPerBlock: 10,
-		blocks: [{
-			count: 1,
-			totalCodewords: 44,
-			dataCodewords: 34
-		}]
-	},
-	{
-		eccPerBlock: 15,
-		blocks: [{
-			count: 1,
-			totalCodewords: 70,
-			dataCodewords: 55
-		}]
-	},
-	{
-		eccPerBlock: 20,
-		blocks: [{
-			count: 1,
-			totalCodewords: 100,
-			dataCodewords: 80
-		}]
-	},
-	{
-		eccPerBlock: 26,
-		blocks: [{
-			count: 1,
-			totalCodewords: 134,
-			dataCodewords: 108
-		}]
-	},
-	{
-		eccPerBlock: 18,
-		blocks: [{
-			count: 2,
-			totalCodewords: 86,
-			dataCodewords: 68
-		}]
-	},
-	{
-		eccPerBlock: 20,
-		blocks: [{
-			count: 2,
-			totalCodewords: 98,
-			dataCodewords: 78
-		}]
-	},
-	{
-		eccPerBlock: 24,
-		blocks: [{
-			count: 2,
-			totalCodewords: 121,
-			dataCodewords: 97
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 2,
-			totalCodewords: 146,
-			dataCodewords: 116
-		}]
-	},
-	{
-		eccPerBlock: 18,
-		blocks: [{
-			count: 2,
-			totalCodewords: 86,
-			dataCodewords: 68
-		}, {
-			count: 2,
-			totalCodewords: 87,
-			dataCodewords: 69
-		}]
-	},
-	{
-		eccPerBlock: 20,
-		blocks: [{
-			count: 4,
-			totalCodewords: 101,
-			dataCodewords: 81
-		}]
-	},
-	{
-		eccPerBlock: 24,
-		blocks: [{
-			count: 2,
-			totalCodewords: 116,
-			dataCodewords: 92
-		}, {
-			count: 2,
-			totalCodewords: 117,
-			dataCodewords: 93
-		}]
-	},
-	{
-		eccPerBlock: 26,
-		blocks: [{
-			count: 4,
-			totalCodewords: 133,
-			dataCodewords: 107
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 3,
-			totalCodewords: 145,
-			dataCodewords: 115
-		}, {
-			count: 1,
-			totalCodewords: 146,
-			dataCodewords: 116
-		}]
-	},
-	{
-		eccPerBlock: 22,
-		blocks: [{
-			count: 5,
-			totalCodewords: 109,
-			dataCodewords: 87
-		}, {
-			count: 1,
-			totalCodewords: 110,
-			dataCodewords: 88
-		}]
-	},
-	{
-		eccPerBlock: 24,
-		blocks: [{
-			count: 5,
-			totalCodewords: 122,
-			dataCodewords: 98
-		}, {
-			count: 1,
-			totalCodewords: 123,
-			dataCodewords: 99
-		}]
-	},
-	{
-		eccPerBlock: 28,
-		blocks: [{
-			count: 1,
-			totalCodewords: 135,
-			dataCodewords: 107
-		}, {
-			count: 5,
-			totalCodewords: 136,
-			dataCodewords: 108
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 5,
-			totalCodewords: 150,
-			dataCodewords: 120
-		}, {
-			count: 1,
-			totalCodewords: 151,
-			dataCodewords: 121
-		}]
-	},
-	{
-		eccPerBlock: 28,
-		blocks: [{
-			count: 3,
-			totalCodewords: 141,
-			dataCodewords: 113
-		}, {
-			count: 4,
-			totalCodewords: 142,
-			dataCodewords: 114
-		}]
-	},
-	{
-		eccPerBlock: 28,
-		blocks: [{
-			count: 3,
-			totalCodewords: 135,
-			dataCodewords: 107
-		}, {
-			count: 5,
-			totalCodewords: 136,
-			dataCodewords: 108
-		}]
-	},
-	{
-		eccPerBlock: 28,
-		blocks: [{
-			count: 4,
-			totalCodewords: 144,
-			dataCodewords: 116
-		}, {
-			count: 4,
-			totalCodewords: 145,
-			dataCodewords: 117
-		}]
-	},
-	{
-		eccPerBlock: 28,
-		blocks: [{
-			count: 2,
-			totalCodewords: 151,
-			dataCodewords: 123
-		}, {
-			count: 7,
-			totalCodewords: 152,
-			dataCodewords: 124
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 4,
-			totalCodewords: 147,
-			dataCodewords: 117
-		}, {
-			count: 5,
-			totalCodewords: 148,
-			dataCodewords: 118
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 6,
-			totalCodewords: 151,
-			dataCodewords: 121
-		}, {
-			count: 4,
-			totalCodewords: 152,
-			dataCodewords: 122
-		}]
-	},
-	{
-		eccPerBlock: 26,
-		blocks: [{
-			count: 8,
-			totalCodewords: 133,
-			dataCodewords: 107
-		}, {
-			count: 4,
-			totalCodewords: 134,
-			dataCodewords: 108
-		}]
-	},
-	{
-		eccPerBlock: 28,
-		blocks: [{
-			count: 10,
-			totalCodewords: 142,
-			dataCodewords: 114
-		}, {
-			count: 2,
-			totalCodewords: 143,
-			dataCodewords: 115
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 8,
-			totalCodewords: 152,
-			dataCodewords: 122
-		}, {
-			count: 4,
-			totalCodewords: 153,
-			dataCodewords: 123
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 3,
-			totalCodewords: 147,
-			dataCodewords: 117
-		}, {
-			count: 10,
-			totalCodewords: 148,
-			dataCodewords: 118
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 7,
-			totalCodewords: 146,
-			dataCodewords: 116
-		}, {
-			count: 7,
-			totalCodewords: 147,
-			dataCodewords: 117
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 5,
-			totalCodewords: 145,
-			dataCodewords: 115
-		}, {
-			count: 10,
-			totalCodewords: 146,
-			dataCodewords: 116
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 13,
-			totalCodewords: 145,
-			dataCodewords: 115
-		}, {
-			count: 3,
-			totalCodewords: 146,
-			dataCodewords: 116
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 17,
-			totalCodewords: 145,
-			dataCodewords: 115
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 17,
-			totalCodewords: 145,
-			dataCodewords: 115
-		}, {
-			count: 1,
-			totalCodewords: 146,
-			dataCodewords: 116
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 13,
-			totalCodewords: 145,
-			dataCodewords: 115
-		}, {
-			count: 6,
-			totalCodewords: 146,
-			dataCodewords: 116
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 12,
-			totalCodewords: 151,
-			dataCodewords: 121
-		}, {
-			count: 7,
-			totalCodewords: 152,
-			dataCodewords: 122
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 6,
-			totalCodewords: 151,
-			dataCodewords: 121
-		}, {
-			count: 14,
-			totalCodewords: 152,
-			dataCodewords: 122
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 17,
-			totalCodewords: 152,
-			dataCodewords: 122
-		}, {
-			count: 4,
-			totalCodewords: 153,
-			dataCodewords: 123
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 4,
-			totalCodewords: 152,
-			dataCodewords: 122
-		}, {
-			count: 18,
-			totalCodewords: 153,
-			dataCodewords: 123
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 20,
-			totalCodewords: 147,
-			dataCodewords: 117
-		}, {
-			count: 4,
-			totalCodewords: 148,
-			dataCodewords: 118
-		}]
-	},
-	{
-		eccPerBlock: 30,
-		blocks: [{
-			count: 19,
-			totalCodewords: 148,
-			dataCodewords: 118
-		}, {
-			count: 6,
-			totalCodewords: 149,
-			dataCodewords: 119
-		}]
-	}
-], ca = [
-	[],
-	[6, 18],
-	[6, 22],
-	[6, 26],
-	[6, 30],
-	[6, 34],
-	[
-		6,
-		22,
-		38
-	],
-	[
-		6,
-		24,
-		42
-	],
-	[
-		6,
-		26,
-		46
-	],
-	[
-		6,
-		28,
-		50
-	],
-	[
-		6,
-		30,
-		54
-	],
-	[
-		6,
-		32,
-		58
-	],
-	[
-		6,
-		34,
-		62
-	],
-	[
-		6,
-		26,
-		46,
-		66
-	],
-	[
-		6,
-		26,
-		48,
-		70
-	],
-	[
-		6,
-		26,
-		50,
-		74
-	],
-	[
-		6,
-		30,
-		54,
-		78
-	],
-	[
-		6,
-		30,
-		56,
-		82
-	],
-	[
-		6,
-		30,
-		58,
-		86
-	],
-	[
-		6,
-		34,
-		62,
-		90
-	],
-	[
-		6,
-		28,
-		50,
-		72,
-		94
-	],
-	[
-		6,
-		26,
-		50,
-		74,
-		98
-	],
-	[
-		6,
-		30,
-		54,
-		78,
-		102
-	],
-	[
-		6,
-		28,
-		54,
-		80,
-		106
-	],
-	[
-		6,
-		32,
-		58,
-		84,
-		110
-	],
-	[
-		6,
-		30,
-		58,
-		86,
-		114
-	],
-	[
-		6,
-		34,
-		62,
-		90,
-		118
-	],
-	[
-		6,
-		26,
-		50,
-		74,
-		98,
-		122
-	],
-	[
-		6,
-		30,
-		54,
-		78,
-		102,
-		126
-	],
-	[
-		6,
-		26,
-		52,
-		78,
-		104,
-		130
-	],
-	[
-		6,
-		30,
-		56,
-		82,
-		108,
-		134
-	],
-	[
-		6,
-		34,
-		60,
-		86,
-		112,
-		138
-	],
-	[
-		6,
-		30,
-		58,
-		86,
-		114,
-		142
-	],
-	[
-		6,
-		34,
-		62,
-		90,
-		118,
-		146
-	],
-	[
-		6,
-		30,
-		54,
-		78,
-		102,
-		126,
-		150
-	],
-	[
-		6,
-		24,
-		50,
-		76,
-		102,
-		128,
-		154
-	],
-	[
-		6,
-		28,
-		54,
-		80,
-		106,
-		132,
-		158
-	],
-	[
-		6,
-		32,
-		58,
-		84,
-		110,
-		136,
-		162
-	],
-	[
-		6,
-		26,
-		54,
-		82,
-		110,
-		138,
-		166
-	],
-	[
-		6,
-		30,
-		58,
-		86,
-		114,
-		142,
-		170
-	]
-], la = [
-	31892,
-	34236,
-	39577,
-	42195,
-	48118,
-	51042,
-	55367,
-	58893,
-	63784,
-	68472,
-	70749,
-	76311,
-	79154,
-	84390,
-	87683,
-	92361,
-	96236,
-	102084,
-	102881,
-	110507,
-	110734,
-	117786,
-	119615,
-	126325,
-	127568,
-	133589,
-	136944,
-	141498,
-	145311,
-	150283,
-	152622,
-	158308,
-	161089,
-	167017
-], ua = 9174;
-function da(e) {
-	let t = sa[e - 1];
-	if (!t) throw Error(`Unsupported QR version: ${e}`);
-	return t;
-}
-function fa(e) {
-	for (let t = 1; t <= 40; t++) {
-		let n = da(t).blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0);
-		if (e + (t <= 9 ? 2 : 3) <= n) return t;
-	}
-	throw Error(`Data payload too large for QR Code (length: ${e}, max capacity: 2953 bytes)`);
-}
-function pa(e, t) {
-	let n = new TextEncoder().encode(e), r = da(t), i = r.blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0), a = [];
-	function o(e, t) {
-		for (let n = t - 1; n >= 0; n--) a.push(e >> n & 1);
-	}
-	o(4, 4);
-	let s = t <= 9 ? 8 : 16;
-	o(n.length, s);
-	for (let e of n) o(e, 8);
-	let c = i * 8;
-	for (o(0, Math.min(4, c - a.length)); a.length % 8 != 0;) a.push(0);
-	let l = new Uint8Array(i);
-	for (let e = 0; e < a.length / 8; e++) {
-		let t = 0;
-		for (let n = 0; n < 8; n++) t = t << 1 | a[e * 8 + n];
-		l[e] = t;
-	}
-	let u = 236;
-	for (let e = a.length / 8; e < i; e++) l[e] = u, u = u === 236 ? 17 : 236;
-	let d = [], f = [], p = 0;
-	for (let e of r.blocks) for (let t = 0; t < e.count; t++) {
-		let t = l.subarray(p, p + e.dataCodewords);
-		d.push(t), f.push(oa(t, r.eccPerBlock)), p += e.dataCodewords;
-	}
-	let m = [], h = Math.max(...d.map((e) => e.length));
-	for (let e = 0; e < h; e++) for (let t of d) e < t.length && m.push(t[e]);
-	for (let e = 0; e < r.eccPerBlock; e++) for (let t of f) m.push(t[e]);
-	return Uint8Array.from(m);
-}
-function ma(e) {
-	let t = fa(new TextEncoder().encode(e).length), n = t * 4 + 17, r = Array.from({ length: n }, () => Array(n).fill(null)), i = Array.from({ length: n }, () => Array(n).fill(!1));
-	function a(e, t, a, o = !0) {
-		e >= 0 && e < n && t >= 0 && t < n && (r[e][t] = a, o && (i[e][t] = !0));
-	}
-	function o(e, t) {
-		for (let r = -1; r <= 7; r++) for (let i = -1; i <= 7; i++) {
-			let o = e + r, s = t + i;
-			o < 0 || o >= n || s < 0 || s >= n || (r === -1 || r === 7 || i === -1 || i === 7 ? a(o, s, !1) : r === 0 || r === 6 || i === 0 || i === 6 || r >= 2 && r <= 4 && i >= 2 && i <= 4 ? a(o, s, !0) : a(o, s, !1));
-		}
-	}
-	o(0, 0), o(0, n - 7), o(n - 7, 0);
-	for (let e = 8; e < n - 8; e++) r[6][e] === null && a(6, e, e % 2 == 0), r[e][6] === null && a(e, 6, e % 2 == 0);
-	let s = ca[t - 1] ?? [];
-	for (let e of s) for (let t of s) if (!i[e][t]) for (let n = -2; n <= 2; n++) for (let r = -2; r <= 2; r++) {
-		let i = Math.max(Math.abs(n), Math.abs(r)) !== 1;
-		a(e + n, t + r, i);
-	}
-	a(n - 8, 8, !0);
-	for (let e = 0; e < 9; e++) r[8][e] === null && a(8, e, !1, !0), r[e][8] === null && a(e, 8, !1, !0);
-	for (let e = 0; e < 8; e++) r[8][n - 1 - e] === null && a(8, n - 1 - e, !1, !0), r[n - 1 - e][8] === null && a(n - 1 - e, 8, !1, !0);
-	if (t >= 7) {
-		let e = la[t - 7];
-		for (let t = 0; t < 18; t++) {
-			let r = (e >> t & 1) == 1, i = Math.floor(t / 3), o = t % 3 + n - 11;
-			a(i, o, r), a(o, i, r);
-		}
-	}
-	let c = pa(e, t), l = 0, u = n - 1, d = -1;
-	for (let e = n - 1; e > 0; e -= 2) for (e === 6 && e--;;) {
-		for (let t = 0; t < 2; t++) {
-			let n = e - t;
-			if (!i[u][n]) {
-				let e = Math.floor(l / 8), t = 7 - l % 8, i = e < c.length && (c[e] >> t & 1) == 1;
-				r[u][n] = i, l++;
-			}
-		}
-		if (u += d, u < 0 || u >= n) {
-			d = -d, u += d;
-			break;
-		}
-	}
-	for (let e = 0; e < n; e++) for (let t = 0; t < n; t++) i[e][t] || (e + t) % 2 == 0 && (r[e][t] = !r[e][t]);
-	let f = ua;
-	for (let e = 0; e < 15; e++) {
-		let t = (f >> e & 1) == 1;
-		e < 6 ? r[8][e] = t : e < 8 ? r[8][e + 1] = t : r[8][n - 15 + e] = t, e < 8 ? r[n - 1 - e][8] = t : r[14 - e][8] = t;
-	}
-	return {
-		size: n,
-		modules: r.map((e) => e.map((e) => !!e))
-	};
-}
-function ha(e, t = {}) {
-	let { margin: n = 2, color: r = "#000000", background: i = "#ffffff", size: a = 512 } = t, o = ma(e), s = o.size + n * 2, c = [];
-	for (let e = 0; e < o.size; e++) for (let t = 0; t < o.size; t++) o.modules[e][t] && c.push(`M${t + n},${e + n}h1v1h-1z`);
-	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${a}" height="${a}" shape-rendering="crispEdges" data-chronos-qr="${e}"><metadata>${e}</metadata><rect width="${s}" height="${s}" fill="${i}"/><path d="${c.join("")}" fill="${r}"/></svg>`;
-}
-//#endregion
-//#region packages/plugins/codec-qrcode/src/messages.ts
-function ga(e) {
-	return Sr({ content: {
-		type: "string",
-		title: () => e("import.field.content.title"),
-		placeholder: () => e("import.field.content.placeholder"),
-		required: !0
-	} });
-}
-var _a = {
+//#region packages/plugins/calendar-holidays/src/messages.ts
+var la = {
 	"zh-cn": {
-		"plugin.name": "二维码",
-		"plugin.description": "通过二维码导入/导出课表",
-		"import.tab.title": "二维码",
-		"import.tab.badge": "图片",
-		"import.tab.supporting": "选择或扫描导出为二维码图片进行导入",
-		"import.field.content.title": "二维码内容",
-		"import.field.content.placeholder": "二维码识别出的数据内容",
-		"import.error.empty": "未识别到有效的二维码内容",
-		"import.error.corrupt": "二维码数据格式损坏或无法解析为课表",
-		"import.error.decodeFailed": "二维码识别失败",
-		"import.ui.title": "二维码",
-		"import.ui.subtitle": "选择或拖入他人分享的导出为二维码图片",
-		"import.ui.dropLabel": "点击选择二维码图片",
-		"import.ui.formats": "支持 PNG、JPEG、WebP 或 SVG 格式",
-		"import.ui.select": "选择图片",
-		"import.ui.scanning": "识别中…",
-		"import.ui.dropAria": "二维码图片上传区域",
-		"export.action.title": "二维码",
-		"export.action.description": "生成分享二维码矢量图并保存",
-		"export.error.noTimetable": "无可导出的课表",
-		"export.success": "已生成并下载导出为二维码",
-		"timetable.unnamedCourse": "未命名课程",
-		"timetable.defaultName": "二维码导入课表",
-		"decode.browserOnly": "二维码解码仅支持在浏览器环境中运行",
-		"decode.unreadableImage": "无法读取图片内容",
-		"decode.noQrFound": "未能从该图片中识别出有效的二维码或当前浏览器不支持原生扫码识别"
+		"plugin.name": "法定节假日",
+		"plugin.description": "在课表中展示法定节假日",
+		"mine.title": "法定节假日",
+		"mine.keywords": "节假日,假期,放假,国庆,春节,holiday",
+		"screen.title": "法定节假日",
+		"screen.intro.title": "法定节假日",
+		"screen.intro.body": "安装后自动同步国务院公布的放假安排，并在课表标注。仅标记放假，不包含调休补班。",
+		"screen.intro.source": "数据来源：holiday-cn",
+		"screen.sync.title": "同步法定节假日",
+		"screen.sync.years": "将同步 {years} 年数据",
+		"screen.sync.action": "同步法定节假日",
+		"screen.sync.resync": "重新同步",
+		"screen.sync.syncing": "同步中…",
+		"screen.sync.last": "上次同步：{time} · 来源 holiday-cn",
+		"screen.sync.never": "尚未同步",
+		"screen.list.heading": "本学期假期",
+		"screen.list.empty": "本学期暂无法定节假日",
+		"screen.list.emptyHint": "同步后，课表将标注法定放假日",
+		"screen.error.noTimetable": "请先选择或创建课表",
+		"screen.error.syncFailed": "同步失败，请检查网络后重试",
+		"screen.notify.synced": "法定节假日已同步"
 	},
 	en: {
-		"plugin.name": "QR Code",
-		"plugin.description": "Import and export timetables via QR codes",
-		"import.tab.title": "QR code",
-		"import.tab.badge": "Image",
-		"import.tab.supporting": "Select or scan a timetable QR code image to import",
-		"import.field.content.title": "QR content",
-		"import.field.content.placeholder": "Decoded QR payload",
-		"import.error.empty": "No valid QR content was recognized",
-		"import.error.corrupt": "QR data is corrupted or cannot be parsed as a timetable",
-		"import.error.decodeFailed": "Failed to decode QR code",
-		"import.ui.title": "QR code",
-		"import.ui.subtitle": "Select or drop a shared timetable QR image",
-		"import.ui.dropLabel": "Choose a QR image",
-		"import.ui.formats": "PNG, JPEG, WebP, or SVG",
-		"import.ui.select": "Choose image",
-		"import.ui.scanning": "Scanning…",
-		"import.ui.dropAria": "QR image upload area",
-		"export.action.title": "QR code",
-		"export.action.description": "Generate a shareable QR vector and download",
-		"export.error.noTimetable": "No timetable to export",
-		"export.success": "Timetable QR code downloaded",
-		"timetable.unnamedCourse": "Untitled course",
-		"timetable.defaultName": "Imported timetable (QR)",
-		"decode.browserOnly": "QR decoding is only available in the browser",
-		"decode.unreadableImage": "Could not read image contents",
-		"decode.noQrFound": "No valid QR code was found in this image, or the browser does not support native scanning"
+		"plugin.name": "Public Holidays",
+		"plugin.description": "Show public holidays on the timetable",
+		"mine.title": "Public Holidays",
+		"mine.keywords": "holiday,vacation,national day,spring festival",
+		"screen.title": "Public Holidays",
+		"screen.intro.title": "Public Holidays",
+		"screen.intro.body": "Automatically syncs official public holiday schedules on install and marks them on your timetable. Only rest days are marked; makeup workdays are excluded.",
+		"screen.intro.source": "Data source: holiday-cn",
+		"screen.sync.title": "Sync public holidays",
+		"screen.sync.years": "Will sync years: {years}",
+		"screen.sync.action": "Sync public holidays",
+		"screen.sync.resync": "Resync",
+		"screen.sync.syncing": "Syncing…",
+		"screen.sync.last": "Last sync: {time} · source holiday-cn",
+		"screen.sync.never": "Not synced yet",
+		"screen.list.heading": "Holidays this term",
+		"screen.list.empty": "No public holidays in this term",
+		"screen.list.emptyHint": "After syncing, holidays will appear on your timetable",
+		"screen.error.noTimetable": "Select or create a timetable first",
+		"screen.error.syncFailed": "Sync failed. Check your network and try again.",
+		"screen.notify.synced": "Public holidays synced"
+	}
+}, ua = "tool-calendar-holidays", da = "https://fastly.jsdelivr.net/gh/NateScarlet/holiday-cn@master", fa = {
+	2025: {
+		$schema: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json",
+		$id: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2025.json",
+		year: 2025,
+		papers: ["https://www.gov.cn/zhengce/zhengceku/202411/content_6986383.htm"],
+		days: [
+			{
+				name: "元旦",
+				date: "2025-01-01",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-01-26",
+				isOffDay: !1
+			},
+			{
+				name: "春节",
+				date: "2025-01-28",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-01-29",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-01-30",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-01-31",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-02-01",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-02-02",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-02-03",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-02-04",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2025-02-08",
+				isOffDay: !1
+			},
+			{
+				name: "清明节",
+				date: "2025-04-04",
+				isOffDay: !0
+			},
+			{
+				name: "清明节",
+				date: "2025-04-05",
+				isOffDay: !0
+			},
+			{
+				name: "清明节",
+				date: "2025-04-06",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2025-04-27",
+				isOffDay: !1
+			},
+			{
+				name: "劳动节",
+				date: "2025-05-01",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2025-05-02",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2025-05-03",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2025-05-04",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2025-05-05",
+				isOffDay: !0
+			},
+			{
+				name: "端午节",
+				date: "2025-05-31",
+				isOffDay: !0
+			},
+			{
+				name: "端午节",
+				date: "2025-06-01",
+				isOffDay: !0
+			},
+			{
+				name: "端午节",
+				date: "2025-06-02",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-09-28",
+				isOffDay: !1
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-01",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-02",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-03",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-04",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-05",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-06",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-07",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-08",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节、中秋节",
+				date: "2025-10-11",
+				isOffDay: !1
+			}
+		]
+	},
+	2026: {
+		$schema: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json",
+		$id: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2026.json",
+		year: 2026,
+		papers: ["https://www.gov.cn/zhengce/zhengceku/202511/content_7047091.htm"],
+		days: [
+			{
+				name: "元旦",
+				date: "2026-01-01",
+				isOffDay: !0
+			},
+			{
+				name: "元旦",
+				date: "2026-01-02",
+				isOffDay: !0
+			},
+			{
+				name: "元旦",
+				date: "2026-01-03",
+				isOffDay: !0
+			},
+			{
+				name: "元旦",
+				date: "2026-01-04",
+				isOffDay: !1
+			},
+			{
+				name: "春节",
+				date: "2026-02-14",
+				isOffDay: !1
+			},
+			{
+				name: "春节",
+				date: "2026-02-15",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-16",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-17",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-18",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-19",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-20",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-21",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-22",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-23",
+				isOffDay: !0
+			},
+			{
+				name: "春节",
+				date: "2026-02-28",
+				isOffDay: !1
+			},
+			{
+				name: "清明节",
+				date: "2026-04-04",
+				isOffDay: !0
+			},
+			{
+				name: "清明节",
+				date: "2026-04-05",
+				isOffDay: !0
+			},
+			{
+				name: "清明节",
+				date: "2026-04-06",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2026-05-01",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2026-05-02",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2026-05-03",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2026-05-04",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2026-05-05",
+				isOffDay: !0
+			},
+			{
+				name: "劳动节",
+				date: "2026-05-09",
+				isOffDay: !1
+			},
+			{
+				name: "端午节",
+				date: "2026-06-19",
+				isOffDay: !0
+			},
+			{
+				name: "端午节",
+				date: "2026-06-20",
+				isOffDay: !0
+			},
+			{
+				name: "端午节",
+				date: "2026-06-21",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-09-20",
+				isOffDay: !1
+			},
+			{
+				name: "中秋节",
+				date: "2026-09-25",
+				isOffDay: !0
+			},
+			{
+				name: "中秋节",
+				date: "2026-09-26",
+				isOffDay: !0
+			},
+			{
+				name: "中秋节",
+				date: "2026-09-27",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-10-01",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-10-02",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-10-03",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-10-04",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-10-05",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-10-06",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-10-07",
+				isOffDay: !0
+			},
+			{
+				name: "国庆节",
+				date: "2026-10-10",
+				isOffDay: !1
+			}
+		]
+	},
+	2027: {
+		$schema: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json",
+		$id: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2027.json",
+		year: 2027,
+		papers: [],
+		days: []
 	}
 };
-function va(e) {
-	return _a[e.toLowerCase() === "en" ? "en" : "zh-cn"];
+function pa(e) {
+	return e.days.filter((e) => e.isOffDay).map((e) => ({
+		date: e.date,
+		label: e.name
+	}));
 }
-//#endregion
-//#region packages/plugins/codec-qrcode/src/qr/qr-decode.ts
-async function ya(e, t) {
-	let n = va("zh-cn"), r = (e) => t?.(e) ?? n[e];
-	if (typeof window > "u") throw Error(r("decode.browserOnly"));
+async function ma(e, t) {
+	let n = `${da}/${t}.json`;
 	try {
-		let t = await e.text(), n = /chronos-qr:[A-Za-z0-9+/=:_-]+/.exec(t);
-		if (n) return n[0];
-	} catch {}
-	let i = URL.createObjectURL(e), a = document.createElement("canvas"), o = a.getContext("2d");
-	try {
-		let e = new Image();
-		await new Promise((t, n) => {
-			e.onload = () => t(), e.onerror = () => n(Error(r("decode.unreadableImage"))), e.src = i;
+		let t = await e.request(n, {
+			method: "GET",
+			timeoutMs: 15e3
 		});
-		let t = e.naturalWidth || e.width || 512, n = e.naturalHeight || e.height || 512;
-		if (a.width = t, a.height = n, o?.drawImage(e, 0, 0, t, n), window.BarcodeDetector) try {
-			let e = await new window.BarcodeDetector({ formats: ["qr_code"] }).detect(a);
-			if (e.length > 0 && e[0]?.rawValue) return e[0].rawValue;
-		} catch (e) {
-			console.warn("[BarcodeDetector] detect failed on canvas:", e);
-		}
-	} finally {
-		URL.revokeObjectURL(i);
+		if (!t.ok) throw Error(`HTTP ${t.status}`);
+		return await t.json();
+	} catch (e) {
+		return fa[t] || (console.warn(`[calendar-holidays] No holiday-cn data for ${t}`, e), null);
 	}
-	throw Error(r("decode.noQrFound"));
+}
+async function ha(e, t) {
+	let n = (await Promise.all(t.map((t) => ma(e, t)))).filter((e) => e !== null);
+	if (n.length === 0) throw Error(`No holiday-cn data for years: ${t.join(", ")}`);
+	let r = n.flatMap((e) => pa(e)), i = /* @__PURE__ */ new Map();
+	for (let e of r) i.has(e.date) || i.set(e.date, e);
+	return { holidays: [...i.values()].sort((e, t) => e.date.localeCompare(t.date)) };
 }
 //#endregion
-//#region packages/plugins/codec-qrcode/src/QrCodeImportTab.svelte
-var ba = /* @__PURE__ */ Un("<div class=\"rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs\"><div class=\"flex flex-col gap-4\"><div><h2 class=\"m3-title-medium text-on-surface\"> </h2> <p class=\"m3-body-small mt-0.5 text-on-surface-variant\"> </p></div> <input type=\"file\" accept=\"image/*,.svg\" class=\"hidden\"/> <div role=\"region\"><svg class=\"size-10 text-on-surface-variant/80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><path d=\"M14 14h3v3h-3z\"></path><path d=\"M20 14v3h-3\"></path><path d=\"M14 20h7\"></path></svg> <div class=\"flex flex-col gap-1\"><span class=\"m3-body-medium font-medium text-on-surface\"> </span> <span class=\"m3-body-small text-on-surface-variant\"> </span></div> <button type=\"button\" class=\"m3-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50\"> </button></div></div></div>");
-function xa(e, t) {
-	Te(t, !0);
-	let n = /* @__PURE__ */ St(!1), r = /* @__PURE__ */ St(null), i = /* @__PURE__ */ St(!1);
-	function a(e) {
-		return Wi(t.controller, "tool-qrcode", _a, e);
-	}
-	let o = /* @__PURE__ */ Ye(() => a("import.ui.title")), s = /* @__PURE__ */ Ye(() => a("import.ui.subtitle")), c = /* @__PURE__ */ Ye(() => a("import.ui.dropLabel")), l = /* @__PURE__ */ Ye(() => a("import.ui.formats")), u = /* @__PURE__ */ Ye(() => a("import.ui.select")), d = /* @__PURE__ */ Ye(() => a("import.ui.scanning")), f = /* @__PURE__ */ Ye(() => a("import.ui.dropAria"));
-	function p() {
-		let { errorMessage: e } = t.transfer.state;
-		e && alert(e);
-	}
-	async function m(e) {
-		O(n, !0);
-		try {
-			let n = await ya(e, (e) => a(e));
-			await t.transfer.previewWithSlot("qrcode", { content: n }) ? t.onContinue() : p();
-		} catch (e) {
-			let t = e instanceof Error ? e.message : a("import.error.decodeFailed");
-			alert(t);
-		} finally {
-			O(n, !1);
-		}
-	}
-	async function h(e) {
-		let t = e.target, n = t.files?.[0];
-		n && (await m(n), t.value = "");
-	}
-	async function g(e) {
-		e.preventDefault(), O(i, !1);
-		let t = e.dataTransfer?.files?.[0];
-		t && await m(t);
-	}
-	var _ = ba(), v = It(It(_)), y = It(v), ee = It(y, !0), b = It(Lt(y, 2), !0), x = Lt(v, 2);
-	lr(x, (e) => O(r, e), () => I(r));
-	var S = Lt(x, 2), C = Lt(It(S), 2), te = It(C), ne = It(te, !0), re = It(Lt(te, 2), !0), ie = Lt(C, 2), ae = It(ie, !0);
-	Jt(() => {
-		qn(ee, I(o)), qn(b, I(s)), tr(S, 1, `flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors ${I(i) ? "border-primary bg-primary/5" : "border-outline/40 bg-surface-variant/20"}`), ir(S, "aria-label", I(f)), qn(ne, I(c)), qn(re, I(l)), ie.disabled = I(n), qn(ae, I(n) ? I(d) : I(u));
-	}), Pn("change", x, h), Nn("dragover", S, (e) => {
-		e.preventDefault(), O(i, !0);
-	}), Nn("dragleave", S, () => O(i, !1)), Nn("drop", S, g), Pn("click", ie, () => I(r)?.click()), Wn(e, _), Ee();
+//#region packages/plugins/calendar-holidays/src/holiday-sync.ts
+var ga = /* @__PURE__ */ new Map();
+function _a(e, t) {
+	if (!e?.syncedAt || !e.syncedYears?.length) return !0;
+	let n = new Set(e.syncedYears);
+	return t.some((e) => !n.has(e));
 }
-Fn(["change", "click"]);
-//#endregion
-//#region packages/plugins/codec-qrcode/src/index.ts
-async function Sa(e) {
-	let t = new ta(), n = e.courses.map((e) => {
-		let n = t.intern(e.name), r = t.intern(e.teacher), i = t.intern(e.location), a = t.intern(e.remark), o = t.intern(e.color), s = $i(e.weeks), c = [
-			n,
-			r,
-			i,
-			e.dayOfWeek,
-			e.startPeriod,
-			e.endPeriod,
-			s
-		];
-		return (a >= 0 || o >= 0) && c.push(a >= 0 ? a : -1), o >= 0 && c.push(o), c;
-	}), r = {
-		v: 2,
-		n: e.name,
-		s: t.strings,
-		c: n
+async function va(e, t = {}) {
+	let n = e.state.currentTimetable;
+	if (!n) throw Error("No active timetable");
+	let r = n.id, i = ga.get(r);
+	if (i) return i;
+	let a = ba(e, r, n.academicConfig, t).finally(() => {
+		ga.delete(r);
+	});
+	return ga.set(r, a), a;
+}
+async function ya(e, t = {}) {
+	return e.state.currentTimetable ? va(e, t) : !1;
+}
+async function ba(e, t, n, r) {
+	let i = Lr(n), a = e.service(Br), o = await a.getTimetable(t);
+	if (!o) throw Error(`Timetable not found: ${t}`);
+	if (!r.force && !_a(o.academicConfig.holidayCalendar, i)) return !1;
+	let { holidays: s } = await ha(e.service(zr), i), c = {
+		holidays: s,
+		syncedAt: Date.now(),
+		syncedYears: [...i]
+	}, l = {
+		...o.academicConfig,
+		holidayCalendar: c
 	};
-	e.academicConfig?.termStartDate && (r.d = e.academicConfig.termStartDate), (e.academicConfig?.startWeek !== void 0 || e.academicConfig?.endWeek !== void 0) && (r.w = [e.academicConfig.startWeek ?? 1, e.academicConfig.endWeek ?? 20]), e.academicConfig?.periodTimes?.length && (r.p = e.academicConfig.periodTimes.map((e) => [
-		e.index,
-		e.startTime,
-		e.endTime
-	]));
-	let i = JSON.stringify(r);
-	return `chronos-qr:v2:${Xi(await Gi(new TextEncoder().encode(i)))}`;
+	if (e.state.currentTimetable?.id === t) return await e.actions.saveCurrentTimetableDetails({ academicConfig: l }), !0;
+	let u = {
+		...o,
+		academicConfig: l,
+		updatedAt: Date.now()
+	};
+	return await a.saveTimetable(u), !0;
 }
-async function Ca(e, t = va("zh-cn")) {
-	let n = e.trim();
-	if (!n.startsWith("chronos-qr:v2:")) throw Error(t["import.error.corrupt"]);
-	let r = await Ki(Zi(n.slice(14))), i = new TextDecoder().decode(r), a = JSON.parse(i), o = a.s ?? [], s = (a.c ?? []).map((e, n) => {
-		let r = (e[0] >= 0 ? o[e[0]] : null) ?? t["timetable.unnamedCourse"], i = (e[1] >= 0 ? o[e[1]] : null) ?? "", a = (e[2] >= 0 ? o[e[2]] : null) ?? "", s = e[3] ?? 1, c = e[4] ?? 1, l = e[5] ?? 1, u = ea(e[6] ?? 1), d = u.length > 0 ? u : [1], f = e[7] !== void 0 && e[7] >= 0 ? o[e[7]] : void 0, p = e[8] !== void 0 && e[8] >= 0 ? o[e[8]] : void 0;
-		return gr({
-			id: `c-qr-${n + 1}-${Date.now().toString(36)}`,
-			name: r,
-			teacher: i,
-			location: a,
-			dayOfWeek: s,
-			startPeriod: c,
-			endPeriod: l,
-			weeks: d,
-			remark: f,
-			color: p
-		});
-	});
-	return xr({
-		id: `t-qr-${Date.now().toString(36)}`,
-		name: a.n || t["timetable.defaultName"],
-		academicConfig: {
-			termStartDate: a.d ?? "",
-			startWeek: a.w?.[0] ?? 1,
-			endWeek: a.w?.[1] ?? 20,
-			periodTimes: (a.p ?? []).map((e) => ({
-				index: e[0],
-				startTime: e[1],
-				endTime: e[2]
-			}))
-		},
-		viewPrefs: {
-			..._r(s),
-			showNonCurrentWeekCourses: !1
-		},
-		courses: s
-	});
-}
-function wa(e = {}) {
-	let { importComponent: t = Ui(xa) } = e;
-	return Or({
-		id: "tool-qrcode",
-		messages: _a,
+//#endregion
+//#region packages/plugins/calendar-holidays/src/index.ts
+function xa(e = {}) {
+	let { screenComponent: t } = e;
+	return Kr({
+		id: ua,
+		messages: la,
 		nameKey: "plugin.name",
 		descriptionKey: "plugin.description",
 		category: "tool",
-		order: 35,
-		author: "CQUT OpenProject",
-		homepage: "https://github.com/CQUT-OpenProject/Chronos",
+		order: 45,
+		author: "Chronos",
+		homepage: "https://github.com/NateScarlet/holiday-cn",
+		allowedDomains: ["fastly.jsdelivr.net", "raw.githubusercontent.com"],
 		async apply(e, n) {
-			let r = va(e.i18n.locale), i = ga(n);
-			kr(e, {
-				id: "qrcode",
-				title: () => n("import.tab.title"),
-				order: 25,
-				importKind: "file",
-				badge: () => n("import.tab.badge"),
-				supportingText: () => n("import.tab.supporting"),
-				component: t,
-				inputSchema: i,
-				async executeImport(e) {
-					let t = e.content ?? e.fileContent;
-					if (!t?.trim()) throw Error(n("import.error.empty"));
-					return Ca(t, r);
-				}
-			}), e.registerSlot("export.action", {
-				id: "qrcode",
-				title: () => n("export.action.title"),
-				order: 20,
-				disposition: "download",
-				isPrimary: !1,
-				description: () => n("export.action.description"),
-				async export(e, t) {
-					let r = e ?? t?.state.currentTimetable;
-					if (!r) throw Error(n("export.error.noTimetable"));
-					let i = ha(await Sa(r), { margin: 2 });
-					return {
-						filename: `${(r.name || "timetable").replace(/[/\\?%*:|"<>]/g, "_")}-qrcode.svg`,
-						mimeType: "image/svg+xml",
-						content: i,
-						disposition: "download",
-						successMessage: () => n("export.success")
-					};
-				}
+			let r = n("mine.keywords").split(",").map((e) => e.trim()).filter(Boolean);
+			e.registerSlot("mine.item", {
+				id: "holiday-calendar",
+				sectionId: "data-sync",
+				title: () => n("mine.title"),
+				href: `/plugins/${ua}`,
+				icon: "event",
+				iconTone: "secondary",
+				keywords: r,
+				order: 25
+			}), e.registerSlot("shell.route.screen", {
+				id: ua,
+				title: () => n("screen.title"),
+				...t ? { component: t } : {}
+			});
+			try {
+				await ya(e) && e.state.currentTimetable && e.actions.notify(n("screen.notify.synced"), "info");
+			} catch {
+				e.actions.notify(n("screen.error.syncFailed"), "warn");
+			}
+			e.on("timetable:switched", async () => {
+				try {
+					await ya(e);
+				} catch {}
 			});
 		}
 	});
 }
-wa();
 //#endregion
-//#region packages/plugins/codec-qrcode/bundle/entry.ts
-var Ta = wa({ importComponent: Ui(xa) });
+//#region packages/plugins/calendar-holidays/src/HolidayCalendarScreen.svelte
+var Sa = /* @__PURE__ */ nr("<p class=\"m3-body-small mt-1 text-on-surface-variant\"> </p>"), Ca = /* @__PURE__ */ nr("<p class=\"m3-body-medium py-6 text-center text-on-surface-variant\"> </p>"), wa = /* @__PURE__ */ nr("<li class=\"py-3\"><span class=\"m3-body-medium text-on-surface\"> </span></li>"), Ta = /* @__PURE__ */ nr("<div class=\"mt-3 mb-3\"><p class=\"m3-label-large mb-1 text-on-surface-variant\"> </p> <ul class=\"divide-y divide-outline/10\"></ul></div>"), Ea = /* @__PURE__ */ nr("<p class=\"m3-body-small text-error\"> </p>"), Da = /* @__PURE__ */ nr("<div class=\"flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4\"><section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h2 class=\"m3-title-medium text-on-surface\"> </h2> <p class=\"m3-body-medium mt-2 text-on-surface-variant\"> </p> <a class=\"m3-body-small mt-2 inline-block text-primary\" href=\"https://github.com/NateScarlet/holiday-cn\" target=\"_blank\" rel=\"noreferrer\"> </a></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"m3-title-small text-on-surface\"> </h3> <!> <p class=\"m3-body-small mt-2 text-on-surface-variant\"> </p> <button type=\"button\" class=\"m3-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50\"> </button></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"m3-title-small text-on-surface\"> </h3> <!></section> <!></div>");
+function Oa(e, t) {
+	je(t, !0);
+	let n = /* @__PURE__ */ kt(!1), r = /* @__PURE__ */ kt(null), i = /* @__PURE__ */ tt(() => t.controller.currentTimetable), a = /* @__PURE__ */ tt(() => L(i)?.academicConfig.holidayCalendar), o = /* @__PURE__ */ tt(() => L(i) && L(a) ? Ir(L(a).holidays, L(i).academicConfig) : []), s = /* @__PURE__ */ tt(() => L(i) ? Lr(L(i).academicConfig).join("、") : ""), c = /* @__PURE__ */ tt(() => d(L(o))), l = /* @__PURE__ */ tt(() => !!L(a)?.syncedAt);
+	function u(e) {
+		return ca(t.controller, ua, la, e);
+	}
+	function d(e) {
+		let t = /* @__PURE__ */ new Map();
+		for (let n of e) {
+			let e = `${Number(n.date.slice(5, 7))}月`, r = t.get(e) ?? [];
+			r.push(n), t.set(e, r);
+		}
+		return [...t.entries()].map(([e, t]) => ({
+			month: e,
+			items: t
+		}));
+	}
+	function f(e) {
+		let t = Number(e.date.slice(5, 7)), n = Number(e.date.slice(8, 10)), r = (/* @__PURE__ */ new Date(`${e.date}T12:00:00`)).toLocaleDateString("zh-CN", { weekday: "short" });
+		return `${t}月${n}日 · ${e.label} · ${r}`;
+	}
+	function p(e) {
+		if (!e) return u("screen.sync.never");
+		let t = new Date(e);
+		return u("screen.sync.last").replace("{time}", t.toLocaleString(void 0, {
+			month: "numeric",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit"
+		}));
+	}
+	async function m() {
+		if (!L(i)) {
+			jt(r, u("screen.error.noTimetable"), !0);
+			return;
+		}
+		jt(n, !0), jt(r, null);
+		try {
+			let e = t.controller.getPluginContext(t.pluginId);
+			await va(e, { force: !0 }), e.actions.notify(u("screen.notify.synced"), "info");
+		} catch (e) {
+			jt(r, e instanceof Error ? e.message : u("screen.error.syncFailed"), !0);
+		} finally {
+			jt(n, !1);
+		}
+	}
+	var h = Da(), g = j(h), _ = j(g), v = j(_, !0);
+	O(_);
+	var y = Kt(_, 2), b = j(y, !0);
+	O(y);
+	var x = Kt(y, 2), S = j(x, !0);
+	O(x), O(g);
+	var C = Kt(g, 2), w = j(C), ee = j(w, !0);
+	O(w);
+	var te = Kt(w, 2), ne = (e) => {
+		var t = Sa(), n = j(t, !0);
+		O(t), on((e) => sr(n, e), [() => u("screen.sync.years").replace("{years}", L(s))]), ir(e, t);
+	};
+	mr(te, (e) => {
+		L(s) && e(ne);
+	});
+	var re = Kt(te, 2), ie = j(re, !0);
+	O(re);
+	var T = Kt(re, 2), ae = j(T, !0);
+	O(T), O(C);
+	var oe = Kt(C, 2), se = j(oe), ce = j(se, !0);
+	O(se);
+	var le = Kt(se, 2), ue = (e) => {
+		var t = Ca(), n = j(t, !0);
+		O(t), on((e) => sr(n, e), [() => L(a)?.holidays.length ? u("screen.list.empty") : u("screen.list.emptyHint")]), ir(e, t);
+	}, de = (e) => {
+		var t = rr();
+		vr(Gt(t), 17, () => L(c), (e) => e.month, (e, t) => {
+			var n = Ta(), r = j(n), i = j(r, !0);
+			O(r);
+			var a = Kt(r, 2);
+			vr(a, 21, () => L(t).items, (e) => e.date, (e, t) => {
+				var n = wa(), r = j(n), i = j(r, !0);
+				O(r), O(n), on((e) => sr(i, e), [() => f(L(t))]), ir(e, n);
+			}), O(a), O(n), on(() => sr(i, L(t).month)), ir(e, n);
+		}), ir(e, t);
+	};
+	mr(le, (e) => {
+		L(o).length === 0 ? e(ue) : e(de, -1);
+	}), O(oe);
+	var fe = Kt(oe, 2), pe = (e) => {
+		var t = Ea(), n = j(t, !0);
+		O(t), on(() => sr(n, L(r))), ir(e, t);
+	};
+	mr(fe, (e) => {
+		L(r) && e(pe);
+	}), O(h), on((e, t, r, a, o, s, c) => {
+		sr(v, e), sr(b, t), sr(S, r), sr(ee, a), sr(ie, o), T.disabled = L(n) || !L(i), sr(ae, s), sr(ce, c);
+	}, [
+		() => u("screen.intro.title"),
+		() => u("screen.intro.body"),
+		() => u("screen.intro.source"),
+		() => u("screen.sync.title"),
+		() => p(L(a)?.syncedAt),
+		() => L(n) ? u("screen.sync.syncing") : L(l) ? u("screen.sync.resync") : u("screen.sync.action"),
+		() => u("screen.list.heading")
+	]), qn("click", T, m), ir(e, h), Me();
+}
+Jn(["click"]);
 //#endregion
-export { Ta as default };
+//#region packages/plugins/calendar-holidays/bundle/entry.ts
+var ka = xa({ screenComponent: sa(Oa) });
+//#endregion
+export { ka as default };
