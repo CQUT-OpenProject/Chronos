@@ -65,3 +65,10 @@ export function todayIsoDate(date: Date = new Date()): string {
 	const day = String(date.getDate()).padStart(2, '0');
 	return `${year}-${month}-${day}`;
 }
+
+/** Local calendar weekday from an ISO date string (1 = Monday … 7 = Sunday). */
+export function dayOfWeekFromIso(iso: string): number {
+	const date = new Date(`${iso}T12:00:00`);
+	const jsDay = date.getDay();
+	return jsDay === 0 ? 7 : jsDay;
+}
