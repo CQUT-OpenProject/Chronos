@@ -7,21 +7,25 @@
 	import { trackEvent } from '$lib/client/analytics';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableScreen from '$lib/components/timetable/TimetableScreen.svelte';
+	import CourseDetailSheet from '$lib/components/timetable/CourseDetailSheet.svelte';
 	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 
 	const screen = getContext<TimetableScreenController>('timetableScreen');
 
 	let clientReady = $state(false);
+	let detailOpen = $state(false);
+	let detailCourseId = $state<string | null>(null);
 
 	onMount(() => {
 		clientReady = true;
 		screen.refresh();
 	});
 
-	function navigateToCourseDetail(courseId: string) {
+	function openCourseDetail(courseId: string) {
+		detailCourseId = courseId;
+		detailOpen = true;
 		trackEvent('course_detail_open');
-		goto(resolve(`/timetable/course-detail?courseId=${encodeURIComponent(courseId)}`));
 	}
 
 	function navigateToCourseEditor(courseId: string) {
@@ -36,9 +40,10 @@
 	<TimetableScreen
 		{screen}
 		onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
-		onCourseClick={navigateToCourseDetail}
+		onCourseClick={openCourseDetail}
 		onCourseLongClick={navigateToCourseEditor}
 	/>
+	<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
 {:else if browser && clientReady}
 	<div class="flex min-h-[60vh] items-center justify-center p-4">
 		<LoadingIndicator />
