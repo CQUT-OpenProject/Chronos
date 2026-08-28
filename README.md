@@ -39,7 +39,7 @@ Chronos 的核心功能仅为查看、管理与分享课表。另外，您可在
 
 ## 数据收集
 
-官方 Vercel 托管版在生产环境且配置了 `PUBLIC_POSTHOG_KEY` 时，会通过 PostHog 收集匿名化的功能使用统计以改进产品，不包含课表内容与账号凭据等隐私信息。未配置密钥的构建不会启用埋点。
+官方 Vercel 托管版会通过 PostHog 收集匿名化的功能使用统计以改进产品，不包含课表内容与账号凭据等隐私信息。未配置密钥的构建不会启用埋点。
 
 详见应用内「关于 → 隐私政策」，或 [`privacy-policy.md`](apps/web/static/legal/privacy-policy.md)。
 
