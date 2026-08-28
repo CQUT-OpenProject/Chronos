@@ -38,7 +38,6 @@
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 	import { createTimetableInteractionMediator } from '$lib/timetable/timetable-interaction-mediator';
 
-	const FIT_MIN_FONT_PX = 6;
 	const SCROLL_ROW_HEIGHT = '5.5rem';
 
 	interface Props {

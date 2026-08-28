@@ -1,20 +1,54 @@
 <script lang="ts">
 	import { Dialog } from 'bits-ui';
 	import type { Snippet } from 'svelte';
+	import {
+		createHistoryOverlaySync,
+		type HistoryOverlaySync
+	} from '$lib/navigation/history-overlay';
 
 	let {
 		open = $bindable(false),
 		title = '',
 		actions,
 		children,
-		onOpenChangeComplete
+		onOpenChangeComplete,
+		manageHistory = true
 	}: {
 		open?: boolean;
 		title?: string;
 		actions?: Snippet;
 		children?: Snippet;
 		onOpenChangeComplete?: (open: boolean) => void;
+		manageHistory?: boolean;
 	} = $props();
+
+	let historySync: HistoryOverlaySync | null = null;
+
+	$effect(() => {
+		if (!manageHistory) {
+			historySync?.dispose();
+			historySync = null;
+			return;
+		}
+
+		const sync = createHistoryOverlaySync({
+			isOpen: () => open,
+			setOpen: (nextOpen) => {
+				open = nextOpen;
+			}
+		});
+		historySync = sync;
+		return () => {
+			sync.dispose();
+			historySync = null;
+		};
+	});
+
+	$effect(() => {
+		if (!manageHistory || !historySync) return;
+		void open;
+		historySync.syncOpenState(open);
+	});
 </script>
 
 <Dialog.Root bind:open {onOpenChangeComplete}>
