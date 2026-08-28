@@ -428,9 +428,18 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			throw new Error('No active timetable to update');
 		}
 
+		const current = this._currentTimetable;
 		const updated: Timetable = {
-			...this._currentTimetable,
+			...current,
 			...patch,
+			...(patch.academicConfig
+				? {
+						academicConfig: {
+							...current.academicConfig,
+							...patch.academicConfig
+						}
+					}
+				: {}),
 			updatedAt: Date.now()
 		};
 
