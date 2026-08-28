@@ -5,7 +5,7 @@ import fallback2025 from '../static/data/2025.json';
 import fallback2026 from '../static/data/2026.json';
 import fallback2027 from '../static/data/2027.json';
 
-export interface HolidayCnDay {
+interface HolidayCnDay {
 	name: string;
 	date: string;
 	isOffDay: boolean;
@@ -29,7 +29,7 @@ export function parseHolidayCnOffDays(payload: HolidayCnYearPayload): CalendarHo
 		.map((day) => ({ date: day.date, label: day.name }));
 }
 
-export async function fetchHolidayCnYear(
+async function fetchHolidayCnYear(
 	http: IHttpService,
 	year: number
 ): Promise<HolidayCnYearPayload | null> {

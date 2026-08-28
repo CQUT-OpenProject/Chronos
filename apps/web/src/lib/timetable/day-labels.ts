@@ -16,7 +16,7 @@ export function timetableDayLabel(dayOfWeek: number): string {
 	return hostT(key);
 }
 
-export function timetableDayShortLabel(dayOfWeek: number): string {
+function timetableDayShortLabel(dayOfWeek: number): string {
 	const key = resolveDayKey(dayOfWeek, 'short');
 	if (!key) return dayOfWeek === 0 ? '' : '?';
 	return hostT(key);

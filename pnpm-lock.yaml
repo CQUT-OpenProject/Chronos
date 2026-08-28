@@ -90,9 +90,6 @@ importers:
       web-vitals:
         specifier: ^6.1.1
         version: 6.1.1
-      workbox-window:
-        specifier: ^7.4.1
-        version: 7.4.1
       zod:
         specifier: ^4.4.3
         version: 4.4.3

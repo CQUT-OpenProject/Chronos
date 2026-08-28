@@ -5,14 +5,13 @@ import {
 	createTimetable,
 	type AcademicConfig,
 	type ImportMetadata,
-	type PeriodTime,
 	type Timetable,
 	type TimetableViewPrefs
 } from '@chronos/core';
 import { defaultPeriodTimes } from './defaults';
 
 export { DEFAULT_TIMETABLE_NAME, normalizeTimetableName, createTimetable };
-export type { AcademicConfig, PeriodTime, Timetable, TimetableViewPrefs };
+export type { AcademicConfig, Timetable, TimetableViewPrefs };
 export type TimetableImportMetadata = ImportMetadata;
 
 const periodTimeSchema = z.object({

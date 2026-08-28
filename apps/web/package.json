@@ -27,7 +27,6 @@
 		"swiper": "^14.1.0",
 		"vite-plugin-functions-mixins": "^0.4.1",
 		"web-vitals": "^6.1.1",
-		"workbox-window": "^7.4.1",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

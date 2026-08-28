@@ -5,7 +5,6 @@ export {
 export { Person, PersonFill } from '@material-symbols-svg/svelte/icons/person';
 export { ArrowBack } from '@material-symbols-svg/svelte/icons/arrow-back';
 export { EditNote } from '@material-symbols-svg/svelte/icons/edit-note';
-export { ChevronLeft } from '@material-symbols-svg/svelte/icons/chevron-left';
 export { ChevronRight } from '@material-symbols-svg/svelte/icons/chevron-right';
 export { ListAltFill } from '@material-symbols-svg/svelte/icons/list-alt';
 export { DownloadFill } from '@material-symbols-svg/svelte/icons/download';
@@ -13,9 +12,6 @@ export { IosShareFill } from '@material-symbols-svg/svelte/icons/ios-share';
 export { PaletteFill } from '@material-symbols-svg/svelte/icons/palette';
 export { WallpaperFill } from '@material-symbols-svg/svelte/icons/wallpaper';
 export { InfoFill } from '@material-symbols-svg/svelte/icons/info';
-export { LightModeFill } from '@material-symbols-svg/svelte/icons/light-mode';
-export { DarkModeFill } from '@material-symbols-svg/svelte/icons/dark-mode';
-export { LightModeAutoFill as AutoModeFill } from '@material-symbols-svg/svelte/icons/light-mode-auto';
 export { Check } from '@material-symbols-svg/svelte/icons/check';
 export { CheckCircleFill } from '@material-symbols-svg/svelte/icons/check-circle';
 export { Edit } from '@material-symbols-svg/svelte/icons/edit';
@@ -27,7 +23,6 @@ export { OpenInNewFill } from '@material-symbols-svg/svelte/icons/open-in-new';
 export { DescriptionFill } from '@material-symbols-svg/svelte/icons/description';
 export { FolderZipFill } from '@material-symbols-svg/svelte/icons/folder-zip';
 export { LayersClearFill } from '@material-symbols-svg/svelte/icons/layers-clear';
-export { PhotoLibraryFill } from '@material-symbols-svg/svelte/icons/photo-library';
 export { ScheduleFill } from '@material-symbols-svg/svelte/icons/schedule';
 export { EventFill } from '@material-symbols-svg/svelte/icons/event';
 export { Today } from '@material-symbols-svg/svelte/icons/today';
@@ -41,14 +36,8 @@ export { FullscreenFill } from '@material-symbols-svg/svelte/icons/fullscreen';
 export { Search } from '@material-symbols-svg/svelte/icons/search';
 export { Close } from '@material-symbols-svg/svelte/icons/close';
 export { DeleteFill } from '@material-symbols-svg/svelte/icons/delete';
-export { CasinoFill } from '@material-symbols-svg/svelte/icons/casino';
 export { History } from '@material-symbols-svg/svelte/icons/history';
 export { Update } from '@material-symbols-svg/svelte/icons/update';
 export { Refresh } from '@material-symbols-svg/svelte/icons/refresh';
-export {
-	MobileVibrate,
-	MobileVibrateFill
-} from '@material-symbols-svg/svelte/icons/mobile-vibrate';
-export { Settings, SettingsFill } from '@material-symbols-svg/svelte/icons/settings';
-export { Tune, TuneFill } from '@material-symbols-svg/svelte/icons/tune';
-export { Extension, ExtensionFill } from '@material-symbols-svg/svelte/icons/extension';
+export { MobileVibrateFill } from '@material-symbols-svg/svelte/icons/mobile-vibrate';
+export { TuneFill } from '@material-symbols-svg/svelte/icons/tune';

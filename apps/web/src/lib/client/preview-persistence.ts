@@ -6,7 +6,7 @@ const PREVIEW_SLOT_KEY = 'chronos:import-preview-slot';
 const IMPORT_MODE_KEY = 'chronos:import-mode';
 const CONFIRM_INPUTS_KEY = 'chronos:import-confirm-inputs';
 
-export interface PreviewSnapshot {
+interface PreviewSnapshot {
 	preview: Timetable;
 	slotId: string;
 	importMode: ImportMode;
