@@ -18,8 +18,8 @@ export function createShareLinkImportSchema(t: (key: string) => string) {
 
 export const SHARE_CODEC_MESSAGES = {
 	'zh-cn': {
-		'plugin.name': '分享编解码',
-		'plugin.description': '课表分享短链编解码',
+		'plugin.name': '分享口令',
+		'plugin.description': '通过分享口令导入/导出课表',
 		'import.tab.title': '分享口令',
 		'import.field.content.title': '分享链接或口令',
 		'import.field.content.placeholder': '粘贴课表分享链接或完整口令',
@@ -41,8 +41,8 @@ export const SHARE_CODEC_MESSAGES = {
 			'我分享了一张课表：「{name}」\n复制这段文本后，打开 Chronos，选择从【分享链接】方式导入\n{link}'
 	},
 	en: {
-		'plugin.name': 'Share Codec',
-		'plugin.description': 'Timetable share link codec',
+		'plugin.name': 'Share token',
+		'plugin.description': 'Import and export timetables via share tokens',
 		'import.tab.title': 'Share link',
 		'import.field.content.title': 'Share link or token',
 		'import.field.content.placeholder': 'Paste a timetable share link or full token',

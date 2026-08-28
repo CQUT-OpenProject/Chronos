@@ -5,14 +5,13 @@ import {
 	createTimetable,
 	type AcademicConfig,
 	type ImportMetadata,
-	type PeriodTime,
 	type Timetable,
 	type TimetableViewPrefs
 } from '@chronos/core';
 import { defaultPeriodTimes } from './defaults';
 
 export { DEFAULT_TIMETABLE_NAME, normalizeTimetableName, createTimetable };
-export type { AcademicConfig, PeriodTime, Timetable, TimetableViewPrefs };
+export type { AcademicConfig, Timetable, TimetableViewPrefs };
 export type TimetableImportMetadata = ImportMetadata;
 
 const periodTimeSchema = z.object({
@@ -21,11 +20,23 @@ const periodTimeSchema = z.object({
 	endTime: z.string()
 });
 
+const calendarHolidaySchema = z.object({
+	date: z.string(),
+	label: z.string()
+});
+
+const holidayCalendarConfigSchema = z.object({
+	holidays: z.array(calendarHolidaySchema).default([]),
+	syncedAt: z.number().optional(),
+	syncedYears: z.array(z.number().int()).optional()
+});
+
 export const academicConfigSchema = z.object({
 	termStartDate: z.string().default(''),
 	startWeek: z.number().int().default(1),
 	endWeek: z.number().int().default(20),
-	periodTimes: z.array(periodTimeSchema).default(defaultPeriodTimes())
+	periodTimes: z.array(periodTimeSchema).default(defaultPeriodTimes()),
+	holidayCalendar: holidayCalendarConfigSchema.optional()
 });
 
 export const timetableViewPrefsSchema = z.object({

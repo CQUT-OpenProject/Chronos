@@ -6,12 +6,14 @@
 		getProfileBuiltinPlugins,
 		getAppController
 	} from '$lib/services/app-engine';
-	import type { InstalledOfficialPluginRecord } from '$lib/services/official-plugins/official-plugin-service';
+	import type {
+		InstalledOfficialPluginRecord,
+		PluginUpdateOffer
+	} from '$lib/services/official-plugins/official-plugin-service';
 	import type { PluginManifest, ConfigSchema } from '@chronos/core';
 	import { resolveLocaleMapText } from '@chronos/core';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Switch from '$lib/components/ui/Switch.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
@@ -22,7 +24,7 @@
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
 	import { assertValidManifestInstallUrl } from '$lib/services/official-plugins/manifest-url';
-	import { DeleteFill, CheckCircleFill, TuneFill } from '$lib/icons';
+	import { CheckCircleFill, TuneFill } from '$lib/icons';
 
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
 
@@ -37,6 +39,7 @@
 
 	let installedRecords = $state<InstalledOfficialPluginRecord[]>([]);
 	let catalogManifests = $state<Array<{ url: string; manifest: PluginManifest }>>([]);
+	let updateOffers = $state.raw<PluginUpdateOffer[]>([]);
 	let loadingCatalog = $state(false);
 	let catalogError = $state<string | null>(null);
 	let operatingPluginId = $state<string | null>(null);
@@ -63,13 +66,43 @@
 		installedRecords = [...officialPlugins.listInstalled()];
 	}
 
+	const updateOfferById = $derived.by(() => {
+		const map = new Map<string, PluginUpdateOffer>();
+		for (const offer of updateOffers) {
+			map.set(offer.pluginId, offer);
+		}
+		return map;
+	});
+
+	function buildPrefetchedCatalog() {
+		return new Map(
+			catalogManifests.map((entry) => [
+				entry.manifest.id,
+				{ manifest: entry.manifest, manifestUrl: entry.url }
+			])
+		);
+	}
+
+	async function refreshUpdateOffers() {
+		try {
+			updateOffers = await officialPlugins.checkForUpdates(
+				BUILTIN_CATALOG_URL,
+				buildPrefetchedCatalog()
+			);
+		} catch {
+			updateOffers = [];
+		}
+	}
+
 	onMount(() => {
-		void officialPlugins.init().then(() => {
+		void officialPlugins.init().then(async () => {
 			refreshInstalled();
+			await loadOfficialCatalog();
 		});
 
 		const sub = officialPlugins.onChanged(() => {
 			refreshInstalled();
+			void refreshUpdateOffers();
 		});
 
 		return () => {
@@ -84,24 +117,25 @@
 			const catalog = await officialPlugins.fetchCatalog(BUILTIN_CATALOG_URL);
 			const entries = await Promise.all(
 				catalog.manifests.map(async (url) => {
-					const manifest = await officialPlugins.fetchManifest(url);
-					return { url, manifest };
+					try {
+						const manifest = await officialPlugins.fetchManifest(url);
+						return { url, manifest };
+					} catch (err) {
+						console.error(`[PluginsScreen] Failed to fetch manifest ${url}:`, err);
+						return null;
+					}
 				})
 			);
-			catalogManifests = entries;
+			catalogManifests = entries.filter((entry) => entry !== null);
+			await refreshUpdateOffers();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			catalogError = msg;
+			await refreshUpdateOffers();
 		} finally {
 			loadingCatalog = false;
 		}
 	}
-
-	$effect(() => {
-		if (activeTab === 'official') {
-			void loadOfficialCatalog();
-		}
-	});
 
 	const activeLocale = $derived(appController.currentLocale);
 
@@ -144,10 +178,21 @@
 		operatingPluginId = manifest.id;
 		try {
 			await officialPlugins.install(manifest, manifestUrl);
-			refreshInstalled();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			snackbarKey('snackbar.install.failed', { message: msg });
+		} finally {
+			operatingPluginId = null;
+		}
+	}
+
+	async function handleUpdate(pluginId: string, manifestUrl?: string) {
+		operatingPluginId = pluginId;
+		try {
+			await officialPlugins.updateInstalled(pluginId, manifestUrl);
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String(err);
+			snackbarKey('snackbar.update.failed', { message: msg });
 		} finally {
 			operatingPluginId = null;
 		}
@@ -176,7 +221,6 @@
 		operatingPluginId = 'url-install';
 		try {
 			await officialPlugins.installFromManifestUrl(url);
-			refreshInstalled();
 			activeTab = 'installed';
 			linkInstallDialogOpen = false;
 			manifestUrlInput = '';
@@ -201,7 +245,6 @@
 		operatingPluginId = targetId;
 		try {
 			await officialPlugins.uninstall(targetId);
-			refreshInstalled();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			snackbarKey('snackbar.uninstall.failed', { message: msg });
@@ -218,7 +261,6 @@
 			} else {
 				await officialPlugins.disable(pluginId);
 			}
-			refreshInstalled();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			snackbarKey('snackbar.toggle.failed', { message: msg });
@@ -351,12 +393,13 @@
 							{@const desc = resolveManifestText(record.manifest.description)}
 							{@const meta = getPluginCategoryMeta(record.manifest.type)}
 							{@const isBusy = operatingPluginId === record.manifest.id}
+							{@const updateOffer = updateOfferById.get(record.manifest.id)}
 							<div
 								class="flex flex-col gap-2 p-3 transition-colors hover:bg-surface-variant/30"
 								class:opacity-60={!record.enabled}
 							>
 								<div class="flex items-start justify-between gap-3">
-									<div class="flex min-w-0 flex-1 flex-col justify-center">
+									<div class="min-w-0 flex-1">
 										<div class="flex flex-wrap items-center gap-1.5">
 											<span class="m3-body-medium line-clamp-1 font-medium text-on-surface">
 												{name}
@@ -384,31 +427,45 @@
 												{desc}
 											</p>
 										{/if}
-									</div>
-									<div class="flex shrink-0 items-center gap-2">
-										<Switch
-											checked={record.enabled}
-											disabled={isBusy}
-											onCheckedChange={(checked) =>
-												handleToggleEnabled(record.manifest.id, checked === true)}
-										/>
-									</div>
-								</div>
-
-								<div class="flex items-center justify-between gap-2">
-									<div class="flex flex-wrap items-center gap-1">
 										{#if record.manifest.author}
-											<span class="m3-caption text-[10px] text-on-surface-variant/70">
+											<p class="m3-caption mt-1 text-[10px] text-on-surface-variant/70">
 												by {record.manifest.author}
-											</span>
+											</p>
 										{/if}
 									</div>
 
-									<div class="flex items-center gap-1">
+									{#if updateOffer}
+										<div class="flex shrink-0 flex-col items-end gap-1">
+											<Button
+												variant="filled"
+												class="h-8 shrink-0 px-3.5 text-xs font-medium"
+												disabled={isBusy}
+												onclick={() => handleUpdate(record.manifest.id, updateOffer.manifestUrl)}
+											>
+												{isBusy ? hostT('plugins.action.updating') : hostT('plugins.action.update')}
+											</Button>
+											<span class="m3-caption text-[10px] text-on-surface-variant">
+												v{updateOffer.currentVersion} → v{updateOffer.latestVersion}
+											</span>
+										</div>
+									{/if}
+								</div>
+
+								<div class="flex items-center justify-between gap-2">
+									<Button
+										variant="text"
+										class="h-6 shrink-0 px-1.5 text-[10px] text-error hover:bg-error/10"
+										disabled={isBusy}
+										onclick={() => promptUninstall(record.manifest.id, name)}
+									>
+										{hostT('common.uninstall')}
+									</Button>
+
+									<div class="flex shrink-0 items-center gap-1.5">
 										{#if record.manifest.configSchema}
 											<Button
 												variant="outlined"
-												class="h-6.5 px-2 text-[11px] font-normal"
+												class="h-7 px-2.5 text-[11px] font-normal"
 												disabled={isBusy || !record.enabled}
 												onclick={() =>
 													handleOpenConfig(record.manifest.id, name, record.manifest.configSchema)}
@@ -417,15 +474,16 @@
 												{hostT('plugins.action.settings')}
 											</Button>
 										{/if}
-										<IconButton
-											variant="danger"
+										<span class="m3-label-small text-[11px] text-on-surface-variant">
+											{hostT('plugins.action.enable')}
+										</span>
+										<Switch
 											size="sm"
-											ariaLabel={hostT('plugins.uninstall.aria')}
+											checked={record.enabled}
 											disabled={isBusy}
-											onclick={() => promptUninstall(record.manifest.id, name)}
-										>
-											<DeleteFill class="size-4" />
-										</IconButton>
+											onCheckedChange={(checked) =>
+												handleToggleEnabled(record.manifest.id, checked === true)}
+										/>
 									</div>
 								</div>
 							</div>
@@ -489,6 +547,7 @@
 								{@const meta = getPluginCategoryMeta(manifest.type)}
 								{@const installed = isInstalled(manifest.id)}
 								{@const isBusy = operatingPluginId === manifest.id}
+								{@const updateOffer = updateOfferById.get(manifest.id)}
 								<div
 									class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
 								>
@@ -522,8 +581,20 @@
 										{/if}
 									</div>
 
-									<div class="flex shrink-0 items-center gap-2">
-										{#if installed}
+									<div class="flex shrink-0 flex-col items-end gap-1">
+										{#if installed && updateOffer}
+											<Button
+												variant="filled"
+												class="h-8 shrink-0 px-3.5 text-xs font-medium"
+												disabled={isBusy}
+												onclick={() => handleUpdate(manifest.id, updateOffer.manifestUrl)}
+											>
+												{isBusy ? hostT('plugins.action.updating') : hostT('plugins.action.update')}
+											</Button>
+											<span class="m3-caption text-[10px] text-on-surface-variant">
+												v{updateOffer.currentVersion} → v{updateOffer.latestVersion}
+											</span>
+										{:else if installed}
 											<span
 												class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
 											>

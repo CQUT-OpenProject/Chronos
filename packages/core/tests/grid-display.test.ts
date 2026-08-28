@@ -108,4 +108,42 @@ describe('Grid & Display Models in @chronos/core', () => {
 		expect(displayModels[1]?.isInDisplayedWeek).toBe(false);
 		expect(displayModels[1]?.course.id).toBe('c2');
 	});
+
+	it('marks courses on holiday columns as muted without hiding them', () => {
+		const course = createCourse({
+			id: 'c-holiday',
+			name: '放假日课程',
+			dayOfWeek: 4,
+			startPeriod: 1,
+			endPeriod: 2
+		});
+		const timetable = createTimetable({
+			id: 't-holiday',
+			name: '测试课表',
+			courses: [course],
+			academicConfig: {
+				termStartDate: '2026-09-28',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [{ index: 1, startTime: '08:00', endTime: '08:45' }],
+				holidayCalendar: {
+					holidays: [{ date: '2026-10-01', label: '国庆节' }]
+				}
+			}
+		});
+
+		const grid = calculateTimetableGrid('2026-10-01', 1, timetable);
+		const mutedDays = new Set(
+			grid.visibleDays.filter((day) => day.holiday).map((day) => day.dayOfWeek)
+		);
+		const models = buildTimetableCourseDisplayModels(
+			timetable,
+			new Set(grid.visibleDays.map((day) => day.dayOfWeek)),
+			1,
+			mutedDays
+		);
+
+		expect(models).toHaveLength(1);
+		expect(models[0]?.isHolidayMuted).toBe(true);
+	});
 });

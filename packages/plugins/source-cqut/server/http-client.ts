@@ -49,7 +49,7 @@ function mergeSignals(signals: AbortSignal[]): AbortSignal {
 	return controller.signal;
 }
 
-export async function request(
+async function request(
 	jar: CookieJar,
 	url: string,
 	init: RequestInit,

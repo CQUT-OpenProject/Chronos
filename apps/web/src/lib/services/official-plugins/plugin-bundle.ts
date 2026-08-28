@@ -10,6 +10,20 @@ function parseSemver(version: string): [number, number, number] {
 	];
 }
 
+/** Ascending `x.y.z` comparison for plugin manifest versions. */
+export function comparePluginVersions(a: string, b: string): number {
+	const av = parseSemver(a);
+	const bv = parseSemver(b);
+	for (let i = 0; i < 3; i++) {
+		if (av[i] !== bv[i]) return av[i] - bv[i];
+	}
+	return 0;
+}
+
+export function isPluginVersionNewer(remote: string, local: string): boolean {
+	return comparePluginVersions(remote, local) > 0;
+}
+
 /** Returns true when `engineVersion` satisfies `minRequired` (semver x.y.z). */
 export function isEngineVersionCompatible(engineVersion: string, minRequired: string): boolean {
 	const [engineMajor, engineMinor, enginePatch] = parseSemver(engineVersion);

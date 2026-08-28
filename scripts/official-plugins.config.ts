@@ -42,12 +42,34 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 		id: 'tool-qrcode',
 		type: 'tool',
 		sourceDir: 'codec-qrcode',
-		name: { 'zh-CN': '导出为二维码', en: 'Timetable QR Code' },
+		name: { 'zh-CN': '二维码', en: 'QR Code' },
 		description: {
-			'zh-CN': '生成课表分享二维码矢量图与扫码/图片识别导入',
-			en: 'Generate timetable QR codes and import via scan or image'
+			'zh-CN': '通过二维码导入/导出课表',
+			en: 'Import and export timetables via QR codes'
 		},
 		entry: resolve(root, 'packages/plugins/codec-qrcode/bundle/entry.ts')
+	},
+	{
+		id: 'tool-calendar-holidays',
+		type: 'tool',
+		sourceDir: 'calendar-holidays',
+		name: { 'zh-CN': '法定节假日', en: 'Public Holidays' },
+		description: {
+			'zh-CN': '在课表中展示法定节假日',
+			en: 'Show public holidays on the timetable'
+		},
+		entry: resolve(root, 'packages/plugins/calendar-holidays/bundle/entry.ts')
+	},
+	{
+		id: 'tool-today',
+		type: 'tool',
+		sourceDir: 'today',
+		name: { 'zh-CN': '今日', en: 'Today' },
+		description: {
+			'zh-CN': '快速查看当天课程',
+			en: "Bottom tab showing today's courses"
+		},
+		entry: resolve(root, 'packages/plugins/today/bundle/entry.ts')
 	}
 ];
 

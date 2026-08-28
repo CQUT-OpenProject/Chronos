@@ -1,5 +1,11 @@
 /// <reference types="vite/client" />
 
+declare namespace App {
+	interface PageState {
+		chronosOverlay?: 1;
+	}
+}
+
 interface BeforeInstallPromptEvent extends Event {
 	prompt(): Promise<void>;
 	userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;

@@ -92,3 +92,74 @@ function boundaryToDate(now: Date, boundaryMinutes: number, nowMinutes: number):
 	}
 	return candidate;
 }
+
+export function computeDelayUntilNextMidnightMillis(now = new Date()): number {
+	const nextMidnight = new Date(now);
+	nextMidnight.setHours(24, 0, 0, 0);
+	return Math.max(nextMidnight.getTime() - now.getTime(), MIN_TIME_REFRESH_DELAY_MILLIS);
+}
+
+export interface DayClockHandle {
+	reschedule(): void;
+	dispose(): void;
+}
+
+export function createDayClock(options: {
+	getPeriodTimes: () => PeriodTime[];
+	onMidnight: () => void;
+	onPeriodBoundary: () => void;
+}): DayClockHandle {
+	let todayTimer: ReturnType<typeof setTimeout> | null = null;
+	let periodTimer: ReturnType<typeof setTimeout> | null = null;
+	let disposed = false;
+
+	function clearTimers() {
+		if (todayTimer) clearTimeout(todayTimer);
+		if (periodTimer) clearTimeout(periodTimer);
+		todayTimer = null;
+		periodTimer = null;
+	}
+
+	function scheduleMidnight() {
+		if (disposed) return;
+		const delay = computeDelayUntilNextMidnightMillis(new Date());
+		todayTimer = setTimeout(() => {
+			if (disposed) return;
+			options.onMidnight();
+			scheduleMidnight();
+		}, delay);
+	}
+
+	function schedulePeriod() {
+		if (disposed) return;
+		if (periodTimer) clearTimeout(periodTimer);
+		periodTimer = null;
+
+		const parsed = parsePeriodRanges(options.getPeriodTimes());
+		if (parsed.length === 0) return;
+
+		const delay = computeDelayUntilNextCurrentTimeRefreshMillis(new Date(), parsed);
+		periodTimer = setTimeout(() => {
+			if (disposed) return;
+			options.onPeriodBoundary();
+			schedulePeriod();
+		}, delay);
+	}
+
+	function reschedule() {
+		if (disposed) return;
+		clearTimers();
+		scheduleMidnight();
+		schedulePeriod();
+	}
+
+	reschedule();
+
+	return {
+		reschedule,
+		dispose() {
+			disposed = true;
+			clearTimers();
+		}
+	};
+}

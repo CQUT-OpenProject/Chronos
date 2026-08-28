@@ -321,4 +321,47 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(engine.state.currentTimetable?.id).toBe('active-1');
 		expect(await env.storage.getActiveTimetableId()).toBe('active-1');
 	});
+
+	it('saveCurrentTimetableDetails deep-merges academicConfig and preserves holidayCalendar', async () => {
+		const { env } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		const holidayCalendar = {
+			holidays: [{ date: '2026-10-01', label: '国庆节' }],
+			syncedAt: 1,
+			syncedYears: [2026]
+		};
+		const timetable = createTimetable({
+			id: 't1',
+			name: '课表',
+			courses: [],
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [],
+				holidayCalendar
+			}
+		});
+		await env.storage.saveTimetable(timetable);
+		await engine.switchTimetable('t1');
+
+		await engine.saveCurrentTimetableDetails({
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [{ index: 1, startTime: '08:00', endTime: '08:45' }]
+			},
+			viewPrefs: {
+				showSaturday: true,
+				showSunday: false,
+				showNonCurrentWeekCourses: false
+			}
+		});
+
+		expect(engine.state.currentTimetable?.academicConfig.holidayCalendar).toEqual(holidayCalendar);
+		engine.dispose();
+	});
 });

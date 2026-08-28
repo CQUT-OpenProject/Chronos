@@ -20,3 +20,11 @@ export interface OfficialPluginAssets {
 	iconThemeJson?: string | null;
 	cssCode?: string | null;
 }
+
+export interface PluginUpdateOffer {
+	pluginId: string;
+	currentVersion: string;
+	latestVersion: string;
+	manifest: PluginManifest;
+	manifestUrl: string;
+}

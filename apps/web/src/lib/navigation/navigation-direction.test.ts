@@ -18,13 +18,13 @@ describe('getNavigationDirection', () => {
 	it('returns forward when entering secondary routes', () => {
 		expect(getNavigationDirection('/mine', '/about')).toBe('forward');
 		expect(getNavigationDirection('/mine', '/plugins')).toBe('forward');
-		expect(getNavigationDirection('/', '/timetable/course-detail')).toBe('forward');
+		expect(getNavigationDirection('/', '/timetable/details')).toBe('forward');
 	});
 
 	it('returns back when leaving secondary routes', () => {
 		expect(getNavigationDirection('/about', '/mine')).toBe('back');
 		expect(getNavigationDirection('/plugins', '/mine')).toBe('back');
-		expect(getNavigationDirection('/timetable/course-detail', '/')).toBe('back');
+		expect(getNavigationDirection('/timetable/details', '/')).toBe('back');
 	});
 
 	it('returns forward when going deeper in secondary routes', () => {

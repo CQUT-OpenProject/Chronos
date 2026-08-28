@@ -9,6 +9,25 @@ import {
 } from './timetable-mappers';
 
 describe('timetable-mappers', () => {
+	it('toSettingsDraft omits plugin-managed holidayCalendar', () => {
+		const draft = toSettingsDraft(
+			sampleTimetable({
+				academicConfig: {
+					termStartDate: '2026-03-02',
+					startWeek: 1,
+					endWeek: 20,
+					periodTimes: [],
+					holidayCalendar: {
+						holidays: [{ date: '2026-10-01', label: '国庆节' }],
+						syncedAt: 1,
+						syncedYears: [2026]
+					}
+				}
+			})
+		);
+		expect(draft.academicConfig.holidayCalendar).toBeUndefined();
+	});
+
 	it('toSettingsDraft normalizes non monday term start date', () => {
 		const draft = toSettingsDraft(
 			sampleTimetable({
@@ -50,10 +69,12 @@ describe('timetable-mappers', () => {
 
 function sampleTimetable({
 	termStartDate = '2026-03-02',
-	courses = []
+	courses = [],
+	academicConfig
 }: {
 	termStartDate?: string;
 	courses?: ReturnType<typeof createCourse>[];
+	academicConfig?: Parameters<typeof createTimetable>[0]['academicConfig'];
 }) {
 	return createTimetable({
 		id: 'timetable',
@@ -61,7 +82,7 @@ function sampleTimetable({
 		courses,
 		createdAt: 0,
 		updatedAt: 0,
-		academicConfig: {
+		academicConfig: academicConfig ?? {
 			termStartDate,
 			startWeek: 1,
 			endWeek: 20,

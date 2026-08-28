@@ -62,10 +62,14 @@ export function computeTimetableWeekLayout(
 	});
 
 	const visibleDaySet = new Set(gridModel.visibleDays.map((day) => day.dayOfWeek));
+	const holidayMutedDayOfWeeks = new Set(
+		gridModel.visibleDays.filter((day) => day.holiday).map((day) => day.dayOfWeek)
+	);
 	const courseDisplayModels = buildTimetableCourseDisplayModels(
 		timetable,
 		visibleDaySet,
-		displayedWeek
+		displayedWeek,
+		holidayMutedDayOfWeeks
 	);
 
 	const placements = placeCapsules({

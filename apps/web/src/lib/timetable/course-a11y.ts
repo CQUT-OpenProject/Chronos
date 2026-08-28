@@ -11,13 +11,17 @@ function formatPeriodRange(startPeriod: number, endPeriod: number): string {
 
 export function buildCourseCapsuleAriaLabel(
 	course: Course,
-	options?: { teacher?: string }
+	options?: { teacher?: string; isHolidayMuted?: boolean }
 ): string {
 	const parts = [
 		course.name,
 		timetableDayLabel(course.dayOfWeek),
 		formatPeriodRange(course.startPeriod, course.endPeriod)
 	];
+
+	if (options?.isHolidayMuted) {
+		parts.push(hostT('timetable.holiday.label'));
+	}
 
 	const location = course.location.trim();
 	if (location) parts.push(location);

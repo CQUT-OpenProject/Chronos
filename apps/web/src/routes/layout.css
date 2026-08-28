@@ -2,6 +2,8 @@
 @source '..';
 @source '../../../../packages/ui-kit/src';
 @source '../../../../packages/plugins/wallpaper/src';
+@source '../../../../packages/plugins/calendar-holidays/src';
+@source '../../../../packages/plugins/today/src';
 @source '../../../../packages/plugins/codec-qrcode/src';
 @source '../../../../packages/plugins/source-cqut/src';
 @source '../../../../packages/plugins/codec-share/src';

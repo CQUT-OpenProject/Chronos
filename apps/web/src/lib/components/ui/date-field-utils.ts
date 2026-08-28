@@ -4,11 +4,10 @@ import {
 	calendarDateToIso,
 	DEFAULT_DATE_FIELD_LABELS,
 	formatDateDisplay,
-	isoToCalendarDate,
-	type DateFieldLabels
+	isoToCalendarDate
 } from '@chronos/ui-kit';
 
-export { calendarDateToIso, formatDateDisplay, isoToCalendarDate, type DateFieldLabels };
+export { calendarDateToIso, formatDateDisplay, isoToCalendarDate };
 
 export function buildDateFieldTriggerLabel(label: string, iso: string): string {
 	return buildUiDateFieldTriggerLabel(label, iso, {

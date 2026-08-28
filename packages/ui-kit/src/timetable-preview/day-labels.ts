@@ -1,3 +1,5 @@
+import { truncateHolidayLabel } from '@chronos/core';
+
 const DAY_LABELS = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 const DAY_SHORT_LABELS = ['', '一', '二', '三', '四', '五', '六', '日'];
 
@@ -7,4 +9,12 @@ export function timetableDayLabel(dayOfWeek: number): string {
 
 export function timetableDayShortLabel(dayOfWeek: number): string {
 	return DAY_SHORT_LABELS[dayOfWeek] ?? '?';
+}
+
+export function timetableDayColumnHeaderLabel(day: {
+	dayOfWeek: number;
+	holiday?: { label: string };
+}): string {
+	if (day.holiday) return truncateHolidayLabel(day.holiday.label);
+	return timetableDayShortLabel(day.dayOfWeek);
 }

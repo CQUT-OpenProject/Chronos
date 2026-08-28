@@ -171,6 +171,8 @@ export interface BottomTabSlotContribution {
 	iconFill?: ShellIconRef;
 	badge?: LocalizedText | (() => number | string | null);
 	onClick?(event: MouseEvent, ctx?: ChronosContext): void | Promise<void>;
+	/** Declares this tab as the cold-start landing page when the app opens on `/`. */
+	defaultLaunch?: boolean;
 }
 
 /** Standard slot contract map */
@@ -219,4 +221,16 @@ export function resolveLocalizedText(
  */
 export function pickPrimary<T extends { isPrimary?: boolean }>(items: readonly T[]): T | undefined {
 	return items.find((item) => item.isPrimary) ?? items[0];
+}
+
+/**
+ * Resolves the default cold-start tab from bottom-bar contributions.
+ * When multiple tabs declare defaultLaunch, the lowest order wins.
+ */
+export function resolveDefaultLaunchTab(
+	tabs: readonly BottomTabSlotContribution[]
+): BottomTabSlotContribution | undefined {
+	const candidates = tabs.filter((tab) => tab.defaultLaunch);
+	if (candidates.length === 0) return undefined;
+	return [...candidates].sort((left, right) => (left.order ?? 50) - (right.order ?? 50))[0];
 }

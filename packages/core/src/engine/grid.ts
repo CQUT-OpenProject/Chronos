@@ -1,11 +1,14 @@
 import type { PeriodTime, Timetable } from '../domain/timetable';
+import type { CalendarHoliday } from '../domain/timetable';
 import { AcademicCalendarService } from './calendar';
+import { buildHolidayLookup } from './holiday-calendar';
 import { addDays, formatIsoDate, parseIsoDate } from './date';
 
 export interface TimetableDayModel {
 	dayOfWeek: number;
 	date: string;
 	isToday: boolean;
+	holiday?: CalendarHoliday;
 }
 
 export interface TimetableGridModel {
@@ -64,6 +67,7 @@ export function calculateTimetableGrid(
 	}
 ): TimetableGridModel {
 	const calendarService = options?.academicCalendarService ?? new AcademicCalendarService();
+	const holidayLookup = buildHolidayLookup(timetable.academicConfig.holidayCalendar);
 	const visibleDays = buildVisibleDayIndices(timetable);
 	const startOfWeek = parseIsoDate(
 		calendarService.resolveWeekStart(timetable.academicConfig, displayedWeek, today)
@@ -75,7 +79,8 @@ export function calculateTimetableGrid(
 		return {
 			dayOfWeek: dayIndex,
 			date: dateString,
-			isToday: dateString === today
+			isToday: dateString === today,
+			...(holidayLookup.has(dateString) ? { holiday: holidayLookup.get(dateString) } : {})
 		};
 	});
 

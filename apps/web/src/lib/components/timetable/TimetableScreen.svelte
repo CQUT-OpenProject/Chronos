@@ -4,7 +4,7 @@
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
-	import { formatWeekDateRange } from '@chronos/core';
+	import { formatWeekDateRange, dayOfWeekFromIso } from '@chronos/core';
 	import { getContext } from 'svelte';
 	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
@@ -96,12 +96,6 @@
 			event.preventDefault();
 			weekGesture.onHeaderTap();
 		}
-	}
-
-	function dayOfWeekFromIso(iso: string) {
-		const date = new Date(`${iso}T12:00:00`);
-		const jsDay = date.getDay();
-		return jsDay === 0 ? 7 : jsDay;
 	}
 </script>
 

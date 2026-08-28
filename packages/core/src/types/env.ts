@@ -1,24 +1,16 @@
 import type {
-	Disposable,
 	HttpRequestOptions,
 	HttpResponse,
 	IAnalyticsService,
 	IStorageService,
-	StorageChangeEvent,
 	VaultSecretOptions
 } from './services';
 
-export type {
-	Disposable,
-	HttpRequestOptions,
-	HttpResponse,
-	StorageChangeEvent,
-	VaultSecretOptions
-};
+export type { Disposable, StorageChangeEvent } from './services';
 
 export type PlatformType = 'web' | 'ios' | 'android' | 'node';
 
-export type ChronosEnvStorage = Pick<
+type ChronosEnvStorage = Pick<
 	IStorageService,
 	| 'getTimetable'
 	| 'listTimetables'

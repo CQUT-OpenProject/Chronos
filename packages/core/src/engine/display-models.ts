@@ -5,6 +5,7 @@ import { courseSlotKey } from './slot-key';
 export interface TimetableCourseDisplayModel {
 	course: Course;
 	isInDisplayedWeek: boolean;
+	isHolidayMuted?: boolean;
 }
 
 interface FutureCourseCandidate {
@@ -26,7 +27,8 @@ function isBetterFutureCandidate(
 export function buildTimetableCourseDisplayModels(
 	timetable: Timetable,
 	visibleDayOfWeeks: Set<number>,
-	displayedWeek: number
+	displayedWeek: number,
+	holidayMutedDayOfWeeks: ReadonlySet<number> = new Set()
 ): TimetableCourseDisplayModel[] {
 	const currentEntries: TimetableCourseDisplayModel[] = [];
 	const nonCurrentCandidates: Array<{ course: Course; originalIndex: number }> = [];
@@ -38,7 +40,8 @@ export function buildTimetableCourseDisplayModels(
 		if (course.weeks.length === 0 || course.weeks.includes(displayedWeek)) {
 			currentEntries.push({
 				course: { ...course, weeks: [...course.weeks] },
-				isInDisplayedWeek: true
+				isInDisplayedWeek: true,
+				...(holidayMutedDayOfWeeks.has(course.dayOfWeek) ? { isHolidayMuted: true } : {})
 			});
 		} else {
 			nonCurrentCandidates.push({ course, originalIndex: i });
@@ -80,7 +83,8 @@ export function buildTimetableCourseDisplayModels(
 		.sort((left, right) => left.originalIndex - right.originalIndex)
 		.map((candidate) => ({
 			course: { ...candidate.course, weeks: [...candidate.course.weeks] },
-			isInDisplayedWeek: false
+			isInDisplayedWeek: false,
+			...(holidayMutedDayOfWeeks.has(candidate.course.dayOfWeek) ? { isHolidayMuted: true } : {})
 		}));
 
 	return [...currentEntries, ...futureEntries];
