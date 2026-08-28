@@ -59,6 +59,17 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 			en: 'Show public holidays on the timetable'
 		},
 		entry: resolve(root, 'packages/plugins/calendar-holidays/bundle/entry.ts')
+	},
+	{
+		id: 'tool-today',
+		type: 'tool',
+		sourceDir: 'today',
+		name: { 'zh-CN': '今日', en: 'Today' },
+		description: {
+			'zh-CN': '快速查看当天课程',
+			en: "Bottom tab showing today's courses"
+		},
+		entry: resolve(root, 'packages/plugins/today/bundle/entry.ts')
 	}
 ];
 

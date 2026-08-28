@@ -30,6 +30,8 @@ export { LayersClearFill } from '@material-symbols-svg/svelte/icons/layers-clear
 export { PhotoLibraryFill } from '@material-symbols-svg/svelte/icons/photo-library';
 export { ScheduleFill } from '@material-symbols-svg/svelte/icons/schedule';
 export { EventFill } from '@material-symbols-svg/svelte/icons/event';
+export { Today } from '@material-symbols-svg/svelte/icons/today';
+export { CalendarToday as CalendarTodayFill } from '@material-symbols-svg/svelte/icons/calendar-today';
 export { Visibility } from '@material-symbols-svg/svelte/icons/visibility';
 export { VisibilityOff } from '@material-symbols-svg/svelte/icons/visibility-off';
 export { AddHomeFill } from '@material-symbols-svg/svelte/icons/add-home';

@@ -2,6 +2,7 @@ import {
 	AddHomeFill,
 	CalendarMonth,
 	CalendarMonthFill,
+	CalendarTodayFill,
 	DownloadFill,
 	EventFill,
 	InfoFill,
@@ -11,6 +12,7 @@ import {
 	PaletteFill,
 	Person,
 	PersonFill,
+	Today,
 	WallpaperFill,
 	CodeFill
 } from '$lib/icons';
@@ -30,10 +32,10 @@ export const SHELL_ICON_MAP = {
 	wallpaper: WallpaperFill,
 	code: CodeFill,
 	'add-home': AddHomeFill,
-	info: InfoFill
+	info: InfoFill,
+	today: Today,
+	'calendar-today': CalendarTodayFill
 } as const satisfies Record<string, Component<{ class?: string }>>;
-
-/** Resolves string icon keys declared on mine.item slot contributions. */
 export const MINE_ITEM_ICON_MAP = {
 	'list-alt': ListAltFill,
 	download: DownloadFill,

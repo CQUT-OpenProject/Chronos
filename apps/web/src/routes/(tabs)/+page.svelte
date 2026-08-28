@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
@@ -10,14 +11,22 @@
 	import CourseDetailSheet from '$lib/components/timetable/CourseDetailSheet.svelte';
 	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
+	import { ensureEngineReady, getAppController } from '$lib/services/app-engine';
+	import { tryDefaultLaunchRedirect } from '$lib/shell/default-launch-tab';
 
 	const screen = getContext<TimetableScreenController>('timetableScreen');
 
+	let launchResolved = $state(false);
 	let clientReady = $state(false);
 	let detailOpen = $state(false);
 	let detailCourseId = $state<string | null>(null);
 
-	onMount(() => {
+	onMount(async () => {
+		await ensureEngineReady();
+		if (await tryDefaultLaunchRedirect(page.url.pathname, getAppController())) {
+			return;
+		}
+		launchResolved = true;
 		clientReady = true;
 		screen.refresh();
 	});
@@ -34,9 +43,9 @@
 	}
 </script>
 
-{#if browser && clientReady && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
+{#if browser && launchResolved && clientReady && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
 	<EmptyTimetableState />
-{:else if browser && clientReady && screen.state.hasLoadedAppState}
+{:else if browser && launchResolved && clientReady && screen.state.hasLoadedAppState}
 	<TimetableScreen
 		{screen}
 		onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
@@ -44,7 +53,7 @@
 		onCourseLongClick={navigateToCourseEditor}
 	/>
 	<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
-{:else if browser && clientReady}
+{:else if browser}
 	<div class="flex min-h-[60vh] items-center justify-center p-4">
 		<LoadingIndicator />
 	</div>

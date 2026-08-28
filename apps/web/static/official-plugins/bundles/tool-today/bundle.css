@@ -1,0 +1,2 @@
+:root{--dynamic-tint-sidebar:#ffffff8a;--dynamic-tint-grid:#ffffff61}.dark{--dynamic-tint-sidebar:#18181bb8;--dynamic-tint-grid:#18181b9e}.timetable-dynamic-tint-body{background-image:linear-gradient(90deg, var(--dynamic-tint-sidebar) 0, var(--dynamic-tint-sidebar) var(--sidebar-width), var(--dynamic-tint-grid) var(--sidebar-width), var(--dynamic-tint-grid) 100%)}
+/*$vite$:1*/
