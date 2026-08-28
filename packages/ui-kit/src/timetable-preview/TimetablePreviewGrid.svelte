@@ -10,7 +10,7 @@
 	} from '@chronos/core';
 	import { timetableDayColumnHeaderLabel } from './day-labels';
 	import MiddleTruncateText from './MiddleTruncateText.svelte';
-	import { createSizedCanvasMeasurer, fitFontSizePx } from '../utils/middle-truncate';
+	import { createFitWidthFontAttachment } from '../utils/fit-width-font.svelte';
 	import {
 		timetableBodyTintClass,
 		timetableSidebarTintClass,
@@ -132,51 +132,6 @@
 		schedule();
 		return () => clearTimeout(timeoutId);
 	});
-
-	function fitWidthFont(
-		getParams: () => { lines: string[]; maxFontPx: number; fromParent?: boolean }
-	): Attachment<HTMLElement> {
-		return (node) => {
-			const apply = () => {
-				const { lines, maxFontPx, fromParent = false } = getParams();
-				const contents = lines.filter((line) => line.length > 0);
-				const box = fromParent ? (node.parentElement ?? node) : node;
-				let available = box.clientWidth;
-				if (fromParent) {
-					const style = getComputedStyle(node);
-					available -=
-						(Number.parseFloat(style.paddingLeft) || 0) +
-						(Number.parseFloat(style.paddingRight) || 0);
-					available = Math.max(0, available);
-				}
-				if (available <= 0 || contents.length === 0) return;
-				const measurerForSize = createSizedCanvasMeasurer(node);
-				const fontPx = fitFontSizePx(
-					available,
-					(size) => {
-						const measure = measurerForSize(size);
-						return Math.max(...contents.map((line) => measure(line)));
-					},
-					maxFontPx,
-					FIT_MIN_FONT_PX
-				);
-				node.style.fontSize = `${fontPx}px`;
-			};
-			let observed: Element | null = null;
-			const observer = new ResizeObserver(apply);
-			$effect(() => {
-				const { fromParent = false } = getParams();
-				const target = fromParent ? (node.parentElement ?? node) : node;
-				if (observed !== target) {
-					observer.disconnect();
-					observer.observe(target);
-					observed = target;
-				}
-				apply();
-			});
-			return () => observer.disconnect();
-		};
-	}
 
 	function expandSlot(key: string) {
 		if (onExpandSlot) {
@@ -363,7 +318,7 @@
 												style:background-color="color-mix(in srgb, currentColor 12%, transparent)"
 												style:color="color-mix(in srgb, currentColor 80%, transparent)"
 												style:font-size="{item.scale.badgePx}px"
-												{@attach fitWidthFont(() => ({
+												{@attach createFitWidthFontAttachment(() => ({
 													lines: [badgeText],
 													maxFontPx: item.scale.badgePx,
 													fromParent: true
@@ -383,7 +338,7 @@
 											class="mt-1.5 shrink-0 overflow-hidden leading-tight"
 											style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {item
 												.locationMetrics.fontPx}px; height: {item.locationMetrics.heightPx}px"
-											{@attach fitWidthFont(() => ({
+											{@attach createFitWidthFontAttachment(() => ({
 												lines: item.locationLines,
 												maxFontPx: item.locationMetrics.fontPx
 											}))}
@@ -398,7 +353,7 @@
 											class="mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap"
 											style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {item
 												.scale.detailPx}px"
-											{@attach fitWidthFont(() => ({
+											{@attach createFitWidthFontAttachment(() => ({
 												lines: [item.teacher],
 												maxFontPx: item.scale.detailPx
 											}))}
@@ -426,7 +381,7 @@
 												style:background-color="color-mix(in srgb, currentColor 12%, transparent)"
 												style:color="color-mix(in srgb, currentColor 80%, transparent)"
 												style:font-size="{item.scale.badgePx}px"
-												{@attach fitWidthFont(() => ({
+												{@attach createFitWidthFontAttachment(() => ({
 													lines: [badgeText],
 													maxFontPx: item.scale.badgePx,
 													fromParent: true
@@ -446,7 +401,7 @@
 											class="mt-1.5 shrink-0 overflow-hidden leading-tight"
 											style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {item
 												.locationMetrics.fontPx}px; height: {item.locationMetrics.heightPx}px"
-											{@attach fitWidthFont(() => ({
+											{@attach createFitWidthFontAttachment(() => ({
 												lines: item.locationLines,
 												maxFontPx: item.locationMetrics.fontPx
 											}))}
@@ -461,7 +416,7 @@
 											class="mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap"
 											style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {item
 												.scale.detailPx}px"
-											{@attach fitWidthFont(() => ({
+											{@attach createFitWidthFontAttachment(() => ({
 												lines: [item.teacher],
 												maxFontPx: item.scale.detailPx
 											}))}

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { slide } from 'svelte/transition';
-	import type { Attachment } from 'svelte/attachments';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { Course } from '@chronos/core';
 	import {
@@ -10,7 +9,7 @@
 		resolveCoursePaint,
 		resolveLocalizedText
 	} from '@chronos/core';
-	import { createSizedCanvasMeasurer, fitFontSizePx } from '@chronos/ui-kit/utils/middle-truncate';
+	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import { getAppController } from '$lib/services/app-engine';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -85,34 +84,6 @@
 				]
 			: []
 	);
-
-	function fitCourseNameFont(getParams: () => { name: string }): Attachment<HTMLElement> {
-		return (node) => {
-			const apply = () => {
-				const { name } = getParams();
-				if (!name || node.clientWidth <= 0) return;
-
-				const measurerForSize = createSizedCanvasMeasurer(node);
-				const fontPx = fitFontSizePx(
-					node.clientWidth,
-					(size) => measurerForSize(size)(name),
-					HEADLINE_SMALL_FONT_PX,
-					FIT_MIN_FONT_PX
-				);
-				node.style.fontSize = `${fontPx}px`;
-			};
-
-			const observer = new ResizeObserver(apply);
-			observer.observe(node);
-
-			$effect(() => {
-				getParams();
-				apply();
-			});
-
-			return () => observer.disconnect();
-		};
-	}
 </script>
 
 {#if !courseId}
@@ -128,7 +99,11 @@
 		></span>
 		<h2
 			class="m3-headline-small min-w-0 flex-1 font-bold whitespace-nowrap text-on-surface"
-			{@attach fitCourseNameFont(() => ({ name: course.name }))}
+			{@attach createFitWidthFontAttachment(() => ({
+				lines: [course.name],
+				maxFontPx: HEADLINE_SMALL_FONT_PX,
+				minFontPx: FIT_MIN_FONT_PX
+			}))}
 		>
 			{course.name}
 		</h2>

@@ -11,7 +11,7 @@
 	} from '@chronos/core';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
-	import { createSizedCanvasMeasurer, fitFontSizePx } from '@chronos/ui-kit/utils/middle-truncate';
+	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayColumnHeaderLabel } from '$lib/timetable/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,
@@ -206,59 +206,6 @@
 
 	function dayOfMonth(date: string): string {
 		return date.slice(8, 10);
-	}
-
-	/**
-	 * Pass a getter so `{@attach fitWidthFont(() => …)}` does not re-create the
-	 * attachment when params change — inner `$effect` applies updates instead.
-	 */
-	function fitWidthFont(
-		getParams: () => { lines: string[]; maxFontPx: number; fromParent?: boolean }
-	): Attachment<HTMLElement> {
-		return (node) => {
-			const apply = () => {
-				const { lines, maxFontPx, fromParent = false } = getParams();
-				const contents = lines.filter((line) => line.length > 0);
-				const box = fromParent ? (node.parentElement ?? node) : node;
-				let available = box.clientWidth;
-				if (fromParent) {
-					const style = getComputedStyle(node);
-					available -=
-						(Number.parseFloat(style.paddingLeft) || 0) +
-						(Number.parseFloat(style.paddingRight) || 0);
-					available = Math.max(0, available);
-				}
-				if (available <= 0 || contents.length === 0) return;
-
-				const measurerForSize = createSizedCanvasMeasurer(node);
-				const fontPx = fitFontSizePx(
-					available,
-					(size) => {
-						const measure = measurerForSize(size);
-						return Math.max(...contents.map((line) => measure(line)));
-					},
-					maxFontPx,
-					FIT_MIN_FONT_PX
-				);
-				node.style.fontSize = `${fontPx}px`;
-			};
-
-			let observed: Element | null = null;
-			const observer = new ResizeObserver(apply);
-
-			$effect(() => {
-				const { fromParent = false } = getParams();
-				const target = fromParent ? (node.parentElement ?? node) : node;
-				if (observed !== target) {
-					observer.disconnect();
-					observer.observe(target);
-					observed = target;
-				}
-				apply();
-			});
-
-			return () => observer.disconnect();
-		};
 	}
 
 	function expandSlot(key: string) {
@@ -467,7 +414,7 @@
 					style:background-color="color-mix(in srgb, currentColor 12%, transparent)"
 					style:color="color-mix(in srgb, currentColor 80%, transparent)"
 					style:font-size="{scale.badgePx}px"
-					{@attach fitWidthFont(() => ({
+					{@attach createFitWidthFontAttachment(() => ({
 						lines: [badgeText],
 						maxFontPx: scale.badgePx,
 						fromParent: true
@@ -486,7 +433,7 @@
 			<div
 				class="mt-1.5 shrink-0 overflow-hidden leading-tight"
 				style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {locationMetrics.fontPx}px; height: {locationMetrics.heightPx}px"
-				{@attach fitWidthFont(() => ({
+				{@attach createFitWidthFontAttachment(() => ({
 					lines: locationLines,
 					maxFontPx: locationMetrics.fontPx
 				}))}
@@ -500,7 +447,10 @@
 			<div
 				class="mt-0.5 shrink-0 overflow-hidden leading-tight whitespace-nowrap"
 				style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {scale.detailPx}px"
-				{@attach fitWidthFont(() => ({ lines: [teacher], maxFontPx: scale.detailPx }))}
+				{@attach createFitWidthFontAttachment(() => ({
+					lines: [teacher],
+					maxFontPx: scale.detailPx
+				}))}
 			>
 				{teacher}
 			</div>
