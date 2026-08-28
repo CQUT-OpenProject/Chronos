@@ -123,6 +123,8 @@ export default defineConfig({
 				cache: false
 			},
 			'build:official-plugins': 'node --experimental-strip-types scripts/build-official-plugins.ts',
+			'fetch:holiday-cn-fallback':
+				'node --experimental-strip-types scripts/fetch-holiday-cn-fallback.ts',
 			'verify:official-plugins':
 				'node --experimental-strip-types scripts/verify-official-plugins.ts'
 		}
