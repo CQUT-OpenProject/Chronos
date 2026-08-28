@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { slide } from 'svelte/transition';
+	import type { Attachment } from 'svelte/attachments';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { Course } from '@chronos/core';
 	import {
@@ -9,9 +10,13 @@
 		resolveCoursePaint,
 		resolveLocalizedText
 	} from '@chronos/core';
+	import { createSizedCanvasMeasurer, fitFontSizePx } from '@chronos/ui-kit/utils/middle-truncate';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import { getAppController } from '$lib/services/app-engine';
 	import Button from '$lib/components/ui/Button.svelte';
+
+	const HEADLINE_SMALL_FONT_PX = 24;
+	const FIT_MIN_FONT_PX = 12;
 
 	let {
 		shell,
@@ -80,6 +85,34 @@
 				]
 			: []
 	);
+
+	function fitCourseNameFont(getParams: () => { name: string }): Attachment<HTMLElement> {
+		return (node) => {
+			const apply = () => {
+				const { name } = getParams();
+				if (!name || node.clientWidth <= 0) return;
+
+				const measurerForSize = createSizedCanvasMeasurer(node);
+				const fontPx = fitFontSizePx(
+					node.clientWidth,
+					(size) => measurerForSize(size)(name),
+					HEADLINE_SMALL_FONT_PX,
+					FIT_MIN_FONT_PX
+				);
+				node.style.fontSize = `${fontPx}px`;
+			};
+
+			const observer = new ResizeObserver(apply);
+			observer.observe(node);
+
+			$effect(() => {
+				getParams();
+				apply();
+			});
+
+			return () => observer.disconnect();
+		};
+	}
 </script>
 
 {#if !courseId}
@@ -87,19 +120,21 @@
 		{hostT('course.detail.noId')}
 	</p>
 {:else if course}
-	<div class="mb-6 flex items-center gap-3 py-2">
+	<div class="mb-6 flex min-w-0 items-center gap-3 py-2">
 		<span
 			class="course-capsule size-3 shrink-0 rounded-full"
 			style:--capsule={paint?.background}
 			style:--capsule-fg={paint?.foreground}
 		></span>
-		<h2 class="m3-headline-small flex-1 font-bold text-on-surface">{course.name}</h2>
+		<h2
+			class="m3-headline-small min-w-0 flex-1 font-bold whitespace-nowrap text-on-surface"
+			{@attach fitCourseNameFont(() => ({ name: course.name }))}
+		>
+			{course.name}
+		</h2>
 	</div>
 
 	<section class="rounded-2xl bg-surface-variant/40 p-4">
-		<h3 class="m3-title-small mb-2 text-on-surface-variant">
-			{hostT('course.detail.basicInfo')}
-		</h3>
 		<div class="divide-y divide-outline-variant/60">
 			{#each detailRows as row (row.label)}
 				<div class="m3-body-medium flex items-center justify-between gap-4 py-2.5">
