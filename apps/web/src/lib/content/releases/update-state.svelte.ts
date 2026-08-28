@@ -109,6 +109,8 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 		trackEvent('pwa_update_apply');
 		try {
 			await swAdapter.applyUpdateAndReload();
+			// Reload should unmount the page; reset if the browser did not navigate.
+			updating = false;
 		} catch (err) {
 			updating = false;
 			errorMessage = err instanceof Error ? err.message : '安装更新失败，请重试';

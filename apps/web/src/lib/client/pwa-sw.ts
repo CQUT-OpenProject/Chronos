@@ -5,6 +5,8 @@ let needRefresh = false;
 
 let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
 
+const CONTROLLER_CHANGE_TIMEOUT_MS = 3000;
+
 export function isSwUpdatePending(): boolean {
 	return needRefresh;
 }
@@ -38,18 +40,60 @@ export async function checkAndApplySwUpdate(): Promise<boolean> {
 	return needRefresh;
 }
 
+function reloadPage(): void {
+	needRefresh = false;
+	window.location.reload();
+}
+
+export async function waitForSwActivationAndReload(
+	getRegistration: () => Promise<ServiceWorkerRegistration | undefined>,
+	reload: () => void = reloadPage,
+	timeoutMs = CONTROLLER_CHANGE_TIMEOUT_MS
+): Promise<void> {
+	const registration = await getRegistration();
+	const waiting = registration?.waiting;
+
+	if (!waiting) {
+		void updateServiceWorker?.(true);
+		reload();
+		return;
+	}
+
+	await new Promise<void>((resolve) => {
+		let settled = false;
+		const finish = () => {
+			if (settled) return;
+			settled = true;
+			resolve();
+			reload();
+		};
+
+		navigator.serviceWorker.addEventListener('controllerchange', finish, { once: true });
+		waiting.postMessage({ type: 'SKIP_WAITING' });
+		void updateServiceWorker?.(true);
+		setTimeout(finish, timeoutMs);
+	});
+}
+
 export async function applyUpdateAndReload(): Promise<void> {
 	if (typeof window === 'undefined') return;
+
 	try {
 		if ('caches' in window) {
 			await caches.delete('pages-cache');
 		}
-		if (updateServiceWorker) {
-			await updateServiceWorker(true);
-			return;
-		}
 	} catch {
-		// fallback
+		// ignore cache deletion errors
 	}
-	window.location.reload();
+
+	if (!('serviceWorker' in navigator)) {
+		reloadPage();
+		return;
+	}
+
+	try {
+		await waitForSwActivationAndReload(() => navigator.serviceWorker.getRegistration());
+	} catch {
+		reloadPage();
+	}
 }
