@@ -32,6 +32,8 @@ One lookup module (`packages/core/src/engine/period-clock.ts`), two fallbacks:
 - `'none'` — Engine `updateTime` (period only while in progress).
 - `'upcomingOrLast'` — grid highlight.
 
+Also exports `computeDelayUntilNextMidnightMillis`, `createDayClock` (midnight + period-boundary timers with `reschedule`/`dispose`), and period parsing helpers. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/engine/date.ts`.
+
 CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live only in `@chronos/plugin-source-cqut`.
 
 ## EventPipeline
@@ -44,7 +46,7 @@ Single event + hook runtime on `ChronosEngine.events` (`emit` / `on`, `serial` g
 
 ## Reserved port: queryCourses
 
-`IStorageService.queryCourses` (cross-timetable course lookup) is a **reserved capability**: implemented by Dexie, threaded through env/engine facades, with zero production consumers today. Kept deliberately (Round 4 decision); do not "clean it up" without revisiting that decision, and do not extend it until a consumer exists.
+`IStorageService.queryCourses` (cross-timetable course lookup) is a **reserved capability**: implemented by Dexie, threaded through env/engine facades. First production consumer: official plugin `tool-today` (`queryTodayCourses`). Kept deliberately (Round 4 decision); do not extend query parameters without revisiting that decision.
 
 ## Transfer ingest
 
@@ -97,7 +99,7 @@ No global conflict arbitrator. Behavior by resource type:
 
 ## Core shell (`core-shell`)
 
-Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile.
+Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile. Tab plugins may declare `defaultLaunch: true` on `shell.bottom-bar.tab`; host resolves via `resolveDefaultLaunchTab` (lowest `order` wins) and cold-starts on `/` via `tryDefaultLaunchRedirect`. Valid tab hrefs: `HOST_SHELL_TAB_ROUTES` in core (`/`, `/today`, `/mine`).
 
 ## Dynamic color
 
