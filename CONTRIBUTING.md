@@ -41,7 +41,7 @@ vp run build:default         # chronos-default
 
 | 变量                    | 作用域 | 说明                                                                                                             |
 | ----------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
-| `CHRONOS_PROFILE`       | 构建时 | 产品 profile，见上表；Vercel 默认 `chronos-cqut`，Pages 默认 `chronos-default`                              |
+| `CHRONOS_PROFILE`       | 构建时 | 产品 profile，见上表；Vercel 默认 `chronos-cqut`，Pages 默认 `chronos-default`                                   |
 | `CHRONOS_DEPLOY_TARGET` | 构建时 | 设为 `pages` 时构建 GitHub Pages 静态版，默认不设置则构建 Vercel 版                                              |
 | `ORIGIN`                | 运行时 | SvelteKit 标准变量，用于 CSRF 校验等场景。本地开发一般无需配置；若部署后出现 origin 相关报错，可设为站点完整 URL |
 | `PUBLIC_POSTHOG_KEY`    | 构建时 | PostHog 项目密钥；留空则构建期剔除埋点（GitHub Pages、自行部署默认不启用）                                       |
@@ -115,13 +115,13 @@ Gitmoji 格式：`<emoji> <简洁中文描述>`，例如 `✨ 新增课表导出
 
 ### 分层拓扑
 
-| 包                                    | 角色                                                                                 | 可依赖                                   |
-| ------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------- |
-| `apps/web`                            | Web 宿主：SvelteKit 外壳、页面路由、Dexie/HTTP 适配器、transfer-state 导入流         | core、ui-kit、plugins（经 Profile 装配） |
-| `packages/core` (`@chronos/core`)     | 微内核：引擎、服务容器、插槽树、领域模型、Schema 校验                                | 无运行时依赖                             |
-| `packages/ui-kit` (`@chronos/ui-kit`) | 与内核配套的 Svelte 组件库：响应式控制器、SchemaForm、插槽出口                       | core                                     |
-| `packages/plugins/*`                  | 内置/官方插件（source-cqut、codec-share、codec-qrcode、wallpaper、theme-yumemita）   | core、ui-kit；彼此不依赖                 |
-| `packages/codec-kit`                  | 构建期共享字节编解码原语（deflate/base64/CRC/varint/bitmask），普通 npm 依赖，非插件 | —                                        |
+| 包                                    | 角色                                                                                                       | 可依赖                                   |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `apps/web`                            | Web 宿主：SvelteKit 外壳、页面路由、Dexie/HTTP 适配器、transfer-state 导入流                               | core、ui-kit、plugins（经 Profile 装配） |
+| `packages/core` (`@chronos/core`)     | 微内核：引擎、服务容器、插槽树、领域模型、Schema 校验                                                      | 无运行时依赖                             |
+| `packages/ui-kit` (`@chronos/ui-kit`) | 与内核配套的 Svelte 组件库：响应式控制器、SchemaForm、插槽出口                                             | core                                     |
+| `packages/plugins/*`                  | 内置/官方插件（source-cqut、codec-share、codec-qrcode、tool-calendar-holidays、wallpaper、theme-yumemita） | core、ui-kit；彼此不依赖                 |
+| `packages/codec-kit`                  | 构建期共享字节编解码原语（deflate/base64/CRC/varint/bitmask），普通 npm 依赖，非插件                       | —                                        |
 
 依赖规则只有一条方向：**宿主装配插件，插件不感知宿主**。插件之间禁止互相 import——共享原语走 `codec-kit` 这类公共库。
 
