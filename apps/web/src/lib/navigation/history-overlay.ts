@@ -1,4 +1,4 @@
-const HISTORY_OVERLAY_STATE_KEY = 'chronosOverlay';
+import { pushState } from '$app/navigation';
 
 export interface HistoryOverlaySync {
 	syncOpenState(isOpen: boolean): void;
@@ -26,7 +26,7 @@ export function createHistoryOverlaySync(options: {
 		syncOpenState(isOpen: boolean) {
 			if (isOpen) {
 				if (!historyPushed) {
-					history.pushState({ [HISTORY_OVERLAY_STATE_KEY]: 1 }, '');
+					pushState('', { chronosOverlay: 1 });
 					historyPushed = true;
 				}
 				return;
