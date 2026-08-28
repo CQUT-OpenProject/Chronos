@@ -3,6 +3,7 @@ import {
 	CalendarMonth,
 	CalendarMonthFill,
 	DownloadFill,
+	EventFill,
 	InfoFill,
 	IosShareFill,
 	ListAltFill,
@@ -41,6 +42,7 @@ export const MINE_ITEM_ICON_MAP = {
 	vibrate: MobileVibrateFill,
 	wallpaper: WallpaperFill,
 	code: CodeFill,
+	event: EventFill,
 	'add-home': AddHomeFill,
 	info: InfoFill
 } as const satisfies Record<string, Component<{ class?: string }>>;

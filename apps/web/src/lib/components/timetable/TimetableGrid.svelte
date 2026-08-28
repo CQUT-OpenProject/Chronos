@@ -12,7 +12,7 @@
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '@chronos/ui-kit/utils/middle-truncate';
-	import { timetableDayShortLabel } from '$lib/timetable/day-labels';
+	import { timetableDayColumnHeaderLabel } from '$lib/timetable/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,
 		buildOverlapPlaceholderAriaLabel
@@ -320,13 +320,15 @@
 		<div class="flex min-w-0 flex-1">
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
-					<span class="m3-body-small text-on-surface-variant"
-						>{timetableDayShortLabel(day.dayOfWeek)}</span
-					>
+					<span class="m3-body-small max-w-full truncate text-on-surface-variant">
+						{timetableDayColumnHeaderLabel(day)}
+					</span>
 					<div
 						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
 							? 'bg-brand text-on-primary'
-							: 'text-on-surface'}"
+							: day.holiday
+								? 'text-on-surface-variant'
+								: 'text-on-surface'}"
 					>
 						{dayOfMonth(day.date)}
 					</div>
@@ -378,6 +380,16 @@
 				class="relative min-w-0 flex-1"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
+				{#each gridModel.visibleDays as day, columnIndex (day.dayOfWeek)}
+					{#if day.holiday}
+						<div
+							class="pointer-events-none absolute top-0 bg-surface-container-low/60"
+							style:left="{(columnIndex / visibleDayCount) * 100}%"
+							style:width="{100 / visibleDayCount}%"
+							style:height="100%"
+						></div>
+					{/if}
+				{/each}
 				{#each placements as item (item.key)}
 					{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
 					<div
@@ -427,10 +439,17 @@
 		type="button"
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
 			placed.corners
-		)} {placed.displayModel.isInDisplayedWeek ? '' : 'opacity-45'}"
+		)} {placed.displayModel.isHolidayMuted
+			? 'opacity-40'
+			: placed.displayModel.isInDisplayedWeek
+				? ''
+				: 'opacity-45'}"
 		style:--capsule={colors.background}
 		style:--capsule-fg={colors.text}
-		aria-label={buildCourseCapsuleAriaLabel(placed.course, { teacher })}
+		aria-label={buildCourseCapsuleAriaLabel(placed.course, {
+			teacher,
+			isHolidayMuted: placed.displayModel.isHolidayMuted
+		})}
 		aria-keyshortcuts="Shift+Enter"
 		oncontextmenu={handlers.oncontextmenu}
 		onpointerdown={handlers.onpointerdown}

@@ -21,11 +21,23 @@ const periodTimeSchema = z.object({
 	endTime: z.string()
 });
 
+const calendarHolidaySchema = z.object({
+	date: z.string(),
+	label: z.string()
+});
+
+const holidayCalendarConfigSchema = z.object({
+	holidays: z.array(calendarHolidaySchema).default([]),
+	syncedAt: z.number().optional(),
+	syncedYears: z.array(z.number().int()).optional()
+});
+
 export const academicConfigSchema = z.object({
 	termStartDate: z.string().default(''),
 	startWeek: z.number().int().default(1),
 	endWeek: z.number().int().default(20),
-	periodTimes: z.array(periodTimeSchema).default(defaultPeriodTimes())
+	periodTimes: z.array(periodTimeSchema).default(defaultPeriodTimes()),
+	holidayCalendar: holidayCalendarConfigSchema.optional()
 });
 
 export const timetableViewPrefsSchema = z.object({

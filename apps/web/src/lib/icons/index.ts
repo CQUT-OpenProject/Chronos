@@ -29,6 +29,7 @@ export { FolderZipFill } from '@material-symbols-svg/svelte/icons/folder-zip';
 export { LayersClearFill } from '@material-symbols-svg/svelte/icons/layers-clear';
 export { PhotoLibraryFill } from '@material-symbols-svg/svelte/icons/photo-library';
 export { ScheduleFill } from '@material-symbols-svg/svelte/icons/schedule';
+export { EventFill } from '@material-symbols-svg/svelte/icons/event';
 export { Visibility } from '@material-symbols-svg/svelte/icons/visibility';
 export { VisibilityOff } from '@material-symbols-svg/svelte/icons/visibility-off';
 export { AddHomeFill } from '@material-symbols-svg/svelte/icons/add-home';

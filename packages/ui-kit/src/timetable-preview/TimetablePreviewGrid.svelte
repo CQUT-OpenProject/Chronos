@@ -8,7 +8,7 @@
 		type TimetableCourseDisplayModel,
 		type TimetableGridModel
 	} from '@chronos/core';
-	import { timetableDayShortLabel } from './day-labels';
+	import { timetableDayColumnHeaderLabel } from './day-labels';
 	import MiddleTruncateText from './MiddleTruncateText.svelte';
 	import { createSizedCanvasMeasurer, fitFontSizePx } from '../utils/middle-truncate';
 	import {
@@ -238,13 +238,15 @@
 		<div class="flex min-w-0 flex-1">
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
-					<span class="m3-body-small text-on-surface-variant"
-						>{timetableDayShortLabel(day.dayOfWeek)}</span
-					>
+					<span class="m3-body-small max-w-full truncate text-on-surface-variant">
+						{timetableDayColumnHeaderLabel(day)}
+					</span>
 					<div
 						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
 							? 'bg-brand text-on-primary'
-							: 'text-on-surface'}"
+							: day.holiday
+								? 'text-on-surface-variant'
+								: 'text-on-surface'}"
 					>
 						{dayOfMonth(day.date)}
 					</div>
@@ -294,6 +296,16 @@
 				class="relative min-w-0 flex-1"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
+				{#each gridModel.visibleDays as day, columnIndex (day.dayOfWeek)}
+					{#if day.holiday}
+						<div
+							class="pointer-events-none absolute top-0 bg-surface-container-low/60"
+							style:left="{(columnIndex / visibleDayCount) * 100}%"
+							style:width="{100 / visibleDayCount}%"
+							style:height="100%"
+						></div>
+					{/if}
+				{/each}
 				{#each placements as item (item.key)}
 					{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
 					<div
@@ -335,7 +347,11 @@
 									type="button"
 									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
 										item.corners
-									)} {item.displayModel.isInDisplayedWeek ? '' : 'opacity-45'}"
+									)} {item.displayModel.isHolidayMuted
+										? 'opacity-40'
+										: item.displayModel.isInDisplayedWeek
+											? ''
+											: 'opacity-45'}"
 									style:--capsule={item.colors.background}
 									style:--capsule-fg={item.colors.text}
 									onclick={() => onCourseClick?.(item.course)}
@@ -395,7 +411,11 @@
 								<div
 									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
 										item.corners
-									)} {item.displayModel.isInDisplayedWeek ? '' : 'opacity-45'}"
+									)} {item.displayModel.isHolidayMuted
+										? 'opacity-40'
+										: item.displayModel.isInDisplayedWeek
+											? ''
+											: 'opacity-45'}"
 									style:--capsule={item.colors.background}
 									style:--capsule-fg={item.colors.text}
 								>

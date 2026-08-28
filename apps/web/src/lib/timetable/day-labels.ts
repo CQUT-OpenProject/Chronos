@@ -1,5 +1,6 @@
 import type { HostMessageKey } from '$lib/i18n/host-messages';
 import { hostT } from '$lib/i18n/host-i18n.svelte';
+import { truncateHolidayLabel } from '@chronos/core';
 
 const DAY_SUFFIXES = ['', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
@@ -19,4 +20,12 @@ export function timetableDayShortLabel(dayOfWeek: number): string {
 	const key = resolveDayKey(dayOfWeek, 'short');
 	if (!key) return dayOfWeek === 0 ? '' : '?';
 	return hostT(key);
+}
+
+export function timetableDayColumnHeaderLabel(day: {
+	dayOfWeek: number;
+	holiday?: { label: string };
+}): string {
+	if (day.holiday) return truncateHolidayLabel(day.holiday.label);
+	return timetableDayShortLabel(day.dayOfWeek);
 }
