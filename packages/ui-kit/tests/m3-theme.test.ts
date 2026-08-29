@@ -25,31 +25,18 @@ describe('M3DefaultTheme', () => {
 		expect(customTokens.primary).not.toEqual(defaultTokens.primary);
 	});
 
-	it('resolves course paint with course colors or palette index', () => {
-		const customCourse = createCourse({
+	it('resolves course paint from palette index', () => {
+		const course = createCourse({
 			id: 'c1',
 			name: '高等数学',
-			color: '#123456',
-			textColor: '#ffffff',
 			dayOfWeek: 1,
 			startPeriod: 1,
 			endPeriod: 2,
 			weeks: [1]
 		});
 
-		const paint1 = m3DefaultTheme.resolveCoursePaint!(customCourse, 0, 'light');
-		expect(paint1).toEqual({ background: '#123456', foreground: '#ffffff' });
-
-		const autoCourse = createCourse({
-			id: 'c2',
-			name: '大学物理',
-			dayOfWeek: 2,
-			startPeriod: 1,
-			endPeriod: 2,
-			weeks: [1]
-		});
-		const paint2 = m3DefaultTheme.resolveCoursePaint!(autoCourse, 1, 'light');
-		expect(paint2.background).toBeDefined();
-		expect(paint2.foreground).toBeDefined();
+		const paint = m3DefaultTheme.resolveCoursePaint!(course, 1, 'light');
+		expect(paint.background).toBeDefined();
+		expect(paint.foreground).toBeDefined();
 	});
 });

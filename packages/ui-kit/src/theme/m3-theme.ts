@@ -297,13 +297,7 @@ export const m3DefaultTheme: ThemeContribution = {
 		return buildM3Tokens(mode, seedColor);
 	},
 
-	resolveCoursePaint(course: Course, paletteIndex: number, _mode: 'light' | 'dark'): CoursePaint {
-		if (course.color && course.textColor) {
-			return {
-				background: course.color,
-				foreground: course.textColor
-			};
-		}
+	resolveCoursePaint(_course: Course, paletteIndex: number, _mode: 'light' | 'dark'): CoursePaint {
 		const palette = buildM3CoursePalette(BRAND_SOURCE_ARGB);
 		return palette[Math.abs(paletteIndex) % palette.length]!;
 	}

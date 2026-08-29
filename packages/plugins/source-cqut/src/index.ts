@@ -9,7 +9,6 @@ import {
 import {
 	createCourse,
 	createTimetable,
-	coursePalette,
 	deriveWeekendViewPrefs,
 	normalizedCourseName,
 	IHttpService
@@ -166,7 +165,6 @@ export function parseCqutScheduleData(
 
 				const eventName = event.eventName.trim();
 				const normalizedName = normalizedCourseName(eventName);
-				const [color, textColor] = coursePalette(normalizedName);
 
 				return createCourse({
 					id: event.eventID?.trim() || `cqut-${dayOfWeek}-${startPeriod}-${endPeriod}-${idx}`,
@@ -176,8 +174,6 @@ export function parseCqutScheduleData(
 					dayOfWeek,
 					startPeriod,
 					endPeriod: Math.max(startPeriod, endPeriod),
-					color,
-					textColor,
 					weeks,
 					remark: event.remark?.trim() ?? ''
 				});

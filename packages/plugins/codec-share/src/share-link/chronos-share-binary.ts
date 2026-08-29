@@ -9,7 +9,6 @@ import {
 import {
 	AcademicCalendarService,
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
-	coursePalette,
 	deriveWeekendViewPrefs,
 	normalizedCourseName,
 	normalizeTimetableName,
@@ -387,7 +386,6 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 		const name = strings[nameIdx];
 		if (!name) throw new ShareBinaryDecodeError('invalid course name index');
 
-		const [color, textColor] = coursePalette(name);
 		courses.push({
 			id: `share-course-${index + 1}`,
 			name,
@@ -399,8 +397,6 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 			dayOfWeek,
 			startPeriod,
 			endPeriod: Math.max(startPeriod, endPeriod),
-			color,
-			textColor,
 			weeks: weekMaskTable.decode(weekMaskIdx),
 			remark: remarkIdx > 0 ? (strings[remarkIdx] ?? '') : ''
 		});

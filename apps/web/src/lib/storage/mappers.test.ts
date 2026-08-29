@@ -11,8 +11,6 @@ describe('storage mappers', () => {
 			dayOfWeek: 1,
 			startPeriod: 1,
 			endPeriod: 2,
-			color: '#EADDFF',
-			textColor: '#21005D',
 			weeks: [1, 3, 5],
 			remark: 'note'
 		};

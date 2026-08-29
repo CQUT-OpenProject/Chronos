@@ -82,7 +82,7 @@ export interface PlaceCapsulesInput {
 	expandedSlotKeys: ReadonlySet<string>;
 	layoutMode?: TimetableLayoutMode;
 	coursePalette?: readonly CoursePaletteEntry[];
-	paletteCourses?: { name: string; color?: string }[];
+	paletteCourses?: { name: string }[];
 	capsuleCornerStyle?: CapsuleCornerStyle;
 }
 

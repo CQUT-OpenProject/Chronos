@@ -36,8 +36,8 @@ export interface V2CompactQrPayload {
 	w?: [number, number]; // [startWeek, endWeek]
 	p?: Array<[number, string, string]>; // periodTimes
 	s: string[]; // string pool
-	c: Array<[number, number, number, number, number, number, number, number?, number?]>;
-	// [nameIdx, teacherIdx, locationIdx, dayOfWeek, startPeriod, endPeriod, weekBitmask, remarkIdx?, colorIdx?]
+	c: Array<[number, number, number, number, number, number, number, number?]>;
+	// [nameIdx, teacherIdx, locationIdx, dayOfWeek, startPeriod, endPeriod, weekBitmask, remarkIdx?]
 }
 
 export async function serializeTimetableForQr(timetable: Timetable): Promise<string> {
@@ -48,7 +48,6 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 		const teacherIdx = interner.intern(course.teacher);
 		const locationIdx = interner.intern(course.location);
 		const remarkIdx = interner.intern(course.remark);
-		const colorIdx = interner.intern(course.color);
 		const weekBitmask = weeksToBitmask(course.weeks);
 
 		const item: V2CompactQrPayload['c'][number] = [
@@ -60,11 +59,8 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 			course.endPeriod,
 			weekBitmask
 		];
-		if (remarkIdx >= 0 || colorIdx >= 0) {
-			item.push(remarkIdx >= 0 ? remarkIdx : -1);
-		}
-		if (colorIdx >= 0) {
-			item.push(colorIdx);
+		if (remarkIdx >= 0) {
+			item.push(remarkIdx);
 		}
 		return item;
 	});
@@ -126,7 +122,6 @@ export async function deserializeTimetableFromQr(
 		const weeks = bitmaskToWeeks(tuple[6] ?? 1);
 		const safeWeeks = weeks.length > 0 ? weeks : [1];
 		const remark = tuple[7] !== undefined && tuple[7] >= 0 ? pool[tuple[7]] : undefined;
-		const color = tuple[8] !== undefined && tuple[8] >= 0 ? pool[tuple[8]] : undefined;
 
 		return createCourse({
 			id: `c-qr-${idx + 1}-${Date.now().toString(36)}`,
@@ -137,8 +132,7 @@ export async function deserializeTimetableFromQr(
 			startPeriod,
 			endPeriod,
 			weeks: safeWeeks,
-			remark,
-			color
+			remark
 		});
 	});
 

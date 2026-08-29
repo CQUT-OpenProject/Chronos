@@ -496,8 +496,6 @@ const zhCn = {
 	'ui.date.confirm': '确认',
 	'ui.date.trigger.labeled': '{label}：{display}',
 	'ui.date.trigger.empty': '选择{label}',
-	'ui.color.label': '课程颜色',
-	'ui.color.selectAria': '选择颜色 {color}',
 	'ui.nav.back': '返回',
 	'ui.nav.main': '主导航',
 
@@ -1018,8 +1016,6 @@ Aside from GitHub Issues, this project has no other public feedback channels
 	'ui.date.confirm': 'Confirm',
 	'ui.date.trigger.labeled': '{label}: {display}',
 	'ui.date.trigger.empty': 'Select {label}',
-	'ui.color.label': 'Course color',
-	'ui.color.selectAria': 'Select color {color}',
 	'ui.nav.back': 'Back',
 	'ui.nav.main': 'Main navigation',
 

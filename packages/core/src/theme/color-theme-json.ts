@@ -102,10 +102,7 @@ export function createThemeFromColorJson(json: ColorThemeJson): ThemeContributio
 		getTokens(mode: 'light' | 'dark'): DesignTokens {
 			return workbenchColorsToDesignTokens(workbenchColors[mode]) as DesignTokens;
 		},
-		resolveCoursePaint(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint {
-			if (course.color && course.textColor) {
-				return { background: course.color, foreground: course.textColor };
-			}
+		resolveCoursePaint(_course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint {
 			const entries = json.coursePalette?.[mode];
 			if (!entries?.length) {
 				return { background: '#888', foreground: '#fff' };

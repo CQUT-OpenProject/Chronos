@@ -3,7 +3,6 @@ import {
 	AcademicCalendarService,
 	createCourse,
 	createTimetable,
-	coursePalette,
 	deriveWeekendViewPrefs,
 	normalizedCourseName
 } from '@chronos/core';
@@ -187,7 +186,6 @@ export function parseHtmlTimetable(
 			});
 
 			const normalizedName = normalizedCourseName(rawTitle);
-			const [color, textColor] = coursePalette(normalizedName);
 
 			courses.push(
 				createCourse({
@@ -198,8 +196,6 @@ export function parseHtmlTimetable(
 					dayOfWeek,
 					startPeriod,
 					endPeriod,
-					color,
-					textColor,
 					weeks: parseWeeks(metadata.get('节/周') ?? '')
 				})
 			);
