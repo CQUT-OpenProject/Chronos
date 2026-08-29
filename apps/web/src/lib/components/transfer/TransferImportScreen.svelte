@@ -72,7 +72,7 @@
 				{@const isSelected = transfer.state.selectedSlotId === slot.id}
 				<button
 					type="button"
-					class="m3-label-large relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-center transition-colors {isSelected
+					class="m3-label-large rounded-pill relative flex shrink-0 items-center gap-1.5 px-4 py-2 text-center transition-colors {isSelected
 						? 'bg-secondary-container font-medium text-on-secondary-container shadow-xs'
 						: 'bg-surface-variant/40 text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface'}"
 					onclick={() => handleSourceChange(slot.id)}

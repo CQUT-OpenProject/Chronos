@@ -79,7 +79,7 @@
 			>
 				<span
 					aria-hidden="true"
-					class="flex h-7 w-12 items-center justify-center rounded-full transition-colors sm:h-8 sm:w-14 {active
+					class="rounded-circular flex h-7 w-12 items-center justify-center transition-colors sm:h-8 sm:w-14 {active
 						? 'shell-bottom-tab-active'
 						: ''}"
 				>
