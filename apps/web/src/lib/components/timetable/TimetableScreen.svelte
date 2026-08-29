@@ -17,13 +17,11 @@
 	let {
 		screen,
 		onEditTimetableDetails,
-		onCourseClick,
-		onCourseLongClick
+		onCourseClick
 	}: {
 		screen: TimetableScreenController;
 		onEditTimetableDetails: () => void;
 		onCourseClick: (courseId: string) => void;
-		onCourseLongClick: (courseId: string) => void;
 	} = $props();
 
 	const screenState = $derived(screen.state);
@@ -174,7 +172,6 @@
 				{layoutMode}
 				{capsuleCornerStyle}
 				{onCourseClick}
-				{onCourseLongClick}
 			/>
 		{/key}
 	</TimetableWallpaperLayer>

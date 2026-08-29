@@ -36,11 +36,6 @@
 		detailOpen = true;
 		trackEvent('course_detail_open');
 	}
-
-	function navigateToCourseEditor(courseId: string) {
-		trackEvent('course_editor_open', { trigger: 'long_press' });
-		goto(resolve(`/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`));
-	}
 </script>
 
 {#if browser && launchResolved && clientReady && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
@@ -50,7 +45,6 @@
 		{screen}
 		onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
 		onCourseClick={openCourseDetail}
-		onCourseLongClick={navigateToCourseEditor}
 	/>
 	<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
 {:else if browser}

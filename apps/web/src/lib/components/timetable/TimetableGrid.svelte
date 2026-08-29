@@ -50,11 +50,10 @@
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasDynamicBackground: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
-		paletteCourses?: { name: string; color: string }[];
+		paletteCourses?: { name: string }[];
 		layoutMode?: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick?: (course: Course) => void;
-		onCourseLongClick?: (course: Course) => void;
 	}
 
 	let {
@@ -70,8 +69,7 @@
 		paletteCourses,
 		layoutMode = 'fixed',
 		capsuleCornerStyle = 'rounded',
-		onCourseClick,
-		onCourseLongClick
+		onCourseClick
 	}: Props = $props();
 
 	const controller = getAppController();
@@ -87,12 +85,7 @@
 	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
-	const mediator = $derived(
-		createTimetableInteractionMediator({
-			onCourseClick,
-			onCourseLongClick
-		})
-	);
+	const mediator = $derived(createTimetableInteractionMediator({ onCourseClick }));
 
 	const placements = $derived(
 		placeCapsules({
@@ -363,9 +356,7 @@
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
 	{@const handlers = createCourseCardHandlers(placed.course, {
-		onCourseClick: mediator.handleCourseClick,
-		onCourseLongClick: mediator.handleCourseLongPress,
-		onLongPressFeedback: () => {}
+		onCourseClick: mediator.handleCourseClick
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
@@ -383,15 +374,12 @@
 			teacher,
 			isHolidayMuted: placed.displayModel.isHolidayMuted
 		})}
-		aria-keyshortcuts="Shift+Enter"
-		oncontextmenu={handlers.oncontextmenu}
 		onpointerdown={handlers.onpointerdown}
 		onpointermove={handlers.onpointermove}
 		onpointerup={handlers.onpointerup}
 		onpointerleave={handlers.onpointerleave}
 		onpointercancel={handlers.onpointercancel}
 		onclick={handlers.onclick}
-		onkeydown={handlers.onkeydown}
 	>
 		{#if badgeText}
 			<span class="mb-0.5 flex w-full shrink-0 justify-center">
