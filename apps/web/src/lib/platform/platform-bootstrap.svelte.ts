@@ -9,6 +9,7 @@ import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
 import { ensureEngineReady } from '$lib/services/app-engine';
 import { configureHostI18n } from '$lib/i18n/host-i18n.svelte';
 import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
+import { registerHyperellipse } from 'hyperellipse';
 
 export type PlatformBootstrapDeps = {
 	shell: AppShellController;
@@ -29,6 +30,7 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		started = true;
 
 		initNavigationStack(pathname);
+		registerHyperellipse();
 		connectivity.init();
 
 		void ensureEngineReady().then((engine) => {

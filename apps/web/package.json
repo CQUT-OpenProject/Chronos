@@ -15,13 +15,14 @@
 	},
 	"dependencies": {
 		"@chronos/core": "workspace:*",
-		"@chronos/ui-kit": "workspace:*",
-		"@chronos/plugin-source-cqut": "workspace:*",
 		"@chronos/plugin-codec-share": "workspace:*",
+		"@chronos/plugin-source-cqut": "workspace:*",
+		"@chronos/ui-kit": "workspace:*",
 		"@internationalized/date": "^3.12.3",
 		"@material-symbols-svg/svelte": "^0.13.0",
 		"bits-ui": "^2.18.1",
 		"dexie": "^4.4.5",
+		"hyperellipse": "^1.0.5",
 		"marked": "^18.0.9",
 		"posthog-js": "^1.417.1",
 		"swiper": "^14.1.0",
@@ -31,6 +32,7 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@chronos/plugin-theme-yumemita": "workspace:*",
 		"@chronos/plugin-wallpaper": "workspace:*",
 		"@inlang/paraglide-js": "^2.24.1",
 		"@sveltejs/adapter-static": "^3.0.10",
@@ -47,7 +49,6 @@
 		"tailwindcss": "^4.3.0",
 		"typescript": "^7.0.2",
 		"vite": "catalog:",
-		"vite-plus": "catalog:",
-		"@chronos/plugin-theme-yumemita": "workspace:*"
+		"vite-plus": "catalog:"
 	}
 }
