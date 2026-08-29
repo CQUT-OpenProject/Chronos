@@ -98,7 +98,7 @@
 					{/if}
 				</span>
 				<span
-					class="m3-label-small text-[11px] leading-tight sm:text-xs {active
+					class="text-label-small text-[11px] leading-tight sm:text-xs {active
 						? 'text-on-surface'
 						: 'text-on-surface-variant'}"
 				>

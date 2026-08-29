@@ -80,14 +80,14 @@
 
 <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
 	<header class="border-b border-outline/10 bg-surface px-4 pt-6 pb-4">
-		<p class="m3-headline-small text-on-surface">{formatHeaderDate(screen.today)}</p>
+		<p class="text-headline-small text-on-surface">{formatHeaderDate(screen.today)}</p>
 		{#if timetable}
 			<div class="mt-1 flex items-center justify-between gap-3">
-				<p class="m3-body-medium text-on-surface-variant">
+				<p class="text-body-medium text-on-surface-variant">
 					{pt('screen.week', { week: academicWeek })}
 				</p>
 				{#if screen.courseEntries.length > 0}
-					<p class="m3-label-large shrink-0 text-on-surface-variant">
+					<p class="text-label-large shrink-0 text-on-surface-variant">
 						{pt('screen.summary.count', { count: screen.courseEntries.length })}
 					</p>
 				{/if}
@@ -107,7 +107,7 @@
 			{#each scopeSegments as segment (segment.value)}
 				<button
 					type="button"
-					class="m3-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 {screen.scope ===
+					class="text-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 {screen.scope ===
 					segment.value
 						? 'text-on-secondary-container'
 						: 'text-on-surface-variant hover:text-on-surface'}"
@@ -134,7 +134,7 @@
 						/>
 					</svg>
 				</div>
-				<p class="m3-title-medium text-on-surface">{pt('screen.empty.noTimetable')}</p>
+				<p class="text-title-medium text-on-surface">{pt('screen.empty.noTimetable')}</p>
 			</section>
 		{:else if screen.courseEntries.length === 0}
 			<section
@@ -150,8 +150,8 @@
 						/>
 					</svg>
 				</div>
-				<p class="m3-title-medium text-on-surface">{pt('screen.empty.noCourses')}</p>
-				<p class="m3-body-medium mt-2 text-on-surface-variant">
+				<p class="text-title-medium text-on-surface">{pt('screen.empty.noCourses')}</p>
+				<p class="text-body-medium mt-2 text-on-surface-variant">
 					{pt('screen.empty.noCoursesHint')}
 				</p>
 			</section>
@@ -174,8 +174,8 @@
 									: ''}"
 							>
 								<div class="w-20 shrink-0 pt-0.5">
-									<p class="m3-label-medium text-on-surface-variant">{timeLabel}</p>
-									<p class="m3-body-small mt-1 text-on-surface-variant">
+									<p class="text-label-medium text-on-surface-variant">{timeLabel}</p>
+									<p class="text-body-small mt-1 text-on-surface-variant">
 										{entry.hit.course.startPeriod === entry.hit.course.endPeriod
 											? pt('screen.course.periodSingle', {
 													n: entry.hit.course.startPeriod
@@ -195,12 +195,12 @@
 
 								<div class="min-w-0 flex-1">
 									<div class="flex items-start justify-between gap-2">
-										<p class="m3-title-medium truncate text-on-surface">
+										<p class="text-title-medium truncate text-on-surface">
 											{entry.hit.course.name}
 										</p>
 										{#if entry.status === 'current'}
 											<span
-												class="m3-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary"
+												class="text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary"
 											>
 												{pt('screen.status.current')}
 											</span>
@@ -208,19 +208,19 @@
 									</div>
 
 									{#if screen.scope === 'all' && entry.hit.timetableName}
-										<p class="m3-body-small mt-1 text-on-surface-variant">
+										<p class="text-body-small mt-1 text-on-surface-variant">
 											{pt('screen.course.timetable', { name: entry.hit.timetableName })}
 										</p>
 									{/if}
 
 									{#if entry.hit.course.location}
-										<p class="m3-body-small mt-1 text-on-surface-variant">
+										<p class="text-body-small mt-1 text-on-surface-variant">
 											{entry.hit.course.location}
 										</p>
 									{/if}
 
 									{#if entry.hit.course.teacher}
-										<p class="m3-body-small text-on-surface-variant">
+										<p class="text-body-small text-on-surface-variant">
 											{entry.hit.course.teacher}
 										</p>
 									{/if}

@@ -84,14 +84,14 @@
 <div class={isSection ? ['flex flex-col gap-3', className] : undefined}>
 	{#if isSection}
 		<div class="px-1">
-			<h3 id={labelId} class="m3-title-medium text-on-surface">
+			<h3 id={labelId} class="text-title-medium text-on-surface">
 				{label}
 				{#if required}
 					<span class="ml-0.5 text-error">*</span>
 				{/if}
 			</h3>
 			{#if description}
-				<p class="m3-body-small mt-1 text-on-surface-variant">{description}</p>
+				<p class="text-body-small mt-1 text-on-surface-variant">{description}</p>
 			{/if}
 		</div>
 	{/if}
@@ -109,9 +109,9 @@
 		{disabled}
 		{calendarLabel}
 	>
-		<div class={isSection ? 'm3-form-field' : ['m3-form-field', className]}>
+		<div class={isSection ? 'ui-form-field' : ['ui-form-field', className]}>
 			{#if !isSection}
-				<span id={labelId} class="m3-field-label">
+				<span id={labelId} class="ui-field-label">
 					{label}
 					{#if required}
 						<span class="ml-0.5 text-error">*</span>
@@ -126,19 +126,19 @@
 								<button
 									{...triggerProps}
 									type="button"
-									class="m3-form-field-input m3-date-field-input"
+									class="ui-form-field-input ui-date-field-input"
 									aria-label={triggerAriaLabel}
 									{disabled}
 								>
 									<span
 										class={[
-											'm3-date-field-value m3-body-large truncate text-left',
+											'ui-date-field-value text-body-large truncate text-left',
 											displayValue ? 'text-on-surface' : 'text-on-surface-variant/60'
 										]}
 									>
 										{displayValue || labels.placeholder}
 									</span>
-									<span class="m3-date-field-trigger" aria-hidden="true">
+									<span class="ui-date-field-trigger" aria-hidden="true">
 										<svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 											<path
 												d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2Zm0 16H5V10h14v10Zm0-12H5V6h14v2Z"
@@ -164,7 +164,7 @@
 				{/if}
 				<DatePicker.Content
 					sideOffset={8}
-					class="m3-date-picker-content z-[70] rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
+					class="ui-date-picker-content z-[70] rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
 				>
 					<DatePicker.Calendar>
 						{#snippet children({ months, weekdays })}
@@ -176,7 +176,7 @@
 										<path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
 									</svg>
 								</DatePicker.PrevButton>
-								<DatePicker.Heading class="m3-title-small text-on-surface" />
+								<DatePicker.Heading class="text-title-small text-on-surface" />
 								<DatePicker.NextButton
 									class="inline-flex size-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-on-surface/5 active:bg-on-surface/10"
 								>
@@ -192,7 +192,7 @@
 										<DatePicker.GridRow class="mb-1 flex w-full justify-between">
 											{#each weekdays as day (day)}
 												<DatePicker.HeadCell
-													class="m3-label-small flex size-10 items-center justify-center text-on-surface-variant"
+													class="text-label-small flex size-10 items-center justify-center text-on-surface-variant"
 												>
 													{day.slice(-1)}
 												</DatePicker.HeadCell>
@@ -205,7 +205,7 @@
 												{#each weekDates as date (date)}
 													<DatePicker.Cell {date} month={month.value} class="p-0 text-center">
 														<DatePicker.Day
-															class="m3-date-picker-day m3-body-medium inline-flex size-10 items-center justify-center rounded-full border border-transparent text-on-surface transition-colors hover:bg-on-surface/5 data-disabled:pointer-events-none data-disabled:text-on-surface/30 data-outside-month:text-on-surface-variant/50 data-selected:bg-brand data-selected:font-medium data-selected:text-on-primary data-unavailable:text-on-surface-variant data-unavailable:line-through"
+															class="m3-date-picker-day text-body-medium inline-flex size-10 items-center justify-center rounded-full border border-transparent text-on-surface transition-colors hover:bg-on-surface/5 data-disabled:pointer-events-none data-disabled:text-on-surface/30 data-outside-month:text-on-surface-variant/50 data-selected:bg-brand data-selected:font-medium data-selected:text-on-primary data-unavailable:text-on-surface-variant data-unavailable:line-through"
 														>
 															{date.day}
 														</DatePicker.Day>
@@ -223,14 +223,14 @@
 								<div class="flex items-center gap-1">
 									<button
 										type="button"
-										class="m3-label-large h-9 rounded-full px-3 text-brand hover:bg-brand/10 active:bg-brand/20"
+										class="text-label-large h-9 rounded-full px-3 text-brand hover:bg-brand/10 active:bg-brand/20"
 										onclick={selectToday}
 									>
 										{labels.today}
 									</button>
 									<button
 										type="button"
-										class="m3-label-large h-9 rounded-full px-3 text-on-surface-variant hover:bg-on-surface/5 disabled:opacity-40"
+										class="text-label-large h-9 rounded-full px-3 text-on-surface-variant hover:bg-on-surface/5 disabled:opacity-40"
 										disabled={!draftIso}
 										onclick={clearDate}
 									>
@@ -239,7 +239,7 @@
 								</div>
 								<button
 									type="button"
-									class="m3-label-large h-9 rounded-full bg-brand px-4 text-on-primary hover:shadow-xs active:opacity-90"
+									class="text-label-large h-9 rounded-full bg-brand px-4 text-on-primary hover:shadow-xs active:opacity-90"
 									onclick={confirmSelection}
 								>
 									{labels.confirm}

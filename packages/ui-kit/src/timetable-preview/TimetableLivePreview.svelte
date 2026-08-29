@@ -82,6 +82,6 @@
 	</TimetableWallpaperLayer>
 {:else}
 	<div class="flex min-h-[12rem] items-center justify-center p-8">
-		<p class="m3-body-medium text-center text-on-surface-variant">暂无课表，导入后可预览效果</p>
+		<p class="text-body-medium text-center text-on-surface-variant">暂无课表，导入后可预览效果</p>
 	</div>
 {/if}

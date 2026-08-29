@@ -28,7 +28,7 @@
 		bind:value
 		placeholder={resolvedPlaceholder}
 		aria-label={resolvedAriaLabel}
-		class="m3-body-medium w-full border-none bg-transparent p-0 text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
+		class="text-body-medium w-full border-none bg-transparent p-0 text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
 	/>
 	{#if value}
 		<IconButton

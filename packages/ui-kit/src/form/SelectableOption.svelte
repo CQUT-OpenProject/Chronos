@@ -30,9 +30,9 @@
 >
 	<Radio {name} checked={selected} {disabled} />
 	<div class="flex flex-col justify-center">
-		<span class="m3-body-large font-medium text-on-surface">{label}</span>
+		<span class="text-body-large font-medium text-on-surface">{label}</span>
 		{#if description}
-			<span class="m3-body-small mt-0.5 text-on-surface-variant">{description}</span>
+			<span class="text-body-small mt-0.5 text-on-surface-variant">{description}</span>
 		{/if}
 	</div>
 </button>

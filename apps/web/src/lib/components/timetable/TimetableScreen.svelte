@@ -133,7 +133,7 @@
 						/>
 					{:else}
 						<p
-							class="m3-title-large truncate text-base leading-tight font-bold sm:text-lg md:text-xl"
+							class="text-title-large truncate text-base leading-tight font-bold sm:text-lg md:text-xl"
 						>
 							{weekRangeText}
 						</p>
@@ -141,7 +141,7 @@
 				</div>
 				<div class="flex h-4.5 items-center sm:h-5">
 					<p
-						class="m3-body-medium truncate text-xs leading-tight text-on-surface-variant sm:text-sm"
+						class="text-body-medium truncate text-xs leading-tight text-on-surface-variant sm:text-sm"
 					>
 						{weekLabel}
 					</p>

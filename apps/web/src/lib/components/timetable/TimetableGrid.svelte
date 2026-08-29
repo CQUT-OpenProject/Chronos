@@ -240,7 +240,7 @@
 >
 	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
 		<div
-			class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
+			class="text-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
 		>
 			<span>{gridModel.monthLabel}</span>
 			<span>{hostT('timetable.grid.monthSuffix')}</span>
@@ -248,11 +248,11 @@
 		<div class="flex min-w-0 flex-1">
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
-					<span class="m3-body-small max-w-full truncate text-on-surface-variant">
+					<span class="text-body-small max-w-full truncate text-on-surface-variant">
 						{timetableDayColumnHeaderLabel(day)}
 					</span>
 					<div
-						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
+						class="text-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
 							? 'bg-brand text-on-primary'
 							: day.holiday
 								? 'text-on-surface-variant'
@@ -290,11 +290,11 @@
 								? 'period-active'
 								: ''}"
 						>
-							<span class="m3-body-medium font-bold">
+							<span class="text-body-medium font-bold">
 								{period.index}
 							</span>
 							<span
-								class="m3-caption mt-1 leading-tight {isActive ? '' : 'text-on-surface-variant'}"
+								class="text-caption mt-1 leading-tight {isActive ? '' : 'text-on-surface-variant'}"
 							>
 								{period.startTime}<br />{period.endTime}
 							</span>

@@ -32,8 +32,8 @@
 		<InfoFill class="size-8 text-on-surface-variant" aria-hidden="true" />
 	{/if}
 	<div class="flex flex-col gap-1">
-		<p class="m3-title-small font-semibold text-on-surface">{resolvedTitle}</p>
-		<p class="m3-body-medium text-on-surface-variant">{resolvedDescription}</p>
+		<p class="text-title-small font-semibold text-on-surface">{resolvedTitle}</p>
+		<p class="text-body-medium text-on-surface-variant">{resolvedDescription}</p>
 	</div>
 	{#if onRetry}
 		<Button variant="text" onclick={onRetry}>

@@ -31,7 +31,7 @@
 	{#each segments as segment (segment.value)}
 		<button
 			type="button"
-			class="m3-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 {value ===
+			class="text-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 {value ===
 			segment.value
 				? 'text-on-secondary-container'
 				: 'text-on-surface-variant hover:text-on-surface'}"

@@ -72,8 +72,8 @@
 	<ul class="flex flex-col divide-y divide-outline-variant/60">
 		{#each licenses as entry (entry.name)}
 			<li class="flex flex-col gap-0.5 py-3">
-				<span class="m3-title-small text-on-surface">{entry.name}</span>
-				<span class="m3-body-small text-on-surface-variant">{entry.license}</span>
+				<span class="text-title-small text-on-surface">{entry.name}</span>
+				<span class="text-body-small text-on-surface-variant">{entry.license}</span>
 			</li>
 		{/each}
 	</ul>

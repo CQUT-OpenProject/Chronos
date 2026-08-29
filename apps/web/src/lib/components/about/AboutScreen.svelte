@@ -89,7 +89,7 @@
 	}
 </script>
 
-<div class="m3-stack">
+<div class="ui-stack">
 	<AppHero title="Chronos" subtitle={hostT('meta.intro')} />
 
 	<MineSection title={hostT('about.section.version')}>
@@ -153,7 +153,7 @@
 	</MineSection>
 
 	<footer class="copyright">
-		<p class="m3-body-small text-on-surface-variant">
+		<p class="text-body-small text-on-surface-variant">
 			© {formatCopyrightYearRange()}
 			{COPYRIGHT_HOLDER} ·
 			<a href={resolve('/open-source-licenses/project')} class="license-link">

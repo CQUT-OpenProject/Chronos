@@ -15,6 +15,8 @@ export type OfficialPluginDef = {
 	entry?: string;
 	colorsJson?: string;
 	iconsJson?: string;
+	/** JSON-only assets skip Tailwind @source dir verification (default: has entry) */
+	tailwindSource?: boolean;
 };
 
 export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
@@ -22,6 +24,7 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 		id: 'theme-yumemita',
 		type: 'theme',
 		sourceDir: 'theme-yumemita',
+		tailwindSource: false,
 		name: { 'zh-CN': 'YUMEMITA', en: 'YUMEMITA' },
 		description: { 'zh-CN': 'YUMEMITA 主题', en: 'YUMEMITA theme' },
 		colorsJson: resolve(root, 'packages/plugins/theme-yumemita/theme-yumemita.colors.json'),

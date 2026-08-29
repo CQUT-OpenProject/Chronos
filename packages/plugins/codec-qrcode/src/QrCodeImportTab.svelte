@@ -67,8 +67,8 @@
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
 		<div>
-			<h2 class="m3-title-medium text-on-surface">{title}</h2>
-			<p class="m3-body-small mt-0.5 text-on-surface-variant">{subtitle}</p>
+			<h2 class="text-title-medium text-on-surface">{title}</h2>
+			<p class="text-body-small mt-0.5 text-on-surface-variant">{subtitle}</p>
 		</div>
 
 		<input
@@ -107,12 +107,12 @@
 				<path d="M14 20h7"></path>
 			</svg>
 			<div class="flex flex-col gap-1">
-				<span class="m3-body-medium font-medium text-on-surface">{dropLabel}</span>
-				<span class="m3-body-small text-on-surface-variant">{formats}</span>
+				<span class="text-body-medium font-medium text-on-surface">{dropLabel}</span>
+				<span class="text-body-small text-on-surface-variant">{formats}</span>
 			</div>
 			<button
 				type="button"
-				class="m3-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50"
+				class="text-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50"
 				disabled={loading}
 				onclick={() => fileInputRef?.click()}
 			>

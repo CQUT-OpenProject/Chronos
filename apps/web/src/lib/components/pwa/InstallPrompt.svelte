@@ -51,18 +51,20 @@
 
 <!-- iOS Safari Guide Dialog -->
 <Dialog bind:open={pwaInstallController.iosGuideOpen} title={hostT('pwa.dialog.install.title')}>
-	<div class="m3-body-medium flex flex-col gap-3 text-left leading-relaxed text-on-surface-variant">
+	<div
+		class="text-body-medium flex flex-col gap-3 text-left leading-relaxed text-on-surface-variant"
+	>
 		<p>{hostT('pwa.dialog.install.descIos')}</p>
 		<ol class="flex flex-col gap-2 pt-1">
 			<li class="flex items-start gap-2">
-				<span class="m3-step-badge">1</span>
-				<span class="m3-body-medium">
+				<span class="ui-step-badge">1</span>
+				<span class="text-body-medium">
 					{hostT('pwa.dialog.ios.step1')}
 				</span>
 			</li>
 			<li class="flex items-start gap-2">
-				<span class="m3-step-badge">2</span>
-				<span class="m3-body-medium">
+				<span class="ui-step-badge">2</span>
+				<span class="text-body-medium">
 					{hostT('pwa.dialog.ios.step2')}
 				</span>
 			</li>

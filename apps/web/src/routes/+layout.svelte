@@ -18,7 +18,6 @@
 	import { isSecondaryRoute } from '$lib/navigation/routes';
 	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
-	import '$lib/m3/m3.css';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { pwaInfo } from 'virtual:pwa-info';

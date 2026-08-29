@@ -301,17 +301,17 @@
 
 	{#if activeTab === 'installed'}
 		<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
-			<section class="m3-section">
+			<section class="ui-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="m3-section-title">{hostT('plugins.builtin.heading')}</h2>
-					<span class="m3-label-small text-on-surface-variant"
+					<h2 class="ui-section-title">{hostT('plugins.builtin.heading')}</h2>
+					<span class="text-label-small text-on-surface-variant"
 						>{hostT('plugins.builtin.count', {
 							count: profileBuiltinPlugins.length
 						})}</span
 					>
 				</div>
 
-				<div class="m3-section-surface divide-y divide-border/40">
+				<div class="ui-section-surface divide-y divide-border/40">
 					{#each profileBuiltinPlugins as plugin (plugin.id)}
 						{@const name = resolveManifestText(plugin.name)}
 						{@const desc = resolveManifestText(plugin.description)}
@@ -321,22 +321,22 @@
 						>
 							<div class="flex min-w-0 flex-1 flex-col justify-center">
 								<div class="flex flex-wrap items-center gap-1.5">
-									<span class="m3-body-medium line-clamp-1 font-medium text-on-surface">
+									<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
 										{name}
 									</span>
 									{#if plugin.version}
-										<span class="m3-label-small font-mono text-[10px] text-on-surface-variant">
+										<span class="text-label-small font-mono text-[10px] text-on-surface-variant">
 											v{plugin.version}
 										</span>
 									{/if}
 									<span
-										class="m3-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
+										class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
 									>
 										{meta.label}
 									</span>
 								</div>
 								{#if desc}
-									<p class="m3-body-small mt-0.5 line-clamp-1 text-on-surface-variant">{desc}</p>
+									<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">{desc}</p>
 								{/if}
 							</div>
 							<div class="flex shrink-0 items-center gap-1.5">
@@ -350,7 +350,7 @@
 										{hostT('plugins.action.settings')}
 									</Button>
 								{:else}
-									<span class="m3-label-small text-[11px] text-on-surface-variant/80">
+									<span class="text-label-small text-[11px] text-on-surface-variant/80">
 										{hostT('plugins.builtin.defaultEnabled')}
 									</span>
 								{/if}
@@ -360,12 +360,12 @@
 				</div>
 			</section>
 
-			<section class="m3-section">
+			<section class="ui-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="m3-section-title">
+					<h2 class="ui-section-title">
 						{hostT('plugins.installed.heading')}
 					</h2>
-					<span class="m3-label-small text-on-surface-variant"
+					<span class="text-label-small text-on-surface-variant"
 						>{hostT('plugins.builtin.count', {
 							count: installedRecords.length
 						})}</span
@@ -376,7 +376,7 @@
 					<div
 						class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-8 text-center text-on-surface-variant"
 					>
-						<p class="m3-body-medium">{hostT('plugins.empty.installed')}</p>
+						<p class="text-body-medium">{hostT('plugins.empty.installed')}</p>
 						<div class="mt-2 flex flex-wrap items-center justify-center gap-2">
 							<Button variant="text" class="text-xs" onclick={() => (activeTab = 'official')}>
 								{hostT('plugins.empty.browse')}
@@ -387,7 +387,7 @@
 						</div>
 					</div>
 				{:else}
-					<div class="m3-section-surface divide-y divide-border/40">
+					<div class="ui-section-surface divide-y divide-border/40">
 						{#each installedRecords as record (record.manifest.id)}
 							{@const name = resolveManifestText(record.manifest.name)}
 							{@const desc = resolveManifestText(record.manifest.description)}
@@ -401,34 +401,36 @@
 								<div class="flex items-start justify-between gap-3">
 									<div class="min-w-0 flex-1">
 										<div class="flex flex-wrap items-center gap-1.5">
-											<span class="m3-body-medium line-clamp-1 font-medium text-on-surface">
+											<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
 												{name}
 											</span>
 											{#if record.manifest.version}
-												<span class="m3-label-small font-mono text-[10px] text-on-surface-variant">
+												<span
+													class="text-label-small font-mono text-[10px] text-on-surface-variant"
+												>
 													v{record.manifest.version}
 												</span>
 											{/if}
 											<span
-												class="m3-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
+												class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
 											>
 												{meta.label}
 											</span>
 											{#if isThemePluginInUse(record.manifest, record.enabled)}
 												<span
-													class="m3-label-small py-0.2 rounded-full bg-primary-container/80 px-1.5 text-[10px] font-medium text-on-primary-container"
+													class="text-label-small py-0.2 rounded-full bg-primary-container/80 px-1.5 text-[10px] font-medium text-on-primary-container"
 												>
 													{hostT('plugins.badge.inUse')}
 												</span>
 											{/if}
 										</div>
 										{#if desc}
-											<p class="m3-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
+											<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
 												{desc}
 											</p>
 										{/if}
 										{#if record.manifest.author}
-											<p class="m3-caption mt-1 text-[10px] text-on-surface-variant/70">
+											<p class="text-caption mt-1 text-[10px] text-on-surface-variant/70">
 												by {record.manifest.author}
 											</p>
 										{/if}
@@ -444,7 +446,7 @@
 											>
 												{isBusy ? hostT('plugins.action.updating') : hostT('plugins.action.update')}
 											</Button>
-											<span class="m3-caption text-[10px] text-on-surface-variant">
+											<span class="text-caption text-[10px] text-on-surface-variant">
 												v{updateOffer.currentVersion} → v{updateOffer.latestVersion}
 											</span>
 										</div>
@@ -474,7 +476,7 @@
 												{hostT('plugins.action.settings')}
 											</Button>
 										{/if}
-										<span class="m3-label-small text-[11px] text-on-surface-variant">
+										<span class="text-label-small text-[11px] text-on-surface-variant">
 											{hostT('plugins.action.enable')}
 										</span>
 										<Switch
@@ -495,13 +497,13 @@
 	{:else}
 		<div class="flex min-h-0 flex-1 flex-col">
 			<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
-				<section class="m3-section">
+				<section class="ui-section">
 					<div class="flex items-center gap-2 px-1">
-						<h2 class="m3-section-title">
+						<h2 class="ui-section-title">
 							{hostT('plugins.catalog.heading')}
 						</h2>
 						{#if catalogManifests.length > 0}
-							<span class="m3-label-small text-on-surface-variant">
+							<span class="text-label-small text-on-surface-variant">
 								{hostT('plugins.builtin.count', {
 									count: catalogManifests.length
 								})}
@@ -512,7 +514,7 @@
 					{#if loadingCatalog}
 						<div class="flex flex-col items-center justify-center py-12">
 							<LoadingIndicator size="large" />
-							<p class="m3-body-small mt-2 text-on-surface-variant">
+							<p class="text-body-small mt-2 text-on-surface-variant">
 								{hostT('plugins.catalog.loading')}
 							</p>
 						</div>
@@ -520,10 +522,10 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl border border-error/30 bg-error-container/20 p-6 text-center"
 						>
-							<p class="m3-body-medium font-medium text-error">
+							<p class="text-body-medium font-medium text-error">
 								{hostT('plugins.catalog.error.title')}
 							</p>
-							<p class="m3-body-small mt-1 text-on-surface-variant">{catalogError}</p>
+							<p class="text-body-small mt-1 text-on-surface-variant">{catalogError}</p>
 							<Button
 								variant="outlined"
 								class="mt-3 h-8 px-4 text-xs"
@@ -536,10 +538,10 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-12 text-center text-on-surface-variant"
 						>
-							<p class="m3-body-medium">{hostT('plugins.catalog.empty')}</p>
+							<p class="text-body-medium">{hostT('plugins.catalog.empty')}</p>
 						</div>
 					{:else}
-						<div class="m3-section-surface divide-y divide-border/40">
+						<div class="ui-section-surface divide-y divide-border/40">
 							{#each catalogManifests as entry (entry.manifest.id)}
 								{@const manifest = entry.manifest}
 								{@const name = resolveManifestText(manifest.name)}
@@ -553,28 +555,30 @@
 								>
 									<div class="flex min-w-0 flex-1 flex-col justify-center">
 										<div class="flex flex-wrap items-center gap-1.5">
-											<span class="m3-body-medium line-clamp-1 font-medium text-on-surface">
+											<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
 												{name}
 											</span>
 											{#if manifest.version}
-												<span class="m3-label-small font-mono text-[10px] text-on-surface-variant">
+												<span
+													class="text-label-small font-mono text-[10px] text-on-surface-variant"
+												>
 													v{manifest.version}
 												</span>
 											{/if}
 											<span
-												class="m3-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
+												class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
 											>
 												{meta.label}
 											</span>
 										</div>
 										{#if desc}
-											<p class="m3-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
+											<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
 												{desc}
 											</p>
 										{/if}
 										{#if manifest.author}
 											<div class="mt-1 flex flex-wrap items-center gap-1">
-												<span class="m3-caption text-[10px] text-on-surface-variant/70">
+												<span class="text-caption text-[10px] text-on-surface-variant/70">
 													by {manifest.author}
 												</span>
 											</div>
@@ -591,7 +595,7 @@
 											>
 												{isBusy ? hostT('plugins.action.updating') : hostT('plugins.action.update')}
 											</Button>
-											<span class="m3-caption text-[10px] text-on-surface-variant">
+											<span class="text-caption text-[10px] text-on-surface-variant">
 												v{updateOffer.currentVersion} → v{updateOffer.latestVersion}
 											</span>
 										{:else if installed}
@@ -654,7 +658,7 @@
 <Dialog bind:open={linkInstallDialogOpen} title={hostT('plugins.link.title')}>
 	<div class="flex flex-col gap-3 py-2">
 		<input
-			class="m3-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary disabled:opacity-60"
+			class="text-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary disabled:opacity-60"
 			type="url"
 			placeholder={hostT('plugins.link.placeholder')}
 			bind:value={manifestUrlInput}
@@ -663,7 +667,7 @@
 		{#if linkInstallInProgress}
 			<div class="flex items-center gap-2 text-on-surface-variant">
 				<LoadingIndicator size="small" />
-				<span class="m3-body-small">{hostT('plugins.link.installing')}</span>
+				<span class="text-body-small">{hostT('plugins.link.installing')}</span>
 			</div>
 		{/if}
 	</div>

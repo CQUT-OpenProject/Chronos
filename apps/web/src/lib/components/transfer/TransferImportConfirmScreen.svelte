@@ -100,7 +100,7 @@
 			disabled={loading ||
 				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
 				Boolean(confirmValidationError)}
-			class="m3-body-large h-12 w-full shadow-xs"
+			class="text-body-large h-12 w-full shadow-xs"
 			onclick={handleConfirm}
 		>
 			{#if loading}
@@ -121,11 +121,11 @@
 			<Card variant="filled" class="border border-outline-variant/50 !bg-surface-variant/30 p-4.5">
 				<div class="flex flex-col gap-3.5">
 					<div class="flex items-center justify-between gap-3">
-						<h2 class="m3-title-medium flex-1 text-on-surface">
+						<h2 class="text-title-medium flex-1 text-on-surface">
 							{preview.name}
 						</h2>
 						<span
-							class="m3-label-large inline-flex items-center rounded-full bg-secondary-container px-3 py-1 text-on-secondary-container"
+							class="text-label-large inline-flex items-center rounded-full bg-secondary-container px-3 py-1 text-on-secondary-container"
 						>
 							{resolveSlotTitle(transferState.previewSlotId)}
 						</span>
@@ -135,30 +135,30 @@
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small text-on-surface-variant">
+							<span class="text-body-small text-on-surface-variant">
 								{hostT('transfer.confirm.stats.courses')}
 							</span>
-							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
+							<span class="text-title-large mt-0.5 font-bold text-on-surface"
 								>{displayedCourseCount}</span
 							>
 						</div>
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small text-on-surface-variant">
+							<span class="text-body-small text-on-surface-variant">
 								{hostT('transfer.confirm.stats.startWeek')}
 							</span>
-							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
+							<span class="text-title-large mt-0.5 font-bold text-on-surface"
 								>{preview.academicConfig?.startWeek ?? 1}</span
 							>
 						</div>
 						<div
 							class="flex flex-col items-center justify-center rounded-2xl bg-surface/80 p-3 text-center transition-colors dark:bg-surface/50"
 						>
-							<span class="m3-body-small text-on-surface-variant">
+							<span class="text-body-small text-on-surface-variant">
 								{hostT('transfer.confirm.stats.endWeek')}
 							</span>
-							<span class="m3-title-large mt-0.5 font-bold text-on-surface"
+							<span class="text-title-large mt-0.5 font-bold text-on-surface"
 								>{preview.academicConfig?.endWeek ?? 20}</span
 							>
 						</div>
@@ -187,7 +187,7 @@
 			{/if}
 
 			<div class="flex flex-col gap-3">
-				<h3 class="m3-title-medium px-1 text-on-surface">
+				<h3 class="text-title-medium px-1 text-on-surface">
 					{hostT('transfer.confirm.mode.heading')}
 				</h3>
 

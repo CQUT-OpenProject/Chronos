@@ -77,7 +77,7 @@
 		</div>
 	{:else}
 		<div class="flex min-h-0 flex-1 items-center justify-center bg-canvas p-4">
-			<p class="m3-body-medium text-center text-on-surface-variant">{previewEmpty}</p>
+			<p class="text-body-medium text-center text-on-surface-variant">{previewEmpty}</p>
 		</div>
 	{/if}
 

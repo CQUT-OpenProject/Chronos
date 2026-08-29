@@ -54,12 +54,12 @@
 	}
 </script>
 
-<div class={['m3-form-field', multiline && 'm3-form-field--multiline', className]}>
-	<label class="m3-field-label" for={fieldId}>{label}</label>
+<div class={['ui-form-field', multiline && 'ui-form-field--multiline', className]}>
+	<label class="ui-field-label" for={fieldId}>{label}</label>
 	{#if multiline}
 		<textarea
 			id={fieldId}
-			class="m3-form-field-input"
+			class="ui-form-field-input"
 			{rows}
 			{maxlength}
 			enterkeyhint="enter"
@@ -67,10 +67,10 @@
 			oninput={handleInput}
 			{...props}></textarea>
 	{:else if passwordToggleEnabled}
-		<div class="m3-form-field-input-row">
+		<div class="ui-form-field-input-row">
 			<input
 				id={fieldId}
-				class="m3-form-field-input"
+				class="ui-form-field-input"
 				type={inputType}
 				{maxlength}
 				bind:value
@@ -93,7 +93,7 @@
 	{:else}
 		<input
 			id={fieldId}
-			class="m3-form-field-input"
+			class="ui-form-field-input"
 			{type}
 			{maxlength}
 			bind:value
@@ -103,7 +103,7 @@
 	{/if}
 	{#if showCounter}
 		<span
-			class={['m3-form-field-counter', counterAtLimit && 'm3-form-field-counter--limit']}
+			class={['ui-form-field-counter', counterAtLimit && 'ui-form-field-counter--limit']}
 			aria-live="polite"
 		>
 			{charCount}/{maxlength}

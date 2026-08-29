@@ -59,7 +59,7 @@
 		{/snippet}
 	</Dialog>
 {:else}
-	<p class="m3-body-medium p-4 text-on-surface-variant">
+	<p class="text-body-medium p-4 text-on-surface-variant">
 		{hostT('timetable.details.notFound')}
 	</p>
 {/if}

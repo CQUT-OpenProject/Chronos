@@ -56,11 +56,11 @@
 		<div class="flex flex-col gap-4 rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
 			<SchemaForm schema={screenSlot.schema} bind:value={formValues} {controller} />
 			{#if saveError}
-				<p class="m3-body-small text-error">{saveError}</p>
+				<p class="text-body-small text-error">{saveError}</p>
 			{/if}
 			<button
 				type="button"
-				class="m3-label-large rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
+				class="text-label-large rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
 				disabled={saving}
 				onclick={saveSchemaConfig}
 			>

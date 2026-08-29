@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { m3DefaultTheme, buildM3Tokens } from '../src/theme/m3-theme';
+import {
+	m3DefaultTheme,
+	buildM3Tokens,
+	buildGeneratedThemeCss,
+	CHRONOS_HOST_COLORS,
+	CHRONOS_HOST_COLOR_KEYS
+} from '../src/theme/m3-theme';
 import { createCourse } from '@chronos/core';
 
 describe('M3DefaultTheme', () => {
@@ -38,5 +44,20 @@ describe('M3DefaultTheme', () => {
 		const paint = m3DefaultTheme.resolveCoursePaint!(course, 1, 'light');
 		expect(paint.background).toBeDefined();
 		expect(paint.foreground).toBeDefined();
+	});
+
+	it('generated CSS includes host color overrides', () => {
+		const css = buildGeneratedThemeCss();
+		for (const key of CHRONOS_HOST_COLOR_KEYS) {
+			const value = CHRONOS_HOST_COLORS.light[key];
+			expect(css).toContain(`--color-${key}: ${value}`);
+		}
+	});
+
+	it('m3-default workbench colors match host surface overrides', () => {
+		const light = m3DefaultTheme.workbenchColors.light;
+		expect(light['color.surface']).toBe(CHRONOS_HOST_COLORS.light.surface);
+		expect(light['color.canvas']).toBe(CHRONOS_HOST_COLORS.light.canvas);
+		expect(light['color.danger']).toBe(CHRONOS_HOST_COLORS.light.danger);
 	});
 });

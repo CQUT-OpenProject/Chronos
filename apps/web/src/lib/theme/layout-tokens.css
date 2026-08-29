@@ -1,0 +1,73 @@
+/* Layout shell dimensions, safe-area, and component-level course tokens */
+
+@layer tokens {
+	.period-active {
+		background-color: var(--period-active-bg, var(--color-brand));
+		background-image: var(--period-active-bg-image, none);
+		color: var(--color-on-primary);
+	}
+
+	/* Light: raw course paint. Dark: 42%/18% course mix (was layout blendColors 0.58/0.18). */
+	.course-capsule {
+		background-color: var(--capsule);
+		color: var(--capsule-fg);
+		border-color: color-mix(in srgb, var(--capsule-fg) 18%, transparent);
+	}
+
+	.dark .course-capsule {
+		background-color: color-mix(in srgb, var(--capsule) 42%, var(--color-surface));
+		color: color-mix(in srgb, var(--capsule) 18%, var(--color-on-surface));
+		border-color: color-mix(in srgb, currentColor 18%, transparent);
+	}
+}
+
+@layer base {
+	html {
+		font-size: 15px;
+		line-height: 1.47;
+		touch-action: pan-x pan-y;
+	}
+
+	@media (min-width: 768px) {
+		html {
+			font-size: 16px;
+		}
+	}
+
+	@media (min-width: 1366px) {
+		html {
+			font-size: 17px;
+		}
+	}
+
+	:root {
+		--topbar-safe: env(safe-area-inset-top, 0px);
+		--tabbar-safe: env(safe-area-inset-bottom, 0px);
+		--spacing-topbar: 4.5rem;
+		--spacing-tabbar: 4.25rem;
+		--top-bar-height: calc(var(--spacing-topbar) + var(--topbar-safe));
+		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
+	}
+
+	@media (max-height: 720px) {
+		:root {
+			--spacing-topbar: 3.75rem;
+			--spacing-tabbar: 3.625rem;
+		}
+	}
+
+	@media (max-height: 560px) {
+		:root {
+			--spacing-topbar: 3.25rem;
+			--spacing-tabbar: 3.125rem;
+		}
+	}
+
+	* {
+		scrollbar-width: none;
+	}
+
+	*::-webkit-scrollbar {
+		display: none;
+	}
+}

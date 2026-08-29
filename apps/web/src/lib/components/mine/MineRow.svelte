@@ -31,14 +31,14 @@
 
 {#snippet rowContent()}
 	{#if Icon}
-		<span class="m3-leading-icon tone-{iconTone}" aria-hidden="true">
+		<span class="ui-leading-icon tone-{iconTone}" aria-hidden="true">
 			<Icon />
 		</span>
 	{/if}
 	<div class="flex min-w-0 flex-1 flex-col justify-center text-left">
-		<span class="m3-body-large line-clamp-1 font-normal text-on-surface">{title}</span>
+		<span class="text-body-large line-clamp-1 font-normal text-on-surface">{title}</span>
 		{#if supporting}
-			<span class="m3-body-small line-clamp-1 text-on-surface-variant">{supporting}</span>
+			<span class="text-body-small line-clamp-1 text-on-surface-variant">{supporting}</span>
 		{/if}
 	</div>
 	{#if trailing}

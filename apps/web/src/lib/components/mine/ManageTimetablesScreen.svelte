@@ -47,7 +47,7 @@
 
 <FormScreenLayout footer={deleteFooter}>
 	<div class="flex flex-col gap-3">
-		<h3 class="m3-title-medium px-1 text-on-surface">
+		<h3 class="text-title-medium px-1 text-on-surface">
 			{hostT('timetable.manage.heading')}
 		</h3>
 

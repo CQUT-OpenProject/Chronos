@@ -71,7 +71,7 @@
 				<div class="flex shrink-0 items-center gap-3 px-4 pb-3">
 					{#if title}
 						<Dialog.Title
-							class="m3-title-large min-w-0 flex-1 truncate font-medium text-on-surface"
+							class="text-title-large min-w-0 flex-1 truncate font-medium text-on-surface"
 						>
 							{title}
 						</Dialog.Title>

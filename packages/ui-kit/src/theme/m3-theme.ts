@@ -18,6 +18,62 @@ import { createWorkbenchColorsFromTokens } from '@chronos/core/theme/workbench-c
 
 export const BRAND_SOURCE_ARGB = 0xff0068b7;
 
+/** Host semantic color defaults — single source for generated CSS and m3-default tokens. */
+export const CHRONOS_HOST_COLOR_KEYS = [
+	'canvas',
+	'ink',
+	'border-subtle',
+	'surface',
+	'surface-container',
+	'surface-container-high',
+	'outline',
+	'outline-variant',
+	'success',
+	'warning',
+	'danger'
+] as const;
+
+export type ChronosHostColorKey = (typeof CHRONOS_HOST_COLOR_KEYS)[number];
+
+export const CHRONOS_HOST_COLORS: Record<'light' | 'dark', Record<ChronosHostColorKey, string>> = {
+	light: {
+		canvas: '#f0f4f8',
+		ink: '#0b1f33',
+		'border-subtle': '#d4e0eb',
+		surface: '#ffffff',
+		'surface-container': '#ffffff',
+		'surface-container-high': '#f1f5f9',
+		outline: '#cbd5e1',
+		'outline-variant': '#e2e8f0',
+		success: '#15803d',
+		warning: '#b45309',
+		danger: '#e60012'
+	},
+	dark: {
+		canvas: '#121316',
+		ink: '#f8fafc',
+		'border-subtle': '#2e3038',
+		surface: '#1e2026',
+		'surface-container': '#1e2026',
+		'surface-container-high': '#24262e',
+		outline: '#334155',
+		'outline-variant': '#2e3038',
+		success: '#4ade80',
+		warning: '#fbbf24',
+		danger: '#e60012'
+	}
+};
+
+/** Tailwind @theme inline bridge keys for host semantics. */
+export const CHRONOS_HOST_INLINE_THEME_KEYS = [
+	'canvas',
+	'ink',
+	'success',
+	'warning',
+	'danger',
+	'border-subtle'
+] as const;
+
 const materialColors = new MaterialDynamicColors();
 
 const onOnPrimary = DynamicColor.fromPalette({
@@ -218,6 +274,12 @@ export function coursePaletteFromSources(argbs: number[]): CoursePaletteEntry[] 
 	return entries;
 }
 
+function hostColorCssVars(mode: 'light' | 'dark'): string[] {
+	return CHRONOS_HOST_COLOR_KEYS.map(
+		(key) => `\t\t--color-${key}: ${CHRONOS_HOST_COLORS[mode][key]};`
+	);
+}
+
 export function buildGeneratedThemeCss(): string {
 	const light = createDynamicScheme(BRAND_SOURCE_ARGB, false);
 	const dark = createDynamicScheme(BRAND_SOURCE_ARGB, true);
@@ -235,11 +297,16 @@ export function buildGeneratedThemeCss(): string {
 		}
 	}
 
+	lightVars.push(...hostColorCssVars('light'));
+	darkVars.push(...hostColorCssVars('dark'));
+
 	const themeInlineVars = [
 		...getM3ColorNames().map((name) => `\t--color-${name}: var(--color-${name});`),
 		...CHRONOS_COLOR_ALIASES.map(
 			(alias) => `\t--color-${alias.name}: var(--color-${alias.source});`
-		)
+		),
+		...CHRONOS_HOST_INLINE_THEME_KEYS.map((key) => `\t--color-${key}: var(--color-${key});`),
+		'\t--color-border: var(--color-border-subtle);'
 	].join('\n');
 
 	return `/* generated, do not edit */
@@ -260,6 +327,16 @@ ${themeInlineVars}
 `;
 }
 
+function mergeHostColorsIntoTokens(
+	tokens: Record<string, string>,
+	mode: 'light' | 'dark'
+): Record<string, string> {
+	for (const key of CHRONOS_HOST_COLOR_KEYS) {
+		tokens[key] = CHRONOS_HOST_COLORS[mode][key];
+	}
+	return tokens;
+}
+
 export function buildM3Tokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens {
 	const isDark = mode === 'dark';
 	const sourceArgb = (seedColor ? parseHexColor(seedColor) : null) ?? BRAND_SOURCE_ARGB;
@@ -271,6 +348,8 @@ export function buildM3Tokens(mode: 'light' | 'dark', seedColor?: string): Desig
 		const kebabCase = toKebabCase(color.name);
 		tokens[kebabCase] = argbToHex(color.getArgb(scheme));
 	}
+
+	mergeHostColorsIntoTokens(tokens, mode);
 
 	return {
 		surface: tokens['surface'] ?? (isDark ? '#141318' : '#fef7ff'),
