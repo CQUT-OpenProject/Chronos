@@ -2,6 +2,7 @@ import { pushState } from '$app/navigation';
 
 export interface HistoryOverlaySync {
 	syncOpenState(isOpen: boolean): void;
+	skipNextHistoryBack(): void;
 	dispose(): void;
 }
 
@@ -11,6 +12,7 @@ export function createHistoryOverlaySync(options: {
 }): HistoryOverlaySync {
 	let historyPushed = false;
 	let closingFromPopstate = false;
+	let skipNextBack = false;
 
 	function onPopState() {
 		if (!options.isOpen()) return;
@@ -23,6 +25,9 @@ export function createHistoryOverlaySync(options: {
 	window.addEventListener('popstate', onPopState);
 
 	return {
+		skipNextHistoryBack() {
+			skipNextBack = true;
+		},
 		syncOpenState(isOpen: boolean) {
 			if (isOpen) {
 				if (!historyPushed) {
@@ -33,7 +38,11 @@ export function createHistoryOverlaySync(options: {
 			}
 
 			if (historyPushed && !closingFromPopstate) {
-				history.back();
+				if (skipNextBack) {
+					skipNextBack = false;
+				} else {
+					history.back();
+				}
 			}
 			historyPushed = false;
 		},

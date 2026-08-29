@@ -87,4 +87,20 @@ describe('createHistoryOverlaySync', () => {
 		expect(back).toHaveBeenCalledTimes(1);
 		sync.dispose();
 	});
+
+	it('skips history.back once when skipNextHistoryBack was called before close', () => {
+		const sync = createHistoryOverlaySync({
+			isOpen: () => isOpen,
+			setOpen
+		});
+
+		isOpen = true;
+		sync.syncOpenState(true);
+		sync.skipNextHistoryBack();
+		isOpen = false;
+		sync.syncOpenState(false);
+
+		expect(back).not.toHaveBeenCalled();
+		sync.dispose();
+	});
 });

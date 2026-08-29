@@ -24,6 +24,10 @@
 
 	let historySync: HistoryOverlaySync | null = null;
 
+	export function skipNextHistoryBack() {
+		historySync?.skipNextHistoryBack();
+	}
+
 	$effect(() => {
 		if (!manageHistory) {
 			historySync?.dispose();
