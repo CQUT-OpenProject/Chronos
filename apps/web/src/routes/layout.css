@@ -18,6 +18,9 @@
 
 @theme {
 	--color-danger: #e60012;
+	--radius-full: calc(infinity * 1px);
+	--radius-dialog: 28px;
+	--radius-sheet-top: 28px;
 }
 
 @theme inline {
@@ -153,4 +156,128 @@
 		padding-top: var(--topbar-safe);
 		background-color: var(--shell-top-bar-bg, transparent);
 	}
+}
+
+/* G2 squircle overrides — must live in layout.css so Tailwind build order keeps them last. */
+:root {
+	--squircle-compensation: 1.72;
+}
+
+@layer utilities {
+	.rounded-lg {
+		border-radius: calc(var(--radius-lg) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-xl {
+		border-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-2xl {
+		border-radius: calc(var(--radius-2xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-3xl {
+		border-radius: calc(var(--radius-3xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-full {
+		border-radius: var(--radius-full);
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-circular {
+		border-radius: var(--radius-full);
+		corner-shape: initial;
+		--corner-shape: initial;
+	}
+
+	.rounded-pill {
+		border-radius: var(--radius-full);
+		corner-shape: initial;
+		--corner-shape: initial;
+	}
+
+	.rounded-t-lg {
+		border-top-left-radius: calc(var(--radius-lg) * var(--squircle-compensation));
+		border-top-right-radius: calc(var(--radius-lg) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-t-xl {
+		border-top-left-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		border-top-right-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-t-2xl {
+		border-top-left-radius: calc(var(--radius-2xl) * var(--squircle-compensation));
+		border-top-right-radius: calc(var(--radius-2xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-t-3xl {
+		border-top-left-radius: calc(var(--radius-3xl) * var(--squircle-compensation));
+		border-top-right-radius: calc(var(--radius-3xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-tl-xl {
+		border-top-left-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-tr-xl {
+		border-top-right-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-bl-xl {
+		border-bottom-left-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-br-xl {
+		border-bottom-right-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-dialog {
+		border-radius: calc(var(--radius-dialog) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+
+	.rounded-t-sheet {
+		border-top-left-radius: calc(var(--radius-sheet-top) * var(--squircle-compensation));
+		border-top-right-radius: calc(var(--radius-sheet-top) * var(--squircle-compensation));
+		corner-shape: squircle squircle square square;
+		--corner-shape: squircle squircle square square;
+	}
+
+	.file\:rounded-lg::file-selector-button {
+		border-radius: calc(var(--radius-lg) * var(--squircle-compensation));
+		corner-shape: squircle;
+		--corner-shape: squircle;
+	}
+}
+
+.course-capsule {
+	--corner-shape: squircle;
 }

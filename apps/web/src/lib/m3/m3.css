@@ -72,6 +72,8 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 9999px;
+	corner-shape: squircle;
+	--corner-shape: squircle;
 	background-color: color-mix(in srgb, var(--color-brand) 10%, transparent);
 	font-size: 0.6875rem;
 	line-height: 1.45;
@@ -215,6 +217,8 @@ button.m3-date-field-input {
 	align-items: center;
 	justify-content: center;
 	border-radius: 9999px;
+	corner-shape: squircle;
+	--corner-shape: squircle;
 	color: var(--color-on-surface-variant);
 	transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -241,7 +245,9 @@ button.m3-date-field-input {
 }
 
 .m3-time-field-segment {
-	border-radius: 0.25rem;
+	border-radius: calc(0.25rem * var(--squircle-compensation));
+	corner-shape: squircle;
+	--corner-shape: squircle;
 	padding: 0.125rem 0.25rem;
 	color: var(--color-on-surface);
 	transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -293,7 +299,9 @@ button.m3-date-field-input {
 	margin: 0;
 	padding: 0.375rem;
 	overflow: hidden;
-	border-radius: 1.5rem;
+	border-radius: calc(1.5rem * var(--squircle-compensation));
+	corner-shape: squircle;
+	--corner-shape: squircle;
 	border: 1px solid var(--color-border-subtle);
 	background-color: var(--color-surface);
 	box-shadow:
@@ -311,7 +319,9 @@ button.m3-date-field-input {
 .m3-section-surface label,
 .m3-section-surface button {
 	position: relative;
-	border-radius: 1.125rem !important;
+	border-radius: calc(1.125rem * var(--squircle-compensation)) !important;
+	corner-shape: squircle;
+	--corner-shape: squircle;
 	overflow: hidden !important;
 }
 
@@ -352,7 +362,9 @@ button.m3-date-field-input {
 	justify-content: center;
 	width: 2.25rem;
 	height: 2.25rem;
-	border-radius: 0.875rem;
+	border-radius: calc(0.875rem * var(--squircle-compensation));
+	corner-shape: squircle;
+	--corner-shape: squircle;
 	flex-shrink: 0;
 }
 
