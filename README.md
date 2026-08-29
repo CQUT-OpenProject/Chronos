@@ -5,7 +5,7 @@
 <img src=".github/assets/light.png" alt="Preview Light" height="500" />
 <img src=".github/assets/dark.png" alt="Preview Dark" height="500" />
 
-基于渐进式 Web 的课程表应用
+微内核、插件化的课程表应用框架
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CQUT-OpenProject/Chronos)
 
