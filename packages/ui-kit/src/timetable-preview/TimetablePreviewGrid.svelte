@@ -3,11 +3,11 @@
 	import type { Attachment } from 'svelte/attachments';
 	import {
 		placeCapsules,
-		type CapsuleCorners,
 		type CoursePaletteEntry,
 		type TimetableCourseDisplayModel,
 		type TimetableGridModel
 	} from '@chronos/core';
+	import { capsuleCornerAttrs } from '../timetable/capsule-corners';
 	import { timetableDayColumnHeaderLabel } from './day-labels';
 	import MiddleTruncateText from './MiddleTruncateText.svelte';
 	import { createFitWidthFontAttachment } from '../utils/fit-width-font.svelte';
@@ -145,17 +145,6 @@
 		return date.slice(8, 10);
 	}
 
-	function cornerClasses(corners: CapsuleCorners): string {
-		return [
-			corners.topLeft ? 'rounded-tl-xl' : null,
-			corners.topRight ? 'rounded-tr-xl' : null,
-			corners.bottomLeft ? 'rounded-bl-xl' : null,
-			corners.bottomRight ? 'rounded-br-xl' : null
-		]
-			.filter((name): name is string => name != null)
-			.join(' ');
-	}
-
 	const gridBodyWidthAttach: Attachment = (node) => {
 		const update = () => {
 			gridBodyWidth = node.clientWidth;
@@ -274,9 +263,8 @@
 							{#if interactive}
 								<button
 									type="button"
-									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
-										item.corners
-									)}"
+									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
+									style={capsuleCornerAttrs(item.corners).style}
 									onclick={() => expandSlot(item.key)}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
@@ -285,9 +273,8 @@
 								</button>
 							{:else}
 								<div
-									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
-										item.corners
-									)}"
+									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
+									style={capsuleCornerAttrs(item.corners).style}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
 										{item.count} 门课程重叠
@@ -300,15 +287,14 @@
 							{#if interactive}
 								<button
 									type="button"
-									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
-										item.corners
-									)} {item.displayModel.isHolidayMuted
+									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {item
+										.displayModel.isHolidayMuted
 										? 'opacity-40'
 										: item.displayModel.isInDisplayedWeek
 											? ''
 											: 'opacity-45'}"
-									style:--capsule={item.colors.background}
-									style:--capsule-fg={item.colors.text}
+									style="{capsuleCornerAttrs(item.corners).style}; --capsule: {item.colors
+										.background}; --capsule-fg: {item.colors.text}"
 									onclick={() => onCourseClick?.(item.course)}
 								>
 									{#if badgeText}
@@ -364,15 +350,14 @@
 								</button>
 							{:else}
 								<div
-									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
-										item.corners
-									)} {item.displayModel.isHolidayMuted
+									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {item
+										.displayModel.isHolidayMuted
 										? 'opacity-40'
 										: item.displayModel.isInDisplayedWeek
 											? ''
 											: 'opacity-45'}"
-									style:--capsule={item.colors.background}
-									style:--capsule-fg={item.colors.text}
+									style="{capsuleCornerAttrs(item.corners).style}; --capsule: {item.colors
+										.background}; --capsule-fg: {item.colors.text}"
 								>
 									{#if badgeText}
 										<span class="mb-0.5 flex w-full shrink-0 justify-center">

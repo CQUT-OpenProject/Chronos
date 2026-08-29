@@ -3,7 +3,6 @@
 	import type { Attachment } from 'svelte/attachments';
 	import {
 		placeCapsules,
-		type CapsuleCorners,
 		type Course,
 		type PlacedCourseCapsule,
 		type TimetableCourseDisplayModel,
@@ -11,6 +10,7 @@
 	} from '@chronos/core';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
+	import { capsuleCornerAttrs } from '@chronos/ui-kit/timetable/capsule-corners';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayColumnHeaderLabel } from '$lib/timetable/day-labels';
 	import {
@@ -216,17 +216,6 @@
 		}
 	}
 
-	function cornerClasses(corners: CapsuleCorners): string {
-		return [
-			corners.topLeft ? 'rounded-tl-xl' : null,
-			corners.topRight ? 'rounded-tr-xl' : null,
-			corners.bottomLeft ? 'rounded-bl-xl' : null,
-			corners.bottomRight ? 'rounded-br-xl' : null
-		]
-			.filter((name): name is string => name != null)
-			.join(' ');
-	}
-
 	const bodyScrollAttach: Attachment = (node) => {
 		const element = node as HTMLDivElement;
 		scrollContainer = element;
@@ -348,9 +337,8 @@
 						{#if item.kind === 'overlap-placeholder'}
 							<button
 								type="button"
-								class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
-									item.corners
-								)}"
+								class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
+								style={capsuleCornerAttrs(item.corners).style}
 								aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
 								onclick={() => expandSlot(item.key)}
 							>
@@ -383,15 +371,14 @@
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
 	<button
 		type="button"
-		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
-			placed.corners
-		)} {placed.displayModel.isHolidayMuted
+		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {placed
+			.displayModel.isHolidayMuted
 			? 'opacity-40'
 			: placed.displayModel.isInDisplayedWeek
 				? ''
 				: 'opacity-45'}"
-		style:--capsule={colors.background}
-		style:--capsule-fg={colors.text}
+		style="{capsuleCornerAttrs(placed.corners)
+			.style}; --capsule: {colors.background}; --capsule-fg: {colors.text}"
 		aria-label={buildCourseCapsuleAriaLabel(placed.course, {
 			teacher,
 			isHolidayMuted: placed.displayModel.isHolidayMuted
