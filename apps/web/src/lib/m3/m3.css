@@ -245,7 +245,7 @@ button.m3-date-field-input {
 }
 
 .m3-time-field-segment {
-	border-radius: calc(0.25rem * var(--squircle-compensation));
+	border-radius: calc(0.25rem * var(--squircle-compensation-ui));
 	corner-shape: squircle;
 	--corner-shape: squircle;
 	padding: 0.125rem 0.25rem;
@@ -299,7 +299,7 @@ button.m3-date-field-input {
 	margin: 0;
 	padding: 0.375rem;
 	overflow: hidden;
-	border-radius: calc(1.5rem * var(--squircle-compensation));
+	border-radius: calc(1.5rem * var(--squircle-compensation-ui));
 	corner-shape: squircle;
 	--corner-shape: squircle;
 	border: 1px solid var(--color-border-subtle);
@@ -317,9 +317,9 @@ button.m3-date-field-input {
 /* Ensure list item active/pressed state overlays have smooth rounded corners matching card section */
 .m3-section-surface a,
 .m3-section-surface label,
-.m3-section-surface button {
+.m3-section-surface button:not([role='switch']) {
 	position: relative;
-	border-radius: calc(1.125rem * var(--squircle-compensation)) !important;
+	border-radius: calc(1.125rem * var(--squircle-compensation-ui)) !important;
 	corner-shape: squircle;
 	--corner-shape: squircle;
 	overflow: hidden !important;
@@ -329,15 +329,15 @@ button.m3-date-field-input {
 .m3-section-surface a::after,
 .m3-section-surface label::before,
 .m3-section-surface label::after,
-.m3-section-surface button::before,
-.m3-section-surface button::after {
+.m3-section-surface button:not([role='switch'])::before,
+.m3-section-surface button:not([role='switch'])::after {
 	border-radius: inherit !important;
 }
 
 /* Centered subtle divider between adjacent menu list items */
 .m3-section-surface > * + a::before,
 .m3-section-surface > * + label::before,
-.m3-section-surface > * + button::before {
+.m3-section-surface > * + button:not([role='switch'])::before {
 	content: '';
 	position: absolute;
 	top: 0;
@@ -351,7 +351,7 @@ button.m3-date-field-input {
 
 .dark .m3-section-surface > * + a::before,
 .dark .m3-section-surface > * + label::before,
-.dark .m3-section-surface > * + button::before {
+.dark .m3-section-surface > * + button:not([role='switch'])::before {
 	background-color: color-mix(in srgb, var(--color-on-surface-variant) 18%, transparent);
 }
 
@@ -362,7 +362,7 @@ button.m3-date-field-input {
 	justify-content: center;
 	width: 2.25rem;
 	height: 2.25rem;
-	border-radius: calc(0.875rem * var(--squircle-compensation));
+	border-radius: calc(0.875rem * var(--squircle-compensation-ui));
 	corner-shape: squircle;
 	--corner-shape: squircle;
 	flex-shrink: 0;

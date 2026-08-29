@@ -75,6 +75,10 @@
 	function clearDate() {
 		draftIso = '';
 	}
+
+	function dismissPicker() {
+		open = false;
+	}
 </script>
 
 <div class={isSection ? ['flex flex-col gap-3', className] : undefined}>
@@ -149,9 +153,18 @@
 			</DatePicker.Input>
 
 			<DatePicker.Portal>
+				{#if open}
+					<button
+						type="button"
+						tabindex="-1"
+						class="date-picker-overlay fixed inset-0 z-[70] bg-black/50 backdrop-blur-xs"
+						aria-label="关闭"
+						onclick={dismissPicker}
+					></button>
+				{/if}
 				<DatePicker.Content
 					sideOffset={8}
-					class="m3-date-picker-content z-[60] rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
+					class="m3-date-picker-content z-[70] rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
 				>
 					<DatePicker.Calendar>
 						{#snippet children({ months, weekdays })}

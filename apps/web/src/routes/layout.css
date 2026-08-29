@@ -161,29 +161,30 @@
 /* G2 squircle overrides — must live in layout.css so Tailwind build order keeps them last. */
 :root {
 	--squircle-compensation: 1.72;
+	--squircle-compensation-ui: 1.65;
 }
 
 @layer utilities {
 	.rounded-lg {
-		border-radius: calc(var(--radius-lg) * var(--squircle-compensation));
+		border-radius: calc(var(--radius-lg) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-xl {
-		border-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		border-radius: calc(var(--radius-xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-2xl {
-		border-radius: calc(var(--radius-2xl) * var(--squircle-compensation));
+		border-radius: calc(var(--radius-2xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-3xl {
-		border-radius: calc(var(--radius-3xl) * var(--squircle-compensation));
+		border-radius: calc(var(--radius-3xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
@@ -207,72 +208,72 @@
 	}
 
 	.rounded-t-lg {
-		border-top-left-radius: calc(var(--radius-lg) * var(--squircle-compensation));
-		border-top-right-radius: calc(var(--radius-lg) * var(--squircle-compensation));
+		border-top-left-radius: calc(var(--radius-lg) * var(--squircle-compensation-ui));
+		border-top-right-radius: calc(var(--radius-lg) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-t-xl {
-		border-top-left-radius: calc(var(--radius-xl) * var(--squircle-compensation));
-		border-top-right-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		border-top-left-radius: calc(var(--radius-xl) * var(--squircle-compensation-ui));
+		border-top-right-radius: calc(var(--radius-xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-t-2xl {
-		border-top-left-radius: calc(var(--radius-2xl) * var(--squircle-compensation));
-		border-top-right-radius: calc(var(--radius-2xl) * var(--squircle-compensation));
+		border-top-left-radius: calc(var(--radius-2xl) * var(--squircle-compensation-ui));
+		border-top-right-radius: calc(var(--radius-2xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-t-3xl {
-		border-top-left-radius: calc(var(--radius-3xl) * var(--squircle-compensation));
-		border-top-right-radius: calc(var(--radius-3xl) * var(--squircle-compensation));
+		border-top-left-radius: calc(var(--radius-3xl) * var(--squircle-compensation-ui));
+		border-top-right-radius: calc(var(--radius-3xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-tl-xl {
-		border-top-left-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		border-top-left-radius: calc(var(--radius-xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-tr-xl {
-		border-top-right-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		border-top-right-radius: calc(var(--radius-xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-bl-xl {
-		border-bottom-left-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		border-bottom-left-radius: calc(var(--radius-xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-br-xl {
-		border-bottom-right-radius: calc(var(--radius-xl) * var(--squircle-compensation));
+		border-bottom-right-radius: calc(var(--radius-xl) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-dialog {
-		border-radius: calc(var(--radius-dialog) * var(--squircle-compensation));
+		border-radius: calc(var(--radius-dialog) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
 
 	.rounded-t-sheet {
-		border-top-left-radius: calc(var(--radius-sheet-top) * var(--squircle-compensation));
-		border-top-right-radius: calc(var(--radius-sheet-top) * var(--squircle-compensation));
+		border-top-left-radius: calc(var(--radius-sheet-top) * var(--squircle-compensation-ui));
+		border-top-right-radius: calc(var(--radius-sheet-top) * var(--squircle-compensation-ui));
 		corner-shape: squircle squircle square square;
 		--corner-shape: squircle squircle square square;
 	}
 
 	.file\:rounded-lg::file-selector-button {
-		border-radius: calc(var(--radius-lg) * var(--squircle-compensation));
+		border-radius: calc(var(--radius-lg) * var(--squircle-compensation-ui));
 		corner-shape: squircle;
 		--corner-shape: squircle;
 	}
