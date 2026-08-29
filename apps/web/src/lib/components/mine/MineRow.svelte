@@ -2,6 +2,7 @@
 	import type { Component, Snippet } from 'svelte';
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes, HTMLAttributes } from 'svelte/elements';
 	import { ChevronRight } from '$lib/icons';
+	import { appRouteHref } from '$lib/navigation/app-route-href';
 
 	export type MineIconTone = 'primary' | 'secondary' | 'tertiary' | 'neutral';
 
@@ -50,7 +51,7 @@
 
 {#if href}
 	<a
-		{href}
+		href={appRouteHref(href)}
 		{onclick}
 		{...props}
 		class="relative flex h-16 w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-surface-variant/40 active:bg-surface-variant/60"
