@@ -183,7 +183,6 @@
 
 	$effect(() => {
 		if (propCurrentPeriodIndex !== undefined) return;
-		if (!isCurrentWeek) return;
 
 		let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -284,12 +283,12 @@
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
 				{#each gridModel.periods as period (period.index)}
-					{@const isActive = isCurrentWeek && period.index === currentPeriodIndex}
 					<div
 						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
 					>
 						<div
-							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
+							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {period.index ===
+							currentPeriodIndex
 								? 'period-active'
 								: ''}"
 						>
@@ -297,7 +296,9 @@
 								{period.index}
 							</span>
 							<span
-								class="text-caption mt-1 leading-tight {isActive ? '' : 'text-on-surface-variant'}"
+								class="text-caption mt-1 leading-tight {period.index === currentPeriodIndex
+									? ''
+									: 'text-on-surface-variant'}"
 							>
 								{period.startTime}<br />{period.endTime}
 							</span>
