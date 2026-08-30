@@ -29,6 +29,8 @@ import {
 	type QrCodeImportForm
 } from './messages';
 
+export const QR_CODEC_ENVELOPE_PREFIX = 'chronos-qr:v1:';
+
 export interface V2CompactQrPayload {
 	v: 2;
 	n: string; // name
@@ -89,7 +91,7 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 	const rawBytes = new TextEncoder().encode(json);
 	const compressedBytes = await deflateRaw(rawBytes);
 
-	return `chronos-qr:v2:${bytesToBase64(compressedBytes)}`;
+	return `${QR_CODEC_ENVELOPE_PREFIX}${bytesToBase64(compressedBytes)}`;
 }
 
 export async function deserializeTimetableFromQr(
@@ -101,11 +103,11 @@ export async function deserializeTimetableFromQr(
 ): Promise<Timetable> {
 	const content = rawText.trim();
 
-	if (!content.startsWith('chronos-qr:v2:')) {
+	if (!content.startsWith(QR_CODEC_ENVELOPE_PREFIX)) {
 		throw new Error(labels['import.error.corrupt']);
 	}
 
-	const base64 = content.slice('chronos-qr:v2:'.length);
+	const base64 = content.slice(QR_CODEC_ENVELOPE_PREFIX.length);
 	const compressedBytes = base64ToBytes(base64);
 	const decompressedBytes = await inflateRaw(compressedBytes);
 	const jsonStr = new TextDecoder().decode(decompressedBytes);
