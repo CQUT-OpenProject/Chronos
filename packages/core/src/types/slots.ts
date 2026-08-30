@@ -144,16 +144,6 @@ export interface CourseActionSlotContribution {
 }
 
 // 6. Theme slot contribution specification
-export interface DesignTokens {
-	surface: string;
-	onSurface: string;
-	primary: string;
-	onPrimary: string;
-	surfaceVariant: string;
-	outline: string;
-	[customToken: string]: string;
-}
-
 export interface CoursePaint {
 	background: string;
 	foreground: string;

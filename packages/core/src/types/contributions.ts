@@ -1,8 +1,7 @@
-import type { Course } from '../domain/course';
 import type { CoursePaletteEntry } from '../engine/palette';
-import type { DesignTokens, CoursePaint, LocalizedText } from './slots';
+import type { LocalizedText } from './slots';
 
-export type { DesignTokens, CoursePaint, CourseBadgeSlotContribution } from './slots';
+export type { CoursePaint, CourseBadgeSlotContribution } from './slots';
 
 export interface ThemeWorkbenchColors {
 	light: Record<string, string>;
@@ -30,6 +29,4 @@ export interface ThemeContribution {
 		| readonly CoursePaletteEntry[]
 		| ((mode: 'light' | 'dark') => readonly CoursePaletteEntry[]);
 	readonly dynamicColorAdapter?: DynamicColorAdapter;
-	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens;
-	resolveCoursePaint?(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint;
 }

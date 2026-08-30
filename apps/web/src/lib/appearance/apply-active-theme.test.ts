@@ -154,15 +154,7 @@ describe('applyActiveTheme', () => {
 				dark: {
 					'color.primary': '#abcdef'
 				}
-			},
-			getTokens: () => ({
-				surface: '#fff',
-				onSurface: '#000',
-				primary: '#123456',
-				onPrimary: '#fff',
-				surfaceVariant: '#eee',
-				outline: '#ccc'
-			})
+			}
 		});
 
 		const target = createFakeElement();

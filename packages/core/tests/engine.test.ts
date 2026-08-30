@@ -263,16 +263,8 @@ describe('ChronosEngine in @chronos/core', () => {
 		engine.themes.registerTheme({
 			id: 'paired',
 			name: 'Paired Theme',
-			workbenchColors: { light: {}, dark: {} },
-			recommendedIconTheme: 'paired-icons',
-			getTokens: () => ({
-				surface: '#ffffff',
-				onSurface: '#000000',
-				primary: '#0000ff',
-				onPrimary: '#ffffff',
-				surfaceVariant: '#eeeeee',
-				outline: '#cccccc'
-			})
+			workbenchColors: { light: { 'color.primary': '#0000ff' }, dark: {} },
+			recommendedIconTheme: 'paired-icons'
 		});
 		engine.setTheme('paired');
 		expect(engine.state.activeIconThemeId).toBe('paired-icons');

@@ -7,13 +7,7 @@ import {
 	TonalPalette,
 	Variant
 } from '@ktibow/material-color-utilities-nightly';
-import type {
-	Course,
-	CoursePaint,
-	DesignTokens,
-	ThemeContribution,
-	CoursePaletteEntry
-} from '@chronos/core';
+import type { CoursePaint, ThemeContribution, CoursePaletteEntry } from '@chronos/core';
 import { createWorkbenchColorsFromTokens } from '@chronos/core/theme/workbench-colors';
 
 export const BRAND_SOURCE_ARGB = 0xff0068b7;
@@ -337,7 +331,7 @@ function mergeHostColorsIntoTokens(
 	return tokens;
 }
 
-export function buildM3Tokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens {
+export function buildM3Tokens(mode: 'light' | 'dark', seedColor?: string): Record<string, string> {
 	const isDark = mode === 'dark';
 	const sourceArgb = (seedColor ? parseHexColor(seedColor) : null) ?? BRAND_SOURCE_ARGB;
 	const scheme = createDynamicScheme(sourceArgb, isDark);
@@ -370,14 +364,5 @@ export const m3DefaultTheme: ThemeContribution = {
 	id: 'm3-default',
 	name: () => 'Material 3 (Default)',
 	supportsDynamicColor: true,
-	workbenchColors: createWorkbenchColorsFromTokens(buildM3Tokens('light'), buildM3Tokens('dark')),
-
-	getTokens(mode: 'light' | 'dark', seedColor?: string): DesignTokens {
-		return buildM3Tokens(mode, seedColor);
-	},
-
-	resolveCoursePaint(_course: Course, paletteIndex: number, _mode: 'light' | 'dark'): CoursePaint {
-		const palette = buildM3CoursePalette(BRAND_SOURCE_ARGB);
-		return palette[Math.abs(paletteIndex) % palette.length]!;
-	}
+	workbenchColors: createWorkbenchColorsFromTokens(buildM3Tokens('light'), buildM3Tokens('dark'))
 };

@@ -1,12 +1,6 @@
-import type { Course } from '../domain/course';
 import type { CoursePaletteEntry } from '../engine/palette';
-import type {
-	CoursePaint,
-	DesignTokens,
-	ThemeContribution,
-	ThemeWorkbenchColors
-} from '../types/contributions';
-import { validateWorkbenchColors, workbenchColorsToDesignTokens } from './workbench-colors';
+import type { ThemeContribution, ThemeWorkbenchColors } from '../types/contributions';
+import { validateWorkbenchColors } from './workbench-colors';
 
 export type ColorThemeJsonCoursePalette = Record<'light' | 'dark', readonly CoursePaletteEntry[]>;
 
@@ -98,17 +92,6 @@ export function createThemeFromColorJson(json: ColorThemeJson): ThemeContributio
 		className: json.className,
 		recommendedIconTheme: json.recommendedIconTheme,
 		workbenchColors,
-		paletteEntries,
-		getTokens(mode: 'light' | 'dark'): DesignTokens {
-			return workbenchColorsToDesignTokens(workbenchColors[mode]) as DesignTokens;
-		},
-		resolveCoursePaint(_course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint {
-			const entries = json.coursePalette?.[mode];
-			if (!entries?.length) {
-				return { background: '#888', foreground: '#fff' };
-			}
-			const entry = entries[Math.abs(paletteIndex) % entries.length]!;
-			return { background: entry.background, foreground: entry.foreground };
-		}
+		paletteEntries
 	};
 }

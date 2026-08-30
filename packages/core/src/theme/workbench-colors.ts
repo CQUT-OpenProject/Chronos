@@ -209,18 +209,6 @@ export function applyWorkbenchColors(
 	return appliedKeys;
 }
 
-export function workbenchColorsToDesignTokens(
-	colors: Record<string, string>
-): Record<string, string> {
-	const tokens: Record<string, string> = {};
-	for (const [key, value] of Object.entries(colors)) {
-		if (key.startsWith('color.')) {
-			tokens[key.slice('color.'.length)] = value;
-		}
-	}
-	return tokens;
-}
-
 function tokenKeyToWorkbenchColorKey(tokenKey: string): string {
 	const kebab = tokenKey.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 	return `color.${kebab}`;
