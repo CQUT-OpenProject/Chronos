@@ -3,7 +3,6 @@ import { connectivity } from '$lib/platform/connectivity.svelte';
 import { onboardingController } from '$lib/client/onboarding.svelte';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 import { initAnalytics } from '$lib/client/analytics';
-import { initWebVitals } from '$lib/client/web-vitals';
 import { initNavigationStack } from '$lib/navigation/navigation-direction';
 import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
 import { ensureEngineReady } from '$lib/services/app-engine';
@@ -40,7 +39,6 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 			deps.shell.init();
 			deps.timetableScreen.init(deps.shell);
 			void pwaInstallController.init();
-			initWebVitals();
 			initAnalytics();
 			window.__chronosHideBootFallback?.();
 

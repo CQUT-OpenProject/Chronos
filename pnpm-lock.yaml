@@ -90,9 +90,6 @@ importers:
       vite-plugin-functions-mixins:
         specifier: ^0.4.1
         version: 0.4.1(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))
-      web-vitals:
-        specifier: ^6.1.1
-        version: 6.1.1
       workbox-window:
         specifier: ^7.4.1
         version: 7.4.1
@@ -4003,9 +4000,6 @@ packages:
   web-vitals@6.0.0:
     resolution: {integrity: sha512-Guaibvy/+uNtL6Bsu4jmMJGzuSl91oeRH5iO9pPRbYftnFUr3yqT1TUNX/OE4o9HexuEMU3Kb/Wg7iKhlffZUA==}
 
-  web-vitals@6.1.1:
-    resolution: {integrity: sha512-r93gKnR6ZC2O8F3JrS0AAGIQ0v0OhXuyg4DAj2oG7K+GPkwXfUSc3ZcWeu50AsV5yIc6xxnTjERipJ6EvSw2vg==}
-
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
@@ -7829,8 +7823,6 @@ snapshots:
   web-vitals@5.3.0: {}
 
   web-vitals@6.0.0: {}
-
-  web-vitals@6.1.1: {}
 
   webidl-conversions@3.0.1: {}
 
