@@ -307,7 +307,7 @@ describe('calendar-holidays plugin', () => {
 		await engine.init();
 		await engine.switchTimetable(t1.id);
 
-		const handle = await engine.loadPlugin(createHolidayPlugin());
+		await engine.loadPlugin(createHolidayPlugin());
 		await engine.unloadPlugin('tool-calendar-holidays');
 
 		expect(timetables.get('t1')?.academicConfig.holidayCalendar).toBeUndefined();
