@@ -81,4 +81,12 @@ describe('createShellTabController', () => {
 		shellTab.setActiveTab('mine');
 		expect(shellTab.activeTabId).toBe('mine');
 	});
+
+	it('does not reset active tab when init is called again', () => {
+		const shellTab = createShellTabController(() => controller);
+		shellTab.init();
+		shellTab.setActiveTab('mine');
+		shellTab.init();
+		expect(shellTab.activeTabId).toBe('mine');
+	});
 });

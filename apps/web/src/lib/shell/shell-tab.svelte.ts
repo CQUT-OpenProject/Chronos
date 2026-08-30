@@ -22,6 +22,7 @@ export function createShellTabController(getController: () => ReactiveChronosCon
 	}
 
 	function init(): void {
+		if (initialized) return;
 		const controller = getController();
 		const tabs = controller.getSlots('shell.bottom-bar.tab');
 		activeTabId = resolveDefaultLaunchTab(tabs)?.id ?? tabs[0]?.id ?? FALLBACK_TAB_ID;
