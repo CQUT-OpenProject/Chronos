@@ -191,9 +191,6 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
-      '@chronos/plugin-source-cqut':
-        specifier: workspace:*
-        version: link:../source-cqut
       '@chronos/ui-kit':
         specifier: workspace:*
         version: link:../../ui-kit
@@ -213,9 +210,6 @@ importers:
       '@cqut-openproject/cas-sdk':
         specifier: github:CQUT-OpenProject/CAS-SDK#1.0.0
         version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f
-      '@sveltejs/kit':
-        specifier: ^2.63.0
-        version: 2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0))(typescript@7.0.2)
       undici:
         specifier: ^8.10.0
         version: 8.10.0
@@ -5402,26 +5396,6 @@ snapshots:
       - encoding
       - rollup
       - supports-color
-
-  '@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0))(typescript@7.0.2)':
-    dependencies:
-      '@standard-schema/spec': 1.1.0
-      '@sveltejs/acorn-typescript': 1.0.13(acorn@8.18.0)
-      '@sveltejs/vite-plugin-svelte': 7.3.0(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0))
-      '@types/cookie': 0.6.0
-      acorn: 8.18.0
-      cookie: 0.6.0
-      devalue: 5.9.0
-      esm-env: 1.2.2
-      kleur: 4.1.5
-      magic-string: 0.30.21
-      mrmime: 2.0.1
-      set-cookie-parser: 3.1.2
-      sirv: 3.0.2
-      svelte: 5.56.10(@typescript-eslint/types@8.66.0)
-      vite: '@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2)'
-    optionalDependencies:
-      typescript: 7.0.2
 
   '@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0))(typescript@7.0.2)':
     dependencies:
