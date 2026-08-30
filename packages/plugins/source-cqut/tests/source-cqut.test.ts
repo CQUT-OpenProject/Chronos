@@ -243,8 +243,6 @@ describe('cqutPlugin', () => {
 		expect(timetable.academicConfig.termStartDate).toBe('2026-03-02');
 		expect(timetable.courses.length).toBe(1);
 		expect(timetable.courses[0]?.name).toBe('高等数学A');
-		expect(timetable.courses[0]?.color).toBeDefined();
-		expect(timetable.courses[0]?.textColor).toBeDefined();
 		expect(timetable.courses[0]?.teacher).toBe('王教授');
 		expect(timetable.courses[0]?.location).toBe('花溪校区 第三教学楼301');
 		expect(timetable.courses[0]?.dayOfWeek).toBe(1);

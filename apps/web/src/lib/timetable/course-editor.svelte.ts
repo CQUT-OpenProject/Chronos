@@ -13,8 +13,6 @@ function emptyDraft(): CourseDraft {
 		dayOfWeek: 1,
 		startPeriod: 1,
 		endPeriod: 1,
-		color: '#EADDFF',
-		textColor: '#21005D',
 		weeks: [],
 		remark: ''
 	};
@@ -31,7 +29,6 @@ export function createCourseEditor(
 
 	const timetable = $derived(shell.controller.currentTimetable);
 	const canSave = $derived(Boolean(draft?.name.trim()));
-	const coursePalette = $derived(shell.appearance.coursePalette);
 
 	function syncFromRoute() {
 		const courseId = getCourseId();
@@ -58,8 +55,6 @@ export function createCourseEditor(
 			dayOfWeek: draft.dayOfWeek,
 			startPeriod: draft.startPeriod,
 			endPeriod: draft.endPeriod,
-			color: draft.color,
-			textColor: draft.textColor,
 			weeks: draft.weeks,
 			remark: draft.remark
 		});
@@ -84,9 +79,6 @@ export function createCourseEditor(
 		},
 		get canSave() {
 			return canSave;
-		},
-		get coursePalette() {
-			return coursePalette;
 		},
 		save,
 		deleteCourse,

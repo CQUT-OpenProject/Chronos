@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type {
 	PluginServerHandler,
 	PluginServerManifest,
@@ -30,13 +29,13 @@ export const handlePreview: PluginServerHandler = async ({ request }) => {
 	try {
 		body = (await request.json()) as PreviewRequestBody;
 	} catch {
-		return json(pluginServerError('DataFormat', '请求格式错误'), { status: 400 });
+		return Response.json(pluginServerError('DataFormat', '请求格式错误'), { status: 400 });
 	}
 
 	const account = (body.account ?? body.username)?.trim() ?? '';
 	const password = body.password?.trim() ?? '';
 	if (!account || !password) {
-		return json(pluginServerError('Validation', '账号和密码不能为空'), { status: 400 });
+		return Response.json(pluginServerError('Validation', '账号和密码不能为空'), { status: 400 });
 	}
 
 	const result = await fetchCqutSchedule({
@@ -45,12 +44,15 @@ export const handlePreview: PluginServerHandler = async ({ request }) => {
 	});
 
 	if (result.ok) {
-		return json(pluginServerSuccess(result.value));
+		return Response.json(pluginServerSuccess(result.value));
 	}
 
-	return json(pluginServerError(toWireErrorKind(result.error.kind), result.error.message), {
-		status: 502
-	});
+	return Response.json(
+		pluginServerError(toWireErrorKind(result.error.kind), result.error.message),
+		{
+			status: 502
+		}
+	);
 };
 
 export const serverManifest: PluginServerManifest = {

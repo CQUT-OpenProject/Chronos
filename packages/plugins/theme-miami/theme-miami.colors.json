@@ -1,0 +1,86 @@
+{
+	"id": "miami",
+	"name": { "zh-CN": "迈阿密", "en": "Miami" },
+	"className": "theme-miami",
+	"recommendedIconTheme": "miami",
+	"coursePalette": {
+		"light": [
+			{ "background": "#FFC857", "foreground": "#1a1a1a" },
+			{ "background": "#FF6F61", "foreground": "#fff" },
+			{ "background": "#3DBCA8", "foreground": "#1a1a1a" },
+			{ "background": "#FF4D8D", "foreground": "#fff" },
+			{ "background": "#006D6F", "foreground": "#fff" },
+			{ "background": "#7DD4C4", "foreground": "#1a1a1a" }
+		],
+		"dark": [
+			{ "background": "#FFC857", "foreground": "#1a1a1a" },
+			{ "background": "#FF6F61", "foreground": "#fff" },
+			{ "background": "#3DBCA8", "foreground": "#1a1a1a" },
+			{ "background": "#FF4D8D", "foreground": "#fff" },
+			{ "background": "#006D6F", "foreground": "#fff" },
+			{ "background": "#7DD4C4", "foreground": "#1a1a1a" }
+		]
+	},
+	"variants": {
+		"light": {
+			"colors": {
+				"color.surface": "#FFFBF8",
+				"color.on-surface": "#1A2E2F",
+				"color.surface-variant": "#E8F5F3",
+				"color.outline": "#9BC4BE",
+				"color.primary": "#006D6F",
+				"color.on-primary": "#fff",
+				"color.primary-dim": "#006D6F",
+				"color.primary-container": "#006D6F",
+				"color.on-primary-container": "#fff",
+				"color.inverse-primary": "#006D6F",
+				"color.secondary": "#FF6F61",
+				"color.secondary-dim": "#FF6F61",
+				"color.on-secondary": "#fff",
+				"color.secondary-container": "#FF6F61",
+				"color.on-secondary-container": "#fff",
+				"color.secondary-container-subtle": "#FF6F61",
+				"color.on-secondary-container-subtle": "#fff",
+				"color.primary-container-subtle": "#006D6F",
+				"color.on-primary-container-subtle": "#fff",
+				"color.warning": "#FFC857",
+				"shell.bottomTab.activeBackground": "transparent",
+				"shell.bottomTab.activeForeground": "#006D6F",
+				"leadingIcon.background": "color-mix(in srgb, #FF6F61 75%, transparent)",
+				"leadingIcon.color": "#fff",
+				"timetable.period.activeBackground": "transparent",
+				"timetable.period.activeBackgroundImage": "linear-gradient(to bottom, #FF6F61, #3DBCA8)"
+			}
+		},
+		"dark": {
+			"colors": {
+				"color.surface": "#0A1C1D",
+				"color.on-surface": "#F0FAF9",
+				"color.surface-variant": "#132829",
+				"color.outline": "#2A4A4C",
+				"color.primary": "#3DBCA8",
+				"color.on-primary": "#1A2E2F",
+				"color.primary-dim": "#3DBCA8",
+				"color.primary-container": "#3DBCA8",
+				"color.on-primary-container": "#1A2E2F",
+				"color.inverse-primary": "#3DBCA8",
+				"color.secondary": "#FF4D8D",
+				"color.secondary-dim": "#FF4D8D",
+				"color.on-secondary": "#fff",
+				"color.secondary-container": "#FF4D8D",
+				"color.on-secondary-container": "#fff",
+				"color.secondary-container-subtle": "#FF4D8D",
+				"color.on-secondary-container-subtle": "#fff",
+				"color.primary-container-subtle": "#3DBCA8",
+				"color.on-primary-container-subtle": "#1A2E2F",
+				"color.warning": "#FFC857",
+				"shell.bottomTab.activeBackground": "transparent",
+				"shell.bottomTab.activeForeground": "#3DBCA8",
+				"leadingIcon.background": "color-mix(in srgb, #FF4D8D 75%, transparent)",
+				"leadingIcon.color": "#fff",
+				"timetable.period.activeBackground": "transparent",
+				"timetable.period.activeBackgroundImage": "linear-gradient(to bottom, #FF4D8D, #006D6F)"
+			}
+		}
+	}
+}

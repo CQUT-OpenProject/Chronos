@@ -33,8 +33,8 @@
 		onValueChange
 	}: Props = $props();
 
-	const fallbackId = `input-wallpaper-${Math.random().toString(36).slice(2, 9)}`;
-	const inputId = $derived(id || fallbackId);
+	const instanceId = $props.id();
+	const inputId = $derived(id || instanceId);
 
 	const calendarService = new AcademicCalendarService();
 
@@ -55,7 +55,7 @@
 	);
 	const paletteCourses = $derived(timetable?.courses ?? []);
 	const layoutMode = $derived(controller?.userPreferences?.timetableLayoutMode ?? 'fixed');
-	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'rounded');
+	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const courseBadges = $derived(controller?.courseBadges ?? {});
 
 	const preview = $derived(
@@ -180,13 +180,13 @@
 					<div
 						class="absolute inset-x-0 bottom-0 bg-surface-variant/80 px-3 py-2 text-center backdrop-blur-sm"
 					>
-						<p class="m3-body-small text-on-surface-variant">选择壁纸后可预览效果</p>
+						<p class="text-body-small text-on-surface-variant">选择壁纸后可预览效果</p>
 					</div>
 				{/if}
 			</div>
 		{:else}
 			<p
-				class="m3-body-medium flex items-center justify-center p-8 text-center text-on-surface-variant"
+				class="text-body-medium flex items-center justify-center p-8 text-center text-on-surface-variant"
 			>
 				暂无课表，导入后可预览壁纸效果
 			</p>

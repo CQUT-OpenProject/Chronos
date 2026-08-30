@@ -19,6 +19,7 @@
 	} = $props();
 
 	const shell = getContext<AppShellController>('appShell');
+	let bottomSheet = $state<BottomSheet | null>(null);
 
 	const course = $derived(
 		courseId
@@ -34,6 +35,7 @@
 
 	function editCourse() {
 		if (!course) return;
+		bottomSheet?.skipNextHistoryBack();
 		open = false;
 		trackEvent('course_editor_open', { trigger: 'detail_page' });
 		goto(resolve(`/timetable/course-editor?courseId=${encodeURIComponent(course.id)}`));
@@ -54,6 +56,7 @@
 {/snippet}
 
 <BottomSheet
+	bind:this={bottomSheet}
 	bind:open
 	title={hostT('route.courseDetail')}
 	actions={editAction}

@@ -34,14 +34,14 @@
 
 <div class="flex flex-col gap-3">
 	<div class="px-1">
-		<h3 class="m3-title-medium text-on-surface">
+		<h3 class="text-title-medium text-on-surface">
 			{label}
 			{#if required}
 				<span class="ml-0.5 text-error">*</span>
 			{/if}
 		</h3>
 		{#if description}
-			<p class="m3-body-small mt-1 text-on-surface-variant">{description}</p>
+			<p class="text-body-small mt-1 text-on-surface-variant">{description}</p>
 		{/if}
 	</div>
 

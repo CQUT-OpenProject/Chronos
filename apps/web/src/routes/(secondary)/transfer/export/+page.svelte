@@ -18,6 +18,6 @@
 	});
 </script>
 
-<SecondaryPageShell title={hostT('route.export')} backHref="/mine">
+<SecondaryPageShell title={hostT('route.export')} backShellTab="mine">
 	<TransferExportScreen warningMessage={exportWarning} />
 </SecondaryPageShell>

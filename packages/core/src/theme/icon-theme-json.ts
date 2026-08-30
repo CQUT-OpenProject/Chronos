@@ -13,14 +13,6 @@ export interface IconThemeJson {
 	bottomTabIcons?: Record<string, BottomTabIconOverride>;
 }
 
-function resolveLocalizedText(
-	value: Record<string, string> | string | undefined
-): string | undefined {
-	if (!value) return undefined;
-	if (typeof value === 'string') return value;
-	return value['zh-CN'] ?? value.en ?? Object.values(value)[0];
-}
-
 function validateDescriptor(descriptor: ShellIconDescriptor, path: string): ShellIconDescriptor {
 	if (!isShellIconDescriptor(descriptor)) {
 		throw new Error(`Invalid icon descriptor at ${path}`);
@@ -62,13 +54,13 @@ export function createIconThemeFromJson(json: IconThemeJson): IconThemeContribut
 		}
 	}
 
-	const name: LocalizedText = () => resolveLocalizedText(json.name) ?? json.id;
-	const description = resolveLocalizedText(json.description);
+	const name: LocalizedText = json.name;
+	const description: LocalizedText | undefined = json.description;
 
 	return {
 		id: json.id,
 		name,
-		description: description ? () => description : undefined,
+		description,
 		bottomTabIcons
 	};
 }

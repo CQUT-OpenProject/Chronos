@@ -3,11 +3,11 @@
 	import type { Attachment } from 'svelte/attachments';
 	import {
 		placeCapsules,
-		type CapsuleCorners,
 		type CoursePaletteEntry,
 		type TimetableCourseDisplayModel,
 		type TimetableGridModel
 	} from '@chronos/core';
+	import { capsuleCornerAttrs } from '../timetable/capsule-corners';
 	import { timetableDayColumnHeaderLabel } from './day-labels';
 	import MiddleTruncateText from './MiddleTruncateText.svelte';
 	import { createFitWidthFontAttachment } from '../utils/fit-width-font.svelte';
@@ -51,7 +51,7 @@
 		paletteCourses,
 		hasDynamicBackground = false,
 		layoutMode = 'fixed',
-		capsuleCornerStyle = 'rounded',
+		capsuleCornerStyle = 'sharp',
 		interactive = false,
 		isCurrentWeek = false,
 		currentPeriodIndex: propCurrentPeriodIndex,
@@ -89,9 +89,7 @@
 	const currentPeriodIndex = $derived(
 		propCurrentPeriodIndex !== undefined
 			? propCurrentPeriodIndex
-			: isCurrentWeek
-				? findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
-				: null
+			: findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
 	);
 	const rowHeightCss = $derived.by(() => {
 		if (!isFitLayout || bodyViewportHeight <= 0 || gridModel.displayedPeriodCount <= 0) {
@@ -102,7 +100,6 @@
 
 	$effect(() => {
 		if (propCurrentPeriodIndex !== undefined) return;
-		if (!isCurrentWeek) return;
 		let timeoutId: ReturnType<typeof setTimeout>;
 		const schedule = () => {
 			const delay = (() => {
@@ -145,17 +142,6 @@
 		return date.slice(8, 10);
 	}
 
-	function cornerClasses(corners: CapsuleCorners): string {
-		return [
-			corners.topLeft ? 'rounded-tl-xl' : null,
-			corners.topRight ? 'rounded-tr-xl' : null,
-			corners.bottomLeft ? 'rounded-bl-xl' : null,
-			corners.bottomRight ? 'rounded-br-xl' : null
-		]
-			.filter((name): name is string => name != null)
-			.join(' ');
-	}
-
 	const gridBodyWidthAttach: Attachment = (node) => {
 		const update = () => {
 			gridBodyWidth = node.clientWidth;
@@ -185,7 +171,7 @@
 >
 	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
 		<div
-			class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
+			class="text-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
 		>
 			<span>{gridModel.monthLabel}</span>
 			<span>月</span>
@@ -193,11 +179,11 @@
 		<div class="flex min-w-0 flex-1">
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
-					<span class="m3-body-small max-w-full truncate text-on-surface-variant">
+					<span class="text-body-small max-w-full truncate text-on-surface-variant">
 						{timetableDayColumnHeaderLabel(day)}
 					</span>
 					<div
-						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
+						class="text-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
 							? 'bg-brand text-on-primary'
 							: day.holiday
 								? 'text-on-surface-variant'
@@ -226,18 +212,20 @@
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
 				{#each gridModel.periods as period (period.index)}
-					{@const isActive = isCurrentWeek && period.index === currentPeriodIndex}
 					<div
 						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
 					>
 						<div
-							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
+							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {period.index ===
+							currentPeriodIndex
 								? 'period-active'
 								: ''}"
 						>
-							<span class="m3-body-medium font-bold">{period.index}</span>
+							<span class="text-body-medium font-bold">{period.index}</span>
 							<span
-								class="m3-caption mt-1 leading-tight {isActive ? '' : 'text-on-surface-variant'}"
+								class="text-caption mt-1 leading-tight {period.index === currentPeriodIndex
+									? ''
+									: 'text-on-surface-variant'}"
 							>
 								{period.startTime}<br />{period.endTime}
 							</span>
@@ -274,9 +262,8 @@
 							{#if interactive}
 								<button
 									type="button"
-									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
-										item.corners
-									)}"
+									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
+									style={capsuleCornerAttrs(item.corners).style}
 									onclick={() => expandSlot(item.key)}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
@@ -285,9 +272,8 @@
 								</button>
 							{:else}
 								<div
-									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
-										item.corners
-									)}"
+									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
+									style={capsuleCornerAttrs(item.corners).style}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
 										{item.count} 门课程重叠
@@ -300,15 +286,14 @@
 							{#if interactive}
 								<button
 									type="button"
-									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
-										item.corners
-									)} {item.displayModel.isHolidayMuted
+									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {item
+										.displayModel.isHolidayMuted
 										? 'opacity-40'
 										: item.displayModel.isInDisplayedWeek
 											? ''
 											: 'opacity-45'}"
-									style:--capsule={item.colors.background}
-									style:--capsule-fg={item.colors.text}
+									style="{capsuleCornerAttrs(item.corners).style}; --capsule: {item.colors
+										.background}; --capsule-fg: {item.colors.text}"
 									onclick={() => onCourseClick?.(item.course)}
 								>
 									{#if badgeText}
@@ -343,7 +328,7 @@
 												maxFontPx: item.locationMetrics.fontPx
 											}))}
 										>
-											{#each item.locationLines as line, index (index)}
+											{#each item.locationLines as line, lineIndex (`${lineIndex}:${line}`)}
 												<div class="overflow-hidden whitespace-nowrap">{line}</div>
 											{/each}
 										</div>
@@ -364,15 +349,14 @@
 								</button>
 							{:else}
 								<div
-									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
-										item.corners
-									)} {item.displayModel.isHolidayMuted
+									class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {item
+										.displayModel.isHolidayMuted
 										? 'opacity-40'
 										: item.displayModel.isInDisplayedWeek
 											? ''
 											: 'opacity-45'}"
-									style:--capsule={item.colors.background}
-									style:--capsule-fg={item.colors.text}
+									style="{capsuleCornerAttrs(item.corners).style}; --capsule: {item.colors
+										.background}; --capsule-fg: {item.colors.text}"
 								>
 									{#if badgeText}
 										<span class="mb-0.5 flex w-full shrink-0 justify-center">
@@ -406,7 +390,7 @@
 												maxFontPx: item.locationMetrics.fontPx
 											}))}
 										>
-											{#each item.locationLines as line, index (index)}
+											{#each item.locationLines as line, lineIndex (`${lineIndex}:${line}`)}
 												<div class="overflow-hidden whitespace-nowrap">{line}</div>
 											{/each}
 										</div>

@@ -68,9 +68,7 @@ export class WebHttpProxyProvider implements IHttpService {
 
 		try {
 			if (options?.bypassCors && !profileHasServerPlugins()) {
-				throw new Error(
-					'当前构建未启用服务端代理，在线教务同步不可用，请使用离线 HTML 导入或分享链接'
-				);
+				throw new Error('Server-side proxy is not available in this build');
 			}
 
 			// Validate URL and security constraints if bypassCors is requested

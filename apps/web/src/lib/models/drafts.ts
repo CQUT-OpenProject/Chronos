@@ -17,8 +17,6 @@ export interface CourseDraft {
 	dayOfWeek: number;
 	startPeriod: number;
 	endPeriod: number;
-	color: string;
-	textColor: string;
 	weeks: number[];
 	remark: string;
 }

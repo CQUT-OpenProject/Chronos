@@ -80,8 +80,6 @@ describe('cqut html parser', () => {
 
 		const course = timetable.courses[0]!;
 		expect(course.name).toBe('线性代数');
-		expect(course.color).toBeDefined();
-		expect(course.textColor).toBeDefined();
 		expect(course.teacher).toBe('赵老师');
 		expect(course.location).toBe('二教302');
 		expect(course.dayOfWeek).toBe(1);

@@ -10,6 +10,6 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.displaySettings')} backHref="/mine">
+<SecondaryPageShell title={hostT('route.displaySettings')} backShellTab="mine">
 	<DisplaySettingsScreen {shell} />
 </SecondaryPageShell>

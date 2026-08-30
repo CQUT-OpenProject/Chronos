@@ -10,6 +10,6 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.manageTimetables')} backHref="/mine" flush>
+<SecondaryPageShell title={hostT('route.manageTimetables')} backShellTab="mine" flush>
 	<ManageTimetablesScreen {shell} />
 </SecondaryPageShell>

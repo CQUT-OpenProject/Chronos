@@ -13,7 +13,7 @@
 		<div
 			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-inverse-on-surface shadow-lg transition-all duration-200"
 		>
-			<span class="m3-body-medium flex-1">{snackbarStore.message}</span>
+			<span class="text-body-medium flex-1">{snackbarStore.message}</span>
 			{#if snackbarStore.action}
 				<Button
 					variant="text"

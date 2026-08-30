@@ -4,11 +4,8 @@ import { m3DefaultTheme } from '@chronos/ui-kit';
 import { wallpaperPlugin } from '@chronos/plugin-wallpaper';
 
 function assertThemeContract(theme: ThemeContribution) {
-	const lightTokens = theme.getTokens('light');
-	const darkTokens = theme.getTokens('dark');
-	expect(lightTokens).toBeDefined();
-	expect(darkTokens).toBeDefined();
-	expect(theme.getTokens('light')).toEqual(lightTokens);
+	expect(Object.keys(theme.workbenchColors.light).length).toBeGreaterThan(0);
+	expect(Object.keys(theme.workbenchColors.dark).length).toBeGreaterThan(0);
 
 	if (theme.paletteEntries) {
 		const entries =

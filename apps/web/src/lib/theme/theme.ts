@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildGeneratedThemeCss } from '@chronos/ui-kit/theme/m3-theme';
 
-const generatedThemePath = resolve(dirname(fileURLToPath(import.meta.url)), 'generated-theme.css');
+const generatedThemePath = resolve(dirname(fileURLToPath(import.meta.url)), 'generated-colors.css');
 
 export function writeGeneratedThemeCss() {
 	const css = buildGeneratedThemeCss();

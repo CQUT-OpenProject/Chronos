@@ -23,8 +23,8 @@
 		oninput
 	}: Props = $props();
 
-	const fallbackId = `input-text-${Math.random().toString(36).slice(2, 9)}`;
-	const inputId = $derived(id || fallbackId);
+	const instanceId = $props.id();
+	const inputId = $derived(id || instanceId);
 </script>
 
 <div class="flex flex-col gap-1.5 text-left">

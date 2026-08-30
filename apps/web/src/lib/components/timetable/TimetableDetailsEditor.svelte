@@ -105,7 +105,7 @@
 
 		<div class="flex flex-col gap-2.5">
 			<div class="flex items-center justify-between px-1">
-				<h3 class="m3-title-medium">
+				<h3 class="text-title-medium">
 					{hostT('timetable.details.periods.heading')}
 				</h3>
 				<Button variant="text" class="px-2" onclick={addPeriod}>
@@ -115,7 +115,7 @@
 			{#each draft.academicConfig.periodTimes as period, index (period.index)}
 				<FormCard>
 					<div class="flex items-center justify-between px-4 py-2">
-						<span class="m3-body-medium text-on-surface-variant">
+						<span class="text-body-medium text-on-surface-variant">
 							{hostT('timetable.details.periods.label', {
 								index: period.index
 							})}

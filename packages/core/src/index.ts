@@ -17,7 +17,6 @@ export * from './engine/timetable-layout';
 export * from './engine/period-clock';
 
 // Shell
-export * from './shell/host-tab-routes';
 
 // Schema
 export * from './schema/schema';

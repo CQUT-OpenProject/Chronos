@@ -43,7 +43,6 @@
 	<FormScreenLayout {footer}>
 		<CourseEditorForm
 			{draft}
-			colors={editor.coursePalette}
 			maxPeriods={editor.timetable?.academicConfig.periodTimes.length ?? 10}
 		/>
 	</FormScreenLayout>
@@ -65,7 +64,7 @@
 		</Dialog>
 	{/if}
 {:else}
-	<p class="m3-body-medium p-4 text-on-surface-variant">
+	<p class="text-body-medium p-4 text-on-surface-variant">
 		{hostT('course.editor.notFound')}
 	</p>
 {/if}

@@ -20,7 +20,7 @@
 </script>
 
 <div
-	class="flex h-11 items-center gap-2.5 rounded-full border border-outline-variant bg-surface px-4 shadow-xs transition-colors focus-within:border-brand {className}"
+	class="rounded-pill flex h-12 items-center gap-2.5 border border-outline-variant bg-surface px-4 shadow-xs transition-colors focus-within:border-brand {className}"
 >
 	<Search aria-hidden="true" class="size-5 shrink-0 text-on-surface-variant" />
 	<input
@@ -28,7 +28,7 @@
 		bind:value
 		placeholder={resolvedPlaceholder}
 		aria-label={resolvedAriaLabel}
-		class="m3-body-medium w-full border-none bg-transparent p-0 text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
+		class="text-body-medium w-full border-none bg-transparent p-0 text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0 focus:outline-none"
 	/>
 	{#if value}
 		<IconButton

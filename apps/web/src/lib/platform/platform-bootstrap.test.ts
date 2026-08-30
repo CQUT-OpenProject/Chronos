@@ -7,7 +7,6 @@ const mocks = vi.hoisted(() => ({
 	pwaInstallInit: vi.fn().mockResolvedValue(undefined),
 	setInstallPromptGate: vi.fn(),
 	tryScheduleInstallDialog: vi.fn(),
-	initWebVitals: vi.fn(),
 	initAnalytics: vi.fn(),
 	attachOfflineUx: vi.fn(() => vi.fn())
 }));
@@ -32,10 +31,6 @@ vi.mock('$lib/client/pwa-install.svelte', () => ({
 		dismiss: vi.fn(),
 		tryScheduleInstallDialog: mocks.tryScheduleInstallDialog
 	}
-}));
-
-vi.mock('$lib/client/web-vitals', () => ({
-	initWebVitals: mocks.initWebVitals
 }));
 
 vi.mock('$lib/client/analytics', () => ({
@@ -108,7 +103,6 @@ describe('createPlatformBootstrap', () => {
 		expect(mocks.connectivityInit).toHaveBeenCalled();
 		expect(timetableScreen.init).toHaveBeenCalledWith(shell);
 		expect(mocks.pwaInstallInit).toHaveBeenCalled();
-		expect(mocks.initWebVitals).toHaveBeenCalled();
 		expect(mocks.initAnalytics).toHaveBeenCalled();
 		expect(mocks.setInstallPromptGate).toHaveBeenCalled();
 		expect(mocks.attachOfflineUx).toHaveBeenCalled();

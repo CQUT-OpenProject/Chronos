@@ -35,7 +35,7 @@
 	);
 	const paletteCourses = $derived(timetable?.courses ?? []);
 	const layoutMode = $derived(controller?.userPreferences?.timetableLayoutMode ?? 'fixed');
-	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'rounded');
+	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const courseBadges = $derived(controller?.courseBadges ?? {});
 
 	const preview = $derived(
@@ -81,7 +81,7 @@
 			</div>
 		{:else}
 			<p
-				class="m3-body-medium flex items-center justify-center p-8 text-center text-on-surface-variant"
+				class="text-body-medium flex items-center justify-center p-8 text-center text-on-surface-variant"
 			>
 				暂无课表，导入后可预览效果
 			</p>

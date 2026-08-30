@@ -1,5 +1,9 @@
 import type { Course } from '../domain/course';
-import type { CapsuleCornerStyle, TimetableLayoutMode } from '../domain/preferences';
+import {
+	DEFAULT_USER_PREFERENCES,
+	type CapsuleCornerStyle,
+	type TimetableLayoutMode
+} from '../domain/preferences';
 import type { TimetableCourseDisplayModel } from './display-models';
 import {
 	COURSE_PALETTE_ENTRIES,
@@ -82,7 +86,7 @@ export interface PlaceCapsulesInput {
 	expandedSlotKeys: ReadonlySet<string>;
 	layoutMode?: TimetableLayoutMode;
 	coursePalette?: readonly CoursePaletteEntry[];
-	paletteCourses?: { name: string; color?: string }[];
+	paletteCourses?: { name: string }[];
 	capsuleCornerStyle?: CapsuleCornerStyle;
 }
 
@@ -138,7 +142,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		layoutMode = 'fixed',
 		coursePalette = COURSE_PALETTE_ENTRIES,
 		paletteCourses,
-		capsuleCornerStyle = 'rounded'
+		capsuleCornerStyle = DEFAULT_USER_PREFERENCES.capsuleCornerStyle
 	} = input;
 	const compact = layoutMode === 'compact';
 	const visibleDayCount = visibleDays.length;

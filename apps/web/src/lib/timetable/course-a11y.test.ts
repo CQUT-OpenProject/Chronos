@@ -10,8 +10,6 @@ const baseCourse: Course = {
 	dayOfWeek: 3,
 	startPeriod: 1,
 	endPeriod: 2,
-	color: '#EADDFF',
-	textColor: '#21005D',
 	weeks: [],
 	remark: ''
 };

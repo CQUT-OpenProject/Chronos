@@ -419,17 +419,17 @@ proxy?(pluginId, action, payload, options?): Promise<HttpResponse>
 
 ### 总览
 
-| 槽位路径                     | 用途                                       | 多贡献者策略                                       |
-| ---------------------------- | ------------------------------------------ | -------------------------------------------------- |
-| `import.source.tab`          | 导入数据源标签页（在线/文件/链接）         | 共存，按 `order` 排序                              |
-| `export.action`              | 课表导出动作（复制/下载/自定义）           | 共存，`isPrimary` 选主                             |
-| `mine.section` / `mine.item` | 「我的」页分区与条目                       | 共存，按 `order` 排序                              |
-| `shell.route.screen`         | 插件全屏页面（`/plugins/[pluginId]/[id]`） | 每 id 一屏                                         |
-| `shell.bottom-bar.tab`       | 底栏导航标签                               | 共存，按 `order` 排序                              |
-| `timetable.cell.badge`       | 课程卡徽章                                 | 聚合所有贡献者（RESERVED，零生产者时早退）         |
-| `course.detail.action`       | 课程详情操作项                             | 共存，按 `order` 排序                              |
-| `theme.definition`           | 配色主题                                   | 注册多个，用户选择其一                             |
-| `theme.icon.definition`      | 图标主题                                   | 由激活主题 `recommendedIconTheme` 派生，无独立偏好 |
+| 槽位路径                     | 用途                                                                 | 多贡献者策略                                       |
+| ---------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| `import.source.tab`          | 导入数据源标签页（在线/文件/链接）                                   | 共存，按 `order` 排序                              |
+| `export.action`              | 课表导出动作（复制/下载/自定义）                                     | 共存，`isPrimary` 选主                             |
+| `mine.section` / `mine.item` | 「我的」页分区与条目                                                 | 共存，按 `order` 排序                              |
+| `shell.route.screen`         | 插件全屏页面（`/plugins/[pluginId]/[id]`）                           | 每 id 一屏                                         |
+| `shell.bottom-bar.tab`       | 底栏导航标签（仅 `id`，宿主壳内 `activeTabId` 切换，无 per-tab URL） | 共存，按 `order` 排序                              |
+| `timetable.cell.badge`       | 课程卡徽章                                                           | 聚合所有贡献者（RESERVED，零生产者时早退）         |
+| `course.detail.action`       | 课程详情操作项                                                       | 共存，按 `order` 排序                              |
+| `theme.definition`           | 配色主题                                                             | 注册多个，用户选择其一                             |
+| `theme.icon.definition`      | 图标主题                                                             | 由激活主题 `recommendedIconTheme` 派生，无独立偏好 |
 
 ### 通用约定
 

@@ -71,7 +71,7 @@
 		{#if Object.keys(schema).length > 0}
 			<SchemaForm {schema} bind:value={formValues} disabled={saving} />
 		{:else}
-			<p class="m3-body-medium text-on-surface-variant">
+			<p class="text-body-medium text-on-surface-variant">
 				{hostT('plugins.config.empty')}
 			</p>
 		{/if}

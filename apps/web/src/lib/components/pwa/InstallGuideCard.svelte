@@ -39,11 +39,11 @@
 
 {#if pwaInstallController.isStandalone}
 	<Card variant="filled" class="text-center">
-		<p class="m3-title-small flex items-center justify-center gap-2 text-brand">
+		<p class="text-title-small flex items-center justify-center gap-2 text-brand">
 			<CheckCircleFill class="h-5 w-5" />
 			<span>{hostT('pwa.guide.installed.title')}</span>
 		</p>
-		<p class="m3-body-small text-on-surface-variant">
+		<p class="text-body-small text-on-surface-variant">
 			{#if inOnboarding}
 				{hostT('pwa.guide.installed.onboarding')}
 			{:else}
@@ -53,22 +53,22 @@
 	</Card>
 {:else if pwaInstallController.isInstalledLocally && inOnboarding}
 	<Card variant="filled" class="text-center">
-		<p class="m3-title-small flex items-center justify-center gap-2 text-brand">
+		<p class="text-title-small flex items-center justify-center gap-2 text-brand">
 			<CheckCircleFill class="h-5 w-5" />
 			<span>{hostT('pwa.guide.local.title')}</span>
 		</p>
-		<p class="m3-body-small text-on-surface-variant">
+		<p class="text-body-small text-on-surface-variant">
 			{hostT('pwa.guide.local.onboarding')}
 		</p>
 	</Card>
 {:else if pwaInstallController.isInstalledLocally}
 	<Card variant="outlined">
 		<div class="flex flex-col gap-4">
-			<p class="m3-title-small flex items-center justify-center gap-2 text-brand">
+			<p class="text-title-small flex items-center justify-center gap-2 text-brand">
 				<CheckCircleFill class="h-5 w-5" />
 				<span>{hostT('pwa.guide.installed.title')}</span>
 			</p>
-			<p class="m3-body-small text-center text-on-surface-variant">
+			<p class="text-body-small text-center text-on-surface-variant">
 				{hostT('pwa.guide.local.hint')}
 			</p>
 			<Button variant="filled" class="w-full" onclick={() => pwaInstallController.openInApp()}>
@@ -79,44 +79,44 @@
 	</Card>
 {:else if pwaInstallController.isMacSafari}
 	<Card variant="outlined">
-		<h3 class="m3-title-small mb-3 text-on-surface">
+		<h3 class="text-title-small mb-3 text-on-surface">
 			{hostT('pwa.guide.mac.title')}
 		</h3>
 		<ol class="flex flex-col gap-3 text-on-surface-variant">
 			<li class="flex items-start gap-2.5">
-				<span class="m3-step-badge">1</span>
-				<span class="m3-body-small">{hostT('pwa.guide.mac.step1')}</span>
+				<span class="ui-step-badge">1</span>
+				<span class="text-body-small">{hostT('pwa.guide.mac.step1')}</span>
 			</li>
 			<li class="flex items-start gap-2.5">
-				<span class="m3-step-badge">2</span>
-				<span class="m3-body-small">{hostT('pwa.guide.mac.step2')}</span>
+				<span class="ui-step-badge">2</span>
+				<span class="text-body-small">{hostT('pwa.guide.mac.step2')}</span>
 			</li>
 			<li class="flex items-start gap-2.5">
-				<span class="m3-step-badge">3</span>
-				<span class="m3-body-small">{hostT('pwa.guide.mac.step3')}</span>
+				<span class="ui-step-badge">3</span>
+				<span class="text-body-small">{hostT('pwa.guide.mac.step3')}</span>
 			</li>
 		</ol>
 	</Card>
 {:else if pwaInstallController.isIOS}
 	<Card variant="outlined">
-		<h3 class="m3-title-small mb-3 text-on-surface">
+		<h3 class="text-title-small mb-3 text-on-surface">
 			{hostT('pwa.guide.ios.title')}
 		</h3>
 		<ol class="flex flex-col gap-3 text-on-surface-variant">
 			<li class="flex items-start gap-2.5">
-				<span class="m3-step-badge">1</span>
-				<span class="m3-body-small">
+				<span class="ui-step-badge">1</span>
+				<span class="text-body-small">
 					{hostT('pwa.guide.ios.step1')}
 					<IosShareFill class="inline h-3.5 w-3.5 text-brand" />
 				</span>
 			</li>
 			<li class="flex items-start gap-2.5">
-				<span class="m3-step-badge">2</span>
-				<span class="m3-body-small">{hostT('pwa.guide.ios.step2')}</span>
+				<span class="ui-step-badge">2</span>
+				<span class="text-body-small">{hostT('pwa.guide.ios.step2')}</span>
 			</li>
 			<li class="flex items-start gap-2.5">
-				<span class="m3-step-badge">3</span>
-				<span class="m3-body-small">{hostT('pwa.guide.ios.step3')}</span>
+				<span class="ui-step-badge">3</span>
+				<span class="text-body-small">{hostT('pwa.guide.ios.step3')}</span>
 			</li>
 		</ol>
 	</Card>
@@ -128,10 +128,10 @@
 			</Button>
 
 			<div class="rounded-xl bg-surface-container-high/60 p-3.5 text-on-surface-variant">
-				<p class="m3-body-large text-on-surface">
+				<p class="text-body-large text-on-surface">
 					{hostT('pwa.guide.chrome.hint.title')}
 				</p>
-				<p class="m3-body-small">
+				<p class="text-body-small">
 					{hostT('pwa.guide.chrome.hint.body')}
 				</p>
 			</div>

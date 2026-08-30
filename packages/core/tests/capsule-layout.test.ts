@@ -3,6 +3,8 @@ import {
 	applyCapsuleCornerRounding,
 	applyCapsuleSquareCorners,
 	buildSlotGroups,
+	coursePalette,
+	COURSE_PALETTE_ENTRIES,
 	locationDisplayLines,
 	parseLocationParts,
 	periodSlotKey,
@@ -166,7 +168,7 @@ describe('placeCapsules', () => {
 		expect(item.locationLines).toEqual(['两江校区', '弘远楼', 'A0213']);
 		expect(item.scale.titlePx).toBe(17);
 		expect(item.badgeLabel).toBeNull();
-		expect(item.colors.background).toBe('#EADDFF');
+		expect(item.colors.background).toBe(coursePalette('a')[0]);
 	});
 
 	it('remaps default palette colors when a custom course palette is passed', () => {
@@ -186,9 +188,12 @@ describe('placeCapsules', () => {
 		expect(off[0]?.kind).toBe('course');
 		expect(on[0]?.kind).toBe('course');
 		if (off[0]?.kind !== 'course' || on[0]?.kind !== 'course') return;
-		expect(off[0].colors.background).toBe('#EADDFF');
-		expect(on[0].colors.background).toBe('#FFEE55');
-		expect(on[0].colors.text).toBe('#1a1a1a');
+		const slot = COURSE_PALETTE_ENTRIES.findIndex(
+			(entry) => entry.background === coursePalette('a')[0]
+		);
+		expect(off[0].colors.background).toBe(COURSE_PALETTE_ENTRIES[slot]!.background);
+		expect(on[0].colors.background).toBe(TEST_PALETTE_ENTRIES[slot]!.background);
+		expect(on[0].colors.text).toBe(TEST_PALETTE_ENTRIES[slot]!.foreground);
 	});
 
 	it('spreads colliding default-palette courses across unused display colors', () => {
@@ -238,14 +243,14 @@ describe('placeCapsules', () => {
 		);
 	});
 
-	it('maps each default-palette slot onto the matching display-palette entry', () => {
+	it('maps course names onto the display palette by hash slot', () => {
 		const models = [
-			courseModel('a', 1, 1, 1, { color: '#EADDFF' }),
-			courseModel('b', 1, 3, 3, { color: '#FFDBC9' }),
-			courseModel('c', 2, 1, 1, { color: '#C4EED0' }),
-			courseModel('d', 2, 3, 3, { color: '#D3E3FD' }),
-			courseModel('e', 3, 1, 1, { color: '#FFD8E4' }),
-			courseModel('f', 3, 3, 3, { color: '#F6E1B0' })
+			courseModel('a', 1, 1, 1),
+			courseModel('b', 1, 3, 3),
+			courseModel('c', 2, 1, 1),
+			courseModel('d', 2, 3, 3),
+			courseModel('e', 3, 1, 1),
+			courseModel('f', 3, 3, 3)
 		];
 		const items = placeCapsules({
 			courseDisplayModels: models,
@@ -257,7 +262,11 @@ describe('placeCapsules', () => {
 		const backgrounds = items
 			.filter((item) => item.kind === 'course')
 			.map((item) => (item.kind === 'course' ? item.colors.background : ''));
-		expect(backgrounds).toEqual(['#FFEE55', '#FFBBCC', '#4477CC', '#9977CC', '#EE5577', '#4D5B4C']);
+		expect(
+			backgrounds.every((background) =>
+				TEST_PALETTE_ENTRIES.some((entry) => entry.background === background)
+			)
+		).toBe(true);
 	});
 
 	it('keeps a course color stable when the visible week is a subset', () => {
@@ -290,19 +299,6 @@ describe('placeCapsules', () => {
 		expect(week[0]?.kind).toBe('course');
 		if (fromFull?.kind !== 'course' || week[0]?.kind !== 'course') return;
 		expect(week[0].colors.background).toBe(fromFull.colors.background);
-	});
-
-	it('leaves custom course colors unchanged when a custom course palette is passed', () => {
-		const [item] = placeCapsules({
-			courseDisplayModels: [courseModel('a', 1, 1, 1, { color: '#123456' })],
-			visibleDays,
-			columnWidthPx: 110,
-			expandedSlotKeys: new Set(),
-			coursePalette: TEST_PALETTE_ENTRIES
-		});
-		expect(item?.kind).toBe('course');
-		if (item?.kind !== 'course') return;
-		expect(item.colors.background).toBe('#123456');
 	});
 
 	it('emits an overlap placeholder until the slot is expanded', () => {
@@ -617,7 +613,7 @@ function courseModel(
 	dayOfWeek: number,
 	startPeriod: number,
 	endPeriod: number,
-	options?: { location?: string; isInDisplayedWeek?: boolean; color?: string }
+	options?: { location?: string; isInDisplayedWeek?: boolean }
 ) {
 	return {
 		course: {
@@ -628,8 +624,6 @@ function courseModel(
 			dayOfWeek,
 			startPeriod,
 			endPeriod,
-			color: options?.color ?? '#EADDFF',
-			textColor: '#21005D',
 			weeks: [1],
 			remark: ''
 		},

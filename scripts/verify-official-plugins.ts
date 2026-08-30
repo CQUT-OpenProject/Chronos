@@ -15,7 +15,13 @@ const ASSET_FIELDS: ReadonlyArray<readonly [urlField: string, hashField: string]
 	['iconThemeUrl', 'iconThemeSha256']
 ];
 
-import { OFFICIAL_PLUGIN_SOURCE_DIRS } from './official-plugins.config.ts';
+import { OFFICIAL_PLUGINS } from './official-plugins.config.ts';
+
+function pluginRequiresTailwindSource(pluginId: string): boolean {
+	const plugin = OFFICIAL_PLUGINS.find((entry) => entry.id === pluginId);
+	if (!plugin) return false;
+	return plugin.tailwindSource ?? Boolean(plugin.entry);
+}
 
 function verifyPluginTailwindSourceCoverage(
 	catalog: { manifests: string[] },
@@ -32,7 +38,10 @@ function verifyPluginTailwindSourceCoverage(
 		if (!pluginId || seen.has(pluginId)) continue;
 		seen.add(pluginId);
 
-		const sourceDirName = OFFICIAL_PLUGIN_SOURCE_DIRS[pluginId];
+		if (!pluginRequiresTailwindSource(pluginId)) continue;
+
+		const plugin = OFFICIAL_PLUGINS.find((entry) => entry.id === pluginId);
+		const sourceDirName = plugin?.sourceDir;
 		if (!sourceDirName) {
 			console.error(`✗ ${pluginId}: no Tailwind @source mapping in verify-official-plugins`);
 			failures++;

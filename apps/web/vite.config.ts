@@ -8,7 +8,7 @@ import adapterStatic from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { createChronosAlias } from '../../scripts/resolve-chronos-aliases.ts';
-import { writeGeneratedThemeCss } from './src/lib/m3/theme';
+import { writeGeneratedThemeCss } from './src/lib/theme/theme';
 import { writeGeneratedVersionJson } from './src/lib/content/releases/version-generator';
 import { chronosProfilePlugin } from './src/lib/profile-codegen/chronos-profile-plugin';
 

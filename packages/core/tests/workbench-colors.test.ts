@@ -58,4 +58,20 @@ describe('workbench-colors', () => {
 			'color.primary': '#2288dd'
 		});
 	});
+
+	it('validateWorkbenchColors accepts host semantic keys', () => {
+		const result = validateWorkbenchColors({
+			'color.canvas': '#f0f4f8',
+			'color.ink': '#0b1f33',
+			'color.border-subtle': '#d4e0eb',
+			'color.success': '#15803d',
+			'color.warning': '#b45309',
+			'color.danger': '#e60012',
+			'color.outline-variant': '#e2e8f0',
+			'color.surface-container-high': '#f1f5f9'
+		});
+		expect(result.errors).toEqual([]);
+		expect(result.colors['color.canvas']).toBe('#f0f4f8');
+		expect(result.colors['color.danger']).toBe('#e60012');
+	});
 });

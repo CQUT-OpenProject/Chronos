@@ -144,12 +144,12 @@
 
 {#snippet importMethodCard(Icon: typeof DownloadFill, title: string, description: string)}
 	<Card variant="outlined" class="flex items-start gap-3.5">
-		<span class="m3-leading-icon tone-primary" aria-hidden="true">
+		<span class="ui-leading-icon tone-primary" aria-hidden="true">
 			<Icon />
 		</span>
 		<div class="flex min-w-0 flex-1 flex-col justify-center">
-			<p class="m3-body-large text-on-surface">{title}</p>
-			<p class="m3-body-small text-on-surface-variant">{description}</p>
+			<p class="text-body-large text-on-surface">{title}</p>
+			<p class="text-body-small text-on-surface-variant">{description}</p>
 		</div>
 	</Card>
 {/snippet}
@@ -197,7 +197,7 @@
 							<div class="flex flex-1 flex-col items-center justify-center gap-6">
 								<h2
 									id={stepTitleId}
-									class="m3-headline-small text-center font-semibold text-on-surface"
+									class="text-headline-small text-center font-semibold text-on-surface"
 								>
 									{hostT('onboarding.highlights.title')}
 								</h2>
@@ -223,11 +223,11 @@
 							<div class="flex flex-1 flex-col justify-center gap-4">
 								<h2
 									id={stepTitleId}
-									class="m3-headline-small text-center font-semibold text-on-surface"
+									class="text-headline-small text-center font-semibold text-on-surface"
 								>
 									{hostT('onboarding.layout.title')}
 								</h2>
-								<p class="m3-body-small text-center text-on-surface-variant">
+								<p class="text-body-small text-center text-on-surface-variant">
 									{hostT('onboarding.layout.hint')}
 								</p>
 								<div class="flex flex-col gap-3">
@@ -241,8 +241,8 @@
 													: ''}"
 											>
 												<div class="flex min-w-0 flex-1 flex-col justify-center">
-													<p class="m3-body-large text-on-surface">{option.label}</p>
-													<p class="m3-body-small text-on-surface-variant">
+													<p class="text-body-large text-on-surface">{option.label}</p>
+													<p class="text-body-small text-on-surface-variant">
 														{option.description}
 													</p>
 												</div>
@@ -262,7 +262,7 @@
 							<div class="flex flex-1 flex-col justify-center gap-4">
 								<h2
 									id={stepTitleId}
-									class="m3-headline-small text-center font-semibold text-on-surface"
+									class="text-headline-small text-center font-semibold text-on-surface"
 								>
 									{hostT('onboarding.import.title')}
 								</h2>
@@ -286,11 +286,11 @@
 							<div class="flex flex-1 flex-col justify-center gap-4">
 								<h2
 									id={stepTitleId}
-									class="m3-headline-small text-center font-semibold text-on-surface"
+									class="text-headline-small text-center font-semibold text-on-surface"
 								>
 									{hostT('onboarding.install.title')}
 								</h2>
-								<p class="m3-body-small text-center text-on-surface-variant">
+								<p class="text-body-small text-center text-on-surface-variant">
 									{hostT('onboarding.install.subtitle')}
 								</p>
 								<InstallGuideCard inOnboarding />
@@ -302,10 +302,10 @@
 								>
 									<DownloadFill class="h-8 w-8" />
 								</div>
-								<h2 id={stepTitleId} class="m3-headline-small font-semibold text-on-surface">
+								<h2 id={stepTitleId} class="text-headline-small font-semibold text-on-surface">
 									{hostT('onboarding.done.title')}
 								</h2>
-								<p class="m3-body-medium text-on-surface-variant">
+								<p class="text-body-medium text-on-surface-variant">
 									{hostT('onboarding.done.subtitle')}
 								</p>
 							</div>
@@ -322,14 +322,14 @@
 					class="flex list-none justify-center gap-1.5"
 					aria-label={hostT('onboarding.steps.aria')}
 				>
-					{#each stepIndices as index}
+					{#each stepIndices as stepIndex (stepIndex)}
 						<li
-							class="h-1.5 w-6 rounded-full transition-colors {index <= step
+							class="h-1.5 w-6 rounded-full transition-colors {stepIndex <= step
 								? 'bg-brand dark:bg-soft-blue'
 								: 'bg-outline-variant'}"
-							aria-current={index === step ? 'step' : undefined}
+							aria-current={stepIndex === step ? 'step' : undefined}
 							aria-label={hostT('onboarding.steps.label', {
-								current: index + 1,
+								current: stepIndex + 1,
 								total: stepIndices.length
 							})}
 						></li>

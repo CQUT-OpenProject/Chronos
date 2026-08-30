@@ -7,6 +7,6 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.plugins')} backHref="/mine" flush>
+<SecondaryPageShell title={hostT('route.plugins')} backShellTab="mine" flush>
 	<PluginsScreen />
 </SecondaryPageShell>

@@ -24,8 +24,8 @@
 >
 	<img src={favicon} alt="" class="h-32 w-32" aria-hidden="true" />
 
-	<p class="m3-label-large text-brand">{hostT('timetable.empty.brand')}</p>
-	<h2 class="m3-headline-medium font-bold text-on-surface">
+	<p class="text-label-large text-brand">{hostT('timetable.empty.brand')}</p>
+	<h2 class="text-headline-medium font-bold text-on-surface">
 		{hostT('timetable.empty.title')}
 	</h2>
 

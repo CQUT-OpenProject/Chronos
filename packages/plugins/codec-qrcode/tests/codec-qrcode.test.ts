@@ -4,26 +4,34 @@ import { createMockEnv } from '@chronos/core/test-utils';
 import {
 	createQrCodecPlugin,
 	generateQrMatrix,
-	generateQrSvg,
+	generateQrPng,
+	QR_CODEC_ENVELOPE_PREFIX,
 	serializeTimetableForQr,
 	deserializeTimetableFromQr
 } from '../src/index';
+import { extractChronosQrFromPng } from '../src/qr/qr-decode';
 
 describe('codec-qrcode generator (Version 1-40)', () => {
 	it('generates QR matrix with valid dimensions for standard texts', () => {
-		const matrix = generateQrMatrix('chronos-qr:v2:sample');
+		const matrix = generateQrMatrix(`${QR_CODEC_ENVELOPE_PREFIX}sample`);
 		expect(matrix.size).toBeGreaterThanOrEqual(21);
 		expect(matrix.modules.length).toBe(matrix.size);
 		expect(matrix.modules[0]!.length).toBe(matrix.size);
 	});
 
-	it('generates valid SVG output with crispEdges and correct viewBox', () => {
-		const svg = generateQrSvg('chronos-qr:v2:sample', { margin: 2 });
-		expect(svg).toContain('<svg xmlns="http://www.w3.org/2000/svg"');
-		expect(svg).toContain('viewBox="0 0');
-		expect(svg).toContain('shape-rendering="crispEdges"');
-		expect(svg).toContain('<rect width=');
-		expect(svg).toContain('<path d=');
+	it('generates valid PNG output with correct signature', async () => {
+		const png = await generateQrPng(`${QR_CODEC_ENVELOPE_PREFIX}sample`, { margin: 2 });
+		expect(png[0]).toBe(0x89);
+		expect(png[1]).toBe(0x50);
+		expect(png[2]).toBe(0x4e);
+		expect(png[3]).toBe(0x47);
+		expect(png.length).toBeGreaterThan(100);
+	});
+
+	it('embeds chronos-qr payload in PNG tEXt chunk for import without BarcodeDetector', async () => {
+		const payload = `${QR_CODEC_ENVELOPE_PREFIX}embedded-sample`;
+		const png = await generateQrPng(payload, { margin: 2 });
+		expect(extractChronosQrFromPng(png)).toBe(payload);
 	});
 });
 
@@ -64,13 +72,14 @@ describe('codec-qrcode high-compression serialization & slot execution', () => {
 		const payload = await serializeTimetableForQr(massiveTimetable);
 		// Compressed payload should easily be under 1500 bytes (far below 2953 limit)
 		expect(payload.length).toBeLessThan(1500);
-		expect(payload.startsWith('chronos-qr:v2:')).toBe(true);
+		expect(payload.startsWith(QR_CODEC_ENVELOPE_PREFIX)).toBe(true);
 
-		// Generates QR matrix & SVG without any overflow error
+		// Generates QR matrix & PNG without any overflow error
 		const matrix = generateQrMatrix(payload);
 		expect(matrix.size).toBeLessThanOrEqual(177);
-		const svg = generateQrSvg(payload);
-		expect(svg).toContain('<svg');
+		const png = await generateQrPng(payload);
+		expect(png[0]).toBe(0x89);
+		expect(png[1]).toBe(0x50);
 
 		// Restores correctly
 		const restored = await deserializeTimetableFromQr(payload);
@@ -148,10 +157,10 @@ describe('codec-qrcode high-compression serialization & slot execution', () => {
 
 		// 1. Test Export Action
 		const exportResult = await exportSlot!.export(sample);
-		expect(exportResult.mimeType).toBe('image/svg+xml');
-		expect(exportResult.filename).toBe('二维码课表-qrcode.svg');
-		expect(typeof exportResult.content).toBe('string');
-		expect(exportResult.content as string).toContain('<svg');
+		expect(exportResult.mimeType).toBe('image/png');
+		expect(exportResult.filename).toBe('二维码课表-qrcode.png');
+		expect(exportResult.content).toBeInstanceOf(Uint8Array);
+		expect((exportResult.content as Uint8Array)[0]).toBe(0x89);
 
 		// 2. Test Import Tab with payload
 		const payload = await serializeTimetableForQr(sample);

@@ -15,6 +15,8 @@ export type OfficialPluginDef = {
 	entry?: string;
 	colorsJson?: string;
 	iconsJson?: string;
+	/** JSON-only assets skip Tailwind @source dir verification (default: has entry) */
+	tailwindSource?: boolean;
 };
 
 export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
@@ -22,10 +24,21 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 		id: 'theme-yumemita',
 		type: 'theme',
 		sourceDir: 'theme-yumemita',
+		tailwindSource: false,
 		name: { 'zh-CN': 'YUMEMITA', en: 'YUMEMITA' },
 		description: { 'zh-CN': 'YUMEMITA 主题', en: 'YUMEMITA theme' },
 		colorsJson: resolve(root, 'packages/plugins/theme-yumemita/theme-yumemita.colors.json'),
 		iconsJson: resolve(root, 'packages/plugins/theme-yumemita/theme-yumemita.icons.json')
+	},
+	{
+		id: 'theme-miami',
+		type: 'theme',
+		sourceDir: 'theme-miami',
+		tailwindSource: false,
+		name: { 'zh-CN': '迈阿密', en: 'Miami' },
+		description: { 'zh-CN': '迈阿密热带日落主题', en: 'Miami tropical sunset theme' },
+		colorsJson: resolve(root, 'packages/plugins/theme-miami/theme-miami.colors.json'),
+		iconsJson: resolve(root, 'packages/plugins/theme-miami/theme-miami.icons.json')
 	},
 	{
 		id: 'tool-wallpaper',

@@ -2,6 +2,7 @@
 	import type { Component, Snippet } from 'svelte';
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes, HTMLAttributes } from 'svelte/elements';
 	import { ChevronRight } from '$lib/icons';
+	import { appRouteHref } from '$lib/navigation/app-route-href';
 
 	export type MineIconTone = 'primary' | 'secondary' | 'tertiary' | 'neutral';
 
@@ -31,14 +32,14 @@
 
 {#snippet rowContent()}
 	{#if Icon}
-		<span class="m3-leading-icon tone-{iconTone}" aria-hidden="true">
+		<span class="ui-leading-icon tone-{iconTone}" aria-hidden="true">
 			<Icon />
 		</span>
 	{/if}
 	<div class="flex min-w-0 flex-1 flex-col justify-center text-left">
-		<span class="m3-body-large line-clamp-1 font-normal text-on-surface">{title}</span>
+		<span class="text-body-large line-clamp-1 font-normal text-on-surface">{title}</span>
 		{#if supporting}
-			<span class="m3-body-small line-clamp-1 text-on-surface-variant">{supporting}</span>
+			<span class="text-body-small line-clamp-1 text-on-surface-variant">{supporting}</span>
 		{/if}
 	</div>
 	{#if trailing}
@@ -50,7 +51,7 @@
 
 {#if href}
 	<a
-		{href}
+		href={appRouteHref(href)}
 		{onclick}
 		{...props}
 		class="relative flex h-16 w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-surface-variant/40 active:bg-surface-variant/60"

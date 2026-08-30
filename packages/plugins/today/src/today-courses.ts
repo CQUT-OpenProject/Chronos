@@ -97,19 +97,25 @@ export async function queryTodayCourses(
 	}
 
 	const summaries = await storage.listTimetables();
-	const hits: CourseQueryHit[] = [];
+	if (summaries.length === 0) return [];
 
-	for (const summary of summaries) {
-		const entry = await storage.getTimetable(summary.id);
-		if (!entry) continue;
+	const entries = (
+		await Promise.all(summaries.map((summary) => storage.getTimetable(summary.id)))
+	).filter((entry): entry is Timetable => entry != null);
+
+	const weekGroups = new Map<number, string[]>();
+	for (const entry of entries) {
 		const week = calendarService.calculateAcademicWeek(todayIso, entry.academicConfig);
-		const timetableHits = await storage.queryCourses({
-			dayOfWeek,
-			week,
-			timetableIds: [entry.id]
-		});
-		hits.push(...timetableHits);
+		const ids = weekGroups.get(week) ?? [];
+		ids.push(entry.id);
+		weekGroups.set(week, ids);
 	}
 
-	return hits;
+	const hitGroups = await Promise.all(
+		[...weekGroups.entries()].map(([week, timetableIds]) =>
+			storage.queryCourses({ dayOfWeek, week, timetableIds })
+		)
+	);
+
+	return hitGroups.flat();
 }

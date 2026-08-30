@@ -96,6 +96,17 @@ describe('TimetableScreenController', () => {
 		expect(screen.isSlotExpanded('1:1:2')).toBe(false);
 	});
 
+	it('updates viewport maps when displayed week changes', () => {
+		const screen = getTimetableScreen();
+		screen.init(mockShell);
+
+		screen.setDisplayedWeek(5);
+		expect(screen.state.displayedWeek).toBe(5);
+		expect(screen.state.weekGridModels.has(5)).toBe(true);
+		expect(screen.state.weekGridModels.has(4)).toBe(true);
+		expect(screen.state.weekGridModels.has(6)).toBe(true);
+	});
+
 	it('provides week layout and grid models for active and adjacent weeks', () => {
 		const screen = getTimetableScreen();
 		screen.init(mockShell);

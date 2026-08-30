@@ -32,7 +32,7 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
 	themeMode: 'auto',
 	paletteMode: 'vibrant',
 	timetableLayoutMode: 'fixed',
-	capsuleCornerStyle: 'rounded',
+	capsuleCornerStyle: 'sharp',
 	hapticFeedbackEnabled: true,
 	visualThemeId: DEFAULT_VISUAL_THEME_ID
 };

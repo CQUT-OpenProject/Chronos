@@ -19,6 +19,6 @@
 	}
 </script>
 
-<SecondaryPageShell title={hostT('route.import')} backHref="/mine">
+<SecondaryPageShell title={hostT('route.import')} backShellTab="mine">
 	<TransferImportScreen {transfer} onContinue={continueToConfirm} />
 </SecondaryPageShell>

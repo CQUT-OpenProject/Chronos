@@ -19,10 +19,10 @@
 	const safeIndex = $derived(selectedIndex < 0 ? 0 : selectedIndex);
 </script>
 
-<div class="relative flex w-full rounded-full border border-border bg-surface p-1.5 shadow-xs">
+<div class="rounded-pill relative flex w-full border border-border bg-surface p-1.5 shadow-xs">
 	{#if segmentCount > 0 && selectedIndex >= 0}
 		<div
-			class="absolute top-1.5 bottom-1.5 rounded-full bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
+			class="rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
 			style:left="calc(0.375rem + {safeIndex} * ((100% - 0.75rem) / {segmentCount}))"
 			style:width="calc((100% - 0.75rem) / {segmentCount})"
 		></div>
@@ -31,7 +31,7 @@
 	{#each segments as segment (segment.value)}
 		<button
 			type="button"
-			class="m3-label-large relative z-10 flex-1 cursor-pointer rounded-full py-2 text-center transition-colors duration-200 {value ===
+			class="text-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 {value ===
 			segment.value
 				? 'text-on-secondary-container'
 				: 'text-on-surface-variant hover:text-on-surface'}"

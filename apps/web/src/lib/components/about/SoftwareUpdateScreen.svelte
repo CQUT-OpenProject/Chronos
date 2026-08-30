@@ -80,7 +80,7 @@
 			class="flex flex-col items-center justify-center gap-3 py-10 text-center"
 		>
 			<LoadingIndicator />
-			<p class="m3-body-medium text-on-surface-variant">
+			<p class="text-body-medium text-on-surface-variant">
 				{hostT('about.update.checking')}
 			</p>
 		</Card>
@@ -134,7 +134,7 @@
 	{:else if updateState.state.errorMessage}
 		<Card variant="filled" class="flex flex-col items-center gap-3 py-8 text-center">
 			<InfoFill class="h-8 w-8 text-on-surface-variant" />
-			<p class="m3-body-medium text-danger">{updateState.state.errorMessage}</p>
+			<p class="text-body-medium text-danger">{updateState.state.errorMessage}</p>
 			<Button variant="filled" onclick={() => void updateState.checkUpdate()} class="mt-2">
 				<Refresh class="size-4" />
 				{hostT('about.update.retry')}
@@ -144,10 +144,10 @@
 		<Card variant="filled" class="flex flex-col items-center gap-3 py-8 text-center">
 			<CheckCircleFill class="h-10 w-10 text-primary" />
 			<div>
-				<h3 class="m3-title-medium text-on-surface">
+				<h3 class="text-title-medium text-on-surface">
 					{hostT('about.update.upToDate.title')}
 				</h3>
-				<p class="m3-body-small mt-1 text-on-surface-variant">
+				<p class="text-body-small mt-1 text-on-surface-variant">
 					{hostT('about.update.upToDate.lastChecked', {
 						time: formatCheckTime(updateState.state.lastChecked)
 					})}

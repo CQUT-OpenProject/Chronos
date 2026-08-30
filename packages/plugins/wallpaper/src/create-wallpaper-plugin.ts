@@ -35,17 +35,7 @@ function createWallpaperThemeContribution(t: (key: string) => string): ThemeCont
 				outline: '#334155'
 			}
 		),
-		dynamicColorAdapter: createWallpaperThemeAdapter(),
-		getTokens: (mode: 'light' | 'dark') => {
-			return {
-				surface: mode === 'dark' ? '#1e2026' : '#f9f9fe',
-				onSurface: mode === 'dark' ? '#f8fafc' : '#2e333a',
-				primary: '#0068b7',
-				onPrimary: '#ffffff',
-				surfaceVariant: mode === 'dark' ? '#24262e' : '#eceef5',
-				outline: mode === 'dark' ? '#334155' : '#aeb2bb'
-			};
-		}
+		dynamicColorAdapter: createWallpaperThemeAdapter()
 	};
 }
 

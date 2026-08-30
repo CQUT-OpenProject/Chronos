@@ -94,10 +94,10 @@
 
 <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
 	<section class="rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
-		<h2 class="m3-title-medium text-on-surface">{pt('screen.intro.title')}</h2>
-		<p class="m3-body-medium mt-2 text-on-surface-variant">{pt('screen.intro.body')}</p>
+		<h2 class="text-title-medium text-on-surface">{pt('screen.intro.title')}</h2>
+		<p class="text-body-medium mt-2 text-on-surface-variant">{pt('screen.intro.body')}</p>
 		<a
-			class="m3-body-small mt-2 inline-block text-primary"
+			class="text-body-small mt-2 inline-block text-primary"
 			href="https://github.com/NateScarlet/holiday-cn"
 			target="_blank"
 			rel="noreferrer"
@@ -107,18 +107,18 @@
 	</section>
 
 	<section class="rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
-		<h3 class="m3-title-small text-on-surface">{pt('screen.sync.title')}</h3>
+		<h3 class="text-title-small text-on-surface">{pt('screen.sync.title')}</h3>
 		{#if syncYears}
-			<p class="m3-body-small mt-1 text-on-surface-variant">
+			<p class="text-body-small mt-1 text-on-surface-variant">
 				{pt('screen.sync.years').replace('{years}', syncYears)}
 			</p>
 		{/if}
-		<p class="m3-body-small mt-2 text-on-surface-variant">
+		<p class="text-body-small mt-2 text-on-surface-variant">
 			{formatSyncedAt(holidayCalendar?.syncedAt)}
 		</p>
 		<button
 			type="button"
-			class="m3-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
+			class="text-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
 			disabled={syncing || !timetable}
 			onclick={onSync}
 		>
@@ -131,20 +131,20 @@
 	</section>
 
 	<section class="rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
-		<h3 class="m3-title-small text-on-surface">{pt('screen.list.heading')}</h3>
+		<h3 class="text-title-small text-on-surface">{pt('screen.list.heading')}</h3>
 
 		{#if termHolidays.length === 0}
-			<p class="m3-body-medium py-6 text-center text-on-surface-variant">
+			<p class="text-body-medium py-6 text-center text-on-surface-variant">
 				{holidayCalendar?.holidays.length ? pt('screen.list.empty') : pt('screen.list.emptyHint')}
 			</p>
 		{:else}
 			{#each groupedHolidays as group (group.month)}
 				<div class="mt-3 mb-3">
-					<p class="m3-label-large mb-1 text-on-surface-variant">{group.month}</p>
+					<p class="text-label-large mb-1 text-on-surface-variant">{group.month}</p>
 					<ul class="divide-y divide-outline/10">
 						{#each group.items as holiday (holiday.date)}
 							<li class="py-3">
-								<span class="m3-body-medium text-on-surface">{formatHolidayRow(holiday)}</span>
+								<span class="text-body-medium text-on-surface">{formatHolidayRow(holiday)}</span>
 							</li>
 						{/each}
 					</ul>
@@ -154,6 +154,6 @@
 	</section>
 
 	{#if errorMessage}
-		<p class="m3-body-small text-error">{errorMessage}</p>
+		<p class="text-body-small text-error">{errorMessage}</p>
 	{/if}
 </div>

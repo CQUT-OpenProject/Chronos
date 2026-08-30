@@ -40,14 +40,14 @@
 			<MineRow
 				title={release.name || release.tagName}
 				supporting={formatPublishedDate(release.publishedAt)}
-				href={resolve(releaseHref(release.tagName) as any)}
+				href={resolve(releaseHref(release.tagName))}
 			/>
 		{/each}
 	</MineSection>
 {:else}
 	<Card variant="filled" class="flex flex-col items-center gap-3 py-8 text-center">
 		<InfoFill class="h-8 w-8 text-on-surface-variant" />
-		<p class="m3-body-medium text-danger">
+		<p class="text-body-medium text-danger">
 			{listState.state.errorMessage ?? hostT('about.release.list.empty')}
 		</p>
 	</Card>

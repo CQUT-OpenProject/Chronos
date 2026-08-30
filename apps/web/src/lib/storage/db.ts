@@ -17,8 +17,6 @@ export interface CourseRow {
 	dayOfWeek: number;
 	startPeriod: number;
 	endPeriod: number;
-	color: string;
-	textColor: string;
 	weeksCsv: string;
 	remark: string;
 }

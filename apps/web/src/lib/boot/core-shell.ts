@@ -9,7 +9,6 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'timetable',
 		label: () => t('tab.timetable'),
-		href: '/',
 		order: 10,
 		icon: 'calendar-month',
 		iconFill: 'calendar-month-fill'
@@ -18,7 +17,6 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'mine',
 		label: () => t('tab.mine'),
-		href: '/mine',
 		order: 20,
 		icon: 'person',
 		iconFill: 'person-fill'

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
+	import { resolve } from '$app/paths';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -32,39 +33,64 @@
 		await shell.deleteTimetable(currentTimetableId);
 		deleteDialogOpen = false;
 	}
+
+	function handleImportClick() {
+		trackEvent('empty_import_click');
+	}
 </script>
 
 {#snippet deleteFooter()}
 	<Button
 		variant="danger"
 		class="w-full"
-		disabled={timetables.length <= 1}
+		disabled={!currentTimetableId}
 		onclick={() => (deleteDialogOpen = true)}
 	>
 		{hostT('timetable.manage.delete')}
 	</Button>
 {/snippet}
 
-<FormScreenLayout footer={deleteFooter}>
+<FormScreenLayout footer={timetables.length > 0 ? deleteFooter : undefined}>
 	<div class="flex flex-col gap-3">
-		<h3 class="m3-title-medium px-1 text-on-surface">
+		<h3 class="text-title-medium px-1 text-on-surface">
 			{hostT('timetable.manage.heading')}
 		</h3>
 
-		<div class="flex flex-col gap-2.5">
-			{#each timetables as timetable (timetable.id)}
-				{@const isActive = currentTimetableId === timetable.id}
-				<SelectableOption
-					name="current-timetable"
-					label={timetable.name}
-					description={hostT('timetable.manage.courseCount', {
-						count: timetable.courseCount
-					})}
-					selected={isActive}
-					onclick={() => handleSwitch(timetable.id)}
-				/>
-			{/each}
-		</div>
+		{#if timetables.length === 0}
+			<div
+				class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-12 text-center"
+			>
+				<p class="text-body-medium text-on-surface">
+					{hostT('timetable.manage.empty.title')}
+				</p>
+				<p class="text-body-small mt-1 text-on-surface-variant">
+					{hostT('timetable.manage.empty.desc')}
+				</p>
+				<Button
+					variant="outlined"
+					class="mt-4"
+					href={resolve('/transfer/import')}
+					onclick={handleImportClick}
+				>
+					{hostT('timetable.empty.import')}
+				</Button>
+			</div>
+		{:else}
+			<div class="flex flex-col gap-2.5">
+				{#each timetables as timetable (timetable.id)}
+					{@const isActive = currentTimetableId === timetable.id}
+					<SelectableOption
+						name="current-timetable"
+						label={timetable.name}
+						description={hostT('timetable.manage.courseCount', {
+							count: timetable.courseCount
+						})}
+						selected={isActive}
+						onclick={() => handleSwitch(timetable.id)}
+					/>
+				{/each}
+			</div>
+		{/if}
 	</div>
 </FormScreenLayout>
 

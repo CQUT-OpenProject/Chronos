@@ -580,29 +580,3 @@ export function generateQrMatrix(text: string): QrMatrix {
 		modules: modules.map((row) => row.map((cell) => Boolean(cell)))
 	};
 }
-
-export function generateQrSvg(
-	text: string,
-	options: { margin?: number; color?: string; background?: string; size?: number } = {}
-): string {
-	const { margin = 2, color = '#000000', background = '#ffffff', size = 512 } = options;
-	const matrix = generateQrMatrix(text);
-	const fullSize = matrix.size + margin * 2;
-
-	const pathParts: string[] = [];
-	for (let r = 0; r < matrix.size; r++) {
-		for (let c = 0; c < matrix.size; c++) {
-			if (matrix.modules[r]![c]) {
-				pathParts.push(`M${c + margin},${r + margin}h1v1h-1z`);
-			}
-		}
-	}
-
-	return (
-		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fullSize} ${fullSize}" width="${size}" height="${size}" shape-rendering="crispEdges" data-chronos-qr="${text}">` +
-		`<metadata>${text}</metadata>` +
-		`<rect width="${fullSize}" height="${fullSize}" fill="${background}"/>` +
-		`<path d="${pathParts.join('')}" fill="${color}"/>` +
-		`</svg>`
-	);
-}

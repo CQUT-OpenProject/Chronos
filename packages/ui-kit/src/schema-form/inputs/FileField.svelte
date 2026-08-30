@@ -23,8 +23,8 @@
 		onValueChange
 	}: Props = $props();
 
-	const fallbackId = `input-file-${Math.random().toString(36).slice(2, 9)}`;
-	const inputId = $derived(id || fallbackId);
+	const instanceId = $props.id();
+	const inputId = $derived(id || instanceId);
 	let selectedFileName = $state<string>('');
 
 	async function handleFileChange(event: Event) {

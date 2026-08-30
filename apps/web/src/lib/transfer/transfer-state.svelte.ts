@@ -52,7 +52,7 @@ export async function checkPrimaryExportWarning(engine: ChronosEngine): Promise<
 
 export function createTransferState(engine?: ChronosEngine) {
 	let selectedSlotId = $state(resolveInitialSlotId());
-	let preview = $state<Timetable | null>(null);
+	let preview = $state.raw<Timetable | null>(null);
 	let previewSlotId = $state<string | null>(null);
 	let confirmInputs = $state<Record<string, unknown>>({});
 	let importMode = $state<ImportMode>(ImportMode.AS_NEW);

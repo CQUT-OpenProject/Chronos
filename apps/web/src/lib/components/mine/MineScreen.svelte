@@ -120,7 +120,7 @@
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 p-4 pt-3 pb-7 text-on-surface">
 	<div class="flex flex-col gap-3">
-		<h1 class="m3-page-title m3-headline-medium font-medium">
+		<h1 class="text-page-title text-headline-medium font-medium">
 			{hostT('mine.title')}
 		</h1>
 
@@ -133,13 +133,13 @@
 
 	{#if sections.length === 0}
 		<div class="flex flex-col items-center justify-center py-12 text-center">
-			<p class="m3-body-medium text-on-surface-variant">
+			<p class="text-body-medium text-on-surface-variant">
 				{hostT('mine.empty.noItems')}
 			</p>
 		</div>
 	{:else if filteredSections.length === 0}
 		<div class="flex flex-col items-center justify-center py-12 text-center">
-			<p class="m3-body-medium text-on-surface-variant">
+			<p class="text-body-medium text-on-surface-variant">
 				{hostT('mine.search.noResults', { query: searchQuery })}
 			</p>
 			<Button variant="text" class="mt-2" onclick={() => (searchQuery = '')}>

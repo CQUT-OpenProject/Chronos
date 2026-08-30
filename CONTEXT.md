@@ -99,7 +99,7 @@ No global conflict arbitrator. Behavior by resource type:
 
 ## Core shell (`core-shell`)
 
-Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile. Tab plugins may declare `defaultLaunch: true` on `shell.bottom-bar.tab`; host resolves via `resolveDefaultLaunchTab` (lowest `order` wins) and cold-starts on `/` via `tryDefaultLaunchRedirect`. Valid tab hrefs: `HOST_SHELL_TAB_ROUTES` in core (`/`, `/today`, `/mine`).
+Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile. Tab plugins declare `id` only (no `href`); host switches views via `activeTabId` on `/` (ADR 0029). `defaultLaunch: true` sets initial tab via `resolveDefaultLaunchTab` (lowest `order` wins). Plugin tabs render through `resolveSlotOwner` + `PluginScreenContainer`; secondary tools still use `/plugins/[pluginId]/...`.
 
 ## Dynamic color
 

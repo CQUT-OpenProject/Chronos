@@ -16,23 +16,23 @@
 	} = $props();
 </script>
 
-<header class="m3-top-app-bar {className}">
+<header class="ui-shell-top-bar {className}">
 	{#if leading}
-		<div class="m3-top-app-bar-leading">
+		<div class="ui-shell-top-bar-leading">
 			{@render leading()}
 		</div>
 	{/if}
-	<div class="m3-top-app-bar-title">
+	<div class="ui-shell-top-bar-title">
 		{#if titleSnippet}
 			{@render titleSnippet()}
 		{:else if title}
-			<h1 class="m3-headline-small truncate text-lg font-medium sm:text-xl md:text-2xl">
+			<h1 class="text-headline-small truncate text-lg font-medium sm:text-xl md:text-2xl">
 				{title}
 			</h1>
 		{/if}
 	</div>
 	{#if actions}
-		<div class="m3-top-app-bar-actions">
+		<div class="ui-shell-top-bar-actions">
 			{@render actions()}
 		</div>
 	{/if}

@@ -1,4 +1,10 @@
-import type { AcademicConfig, CalendarHoliday, HolidayCalendarConfig } from '../domain/timetable';
+import type {
+	AcademicConfig,
+	CalendarHoliday,
+	HolidayCalendarConfig,
+	Timetable
+} from '../domain/timetable';
+import type { IStorageService } from '../types/services';
 import { AcademicCalendarService } from './calendar';
 import { addDays, formatIsoDate, parseIsoDate, todayIsoDate } from './date';
 
@@ -11,6 +17,31 @@ export function buildHolidayLookup(
 		lookup.set(holiday.date, holiday);
 	}
 	return lookup;
+}
+
+export function stripHolidayCalendar(academicConfig: AcademicConfig): AcademicConfig {
+	const { holidayCalendar: _, ...rest } = academicConfig;
+	return rest;
+}
+
+export async function clearHolidayCalendarFromStorage(storage: IStorageService): Promise<number> {
+	const summaries = await storage.listTimetables();
+	let clearedCount = 0;
+
+	for (const summary of summaries) {
+		const timetable = await storage.getTimetable(summary.id);
+		if (!timetable?.academicConfig.holidayCalendar) continue;
+
+		const updated: Timetable = {
+			...timetable,
+			academicConfig: stripHolidayCalendar(timetable.academicConfig),
+			updatedAt: Date.now()
+		};
+		await storage.saveTimetable(updated);
+		clearedCount += 1;
+	}
+
+	return clearedCount;
 }
 
 function resolveTermDateRange(
