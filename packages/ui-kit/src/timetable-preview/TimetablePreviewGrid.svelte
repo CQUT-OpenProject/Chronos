@@ -329,7 +329,7 @@
 												maxFontPx: item.locationMetrics.fontPx
 											}))}
 										>
-											{#each item.locationLines as line, index (index)}
+											{#each item.locationLines as line, lineIndex (`${lineIndex}:${line}`)}
 												<div class="overflow-hidden whitespace-nowrap">{line}</div>
 											{/each}
 										</div>
@@ -391,7 +391,7 @@
 												maxFontPx: item.locationMetrics.fontPx
 											}))}
 										>
-											{#each item.locationLines as line, index (index)}
+											{#each item.locationLines as line, lineIndex (`${lineIndex}:${line}`)}
 												<div class="overflow-hidden whitespace-nowrap">{line}</div>
 											{/each}
 										</div>

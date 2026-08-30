@@ -182,6 +182,9 @@
 	});
 
 	$effect(() => {
+		if (propCurrentPeriodIndex !== undefined) return;
+		if (!isCurrentWeek) return;
+
 		let timeoutId: ReturnType<typeof setTimeout>;
 
 		const schedule = () => {
@@ -281,7 +284,7 @@
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
 				{#each gridModel.periods as period (period.index)}
-					{@const isActive = period.index === currentPeriodIndex}
+					{@const isActive = isCurrentWeek && period.index === currentPeriodIndex}
 					<div
 						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
 					>
@@ -412,7 +415,7 @@
 					maxFontPx: locationMetrics.fontPx
 				}))}
 			>
-				{#each locationLines as line, index (index)}
+				{#each locationLines as line, lineIndex (`${lineIndex}:${line}`)}
 					<div class="overflow-hidden whitespace-nowrap">{line}</div>
 				{/each}
 			</div>
