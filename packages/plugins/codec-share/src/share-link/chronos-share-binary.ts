@@ -1,11 +1,4 @@
-import type { Course } from '@chronos/core';
-import {
-	campusIdToShareIndex,
-	getCampusDefaultPeriodTimes,
-	resolveShareCampusId,
-	shareIndexToCampusId,
-	type CqutCampusId as ShareCampusId
-} from '@chronos/plugin-source-cqut/campus-period-times';
+import type { Course, PeriodTime } from '@chronos/core';
 import {
 	AcademicCalendarService,
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
@@ -42,6 +35,8 @@ const TERM_EPOCH = Date.UTC(2020, 0, 1);
 const DEFAULT_END_WEEK = 20;
 const MAX_STRINGS = 255;
 const MAX_COURSES = 255;
+const MAX_PERIOD_COUNT = 32;
+const MINUTES_PER_DAY = 24 * 60;
 
 const FLAG_HAS_REMARKS = 1 << 0;
 const FLAG_CUSTOM_END_WEEK = 1 << 1;
@@ -72,6 +67,80 @@ function daysSinceEpochToDate(days: number): string {
 	const month = String(date.getUTCMonth() + 1).padStart(2, '0');
 	const day = String(date.getUTCDate()).padStart(2, '0');
 	return `${year}-${month}-${day}`;
+}
+
+function parsePeriodClock(value: string): number {
+	const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+	if (!match) throw new ShareBinaryDecodeError('invalid period time');
+	const hours = Number.parseInt(match[1]!, 10);
+	const minutes = Number.parseInt(match[2]!, 10);
+	if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+		throw new ShareBinaryDecodeError('invalid period time');
+	}
+	const total = hours * 60 + minutes;
+	if (total >= MINUTES_PER_DAY) throw new ShareBinaryDecodeError('invalid period time');
+	return total;
+}
+
+function formatPeriodClock(minutes: number): string {
+	if (minutes < 0 || minutes >= MINUTES_PER_DAY) {
+		throw new ShareBinaryDecodeError('invalid period minutes');
+	}
+	const hours = Math.floor(minutes / 60);
+	const remainder = minutes % 60;
+	return `${String(hours).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+}
+
+function writePeriodTimes(periodTimes: PeriodTime[], target: number[]): void {
+	if (periodTimes.length > MAX_PERIOD_COUNT) {
+		throw new ShareBinaryDecodeError('too many period times');
+	}
+	target.push(periodTimes.length);
+	for (const period of periodTimes) {
+		if (period.index < 1 || period.index > MAX_PERIOD_COUNT) {
+			throw new ShareBinaryDecodeError('invalid period index');
+		}
+		const startMinutes = parsePeriodClock(period.startTime);
+		const endMinutes = parsePeriodClock(period.endTime);
+		target.push(period.index);
+		target.push(startMinutes & 0xff, (startMinutes >> 8) & 0xff);
+		target.push(endMinutes & 0xff, (endMinutes >> 8) & 0xff);
+	}
+}
+
+function readPeriodTimes(
+	bytes: Uint8Array,
+	offset: number
+): { periodTimes: PeriodTime[]; nextOffset: number } {
+	const periodCount = bytes[offset];
+	if (periodCount === undefined) throw new ShareBinaryDecodeError('truncated period table');
+	let nextOffset = offset + 1;
+	const periodTimes: PeriodTime[] = [];
+	for (let index = 0; index < periodCount; index += 1) {
+		const periodIndex = bytes[nextOffset];
+		const startLow = bytes[nextOffset + 1];
+		const startHigh = bytes[nextOffset + 2];
+		const endLow = bytes[nextOffset + 3];
+		const endHigh = bytes[nextOffset + 4];
+		if (
+			periodIndex === undefined ||
+			startLow === undefined ||
+			startHigh === undefined ||
+			endLow === undefined ||
+			endHigh === undefined
+		) {
+			throw new ShareBinaryDecodeError('truncated period entry');
+		}
+		const startMinutes = startLow | (startHigh << 8);
+		const endMinutes = endLow | (endHigh << 8);
+		periodTimes.push({
+			index: periodIndex,
+			startTime: formatPeriodClock(startMinutes),
+			endTime: formatPeriodClock(endMinutes)
+		});
+		nextOffset += 5;
+	}
+	return { periodTimes, nextOffset };
 }
 
 const textEncoder = new TextEncoder();
@@ -182,22 +251,6 @@ function normalizeTimetable(timetable: Timetable): Timetable {
 	};
 }
 
-function applyShareImportCampus(
-	timetable: Timetable,
-	campusId: ShareCampusId
-): Pick<Timetable, 'academicConfig' | 'importMetadata'> {
-	return {
-		academicConfig: {
-			...timetable.academicConfig,
-			periodTimes: getCampusDefaultPeriodTimes(campusId)
-		},
-		importMetadata: {
-			source: 'share-link',
-			campusId
-		}
-	};
-}
-
 export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 	const normalized = normalizeTimetable(timetable);
 	if (normalized.courses.length === 0) {
@@ -261,12 +314,6 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 		(endWeek !== DEFAULT_END_WEEK ? FLAG_CUSTOM_END_WEEK : 0) |
 		(globalWeekMask ? FLAG_GLOBAL_WEEK_MASK : 0) |
 		(singleBuildingIdx >= 0 ? FLAG_SINGLE_BUILDING : 0);
-	const campusIdx = campusIdToShareIndex(
-		resolveShareCampusId(
-			normalized.importMetadata?.campusId as ShareCampusId | undefined,
-			normalized.courses
-		)
-	);
 
 	const bytes: number[] = [...MAGIC, VERSION, flags];
 	const termDays = dateToDaysSinceEpoch(normalized.academicConfig.termStartDate);
@@ -274,7 +321,7 @@ export function encodeTimetableToBinary(timetable: Timetable): Uint8Array {
 	if ((flags & FLAG_CUSTOM_END_WEEK) !== 0) bytes.push(endWeek);
 	bytes.push(normalized.courses.length);
 	if ((flags & FLAG_SINGLE_BUILDING) !== 0) bytes.push(singleBuildingIdx);
-	bytes.push(campusIdx);
+	writePeriodTimes(normalized.academicConfig.periodTimes, bytes);
 
 	writeStringTable(pool, bytes);
 	weekMaskTable.write(bytes);
@@ -329,10 +376,8 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 		offset += 1;
 	}
 
-	const campusIdx = bytes[offset];
-	if (campusIdx === undefined) throw new ShareBinaryDecodeError('truncated header');
-	offset += 1;
-	const campusId = shareIndexToCampusId(campusIdx);
+	const { periodTimes, nextOffset: periodTableEnd } = readPeriodTimes(bytes, offset);
+	offset = periodTableEnd;
 
 	const { strings, nextOffset: stringTableEnd } = readStringTable(bytes, offset);
 	offset = stringTableEnd;
@@ -411,7 +456,7 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 			left.name.localeCompare(right.name)
 	);
 
-	const baseTimetable: Timetable = {
+	return {
 		schemaVersion: CURRENT_TIMETABLE_SCHEMA_VERSION,
 		id: 'share-import',
 		name: timetableName,
@@ -422,19 +467,13 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 			termStartDate: daysSinceEpochToDate(termDays),
 			startWeek: 1,
 			endWeek,
-			periodTimes: []
+			periodTimes
 		},
 		importMetadata: { source: 'share-link' },
 		viewPrefs: {
 			...deriveWeekendViewPrefs(courses),
 			showNonCurrentWeekCourses: false
 		}
-	};
-
-	const campusFields = applyShareImportCampus(baseTimetable, campusId);
-	return {
-		...baseTimetable,
-		...campusFields
 	};
 }
 

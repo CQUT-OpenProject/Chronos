@@ -38,9 +38,6 @@ export type ShareClipboardLabels = {
 	'share.clipboard.template': string;
 };
 
-/** @deprecated Use SHARE_CODEC_MESSAGES share.error.corrupted */
-export const SHARE_LINK_CORRUPTED_MESSAGE = DEFAULT_SHARE_LABELS['share.error.corrupted'];
-
 export type ShareLinkResult<T> = { ok: true; value: T } | { ok: false; errorMessage: string };
 
 function shareSuccess<T>(value: T): ShareLinkResult<T> {

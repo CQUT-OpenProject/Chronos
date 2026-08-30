@@ -13,9 +13,19 @@ import {
 	extractSharePayloadFromLocation,
 	extractSharePayloadFromText,
 	formatShareClipboardText,
-	SHARE_LINK_CORRUPTED_MESSAGE,
 	SHARE_LINK_PREFIX_DEFLATE
 } from './chronos-share-link-codec';
+import { SHARE_CODEC_MESSAGES } from '../messages';
+
+const SAMPLE_PERIOD_TIMES = [
+	{ index: 1, startTime: '08:30', endTime: '09:15' },
+	{ index: 2, startTime: '09:25', endTime: '10:10' }
+];
+
+const HUAXI_PERIOD_TIMES = [
+	{ index: 1, startTime: '08:20', endTime: '09:05' },
+	{ index: 2, startTime: '09:15', endTime: '10:00' }
+];
 
 describe('week-bitmask', () => {
 	it('round-trips contiguous and sparse weeks', () => {
@@ -70,8 +80,8 @@ describe('chronos-share-binary', () => {
 		expect(decoded.academicConfig.termStartDate).toBe('2026-03-02');
 		expect(decoded.academicConfig.endWeek).toBe(20);
 		expect(decoded.importMetadata!.source).toBe('share-link');
-		expect(decoded.importMetadata!.campusId).toBe('liangjiang');
-		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:30');
+		expect(decoded.importMetadata!.campusId).toBeUndefined();
+		expect(decoded.academicConfig.periodTimes).toEqual(SAMPLE_PERIOD_TIMES);
 		expect(decoded.courses[0]).toMatchObject({
 			name: '编译原理',
 			teacher: '张老师',
@@ -84,37 +94,32 @@ describe('chronos-share-binary', () => {
 		});
 	});
 
-	it('round-trips explicit huaxi campus', () => {
+	it('round-trips custom period times', () => {
 		const timetable = createTimetable({
 			...sampleTimetable(),
-			importMetadata: { source: 'cqut-online', campusId: 'huaxi' }
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: HUAXI_PERIOD_TIMES
+			}
 		});
 		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
-		expect(decoded.importMetadata!.campusId).toBe('huaxi');
-		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:20');
+		expect(decoded.academicConfig.periodTimes).toEqual(HUAXI_PERIOD_TIMES);
 	});
 
-	it('infers huaxi campus from course locations when exporting', () => {
+	it('round-trips empty period times', () => {
 		const timetable = createTimetable({
 			...sampleTimetable(),
-			courses: [
-				course('c1', '编译原理', '张老师', {
-					location: '花溪校区 至善楼A101',
-					dayOfWeek: 6,
-					weeks: [1, 2, 3]
-				})
-			]
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: []
+			}
 		});
 		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
-		expect(decoded.importMetadata!.campusId).toBe('huaxi');
-		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:20');
-	});
-
-	it('defaults to liangjiang campus when no campus info is available', () => {
-		const timetable = sampleTimetable();
-		const decoded = decodeBinaryToTimetable(encodeTimetableToBinary(timetable));
-		expect(decoded.importMetadata!.campusId).toBe('liangjiang');
-		expect(decoded.academicConfig.periodTimes[0]?.startTime).toBe('08:30');
+		expect(decoded.academicConfig.periodTimes).toEqual([]);
 	});
 
 	it('handles timetable with empty or missing termStartDate gracefully', () => {
@@ -157,7 +162,7 @@ describe('chronos-share-binary', () => {
 				termStartDate: '2026-03-02',
 				startWeek: 1,
 				endWeek: 21,
-				periodTimes: []
+				periodTimes: SAMPLE_PERIOD_TIMES
 			},
 			importMetadata: { source: 'share-link' }
 		});
@@ -211,8 +216,8 @@ describe('chronos-share-link-codec', () => {
 		expect(decoded.ok).toBe(true);
 		if (!decoded.ok) return;
 		expect(decoded.value.courses[0]?.name).toBe('编译原理');
-		expect(decoded.value.importMetadata!.campusId).toBe('liangjiang');
-		expect(decoded.value.academicConfig.periodTimes[0]?.startTime).toBe('08:30');
+		expect(decoded.value.importMetadata!.campusId).toBeUndefined();
+		expect(decoded.value.academicConfig.periodTimes).toEqual(SAMPLE_PERIOD_TIMES);
 
 		const link = await encodeShareLink(timetable, 'https://chronos.test');
 		expect(link).toBe(`https://chronos.test/s#${payload}`);
@@ -247,7 +252,7 @@ describe('chronos-share-link-codec', () => {
 
 		expect(decoded.ok).toBe(false);
 		if (decoded.ok) return;
-		expect(decoded.errorMessage).toBe(SHARE_LINK_CORRUPTED_MESSAGE);
+		expect(decoded.errorMessage).toBe(SHARE_CODEC_MESSAGES['zh-cn']['share.error.corrupted']);
 	});
 
 	it('extracts payload from hash and query', () => {
@@ -326,7 +331,7 @@ describe('chronos-share-link-codec', () => {
 				termStartDate: '2026-08-31',
 				startWeek: 1,
 				endWeek: 21,
-				periodTimes: []
+				periodTimes: SAMPLE_PERIOD_TIMES
 			},
 			importMetadata: { source: 'share-link' }
 		});
@@ -402,7 +407,7 @@ function sampleTimetable() {
 			termStartDate: '2026-03-02',
 			startWeek: 1,
 			endWeek: 20,
-			periodTimes: []
+			periodTimes: SAMPLE_PERIOD_TIMES
 		},
 		importMetadata: { source: 'share-link' },
 		viewPrefs: {
@@ -463,7 +468,7 @@ function createLargeTimetable(count: number) {
 			termStartDate: '2026-03-02',
 			startWeek: 1,
 			endWeek: 20,
-			periodTimes: []
+			periodTimes: SAMPLE_PERIOD_TIMES
 		},
 		importMetadata: { source: 'share-link' }
 	});
@@ -597,7 +602,7 @@ function createCqutLargeTimetable() {
 			termStartDate: '2026-03-02',
 			startWeek: 1,
 			endWeek: 21,
-			periodTimes: []
+			periodTimes: SAMPLE_PERIOD_TIMES
 		},
 		importMetadata: { source: 'share-link' }
 	});

@@ -2,7 +2,6 @@ export {
 	SHARE_LINK_VERSION,
 	SHARE_LINK_PREFIX,
 	SHARE_LINK_WARNING_LENGTH,
-	SHARE_LINK_CORRUPTED_MESSAGE,
 	encodeSharePayload,
 	decodeSharePayload,
 	encodeShareLink,
