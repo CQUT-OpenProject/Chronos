@@ -33,8 +33,8 @@
 		onValueChange
 	}: Props = $props();
 
-	const fallbackId = `input-wallpaper-${Math.random().toString(36).slice(2, 9)}`;
-	const inputId = $derived(id || fallbackId);
+	const instanceId = $props.id();
+	const inputId = $derived(id || instanceId);
 
 	const calendarService = new AcademicCalendarService();
 

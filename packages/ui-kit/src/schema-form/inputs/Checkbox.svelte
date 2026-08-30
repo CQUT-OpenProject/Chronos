@@ -17,8 +17,8 @@
 		onchange
 	}: Props = $props();
 
-	const fallbackId = `input-check-${Math.random().toString(36).slice(2, 9)}`;
-	const inputId = $derived(id || fallbackId);
+	const instanceId = $props.id();
+	const inputId = $derived(id || instanceId);
 </script>
 
 <div class="flex items-start gap-3 py-1 text-left">

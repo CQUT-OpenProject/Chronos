@@ -30,8 +30,8 @@
 	} & HTMLInputAttributes &
 		HTMLTextareaAttributes = $props();
 
-	const fallbackId = `text-field-${Math.random().toString(36).slice(2, 9)}`;
-	const fieldId = $derived(id ?? fallbackId);
+	const instanceId = $props.id();
+	const fieldId = $derived(id ?? instanceId);
 	let passwordVisible = $state(false);
 	const charCount = $derived(value.length);
 	const showCounter = $derived(maxlength !== undefined);

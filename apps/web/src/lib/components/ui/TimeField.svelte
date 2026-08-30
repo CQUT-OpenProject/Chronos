@@ -19,8 +19,8 @@
 		disabled?: boolean;
 	} = $props();
 
-	const fallbackId = `time-field-${Math.random().toString(36).slice(2, 9)}`;
-	const fieldId = $derived(id ?? fallbackId);
+	const instanceId = $props.id();
+	const fieldId = $derived(id ?? instanceId);
 	const labelId = $derived(`${fieldId}-label`);
 
 	const pickerValue = $derived(parseTimeString(value));
