@@ -1,8 +1,9 @@
 {
 	"version": 2,
-	"updatedAt": 1788073037980,
+	"updatedAt": 1788078735701,
 	"manifests": [
 		"/official-plugins/manifests/theme-yumemita.manifest.json",
+		"/official-plugins/manifests/theme-miami.manifest.json",
 		"/official-plugins/manifests/tool-wallpaper.manifest.json",
 		"/official-plugins/manifests/tool-qrcode.manifest.json",
 		"/official-plugins/manifests/tool-calendar-holidays.manifest.json",

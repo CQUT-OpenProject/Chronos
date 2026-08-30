@@ -31,6 +31,16 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 		iconsJson: resolve(root, 'packages/plugins/theme-yumemita/theme-yumemita.icons.json')
 	},
 	{
+		id: 'theme-miami',
+		type: 'theme',
+		sourceDir: 'theme-miami',
+		tailwindSource: false,
+		name: { 'zh-CN': '迈阿密', en: 'Miami' },
+		description: { 'zh-CN': '迈阿密热带日落主题', en: 'Miami tropical sunset theme' },
+		colorsJson: resolve(root, 'packages/plugins/theme-miami/theme-miami.colors.json'),
+		iconsJson: resolve(root, 'packages/plugins/theme-miami/theme-miami.icons.json')
+	},
+	{
 		id: 'tool-wallpaper',
 		type: 'tool',
 		sourceDir: 'wallpaper',

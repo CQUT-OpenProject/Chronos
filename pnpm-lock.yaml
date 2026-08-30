@@ -97,6 +97,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@chronos/plugin-theme-miami':
+        specifier: workspace:*
+        version: link:../../packages/plugins/theme-miami
       '@chronos/plugin-theme-yumemita':
         specifier: workspace:*
         version: link:../../packages/plugins/theme-yumemita
@@ -220,6 +223,12 @@ importers:
       linkedom:
         specifier: ^0.18.13
         version: 0.18.13
+
+  packages/plugins/theme-miami:
+    devDependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../core
 
   packages/plugins/theme-yumemita:
     devDependencies:
