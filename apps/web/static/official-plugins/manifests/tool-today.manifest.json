@@ -14,7 +14,7 @@
 	"bundleFormat": "esm",
 	"minEngineVersion": "0.4.0",
 	"bundleUrl": "/official-plugins/bundles/tool-today/bundle.js",
-	"sha256": "5303d033cc1dfc628a06901bcf4194297fae5dcc045266d670f0a15b1ab3d33f",
+	"sha256": "debdd0a39ba1112eb0be983a23c15abb15ee2164d2611c98549cf68239876a2d",
 	"cssUrl": "/official-plugins/bundles/tool-today/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }
