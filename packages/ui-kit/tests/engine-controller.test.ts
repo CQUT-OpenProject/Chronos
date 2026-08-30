@@ -165,6 +165,12 @@ describe('ReactiveChronosController', () => {
 			name: 'Test Plugin',
 			version: '1.0.0',
 			apply(ctx: ChronosContext) {
+				ctx.registerSlot('shell.bottom-bar.tab', {
+					id: 'today',
+					label: () => 'Today',
+					href: '/today',
+					order: 15
+				});
 				ctx.registerSlot('import.source.tab', {
 					id: 'test-tab',
 					title: () => 'Tab 1',
@@ -185,6 +191,9 @@ describe('ReactiveChronosController', () => {
 
 		const pluginHandle = await engine.loadPlugin(testPlugin);
 		expect(controller.slotVersion).toBeGreaterThan(initialVersion);
+
+		expect(controller.resolveSlotOwner('shell.bottom-bar.tab', 'today')).toBe('test-plugin');
+		expect(controller.resolveSlotOwner('shell.bottom-bar.tab', 'missing')).toBeUndefined();
 
 		const tabs = controller.getSlots('import.source.tab');
 		expect(tabs.length).toBe(1);

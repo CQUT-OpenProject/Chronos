@@ -131,6 +131,14 @@ export class ReactiveChronosController implements Disposable {
 		return this.engine.slots.getSlotItem(slotName, id);
 	}
 
+	resolveSlotOwner<K extends keyof StandardSlotMap>(
+		slotName: K,
+		slotId: string
+	): string | undefined {
+		void this.slotVersion;
+		return this.engine.slots.resolveOwner(slotName, slotId);
+	}
+
 	private syncAllState(): void {
 		this.currentTimetable = this.engine.state.currentTimetable;
 		this.timetables = this.engine.state.timetables ?? [];
