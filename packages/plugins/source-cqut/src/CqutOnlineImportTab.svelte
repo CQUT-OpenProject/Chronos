@@ -11,6 +11,14 @@
 	let passwordVisible = $state(false);
 	let isOnline = $state(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
+	function handleOnline() {
+		isOnline = true;
+	}
+
+	function handleOffline() {
+		isOnline = false;
+	}
+
 	function pt(key: keyof (typeof SOURCE_CQUT_MESSAGES)['zh-cn']) {
 		return pluginText(controller, SOURCE_CQUT_PLUGIN_ID, SOURCE_CQUT_MESSAGES, key);
 	}
@@ -26,22 +34,6 @@
 	const submitLabel = $derived(
 		pt(loading ? 'import.online.submit.loading' : 'import.online.submit')
 	);
-
-	$effect(() => {
-		if (typeof window === 'undefined') return;
-		const handleOnline = () => {
-			isOnline = true;
-		};
-		const handleOffline = () => {
-			isOnline = false;
-		};
-		window.addEventListener('online', handleOnline);
-		window.addEventListener('offline', handleOffline);
-		return () => {
-			window.removeEventListener('online', handleOnline);
-			window.removeEventListener('offline', handleOffline);
-		};
-	});
 
 	const onlineImportDisabled = $derived(loading || !isOnline);
 
@@ -67,6 +59,8 @@
 		}
 	}
 </script>
+
+<svelte:window ononline={handleOnline} onoffline={handleOffline} />
 
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
