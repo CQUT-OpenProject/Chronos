@@ -18,14 +18,6 @@ export interface ColorThemeJson {
 	};
 }
 
-function resolveLocalizedText(
-	value: Record<string, string> | string | undefined
-): string | undefined {
-	if (!value) return undefined;
-	if (typeof value === 'string') return value;
-	return value['zh-CN'] ?? value.en ?? Object.values(value)[0];
-}
-
 export function parseColorThemeJson(raw: unknown): ColorThemeJson {
 	if (!raw || typeof raw !== 'object') {
 		throw new Error('Invalid color theme JSON: root must be an object');
@@ -82,12 +74,10 @@ export function createThemeFromColorJson(json: ColorThemeJson): ThemeContributio
 		? (mode: 'light' | 'dark') => json.coursePalette![mode]
 		: undefined;
 
-	const description = resolveLocalizedText(json.description);
-
 	return {
 		id: json.id,
-		name: () => resolveLocalizedText(json.name) ?? json.id,
-		description: description ? () => description : undefined,
+		name: json.name,
+		description: json.description,
 		disabled: json.disabled,
 		className: json.className,
 		recommendedIconTheme: json.recommendedIconTheme,

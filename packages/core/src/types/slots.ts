@@ -21,7 +21,9 @@ export class ImportSlotError extends Error {
 	}
 }
 
-export type LocalizedText = string | (() => string);
+import { resolveLocaleMapText } from '../i18n/i18n-catalog';
+
+export type LocalizedText = string | Record<string, string> | (() => string);
 
 /** Host registry key or structured shell icon descriptor. */
 export type ShellIconRef = string | import('../theme/icon-theme').ShellIconDescriptor;
@@ -197,11 +199,12 @@ export type ChronosSlotMap = StandardSlotMap & CustomSlotMap;
 export function resolveLocalizedText(
 	text: LocalizedText | undefined | null,
 	fallback = '',
-	_locale?: string
+	locale = 'zh-cn'
 ): string {
 	if (text === undefined || text === null) return fallback;
-	const value = typeof text === 'function' ? text() : text;
-	return value ?? fallback;
+	if (typeof text === 'function') return text() ?? fallback;
+	if (typeof text === 'string') return text;
+	return resolveLocaleMapText(text, locale, fallback);
 }
 
 /**
