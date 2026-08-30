@@ -22,6 +22,7 @@
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
+	import { groupCatalogManifestsByCategory } from '$lib/services/official-plugins/catalog-sort';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
 	import { assertValidManifestInstallUrl } from '$lib/services/official-plugins/manifest-url';
 	import { CheckCircleFill, TuneFill } from '$lib/icons';
@@ -138,6 +139,11 @@
 	}
 
 	const activeLocale = $derived(appController.currentLocale);
+
+	const groupedCatalogManifests = $derived.by(() => {
+		const locale = activeLocale;
+		return groupCatalogManifestsByCategory(catalogManifests, locale);
+	});
 
 	const tabSegments = $derived.by(() => {
 		void appController.currentLocale;
@@ -543,82 +549,101 @@
 							<p class="text-body-medium">{hostT('plugins.catalog.empty')}</p>
 						</div>
 					{:else}
-						<div class="ui-section-surface divide-y divide-border/40">
-							{#each catalogManifests as entry (entry.manifest.id)}
-								{@const manifest = entry.manifest}
-								{@const name = resolveManifestText(manifest.name)}
-								{@const desc = resolveManifestText(manifest.description)}
-								{@const meta = getPluginCategoryMeta(manifest.type)}
-								{@const installed = isInstalled(manifest.id)}
-								{@const isBusy = operatingPluginId === manifest.id}
-								{@const updateOffer = updateOfferById.get(manifest.id)}
-								<div
-									class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
-								>
-									<div class="flex min-w-0 flex-1 flex-col justify-center">
-										<div class="flex flex-wrap items-center gap-1.5">
-											<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
-												{name}
-											</span>
-											{#if manifest.version}
-												<span
-													class="text-label-small font-mono text-[10px] text-on-surface-variant"
-												>
-													v{manifest.version}
-												</span>
-											{/if}
-											<span
-												class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
-											>
-												{meta.label}
-											</span>
-										</div>
-										{#if desc}
-											<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
-												{desc}
-											</p>
-										{/if}
-										{#if manifest.author}
-											<div class="mt-1 flex flex-wrap items-center gap-1">
-												<span class="text-caption text-[10px] text-on-surface-variant/70">
-													by {manifest.author}
-												</span>
-											</div>
-										{/if}
+						<div class="flex flex-col gap-5">
+							{#each groupedCatalogManifests as group (group.category)}
+								{@const groupMeta = getPluginCategoryMeta(group.category)}
+								<div class="flex flex-col gap-2">
+									<div class="flex items-center justify-between px-1">
+										<h3 class="text-label-large font-medium text-on-surface">
+											{groupMeta.label}
+										</h3>
+										<span class="text-label-small text-on-surface-variant">
+											{hostT('plugins.builtin.count', {
+												count: group.entries.length
+											})}
+										</span>
 									</div>
+									<div class="ui-section-surface divide-y divide-border/40">
+										{#each group.entries as entry (entry.manifest.id)}
+											{@const manifest = entry.manifest}
+											{@const name = resolveManifestText(manifest.name)}
+											{@const desc = resolveManifestText(manifest.description)}
+											{@const meta = getPluginCategoryMeta(manifest.type)}
+											{@const installed = isInstalled(manifest.id)}
+											{@const isBusy = operatingPluginId === manifest.id}
+											{@const updateOffer = updateOfferById.get(manifest.id)}
+											<div
+												class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
+											>
+												<div class="flex min-w-0 flex-1 flex-col justify-center">
+													<div class="flex flex-wrap items-center gap-1.5">
+														<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
+															{name}
+														</span>
+														{#if manifest.version}
+															<span
+																class="text-label-small font-mono text-[10px] text-on-surface-variant"
+															>
+																v{manifest.version}
+															</span>
+														{/if}
+														<span
+															class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
+														>
+															{meta.label}
+														</span>
+													</div>
+													{#if desc}
+														<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
+															{desc}
+														</p>
+													{/if}
+													{#if manifest.author}
+														<div class="mt-1 flex flex-wrap items-center gap-1">
+															<span class="text-caption text-[10px] text-on-surface-variant/70">
+																by {manifest.author}
+															</span>
+														</div>
+													{/if}
+												</div>
 
-									<div class="flex shrink-0 flex-col items-end gap-1">
-										{#if installed && updateOffer}
-											<Button
-												variant="filled"
-												class="h-8 shrink-0 px-3.5 text-xs font-medium"
-												disabled={isBusy}
-												onclick={() => handleUpdate(manifest.id, updateOffer.manifestUrl)}
-											>
-												{isBusy ? hostT('plugins.action.updating') : hostT('plugins.action.update')}
-											</Button>
-											<span class="text-caption text-[10px] text-on-surface-variant">
-												v{updateOffer.currentVersion} → v{updateOffer.latestVersion}
-											</span>
-										{:else if installed}
-											<span
-												class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
-											>
-												<CheckCircleFill class="size-3.5" />
-												{hostT('plugins.badge.installed')}
-											</span>
-										{:else}
-											<Button
-												variant="filled"
-												class="h-8 shrink-0 px-3.5 text-xs font-medium"
-												disabled={isBusy}
-												onclick={() => handleInstall(manifest, entry.url)}
-											>
-												{isBusy
-													? hostT('plugins.action.installing')
-													: hostT('plugins.action.install')}
-											</Button>
-										{/if}
+												<div class="flex shrink-0 flex-col items-end gap-1">
+													{#if installed && updateOffer}
+														<Button
+															variant="filled"
+															class="h-8 shrink-0 px-3.5 text-xs font-medium"
+															disabled={isBusy}
+															onclick={() => handleUpdate(manifest.id, updateOffer.manifestUrl)}
+														>
+															{isBusy
+																? hostT('plugins.action.updating')
+																: hostT('plugins.action.update')}
+														</Button>
+														<span class="text-caption text-[10px] text-on-surface-variant">
+															v{updateOffer.currentVersion} → v{updateOffer.latestVersion}
+														</span>
+													{:else if installed}
+														<span
+															class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
+														>
+															<CheckCircleFill class="size-3.5" />
+															{hostT('plugins.badge.installed')}
+														</span>
+													{:else}
+														<Button
+															variant="filled"
+															class="h-8 shrink-0 px-3.5 text-xs font-medium"
+															disabled={isBusy}
+															onclick={() => handleInstall(manifest, entry.url)}
+														>
+															{isBusy
+																? hostT('plugins.action.installing')
+																: hostT('plugins.action.install')}
+														</Button>
+													{/if}
+												</div>
+											</div>
+										{/each}
 									</div>
 								</div>
 							{/each}
