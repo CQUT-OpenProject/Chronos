@@ -274,4 +274,45 @@ describe('calendar-holidays plugin', () => {
 
 		engine.dispose();
 	});
+
+	it('clears holiday data from all timetables on dispose', async () => {
+		const academicConfig = {
+			termStartDate: '2026-03-02',
+			startWeek: 1,
+			endWeek: 20,
+			periodTimes: [] as { index: number; startTime: string; endTime: string }[],
+			holidayCalendar: {
+				holidays: [{ date: '2026-10-01', label: '国庆节' }],
+				syncedAt: 1,
+				syncedYears: [2026]
+			}
+		};
+		const t1 = createTimetable({ id: 't1', name: '课表一', academicConfig });
+		const t2 = createTimetable({
+			id: 't2',
+			name: '课表二',
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: []
+			}
+		});
+
+		const { env, timetables } = createMockEnv();
+		timetables.set(t1.id, t1);
+		timetables.set(t2.id, t2);
+
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+		await engine.switchTimetable(t1.id);
+
+		const handle = await engine.loadPlugin(createHolidayPlugin());
+		await engine.unloadPlugin('tool-calendar-holidays');
+
+		expect(timetables.get('t1')?.academicConfig.holidayCalendar).toBeUndefined();
+		expect(timetables.get('t2')?.academicConfig.holidayCalendar).toBeUndefined();
+
+		engine.dispose();
+	});
 });

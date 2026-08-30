@@ -74,6 +74,9 @@ export class OfficialPluginRuntimeActivator {
 	}
 
 	async deactivate(pluginId: string, options?: { revertThemes?: boolean }): Promise<void> {
+		if (this.engine.isPluginLoaded(pluginId)) {
+			await this.engine.unloadPlugin(pluginId);
+		}
 		const handle = this.activeHandles.get(pluginId);
 		if (handle) {
 			handle.dispose();
