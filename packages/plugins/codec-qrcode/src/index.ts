@@ -17,7 +17,8 @@ import {
 	StringInterner,
 	weeksToBitmask
 } from '@chronos/codec-kit';
-import { generateQrSvg, generateQrMatrix } from './qr/qr-encode';
+import { generateQrMatrix } from './qr/qr-encode';
+import { generateQrPng } from './qr/qr-png';
 import { decodeQrFromBlob } from './qr/qr-decode';
 import QrCodeImportTab from './QrCodeImportTab.svelte';
 import { mountableSvelteComponent } from '@chronos/ui-kit';
@@ -213,12 +214,12 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}) {
 						throw new Error(t('export.error.noTimetable'));
 					}
 					const payload = await serializeTimetableForQr(targetTimetable);
-					const svg = generateQrSvg(payload, { margin: 2 });
+					const png = await generateQrPng(payload, { margin: 2 });
 					const safeName = (targetTimetable.name || 'timetable').replace(/[/\\?%*:|"<>]/g, '_');
 					return {
-						filename: `${safeName}-qrcode.svg`,
-						mimeType: 'image/svg+xml',
-						content: svg,
+						filename: `${safeName}-qrcode.png`,
+						mimeType: 'image/png',
+						content: png,
 						disposition: 'download',
 						successMessage: () => t('export.success')
 					};
@@ -230,4 +231,4 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}) {
 
 export const qrCodecPlugin = createQrCodecPlugin();
 
-export { generateQrSvg, generateQrMatrix, decodeQrFromBlob, QrCodeImportTab };
+export { generateQrPng, generateQrMatrix, decodeQrFromBlob, QrCodeImportTab };

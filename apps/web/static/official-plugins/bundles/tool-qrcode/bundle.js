@@ -6255,14 +6255,97 @@ function pa(e) {
 		modules: r.map((e) => e.map((e) => !!e))
 	};
 }
-function ma(e, t = {}) {
-	let { margin: n = 2, color: r = "#000000", background: i = "#ffffff", size: a = 512 } = t, o = pa(e), s = o.size + n * 2, c = [];
-	for (let e = 0; e < o.size; e++) for (let t = 0; t < o.size; t++) o.modules[e][t] && c.push(`M${t + n},${e + n}h1v1h-1z`);
-	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${a}" height="${a}" shape-rendering="crispEdges" data-chronos-qr="${e}"><metadata>${e}</metadata><rect width="${s}" height="${s}" fill="${i}"/><path d="${c.join("")}" fill="${r}"/></svg>`;
+//#endregion
+//#region packages/plugins/codec-qrcode/src/qr/qr-png.ts
+var ma = new Uint8Array([
+	137,
+	80,
+	78,
+	71,
+	13,
+	10,
+	26,
+	10
+]), ha = (() => {
+	let e = /* @__PURE__ */ new Uint32Array(256);
+	for (let t = 0; t < 256; t++) {
+		let n = t;
+		for (let e = 0; e < 8; e++) n = n & 1 ? 3988292384 ^ n >>> 1 : n >>> 1;
+		e[t] = n;
+	}
+	return e;
+})();
+function ga(e) {
+	let t = 4294967295;
+	for (let n = 0; n < e.length; n++) t = ha[(t ^ e[n]) & 255] ^ t >>> 8;
+	return (t ^ 4294967295) >>> 0;
+}
+function _a(e, t, n) {
+	e.setUint32(t, n, !1);
+}
+function va(e, t) {
+	let n = new TextEncoder().encode(e), r = new Uint8Array(8 + t.length + 4), i = new DataView(r.buffer);
+	_a(i, 0, t.length), r.set(n, 4), r.set(t, 8);
+	let a = new Uint8Array(n.length + t.length);
+	return a.set(n, 0), a.set(t, n.length), _a(i, 8 + t.length, ga(a)), r;
+}
+function ya(e, t) {
+	let n = new TextEncoder().encode(e), r = new TextEncoder().encode(t), i = new Uint8Array(n.length + 1 + r.length);
+	return i.set(n, 0), i[n.length] = 0, i.set(r, n.length + 1), va("tEXt", i);
+}
+async function ba(e) {
+	if (typeof CompressionStream > "u") {
+		let t = await import(
+			/* @vite-ignore */
+			["node", "zlib"].join(":")
+);
+		return new Uint8Array(t.deflateSync(e));
+	}
+	let t = new ReadableStream({ start(t) {
+		t.enqueue(e), t.close();
+	} }).pipeThrough(new CompressionStream("deflate"));
+	return new Uint8Array(await new Response(t).arrayBuffer());
+}
+function xa(e, t = {}) {
+	let { margin: n = 2, size: r = 512 } = t, i = e.size + n * 2, a = Math.max(1, Math.floor(r / i)), o = i * a, s = i * a, c = new Uint8Array(o * s * 4);
+	for (let t = 0; t < s; t++) {
+		let r = Math.floor(t / a) - n;
+		for (let i = 0; i < o; i++) {
+			let s = Math.floor(i / a) - n, l = r >= 0 && r < e.size && s >= 0 && s < e.size && e.modules[r][s], u = (t * o + i) * 4, d = l ? 0 : 255;
+			c[u] = d, c[u + 1] = d, c[u + 2] = d, c[u + 3] = 255;
+		}
+	}
+	return {
+		rgba: c,
+		width: o,
+		height: s
+	};
+}
+async function Sa(e, t, n, r = {}) {
+	let i = 1 + t * 4, a = new Uint8Array(n * i);
+	for (let r = 0; r < n; r++) {
+		let n = r * i;
+		a[n] = 0, a.set(e.subarray(r * t * 4, (r + 1) * t * 4), n + 1);
+	}
+	let o = await ba(a), s = /* @__PURE__ */ new Uint8Array(13), c = new DataView(s.buffer);
+	_a(c, 0, t), _a(c, 4, n), s[8] = 8, s[9] = 6, s[10] = 0, s[11] = 0, s[12] = 0;
+	let l = [
+		ma,
+		va("IHDR", s),
+		va("IDAT", o),
+		...r.metadata ? [ya("chronos-qr", r.metadata)] : [],
+		va("IEND", /* @__PURE__ */ new Uint8Array())
+	], u = l.reduce((e, t) => e + t.length, 0), d = new Uint8Array(u), f = 0;
+	for (let e of l) d.set(e, f), f += e.length;
+	return d;
+}
+async function Ca(e, t = {}) {
+	let { rgba: n, width: r, height: i } = xa(pa(e), t);
+	return Sa(n, r, i, { metadata: e });
 }
 //#endregion
 //#region packages/plugins/codec-qrcode/src/messages.ts
-function ha(e) {
+function wa(e) {
 	return vr({ content: {
 		type: "string",
 		title: () => e("import.field.content.title"),
@@ -6270,7 +6353,7 @@ function ha(e) {
 		required: !0
 	} });
 }
-var ga = {
+var Ta = {
 	"zh-cn": {
 		"plugin.name": "二维码",
 		"plugin.description": "通过二维码导入/导出课表",
@@ -6290,7 +6373,7 @@ var ga = {
 		"import.ui.scanning": "识别中…",
 		"import.ui.dropAria": "二维码图片上传区域",
 		"export.action.title": "二维码",
-		"export.action.description": "生成分享二维码矢量图并保存",
+		"export.action.description": "生成分享二维码 PNG 图片并保存",
 		"export.error.noTimetable": "无可导出的课表",
 		"export.success": "已生成并下载导出为二维码",
 		"timetable.unnamedCourse": "未命名课程",
@@ -6318,7 +6401,7 @@ var ga = {
 		"import.ui.scanning": "Scanning…",
 		"import.ui.dropAria": "QR image upload area",
 		"export.action.title": "QR code",
-		"export.action.description": "Generate a shareable QR vector and download",
+		"export.action.description": "Generate a shareable QR PNG image and download",
 		"export.error.noTimetable": "No timetable to export",
 		"export.success": "Timetable QR code downloaded",
 		"timetable.unnamedCourse": "Untitled course",
@@ -6328,44 +6411,67 @@ var ga = {
 		"decode.noQrFound": "No valid QR code was found in this image, or the browser does not support native scanning"
 	}
 };
-function _a(e) {
-	return ga[e.toLowerCase() === "en" ? "en" : "zh-cn"];
+function Ea(e) {
+	return Ta[e.toLowerCase() === "en" ? "en" : "zh-cn"];
 }
-//#endregion
-//#region packages/plugins/codec-qrcode/src/qr/qr-decode.ts
-async function va(e, t) {
-	let n = _a("zh-cn"), r = (e) => t?.(e) ?? n[e];
+function Da(e, t) {
+	return e[t] << 24 | e[t + 1] << 16 | e[t + 2] << 8 | e[t + 3];
+}
+function Oa(e) {
+	return e.length >= 8 && e[0] === 137 && e[1] === 80 && e[2] === 78 && e[3] === 71;
+}
+function ka(e) {
+	if (!Oa(e)) return null;
+	let t = 8;
+	for (; t + 12 <= e.length;) {
+		let n = Da(e, t), r = String.fromCharCode(e[t + 4], e[t + 5], e[t + 6], e[t + 7]), i = t + 8, a = i + n;
+		if (a > e.length) break;
+		if (r === "tEXt") {
+			let t = e.subarray(i, a), n = t.indexOf(0);
+			if (n > 0) {
+				let e = new TextDecoder().decode(t.subarray(0, n)), r = new TextDecoder().decode(t.subarray(n + 1));
+				if (e === "chronos-qr" && r.startsWith("chronos-qr:")) return r;
+			}
+		}
+		t = a + 4;
+	}
+	return null;
+}
+async function Aa(e, t) {
+	let n = Ea("zh-cn"), r = (e) => t?.(e) ?? n[e];
 	if (typeof window > "u") throw Error(r("decode.browserOnly"));
+	let i = new Uint8Array(await e.arrayBuffer()), a = ka(i);
+	if (a) return a;
 	try {
-		let t = await e.text(), n = /chronos-qr:[A-Za-z0-9+/=:_-]+/.exec(t);
-		if (n) return n[0];
+		let e = new TextDecoder().decode(i), t = /chronos-qr:[A-Za-z0-9+/=:_-]+/.exec(e);
+		if (t) return t[0];
 	} catch {}
-	let i = URL.createObjectURL(e), a = document.createElement("canvas"), o = a.getContext("2d");
+	let o = URL.createObjectURL(e), s = document.createElement("canvas"), c = s.getContext("2d");
 	try {
 		let e = new Image();
 		await new Promise((t, n) => {
-			e.onload = () => t(), e.onerror = () => n(Error(r("decode.unreadableImage"))), e.src = i;
+			e.onload = () => t(), e.onerror = () => n(Error(r("decode.unreadableImage"))), e.src = o;
 		});
 		let t = e.naturalWidth || e.width || 512, n = e.naturalHeight || e.height || 512;
-		if (a.width = t, a.height = n, o?.drawImage(e, 0, 0, t, n), window.BarcodeDetector) try {
-			let e = await new window.BarcodeDetector({ formats: ["qr_code"] }).detect(a);
+		if (s.width = t, s.height = n, c?.drawImage(e, 0, 0, t, n), window.BarcodeDetector) try {
+			let e = await new window.BarcodeDetector({ formats: ["qr_code"] }).detect(s);
 			if (e.length > 0 && e[0]?.rawValue) return e[0].rawValue;
 		} catch (e) {
 			console.warn("[BarcodeDetector] detect failed on canvas:", e);
 		}
 	} finally {
-		URL.revokeObjectURL(i);
+		URL.revokeObjectURL(o);
 	}
 	throw Error(r("decode.noQrFound"));
 }
 //#endregion
 //#region packages/plugins/codec-qrcode/src/QrCodeImportTab.svelte
-var ya = /* @__PURE__ */ Un("<div class=\"rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs\"><div class=\"flex flex-col gap-4\"><div><h2 class=\"text-title-medium text-on-surface\"> </h2> <p class=\"text-body-small mt-0.5 text-on-surface-variant\"> </p></div> <input type=\"file\" accept=\"image/*,.svg\" class=\"hidden\"/> <div role=\"region\"><svg class=\"size-10 text-on-surface-variant/80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><path d=\"M14 14h3v3h-3z\"></path><path d=\"M20 14v3h-3\"></path><path d=\"M14 20h7\"></path></svg> <div class=\"flex flex-col gap-1\"><span class=\"text-body-medium font-medium text-on-surface\"> </span> <span class=\"text-body-small text-on-surface-variant\"> </span></div> <button type=\"button\" class=\"text-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50\"> </button></div></div></div>");
-function ba(e, t) {
+var ja = /* @__PURE__ */ Un("<div class=\"rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs\"><div class=\"flex flex-col gap-4\"><div><h2 class=\"text-title-medium text-on-surface\"> </h2> <p class=\"text-body-small mt-0.5 text-on-surface-variant\"> </p></div> <input type=\"file\" accept=\"image/*,.svg\" class=\"hidden\"/> <div role=\"region\"><svg class=\"size-10 text-on-surface-variant/80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><path d=\"M14 14h3v3h-3z\"></path><path d=\"M20 14v3h-3\"></path><path d=\"M14 20h7\"></path></svg> <div class=\"flex flex-col gap-1\"><span class=\"text-body-medium font-medium text-on-surface\"> </span> <span class=\"text-body-small text-on-surface-variant\"> </span></div> <button type=\"button\" class=\"text-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50\"> </button></div></div></div>");
+function Ma(e, t) {
 	Te(t, !0);
 	let n = /* @__PURE__ */ St(!1), r = /* @__PURE__ */ St(null), i = /* @__PURE__ */ St(!1);
 	function a(e) {
-		return Ui(t.controller, "tool-qrcode", ga, e);
+		return Ui(t.controller, "tool-qrcode", Ta, e);
 	}
 	let o = /* @__PURE__ */ Ye(() => a("import.ui.title")), s = /* @__PURE__ */ Ye(() => a("import.ui.subtitle")), c = /* @__PURE__ */ Ye(() => a("import.ui.dropLabel")), l = /* @__PURE__ */ Ye(() => a("import.ui.formats")), u = /* @__PURE__ */ Ye(() => a("import.ui.select")), d = /* @__PURE__ */ Ye(() => a("import.ui.scanning")), f = /* @__PURE__ */ Ye(() => a("import.ui.dropAria"));
 	function p() {
@@ -6375,7 +6481,7 @@ function ba(e, t) {
 	async function m(e) {
 		O(n, !0);
 		try {
-			let n = await va(e, (e) => a(e));
+			let n = await Aa(e, (e) => a(e));
 			await t.transfer.previewWithSlot("qrcode", { content: n }) ? t.onContinue() : p();
 		} catch (e) {
 			let t = e instanceof Error ? e.message : a("import.error.decodeFailed");
@@ -6393,7 +6499,7 @@ function ba(e, t) {
 		let t = e.dataTransfer?.files?.[0];
 		t && await m(t);
 	}
-	var _ = ya(), v = It(It(_)), y = It(v), ee = It(y, !0), b = It(Lt(y, 2), !0), x = Lt(v, 2);
+	var _ = ja(), v = It(It(_)), y = It(v), ee = It(y, !0), b = It(Lt(y, 2), !0), x = Lt(v, 2);
 	lr(x, (e) => O(r, e), () => I(r));
 	var S = Lt(x, 2), C = Lt(It(S), 2), te = It(C), ne = It(te, !0), re = It(Lt(te, 2), !0), ie = Lt(C, 2), ae = It(ie, !0);
 	Jt(() => {
@@ -6405,8 +6511,8 @@ function ba(e, t) {
 Fn(["change", "click"]);
 //#endregion
 //#region packages/plugins/codec-qrcode/src/index.ts
-var xa = "chronos-qr:v1:";
-async function Sa(e) {
+var Na = "chronos-qr:v1:";
+async function Pa(e) {
 	let t = new ea(), n = e.courses.map((e) => {
 		let n = t.intern(e.name), r = t.intern(e.teacher), i = t.intern(e.location), a = t.intern(e.remark), o = Qi(e.weeks), s = [
 			n,
@@ -6430,9 +6536,9 @@ async function Sa(e) {
 		e.endTime
 	]));
 	let i = JSON.stringify(r);
-	return `${xa}${Yi(await Wi(new TextEncoder().encode(i)))}`;
+	return `${Na}${Yi(await Wi(new TextEncoder().encode(i)))}`;
 }
-async function Ca(e, t = _a("zh-cn")) {
+async function Fa(e, t = Ea("zh-cn")) {
 	let n = e.trim();
 	if (!n.startsWith("chronos-qr:v1:")) throw Error(t["import.error.corrupt"]);
 	let r = await Gi(Xi(n.slice(14))), i = new TextDecoder().decode(r), a = JSON.parse(i), o = a.s ?? [], s = (a.c ?? []).map((e, n) => {
@@ -6469,11 +6575,11 @@ async function Ca(e, t = _a("zh-cn")) {
 		courses: s
 	});
 }
-function wa(e = {}) {
-	let { importComponent: t = Hi(ba) } = e;
+function Ia(e = {}) {
+	let { importComponent: t = Hi(Ma) } = e;
 	return wr({
 		id: "tool-qrcode",
-		messages: ga,
+		messages: Ta,
 		nameKey: "plugin.name",
 		descriptionKey: "plugin.description",
 		category: "tool",
@@ -6481,7 +6587,7 @@ function wa(e = {}) {
 		author: "CQUT OpenProject",
 		homepage: "https://github.com/CQUT-OpenProject/Chronos",
 		async apply(e, n) {
-			let r = _a(e.i18n.locale), i = ha(n);
+			let r = Ea(e.i18n.locale), i = wa(n);
 			Tr(e, {
 				id: "qrcode",
 				title: () => n("import.tab.title"),
@@ -6494,7 +6600,7 @@ function wa(e = {}) {
 				async executeImport(e) {
 					let t = e.content ?? e.fileContent;
 					if (!t?.trim()) throw Error(n("import.error.empty"));
-					return Ca(t, r);
+					return Fa(t, r);
 				}
 			}), e.registerSlot("export.action", {
 				id: "qrcode",
@@ -6506,10 +6612,10 @@ function wa(e = {}) {
 				async export(e, t) {
 					let r = e ?? t?.state.currentTimetable;
 					if (!r) throw Error(n("export.error.noTimetable"));
-					let i = ma(await Sa(r), { margin: 2 });
+					let i = await Ca(await Pa(r), { margin: 2 });
 					return {
-						filename: `${(r.name || "timetable").replace(/[/\\?%*:|"<>]/g, "_")}-qrcode.svg`,
-						mimeType: "image/svg+xml",
+						filename: `${(r.name || "timetable").replace(/[/\\?%*:|"<>]/g, "_")}-qrcode.png`,
+						mimeType: "image/png",
 						content: i,
 						disposition: "download",
 						successMessage: () => n("export.success")
@@ -6519,9 +6625,9 @@ function wa(e = {}) {
 		}
 	});
 }
-wa();
+Ia();
 //#endregion
 //#region packages/plugins/codec-qrcode/bundle/entry.ts
-var Ta = wa({ importComponent: Hi(ba) });
+var La = Ia({ importComponent: Hi(Ma) });
 //#endregion
-export { Ta as default };
+export { La as default };
