@@ -1,12 +1,6 @@
-import type { Course } from '../domain/course';
 import type { CoursePaletteEntry } from '../engine/palette';
-import type {
-	CoursePaint,
-	DesignTokens,
-	ThemeContribution,
-	ThemeWorkbenchColors
-} from '../types/contributions';
-import { validateWorkbenchColors, workbenchColorsToDesignTokens } from './workbench-colors';
+import type { ThemeContribution, ThemeWorkbenchColors } from '../types/contributions';
+import { validateWorkbenchColors } from './workbench-colors';
 
 export type ColorThemeJsonCoursePalette = Record<'light' | 'dark', readonly CoursePaletteEntry[]>;
 
@@ -22,14 +16,6 @@ export interface ColorThemeJson {
 		light: { colors: Record<string, string> };
 		dark: { colors: Record<string, string> };
 	};
-}
-
-function resolveLocalizedText(
-	value: Record<string, string> | string | undefined
-): string | undefined {
-	if (!value) return undefined;
-	if (typeof value === 'string') return value;
-	return value['zh-CN'] ?? value.en ?? Object.values(value)[0];
 }
 
 export function parseColorThemeJson(raw: unknown): ColorThemeJson {
@@ -88,30 +74,14 @@ export function createThemeFromColorJson(json: ColorThemeJson): ThemeContributio
 		? (mode: 'light' | 'dark') => json.coursePalette![mode]
 		: undefined;
 
-	const description = resolveLocalizedText(json.description);
-
 	return {
 		id: json.id,
-		name: () => resolveLocalizedText(json.name) ?? json.id,
-		description: description ? () => description : undefined,
+		name: json.name,
+		description: json.description,
 		disabled: json.disabled,
 		className: json.className,
 		recommendedIconTheme: json.recommendedIconTheme,
 		workbenchColors,
-		paletteEntries,
-		getTokens(mode: 'light' | 'dark'): DesignTokens {
-			return workbenchColorsToDesignTokens(workbenchColors[mode]) as DesignTokens;
-		},
-		resolveCoursePaint(course: Course, paletteIndex: number, mode: 'light' | 'dark'): CoursePaint {
-			if (course.color && course.textColor) {
-				return { background: course.color, foreground: course.textColor };
-			}
-			const entries = json.coursePalette?.[mode];
-			if (!entries?.length) {
-				return { background: '#888', foreground: '#fff' };
-			}
-			const entry = entries[Math.abs(paletteIndex) % entries.length]!;
-			return { background: entry.background, foreground: entry.foreground };
-		}
+		paletteEntries
 	};
 }

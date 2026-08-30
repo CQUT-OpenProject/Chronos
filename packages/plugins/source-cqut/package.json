@@ -46,7 +46,6 @@
 		"@chronos/core": "workspace:*",
 		"@chronos/ui-kit": "workspace:*",
 		"@cqut-openproject/cas-sdk": "github:CQUT-OpenProject/CAS-SDK#1.0.0",
-		"@sveltejs/kit": "^2.63.0",
 		"undici": "^8.10.0",
 		"zod": "^4.4.3"
 	},

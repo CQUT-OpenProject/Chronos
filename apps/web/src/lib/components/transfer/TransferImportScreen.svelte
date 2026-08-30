@@ -54,7 +54,7 @@
 </script>
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
-	<p class="m3-body-medium text-center text-on-surface-variant">
+	<p class="text-body-medium text-center text-on-surface-variant">
 		{hostT('transfer.import.intro')}
 	</p>
 
@@ -72,7 +72,7 @@
 				{@const isSelected = transfer.state.selectedSlotId === slot.id}
 				<button
 					type="button"
-					class="m3-label-large relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-center transition-colors {isSelected
+					class="text-label-large rounded-pill relative flex shrink-0 items-center gap-1.5 px-4 py-2 text-center transition-colors {isSelected
 						? 'bg-secondary-container font-medium text-on-secondary-container shadow-xs'
 						: 'bg-surface-variant/40 text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface'}"
 					onclick={() => handleSourceChange(slot.id)}
@@ -80,7 +80,7 @@
 					<span>{title}</span>
 					{#if badge}
 						<span
-							class="m3-label-small rounded-full px-1.5 py-0.5 text-[10px] leading-none {isSelected
+							class="text-label-small rounded-full px-1.5 py-0.5 text-[10px] leading-none {isSelected
 								? 'bg-primary text-on-primary'
 								: 'bg-outline-variant text-on-surface-variant'}"
 						>
@@ -103,11 +103,11 @@
 			<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 				<div class="flex flex-col gap-4">
 					<div>
-						<h2 class="m3-title-medium text-on-surface">
+						<h2 class="text-title-medium text-on-surface">
 							{resolveLocalizedText(activeSlot.title)}
 						</h2>
 						{#if activeSlot.supportingText}
-							<p class="m3-body-small mt-0.5 text-on-surface-variant">
+							<p class="text-body-small mt-0.5 text-on-surface-variant">
 								{resolveLocalizedText(activeSlot.supportingText)}
 							</p>
 						{/if}
@@ -115,7 +115,7 @@
 					<SchemaForm schema={activeSlot.inputSchema} bind:value={schemaFormValues} {controller} />
 					<button
 						type="button"
-						class="m3-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+						class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
 						disabled={schemaLoading}
 						onclick={handleSchemaSubmit}
 					>

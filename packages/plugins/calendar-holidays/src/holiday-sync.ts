@@ -1,5 +1,6 @@
 import {
 	inferYearsFromAcademicConfig,
+	clearHolidayCalendarFromStorage,
 	type ChronosContext,
 	type HolidayCalendarConfig,
 	IHttpService,
@@ -9,6 +10,10 @@ import {
 import { fetchHolidayCnYears } from './holiday-cn-client';
 
 const syncInFlightByTimetableId = new Map<string, Promise<boolean>>();
+
+export async function clearHolidayCalendarFromAllTimetables(ctx: ChronosContext): Promise<number> {
+	return clearHolidayCalendarFromStorage(ctx.service(IStorageService));
+}
 
 export function needsHolidaySync(
 	existing: HolidayCalendarConfig | undefined,

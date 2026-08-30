@@ -75,6 +75,9 @@ importers:
       dexie:
         specifier: ^4.4.5
         version: 4.4.5
+      hyperellipse:
+        specifier: ^1.0.5
+        version: 1.0.5
       marked:
         specifier: ^18.0.9
         version: 18.0.9
@@ -87,9 +90,6 @@ importers:
       vite-plugin-functions-mixins:
         specifier: ^0.4.1
         version: 0.4.1(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))
-      web-vitals:
-        specifier: ^6.1.1
-        version: 6.1.1
       workbox-window:
         specifier: ^7.4.1
         version: 7.4.1
@@ -97,6 +97,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@chronos/plugin-theme-miami':
+        specifier: workspace:*
+        version: link:../../packages/plugins/theme-miami
       '@chronos/plugin-theme-yumemita':
         specifier: workspace:*
         version: link:../../packages/plugins/theme-yumemita
@@ -191,9 +194,6 @@ importers:
       '@chronos/core':
         specifier: workspace:*
         version: link:../../core
-      '@chronos/plugin-source-cqut':
-        specifier: workspace:*
-        version: link:../source-cqut
       '@chronos/ui-kit':
         specifier: workspace:*
         version: link:../../ui-kit
@@ -213,9 +213,6 @@ importers:
       '@cqut-openproject/cas-sdk':
         specifier: github:CQUT-OpenProject/CAS-SDK#1.0.0
         version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f
-      '@sveltejs/kit':
-        specifier: ^2.63.0
-        version: 2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0))(typescript@7.0.2)
       undici:
         specifier: ^8.10.0
         version: 8.10.0
@@ -226,6 +223,12 @@ importers:
       linkedom:
         specifier: ^0.18.13
         version: 0.18.13
+
+  packages/plugins/theme-miami:
+    devDependencies:
+      '@chronos/core':
+        specifier: workspace:*
+        version: link:../../core
 
   packages/plugins/theme-yumemita:
     devDependencies:
@@ -2990,6 +2993,9 @@ packages:
     resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
     engines: {node: '>= 14'}
 
+  hyperellipse@1.0.5:
+    resolution: {integrity: sha512-kXHjOE7xShPPfD5wT6bTSxyuzspBmsTXnzN4rxZm3eIbRHWW2OIAc/TCCfIiJ9fAqppmi8uIQDi2OHDU3mzO7g==}
+
   idb@7.1.1:
     resolution: {integrity: sha512-gchesWBzyvGHRO9W8tzUWFDycow5gwjvFKfyV9FF32Y7F50yZMp7mP+T2mJIWFx49zicqyC4uefHM17o6xKIVQ==}
 
@@ -3996,9 +4002,6 @@ packages:
 
   web-vitals@6.0.0:
     resolution: {integrity: sha512-Guaibvy/+uNtL6Bsu4jmMJGzuSl91oeRH5iO9pPRbYftnFUr3yqT1TUNX/OE4o9HexuEMU3Kb/Wg7iKhlffZUA==}
-
-  web-vitals@6.1.1:
-    resolution: {integrity: sha512-r93gKnR6ZC2O8F3JrS0AAGIQ0v0OhXuyg4DAj2oG7K+GPkwXfUSc3ZcWeu50AsV5yIc6xxnTjERipJ6EvSw2vg==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -5403,26 +5406,6 @@ snapshots:
       - rollup
       - supports-color
 
-  '@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0))(typescript@7.0.2)':
-    dependencies:
-      '@standard-schema/spec': 1.1.0
-      '@sveltejs/acorn-typescript': 1.0.13(acorn@8.18.0)
-      '@sveltejs/vite-plugin-svelte': 7.3.0(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.10(@typescript-eslint/types@8.66.0))
-      '@types/cookie': 0.6.0
-      acorn: 8.18.0
-      cookie: 0.6.0
-      devalue: 5.9.0
-      esm-env: 1.2.2
-      kleur: 4.1.5
-      magic-string: 0.30.21
-      mrmime: 2.0.1
-      set-cookie-parser: 3.1.2
-      sirv: 3.0.2
-      svelte: 5.56.10(@typescript-eslint/types@8.66.0)
-      vite: '@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2)'
-    optionalDependencies:
-      typescript: 7.0.2
-
   '@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0)))(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(svelte@5.56.9(@typescript-eslint/types@8.66.0))(typescript@7.0.2)':
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -6603,6 +6586,8 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
+
+  hyperellipse@1.0.5: {}
 
   idb@7.1.1: {}
 
@@ -7821,8 +7806,6 @@ snapshots:
   web-vitals@5.3.0: {}
 
   web-vitals@6.0.0: {}
-
-  web-vitals@6.1.1: {}
 
   webidl-conversions@3.0.1: {}
 

@@ -20,32 +20,26 @@ describe('Domain Models in @chronos/core', () => {
 			location: '花溪校区 弘远楼A101',
 			dayOfWeek: 1,
 			startPeriod: 1,
-			endPeriod: 2,
-			color: '#EADDFF'
+			endPeriod: 2
 		});
 
 		expect(course.id).toBe('c1');
 		expect(course.name).toBe('高等数学');
-		expect(course.color).toBe('#EADDFF');
-		expect(course.textColor).toBeUndefined();
 		expect(course.weeks).toEqual([]);
 		expect(course.remark).toBe('');
 		expect(COURSE_REMARK_MAX_LENGTH).toBe(200);
 	});
 
-	it('assigns palette color and textColor automatically when color is omitted in createCourse', () => {
+	it('normalizes course name in createCourse', () => {
 		const course = createCourse({
 			id: 'c2',
-			name: '大学物理',
+			name: '【调】大学物理★',
 			dayOfWeek: 2,
 			startPeriod: 1,
 			endPeriod: 2
 		});
 
-		expect(course.color).toBeDefined();
-		expect(course.textColor).toBeDefined();
-		expect(course.color?.startsWith('#')).toBe(true);
-		expect(course.textColor?.startsWith('#')).toBe(true);
+		expect(course.name).toBe('大学物理');
 	});
 
 	it('normalizes timetable name', () => {
@@ -97,7 +91,7 @@ describe('Domain Models in @chronos/core', () => {
 		expect(DEFAULT_USER_PREFERENCES.themeMode).toBe('auto');
 		expect(DEFAULT_USER_PREFERENCES.paletteMode).toBe('vibrant');
 		expect(DEFAULT_USER_PREFERENCES.timetableLayoutMode).toBe('fixed');
-		expect(DEFAULT_USER_PREFERENCES.capsuleCornerStyle).toBe('rounded');
+		expect(DEFAULT_USER_PREFERENCES.capsuleCornerStyle).toBe('sharp');
 		expect(DEFAULT_USER_PREFERENCES.hapticFeedbackEnabled).toBe(true);
 	});
 });

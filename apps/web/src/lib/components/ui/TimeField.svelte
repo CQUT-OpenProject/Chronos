@@ -19,8 +19,8 @@
 		disabled?: boolean;
 	} = $props();
 
-	const fallbackId = `time-field-${Math.random().toString(36).slice(2, 9)}`;
-	const fieldId = $derived(id ?? fallbackId);
+	const instanceId = $props.id();
+	const fieldId = $derived(id ?? instanceId);
 	const labelId = $derived(`${fieldId}-label`);
 
 	const pickerValue = $derived(parseTimeString(value));
@@ -40,21 +40,21 @@
 	granularity="minute"
 	{disabled}
 >
-	<div class={['m3-form-field', className]}>
-		<span id={labelId} class="m3-field-label">{label}</span>
+	<div class={['ui-form-field', className]}>
+		<span id={labelId} class="ui-field-label">{label}</span>
 		<TimeField.Input
 			id={fieldId}
 			aria-labelledby={labelId}
-			class="m3-form-field-input m3-time-field-input"
+			class="ui-form-field-input ui-time-field-input"
 		>
 			{#snippet children({ segments })}
-				<div class="m3-time-field-segments min-w-0">
+				<div class="ui-time-field-segments min-w-0">
 					{#each segments as { part, value: segmentValue }, index (part + index)}
 						<TimeField.Segment
 							{part}
 							class={[
-								'm3-time-field-segment m3-body-large',
-								part === 'literal' && 'm3-time-field-segment--literal'
+								'ui-time-field-segment text-body-large',
+								part === 'literal' && 'ui-time-field-segment--literal'
 							]}
 						>
 							{segmentValue}

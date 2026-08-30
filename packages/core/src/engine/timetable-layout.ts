@@ -1,5 +1,9 @@
 import type { Timetable } from '../domain/timetable';
-import type { CapsuleCornerStyle, TimetableLayoutMode } from '../domain/preferences';
+import {
+	DEFAULT_USER_PREFERENCES,
+	type CapsuleCornerStyle,
+	type TimetableLayoutMode
+} from '../domain/preferences';
 import { AcademicCalendarService, formatWeekDateRange } from './calendar';
 import { calculateTimetableGrid, type TimetableGridModel } from './grid';
 import {
@@ -45,7 +49,7 @@ export function computeTimetableWeekLayout(
 		columnWidthPx = 0,
 		expandedSlotKeys = new Set<string>(),
 		layoutMode = 'fixed',
-		capsuleCornerStyle = 'rounded',
+		capsuleCornerStyle = DEFAULT_USER_PREFERENCES.capsuleCornerStyle,
 		coursePalette = COURSE_PALETTE_ENTRIES,
 		paletteCourses,
 		academicCalendarService = new AcademicCalendarService()

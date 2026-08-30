@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 	import { beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
@@ -11,6 +12,8 @@
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
+	import { createShellTabController } from '$lib/shell/shell-tab.svelte';
+	import { getAppController } from '$lib/services/app-engine';
 	import {
 		updateTransitionDirection,
 		type NavigationDirection
@@ -18,7 +21,6 @@
 	import { isSecondaryRoute } from '$lib/navigation/routes';
 	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
-	import '$lib/m3/m3.css';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { pwaInfo } from 'virtual:pwa-info';
@@ -45,9 +47,16 @@
 	const shell = createAppShell();
 	const timetableScreen = getTimetableScreen();
 	const platform = createPlatformBootstrap({ shell, timetableScreen });
+	const shellTab = createShellTabController(() => getAppController());
 
 	setContext('appShell', shell);
 	setContext('timetableScreen', timetableScreen);
+	setContext('shellTab', shellTab);
+
+	$effect(() => {
+		void getAppController().slotVersion;
+		shellTab.reconcileActiveTab();
+	});
 
 	onMount(() => platform.init(page.url.pathname));
 </script>
@@ -83,6 +92,6 @@
 
 <div style="display:none">
 	{#each locales as locale (locale)}
-		<a href={resolve(localizeHref(page.url.pathname, { locale }) as any)}>{locale}</a>
+		<a href={resolve(localizeHref(page.url.pathname, { locale }) as Pathname)}>{locale}</a>
 	{/each}
 </div>

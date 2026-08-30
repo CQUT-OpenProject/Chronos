@@ -3,7 +3,6 @@
 	import type { Attachment } from 'svelte/attachments';
 	import {
 		placeCapsules,
-		type CapsuleCorners,
 		type Course,
 		type PlacedCourseCapsule,
 		type TimetableCourseDisplayModel,
@@ -11,6 +10,7 @@
 	} from '@chronos/core';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
+	import { capsuleCornerAttrs } from '@chronos/ui-kit/timetable/capsule-corners';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayColumnHeaderLabel } from '$lib/timetable/day-labels';
 	import {
@@ -50,11 +50,10 @@
 		courseDisplayModels: TimetableCourseDisplayModel[];
 		hasDynamicBackground: boolean;
 		coursePalette: readonly CoursePaletteEntry[];
-		paletteCourses?: { name: string; color: string }[];
+		paletteCourses?: { name: string }[];
 		layoutMode?: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick?: (course: Course) => void;
-		onCourseLongClick?: (course: Course) => void;
 	}
 
 	let {
@@ -69,9 +68,8 @@
 		coursePalette,
 		paletteCourses,
 		layoutMode = 'fixed',
-		capsuleCornerStyle = 'rounded',
-		onCourseClick,
-		onCourseLongClick
+		capsuleCornerStyle = 'sharp',
+		onCourseClick
 	}: Props = $props();
 
 	const controller = getAppController();
@@ -87,12 +85,7 @@
 	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
-	const mediator = $derived(
-		createTimetableInteractionMediator({
-			onCourseClick,
-			onCourseLongClick
-		})
-	);
+	const mediator = $derived(createTimetableInteractionMediator({ onCourseClick }));
 
 	const placements = $derived(
 		placeCapsules({
@@ -189,6 +182,8 @@
 	});
 
 	$effect(() => {
+		if (propCurrentPeriodIndex !== undefined) return;
+
 		let timeoutId: ReturnType<typeof setTimeout>;
 
 		const schedule = () => {
@@ -214,17 +209,6 @@
 		} else {
 			internalExpandedSlots = new Set([...internalExpandedSlots, key]);
 		}
-	}
-
-	function cornerClasses(corners: CapsuleCorners): string {
-		return [
-			corners.topLeft ? 'rounded-tl-xl' : null,
-			corners.topRight ? 'rounded-tr-xl' : null,
-			corners.bottomLeft ? 'rounded-bl-xl' : null,
-			corners.bottomRight ? 'rounded-br-xl' : null
-		]
-			.filter((name): name is string => name != null)
-			.join(' ');
 	}
 
 	const bodyScrollAttach: Attachment = (node) => {
@@ -258,7 +242,7 @@
 >
 	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
 		<div
-			class="m3-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
+			class="text-body-small flex w-[var(--sidebar-width)] flex-col items-center text-center text-on-surface-variant"
 		>
 			<span>{gridModel.monthLabel}</span>
 			<span>{hostT('timetable.grid.monthSuffix')}</span>
@@ -266,11 +250,11 @@
 		<div class="flex min-w-0 flex-1">
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
-					<span class="m3-body-small max-w-full truncate text-on-surface-variant">
+					<span class="text-body-small max-w-full truncate text-on-surface-variant">
 						{timetableDayColumnHeaderLabel(day)}
 					</span>
 					<div
-						class="m3-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
+						class="text-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
 							? 'bg-brand text-on-primary'
 							: day.holiday
 								? 'text-on-surface-variant'
@@ -299,20 +283,22 @@
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
 				{#each gridModel.periods as period (period.index)}
-					{@const isActive = period.index === currentPeriodIndex}
 					<div
 						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
 					>
 						<div
-							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {isActive
+							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {period.index ===
+							currentPeriodIndex
 								? 'period-active'
 								: ''}"
 						>
-							<span class="m3-body-medium font-bold">
+							<span class="text-body-medium font-bold">
 								{period.index}
 							</span>
 							<span
-								class="m3-caption mt-1 leading-tight {isActive ? '' : 'text-on-surface-variant'}"
+								class="text-caption mt-1 leading-tight {period.index === currentPeriodIndex
+									? ''
+									: 'text-on-surface-variant'}"
 							>
 								{period.startTime}<br />{period.endTime}
 							</span>
@@ -348,9 +334,8 @@
 						{#if item.kind === 'overlap-placeholder'}
 							<button
 								type="button"
-								class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center {cornerClasses(
-									item.corners
-								)}"
+								class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
+								style={capsuleCornerAttrs(item.corners).style}
 								aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
 								onclick={() => expandSlot(item.key)}
 							>
@@ -375,36 +360,30 @@
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
 	{@const handlers = createCourseCardHandlers(placed.course, {
-		onCourseClick: mediator.handleCourseClick,
-		onCourseLongClick: mediator.handleCourseLongPress,
-		onLongPressFeedback: () => {}
+		onCourseClick: mediator.handleCourseClick
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
 	<button
 		type="button"
-		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {cornerClasses(
-			placed.corners
-		)} {placed.displayModel.isHolidayMuted
+		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {placed
+			.displayModel.isHolidayMuted
 			? 'opacity-40'
 			: placed.displayModel.isInDisplayedWeek
 				? ''
 				: 'opacity-45'}"
-		style:--capsule={colors.background}
-		style:--capsule-fg={colors.text}
+		style="{capsuleCornerAttrs(placed.corners)
+			.style}; --capsule: {colors.background}; --capsule-fg: {colors.text}"
 		aria-label={buildCourseCapsuleAriaLabel(placed.course, {
 			teacher,
 			isHolidayMuted: placed.displayModel.isHolidayMuted
 		})}
-		aria-keyshortcuts="Shift+Enter"
-		oncontextmenu={handlers.oncontextmenu}
 		onpointerdown={handlers.onpointerdown}
 		onpointermove={handlers.onpointermove}
 		onpointerup={handlers.onpointerup}
 		onpointerleave={handlers.onpointerleave}
 		onpointercancel={handlers.onpointercancel}
 		onclick={handlers.onclick}
-		onkeydown={handlers.onkeydown}
 	>
 		{#if badgeText}
 			<span class="mb-0.5 flex w-full shrink-0 justify-center">
@@ -437,7 +416,7 @@
 					maxFontPx: locationMetrics.fontPx
 				}))}
 			>
-				{#each locationLines as line, index (index)}
+				{#each locationLines as line, lineIndex (`${lineIndex}:${line}`)}
 					<div class="overflow-hidden whitespace-nowrap">{line}</div>
 				{/each}
 			</div>

@@ -17,7 +17,8 @@ import {
 	StringInterner,
 	weeksToBitmask
 } from '@chronos/codec-kit';
-import { generateQrSvg, generateQrMatrix } from './qr/qr-encode';
+import { generateQrMatrix } from './qr/qr-encode';
+import { generateQrPng } from './qr/qr-png';
 import { decodeQrFromBlob } from './qr/qr-decode';
 import QrCodeImportTab from './QrCodeImportTab.svelte';
 import { mountableSvelteComponent } from '@chronos/ui-kit';
@@ -29,6 +30,8 @@ import {
 	type QrCodeImportForm
 } from './messages';
 
+export const QR_CODEC_ENVELOPE_PREFIX = 'chronos-qr:v1:';
+
 export interface V2CompactQrPayload {
 	v: 2;
 	n: string; // name
@@ -36,8 +39,8 @@ export interface V2CompactQrPayload {
 	w?: [number, number]; // [startWeek, endWeek]
 	p?: Array<[number, string, string]>; // periodTimes
 	s: string[]; // string pool
-	c: Array<[number, number, number, number, number, number, number, number?, number?]>;
-	// [nameIdx, teacherIdx, locationIdx, dayOfWeek, startPeriod, endPeriod, weekBitmask, remarkIdx?, colorIdx?]
+	c: Array<[number, number, number, number, number, number, number, number?]>;
+	// [nameIdx, teacherIdx, locationIdx, dayOfWeek, startPeriod, endPeriod, weekBitmask, remarkIdx?]
 }
 
 export async function serializeTimetableForQr(timetable: Timetable): Promise<string> {
@@ -48,7 +51,6 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 		const teacherIdx = interner.intern(course.teacher);
 		const locationIdx = interner.intern(course.location);
 		const remarkIdx = interner.intern(course.remark);
-		const colorIdx = interner.intern(course.color);
 		const weekBitmask = weeksToBitmask(course.weeks);
 
 		const item: V2CompactQrPayload['c'][number] = [
@@ -60,11 +62,8 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 			course.endPeriod,
 			weekBitmask
 		];
-		if (remarkIdx >= 0 || colorIdx >= 0) {
-			item.push(remarkIdx >= 0 ? remarkIdx : -1);
-		}
-		if (colorIdx >= 0) {
-			item.push(colorIdx);
+		if (remarkIdx >= 0) {
+			item.push(remarkIdx);
 		}
 		return item;
 	});
@@ -93,7 +92,7 @@ export async function serializeTimetableForQr(timetable: Timetable): Promise<str
 	const rawBytes = new TextEncoder().encode(json);
 	const compressedBytes = await deflateRaw(rawBytes);
 
-	return `chronos-qr:v2:${bytesToBase64(compressedBytes)}`;
+	return `${QR_CODEC_ENVELOPE_PREFIX}${bytesToBase64(compressedBytes)}`;
 }
 
 export async function deserializeTimetableFromQr(
@@ -105,11 +104,11 @@ export async function deserializeTimetableFromQr(
 ): Promise<Timetable> {
 	const content = rawText.trim();
 
-	if (!content.startsWith('chronos-qr:v2:')) {
+	if (!content.startsWith(QR_CODEC_ENVELOPE_PREFIX)) {
 		throw new Error(labels['import.error.corrupt']);
 	}
 
-	const base64 = content.slice('chronos-qr:v2:'.length);
+	const base64 = content.slice(QR_CODEC_ENVELOPE_PREFIX.length);
 	const compressedBytes = base64ToBytes(base64);
 	const decompressedBytes = await inflateRaw(compressedBytes);
 	const jsonStr = new TextDecoder().decode(decompressedBytes);
@@ -126,7 +125,6 @@ export async function deserializeTimetableFromQr(
 		const weeks = bitmaskToWeeks(tuple[6] ?? 1);
 		const safeWeeks = weeks.length > 0 ? weeks : [1];
 		const remark = tuple[7] !== undefined && tuple[7] >= 0 ? pool[tuple[7]] : undefined;
-		const color = tuple[8] !== undefined && tuple[8] >= 0 ? pool[tuple[8]] : undefined;
 
 		return createCourse({
 			id: `c-qr-${idx + 1}-${Date.now().toString(36)}`,
@@ -137,8 +135,7 @@ export async function deserializeTimetableFromQr(
 			startPeriod,
 			endPeriod,
 			weeks: safeWeeks,
-			remark,
-			color
+			remark
 		});
 	});
 
@@ -217,12 +214,12 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}) {
 						throw new Error(t('export.error.noTimetable'));
 					}
 					const payload = await serializeTimetableForQr(targetTimetable);
-					const svg = generateQrSvg(payload, { margin: 2 });
+					const png = await generateQrPng(payload, { margin: 2 });
 					const safeName = (targetTimetable.name || 'timetable').replace(/[/\\?%*:|"<>]/g, '_');
 					return {
-						filename: `${safeName}-qrcode.svg`,
-						mimeType: 'image/svg+xml',
-						content: svg,
+						filename: `${safeName}-qrcode.png`,
+						mimeType: 'image/png',
+						content: png,
 						disposition: 'download',
 						successMessage: () => t('export.success')
 					};
@@ -234,4 +231,4 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}) {
 
 export const qrCodecPlugin = createQrCodecPlugin();
 
-export { generateQrSvg, generateQrMatrix, decodeQrFromBlob, QrCodeImportTab };
+export { generateQrPng, generateQrMatrix, decodeQrFromBlob, QrCodeImportTab };

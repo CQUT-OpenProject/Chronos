@@ -13,8 +13,6 @@ export function courseToRow(course: Course, timetableId: string): CourseRow {
 		dayOfWeek: course.dayOfWeek,
 		startPeriod: course.startPeriod,
 		endPeriod: course.endPeriod,
-		color: course.color ?? '',
-		textColor: course.textColor ?? '',
 		weeksCsv: course.weeks.join(','),
 		remark: course.remark ?? ''
 	};
@@ -42,8 +40,6 @@ export function courseFromRow(row: CourseRow): Course {
 		dayOfWeek: row.dayOfWeek,
 		startPeriod: row.startPeriod,
 		endPeriod: row.endPeriod,
-		color: row.color,
-		textColor: row.textColor,
 		weeks: parseWeeksCsv(row.weeksCsv),
 		remark: row.remark
 	};

@@ -22,7 +22,7 @@
 
 <div
 	{...props}
-	class="w-full rounded-[24px] p-4 transition-shadow {variantClasses[variant]} {className}"
+	class="w-full rounded-3xl p-4 transition-shadow {variantClasses[variant]} {className}"
 >
 	{@render children?.()}
 </div>

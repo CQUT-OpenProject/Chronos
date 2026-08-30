@@ -1,0 +1,12 @@
+{
+	"name": "@chronos/plugin-theme-miami",
+	"version": "0.1.0",
+	"type": "module",
+	"exports": {
+		"./colors.json": "./theme-miami.colors.json",
+		"./icons.json": "./theme-miami.icons.json"
+	},
+	"devDependencies": {
+		"@chronos/core": "workspace:*"
+	}
+}

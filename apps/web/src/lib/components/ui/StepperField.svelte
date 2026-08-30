@@ -37,12 +37,12 @@
 <div
 	class={[
 		embedded
-			? 'm3-form-field m3-form-field--embedded'
+			? 'ui-form-field ui-form-field--embedded'
 			: 'flex items-center justify-between rounded-lg border border-outline px-3 py-2 dark:border-outline-variant',
 		className
 	]}
 >
-	<span class={embedded ? 'm3-field-label' : 'm3-body-medium'}>{label}</span>
+	<span class={embedded ? 'ui-field-label' : 'text-body-medium'}>{label}</span>
 	<div class="flex items-center gap-2">
 		<Button
 			variant="text"
@@ -53,7 +53,7 @@
 		>
 			-
 		</Button>
-		<span class="m3-body-large">{value}</span>
+		<span class="text-body-large">{value}</span>
 		<Button
 			variant="text"
 			class="size-8 min-w-8 px-0"

@@ -14,23 +14,13 @@
 		BUILD_TIME,
 		COPYRIGHT_HOLDER,
 		formatCopyrightYearRange,
-		PROJECT_LICENSE,
-		SOURCE_CODE_URL
+		PROJECT_LICENSE
 	} from '$lib/config/app-meta';
 
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import AppHero from '$lib/components/AppHero.svelte';
-	import {
-		CodeFill,
-		GavelFill,
-		InfoFill,
-		LayersClearFill,
-		OpenInNewFill,
-		ArticleFill,
-		ScheduleFill,
-		ShieldFill
-	} from '$lib/icons';
+	import { InfoFill, LayersClearFill, ScheduleFill } from '$lib/icons';
 
 	let { shell }: { shell: AppShellController } = $props();
 
@@ -89,7 +79,7 @@
 	}
 </script>
 
-<div class="m3-stack">
+<div class="ui-stack">
 	<AppHero title="Chronos" subtitle={hostT('meta.intro')} />
 
 	<MineSection title={hostT('about.section.version')}>
@@ -120,40 +110,13 @@
 	</MineSection>
 
 	<MineSection title={hostT('about.section.info')}>
-		<MineRow
-			title={hostT('about.legal.terms')}
-			href={resolve('/legal/terms')}
-			icon={ArticleFill}
-			iconTone="tertiary"
-		/>
-		<MineRow
-			title={hostT('about.legal.privacy')}
-			href={resolve('/legal/privacy')}
-			icon={ShieldFill}
-			iconTone="tertiary"
-		/>
-		<MineRow
-			title={hostT('about.legal.licenses')}
-			href={resolve('/open-source-licenses')}
-			icon={GavelFill}
-			iconTone="tertiary"
-		/>
-		<MineRow
-			title={hostT('about.source')}
-			href={SOURCE_CODE_URL}
-			target="_blank"
-			rel="noreferrer"
-			icon={CodeFill}
-			iconTone="neutral"
-		>
-			{#snippet trailing()}
-				<OpenInNewFill class="text-on-surface-variant" style="width:1.125rem;height:1.125rem" />
-			{/snippet}
-		</MineRow>
+		<MineRow title={hostT('about.legal.terms')} href={resolve('/legal/terms')} />
+		<MineRow title={hostT('about.legal.privacy')} href={resolve('/legal/privacy')} />
+		<MineRow title={hostT('about.legal.licenses')} href={resolve('/open-source-licenses')} />
 	</MineSection>
 
 	<footer class="copyright">
-		<p class="m3-body-small text-on-surface-variant">
+		<p class="text-body-small text-on-surface-variant">
 			© {formatCopyrightYearRange()}
 			{COPYRIGHT_HOLDER} ·
 			<a href={resolve('/open-source-licenses/project')} class="license-link">

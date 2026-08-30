@@ -87,7 +87,7 @@
 </script>
 
 {#if !courseId}
-	<p class="m3-body-medium text-on-surface-variant">
+	<p class="text-body-medium text-on-surface-variant">
 		{hostT('course.detail.noId')}
 	</p>
 {:else if course}
@@ -98,7 +98,7 @@
 			style:--capsule-fg={paint?.foreground}
 		></span>
 		<h2
-			class="m3-headline-small min-w-0 flex-1 font-bold whitespace-nowrap text-on-surface"
+			class="text-headline-small min-w-0 flex-1 font-bold whitespace-nowrap text-on-surface"
 			{@attach createFitWidthFontAttachment(() => ({
 				lines: [course.name],
 				maxFontPx: HEADLINE_SMALL_FONT_PX,
@@ -112,7 +112,7 @@
 	<section class="rounded-2xl bg-surface-variant/40 p-4">
 		<div class="divide-y divide-outline-variant/60">
 			{#each detailRows as row (row.label)}
-				<div class="m3-body-medium flex items-center justify-between gap-4 py-2.5">
+				<div class="text-body-medium flex items-center justify-between gap-4 py-2.5">
 					<span class="text-on-surface-variant">{row.label}</span>
 					<span class="text-right font-medium text-on-surface">{row.value}</span>
 				</div>
@@ -122,7 +122,7 @@
 
 	{#if courseActions.length > 0}
 		<section class="mt-4 rounded-2xl bg-surface-variant/40 p-4">
-			<h3 class="m3-title-small mb-2 text-on-surface-variant">
+			<h3 class="text-title-small mb-2 text-on-surface-variant">
 				{hostT('course.detail.pluginActions')}
 			</h3>
 			<div class="flex flex-wrap gap-2">
@@ -145,23 +145,26 @@
 		<section class="mt-4 rounded-2xl bg-surface-variant/40 p-4">
 			<button
 				type="button"
-				class="m3-title-small flex w-full cursor-pointer items-center justify-between text-on-surface-variant"
+				class="text-title-small flex w-full cursor-pointer items-center justify-between text-on-surface-variant"
 				onclick={() => (remarkExpanded = !remarkExpanded)}
 			>
 				<span>{hostT('course.detail.remark')}</span>
-				<span class="m3-label-large text-brand">
+				<span class="text-label-large text-brand">
 					{hostT(remarkExpanded ? 'course.detail.collapse' : 'course.detail.expand')}
 				</span>
 			</button>
 			{#if remarkExpanded}
-				<p class="m3-body-medium mt-2 text-on-surface-variant" transition:slide={{ duration: 200 }}>
+				<p
+					class="text-body-medium mt-2 text-on-surface-variant"
+					transition:slide={{ duration: 200 }}
+				>
 					{course.remark}
 				</p>
 			{/if}
 		</section>
 	{/if}
 {:else}
-	<p class="m3-body-medium text-on-surface-variant">
+	<p class="text-body-medium text-on-surface-variant">
 		{hostT('course.detail.notFound')}
 	</p>
 {/if}

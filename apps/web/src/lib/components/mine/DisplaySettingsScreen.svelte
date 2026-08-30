@@ -24,7 +24,7 @@
 	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const paletteMode = $derived(shell.controller.userPreferences?.paletteMode ?? 'vibrant');
 	const capsuleCornerStyle = $derived(
-		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
+		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
 	);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const visualThemeId = $derived(shell.controller.activeThemeId);
@@ -35,7 +35,7 @@
 
 	const colorSchemeOptions = $derived.by(() => {
 		void shell.controller.slotVersion;
-		void shell.controller.currentLocale;
+		void activeLocale;
 
 		const builtin = [
 			{
@@ -61,11 +61,11 @@
 						? hostT('display.colorScheme.dynamicReady')
 						: hostT('display.colorScheme.dynamicBlocked')
 					: undefined;
-				const desc = resolveLocalizedText(theme.description, defaultDesc);
+				const desc = resolveLocalizedText(theme.description, defaultDesc, activeLocale);
 
 				return {
 					id: theme.id,
-					label: resolveLocalizedText(theme.name),
+					label: resolveLocalizedText(theme.name, theme.id, activeLocale),
 					description: desc,
 					disabled: isDisabled
 				};

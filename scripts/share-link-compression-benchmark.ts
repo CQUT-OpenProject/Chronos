@@ -214,8 +214,6 @@ function course(id: string, name: string, teacher: string, overrides: Partial<Co
 		dayOfWeek: 1,
 		startPeriod: 1,
 		endPeriod: 2,
-		color: '#EADDFF',
-		textColor: '#21005D',
 		weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
 		remark: '',
 		...overrides

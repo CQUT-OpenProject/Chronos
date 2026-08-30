@@ -10,15 +10,10 @@ describe('ThemeRegistry in @chronos/core', () => {
 		const theme: ThemeContribution = {
 			id: 'nord',
 			name: 'Nord Theme',
-			workbenchColors: { light: {}, dark: {} },
-			getTokens: () => ({
-				surface: '#2e3440',
-				onSurface: '#eceff4',
-				primary: '#88c0d0',
-				onPrimary: '#2e3440',
-				surfaceVariant: '#3b4252',
-				outline: '#4c566a'
-			})
+			workbenchColors: {
+				light: { 'color.surface': '#eceff4' },
+				dark: { 'color.surface': '#2e3440' }
+			}
 		};
 
 		const sub = registry.registerTheme(theme);

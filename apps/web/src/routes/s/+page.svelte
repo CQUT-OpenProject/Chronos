@@ -44,10 +44,10 @@
 
 <div class="flex min-h-dvh flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">
 	{#if status === 'loading'}
-		<p class="m3-body-large text-on-surface">{hostT('share.loading')}</p>
+		<p class="text-body-large text-on-surface">{hostT('share.loading')}</p>
 	{:else}
-		<p class="m3-body-large text-on-surface-variant">{hostT('share.failed')}</p>
-		<a href={resolve('/transfer/import')} class="m3-label-large text-brand">
+		<p class="text-body-large text-on-surface-variant">{hostT('share.failed')}</p>
+		<a href={resolve('/transfer/import')} class="text-label-large text-brand">
 			{hostT('share.manualImport')}
 		</a>
 	{/if}

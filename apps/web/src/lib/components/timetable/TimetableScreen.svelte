@@ -17,13 +17,11 @@
 	let {
 		screen,
 		onEditTimetableDetails,
-		onCourseClick,
-		onCourseLongClick
+		onCourseClick
 	}: {
 		screen: TimetableScreenController;
 		onEditTimetableDetails: () => void;
 		onCourseClick: (courseId: string) => void;
-		onCourseLongClick: (courseId: string) => void;
 	} = $props();
 
 	const screenState = $derived(screen.state);
@@ -35,7 +33,7 @@
 	const dynamicColorUri = $derived(shell.state.dynamicColorUri);
 	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const capsuleCornerStyle = $derived(
-		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
+		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
 	);
 
 	const weekGesture = createWeekSliderGesture({
@@ -135,7 +133,7 @@
 						/>
 					{:else}
 						<p
-							class="m3-title-large truncate text-base leading-tight font-bold sm:text-lg md:text-xl"
+							class="text-title-large truncate text-base leading-tight font-bold sm:text-lg md:text-xl"
 						>
 							{weekRangeText}
 						</p>
@@ -143,7 +141,7 @@
 				</div>
 				<div class="flex h-4.5 items-center sm:h-5">
 					<p
-						class="m3-body-medium truncate text-xs leading-tight text-on-surface-variant sm:text-sm"
+						class="text-body-medium truncate text-xs leading-tight text-on-surface-variant sm:text-sm"
 					>
 						{weekLabel}
 					</p>
@@ -174,7 +172,6 @@
 				{layoutMode}
 				{capsuleCornerStyle}
 				{onCourseClick}
-				{onCourseLongClick}
 			/>
 		{/key}
 	</TimetableWallpaperLayer>

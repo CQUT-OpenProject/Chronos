@@ -52,7 +52,8 @@ describe('analytics', () => {
 			'phc_test',
 			expect.objectContaining({
 				autocapture: false,
-				disable_session_recording: true
+				disable_session_recording: true,
+				capture_performance: { web_vitals: false }
 			})
 		);
 	});

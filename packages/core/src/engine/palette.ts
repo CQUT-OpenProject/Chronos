@@ -38,32 +38,21 @@ export function coursePalette(name: string): [string, string] {
 	return COURSE_PALETTE[index] ?? COURSE_PALETTE[0]!;
 }
 
-const PALETTE_SLOT_MAP = new Map<string, number>(
-	COURSE_PALETTE_ENTRIES.map((entry, index) => [entry.background.toLowerCase(), index])
-);
-
-export function defaultPaletteSlot(hex: string): number | null {
-	return PALETTE_SLOT_MAP.get(hex.trim().toLowerCase()) ?? null;
-}
-
-export function persistSwatchSelection(displayIndex: number): CoursePaletteEntry {
-	return COURSE_PALETTE_ENTRIES[displayIndex] ?? COURSE_PALETTE_ENTRIES[0]!;
+function paletteSlotForName(name: string): number {
+	const [background] = coursePalette(name);
+	const index = COURSE_PALETTE.findIndex(([bg]) => bg === background);
+	return index >= 0 ? index : 0;
 }
 
 export function resolveCoursePaint(
-	stored: { name?: string; color?: string; textColor?: string },
+	stored: { name?: string },
 	displayPalette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
 ): { background: string; foreground: string } {
 	const name = stored.name ? normalizedCourseName(stored.name) : '';
-	const color = stored.color || (name ? coursePalette(name)[0] : '');
-	const slot = defaultPaletteSlot(color);
-	if (slot == null || displayPalette.length === 0) {
-		if (name) {
-			const [bg, fg] = coursePalette(name);
-			return { background: stored.color || bg, foreground: stored.textColor || fg };
-		}
-		return { background: stored.color || '#EADDFF', foreground: stored.textColor || '#21005D' };
+	if (!name || displayPalette.length === 0) {
+		return COURSE_PALETTE_ENTRIES[0]!;
 	}
+	const slot = paletteSlotForName(name);
 	return displayPalette[slot % displayPalette.length]!;
 }
 
@@ -84,9 +73,9 @@ interface CourseSlotPreference {
 	hash: number;
 }
 
-/** Spread automatic (default-slot) courses across the display palette. */
+/** Spread courses across the display palette by name hash. */
 export function assignCourseDisplayColors(
-	courses: { name: string; color?: string }[],
+	courses: { name: string }[],
 	palette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
 ): Map<string, CoursePaletteEntry> {
 	if (palette.length === 0) return new Map();
@@ -94,9 +83,7 @@ export function assignCourseDisplayColors(
 	const preferredMap = new Map<string, CourseSlotPreference>();
 	for (const course of courses) {
 		const name = normalizedCourseName(course.name);
-		const color = course.color || coursePalette(name)[0];
-		const slot = defaultPaletteSlot(color);
-		if (slot == null) continue;
+		const slot = paletteSlotForName(name);
 		if (!preferredMap.has(name)) {
 			preferredMap.set(name, {
 				name,
@@ -136,11 +123,4 @@ export function assignCourseDisplayColors(
 	}
 
 	return assigned;
-}
-
-export function displaySwatchBackground(
-	storedBackground: string,
-	displayPalette: readonly CoursePaletteEntry[]
-): string {
-	return resolveCoursePaint({ color: storedBackground, textColor: '' }, displayPalette).background;
 }

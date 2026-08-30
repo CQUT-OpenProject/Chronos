@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { m3DefaultTheme, buildM3Tokens } from '../src/theme/m3-theme';
-import { createCourse } from '@chronos/core';
+import {
+	m3DefaultTheme,
+	buildM3Tokens,
+	buildGeneratedThemeCss,
+	CHRONOS_HOST_COLORS,
+	CHRONOS_HOST_COLOR_KEYS
+} from '../src/theme/m3-theme';
 
 describe('M3DefaultTheme', () => {
 	it('has valid theme id and flags', () => {
@@ -8,15 +13,15 @@ describe('M3DefaultTheme', () => {
 		expect(m3DefaultTheme.supportsDynamicColor).toBe(true);
 	});
 
-	it('generates light and dark design tokens', () => {
-		const lightTokens = m3DefaultTheme.getTokens('light');
-		expect(lightTokens.surface).toBeDefined();
-		expect(lightTokens.primary).toBeDefined();
+	it('generates light and dark workbench colors', () => {
+		const light = m3DefaultTheme.workbenchColors.light;
+		expect(light['color.surface']).toBeDefined();
+		expect(light['color.primary']).toBeDefined();
 
-		const darkTokens = m3DefaultTheme.getTokens('dark');
-		expect(darkTokens.surface).toBeDefined();
-		expect(darkTokens.primary).toBeDefined();
-		expect(darkTokens.surface).not.toEqual(lightTokens.surface);
+		const dark = m3DefaultTheme.workbenchColors.dark;
+		expect(dark['color.surface']).toBeDefined();
+		expect(dark['color.primary']).toBeDefined();
+		expect(dark['color.surface']).not.toEqual(light['color.surface']);
 	});
 
 	it('supports seedColor dynamic color token generation', () => {
@@ -25,31 +30,18 @@ describe('M3DefaultTheme', () => {
 		expect(customTokens.primary).not.toEqual(defaultTokens.primary);
 	});
 
-	it('resolves course paint with course colors or palette index', () => {
-		const customCourse = createCourse({
-			id: 'c1',
-			name: '高等数学',
-			color: '#123456',
-			textColor: '#ffffff',
-			dayOfWeek: 1,
-			startPeriod: 1,
-			endPeriod: 2,
-			weeks: [1]
-		});
+	it('generated CSS includes host color overrides', () => {
+		const css = buildGeneratedThemeCss();
+		for (const key of CHRONOS_HOST_COLOR_KEYS) {
+			const value = CHRONOS_HOST_COLORS.light[key];
+			expect(css).toContain(`--color-${key}: ${value}`);
+		}
+	});
 
-		const paint1 = m3DefaultTheme.resolveCoursePaint!(customCourse, 0, 'light');
-		expect(paint1).toEqual({ background: '#123456', foreground: '#ffffff' });
-
-		const autoCourse = createCourse({
-			id: 'c2',
-			name: '大学物理',
-			dayOfWeek: 2,
-			startPeriod: 1,
-			endPeriod: 2,
-			weeks: [1]
-		});
-		const paint2 = m3DefaultTheme.resolveCoursePaint!(autoCourse, 1, 'light');
-		expect(paint2.background).toBeDefined();
-		expect(paint2.foreground).toBeDefined();
+	it('m3-default workbench colors match host surface overrides', () => {
+		const light = m3DefaultTheme.workbenchColors.light;
+		expect(light['color.surface']).toBe(CHRONOS_HOST_COLORS.light.surface);
+		expect(light['color.canvas']).toBe(CHRONOS_HOST_COLORS.light.canvas);
+		expect(light['color.danger']).toBe(CHRONOS_HOST_COLORS.light.danger);
 	});
 });

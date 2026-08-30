@@ -7,6 +7,6 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.install')} backHref="/mine">
+<SecondaryPageShell title={hostT('route.install')} backShellTab="mine">
 	<InstallScreen />
 </SecondaryPageShell>

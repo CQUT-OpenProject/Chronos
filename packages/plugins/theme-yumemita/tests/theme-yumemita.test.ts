@@ -3,7 +3,8 @@ import {
 	createIconThemeFromJson,
 	createThemeFromColorJson,
 	parseColorThemeJson,
-	parseIconThemeJson
+	parseIconThemeJson,
+	resolveCoursePaint
 } from '@chronos/core';
 import colorsJson from '../theme-yumemita.colors.json';
 import iconsJson from '../theme-yumemita.icons.json';
@@ -23,21 +24,14 @@ describe('@chronos/plugin-theme-yumemita', () => {
 		expect(dark['color.surface']).toBe('#1e2026');
 	});
 
-	it('resolveCoursePaint uses palette entries', () => {
-		const paint = themeContribution.resolveCoursePaint!(
-			{
-				id: '1',
-				name: 'Math',
-				teacher: '',
-				location: '',
-				dayOfWeek: 1,
-				startPeriod: 1,
-				endPeriod: 2,
-				weeks: [1]
-			},
-			0,
-			'light'
-		);
+	it('exposes palette entries for course paint resolution', () => {
+		const entries =
+			typeof themeContribution.paletteEntries === 'function'
+				? themeContribution.paletteEntries('light')
+				: themeContribution.paletteEntries;
+		expect(entries).toEqual(paletteEntries);
+
+		const paint = resolveCoursePaint({ name: 'Math' }, entries);
 		expect(paint.background).toBe(paletteEntries[0]!.background);
 	});
 

@@ -14,7 +14,6 @@ interface TelemetryPort {
 
 export interface TimetableInteractionMediatorOptions {
 	onCourseClick?: (course: Course) => void;
-	onCourseLongClick?: (course: Course) => void;
 	hapticPort?: HapticPort;
 	telemetryPort?: TelemetryPort;
 }
@@ -25,20 +24,11 @@ export interface TimetableInteractionMediatorOptions {
 export function createTimetableInteractionMediator(
 	options: TimetableInteractionMediatorOptions = {}
 ) {
-	const {
-		onCourseClick,
-		onCourseLongClick,
-		hapticPort = haptic,
-		telemetryPort = { track: trackEvent }
-	} = options;
+	const { onCourseClick, hapticPort = haptic, telemetryPort = { track: trackEvent } } = options;
 
 	return {
 		handleCourseClick(course: Course) {
 			onCourseClick?.(course);
-		},
-		handleCourseLongPress(course: Course) {
-			hapticPort.heavy();
-			onCourseLongClick?.(course);
 		},
 		handleOverlapExpand(_key?: string) {
 			telemetryPort.track('timetable_overlap_expand');

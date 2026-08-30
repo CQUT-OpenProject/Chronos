@@ -72,6 +72,7 @@ export function initAnalytics() {
 				defaults: '2026-05-30',
 				autocapture: false,
 				disable_session_recording: true,
+				capture_performance: { web_vitals: false },
 				persistence: 'localStorage'
 			});
 			client = posthog;

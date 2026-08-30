@@ -11,6 +11,14 @@
 	let passwordVisible = $state(false);
 	let isOnline = $state(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
+	function handleOnline() {
+		isOnline = true;
+	}
+
+	function handleOffline() {
+		isOnline = false;
+	}
+
 	function pt(key: keyof (typeof SOURCE_CQUT_MESSAGES)['zh-cn']) {
 		return pluginText(controller, SOURCE_CQUT_PLUGIN_ID, SOURCE_CQUT_MESSAGES, key);
 	}
@@ -26,22 +34,6 @@
 	const submitLabel = $derived(
 		pt(loading ? 'import.online.submit.loading' : 'import.online.submit')
 	);
-
-	$effect(() => {
-		if (typeof window === 'undefined') return;
-		const handleOnline = () => {
-			isOnline = true;
-		};
-		const handleOffline = () => {
-			isOnline = false;
-		};
-		window.addEventListener('online', handleOnline);
-		window.addEventListener('offline', handleOffline);
-		return () => {
-			window.removeEventListener('online', handleOnline);
-			window.removeEventListener('offline', handleOffline);
-		};
-	});
 
 	const onlineImportDisabled = $derived(loading || !isOnline);
 
@@ -68,36 +60,38 @@
 	}
 </script>
 
+<svelte:window ononline={handleOnline} onoffline={handleOffline} />
+
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
 		{#if !isOnline}
 			<div class="flex items-center gap-2 rounded-xl bg-error-container/40 p-3 text-error">
-				<span class="m3-body-small">{offlineMessage}</span>
+				<span class="text-body-small">{offlineMessage}</span>
 			</div>
 		{/if}
 		<div>
-			<h2 class="m3-title-medium text-on-surface">{title}</h2>
-			<p class="m3-body-small mt-0.5 text-on-surface-variant">{intro}</p>
+			<h2 class="text-title-medium text-on-surface">{title}</h2>
+			<p class="text-body-small mt-0.5 text-on-surface-variant">{intro}</p>
 		</div>
 
 		<div class="flex flex-col gap-3">
-			<div class="m3-form-field">
-				<label class="m3-field-label" for="import-account">{accountLabel}</label>
+			<div class="ui-form-field">
+				<label class="ui-field-label" for="import-account">{accountLabel}</label>
 				<input
 					id="import-account"
-					class="m3-form-field-input"
+					class="ui-form-field-input"
 					type="text"
 					inputmode="numeric"
 					autocomplete="username"
 					bind:value={account}
 				/>
 			</div>
-			<div class="m3-form-field">
-				<label class="m3-field-label" for="import-password">{passwordTitle}</label>
-				<div class="m3-form-field-input-row">
+			<div class="ui-form-field">
+				<label class="ui-field-label" for="import-password">{passwordTitle}</label>
+				<div class="ui-form-field-input-row">
 					<input
 						id="import-password"
-						class="m3-form-field-input"
+						class="ui-form-field-input"
 						type={passwordVisible ? 'text' : 'password'}
 						autocomplete="current-password"
 						bind:value={password}
@@ -139,7 +133,7 @@
 		<div class="flex w-full pt-1">
 			<button
 				type="button"
-				class="m3-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+				class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
 				disabled={onlineImportDisabled}
 				onclick={handleOnlinePreview}
 			>

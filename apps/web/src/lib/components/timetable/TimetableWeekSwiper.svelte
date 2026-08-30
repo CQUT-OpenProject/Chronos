@@ -14,9 +14,8 @@
 		hasDynamicBackground,
 		coursePalette,
 		layoutMode,
-		capsuleCornerStyle = 'rounded',
-		onCourseClick,
-		onCourseLongClick
+		capsuleCornerStyle = 'sharp',
+		onCourseClick
 	}: {
 		screen: TimetableScreenController;
 		hasDynamicBackground: boolean;
@@ -24,7 +23,6 @@
 		layoutMode: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick: (courseId: string) => void;
-		onCourseLongClick: (courseId: string) => void;
 	} = $props();
 
 	const screenState = $derived(screen.state);
@@ -109,7 +107,6 @@
 					{layoutMode}
 					{capsuleCornerStyle}
 					onCourseClick={(course) => onCourseClick(course.id)}
-					onCourseLongClick={(course) => onCourseLongClick(course.id)}
 				/>
 			{/if}
 		</swiper-slide>

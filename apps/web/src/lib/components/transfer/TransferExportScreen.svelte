@@ -106,7 +106,7 @@
 </script>
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-5 py-1">
-	<p class="m3-body-medium text-center text-on-surface-variant">
+	<p class="text-body-medium text-center text-on-surface-variant">
 		{hostT('transfer.export.intro', {
 			name: currentTimetable
 				? normalizeTimetableName(currentTimetable.name)
@@ -115,7 +115,7 @@
 	</p>
 
 	{#if warningMessage}
-		<p class="m3-body-small text-center text-warning">{warningMessage}</p>
+		<p class="text-body-small text-center text-warning">{warningMessage}</p>
 	{/if}
 
 	{#if showExportTabs}
@@ -129,10 +129,10 @@
 	{#if selectedAction}
 		<div class="flex flex-col gap-3 rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 			<div>
-				<h2 class="m3-title-medium text-on-surface">
+				<h2 class="text-title-medium text-on-surface">
 					{resolveLocalizedText(selectedAction.title)}
 				</h2>
-				<p class="m3-body-small mt-0.5 text-on-surface-variant">
+				<p class="text-body-small mt-0.5 text-on-surface-variant">
 					{actionDescription(selectedAction)}
 				</p>
 			</div>

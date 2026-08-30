@@ -1,0 +1,146 @@
+/* Chronos typography scale — @theme bridge + text-* utilities */
+
+@theme {
+	--text-headline-medium-size: 1.75rem;
+	--text-headline-medium-line-height: 1.286;
+	--font-weight-headline-medium: 400;
+
+	--text-headline-small-size: 1.5rem;
+	--text-headline-small-line-height: 1.333;
+	--font-weight-headline-small: 400;
+
+	--text-title-large-size: 1.375rem;
+	--text-title-large-line-height: 1.27;
+	--font-weight-title-large: 400;
+
+	--text-title-medium-size: 1rem;
+	--text-title-medium-line-height: 1.5;
+	--font-weight-title-medium: 500;
+
+	--text-title-small-size: 0.875rem;
+	--text-title-small-line-height: 1.429;
+	--font-weight-title-small: 500;
+
+	--text-label-large-size: 0.875rem;
+	--text-label-large-line-height: 1.429;
+	--font-weight-label-large: 500;
+
+	--text-label-medium-size: 1rem;
+	--text-label-medium-line-height: 1.5;
+	--font-weight-label-medium: 500;
+
+	--text-label-small-size: 0.6875rem;
+	--text-label-small-line-height: 1.45;
+	--font-weight-label-small: 500;
+
+	--text-body-large-size: 1rem;
+	--text-body-large-line-height: 1.5;
+	--font-weight-body-large: 400;
+
+	--text-body-medium-size: 0.875rem;
+	--text-body-medium-line-height: 1.429;
+	--font-weight-body-medium: 400;
+
+	--text-body-small-size: 0.75rem;
+	--text-body-small-line-height: 1.333;
+	--font-weight-body-small: 400;
+
+	--text-caption-size: 0.625rem;
+	--text-caption-line-height: 1.2;
+	--font-weight-caption: 400;
+
+	--text-field-label-size: 0.75rem;
+	--text-field-label-line-height: 1.33;
+	--font-weight-field-label: 500;
+}
+
+.text-headline-medium,
+.m3-headline-medium {
+	font-size: var(--text-headline-medium-size);
+	line-height: var(--text-headline-medium-line-height);
+	font-weight: var(--font-weight-headline-medium);
+}
+
+.text-headline-small,
+.m3-headline-small {
+	font-size: var(--text-headline-small-size);
+	line-height: var(--text-headline-small-line-height);
+	font-weight: var(--font-weight-headline-small);
+}
+
+.text-title-large,
+.m3-title-large {
+	font-size: var(--text-title-large-size);
+	line-height: var(--text-title-large-line-height);
+	font-weight: var(--font-weight-title-large);
+}
+
+.text-title-medium,
+.m3-title-medium {
+	font-size: var(--text-title-medium-size);
+	line-height: var(--text-title-medium-line-height);
+	font-weight: var(--font-weight-title-medium);
+}
+
+.text-title-small,
+.m3-title-small {
+	font-size: var(--text-title-small-size);
+	line-height: var(--text-title-small-line-height);
+	font-weight: var(--font-weight-title-small);
+}
+
+.text-label-large,
+.m3-label-large {
+	font-size: var(--text-label-large-size);
+	line-height: var(--text-label-large-line-height);
+	font-weight: var(--font-weight-label-large);
+}
+
+.text-label-medium,
+.m3-label-medium {
+	font-size: var(--text-label-medium-size);
+	line-height: var(--text-label-medium-line-height);
+	font-weight: var(--font-weight-label-medium);
+}
+
+.text-label-small,
+.m3-label-small {
+	font-size: var(--text-label-small-size);
+	line-height: var(--text-label-small-line-height);
+	font-weight: var(--font-weight-label-small);
+}
+
+.text-body-large,
+.m3-body-large {
+	font-size: var(--text-body-large-size);
+	line-height: var(--text-body-large-line-height);
+	font-weight: var(--font-weight-body-large);
+}
+
+.text-body-medium,
+.m3-body-medium {
+	font-size: var(--text-body-medium-size);
+	line-height: var(--text-body-medium-line-height);
+	font-weight: var(--font-weight-body-medium);
+}
+
+.text-body-small,
+.m3-body-small {
+	font-size: var(--text-body-small-size);
+	line-height: var(--text-body-small-line-height);
+	font-weight: var(--font-weight-body-small);
+}
+
+.text-caption,
+.m3-caption {
+	font-size: var(--text-caption-size);
+	line-height: var(--text-caption-line-height);
+	font-weight: var(--font-weight-caption);
+}
+
+.text-page-title,
+.m3-page-title {
+	margin: 0;
+	padding: 0 0.5rem;
+	color: var(--color-on-surface);
+}

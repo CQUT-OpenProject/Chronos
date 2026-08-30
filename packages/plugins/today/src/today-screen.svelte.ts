@@ -31,7 +31,7 @@ export function createTodayScreenController(): TodayScreenController {
 	let today = $state(todayIsoDate());
 	let now = $state(new Date());
 	let scope = $state<TodayScope>('active');
-	let courseEntries = $state<TodayCourseEntry[]>([]);
+	let courseEntries = $state.raw<TodayCourseEntry[]>([]);
 
 	let dayClock: DayClockHandle | null = null;
 	let unsubscribeTimetableSwitch: (() => void) | undefined;

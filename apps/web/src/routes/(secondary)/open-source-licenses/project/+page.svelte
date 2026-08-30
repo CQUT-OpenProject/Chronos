@@ -61,6 +61,6 @@
 		/>
 	{:else}
 		<pre
-			class="m3-body-small leading-relaxed whitespace-pre-wrap text-on-surface-variant">{licenseText}</pre>
+			class="text-body-small leading-relaxed whitespace-pre-wrap text-on-surface-variant">{licenseText}</pre>
 	{/if}
 </SecondaryPageShell>

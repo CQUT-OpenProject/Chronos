@@ -1,60 +1,25 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
 	import { getContext } from 'svelte';
-	import { trackEvent } from '$lib/client/analytics';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
-	import TimetableScreen from '$lib/components/timetable/TimetableScreen.svelte';
-	import CourseDetailSheet from '$lib/components/timetable/CourseDetailSheet.svelte';
-	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
-	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
-	import { ensureEngineReady, getAppController } from '$lib/services/app-engine';
-	import { tryDefaultLaunchRedirect } from '$lib/shell/default-launch-tab';
+	import type { ShellTabController } from '$lib/shell/shell-tab.svelte';
+	import ShellTabPanels from '$lib/components/shell/ShellTabPanels.svelte';
+	import { ensureEngineReady } from '$lib/services/app-engine';
 
 	const screen = getContext<TimetableScreenController>('timetableScreen');
+	const shellTab = getContext<ShellTabController>('shellTab');
 
-	let launchResolved = $state(false);
-	let clientReady = $state(false);
-	let detailOpen = $state(false);
-	let detailCourseId = $state<string | null>(null);
+	let ready = $state(false);
 
 	onMount(async () => {
 		await ensureEngineReady();
-		if (await tryDefaultLaunchRedirect(page.url.pathname, getAppController())) {
-			return;
-		}
-		launchResolved = true;
-		clientReady = true;
+		shellTab.init();
+		ready = true;
 		screen.refresh();
 	});
-
-	function openCourseDetail(courseId: string) {
-		detailCourseId = courseId;
-		detailOpen = true;
-		trackEvent('course_detail_open');
-	}
-
-	function navigateToCourseEditor(courseId: string) {
-		trackEvent('course_editor_open', { trigger: 'long_press' });
-		goto(resolve(`/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`));
-	}
 </script>
 
-{#if browser && launchResolved && clientReady && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
-	<EmptyTimetableState />
-{:else if browser && launchResolved && clientReady && screen.state.hasLoadedAppState}
-	<TimetableScreen
-		{screen}
-		onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
-		onCourseClick={openCourseDetail}
-		onCourseLongClick={navigateToCourseEditor}
-	/>
-	<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
-{:else if browser}
-	<div class="flex min-h-[60vh] items-center justify-center p-4">
-		<LoadingIndicator />
-	</div>
+{#if browser}
+	<ShellTabPanels {ready} />
 {/if}

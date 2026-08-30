@@ -36,7 +36,7 @@
 	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller.activeWeek ?? 1));
 	const currentPeriodIndex = $derived(controller.currentPeriodIndex);
 	const layoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'fixed');
-	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'rounded');
+	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const resolvedPalette = $derived(
 		controller.coursePalette.length > 0 ? controller.coursePalette : COURSE_PALETTE_ENTRIES
 	);
@@ -82,6 +82,6 @@
 	</TimetableWallpaperLayer>
 {:else}
 	<div class="flex min-h-[12rem] items-center justify-center p-8">
-		<p class="m3-body-medium text-center text-on-surface-variant">暂无课表，导入后可预览效果</p>
+		<p class="text-body-medium text-center text-on-surface-variant">暂无课表，导入后可预览效果</p>
 	</div>
 {/if}

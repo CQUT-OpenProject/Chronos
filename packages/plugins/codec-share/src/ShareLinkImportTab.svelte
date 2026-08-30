@@ -57,13 +57,13 @@
 <div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
 	<div class="flex flex-col gap-4">
 		<div>
-			<h2 class="m3-title-medium text-on-surface">{title}</h2>
-			<p class="m3-body-small mt-0.5 text-on-surface-variant">{subtitle}</p>
+			<h2 class="text-title-medium text-on-surface">{title}</h2>
+			<p class="text-body-small mt-0.5 text-on-surface-variant">{subtitle}</p>
 		</div>
 		<div class="flex w-full pt-1">
 			<button
 				type="button"
-				class="m3-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+				class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
 				disabled={loading}
 				onclick={handleClipboardPreview}
 			>

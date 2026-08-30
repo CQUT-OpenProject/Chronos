@@ -19,6 +19,14 @@ export const WORKBENCH_COLOR_KEYS = [
 	'color.on-primary-container-subtle',
 	'color.secondary-container-subtle',
 	'color.on-secondary-container-subtle',
+	'color.outline-variant',
+	'color.surface-container-high',
+	'color.canvas',
+	'color.ink',
+	'color.border-subtle',
+	'color.success',
+	'color.warning',
+	'color.danger',
 	'shell.bottomTab.activeBackground',
 	'shell.bottomTab.activeForeground',
 	'shell.bottomBar.background',
@@ -65,6 +73,14 @@ export const WORKBENCH_COLOR_REGISTRY: Record<WorkbenchColorKey, WorkbenchColorD
 	'color.on-primary-container-subtle': { cssVar: '--color-on-primary-container-subtle' },
 	'color.secondary-container-subtle': { cssVar: '--color-secondary-container-subtle' },
 	'color.on-secondary-container-subtle': { cssVar: '--color-on-secondary-container-subtle' },
+	'color.outline-variant': { cssVar: '--color-outline-variant' },
+	'color.surface-container-high': { cssVar: '--color-surface-container-high' },
+	'color.canvas': { cssVar: '--color-canvas' },
+	'color.ink': { cssVar: '--color-ink' },
+	'color.border-subtle': { cssVar: '--color-border-subtle' },
+	'color.success': { cssVar: '--color-success' },
+	'color.warning': { cssVar: '--color-warning' },
+	'color.danger': { cssVar: '--color-danger' },
 	'shell.bottomTab.activeBackground': { cssVar: '--shell-bottom-tab-active-bg' },
 	'shell.bottomTab.activeForeground': { cssVar: '--shell-bottom-tab-active-fg' },
 	'shell.bottomBar.background': { cssVar: '--shell-bottom-bar-bg' },
@@ -191,18 +207,6 @@ export function applyWorkbenchColors(
 		appliedKeys.push(def.cssVar);
 	}
 	return appliedKeys;
-}
-
-export function workbenchColorsToDesignTokens(
-	colors: Record<string, string>
-): Record<string, string> {
-	const tokens: Record<string, string> = {};
-	for (const [key, value] of Object.entries(colors)) {
-		if (key.startsWith('color.')) {
-			tokens[key.slice('color.'.length)] = value;
-		}
-	}
-	return tokens;
 }
 
 function tokenKeyToWorkbenchColorKey(tokenKey: string): string {
