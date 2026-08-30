@@ -395,8 +395,10 @@
 							{@const isBusy = operatingPluginId === record.manifest.id}
 							{@const updateOffer = updateOfferById.get(record.manifest.id)}
 							<div
-								class="flex flex-col gap-2 p-3 transition-colors hover:bg-surface-variant/30"
-								class:opacity-60={!record.enabled}
+								class={[
+									'flex flex-col gap-2 p-3 transition-colors hover:bg-surface-variant/30',
+									!record.enabled && 'opacity-60'
+								]}
 							>
 								<div class="flex items-start justify-between gap-3">
 									<div class="min-w-0 flex-1">

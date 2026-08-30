@@ -322,14 +322,14 @@
 					class="flex list-none justify-center gap-1.5"
 					aria-label={hostT('onboarding.steps.aria')}
 				>
-					{#each stepIndices as index}
+					{#each stepIndices as stepIndex (stepIndex)}
 						<li
-							class="h-1.5 w-6 rounded-full transition-colors {index <= step
+							class="h-1.5 w-6 rounded-full transition-colors {stepIndex <= step
 								? 'bg-brand dark:bg-soft-blue'
 								: 'bg-outline-variant'}"
-							aria-current={index === step ? 'step' : undefined}
+							aria-current={stepIndex === step ? 'step' : undefined}
 							aria-label={hostT('onboarding.steps.label', {
-								current: index + 1,
+								current: stepIndex + 1,
 								total: stepIndices.length
 							})}
 						></li>
