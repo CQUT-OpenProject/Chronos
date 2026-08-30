@@ -506,19 +506,6 @@
 		<div class="flex min-h-0 flex-1 flex-col">
 			<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
 				<section class="ui-section">
-					<div class="flex items-center gap-2 px-1">
-						<h2 class="ui-section-title">
-							{hostT('plugins.catalog.heading')}
-						</h2>
-						{#if catalogManifests.length > 0}
-							<span class="text-label-small text-on-surface-variant">
-								{hostT('plugins.builtin.count', {
-									count: catalogManifests.length
-								})}
-							</span>
-						{/if}
-					</div>
-
 					{#if loadingCatalog}
 						<div class="flex flex-col items-center justify-center py-12">
 							<LoadingIndicator size="large" />
