@@ -10,6 +10,12 @@ import {
 import { createCourse, createTimetable } from '@chronos/core';
 import type { ChronosDB, CourseRow, PluginDataRow, TimetableRow } from '$lib/storage/db';
 
+vi.mock('$lib/boot/plugin-proxy-meta.generated', () => ({
+	profileHasServerPlugins: vi.fn(() => true)
+}));
+
+import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
+
 class MockStorage implements Storage {
 	private map = new Map<string, string>();
 	get length(): number {
@@ -228,6 +234,17 @@ describe('Web Providers', () => {
 		await expect(
 			http.request('https://evil.attacker.com/steal', { bypassCors: true })
 		).rejects.toThrow(/not in the allowed proxy whitelist/);
+	});
+
+	it('WebHttpProxyProvider rejects bypassCors when server plugins are disabled', async () => {
+		vi.mocked(profileHasServerPlugins).mockReturnValue(false);
+		const http = new WebHttpProxyProvider();
+
+		await expect(http.request('https://example.com/api', { bypassCors: true })).rejects.toThrow(
+			'Server-side proxy is not available in this build'
+		);
+
+		vi.mocked(profileHasServerPlugins).mockReturnValue(true);
 	});
 
 	it('WebRuntimeProvider supports sha256 hashing', async () => {

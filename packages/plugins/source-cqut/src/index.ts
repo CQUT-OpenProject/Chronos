@@ -271,6 +271,10 @@ export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 				activeCtx.actions.notify(t('import.online.notify.connecting'), 'info');
 
 				const http = activeCtx.service(IHttpService);
+				if (!http.proxy) {
+					throw new Error(t('import.online.error.proxyUnsupported'));
+				}
+
 				const { response, body } = await callPluginServerJson<CqutScheduleRawInput>(
 					http,
 					SOURCE_CQUT_PLUGIN_ID,
