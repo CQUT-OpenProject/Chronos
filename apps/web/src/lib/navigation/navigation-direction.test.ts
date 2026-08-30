@@ -10,20 +10,15 @@ import {
 } from './navigation-direction';
 
 describe('getNavigationDirection', () => {
-	it('returns none for tab switches', () => {
-		expect(getNavigationDirection('/', '/mine')).toBe('none');
-		expect(getNavigationDirection('/mine', '/')).toBe('none');
-	});
-
-	it('returns forward when entering secondary routes', () => {
-		expect(getNavigationDirection('/mine', '/about')).toBe('forward');
-		expect(getNavigationDirection('/mine', '/plugins')).toBe('forward');
+	it('returns forward when entering secondary routes from the shell', () => {
+		expect(getNavigationDirection('/', '/about')).toBe('forward');
+		expect(getNavigationDirection('/', '/plugins')).toBe('forward');
 		expect(getNavigationDirection('/', '/timetable/details')).toBe('forward');
 	});
 
-	it('returns back when leaving secondary routes', () => {
-		expect(getNavigationDirection('/about', '/mine')).toBe('back');
-		expect(getNavigationDirection('/plugins', '/mine')).toBe('back');
+	it('returns back when leaving secondary routes to the shell', () => {
+		expect(getNavigationDirection('/about', '/')).toBe('back');
+		expect(getNavigationDirection('/plugins', '/')).toBe('back');
 		expect(getNavigationDirection('/timetable/details', '/')).toBe('back');
 	});
 
@@ -52,8 +47,8 @@ describe('resolveNavigationDirection', () => {
 	});
 
 	it('returns back when returning to a parent page at the same path depth', () => {
-		initNavigationStack('/mine');
-		expect(resolveNavigationDirection('/mine', '/about', 'link')).toBe('forward');
+		initNavigationStack('/');
+		expect(resolveNavigationDirection('/', '/about', 'link')).toBe('forward');
 		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'link')).toBe('forward');
 		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'link')).toBe('back');
 	});
@@ -68,26 +63,26 @@ describe('resolveNavigationDirection', () => {
 	});
 
 	it('returns forward on popstate when browser goes forward', () => {
-		initNavigationStack('/mine');
-		resolveNavigationDirection('/mine', '/about', 'link');
+		initNavigationStack('/');
+		resolveNavigationDirection('/', '/about', 'link');
 		resolveNavigationDirection('/about', '/open-source-licenses', 'link');
 		resolveNavigationDirection('/open-source-licenses', '/about', 'popstate', -1);
 
 		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'popstate', 1)).toBe(
 			'forward'
 		);
-		expect(getNavigationStack()).toEqual(['/mine', '/about', '/open-source-licenses']);
+		expect(getNavigationStack()).toEqual(['/', '/about', '/open-source-licenses']);
 	});
 
 	it('returns back on popstate when browser goes back', () => {
-		initNavigationStack('/mine');
-		resolveNavigationDirection('/mine', '/about', 'link');
+		initNavigationStack('/');
+		resolveNavigationDirection('/', '/about', 'link');
 		resolveNavigationDirection('/about', '/open-source-licenses', 'link');
 
 		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'popstate', -1)).toBe(
 			'back'
 		);
-		expect(getNavigationStack()).toEqual(['/mine', '/about']);
+		expect(getNavigationStack()).toEqual(['/', '/about']);
 	});
 
 	it('repairs stack when backing to a page not in history from a deep link', () => {
@@ -104,21 +99,21 @@ describe('updateTransitionDirection', () => {
 	});
 
 	it('stores direction for transition to read at invocation time', () => {
-		initNavigationStack('/mine');
-		updateTransitionDirection('/mine', '/about', 'link');
+		initNavigationStack('/');
+		updateTransitionDirection('/', '/about', 'link');
 		expect(getTransitionDirection()).toBe('forward');
 	});
 
 	it('stores back when leaving secondary routes', () => {
-		initNavigationStack('/mine');
-		updateTransitionDirection('/mine', '/about', 'link');
-		updateTransitionDirection('/about', '/mine', 'link');
+		initNavigationStack('/');
+		updateTransitionDirection('/', '/about', 'link');
+		updateTransitionDirection('/about', '/', 'link');
 		expect(getTransitionDirection()).toBe('back');
 	});
 
 	it('stores forward on popstate when delta is positive', () => {
-		initNavigationStack('/mine');
-		updateTransitionDirection('/mine', '/about', 'link');
+		initNavigationStack('/');
+		updateTransitionDirection('/', '/about', 'link');
 		updateTransitionDirection('/about', '/open-source-licenses', 'link');
 		updateTransitionDirection('/open-source-licenses', '/about', 'popstate', -1);
 

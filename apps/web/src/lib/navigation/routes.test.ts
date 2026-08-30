@@ -1,17 +1,17 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { secondaryRouteRoots } from '../../routes/(secondary)/navigation';
-import { tabRoutes } from '../../routes/(tabs)/navigation';
-import { isSecondaryRoute } from './routes';
+import { isSecondaryRoute, isShellRoute } from './routes';
 
 vi.mock('$app/paths', () => ({
 	base: '/Chronos'
 }));
 
 describe('navigation routes', () => {
-	it('does not treat tab routes as secondary', () => {
-		for (const route of tabRoutes) {
-			expect(isSecondaryRoute(route)).toBe(false);
-		}
+	it('treats only the shell root as a shell route', () => {
+		expect(isShellRoute('/')).toBe(true);
+		expect(isShellRoute('')).toBe(true);
+		expect(isShellRoute('/mine')).toBe(false);
+		expect(isShellRoute('/today')).toBe(false);
 	});
 
 	it('treats each secondary root and its children as secondary', () => {
@@ -31,17 +31,18 @@ describe('navigation routes', () => {
 		expect(isSecondaryRoute('/plugins/cqut-online/view')).toBe(true);
 	});
 
-	it('does not treat unknown routes as secondary', () => {
-		expect(isSecondaryRoute('/unknown')).toBe(false);
+	it('treats non-shell routes as secondary', () => {
+		expect(isSecondaryRoute('/unknown')).toBe(true);
+		expect(isSecondaryRoute('/mine')).toBe(true);
+		expect(isSecondaryRoute('/today')).toBe(true);
 	});
 
 	it('normalizes deploy-base pathnames before matching', () => {
-		for (const route of tabRoutes) {
-			expect(isSecondaryRoute(`/Chronos${route === '/' ? '' : route}`)).toBe(false);
-		}
+		expect(isShellRoute('/Chronos')).toBe(true);
+		expect(isSecondaryRoute('/Chronos')).toBe(false);
 
 		expect(isSecondaryRoute('/Chronos/about')).toBe(true);
 		expect(isSecondaryRoute('/Chronos/about/install')).toBe(true);
-		expect(isSecondaryRoute('/Chronos/mine')).toBe(false);
+		expect(isSecondaryRoute('/Chronos/mine')).toBe(true);
 	});
 });
