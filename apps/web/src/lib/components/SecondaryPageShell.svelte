@@ -41,7 +41,7 @@
 	<TopAppBar {title} {actions} class="shrink-0">
 		{#snippet leading()}
 			<IconButton
-				href={backShellTab ? undefined : resolve(backHref as any)}
+				href={backShellTab ? undefined : resolve(backHref)}
 				ariaLabel={hostT('ui.nav.back')}
 				onclick={handleBack}
 			>

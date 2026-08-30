@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 	import { beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
@@ -91,6 +92,6 @@
 
 <div style="display:none">
 	{#each locales as locale (locale)}
-		<a href={resolve(localizeHref(page.url.pathname, { locale }) as any)}>{locale}</a>
+		<a href={resolve(localizeHref(page.url.pathname, { locale }) as Pathname)}>{locale}</a>
 	{/each}
 </div>
