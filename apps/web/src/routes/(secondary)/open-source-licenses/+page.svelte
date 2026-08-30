@@ -6,8 +6,6 @@
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 
-	import { DescriptionFill, FolderZipFill } from '$lib/icons';
-
 	const controller = getAppController();
 </script>
 
@@ -16,14 +14,10 @@
 		<MineRow
 			title={hostT('about.licenses.index.project')}
 			href={resolve('/open-source-licenses/project')}
-			icon={DescriptionFill}
-			iconTone="tertiary"
 		/>
 		<MineRow
 			title={hostT('about.licenses.index.thirdParty')}
 			href={resolve('/open-source-licenses/third-party')}
-			icon={FolderZipFill}
-			iconTone="tertiary"
 		/>
 	</MineSection>
 </SecondaryPageShell>
