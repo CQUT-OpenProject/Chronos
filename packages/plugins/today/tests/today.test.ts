@@ -209,16 +209,12 @@ describe('today-courses', () => {
 		});
 
 		expect(listTimetables).toHaveBeenCalled();
-		expect(queryCourses).toHaveBeenCalledTimes(2);
+		expect(getTimetable).toHaveBeenCalledTimes(2);
+		expect(queryCourses).toHaveBeenCalledTimes(1);
 		expect(queryCourses).toHaveBeenCalledWith({
 			dayOfWeek: 1,
 			week: 1,
-			timetableIds: ['t1']
-		});
-		expect(queryCourses).toHaveBeenCalledWith({
-			dayOfWeek: 1,
-			week: 1,
-			timetableIds: ['t2']
+			timetableIds: ['t1', 't2']
 		});
 	});
 
