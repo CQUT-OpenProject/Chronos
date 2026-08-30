@@ -18,7 +18,7 @@
 
 	const controller = getAppController();
 
-	let licenses = $state<ThirdPartyLicense[]>([]);
+	let licenses = $state.raw<ThirdPartyLicense[]>([]);
 	let loadState = $state<LoadState>('loading');
 	let errorMessage = $state('');
 

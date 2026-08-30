@@ -37,8 +37,8 @@
 
 	let activeTab = $state<'installed' | 'official'>('installed');
 
-	let installedRecords = $state<InstalledOfficialPluginRecord[]>([]);
-	let catalogManifests = $state<Array<{ url: string; manifest: PluginManifest }>>([]);
+	let installedRecords = $state.raw<InstalledOfficialPluginRecord[]>([]);
+	let catalogManifests = $state.raw<Array<{ url: string; manifest: PluginManifest }>>([]);
 	let updateOffers = $state.raw<PluginUpdateOffer[]>([]);
 	let loadingCatalog = $state(false);
 	let catalogError = $state<string | null>(null);

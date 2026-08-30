@@ -21,10 +21,10 @@ export class ReactiveChronosController implements Disposable {
 	private disposables: Disposable[] = [];
 
 	// Svelte 5 Runes reactive core state
-	currentTimetable = $state<Timetable | null>(null);
-	timetables = $state<Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>>(
-		[]
-	);
+	currentTimetable = $state.raw<Timetable | null>(null);
+	timetables = $state.raw<
+		Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>
+	>([]);
 	activeWeek = $state<number>(1);
 	currentPeriodIndex = $state<number | null>(null);
 	activeThemeId = $state<string>('m3-default');
@@ -38,7 +38,7 @@ export class ReactiveChronosController implements Disposable {
 
 	// Timetable display state (synced from host TimetableScreenController / appearance)
 	displayedWeek = $state<number>(1);
-	coursePalette = $state<readonly CoursePaletteEntry[]>(COURSE_PALETTE_ENTRIES);
+	coursePalette = $state.raw<readonly CoursePaletteEntry[]>(COURSE_PALETTE_ENTRIES);
 
 	constructor(engine: ChronosEngine) {
 		this.engine = engine;
