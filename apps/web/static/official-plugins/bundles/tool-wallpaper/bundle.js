@@ -6433,8 +6433,6 @@ var Ho = class e {
 	}
 };
 Ho.TARGET_CHROMA = 48, Ho.WEIGHT_PROPORTION = .7, Ho.WEIGHT_CHROMA_ABOVE = .3, Ho.WEIGHT_CHROMA_BELOW = .1, Ho.CUTOFF_CHROMA = 5, Ho.CUTOFF_EXCITED_PROPORTION = .01;
-//#endregion
-//#region packages/ui-kit/src/theme/m3-theme.ts
 var Uo = [
 	"canvas",
 	"ink",
@@ -7466,15 +7464,7 @@ function Oc(e) {
 			surfaceVariant: "#24262e",
 			outline: "#334155"
 		}),
-		dynamicColorAdapter: Cc(),
-		getTokens: (e) => ({
-			surface: e === "dark" ? "#1e2026" : "#f9f9fe",
-			onSurface: e === "dark" ? "#f8fafc" : "#2e333a",
-			primary: "#0068b7",
-			onPrimary: "#ffffff",
-			surfaceVariant: e === "dark" ? "#24262e" : "#eceef5",
-			outline: e === "dark" ? "#334155" : "#aeb2bb"
-		})
+		dynamicColorAdapter: Cc()
 	};
 }
 async function kc(e, t) {

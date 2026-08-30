@@ -5142,8 +5142,6 @@ var vi = class {
 function Si(e) {
 	return e === "2025" ? xi : bi;
 }
-//#endregion
-//#region packages/ui-kit/src/theme/m3-theme.ts
 var Ci = [
 	"canvas",
 	"ink",
@@ -6407,7 +6405,8 @@ function ba(e, t) {
 Fn(["change", "click"]);
 //#endregion
 //#region packages/plugins/codec-qrcode/src/index.ts
-async function xa(e) {
+var xa = "chronos-qr:v1:";
+async function Sa(e) {
 	let t = new ea(), n = e.courses.map((e) => {
 		let n = t.intern(e.name), r = t.intern(e.teacher), i = t.intern(e.location), a = t.intern(e.remark), o = Qi(e.weeks), s = [
 			n,
@@ -6431,11 +6430,11 @@ async function xa(e) {
 		e.endTime
 	]));
 	let i = JSON.stringify(r);
-	return `chronos-qr:v2:${Yi(await Wi(new TextEncoder().encode(i)))}`;
+	return `${xa}${Yi(await Wi(new TextEncoder().encode(i)))}`;
 }
-async function Sa(e, t = _a("zh-cn")) {
+async function Ca(e, t = _a("zh-cn")) {
 	let n = e.trim();
-	if (!n.startsWith("chronos-qr:v2:")) throw Error(t["import.error.corrupt"]);
+	if (!n.startsWith("chronos-qr:v1:")) throw Error(t["import.error.corrupt"]);
 	let r = await Gi(Xi(n.slice(14))), i = new TextDecoder().decode(r), a = JSON.parse(i), o = a.s ?? [], s = (a.c ?? []).map((e, n) => {
 		let r = (e[0] >= 0 ? o[e[0]] : null) ?? t["timetable.unnamedCourse"], i = (e[1] >= 0 ? o[e[1]] : null) ?? "", a = (e[2] >= 0 ? o[e[2]] : null) ?? "", s = e[3] ?? 1, c = e[4] ?? 1, l = e[5] ?? 1, u = $i(e[6] ?? 1), d = u.length > 0 ? u : [1], f = e[7] !== void 0 && e[7] >= 0 ? o[e[7]] : void 0;
 		return fr({
@@ -6470,7 +6469,7 @@ async function Sa(e, t = _a("zh-cn")) {
 		courses: s
 	});
 }
-function Ca(e = {}) {
+function wa(e = {}) {
 	let { importComponent: t = Hi(ba) } = e;
 	return wr({
 		id: "tool-qrcode",
@@ -6495,7 +6494,7 @@ function Ca(e = {}) {
 				async executeImport(e) {
 					let t = e.content ?? e.fileContent;
 					if (!t?.trim()) throw Error(n("import.error.empty"));
-					return Sa(t, r);
+					return Ca(t, r);
 				}
 			}), e.registerSlot("export.action", {
 				id: "qrcode",
@@ -6507,7 +6506,7 @@ function Ca(e = {}) {
 				async export(e, t) {
 					let r = e ?? t?.state.currentTimetable;
 					if (!r) throw Error(n("export.error.noTimetable"));
-					let i = ma(await xa(r), { margin: 2 });
+					let i = ma(await Sa(r), { margin: 2 });
 					return {
 						filename: `${(r.name || "timetable").replace(/[/\\?%*:|"<>]/g, "_")}-qrcode.svg`,
 						mimeType: "image/svg+xml",
@@ -6520,9 +6519,9 @@ function Ca(e = {}) {
 		}
 	});
 }
-Ca();
+wa();
 //#endregion
 //#region packages/plugins/codec-qrcode/bundle/entry.ts
-var wa = Ca({ importComponent: Hi(ba) });
+var Ta = wa({ importComponent: Hi(ba) });
 //#endregion
-export { wa as default };
+export { Ta as default };

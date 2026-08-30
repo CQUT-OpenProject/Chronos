@@ -5462,8 +5462,6 @@ var zi = class {
 function Ui(e) {
 	return e === "2025" ? Hi : Vi;
 }
-//#endregion
-//#region packages/ui-kit/src/theme/m3-theme.ts
 var Wi = [
 	"canvas",
 	"ink",

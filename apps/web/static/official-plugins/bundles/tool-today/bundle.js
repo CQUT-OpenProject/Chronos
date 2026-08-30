@@ -5698,8 +5698,6 @@ var Ta = class {
 function ka(e) {
 	return e === "2025" ? Oa : Da;
 }
-//#endregion
-//#region packages/ui-kit/src/theme/m3-theme.ts
 var Aa = [
 	"canvas",
 	"ink",

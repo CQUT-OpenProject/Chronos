@@ -14,7 +14,7 @@
 	"bundleFormat": "esm",
 	"minEngineVersion": "0.4.0",
 	"bundleUrl": "/official-plugins/bundles/tool-calendar-holidays/bundle.js",
-	"sha256": "b2def151fc0bfa5ee0cc5526f0b139135a175c66bc6450e5db81b40f89c92521",
+	"sha256": "094322e38b748fc9ff5db6055299f764c1075a1dee74f158588762dd088c28c4",
 	"cssUrl": "/official-plugins/bundles/tool-calendar-holidays/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }
