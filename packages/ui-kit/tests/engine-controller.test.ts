@@ -168,7 +168,6 @@ describe('ReactiveChronosController', () => {
 				ctx.registerSlot('shell.bottom-bar.tab', {
 					id: 'today',
 					label: () => 'Today',
-					href: '/today',
 					order: 15
 				});
 				ctx.registerSlot('import.source.tab', {

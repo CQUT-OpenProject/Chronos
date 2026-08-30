@@ -41,7 +41,6 @@ export function createTodayPlugin(options: CreateTodayPluginOptions = {}) {
 			ctx.registerSlot('shell.bottom-bar.tab', {
 				id: 'today',
 				label: () => t('tab.label'),
-				href: '/today',
 				order: 15,
 				icon: 'today',
 				iconFill: 'calendar-today',

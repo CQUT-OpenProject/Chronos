@@ -153,7 +153,6 @@ export interface CoursePaint {
 export interface BottomTabSlotContribution {
 	id: string;
 	label: LocalizedText;
-	href: string;
 	order?: number;
 	/** Host icon registry key or Svelte component */
 	icon?: ShellIconRef;

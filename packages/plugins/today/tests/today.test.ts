@@ -26,7 +26,6 @@ describe('today plugin', () => {
 
 		const tab = engine.slots.getSlotItem('shell.bottom-bar.tab', 'today');
 		expect(tab).toBeDefined();
-		expect(tab?.href).toBe('/today');
 		expect(tab?.order).toBe(15);
 		expect(tab?.defaultLaunch).toBe(true);
 
