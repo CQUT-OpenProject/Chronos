@@ -11,6 +11,8 @@
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
+	import { createShellTabController } from '$lib/shell/shell-tab.svelte';
+	import { getAppController } from '$lib/services/app-engine';
 	import {
 		updateTransitionDirection,
 		type NavigationDirection
@@ -44,9 +46,16 @@
 	const shell = createAppShell();
 	const timetableScreen = getTimetableScreen();
 	const platform = createPlatformBootstrap({ shell, timetableScreen });
+	const shellTab = createShellTabController(() => getAppController());
 
 	setContext('appShell', shell);
 	setContext('timetableScreen', timetableScreen);
+	setContext('shellTab', shellTab);
+
+	$effect(() => {
+		void getAppController().slotVersion;
+		shellTab.reconcileActiveTab();
+	});
 
 	onMount(() => platform.init(page.url.pathname));
 </script>
