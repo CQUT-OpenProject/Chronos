@@ -309,7 +309,9 @@
 		<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
 			<section class="ui-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="ui-section-title">{hostT('plugins.builtin.heading')}</h2>
+					<h3 class="text-label-large font-medium text-on-surface">
+						{hostT('plugins.builtin.heading')}
+					</h3>
 					<span class="text-label-small text-on-surface-variant"
 						>{hostT('plugins.builtin.count', {
 							count: profileBuiltinPlugins.length
@@ -368,9 +370,9 @@
 
 			<section class="ui-section">
 				<div class="flex items-center justify-between px-1">
-					<h2 class="ui-section-title">
+					<h3 class="text-label-large font-medium text-on-surface">
 						{hostT('plugins.installed.heading')}
-					</h2>
+					</h3>
 					<span class="text-label-small text-on-surface-variant"
 						>{hostT('plugins.builtin.count', {
 							count: installedRecords.length
@@ -555,7 +557,6 @@
 											{@const manifest = entry.manifest}
 											{@const name = resolveManifestText(manifest.name)}
 											{@const desc = resolveManifestText(manifest.description)}
-											{@const meta = getPluginCategoryMeta(manifest.type)}
 											{@const installed = isInstalled(manifest.id)}
 											{@const isBusy = operatingPluginId === manifest.id}
 											{@const updateOffer = updateOfferById.get(manifest.id)}
@@ -574,11 +575,6 @@
 																v{manifest.version}
 															</span>
 														{/if}
-														<span
-															class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
-														>
-															{meta.label}
-														</span>
 													</div>
 													{#if desc}
 														<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
