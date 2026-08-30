@@ -5966,7 +5966,6 @@ function eo(e = {}) {
 			e.registerSlot("shell.bottom-bar.tab", {
 				id: "today",
 				label: () => n("tab.label"),
-				href: "/today",
 				order: 15,
 				icon: "today",
 				iconFill: "calendar-today",
