@@ -51,7 +51,7 @@
 		paletteCourses,
 		hasDynamicBackground = false,
 		layoutMode = 'fixed',
-		capsuleCornerStyle = 'rounded',
+		capsuleCornerStyle = 'sharp',
 		interactive = false,
 		isCurrentWeek = false,
 		currentPeriodIndex: propCurrentPeriodIndex,

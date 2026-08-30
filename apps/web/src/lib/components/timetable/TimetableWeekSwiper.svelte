@@ -14,7 +14,7 @@
 		hasDynamicBackground,
 		coursePalette,
 		layoutMode,
-		capsuleCornerStyle = 'rounded',
+		capsuleCornerStyle = 'sharp',
 		onCourseClick
 	}: {
 		screen: TimetableScreenController;

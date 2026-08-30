@@ -51,7 +51,7 @@ function normalizeCornerStyle(raw: string | null): import('@chronos/core').Capsu
 	const value = raw?.trim().toLowerCase();
 	if (value === 'sharp') return 'sharp';
 	if (value === 'pill') return 'pill';
-	return 'rounded';
+	return DEFAULT_USER_PREFERENCES.capsuleCornerStyle;
 }
 
 function normalizeLocale(raw: string | null): import('@chronos/core').AppLocale | undefined {

@@ -68,7 +68,7 @@
 		coursePalette,
 		paletteCourses,
 		layoutMode = 'fixed',
-		capsuleCornerStyle = 'rounded',
+		capsuleCornerStyle = 'sharp',
 		onCourseClick
 	}: Props = $props();
 

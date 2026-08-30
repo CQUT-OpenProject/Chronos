@@ -33,7 +33,7 @@
 	const dynamicColorUri = $derived(shell.state.dynamicColorUri);
 	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const capsuleCornerStyle = $derived(
-		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
+		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
 	);
 
 	const weekGesture = createWeekSliderGesture({

@@ -35,7 +35,7 @@
 	);
 	const paletteCourses = $derived(timetable?.courses ?? []);
 	const layoutMode = $derived(controller?.userPreferences?.timetableLayoutMode ?? 'fixed');
-	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'rounded');
+	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const courseBadges = $derived(controller?.courseBadges ?? {});
 
 	const preview = $derived(

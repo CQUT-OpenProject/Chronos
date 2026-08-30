@@ -24,7 +24,7 @@
 	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const paletteMode = $derived(shell.controller.userPreferences?.paletteMode ?? 'vibrant');
 	const capsuleCornerStyle = $derived(
-		shell.controller.userPreferences?.capsuleCornerStyle ?? 'rounded'
+		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
 	);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const visualThemeId = $derived(shell.controller.activeThemeId);

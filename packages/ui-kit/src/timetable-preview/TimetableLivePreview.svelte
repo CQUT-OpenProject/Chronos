@@ -36,7 +36,7 @@
 	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller.activeWeek ?? 1));
 	const currentPeriodIndex = $derived(controller.currentPeriodIndex);
 	const layoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'fixed');
-	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'rounded');
+	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const resolvedPalette = $derived(
 		controller.coursePalette.length > 0 ? controller.coursePalette : COURSE_PALETTE_ENTRIES
 	);
