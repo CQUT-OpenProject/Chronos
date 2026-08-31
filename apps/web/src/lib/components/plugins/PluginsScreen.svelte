@@ -297,7 +297,7 @@
 {/snippet}
 
 <div class="flex h-full min-h-0 flex-col text-on-surface">
-	<div class="shrink-0 px-4 pt-3 pb-4">
+	<div class="mx-auto w-full max-w-lg shrink-0 px-4 pt-3 pb-4">
 		<SegmentedControl
 			segments={tabSegments}
 			value={activeTab}
