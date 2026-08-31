@@ -7,6 +7,10 @@ import {
 	type UserPreferences
 } from '@chronos/core';
 import { cqutPlugin, parseCqutScheduleData, CQUT_DEFAULT_CAMPUS_PERIOD_TIMES } from '../src/index';
+import { SOURCE_CQUT_MESSAGES } from '../src/messages';
+
+const t = (key: string) =>
+	SOURCE_CQUT_MESSAGES['zh-cn'][key as keyof (typeof SOURCE_CQUT_MESSAGES)['zh-cn']];
 
 function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 	const timetables = new Map<string, Timetable>();
@@ -236,7 +240,9 @@ describe('cqutPlugin', () => {
 					]
 				}
 			},
-			'2024002'
+			'2024002',
+			'liangjiang',
+			t
 		);
 
 		expect(timetable.name).toBe('2024002的课表');

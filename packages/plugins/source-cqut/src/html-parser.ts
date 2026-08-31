@@ -29,12 +29,13 @@ const calendarService = new AcademicCalendarService();
 export function finalizeHtmlPreview(
 	preview: Timetable,
 	confirmInputs: HtmlConfirmForm,
+	t: (key: string) => string,
 	referenceDate = new Date().toISOString().slice(0, 10)
 ): Timetable {
 	const campusId = confirmInputs.campusId ?? DEFAULT_CQUT_CAMPUS_ID;
 	const rawTermStartDate = confirmInputs.termStartDate?.trim() ?? '';
 	if (!rawTermStartDate) {
-		throw new Error('请选择学期起始日期');
+		throw new Error(t('import.html.error.termStartRequired'));
 	}
 
 	const termStartDate = calendarService.normalizeTermStartDate(rawTermStartDate, referenceDate);
@@ -129,8 +130,10 @@ export function parseHtmlTimetable(
 		customDocParser?: (html: string) => Document;
 		termStartDate?: string;
 		campusId?: CqutCampusId;
+		t?: (key: string) => string;
 	}
 ): Timetable {
+	const t = options?.t ?? ((key: string) => key);
 	const doc = options?.customDocParser ? options.customDocParser(html) : parseHtmlDoc(html);
 	const table =
 		doc.querySelector('#kbgrid_table_0') ??
@@ -138,7 +141,7 @@ export function parseHtmlTimetable(
 		doc.querySelector('table[id*="kbgrid"]');
 
 	if (!table) {
-		throw new Error('未找到教务课表表格结构');
+		throw new Error(t('import.html.error.tableNotFound'));
 	}
 
 	const titleContainer = table.querySelector('.timetable_title');
@@ -203,7 +206,7 @@ export function parseHtmlTimetable(
 	});
 
 	if (courses.length === 0) {
-		throw new Error('HTML 中未找到可导入的课程数据');
+		throw new Error(t('import.html.error.noCourses'));
 	}
 
 	let maxWeek = 20;
@@ -215,7 +218,9 @@ export function parseHtmlTimetable(
 
 	return createTimetable({
 		id: `html_${Date.now()}`,
-		name: studentName ? `${studentName}的课表` : term || '导入的 HTML 课表',
+		name: studentName
+			? `${studentName}${t('timetable.studentSuffix')}`
+			: term || t('import.html.timetableDefaultName'),
 		courses,
 		academicConfig: {
 			termStartDate: options?.termStartDate ?? '',

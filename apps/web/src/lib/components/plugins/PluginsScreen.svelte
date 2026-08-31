@@ -285,7 +285,7 @@
 									<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
 										{name}
 									</span>
-									{#if plugin.version}
+									{#if plugin.version && plugin.version !== '1.0.0'}
 										<span class="text-label-small font-mono text-[10px] text-on-surface-variant">
 											v{plugin.version}
 										</span>

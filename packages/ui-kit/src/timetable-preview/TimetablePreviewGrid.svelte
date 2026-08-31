@@ -41,6 +41,7 @@
 		expandedSlots?: ReadonlySet<string>;
 		onExpandSlot?: (slotKey: string) => void;
 		onCourseClick?: (course: Course) => void;
+		hostTranslate?: (key: string) => string;
 	}
 
 	let {
@@ -58,7 +59,8 @@
 		courseBadges = {},
 		expandedSlots: propExpandedSlots,
 		onExpandSlot,
-		onCourseClick
+		onCourseClick,
+		hostTranslate = (key: string) => key
 	}: Props = $props();
 
 	let gridBodyWidth = $state(0);
@@ -180,7 +182,7 @@
 			{#each gridModel.visibleDays as day (day.dayOfWeek)}
 				<div class="flex min-w-0 flex-1 flex-col items-center">
 					<span class="text-body-small max-w-full truncate text-on-surface-variant">
-						{timetableDayColumnHeaderLabel(day)}
+						{timetableDayColumnHeaderLabel(day, hostTranslate)}
 					</span>
 					<div
 						class="text-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday

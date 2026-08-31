@@ -71,9 +71,6 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 		order: 40,
 		author: 'Chronos Community',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
-		configSchema: createWallpaperScreenSchema(
-			(key) => WALLPAPER_MESSAGES['zh-cn'][key as keyof (typeof WALLPAPER_MESSAGES)['zh-cn']]
-		),
 		defaultConfig: { wallpaper: null },
 
 		async apply(ctx, t) {

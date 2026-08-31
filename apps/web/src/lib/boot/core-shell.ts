@@ -5,6 +5,8 @@ import { CORE_SHELL_MESSAGES } from '$lib/boot/core-shell-messages';
 const CORE_SHELL_PLUGIN_ID = 'core-shell';
 export const CORE_SHELL_SUPPORT_SECTION_ID = 'app-support';
 
+let coreShellTranslate: ((key: string) => string) | undefined;
+
 function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string): void {
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'timetable',
@@ -162,13 +164,14 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 
 export const coreShellPlugin: ChronosPlugin = {
 	id: CORE_SHELL_PLUGIN_ID,
-	name: () => 'Chronos UI Core',
-	version: '1.0.0',
-	description: () => '核心导航与基础界面框架',
+	name: () => coreShellTranslate?.('plugin.name') ?? 'Chronos UI Core',
+	version: 'builtin',
+	description: () => coreShellTranslate?.('plugin.description') ?? 'Core navigation shell',
 	category: 'tool',
 	order: 0,
 	apply(ctx) {
 		ctx.i18n.registerMessages(CORE_SHELL_MESSAGES);
-		registerCoreShellSlots(ctx, (key) => ctx.i18n.t(key));
+		coreShellTranslate = (key) => ctx.i18n.t(key);
+		registerCoreShellSlots(ctx, coreShellTranslate);
 	}
 };

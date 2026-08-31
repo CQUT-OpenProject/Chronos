@@ -18,6 +18,8 @@ const zhCn = {
 	'item.install.supporting.local': '已安装，可在应用中打开',
 	'item.install.supporting.prompt': '添加到主屏幕，快捷打开应用',
 	'item.about': '关于 Chronos',
+	'plugin.name': 'Chronos UI Core',
+	'plugin.description': '核心导航与基础界面框架',
 
 	// common
 	'common.cancel': '取消',
@@ -109,6 +111,8 @@ const zhCn = {
 	'plugins.config.save': '保存设置',
 	'plugins.config.saved': '《{name}》设置已保存',
 	'plugins.config.saveFailed': '保存设置失败: {message}',
+	'pluginScreen.notFound': '页面不存在或插件已卸载',
+	'pluginScreen.notFoundDetail': 'Plugin: {pluginId} / View: {viewId}',
 
 	// pluginTags
 	'pluginTags.theme': '主题',
@@ -526,6 +530,8 @@ const en = {
 	'item.install.supporting.local': 'Installed — open in the app',
 	'item.install.supporting.prompt': 'Add to home screen for quick access',
 	'item.about': 'About Chronos',
+	'plugin.name': 'Chronos UI Core',
+	'plugin.description': 'Core navigation and shell framework',
 
 	// common
 	'common.cancel': 'Cancel',
@@ -619,6 +625,8 @@ const en = {
 	'plugins.config.save': 'Save settings',
 	'plugins.config.saved': 'Settings saved for "{name}"',
 	'plugins.config.saveFailed': 'Failed to save settings: {message}',
+	'pluginScreen.notFound': 'Page not found or plugin was uninstalled',
+	'pluginScreen.notFoundDetail': 'Plugin: {pluginId} / View: {viewId}',
 
 	// pluginTags
 	'pluginTags.theme': 'Theme',
@@ -1048,5 +1056,7 @@ export const CORE_SHELL_MESSAGE_KEYS = [
 	'item.install.supporting.standalone',
 	'item.install.supporting.local',
 	'item.install.supporting.prompt',
-	'item.about'
+	'item.about',
+	'plugin.name',
+	'plugin.description'
 ] as const satisfies readonly HostMessageKey[];

@@ -3,8 +3,15 @@ import { timetableDayShortLabel } from '../src/timetable-preview/day-labels';
 
 describe('timetable-preview', () => {
 	it('maps day of week to short labels', () => {
-		expect(timetableDayShortLabel(1)).toBe('一');
-		expect(timetableDayShortLabel(7)).toBe('日');
-		expect(timetableDayShortLabel(99)).toBe('?');
+		const t = (key: string) =>
+			(
+				({
+					'timetable.dayShort.mon': '一',
+					'timetable.dayShort.sun': '日'
+				}) as Record<string, string>
+			)[key] ?? key;
+		expect(timetableDayShortLabel(1, t)).toBe('一');
+		expect(timetableDayShortLabel(7, t)).toBe('日');
+		expect(timetableDayShortLabel(99, t)).toBe('?');
 	});
 });
