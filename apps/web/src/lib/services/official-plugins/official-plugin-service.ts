@@ -1,6 +1,7 @@
 import { hostT } from '$lib/i18n/host-i18n.svelte';
 import type { ChronosEngine, Disposable, PluginManifest } from '@chronos/core';
 import { PLUGIN_CONFIG_STORAGE_KEY } from '@chronos/core';
+import { APP_VERSION } from '$lib/config/app-meta';
 import { OfficialPluginAssetPipeline } from './asset-pipeline';
 import { OfficialPluginCatalogClient } from './catalog-client';
 import { OfficialPluginInstalledStore } from './installed-store';
@@ -8,6 +9,12 @@ import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 import { OfficialPluginRuntimeActivator } from './runtime-activator';
 import { assertValidManifestInstallUrl } from './manifest-url';
 import { validatePluginManifest } from './plugin-bundle';
+import {
+	buildCatalogManifestMap,
+	DEFAULT_OFFICIAL_CATALOG_URL,
+	isOfficialCatalogManifestUrl,
+	shouldSyncInstalledPlugin
+} from './sync-installed-plugins';
 
 export type { InstalledOfficialPluginRecord } from './official-plugin-types';
 
@@ -16,6 +23,7 @@ export interface OfficialPluginServiceDeps {
 	assetPipeline: OfficialPluginAssetPipeline;
 	installedStore: OfficialPluginInstalledStore;
 	runtimeActivator: OfficialPluginRuntimeActivator;
+	hostVersion?: string;
 }
 
 function createOfficialPluginServiceDeps(engine: ChronosEngine): OfficialPluginServiceDeps {
@@ -37,6 +45,7 @@ export class OfficialPluginService implements Disposable {
 	private readonly assetPipeline: OfficialPluginAssetPipeline;
 	private readonly installedStore: OfficialPluginInstalledStore;
 	private readonly runtimeActivator: OfficialPluginRuntimeActivator;
+	private readonly hostVersion: string;
 
 	constructor(
 		private readonly engine: ChronosEngine,
@@ -47,12 +56,14 @@ export class OfficialPluginService implements Disposable {
 		this.assetPipeline = resolved.assetPipeline;
 		this.installedStore = resolved.installedStore;
 		this.runtimeActivator = resolved.runtimeActivator;
+		this.hostVersion = resolved.hostVersion ?? APP_VERSION;
 	}
 
 	async init(): Promise<void> {
 		if (this.initialized) return;
 		await this.installedStore.load();
 		await this.installedStore.dedupeBuiltinOverlap();
+		await this.syncInstalledWithHost();
 
 		for (const record of this.installedStore.getCache()) {
 			if (record.enabled) {
@@ -88,7 +99,11 @@ export class OfficialPluginService implements Disposable {
 		await this.install(manifest, manifestUrl);
 	}
 
-	async install(manifest: PluginManifest, manifestUrl?: string): Promise<void> {
+	async install(
+		manifest: PluginManifest,
+		manifestUrl?: string,
+		options?: { silent?: boolean }
+	): Promise<void> {
 		validatePluginManifest(manifest);
 		const assets = await this.assetPipeline.download(manifest, manifestUrl);
 
@@ -112,6 +127,8 @@ export class OfficialPluginService implements Disposable {
 		if (record.enabled) {
 			await this.runtimeActivator.activate(record);
 		}
+
+		if (options?.silent) return;
 
 		if (manifest.type === 'theme') {
 			this.engine.notify(hostT('plugins.notify.themeInstalled'), 'info');
@@ -166,6 +183,36 @@ export class OfficialPluginService implements Disposable {
 
 	isPluginActive(pluginId: string): boolean {
 		return this.runtimeActivator.isActive(pluginId);
+	}
+
+	private async syncInstalledWithHost(catalogUrl = DEFAULT_OFFICIAL_CATALOG_URL): Promise<void> {
+		const stale = this.installedStore
+			.getCache()
+			.filter((record) => shouldSyncInstalledPlugin(record, this.hostVersion));
+		if (stale.length === 0) return;
+
+		let catalogMap: Awaited<ReturnType<typeof buildCatalogManifestMap>>;
+		try {
+			const catalog = await this.catalogClient.fetchCatalog(catalogUrl);
+			catalogMap = await buildCatalogManifestMap(catalog, (url) =>
+				this.catalogClient.fetchManifest(url)
+			);
+		} catch (err) {
+			console.error('[OfficialPluginService] Failed to sync installed plugins:', err);
+			return;
+		}
+
+		for (const record of stale) {
+			const entry = catalogMap.get(record.manifest.id);
+			if (!entry) continue;
+			if (record.manifestUrl && !isOfficialCatalogManifestUrl(record.manifestUrl)) continue;
+
+			try {
+				await this.install(entry.manifest, entry.manifestUrl, { silent: true });
+			} catch (err) {
+				console.error(`[OfficialPluginService] Failed to sync plugin ${record.manifest.id}:`, err);
+			}
+		}
 	}
 
 	async resetAfterFactoryClear(): Promise<void> {

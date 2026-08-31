@@ -6,8 +6,13 @@ import type {
 	HttpResponse,
 	StorageChangeEvent
 } from '@chronos/core';
-import { DEFAULT_USER_PREFERENCES } from '@chronos/core';
+import { DEFAULT_USER_PREFERENCES, PLUGIN_CONFIG_STORAGE_KEY } from '@chronos/core';
 import { OfficialPluginService } from './official-plugin-service';
+import { OfficialPluginAssetPipeline } from './asset-pipeline';
+import { OfficialPluginCatalogClient } from './catalog-client';
+import { OfficialPluginInstalledStore } from './installed-store';
+import { OfficialPluginRuntimeActivator } from './runtime-activator';
+import { INSTALLED_STORAGE_KEY, OFFICIAL_PLUGINS_PLUGIN_ID } from './official-plugin-types';
 import { loadEsmPluginFromCode } from './plugin-bundle';
 import type { OfficialPluginCatalog, PluginManifest } from '@chronos/core';
 
@@ -93,6 +98,22 @@ function createMockEnv(httpRequest: HttpMock = vi.fn()) {
 	return { env, httpRequest };
 }
 
+function createService(engine: ChronosEngine, hostVersion = '0.4.1'): OfficialPluginService {
+	const installedStore = new OfficialPluginInstalledStore(engine);
+	const runtimeActivator = new OfficialPluginRuntimeActivator(engine, (pluginId) =>
+		installedStore.has(pluginId)
+	);
+	return new OfficialPluginService(engine, {
+		catalogClient: new OfficialPluginCatalogClient(engine),
+		assetPipeline: new OfficialPluginAssetPipeline(engine),
+		installedStore,
+		runtimeActivator,
+		hostVersion
+	});
+}
+
+const OFFICIAL_MANIFEST_URL = '/official-plugins/manifests/test-plugin.manifest.json';
+
 describe('loadEsmPluginFromCode', () => {
 	it('parses export default ESM plugin objects', async () => {
 		const plugin = await loadEsmPluginFromCode(SAMPLE_BUNDLE);
@@ -111,13 +132,18 @@ describe('OfficialPluginService', () => {
 	let engine: ChronosEngine;
 	let service: OfficialPluginService;
 	let httpRequest: HttpMock;
+	let onNotification: ReturnType<typeof vi.fn>;
 
 	beforeEach(async () => {
 		httpRequest = vi.fn();
+		onNotification = vi.fn();
 		const mock = createMockEnv(httpRequest);
-		engine = new ChronosEngine({ env: mock.env, onNotification: vi.fn() });
+		engine = new ChronosEngine({
+			env: mock.env,
+			onNotification: onNotification as (message: string, type: 'error' | 'info' | 'warn') => void
+		});
 		await engine.init();
-		service = new OfficialPluginService(engine);
+		service = createService(engine);
 	});
 
 	it('fetches and parses official plugin catalog', async () => {
@@ -328,5 +354,179 @@ describe('OfficialPluginService', () => {
 		await expect(service.installFromManifestUrl('javascript:alert(1)')).rejects.toThrow(
 			/http or https/
 		);
+	});
+
+	it('syncs stale official plugins from catalog during init without notifications', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const staleManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '0.4.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+		const freshManifest: PluginManifest = {
+			...staleManifest,
+			version: '0.4.1'
+		};
+
+		await engine.storage.setPluginData(OFFICIAL_PLUGINS_PLUGIN_ID, INSTALLED_STORAGE_KEY, [
+			{
+				manifest: staleManifest,
+				code: SAMPLE_BUNDLE,
+				manifestUrl: OFFICIAL_MANIFEST_URL,
+				enabled: true,
+				installedAt: Date.now()
+			}
+		]);
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === '/official-plugins/catalog.json') {
+				return httpResponse({
+					json: async <T>() =>
+						({
+							version: 2,
+							updatedAt: Date.now(),
+							manifests: [OFFICIAL_MANIFEST_URL]
+						}) as T
+				});
+			}
+			if (url === OFFICIAL_MANIFEST_URL) {
+				return httpResponse({ json: async <T>() => freshManifest as T });
+			}
+			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.init();
+
+		expect(service.getInstalled('test-plugin')?.manifest.version).toBe('0.4.1');
+		expect(onNotification).not.toHaveBeenCalled();
+	});
+
+	it('does not sync external link installs during init', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Link' },
+			version: '0.4.0',
+			description: { 'zh-CN': 'Link plugin' },
+			author: 'Community',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: 'bundle.js',
+			sha256: hash
+		};
+		const manifestUrl = 'https://cdn.example.com/plugins/link/manifest.json';
+
+		await engine.storage.setPluginData(OFFICIAL_PLUGINS_PLUGIN_ID, INSTALLED_STORAGE_KEY, [
+			{
+				manifest,
+				code: SAMPLE_BUNDLE,
+				manifestUrl,
+				enabled: true,
+				installedAt: Date.now()
+			}
+		]);
+
+		await service.init();
+
+		expect(service.getInstalled('test-plugin')?.manifest.version).toBe('0.4.0');
+		expect(httpRequest).not.toHaveBeenCalled();
+	});
+
+	it('keeps cached official plugins when catalog sync fails during init', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const staleManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '0.4.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		await engine.storage.setPluginData(OFFICIAL_PLUGINS_PLUGIN_ID, INSTALLED_STORAGE_KEY, [
+			{
+				manifest: staleManifest,
+				code: SAMPLE_BUNDLE,
+				manifestUrl: OFFICIAL_MANIFEST_URL,
+				enabled: true,
+				installedAt: Date.now()
+			}
+		]);
+
+		httpRequest.mockRejectedValueOnce(new Error('offline'));
+
+		await expect(service.init()).resolves.toBeUndefined();
+		expect(service.getInstalled('test-plugin')?.manifest.version).toBe('0.4.0');
+	});
+
+	it('preserves plugin config when syncing stale official plugins during init', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const staleManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '0.4.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+		const freshManifest: PluginManifest = {
+			...staleManifest,
+			version: '0.4.1'
+		};
+
+		await engine.storage.setPluginData(OFFICIAL_PLUGINS_PLUGIN_ID, INSTALLED_STORAGE_KEY, [
+			{
+				manifest: staleManifest,
+				code: SAMPLE_BUNDLE,
+				manifestUrl: OFFICIAL_MANIFEST_URL,
+				enabled: true,
+				installedAt: Date.now()
+			}
+		]);
+		await engine.storage.setPluginData('test-plugin', PLUGIN_CONFIG_STORAGE_KEY, {
+			enabled: true
+		});
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === '/official-plugins/catalog.json') {
+				return httpResponse({
+					json: async <T>() =>
+						({
+							version: 2,
+							updatedAt: Date.now(),
+							manifests: [OFFICIAL_MANIFEST_URL]
+						}) as T
+				});
+			}
+			if (url === OFFICIAL_MANIFEST_URL) {
+				return httpResponse({ json: async <T>() => freshManifest as T });
+			}
+			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.init();
+
+		expect(service.getInstalled('test-plugin')?.manifest.version).toBe('0.4.1');
+		expect(await service.getPluginConfig<{ enabled: boolean }>('test-plugin')).toEqual({
+			enabled: true
+		});
 	});
 });
