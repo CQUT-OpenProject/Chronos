@@ -6214,7 +6214,7 @@ function vo() {
 }
 //#endregion
 //#region packages/plugins/today/src/TodayScreen.svelte
-var yo = /* @__PURE__ */ hr("<p class=\"text-label-large shrink-0 text-on-surface-variant\"> </p>"), bo = /* @__PURE__ */ hr("<div class=\"mt-1 flex items-center justify-between gap-3\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <!></div>"), xo = /* @__PURE__ */ hr("<div class=\"rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]\"></div>"), So = /* @__PURE__ */ hr("<button type=\"button\"> </button>"), Co = /* @__PURE__ */ hr("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p></section>"), wo = /* @__PURE__ */ hr("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p></section>"), To = /* @__PURE__ */ hr("<p class=\"text-label-medium text-on-surface tabular-nums\"> </p>"), Eo = /* @__PURE__ */ hr("<span class=\"text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary\"> </span>"), Do = /* @__PURE__ */ hr("<p class=\"text-body-small mt-1 text-on-surface-variant\"> </p>"), Oo = /* @__PURE__ */ hr("<p class=\"text-body-small text-on-surface-variant\"> </p>"), ko = /* @__PURE__ */ hr("<li><a><div class=\"flex w-11 shrink-0 flex-col items-center pt-0.5\"><!> <p class=\"text-headline-small my-0.5 w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant\"> </p> <!></div> <div class=\"w-1 shrink-0 self-stretch rounded-full\" aria-hidden=\"true\"></div> <div class=\"min-w-0 flex-1\"><div class=\"flex items-start justify-between gap-2\"><p class=\"text-title-medium truncate text-on-surface\"> </p> <!></div> <!> <!> <!></div></a></li>"), Ao = /* @__PURE__ */ hr("<section class=\"overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs\"><ul class=\"divide-y divide-outline/10\"></ul></section>"), jo = /* @__PURE__ */ hr("<div class=\"flex min-h-0 flex-1 flex-col overflow-y-auto\"><header class=\"border-b border-outline/10 bg-surface px-4 pt-6 pb-4\"><p class=\"text-headline-small text-on-surface\"> </p> <!> <div class=\"rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs\"><!> <!></div></header> <div class=\"flex flex-1 flex-col gap-4 p-4\"><!></div></div>");
+var yo = /* @__PURE__ */ hr("<p class=\"text-label-large shrink-0 text-on-surface-variant\"> </p>"), bo = /* @__PURE__ */ hr("<div class=\"mt-1 flex items-center justify-between gap-3\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <!></div>"), xo = /* @__PURE__ */ hr("<div class=\"rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]\"></div>"), So = /* @__PURE__ */ hr("<button type=\"button\"> </button>"), Co = /* @__PURE__ */ hr("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p></section>"), wo = /* @__PURE__ */ hr("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p></section>"), To = /* @__PURE__ */ hr("<p class=\"text-label-medium text-on-surface tabular-nums\"> </p>"), Eo = /* @__PURE__ */ hr("<span class=\"text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary\"> </span>"), Do = /* @__PURE__ */ hr("<p> </p>"), Oo = /* @__PURE__ */ hr("<div class=\"text-body-small mt-1 flex flex-col gap-1 text-on-surface-variant\"><!> <!> <!></div>"), ko = /* @__PURE__ */ hr("<li><a><div class=\"flex w-11 shrink-0 flex-col items-center self-stretch\"><!> <div class=\"flex min-h-0 w-full flex-1 flex-col items-center justify-center\"><p class=\"text-headline-small w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant\"> </p></div> <!></div> <div class=\"w-1 shrink-0 self-stretch rounded-full\" aria-hidden=\"true\"></div> <div class=\"min-w-0 flex-1\"><div class=\"flex items-start justify-between gap-2\"><p class=\"text-title-medium truncate text-on-surface\"> </p> <!></div> <!></div></a></li>"), Ao = /* @__PURE__ */ hr("<section class=\"overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs\"><ul class=\"divide-y divide-outline/10\"></ul></section>"), jo = /* @__PURE__ */ hr("<div class=\"flex min-h-0 flex-1 flex-col overflow-y-auto\"><header class=\"border-b border-outline/10 bg-surface px-4 pt-6 pb-4\"><p class=\"text-headline-small text-on-surface\"> </p> <!> <div class=\"rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs\"><!> <!></div></header> <div class=\"flex flex-1 flex-col gap-4 p-4\"><!></div></div>");
 function Mo(e, t) {
 	Ve(t, !0);
 	let n = new gi(), r = vo(), i = /* @__PURE__ */ dt(() => t.controller.currentTimetable), a = /* @__PURE__ */ dt(() => I(i)?.academicConfig.periodTimes ?? []), o = /* @__PURE__ */ dt(() => I(i) ? n.calculateAcademicWeek(r.today, I(i).academicConfig) : 1), s = /* @__PURE__ */ dt(() => {
@@ -6303,53 +6303,58 @@ function Mo(e, t) {
 			Tr(d, (e) => {
 				I(i) && e(m);
 			});
-			var h = M(d, 2), g = j(h, !0);
-			D(h), Fr(h, () => io(() => ({
+			var h = M(d, 2), g = j(h), _ = j(g, !0);
+			D(g), Fr(g, () => io(() => ({
 				lines: [I(o)],
 				maxFontPx: 24,
 				minFontPx: 6,
 				fromParent: !0
-			})));
-			var _ = M(h, 2), v = (e) => {
+			}))), D(h);
+			var v = M(h, 2), y = (e) => {
 				var t = To(), n = j(t, !0);
 				D(t), gn(() => R(n, I(i).endTime)), L(e, t);
 			};
-			Tr(_, (e) => {
-				I(i) && e(v);
+			Tr(v, (e) => {
+				I(i) && e(y);
 			}), D(l);
-			var y = M(l, 2);
-			let b;
-			var x = M(y, 2), S = j(x), C = j(S), w = j(C, !0);
-			D(C);
-			var ee = M(C, 2), te = (e) => {
+			var b = M(l, 2);
+			let x;
+			var S = M(b, 2), C = j(S), w = j(C), ee = j(w, !0);
+			D(w);
+			var te = M(w, 2), ne = (e) => {
 				var t = Eo(), n = j(t, !0);
 				D(t), gn((e) => R(n, e), [() => u("screen.status.current")]), L(e, t);
 			};
-			Tr(ee, (e) => {
-				I(t).status === "current" && e(te);
-			}), D(S);
-			var ne = M(S, 2), re = (e) => {
-				var n = Do(), r = j(n, !0);
-				D(n), gn((e) => R(r, e), [() => u("screen.course.timetable", { name: I(t).hit.timetableName })]), L(e, n);
+			Tr(te, (e) => {
+				I(t).status === "current" && e(ne);
+			}), D(C);
+			var re = M(C, 2), ie = (e) => {
+				var n = Oo(), i = j(n), a = (e) => {
+					var n = Do(), r = j(n, !0);
+					D(n), gn((e) => R(r, e), [() => u("screen.course.timetable", { name: I(t).hit.timetableName })]), L(e, n);
+				};
+				Tr(i, (e) => {
+					r.scope === "all" && I(t).hit.timetableName && e(a);
+				});
+				var o = M(i, 2), s = (e) => {
+					var n = Do(), r = j(n, !0);
+					D(n), gn(() => R(r, I(t).hit.course.location)), L(e, n);
+				};
+				Tr(o, (e) => {
+					I(t).hit.course.location && e(s);
+				});
+				var c = M(o, 2), l = (e) => {
+					var n = Do(), r = j(n, !0);
+					D(n), gn(() => R(r, I(t).hit.course.teacher)), L(e, n);
+				};
+				Tr(c, (e) => {
+					I(t).hit.course.teacher && e(l);
+				}), D(n), L(e, n);
 			};
-			Tr(ne, (e) => {
-				r.scope === "all" && I(t).hit.timetableName && e(re);
-			});
-			var ie = M(ne, 2), ae = (e) => {
-				var n = Do(), r = j(n, !0);
-				D(n), gn(() => R(r, I(t).hit.course.location)), L(e, n);
-			};
-			Tr(ie, (e) => {
-				I(t).hit.course.location && e(ae);
-			});
-			var oe = M(ie, 2), se = (e) => {
-				var n = Oo(), r = j(n, !0);
-				D(n), gn(() => R(r, I(t).hit.course.teacher)), L(e, n);
-			};
-			Tr(oe, (e) => {
-				I(t).hit.course.teacher && e(se);
-			}), D(x), D(c), D(s), gn((e) => {
-				qr(c, "href", e), Vr(c, 1, `flex gap-3 px-4 py-4 transition-colors hover:bg-surface-container-low ${I(t).status === "past" ? "opacity-60" : ""}`), R(g, I(o)), b = Ur(y, "", b, { "background-color": I(n).background }), R(w, I(t).hit.course.name);
+			Tr(re, (e) => {
+				(r.scope === "all" && I(t).hit.timetableName || I(t).hit.course.location || I(t).hit.course.teacher) && e(ie);
+			}), D(S), D(c), D(s), gn((e) => {
+				qr(c, "href", e), Vr(c, 1, `flex gap-3 px-4 py-4 transition-colors hover:bg-surface-container-low ${I(t).status === "past" ? "opacity-60" : ""}`), R(_, I(o)), x = Ur(b, "", x, { "background-color": I(n).background }), R(ee, I(t).hit.course.name);
 			}, [() => p(I(t).hit.course.id)]), L(e, s);
 		}), D(n), D(t), L(e, t);
 	};

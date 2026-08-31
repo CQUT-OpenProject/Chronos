@@ -186,23 +186,25 @@
 									? 'opacity-60'
 									: ''}"
 							>
-								<div class="flex w-11 shrink-0 flex-col items-center pt-0.5">
+								<div class="flex w-11 shrink-0 flex-col items-center self-stretch">
 									{#if timeRange}
 										<p class="text-label-medium text-on-surface tabular-nums">
 											{timeRange.startTime}
 										</p>
 									{/if}
-									<p
-										class="text-headline-small my-0.5 w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant"
-										{@attach createFitWidthFontAttachment(() => ({
-											lines: [periodLabel],
-											maxFontPx: HEADLINE_SMALL_FONT_PX,
-											minFontPx: PERIOD_LABEL_MIN_FONT_PX,
-											fromParent: true
-										}))}
-									>
-										{periodLabel}
-									</p>
+									<div class="flex min-h-0 w-full flex-1 flex-col items-center justify-center">
+										<p
+											class="text-headline-small w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant"
+											{@attach createFitWidthFontAttachment(() => ({
+												lines: [periodLabel],
+												maxFontPx: HEADLINE_SMALL_FONT_PX,
+												minFontPx: PERIOD_LABEL_MIN_FONT_PX,
+												fromParent: true
+											}))}
+										>
+											{periodLabel}
+										</p>
+									</div>
 									{#if timeRange}
 										<p class="text-label-medium text-on-surface tabular-nums">
 											{timeRange.endTime}
@@ -230,22 +232,22 @@
 										{/if}
 									</div>
 
-									{#if screen.scope === 'all' && entry.hit.timetableName}
-										<p class="text-body-small mt-1 text-on-surface-variant">
-											{pt('screen.course.timetable', { name: entry.hit.timetableName })}
-										</p>
-									{/if}
+									{#if (screen.scope === 'all' && entry.hit.timetableName) || entry.hit.course.location || entry.hit.course.teacher}
+										<div class="text-body-small mt-1 flex flex-col gap-1 text-on-surface-variant">
+											{#if screen.scope === 'all' && entry.hit.timetableName}
+												<p>
+													{pt('screen.course.timetable', { name: entry.hit.timetableName })}
+												</p>
+											{/if}
 
-									{#if entry.hit.course.location}
-										<p class="text-body-small mt-1 text-on-surface-variant">
-											{entry.hit.course.location}
-										</p>
-									{/if}
+											{#if entry.hit.course.location}
+												<p>{entry.hit.course.location}</p>
+											{/if}
 
-									{#if entry.hit.course.teacher}
-										<p class="text-body-small text-on-surface-variant">
-											{entry.hit.course.teacher}
-										</p>
+											{#if entry.hit.course.teacher}
+												<p>{entry.hit.course.teacher}</p>
+											{/if}
+										</div>
 									{/if}
 								</div>
 							</a>
