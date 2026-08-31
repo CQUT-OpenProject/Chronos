@@ -254,6 +254,15 @@ export default defineChronosPlugin({
 - 浏览器直连受 CORS 约束；`IHttpRequestOptions.bypassCors` 由原生宿主兑现。
 - 需要服务端中转时实现插件服务端 handler，暴露为 `/api/plugins/{pluginId}/{action}`；浏览器侧用 `IHttpService.proxy(pluginId, action, payload)` 调用。wire 信封是 core 单源的 `PluginServerResponse<T>`（见 [ADR 0025](.agents/docs/adr/0025-official-plugin-modules-and-proxy-contract.md)）。
 - `allowedDomains` 声明网络白名单。
+- 需要打开宿主自有页面（如课程编辑器）时，使用 `ctx.tryService(IHostNavigation)?.openCourseEditor(courseId)`，**禁止**在插件内硬编码 `/timetable/...` 等宿主路径（见 [ADR 0031](.agents/docs/adr/0031-round7-clock-profile-codegen-navigation-i18n.md)）。
+
+### Profile 内置插件打包
+
+`apps/web` 的 builtin 列表由 `chronos-profile-plugin` 按 `CHRONOS_PROFILE` 生成 `available-plugins.generated.ts`；`chronos-default` 构建不会静态 import `@chronos/plugin-source-cqut`。修改 profile 启用插件时，同步更新 `profile-registry.ts` 与 `profile-definitions.ts`，并运行 `node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts`（`prepare` 也会执行）。
+
+### 官方插件 Tailwind
+
+官方插件 bundle 的 Svelte `<style>` 由构建产出 `bundle.css`；**Tailwind utility class** 仍依赖宿主 `apps/web/src/routes/layout.css` 的 `@source` 扫描插件 `src` 目录——不要在插件构建中重复跑 Tailwind，除非另开专门 ADR。
 
 ### 分发形态
 

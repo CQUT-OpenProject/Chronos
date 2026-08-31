@@ -12,10 +12,10 @@
 
 ADR 0016 引入 `CHRONOS_ENGINE_VERSION` 与 manifest `minEngineVersion` semver 校验，并保留单插件「检查更新 / 重装」流程。实践中出现三套版本号并行维护：
 
-| 版本号 | 示例 | 职责 |
-| ------ | ---- | ---- |
-| `apps/web` 发布版本 | `0.4.1` | 产品发版 |
-| `CHRONOS_ENGINE_VERSION` | `0.4.1` | 插件宿主 API 契约 |
+| 版本号                    | 示例    | 职责                      |
+| ------------------------- | ------- | ------------------------- |
+| `apps/web` 发布版本       | `0.4.1` | 产品发版                  |
+| `CHRONOS_ENGINE_VERSION`  | `0.4.1` | 插件宿主 API 契约         |
 | `OFFICIAL_PLUGIN_VERSION` | `1.0.0` | 官方插件 manifest.version |
 
 官方 ESM 插件已随 `apps/web` 静态资源同发（`static/official-plugins/`），不独立热更。单插件更新 UI 与引擎版本闸门增加心智负担，且与 PWA 整包更新路径重复。
@@ -49,14 +49,14 @@ load → dedupeBuiltinOverlap → syncInstalledWithHost → activate enabled
 
 同步规则：
 
-| 条件 | 行为 |
-| ---- | ---- |
-| `manifest.version === APP_VERSION` | 跳过 |
-| `manifestUrl` 为外部 `http(s)` 链接 | 跳过（第三方插件自有版本） |
+| 条件                                                                                      | 行为                                        |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `manifest.version === APP_VERSION`                                                        | 跳过                                        |
+| `manifestUrl` 为外部 `http(s)` 链接                                                       | 跳过（第三方插件自有版本）                  |
 | 官方 catalog 插件（`/official-plugins/manifests/…` 或无 manifestUrl 但 id 在 catalog 中） | 从 catalog 静默 `install({ silent: true })` |
-| catalog 拉取失败 | 整体跳过，继续用缓存（离线友好） |
-| 单个插件重装失败 | `console.error`，该插件继续用缓存 |
-| 插件已从 catalog 移除 | 保留本地缓存，不自动卸载 |
+| catalog 拉取失败                                                                          | 整体跳过，继续用缓存（离线友好）            |
+| 单个插件重装失败                                                                          | `console.error`，该插件继续用缓存           |
+| 插件已从 catalog 移除                                                                     | 保留本地缓存，不自动卸载                    |
 
 ### 4 — 用户数据与安装缓存分离
 

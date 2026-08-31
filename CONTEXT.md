@@ -13,6 +13,7 @@ Registered on `ServiceContainer`. Hosts bootstrap them once; runtime code reads 
 | `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                   |
 | `IRuntimeService`   | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                     |
 | `IAnalyticsService` | Optional product analytics (registered via `ChronosEnv.analytics` → container; screens may still call `$lib/client/analytics` during migration) |
+| `IHostNavigation`   | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                            |
 
 `ChronosEnv` is only a host bootstrap adapter (web + native). After construction, `registerEnvProviders` copies ports into the container. All hosts must pass `env` at construction (no container-only facade).
 
@@ -29,10 +30,12 @@ Core owns the shapes. Web Dexie / Share codecs are strict Zod adapters (schemaVe
 
 One lookup module (`packages/core/src/engine/period-clock.ts`), two fallbacks:
 
-- `'none'` — Engine `updateTime` (period only while in progress).
-- `'upcomingOrLast'` — grid highlight.
+- `'none'` — Engine `updateTime` / `currentPeriodIndex` (period only while in progress).
+- `'upcomingOrLast'` — grid highlight (host/plugin screens derive from `clockNow`).
 
-Also exports `computeDelayUntilNextMidnightMillis`, `createDayClock` (midnight + period-boundary timers with `reschedule`/`dispose`), and period parsing helpers. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/engine/date.ts`.
+**Scheduler (single):** `ChronosEngine` owns the only `createDayClock` instance (midnight + period-boundary timers with `reschedule`/`dispose`). `time:tick` emits `{ currentWeek, currentPeriod, now, todayIso }`; `ReactiveChronosController` mirrors `clockNow` / `clockTodayIso`. Host timetable screen and `tool-today` must not instantiate their own clocks.
+
+Also exports period parsing helpers and delay utilities. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/engine/date.ts`.
 
 CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live only in `@chronos/plugin-source-cqut`.
 
@@ -99,7 +102,7 @@ No global conflict arbitrator. Behavior by resource type:
 
 ## Core shell (`core-shell`)
 
-Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile. Tab plugins declare `id` only (no `href`); host switches views via `activeTabId` on `/` (ADR 0029). `defaultLaunch: true` sets initial tab via `resolveDefaultLaunchTab` (lowest `order` wins). Plugin tabs render through `resolveSlotOwner` + `PluginScreenContainer`; secondary tools still use `/plugins/[pluginId]/...`.
+Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile. Tab plugins declare `id` only (no `href`); host switches views via `activeTabId` on `/` (ADR 0029). `defaultLaunch: true` sets initial tab via `resolveDefaultLaunchTab` (first `defaultLaunch` in registry order). Plugin tabs render through `resolveSlotOwner` + `PluginScreenContainer`; secondary tools still use `/plugins/[pluginId]/...` or `IHostNavigation` for host-owned editors.
 
 ## Dynamic color
 
