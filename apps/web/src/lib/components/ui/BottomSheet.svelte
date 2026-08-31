@@ -24,12 +24,12 @@
 
 	let historySync: HistoryOverlaySync | null = null;
 	let titleRef = $state<HTMLElement | null>(null);
-	let bodyRef = $state<HTMLDivElement | null>(null);
+	let contentRef = $state<HTMLElement | null>(null);
 
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
 		requestAnimationFrame(() => {
-			(titleRef ?? bodyRef)?.focus();
+			(titleRef ?? contentRef)?.focus();
 		});
 	}
 
@@ -70,6 +70,7 @@
 			class="bottom-sheet-overlay fixed inset-0 z-[70] bg-black/50 backdrop-blur-xs"
 		/>
 		<Dialog.Content
+			bind:ref={contentRef}
 			class="bottom-sheet-content rounded-t-sheet fixed inset-x-0 bottom-0 z-[70] flex max-h-[85dvh] flex-col border border-outline-variant/50 bg-surface-container-high text-on-surface shadow-xl outline-none"
 			onOpenAutoFocus={handleOpenAutoFocus}
 		>
@@ -97,11 +98,7 @@
 			{/if}
 
 			{#if children}
-				<div
-					bind:this={bodyRef}
-					tabindex={title ? undefined : -1}
-					class="min-h-0 flex-1 overflow-y-auto pb-[var(--tabbar-safe)] outline-none"
-				>
+				<div class="min-h-0 flex-1 overflow-y-auto pb-[var(--tabbar-safe)]">
 					{@render children()}
 				</div>
 			{/if}
