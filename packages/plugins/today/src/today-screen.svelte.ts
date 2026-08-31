@@ -1,13 +1,9 @@
-import { untrack } from 'svelte';
 import type { ReactiveChronosController } from '@chronos/ui-kit';
 import {
-	createDayClock,
 	currentTimeMinutes,
 	findCurrentPeriodIndex,
 	IStorageService,
 	parsePeriodRanges,
-	todayIsoDate,
-	type DayClockHandle,
 	type PeriodTime
 } from '@chronos/core';
 import type { TodayScope } from './constants';
@@ -28,12 +24,10 @@ export interface TodayScreenController {
 export function createTodayScreenController(): TodayScreenController {
 	let chronosController = $state<ReactiveChronosController | null>(null);
 	let pluginId = '';
-	let today = $state(todayIsoDate());
-	let now = $state(new Date());
 	let scope = $state<TodayScope>('active');
 	let courseEntries = $state.raw<TodayCourseEntry[]>([]);
 
-	let dayClock: DayClockHandle | null = null;
+	let unsubscribeTimeTick: (() => void) | undefined;
 	let unsubscribeTimetableSwitch: (() => void) | undefined;
 
 	function getTimetable() {
@@ -44,14 +38,19 @@ export function createTodayScreenController(): TodayScreenController {
 		return getTimetable()?.academicConfig.periodTimes ?? [];
 	}
 
+	const today = $derived(chronosController?.clockTodayIso ?? '');
+	const now = $derived(chronosController?.clockNow ?? new Date());
+
 	const currentPeriodIndex = $derived.by(() => {
-		void now;
+		const controller = chronosController;
+		const tickNow = controller?.clockNow ?? new Date();
+		void tickNow;
 		const periodTimes = getPeriodTimes();
 		const parsed = parsePeriodRanges(periodTimes);
 		if (parsed.length === 0) {
-			return chronosController?.currentPeriodIndex ?? null;
+			return controller?.currentPeriodIndex ?? null;
 		}
-		return findCurrentPeriodIndex(parsed, currentTimeMinutes(now));
+		return findCurrentPeriodIndex(parsed, currentTimeMinutes(tickNow));
 	});
 
 	async function refreshCourses() {
@@ -98,26 +97,17 @@ export function createTodayScreenController(): TodayScreenController {
 
 		await loadScopeFromConfig();
 
-		dayClock = createDayClock({
-			getPeriodTimes,
-			onMidnight: () => {
-				today = todayIsoDate();
-				now = new Date();
-				void refreshCourses();
-			},
-			onPeriodBoundary: () => {
-				now = new Date();
-				void refreshCourses();
-			}
-		});
-
 		try {
 			const ctx = controller.getPluginContext(pluginId);
-			const disposable = ctx.on('timetable:switched', () => {
-				dayClock?.reschedule();
+			const timeTickDisposable = ctx.on('time:tick', () => {
 				void refreshCourses();
 			});
-			unsubscribeTimetableSwitch = () => disposable.dispose();
+			unsubscribeTimeTick = () => timeTickDisposable.dispose();
+
+			const timetableSwitchDisposable = ctx.on('timetable:switched', () => {
+				void refreshCourses();
+			});
+			unsubscribeTimetableSwitch = () => timetableSwitchDisposable.dispose();
 		} catch {
 			// Plugin context unavailable during teardown.
 		}
@@ -139,8 +129,8 @@ export function createTodayScreenController(): TodayScreenController {
 	}
 
 	function dispose() {
-		dayClock?.dispose();
-		dayClock = null;
+		unsubscribeTimeTick?.();
+		unsubscribeTimeTick = undefined;
 		unsubscribeTimetableSwitch?.();
 		unsubscribeTimetableSwitch = undefined;
 		chronosController = null;
@@ -150,16 +140,13 @@ export function createTodayScreenController(): TodayScreenController {
 
 	$effect(() => {
 		const controller = chronosController;
-		if (!controller || !dayClock) return;
-		const timetable = controller.currentTimetable;
-		void timetable?.id;
-		void timetable?.academicConfig.periodTimes;
+		if (!controller) return;
+		void controller.clockNow;
+		void controller.clockTodayIso;
 		void scope;
-		void today;
-		untrack(() => {
-			dayClock?.reschedule();
-			void refreshCourses();
-		});
+		void getTimetable()?.id;
+		void getTimetable()?.academicConfig.periodTimes;
+		void refreshCourses();
 	});
 
 	return {
