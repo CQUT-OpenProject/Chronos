@@ -5,8 +5,7 @@ const FALLBACK_TAB_ID = 'timetable';
 
 function pickFallbackTabId(controller: ReactiveChronosController): string {
 	const tabs = controller.getSlots('shell.bottom-bar.tab');
-	if (tabs.length === 0) return FALLBACK_TAB_ID;
-	return [...tabs].sort((left, right) => (left.order ?? 50) - (right.order ?? 50))[0]!.id;
+	return tabs[0]?.id ?? FALLBACK_TAB_ID;
 }
 
 export function createShellTabController(getController: () => ReactiveChronosController) {

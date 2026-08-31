@@ -17,7 +17,7 @@ describe('resolveDefaultLaunchTab', () => {
 		).toBeUndefined();
 	});
 
-	it('returns the tab with defaultLaunch', () => {
+	it('returns the first tab with defaultLaunch in registry order', () => {
 		const today = tab({ id: 'today', order: 15, defaultLaunch: true });
 		expect(
 			resolveDefaultLaunchTab([
@@ -28,9 +28,10 @@ describe('resolveDefaultLaunchTab', () => {
 		).toBe(today);
 	});
 
-	it('picks the lowest order when multiple tabs declare defaultLaunch', () => {
+	it('returns the first defaultLaunch tab when multiple declare it', () => {
 		const earlier = tab({ id: 'today', order: 15, defaultLaunch: true });
 		const later = tab({ id: 'other', order: 25, defaultLaunch: true });
-		expect(resolveDefaultLaunchTab([later, earlier])).toBe(earlier);
+		expect(resolveDefaultLaunchTab([earlier, later])).toBe(earlier);
+		expect(resolveDefaultLaunchTab([later, earlier])).toBe(later);
 	});
 });

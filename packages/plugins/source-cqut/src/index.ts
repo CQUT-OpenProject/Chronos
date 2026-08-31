@@ -2,7 +2,6 @@ import type { ChronosContext, Timetable, Course, PeriodTime, AcademicConfig } fr
 import {
 	defineChronosPlugin,
 	callPluginServerJson,
-	resolvePluginServerErrorMessage,
 	registerImportTab,
 	type ChronosMountable
 } from '@chronos/core';
@@ -22,6 +21,8 @@ import {
 	createCqutImportSchema,
 	createHtmlConfirmSchema,
 	createHtmlImportSchema,
+	formatStudentTimetableName,
+	resolveCqutServerErrorMessage,
 	SOURCE_CQUT_MESSAGES,
 	type CqutImportForm
 } from './messages';
@@ -39,11 +40,7 @@ export {
 	CQUT_CAMPUSES,
 	CQUT_DEFAULT_CAMPUS_PERIOD_TIMES,
 	DEFAULT_CQUT_CAMPUS_ID,
-	getCampusApiName,
-	getCampusDefaultPeriodTimes,
-	campusIdToShareIndex,
-	shareIndexToCampusId,
-	resolveShareCampusId
+	getCampusApiName
 } from './campus-period-times';
 
 export type { CqutImportForm } from './messages';
@@ -132,17 +129,20 @@ function inferCqutTermStartDate(payload: {
 export function parseCqutScheduleData(
 	rawData: CqutScheduleRawInput,
 	studentId = '',
-	fallbackCampusId: CqutCampusId = DEFAULT_CQUT_CAMPUS_ID
+	fallbackCampusId: CqutCampusId = DEFAULT_CQUT_CAMPUS_ID,
+	t: (key: string) => string = (key) => key
 ): Timetable {
 	let courses: Course[] = [];
 	let termStartDate = rawData.termStartDate ?? '';
 	let timetableName = rawData.studentName
-		? `${rawData.studentName}的课表`
-		: rawData.termName || '重庆理工大学课表';
+		? formatStudentTimetableName(rawData.studentName, t)
+		: rawData.termName || t('timetable.defaultName');
 
 	const payload = rawData.payload;
 	if (payload?.eventList && Array.isArray(payload.eventList)) {
-		timetableName = studentId ? `${studentId}的课表` : payload.yearTerm || '重庆理工大学课表';
+		timetableName = studentId
+			? formatStudentTimetableName(studentId, t)
+			: payload.yearTerm || t('timetable.defaultName');
 		termStartDate = inferCqutTermStartDate(payload);
 
 		courses = payload.eventList
@@ -283,12 +283,10 @@ export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 				);
 
 				if (!response.ok || !body.ok) {
-					throw new Error(
-						resolvePluginServerErrorMessage(body, t('import.online.error.authFailed'))
-					);
+					throw new Error(resolveCqutServerErrorMessage(body, t));
 				}
 
-				return parseCqutScheduleData(body.payload, username, DEFAULT_CQUT_CAMPUS_ID);
+				return parseCqutScheduleData(body.payload, username, DEFAULT_CQUT_CAMPUS_ID, t);
 			}
 
 			async function doHtmlImport(inputs: HtmlImportForm): Promise<Timetable> {
@@ -297,7 +295,8 @@ export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 					throw new Error(t('import.html.error.invalidFile'));
 				}
 				return parseHtmlTimetable(fileContent, {
-					campusId: DEFAULT_CQUT_CAMPUS_ID
+					campusId: DEFAULT_CQUT_CAMPUS_ID,
+					t
 				});
 			}
 
@@ -336,7 +335,7 @@ export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 						return null;
 					},
 					finalizePreview: (preview, inputs) =>
-						finalizeHtmlPreview(preview, inputs as HtmlConfirmForm),
+						finalizeHtmlPreview(preview, inputs as HtmlConfirmForm, t),
 					executeImport: (inputs) => doHtmlImport(inputs)
 				});
 			}

@@ -108,7 +108,7 @@ export interface MineItemSlotContribution {
 	sectionId: string;
 	title: LocalizedText;
 	supporting?: LocalizedText;
-	icon?: unknown;
+	icon?: ShellIconRef;
 	iconTone?: 'primary' | 'secondary' | 'tertiary' | 'neutral';
 	keywords?: string[];
 	order?: number;
@@ -222,7 +222,5 @@ export function pickPrimary<T extends { isPrimary?: boolean }>(items: readonly T
 export function resolveDefaultLaunchTab(
 	tabs: readonly BottomTabSlotContribution[]
 ): BottomTabSlotContribution | undefined {
-	const candidates = tabs.filter((tab) => tab.defaultLaunch);
-	if (candidates.length === 0) return undefined;
-	return [...candidates].sort((left, right) => (left.order ?? 50) - (right.order ?? 50))[0];
+	return tabs.find((tab) => tab.defaultLaunch);
 }
