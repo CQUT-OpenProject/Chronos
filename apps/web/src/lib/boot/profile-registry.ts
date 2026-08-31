@@ -1,17 +1,10 @@
 import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { DEFAULT_VISUAL_THEME_ID } from '@chronos/core';
-import { cqutPlugin } from '@chronos/plugin-source-cqut';
-import { shareCodecPlugin } from '@chronos/plugin-codec-share';
-import { coreShellPlugin } from '$lib/boot/core-shell';
+import { availablePlugins } from './available-plugins.generated';
 
 declare const __CHRONOS_PROFILE__: string;
 
-export const availablePlugins: readonly ChronosPlugin[] = [
-	coreShellPlugin,
-	// ScopedContext 边界处 Config 泛型擦除（同 engine.activatePlugin 先例）
-	cqutPlugin as unknown as ChronosPlugin,
-	shareCodecPlugin
-];
+export { availablePlugins };
 
 const defaultProfile: ChronosProfile = {
 	profileId: 'chronos-default',
