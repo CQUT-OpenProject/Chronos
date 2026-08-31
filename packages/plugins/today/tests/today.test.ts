@@ -12,6 +12,7 @@ import {
 	attachCourseStatuses,
 	queryTodayCourses,
 	resolveCourseTimeStatus,
+	resolvePeriodTimeRange,
 	sortCourseHits
 } from '../src/today-courses';
 import { dayOfWeekFromIso } from '@chronos/core';
@@ -48,6 +49,18 @@ describe('today-courses', () => {
 	it('dayOfWeekFromIso maps Sunday to 7', () => {
 		expect(dayOfWeekFromIso('2026-03-01')).toBe(7);
 		expect(dayOfWeekFromIso('2026-03-02')).toBe(1);
+	});
+
+	it('resolvePeriodTimeRange returns start and end times for a period span', () => {
+		expect(resolvePeriodTimeRange(periodTimes, 1, 2)).toEqual({
+			startTime: '08:00',
+			endTime: '09:40'
+		});
+		expect(resolvePeriodTimeRange(periodTimes, 3, 3)).toEqual({
+			startTime: '10:00',
+			endTime: '10:45'
+		});
+		expect(resolvePeriodTimeRange(periodTimes, 9, 9)).toBeNull();
 	});
 
 	it('sortCourseHits orders by start period then end period', () => {

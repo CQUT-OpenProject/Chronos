@@ -5,11 +5,12 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createChronosAliasRecord } from './resolve-chronos-aliases.ts';
-import { CHRONOS_ENGINE_VERSION } from '../packages/core/src/types/official-plugins.ts';
 import { verifyOfficialPlugins } from './verify-official-plugins.ts';
-import { OFFICIAL_PLUGINS, OFFICIAL_PLUGIN_VERSION } from './official-plugins.config.ts';
+import { OFFICIAL_PLUGINS } from './official-plugins.config.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const releaseVersion = JSON.parse(readFileSync(resolve(root, 'apps/web/package.json'), 'utf8'))
+	.version as string;
 const distDir = resolve(root, 'dist/official-plugins');
 const staticBundleDir = resolve(root, 'apps/web/static/official-plugins/bundles');
 const manifestDir = resolve(root, 'apps/web/static/official-plugins/manifests');
@@ -44,12 +45,11 @@ for (const plugin of plugins) {
 	const manifest: Record<string, unknown> = {
 		id: plugin.id,
 		name: plugin.name,
-		version: OFFICIAL_PLUGIN_VERSION,
+		version: releaseVersion,
 		description: plugin.description,
 		author: 'Chronos',
 		type: plugin.type,
-		bundleFormat: 'esm',
-		minEngineVersion: CHRONOS_ENGINE_VERSION
+		bundleFormat: 'esm'
 	};
 
 	const outDir = pluginBundleDir(plugin.id);

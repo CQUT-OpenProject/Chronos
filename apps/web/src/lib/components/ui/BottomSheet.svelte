@@ -23,6 +23,15 @@
 	} = $props();
 
 	let historySync: HistoryOverlaySync | null = null;
+	let titleRef = $state<HTMLElement | null>(null);
+	let contentRef = $state<HTMLElement | null>(null);
+
+	function handleOpenAutoFocus(event: Event) {
+		event.preventDefault();
+		requestAnimationFrame(() => {
+			(titleRef ?? contentRef)?.focus();
+		});
+	}
 
 	export function skipNextHistoryBack() {
 		historySync?.skipNextHistoryBack();
@@ -61,7 +70,9 @@
 			class="bottom-sheet-overlay fixed inset-0 z-[70] bg-black/50 backdrop-blur-xs"
 		/>
 		<Dialog.Content
+			bind:ref={contentRef}
 			class="bottom-sheet-content rounded-t-sheet fixed inset-x-0 bottom-0 z-[70] flex max-h-[85dvh] flex-col border border-outline-variant/50 bg-surface-container-high text-on-surface shadow-xl outline-none"
+			onOpenAutoFocus={handleOpenAutoFocus}
 		>
 			<div class="flex shrink-0 justify-center pt-3" aria-hidden="true">
 				<div class="h-1 w-10 rounded-full bg-on-surface-variant/40"></div>
@@ -71,7 +82,9 @@
 				<div class="flex shrink-0 items-center gap-3 px-4 pb-3">
 					{#if title}
 						<Dialog.Title
-							class="text-title-large min-w-0 flex-1 truncate font-medium text-on-surface"
+							bind:ref={titleRef}
+							tabindex={-1}
+							class="text-title-large min-w-0 flex-1 truncate font-medium text-on-surface outline-none"
 						>
 							{title}
 						</Dialog.Title>

@@ -1,8 +1,5 @@
 import type { ConfigSchema } from '../schema/schema';
 
-/** Current Chronos engine API version for official plugin compatibility checks. */
-export const CHRONOS_ENGINE_VERSION = '0.4.0';
-
 export type BundleFormat = 'esm';
 
 export interface PluginManifest {
@@ -13,7 +10,6 @@ export interface PluginManifest {
 	author: string;
 	type: 'theme' | 'source' | 'tool' | 'exporter';
 	bundleFormat: BundleFormat;
-	minEngineVersion: string;
 	/** ESM plugin bundle (optional when colorsUrl is provided for theme plugins). */
 	bundleUrl?: string;
 	sha256?: string;

@@ -85,7 +85,6 @@ describe('OfficialPluginRuntimeActivator', () => {
 				author: 'Chronos',
 				type: 'theme',
 				bundleFormat: 'esm',
-				minEngineVersion: '0.3.0',
 				colorsUrl: '/c.json',
 				colorsSha256: 'x'
 			},
@@ -109,7 +108,6 @@ describe('OfficialPluginRuntimeActivator', () => {
 					author: 'Chronos',
 					type: 'tool',
 					bundleFormat: 'esm',
-					minEngineVersion: '0.3.0',
 					bundleUrl: '/b.js',
 					sha256: 'x'
 				},
@@ -131,7 +129,6 @@ describe('OfficialPluginRuntimeActivator', () => {
 				author: 'Chronos',
 				type: 'tool',
 				bundleFormat: 'esm',
-				minEngineVersion: '0.3.0',
 				bundleUrl: '/b.js',
 				sha256: 'x'
 			},
@@ -158,7 +155,6 @@ describe('OfficialPluginRuntimeActivator', () => {
 				author: 'Chronos',
 				type: 'tool',
 				bundleFormat: 'esm',
-				minEngineVersion: '0.3.0',
 				bundleUrl: '/b.js',
 				sha256: 'x'
 			},
@@ -183,7 +179,6 @@ describe('OfficialPluginRuntimeActivator', () => {
 				author: 'Chronos',
 				type: 'tool',
 				bundleFormat: 'esm',
-				minEngineVersion: '0.3.0',
 				bundleUrl: '/b.js',
 				sha256: 'x'
 			},

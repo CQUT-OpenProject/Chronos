@@ -3,8 +3,6 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-export const OFFICIAL_PLUGIN_VERSION = '1.0.0';
-
 export type OfficialPluginDef = {
 	id: string;
 	type: 'theme' | 'tool';
