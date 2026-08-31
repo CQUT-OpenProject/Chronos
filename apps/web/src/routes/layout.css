@@ -94,7 +94,11 @@
 }
 
 @layer components {
-	.tab-bar-wrapper {
+	.shell-page {
+		min-height: 100dvh;
+	}
+
+	.shell-tab-bar {
 		position: fixed;
 		inset-inline: 0;
 		bottom: 0;

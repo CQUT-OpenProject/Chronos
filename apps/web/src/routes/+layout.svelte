@@ -11,11 +11,9 @@
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
-	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import { createShellTabController } from '$lib/shell/shell-tab.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 	import { updateTransitionDirection } from '$lib/navigation/navigation-direction';
-	import { isSecondaryRoute } from '$lib/navigation/routes';
 	import { setupSecondaryPageViewTransition } from '$lib/navigation/setup-secondary-page-view-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import './layout.css';
@@ -25,8 +23,6 @@
 	setupSecondaryPageViewTransition();
 
 	const webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
-
-	const showTabBar = $derived(!isSecondaryRoute(page.url.pathname));
 
 	beforeNavigate(({ from, to, type, delta }) => {
 		const fromPath = from?.url.pathname;
@@ -66,12 +62,6 @@
 		{@render children()}
 	</div>
 </div>
-
-{#if showTabBar}
-	<div class="tab-bar-wrapper">
-		<BottomTabBar />
-	</div>
-{/if}
 
 <InstallPrompt />
 <OnboardingFlow />
