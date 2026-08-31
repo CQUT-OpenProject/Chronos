@@ -26,7 +26,14 @@ import { HOST_MESSAGES, HOST_UI_PLUGIN_ID } from '$lib/i18n/host-messages';
 function createEngine(options?: WebProviderOptions): ChronosEngine {
 	const env = createWebChronosEnv({
 		...options,
-		enablePluginProxy: profileHasServerPlugins()
+		enablePluginProxy: profileHasServerPlugins(),
+		navigation: {
+			openCourseEditor(courseId: string) {
+				void import('$app/navigation').then(({ goto }) => {
+					void goto(`/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`);
+				});
+			}
+		}
 	});
 	bindAnalyticsPort(env.analytics);
 	return new ChronosEngine({

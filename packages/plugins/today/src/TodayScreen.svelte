@@ -6,6 +6,7 @@
 	import {
 		AcademicCalendarService,
 		assignCourseDisplayColors,
+		IHostNavigation,
 		normalizedCourseName,
 		resolveCoursePaint
 	} from '@chronos/core';
@@ -72,8 +73,16 @@
 		return assigned;
 	}
 
-	function courseEditorHref(courseId: string): string {
-		return `/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`;
+	const courseEditorNavigation = $derived.by(() => {
+		try {
+			return controller.getPluginContext(pluginId).tryService(IHostNavigation);
+		} catch {
+			return undefined;
+		}
+	});
+
+	function openCourseEditor(courseId: string) {
+		courseEditorNavigation?.openCourseEditor(courseId);
 	}
 
 	onMount(() => {
@@ -179,13 +188,7 @@
 										end: entry.hit.course.endPeriod
 									})}
 						<li>
-							<a
-								href={courseEditorHref(entry.hit.course.id)}
-								class="flex gap-3 px-4 py-4 transition-colors hover:bg-surface-container-low {entry.status ===
-								'past'
-									? 'opacity-60'
-									: ''}"
-							>
+							{#snippet courseRowContent()}
 								<div class="flex w-11 shrink-0 flex-col items-center self-stretch">
 									{#if timeRange}
 										<p class="text-label-medium text-on-surface tabular-nums">
@@ -250,7 +253,24 @@
 										</div>
 									{/if}
 								</div>
-							</a>
+							{/snippet}
+
+							{#if courseEditorNavigation}
+								<button
+									type="button"
+									class="flex w-full gap-3 px-4 py-4 text-left transition-colors hover:bg-surface-container-low {entry.status ===
+									'past'
+										? 'opacity-60'
+										: ''}"
+									onclick={() => openCourseEditor(entry.hit.course.id)}
+								>
+									{@render courseRowContent()}
+								</button>
+							{:else}
+								<div class="flex gap-3 px-4 py-4 {entry.status === 'past' ? 'opacity-60' : ''}">
+									{@render courseRowContent()}
+								</div>
+							{/if}
 						</li>
 					{/each}
 				</ul>
