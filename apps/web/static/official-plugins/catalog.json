@@ -1,6 +1,6 @@
 {
 	"version": 2,
-	"updatedAt": 1788168829325,
+	"updatedAt": 1788183163060,
 	"manifests": [
 		"/official-plugins/manifests/theme-yumemita.manifest.json",
 		"/official-plugins/manifests/theme-miami.manifest.json",

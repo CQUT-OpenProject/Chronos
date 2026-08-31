@@ -33,8 +33,7 @@ function toCatalogEntries(): Array<{ url: string; manifest: PluginManifest }> {
 			description: { 'zh-CN': plugin['zh-CN'], en: plugin.en },
 			author: 'Chronos',
 			type: plugin.type,
-			bundleFormat: 'esm',
-			minEngineVersion: '0.4.0'
+			bundleFormat: 'esm'
 		}
 	}));
 }

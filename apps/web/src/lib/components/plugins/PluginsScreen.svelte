@@ -6,10 +6,7 @@
 		getProfileBuiltinPlugins,
 		getAppController
 	} from '$lib/services/app-engine';
-	import type {
-		InstalledOfficialPluginRecord,
-		PluginUpdateOffer
-	} from '$lib/services/official-plugins/official-plugin-service';
+	import type { InstalledOfficialPluginRecord } from '$lib/services/official-plugins/official-plugin-service';
 	import type { PluginManifest, ConfigSchema } from '@chronos/core';
 	import { resolveLocaleMapText } from '@chronos/core';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
@@ -40,7 +37,6 @@
 
 	let installedRecords = $state.raw<InstalledOfficialPluginRecord[]>([]);
 	let catalogManifests = $state.raw<Array<{ url: string; manifest: PluginManifest }>>([]);
-	let updateOffers = $state.raw<PluginUpdateOffer[]>([]);
 	let loadingCatalog = $state(false);
 	let catalogError = $state<string | null>(null);
 	let operatingPluginId = $state<string | null>(null);
@@ -67,34 +63,6 @@
 		installedRecords = [...officialPlugins.listInstalled()];
 	}
 
-	const updateOfferById = $derived.by(() => {
-		const map = new Map<string, PluginUpdateOffer>();
-		for (const offer of updateOffers) {
-			map.set(offer.pluginId, offer);
-		}
-		return map;
-	});
-
-	function buildPrefetchedCatalog() {
-		return new Map(
-			catalogManifests.map((entry) => [
-				entry.manifest.id,
-				{ manifest: entry.manifest, manifestUrl: entry.url }
-			])
-		);
-	}
-
-	async function refreshUpdateOffers() {
-		try {
-			updateOffers = await officialPlugins.checkForUpdates(
-				BUILTIN_CATALOG_URL,
-				buildPrefetchedCatalog()
-			);
-		} catch {
-			updateOffers = [];
-		}
-	}
-
 	onMount(() => {
 		void officialPlugins.init().then(async () => {
 			refreshInstalled();
@@ -103,7 +71,6 @@
 
 		const sub = officialPlugins.onChanged(() => {
 			refreshInstalled();
-			void refreshUpdateOffers();
 		});
 
 		return () => {
@@ -128,11 +95,9 @@
 				})
 			);
 			catalogManifests = entries.filter((entry) => entry !== null);
-			await refreshUpdateOffers();
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			catalogError = msg;
-			await refreshUpdateOffers();
 		} finally {
 			loadingCatalog = false;
 		}
@@ -187,18 +152,6 @@
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			snackbarKey('snackbar.install.failed', { message: msg });
-		} finally {
-			operatingPluginId = null;
-		}
-	}
-
-	async function handleUpdate(pluginId: string, manifestUrl?: string) {
-		operatingPluginId = pluginId;
-		try {
-			await officialPlugins.updateInstalled(pluginId, manifestUrl);
-		} catch (err: unknown) {
-			const msg = err instanceof Error ? err.message : String(err);
-			snackbarKey('snackbar.update.failed', { message: msg });
 		} finally {
 			operatingPluginId = null;
 		}
@@ -401,7 +354,6 @@
 							{@const desc = resolveManifestText(record.manifest.description)}
 							{@const meta = getPluginCategoryMeta(record.manifest.type)}
 							{@const isBusy = operatingPluginId === record.manifest.id}
-							{@const updateOffer = updateOfferById.get(record.manifest.id)}
 							<div
 								class={[
 									'flex flex-col gap-2 p-3 transition-colors hover:bg-surface-variant/30',
@@ -445,22 +397,6 @@
 											</p>
 										{/if}
 									</div>
-
-									{#if updateOffer}
-										<div class="flex shrink-0 flex-col items-end gap-1">
-											<Button
-												variant="filled"
-												class="h-8 shrink-0 px-3.5 text-xs font-medium"
-												disabled={isBusy}
-												onclick={() => handleUpdate(record.manifest.id, updateOffer.manifestUrl)}
-											>
-												{isBusy ? hostT('plugins.action.updating') : hostT('plugins.action.update')}
-											</Button>
-											<span class="text-caption text-[10px] text-on-surface-variant">
-												v{updateOffer.currentVersion} → v{updateOffer.latestVersion}
-											</span>
-										</div>
-									{/if}
 								</div>
 
 								<div class="flex items-center justify-between gap-2">
@@ -559,7 +495,6 @@
 											{@const desc = resolveManifestText(manifest.description)}
 											{@const installed = isInstalled(manifest.id)}
 											{@const isBusy = operatingPluginId === manifest.id}
-											{@const updateOffer = updateOfferById.get(manifest.id)}
 											<div
 												class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
 											>
@@ -591,21 +526,7 @@
 												</div>
 
 												<div class="flex shrink-0 flex-col items-end gap-1">
-													{#if installed && updateOffer}
-														<Button
-															variant="filled"
-															class="h-8 shrink-0 px-3.5 text-xs font-medium"
-															disabled={isBusy}
-															onclick={() => handleUpdate(manifest.id, updateOffer.manifestUrl)}
-														>
-															{isBusy
-																? hostT('plugins.action.updating')
-																: hostT('plugins.action.update')}
-														</Button>
-														<span class="text-caption text-[10px] text-on-surface-variant">
-															v{updateOffer.currentVersion} → v{updateOffer.latestVersion}
-														</span>
-													{:else if installed}
+													{#if installed}
 														<span
 															class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
 														>

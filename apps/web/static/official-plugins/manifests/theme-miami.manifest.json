@@ -4,7 +4,7 @@
 		"zh-CN": "迈阿密",
 		"en": "Miami"
 	},
-	"version": "1.0.0",
+	"version": "0.4.1",
 	"description": {
 		"zh-CN": "迈阿密热带日落主题",
 		"en": "Miami tropical sunset theme"
@@ -12,7 +12,6 @@
 	"author": "Chronos",
 	"type": "theme",
 	"bundleFormat": "esm",
-	"minEngineVersion": "0.4.0",
 	"colorsUrl": "/official-plugins/bundles/theme-miami/colors.json",
 	"colorsSha256": "78356965cf0420e8e95d859d851be4f63b6c983d7b7d0c161dde2e3791b09c50",
 	"themeId": "miami",
