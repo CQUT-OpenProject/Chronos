@@ -21,15 +21,25 @@ export interface TodayCourseEntry {
 
 const calendarService = new AcademicCalendarService();
 
+export function resolvePeriodTimeRange(
+	periodTimes: PeriodTime[],
+	startPeriod: number,
+	endPeriod: number
+): { startTime: string; endTime: string } | null {
+	const start = periodTimes.find((period) => period.index === startPeriod);
+	const end = periodTimes.find((period) => period.index === endPeriod);
+	if (!start || !end) return null;
+	return { startTime: start.startTime, endTime: end.endTime };
+}
+
 export function formatPeriodRange(
 	periodTimes: PeriodTime[],
 	startPeriod: number,
 	endPeriod: number
 ): string {
-	const start = periodTimes.find((period) => period.index === startPeriod);
-	const end = periodTimes.find((period) => period.index === endPeriod);
-	if (!start || !end) return '';
-	return `${start.startTime}–${end.endTime}`;
+	const range = resolvePeriodTimeRange(periodTimes, startPeriod, endPeriod);
+	if (!range) return '';
+	return `${range.startTime}–${range.endTime}`;
 }
 
 export function sortCourseHits(hits: CourseQueryHit[]): CourseQueryHit[] {

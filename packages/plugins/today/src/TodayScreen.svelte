@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
 	import { pluginText } from '@chronos/ui-kit';
+	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import {
 		AcademicCalendarService,
 		assignCourseDisplayColors,
@@ -10,7 +11,7 @@
 	} from '@chronos/core';
 	import { TODAY_MESSAGES } from './messages';
 	import { TODAY_PLUGIN_ID } from './constants';
-	import { formatPeriodRange } from './today-courses';
+	import { resolvePeriodTimeRange } from './today-courses';
 	import { createTodayScreenController } from './today-screen.svelte';
 
 	interface Props {
@@ -19,6 +20,9 @@
 	}
 
 	let { controller, pluginId }: Props = $props();
+
+	const HEADLINE_SMALL_FONT_PX = 24;
+	const PERIOD_LABEL_MIN_FONT_PX = 6;
 
 	const calendarService = new AcademicCalendarService();
 	const screen = createTodayScreenController();
@@ -160,11 +164,20 @@
 				<ul class="divide-y divide-outline/10">
 					{#each screen.courseEntries as entry (`${entry.hit.timetableId}-${entry.hit.course.id}`)}
 						{@const paint = resolvePaint(entry.hit)}
-						{@const timeLabel = formatPeriodRange(
+						{@const timeRange = resolvePeriodTimeRange(
 							periodTimes,
 							entry.hit.course.startPeriod,
 							entry.hit.course.endPeriod
 						)}
+						{@const periodLabel =
+							entry.hit.course.startPeriod === entry.hit.course.endPeriod
+								? pt('screen.course.periodSingle', {
+										n: entry.hit.course.startPeriod
+									})
+								: pt('screen.course.periodRange', {
+										start: entry.hit.course.startPeriod,
+										end: entry.hit.course.endPeriod
+									})}
 						<li>
 							<a
 								href={courseEditorHref(entry.hit.course.id)}
@@ -173,18 +186,28 @@
 									? 'opacity-60'
 									: ''}"
 							>
-								<div class="w-20 shrink-0 pt-0.5">
-									<p class="text-label-medium text-on-surface-variant">{timeLabel}</p>
-									<p class="text-body-small mt-1 text-on-surface-variant">
-										{entry.hit.course.startPeriod === entry.hit.course.endPeriod
-											? pt('screen.course.periodSingle', {
-													n: entry.hit.course.startPeriod
-												})
-											: pt('screen.course.periodRange', {
-													start: entry.hit.course.startPeriod,
-													end: entry.hit.course.endPeriod
-												})}
+								<div class="flex w-11 shrink-0 flex-col items-center pt-0.5">
+									{#if timeRange}
+										<p class="text-label-medium text-on-surface tabular-nums">
+											{timeRange.startTime}
+										</p>
+									{/if}
+									<p
+										class="text-headline-small my-0.5 w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant"
+										{@attach createFitWidthFontAttachment(() => ({
+											lines: [periodLabel],
+											maxFontPx: HEADLINE_SMALL_FONT_PX,
+											minFontPx: PERIOD_LABEL_MIN_FONT_PX,
+											fromParent: true
+										}))}
+									>
+										{periodLabel}
 									</p>
+									{#if timeRange}
+										<p class="text-label-medium text-on-surface tabular-nums">
+											{timeRange.endTime}
+										</p>
+									{/if}
 								</div>
 
 								<div
