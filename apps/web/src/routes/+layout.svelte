@@ -14,32 +14,25 @@
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import { createShellTabController } from '$lib/shell/shell-tab.svelte';
 	import { getAppController } from '$lib/services/app-engine';
-	import {
-		updateTransitionDirection,
-		type NavigationDirection
-	} from '$lib/navigation/navigation-direction';
+	import { updateTransitionDirection } from '$lib/navigation/navigation-direction';
 	import { isSecondaryRoute } from '$lib/navigation/routes';
-	import { secondaryPageTransition } from '$lib/navigation/secondary-page-transition';
+	import { setupSecondaryPageViewTransition } from '$lib/navigation/setup-secondary-page-view-transition';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { pwaInfo } from 'virtual:pwa-info';
 
+	setupSecondaryPageViewTransition();
+
 	const webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
 
-	const TAB_PAGE_KEY = '__tabs__';
-	const pageTransitionKey = $derived(
-		isSecondaryRoute(page.url.pathname) ? page.url.pathname : TAB_PAGE_KEY
-	);
 	const showTabBar = $derived(!isSecondaryRoute(page.url.pathname));
-
-	let transitionDirection = $state<NavigationDirection>('none');
 
 	beforeNavigate(({ from, to, type, delta }) => {
 		const fromPath = from?.url.pathname;
 		const toPath = to?.url.pathname;
 		if (!toPath) return;
-		transitionDirection = updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
+		updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
 	});
 
 	let { children } = $props();
@@ -69,15 +62,9 @@
 <div
 	class="relative grid min-h-dvh w-full grid-cols-1 grid-rows-1 overflow-x-clip bg-canvas text-ink"
 >
-	{#key pageTransitionKey}
-		<div
-			class="col-start-1 row-start-1 min-h-dvh w-full bg-canvas text-ink"
-			in:secondaryPageTransition={{ phase: 'in', direction: transitionDirection }}
-			out:secondaryPageTransition={{ phase: 'out', direction: transitionDirection }}
-		>
-			{@render children()}
-		</div>
-	{/key}
+	<div class="page-root col-start-1 row-start-1 min-h-dvh w-full bg-canvas text-ink">
+		{@render children()}
+	</div>
 </div>
 
 {#if showTabBar}
