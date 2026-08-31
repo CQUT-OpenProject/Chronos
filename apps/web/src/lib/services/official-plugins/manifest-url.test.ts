@@ -57,7 +57,6 @@ describe('resolveManifestForDownload', () => {
 		author: 'Chronos',
 		type: 'tool',
 		bundleFormat: 'esm',
-		minEngineVersion: '0.4.0',
 		bundleUrl: 'bundle.js',
 		sha256: 'abc',
 		cssUrl: '/styles/bundle.css',

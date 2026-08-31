@@ -4,7 +4,7 @@
 		"zh-CN": "二维码",
 		"en": "QR Code"
 	},
-	"version": "1.0.0",
+	"version": "0.4.1",
 	"description": {
 		"zh-CN": "通过二维码导入/导出课表",
 		"en": "Import and export timetables via QR codes"
@@ -12,7 +12,6 @@
 	"author": "Chronos",
 	"type": "tool",
 	"bundleFormat": "esm",
-	"minEngineVersion": "0.4.0",
 	"bundleUrl": "/official-plugins/bundles/tool-qrcode/bundle.js",
 	"sha256": "6b35eb7385d8025fdd774f68d2af21c657a1638dd765a7acf710aa35a37d2c85",
 	"cssUrl": "/official-plugins/bundles/tool-qrcode/bundle.css",

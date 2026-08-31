@@ -257,11 +257,11 @@ export default defineChronosPlugin({
 
 ### 分发形态
 
-| 形态              | 适合                                   | 要求                                                                     |
-| ----------------- | -------------------------------------- | ------------------------------------------------------------------------ |
-| Profile 内置      | 随应用发行的核心能力（如 source-cqut） | 进入 profile 清单，进程内加载                                            |
-| 官方在线 ESM 插件 | 含逻辑/富 UI 的扩展（如 wallpaper）    | 构建为自包含 ESM bundle，manifest 带 SHA-256 与 `minEngineVersion`       |
-| JSON-only 主题    | 纯配色/图标资源（如 theme-yumemita）   | `ThemeManifest` 显式声明 `colorsUrl` / `iconThemeUrl` / `themeId`，无 JS |
+| 形态              | 适合                                   | 要求                                                                               |
+| ----------------- | -------------------------------------- | ---------------------------------------------------------------------------------- |
+| Profile 内置      | 随应用发行的核心能力（如 source-cqut） | 进入 profile 清单，进程内加载                                                      |
+| 官方在线 ESM 插件 | 含逻辑/富 UI 的扩展（如 wallpaper）    | 构建为自包含 ESM bundle，manifest 带 SHA-256，`version` 与 `apps/web` 发布版本一致 |
+| JSON-only 主题    | 纯配色/图标资源（如 theme-yumemita）   | `ThemeManifest` 显式声明 `colorsUrl` / `iconThemeUrl` / `themeId`，无 JS           |
 
 发布流程见[新增官方插件](#新增官方插件)。
 
@@ -300,7 +300,7 @@ vp run verify:official-plugins  # 自校验检查：哈希、manifest 字段、c
 若插件含 JS：
 
 1. bundle 必须自包含（Svelte 编译进产物），通过 Blob ESM 导入加载；
-2. manifest 声明 `cssUrl`、`cssSha256`、`jsSha256` 与 `minEngineVersion`；
+2. manifest 声明 `cssUrl`、`cssSha256`、`jsSha256`，`version` 取自 `apps/web/package.json`；
 3. 富 UI 暴露 mountable 包装器而非裸组件；
 4. 本地验证可在「我的 → 插件」中经 catalog 在线安装路径走一遍（双轨行为必须一致，见 [ADR 0011](.agents/docs/adr/0011-single-track-official-plugin-install.md)）。
 

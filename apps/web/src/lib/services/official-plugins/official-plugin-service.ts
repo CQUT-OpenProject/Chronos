@@ -1,23 +1,29 @@
 import { hostT } from '$lib/i18n/host-i18n.svelte';
 import type { ChronosEngine, Disposable, PluginManifest } from '@chronos/core';
 import { PLUGIN_CONFIG_STORAGE_KEY } from '@chronos/core';
+import { APP_VERSION } from '$lib/config/app-meta';
 import { OfficialPluginAssetPipeline } from './asset-pipeline';
 import { OfficialPluginCatalogClient } from './catalog-client';
 import { OfficialPluginInstalledStore } from './installed-store';
-import type { InstalledOfficialPluginRecord, PluginUpdateOffer } from './official-plugin-types';
+import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 import { OfficialPluginRuntimeActivator } from './runtime-activator';
 import { assertValidManifestInstallUrl } from './manifest-url';
-import { isPluginVersionNewer, validatePluginManifest } from './plugin-bundle';
+import { validatePluginManifest } from './plugin-bundle';
+import {
+	buildCatalogManifestMap,
+	DEFAULT_OFFICIAL_CATALOG_URL,
+	isOfficialCatalogManifestUrl,
+	shouldSyncInstalledPlugin
+} from './sync-installed-plugins';
 
-export type { InstalledOfficialPluginRecord, PluginUpdateOffer } from './official-plugin-types';
-
-const DEFAULT_CATALOG_URL = '/official-plugins/catalog.json';
+export type { InstalledOfficialPluginRecord } from './official-plugin-types';
 
 export interface OfficialPluginServiceDeps {
 	catalogClient: OfficialPluginCatalogClient;
 	assetPipeline: OfficialPluginAssetPipeline;
 	installedStore: OfficialPluginInstalledStore;
 	runtimeActivator: OfficialPluginRuntimeActivator;
+	hostVersion?: string;
 }
 
 function createOfficialPluginServiceDeps(engine: ChronosEngine): OfficialPluginServiceDeps {
@@ -39,6 +45,7 @@ export class OfficialPluginService implements Disposable {
 	private readonly assetPipeline: OfficialPluginAssetPipeline;
 	private readonly installedStore: OfficialPluginInstalledStore;
 	private readonly runtimeActivator: OfficialPluginRuntimeActivator;
+	private readonly hostVersion: string;
 
 	constructor(
 		private readonly engine: ChronosEngine,
@@ -49,12 +56,14 @@ export class OfficialPluginService implements Disposable {
 		this.assetPipeline = resolved.assetPipeline;
 		this.installedStore = resolved.installedStore;
 		this.runtimeActivator = resolved.runtimeActivator;
+		this.hostVersion = resolved.hostVersion ?? APP_VERSION;
 	}
 
 	async init(): Promise<void> {
 		if (this.initialized) return;
 		await this.installedStore.load();
 		await this.installedStore.dedupeBuiltinOverlap();
+		await this.syncInstalledWithHost();
 
 		for (const record of this.installedStore.getCache()) {
 			if (record.enabled) {
@@ -93,7 +102,7 @@ export class OfficialPluginService implements Disposable {
 	async install(
 		manifest: PluginManifest,
 		manifestUrl?: string,
-		options?: { isUpdate?: boolean }
+		options?: { silent?: boolean }
 	): Promise<void> {
 		validatePluginManifest(manifest);
 		const assets = await this.assetPipeline.download(manifest, manifestUrl);
@@ -119,12 +128,9 @@ export class OfficialPluginService implements Disposable {
 			await this.runtimeActivator.activate(record);
 		}
 
-		if (options?.isUpdate) {
-			this.engine.notify(
-				hostT('plugins.notify.updated', { pluginId: manifest.id, version: manifest.version }),
-				'info'
-			);
-		} else if (manifest.type === 'theme') {
+		if (options?.silent) return;
+
+		if (manifest.type === 'theme') {
 			this.engine.notify(hostT('plugins.notify.themeInstalled'), 'info');
 		} else {
 			this.engine.notify(hostT('plugins.notify.installed', { pluginId: manifest.id }), 'info');
@@ -179,101 +185,34 @@ export class OfficialPluginService implements Disposable {
 		return this.runtimeActivator.isActive(pluginId);
 	}
 
-	private async buildCatalogManifestMap(
-		catalogUrl = DEFAULT_CATALOG_URL
-	): Promise<Map<string, { manifest: PluginManifest; manifestUrl: string }>> {
-		const catalog = await this.fetchCatalog(catalogUrl);
-		const entries = await Promise.all(
-			catalog.manifests.map(async (url) => {
-				try {
-					const manifest = await this.fetchManifest(url);
-					return { manifest, manifestUrl: url };
-				} catch (err) {
-					console.error(`[OfficialPluginService] Failed to fetch catalog manifest ${url}:`, err);
-					return null;
-				}
-			})
-		);
+	private async syncInstalledWithHost(catalogUrl = DEFAULT_OFFICIAL_CATALOG_URL): Promise<void> {
+		const stale = this.installedStore
+			.getCache()
+			.filter((record) => shouldSyncInstalledPlugin(record, this.hostVersion));
+		if (stale.length === 0) return;
 
-		const map = new Map<string, { manifest: PluginManifest; manifestUrl: string }>();
-		for (const entry of entries) {
-			if (entry) map.set(entry.manifest.id, entry);
+		let catalogMap: Awaited<ReturnType<typeof buildCatalogManifestMap>>;
+		try {
+			const catalog = await this.catalogClient.fetchCatalog(catalogUrl);
+			catalogMap = await buildCatalogManifestMap(catalog, (url) =>
+				this.catalogClient.fetchManifest(url)
+			);
+		} catch (err) {
+			console.error('[OfficialPluginService] Failed to sync installed plugins:', err);
+			return;
 		}
-		return map;
-	}
 
-	async checkForUpdates(
-		catalogUrl = DEFAULT_CATALOG_URL,
-		prefetchedCatalog?: ReadonlyMap<string, { manifest: PluginManifest; manifestUrl: string }>
-	): Promise<PluginUpdateOffer[]> {
-		let catalogMap: Map<string, { manifest: PluginManifest; manifestUrl: string }>;
-		if (prefetchedCatalog) {
-			catalogMap = new Map(prefetchedCatalog);
-		} else {
+		for (const record of stale) {
+			const entry = catalogMap.get(record.manifest.id);
+			if (!entry) continue;
+			if (record.manifestUrl && !isOfficialCatalogManifestUrl(record.manifestUrl)) continue;
+
 			try {
-				catalogMap = await this.buildCatalogManifestMap(catalogUrl);
+				await this.install(entry.manifest, entry.manifestUrl, { silent: true });
 			} catch (err) {
-				console.error('[OfficialPluginService] Failed to fetch plugin catalog for updates:', err);
-				catalogMap = new Map();
+				console.error(`[OfficialPluginService] Failed to sync plugin ${record.manifest.id}:`, err);
 			}
 		}
-
-		const offers: PluginUpdateOffer[] = [];
-
-		for (const record of this.listInstalled()) {
-			const pluginId = record.manifest.id;
-			const catalogEntry = catalogMap.get(pluginId);
-
-			let remote: { manifest: PluginManifest; manifestUrl: string } | null = catalogEntry ?? null;
-
-			if (!remote && record.manifestUrl) {
-				try {
-					const manifest = await this.fetchManifest(record.manifestUrl);
-					remote = { manifest, manifestUrl: record.manifestUrl };
-				} catch (err) {
-					console.error(`[OfficialPluginService] Failed to fetch manifest for ${pluginId}:`, err);
-				}
-			}
-
-			if (!remote) continue;
-			if (remote.manifest.id !== pluginId) continue;
-			if (!isPluginVersionNewer(remote.manifest.version, record.manifest.version)) continue;
-
-			offers.push({
-				pluginId,
-				currentVersion: record.manifest.version,
-				latestVersion: remote.manifest.version,
-				manifest: remote.manifest,
-				manifestUrl: remote.manifestUrl
-			});
-		}
-
-		return offers;
-	}
-
-	async updateInstalled(pluginId: string, manifestUrl?: string): Promise<void> {
-		const record = this.installedStore.find(pluginId);
-		if (!record) {
-			throw new Error(`Plugin not installed: ${pluginId}`);
-		}
-
-		let resolvedUrl = manifestUrl ?? record.manifestUrl;
-
-		if (!resolvedUrl) {
-			const catalogMap = await this.buildCatalogManifestMap();
-			resolvedUrl = catalogMap.get(pluginId)?.manifestUrl;
-		}
-
-		if (!resolvedUrl) {
-			throw new Error(`No manifest URL available for plugin: ${pluginId}`);
-		}
-
-		const manifest = await this.fetchManifest(resolvedUrl);
-		if (manifest.id !== pluginId) {
-			throw new Error(`Plugin id mismatch: expected "${pluginId}", got "${manifest.id}"`);
-		}
-
-		await this.install(manifest, resolvedUrl, { isUpdate: true });
 	}
 
 	async resetAfterFactoryClear(): Promise<void> {

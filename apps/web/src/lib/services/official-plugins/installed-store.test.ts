@@ -75,7 +75,6 @@ describe('OfficialPluginInstalledStore', () => {
 				author: 'Chronos',
 				type: 'tool',
 				bundleFormat: 'esm',
-				minEngineVersion: '0.3.0',
 				bundleUrl: '/b.js',
 				sha256: 'abc'
 			},
@@ -98,7 +97,6 @@ describe('OfficialPluginInstalledStore', () => {
 					author: 'Chronos',
 					type: 'tool',
 					bundleFormat: 'esm',
-					minEngineVersion: '0.3.0',
 					bundleUrl: '/b.js',
 					sha256: 'abc'
 				},

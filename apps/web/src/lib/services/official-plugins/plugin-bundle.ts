@@ -1,48 +1,3 @@
-import type { PluginManifest } from '@chronos/core';
-import { CHRONOS_ENGINE_VERSION } from '@chronos/core';
-
-function parseSemver(version: string): [number, number, number] {
-	const parts = version.trim().split('.');
-	return [
-		Number.parseInt(parts[0] ?? '0', 10) || 0,
-		Number.parseInt(parts[1] ?? '0', 10) || 0,
-		Number.parseInt(parts[2] ?? '0', 10) || 0
-	];
-}
-
-/** Ascending `x.y.z` comparison for plugin manifest versions. */
-export function comparePluginVersions(a: string, b: string): number {
-	const av = parseSemver(a);
-	const bv = parseSemver(b);
-	for (let i = 0; i < 3; i++) {
-		if (av[i] !== bv[i]) return av[i] - bv[i];
-	}
-	return 0;
-}
-
-export function isPluginVersionNewer(remote: string, local: string): boolean {
-	return comparePluginVersions(remote, local) > 0;
-}
-
-/** Returns true when `engineVersion` satisfies `minRequired` (semver x.y.z). */
-export function isEngineVersionCompatible(engineVersion: string, minRequired: string): boolean {
-	const [engineMajor, engineMinor, enginePatch] = parseSemver(engineVersion);
-	const [requiredMajor, requiredMinor, requiredPatch] = parseSemver(minRequired);
-
-	if (engineMajor !== requiredMajor) return engineMajor > requiredMajor;
-	if (engineMinor !== requiredMinor) return engineMinor > requiredMinor;
-	return enginePatch >= requiredPatch;
-}
-
-export function assertEngineVersionCompatible(manifest: PluginManifest): void {
-	if (!manifest.minEngineVersion) return;
-	if (!isEngineVersionCompatible(CHRONOS_ENGINE_VERSION, manifest.minEngineVersion)) {
-		throw new Error(
-			`Plugin "${manifest.id}" requires engine >= ${manifest.minEngineVersion}, current is ${CHRONOS_ENGINE_VERSION}`
-		);
-	}
-}
-
 function isChronosPlugin(value: unknown): value is import('@chronos/core').ChronosPlugin {
 	if (!value || typeof value !== 'object') return false;
 	const candidate = value as import('@chronos/core').ChronosPlugin;
@@ -136,9 +91,5 @@ export function validatePluginManifest(
 		if (typeof m.iconThemeSha256 !== 'string' || !m.iconThemeSha256) {
 			throw new Error('Invalid plugin manifest: missing iconThemeSha256 for iconThemeUrl');
 		}
-	}
-
-	if (typeof m.minEngineVersion === 'string' && m.minEngineVersion) {
-		assertEngineVersionCompatible(manifest as PluginManifest);
 	}
 }

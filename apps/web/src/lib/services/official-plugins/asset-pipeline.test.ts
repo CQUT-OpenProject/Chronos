@@ -77,7 +77,6 @@ describe('OfficialPluginAssetPipeline', () => {
 			author: 'Chronos',
 			type: 'tool',
 			bundleFormat: 'esm',
-			minEngineVersion: '0.3.0',
 			bundleUrl: '/bundle.js',
 			sha256: 'deadbeef'
 		};
@@ -96,7 +95,6 @@ describe('OfficialPluginAssetPipeline', () => {
 			author: 'Chronos',
 			type: 'theme',
 			bundleFormat: 'esm',
-			minEngineVersion: '0.3.0',
 			colorsUrl: '/colors.json',
 			colorsSha256: await engine.env.runtime.sha256('{}')
 		};

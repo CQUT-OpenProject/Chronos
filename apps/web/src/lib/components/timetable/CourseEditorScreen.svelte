@@ -42,7 +42,7 @@
 
 	<FormScreenLayout {footer}>
 		<CourseEditorForm
-			{draft}
+			{editor}
 			maxPeriods={editor.timetable?.academicConfig.periodTimes.length ?? 10}
 		/>
 	</FormScreenLayout>
