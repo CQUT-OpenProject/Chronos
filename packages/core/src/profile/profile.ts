@@ -11,7 +11,6 @@ export interface PluginProfileConfig {
 export interface ChronosProfile {
 	profileId: string;
 	name: string;
-	version: string;
 	description?: string;
 	plugins: PluginProfileConfig[];
 	defaultTheme?: string;

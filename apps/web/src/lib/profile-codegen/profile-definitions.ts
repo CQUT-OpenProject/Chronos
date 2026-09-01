@@ -6,7 +6,6 @@ export const EAGER_BUILTIN_PLUGIN_IDS = ['core-shell'] as const;
 const DEFAULT_PROFILE: ChronosProfile = {
 	profileId: 'chronos-default',
 	name: 'Chronos 标准开源版',
-	version: '0.3.0',
 	description: '包含分享短链与标准备份能力',
 	defaultTheme: 'm3-default',
 	defaultImportSlot: 'share-link',
@@ -19,7 +18,6 @@ const DEFAULT_PROFILE: ChronosProfile = {
 const CQUT_PROFILE: ChronosProfile = {
 	profileId: 'chronos-cqut',
 	name: '重庆理工大学在线版',
-	version: '0.3.0',
 	description: '专为重庆理工大学定制，内置知行理工教务直连与校区专属节次',
 	defaultTheme: 'm3-default',
 	defaultImportSlot: 'cqut-online',
@@ -33,7 +31,6 @@ const CQUT_PROFILE: ChronosProfile = {
 const CQUT_OFFLINE_PROFILE: ChronosProfile = {
 	profileId: 'chronos-cqut-offline',
 	name: '重庆理工大学离线版',
-	version: '0.3.0',
 	description: 'HTML 课表导入与分享短链，不含知行理工在线同步',
 	defaultTheme: 'm3-default',
 	defaultImportSlot: 'edu-html',

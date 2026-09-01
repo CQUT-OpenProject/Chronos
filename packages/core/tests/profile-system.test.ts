@@ -92,7 +92,6 @@ describe('Profile System and Layered Config', () => {
 		const profile: ChronosProfile = {
 			profileId: 'test-profile',
 			name: 'Test Profile',
-			version: '1.0.0',
 			defaultTheme: 'catppuccin-latte',
 			plugins: [
 				{
@@ -185,7 +184,6 @@ describe('Profile System and Layered Config', () => {
 		const profile: ChronosProfile = {
 			profileId: 'phased',
 			name: 'Phased',
-			version: '1.0.0',
 			plugins: [
 				{ id: 'plugin-a', enabled: true },
 				{ id: 'plugin-b', enabled: true }
