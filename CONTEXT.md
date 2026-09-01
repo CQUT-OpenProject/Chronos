@@ -53,14 +53,14 @@ Single event + hook runtime on `ChronosEngine.events` (`emit` / `on`, `serial` g
 
 ## Transfer ingest
 
-Import UI executes `import.source.tab` slots directly. Host `transfer-state` is the sole flow owner: preview persistence, `previewAndPersist` / `previewDeepLinkImport` (for `/s`), `setImportMode` / `confirmImport` with overwrite guards, and `engine.importTimetable` on confirm. Structured failures use `ImportSlotError` + `kind`. Share-link codec lives in `@chronos/plugin-codec-share` only (no web copy). Export uses `export.action` slots; clipboard/download helpers live in `apps/web/src/lib/platform/transfer.ts`.
+Import UI executes `import.source.tab` slots directly. Host `transfer-state` is the sole flow owner: preview persistence, `previewAndPersist` / `previewDeepLinkImport` (for `/s`), `setImportMode` / `confirmImport` with overwrite guards, and `engine.importTimetable` on confirm. All import plugins throw `ImportSlotError` + `kind` (`no-data` / `invalid-data` / `network` / `unsupported` / `unknown`); rich import tabs notify via `controller.notify`, not `alert`. Share-link codec lives in `@chronos/plugin-codec-share` only (no web copy). Export uses `export.action` slots; clipboard/download helpers live in `apps/web/src/lib/platform/transfer.ts`.
 
 `ImportTabSlotContribution.importKind` (`online` \| `file` \| `link`) drives host onboarding/import copy without plugin-id hardcoding.
 
 ## Plugin activation (single-track)
 
-- **Profile builtin plugins**: `ProfileManager` → in-process `plugin.apply(ScopedContext)`.
-- **Official online plugins**: `OfficialPluginService` facade orchestrates four deep modules (`OfficialPluginCatalogClient`, `OfficialPluginAssetPipeline`, `OfficialPluginInstalledStore`, `OfficialPluginRuntimeActivator`) → fetch manifest + assets (SHA-256) → `loadEsmPluginFromCode` (when bundle present) → `engine.loadPlugin`.
+- **Profile builtin plugins**: `ProfileManager.loadPlugins` / `applyProfile` is the only assembly surface. Host supplies `resolveBuiltinPlugin`; phase 1/2 filters run through `loadPlugins`. Plugin-center listing prefers a display cache from `resolveProfileBuiltinPlugins` (metadata import, no `loadPlugin`), else `listLoadedPlugins()`.
+- **Official online plugins**: `OfficialPluginService` facade orchestrates four deep modules (`OfficialPluginCatalogClient`, `OfficialPluginAssetPipeline`, `OfficialPluginInstalledStore`, `OfficialPluginRuntimeActivator`) → fetch manifest + assets (SHA-256) → `loadEsmPluginFromCode` (when bundle present) → `engine.loadPlugin`. `init()` order: `load → dedupeBuiltinOverlap → activate cache → syncInstalledWithHost`.
 
 Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. No `plugin.inject` dependency topology — optional services use `ctx.service(...)` inside `apply`. Catalog: `apps/web/static/official-plugins/catalog.json`.
 
@@ -72,7 +72,7 @@ Server-side plugin handlers expose HTTP actions via `/api/plugins/{pluginId}/{ac
 
 - **Host shell UI**: `host-ui` message catalog (`apps/web/src/lib/i18n/host-messages.ts`), registered on engine bootstrap; screens use reactive `hostT()` from `host-i18n.svelte.ts`. Paraglide handles cookie, `document.lang`, and URL de-localization only — locale switches do not reload the page.
 - **Host navigation slots**: `core-shell` plugin registers shell/mine keys from the same catalog subset.
-- **Plugins**: `defineChronosPlugin` or `ctx.i18n.registerMessages(catalog)` in `apply`; slots/schemas use `() => ctx.i18n.t('key')`; rich UI uses ui-kit `pluginText(controller, pluginId, messages, key)`.
+- **Plugins**: `defineChronosPlugin` or `ctx.i18n.registerMessages(catalog)` in `apply`; slots/schemas use `() => ctx.i18n.t('key')`; rich UI uses ui-kit `pluginText(controller, pluginId, messages, key, params?)`.
 - **Locale hub**: `ChronosEngine.setLocale` emits `i18n:localeChanged`; `ReactiveChronosController.slotVersion` increments so slot UI re-resolves `LocalizedText`; `host-i18n` subscribes via `configureHostI18n`.
 - See ADR 0024 (revised §D4 in ADR 0027).
 
@@ -102,7 +102,7 @@ No global conflict arbitrator. Behavior by resource type:
 
 ## Core shell (`core-shell`)
 
-Builtin plugin registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile. Tab plugins declare `id` only (no `href`); host switches views via `activeTabId` on `/` (ADR 0029). `defaultLaunch: true` sets initial tab via `resolveDefaultLaunchTab` (first `defaultLaunch` in registry order). Plugin tabs render through `resolveSlotOwner` + `PluginScreenContainer`; secondary tools still use `/plugins/[pluginId]/...` or `IHostNavigation` for host-owned editors.
+Builtin plugin (`defineChronosPlugin`) registering `shell.bottom-bar.tab` and `mine.*` slots. Loaded first in every profile. Host tabs declare `hostPanel: 'timetable' | 'mine'`; the host switches views via `activeTabId` on `/` and branches on `hostPanel`, never on tab id literals (ADR 0029 / 0032). `defaultLaunch: true` sets initial tab via `resolveDefaultLaunchTab` (first `defaultLaunch` in registry order); fallback is `resolveHostPanelTab(tabs, 'timetable')`. Plugin tabs omit `hostPanel` and render through `resolveSlotOwner` + `PluginScreenContainer`. Secondary tools still use `/plugins/[pluginId]/...` or `IHostNavigation` for host-owned editors. Mine items without `sectionId` use `DEFAULT_MINE_SECTION_ID` (`app-support`). Search `keywords` come from the host catalog (`item.*.keywords`).
 
 ## Dynamic color
 

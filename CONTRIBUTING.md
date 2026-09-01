@@ -355,10 +355,11 @@ export interface StandardSlotMap {
 消费端只允许一套通用机制：
 
 - 排序：`order` 升序，缺省排前；主操作用 `pickPrimary()`（显式 `isPrimary` 优先）。
-- 文本：`resolveLocalizedText()` 单一实现。
+- 文本：`resolveLocalizedText()` 单一实现（含 badge）。
 - 富 UI：`MountableSlotOutlet` 渲染，缺失组件时回退 `SchemaForm`。
+- 底栏宿主屏：只认 `BottomTabSlotContribution.hostPanel`（`'timetable' | 'mine'`），不认 tab id 字面量；无 `hostPanel` 则 `resolveSlotOwner` + `PluginScreenContainer`。
 
-禁止在消费点写 `typeof x === 'function' ? x() : x` 之类的本地实现——这些工具已收敛为内核单源（[ADR 0021](.agents/docs/adr/0021-slot-consumption-seam.md)）。
+禁止在消费点写 `typeof x === 'function' ? x() : x` 之类的本地实现——这些工具已收敛为内核单源（[ADR 0021](.agents/docs/adr/0021-slot-consumption-seam.md)、[ADR 0032](.agents/docs/adr/0032-round8-dual-track-collapse.md)）。
 
 ### 3. 补充冲突策略
 
@@ -428,17 +429,17 @@ proxy?(pluginId, action, payload, options?): Promise<HttpResponse>
 
 ### 总览
 
-| 槽位路径                     | 用途                                                                 | 多贡献者策略                                       |
-| ---------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
-| `import.source.tab`          | 导入数据源标签页（在线/文件/链接）                                   | 共存，按 `order` 排序                              |
-| `export.action`              | 课表导出动作（复制/下载/自定义）                                     | 共存，`isPrimary` 选主                             |
-| `mine.section` / `mine.item` | 「我的」页分区与条目                                                 | 共存，按 `order` 排序                              |
-| `shell.route.screen`         | 插件全屏页面（`/plugins/[pluginId]/[id]`）                           | 每 id 一屏                                         |
-| `shell.bottom-bar.tab`       | 底栏导航标签（仅 `id`，宿主壳内 `activeTabId` 切换，无 per-tab URL） | 共存，按 `order` 排序                              |
-| `timetable.cell.badge`       | 课程卡徽章                                                           | 聚合所有贡献者（RESERVED，零生产者时早退）         |
-| `course.detail.action`       | 课程详情操作项                                                       | 共存，按 `order` 排序                              |
-| `theme.definition`           | 配色主题                                                             | 注册多个，用户选择其一                             |
-| `theme.icon.definition`      | 图标主题                                                             | 由激活主题 `recommendedIconTheme` 派生，无独立偏好 |
+| 槽位路径                     | 用途                                                                   | 多贡献者策略                                       |
+| ---------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- |
+| `import.source.tab`          | 导入数据源标签页（在线/文件/链接）                                     | 共存，按 `order` 排序                              |
+| `export.action`              | 课表导出动作（复制/下载/自定义）                                       | 共存，`isPrimary` 选主                             |
+| `mine.section` / `mine.item` | 「我的」页分区与条目                                                   | 共存，按 `order` 排序                              |
+| `shell.route.screen`         | 插件全屏页面（`/plugins/[pluginId]/[id]`）                             | 每 id 一屏                                         |
+| `shell.bottom-bar.tab`       | 底栏导航标签（仅 `id`；宿主屏用 `hostPanel`，壳内 `activeTabId` 切换） | 共存，按 `order` 排序                              |
+| `timetable.cell.badge`       | 课程卡徽章                                                             | 聚合所有贡献者（RESERVED，零生产者时早退）         |
+| `course.detail.action`       | 课程详情操作项                                                         | 共存，按 `order` 排序                              |
+| `theme.definition`           | 配色主题                                                               | 注册多个，用户选择其一                             |
+| `theme.icon.definition`      | 图标主题                                                               | 由激活主题 `recommendedIconTheme` 派生，无独立偏好 |
 
 ### 通用约定
 
@@ -503,9 +504,25 @@ interface PluginScreenSlotContribution {
 }
 ```
 
+### shell.bottom-bar.tab
+
+```ts
+interface BottomTabSlotContribution {
+	id: string;
+	label: LocalizedText;
+	order?: number;
+	icon?: ShellIconRef;
+	iconFill?: ShellIconRef;
+	hostPanel?: 'timetable' | 'mine'; // 宿主屏；插件 tab 省略
+	defaultLaunch?: boolean;
+}
+```
+
+宿主只认 `hostPanel` 渲染课表/我的屏。冷启动 fallback 用 `resolveHostPanelTab(tabs, 'timetable')`，否则 registry 第一项。插件 tab 不声明 `hostPanel`，消费端走 `resolveSlotOwner` + `PluginScreenContainer`。
+
 ### mine.item
 
-`sectionId` 关联到某个 `mine.section` 贡献；`href` 指向内置路由或插件动态路由；`keywords` 支撑搜索；`iconTone` 取 `primary | secondary | tertiary | neutral`。
+`sectionId` 关联到某个 `mine.section` 贡献；省略时宿主使用 `DEFAULT_MINE_SECTION_ID`（`app-support`）。`href` 指向内置路由或插件动态路由；`keywords` 支撑搜索；`iconTone` 取 `primary | secondary | tertiary | neutral`。
 
 ### theme.definition
 

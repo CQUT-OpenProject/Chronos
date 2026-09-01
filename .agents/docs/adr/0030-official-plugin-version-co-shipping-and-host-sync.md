@@ -41,11 +41,13 @@ ADR 0016 引入 `CHRONOS_ENGINE_VERSION` 与 manifest `minEngineVersion` semver 
 
 [`sync-installed-plugins.ts`](../../apps/web/src/lib/services/official-plugins/sync-installed-plugins.ts) + `OfficialPluginService.syncInstalledWithHost()`：
 
-在 `init()` 的 `dedupeBuiltinOverlap()` 之后、`activate` 之前执行：
+在 `init()` 的 `dedupeBuiltinOverlap()` 之后先激活缓存，再等待 catalog 同步：
 
 ```
-load → dedupeBuiltinOverlap → syncInstalledWithHost → activate enabled
+load → dedupeBuiltinOverlap → activate cache → syncInstalledWithHost
 ```
+
+`init()` 在 `activateInstalledFromCache()` 之后即标记 `initialized` 并 `notify`，然后 `await syncInstalledWithHost()`。catalog 同步不得挡住已缓存插件的启用。
 
 同步规则：
 
@@ -86,3 +88,4 @@ load → dedupeBuiltinOverlap → syncInstalledWithHost → activate enabled
 ## 修订记录
 
 - 2026-08-31：初版 Accepted；撤销 ADR 0016 `minEngineVersion` 闭环策略，改为宿主发版 + 启动同步。
+- 2026-09-01：修订 `init()` 顺序为实际实现：`load → dedupeBuiltinOverlap → activate cache → syncInstalledWithHost`（测试已钉死；不改代码）。
