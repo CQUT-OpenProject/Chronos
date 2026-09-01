@@ -1,8 +1,6 @@
 import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { eagerPlugins, deferredPluginLoaders } from './available-plugins.generated';
 
-export const PHASE1_PLUGIN_ID = 'core-shell';
-
 export async function resolveBuiltinPlugin(id: string): Promise<ChronosPlugin | undefined> {
 	const eager = eagerPlugins.find((plugin) => plugin.id === id);
 	if (eager) return eager;

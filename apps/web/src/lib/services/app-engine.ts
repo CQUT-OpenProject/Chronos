@@ -3,11 +3,8 @@ import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
 import { resolveActiveProfile } from '$lib/boot/profile-registry';
-import {
-	PHASE1_PLUGIN_ID,
-	resolveBuiltinPlugin,
-	resolveProfileBuiltinPlugins
-} from '$lib/boot/profile-bootstrap';
+import { resolveBuiltinPlugin, resolveProfileBuiltinPlugins } from '$lib/boot/profile-bootstrap';
+import { EAGER_BUILTIN_PLUGIN_IDS } from '$lib/profile-codegen/profile-definitions';
 
 import { OfficialPluginService } from '$lib/services/official-plugins/official-plugin-service';
 import { baseLocale } from '$lib/paraglide/runtime.js';
@@ -74,10 +71,8 @@ function scheduleBuiltinPluginCatalog(profile: ChronosProfile, manager: ProfileM
 async function bootstrapEnginePhase1(engine: ChronosEngine): Promise<void> {
 	profileManager = new ProfileManager(engine);
 	const profile = resolveActiveProfile();
-	await profileManager.loadPlugins(
-		profile,
-		resolveBuiltinPlugin,
-		(pluginId) => pluginId === PHASE1_PLUGIN_ID
+	await profileManager.loadPlugins(profile, resolveBuiltinPlugin, (pluginId) =>
+		(EAGER_BUILTIN_PLUGIN_IDS as readonly string[]).includes(pluginId)
 	);
 	scheduleBuiltinPluginCatalog(profile, profileManager);
 	await applyThemeFromPreferences(engine);
@@ -89,7 +84,7 @@ async function bootstrapEnginePhase2(engine: ChronosEngine): Promise<void> {
 		await profileManager.loadPlugins(
 			profile,
 			resolveBuiltinPlugin,
-			(pluginId) => pluginId !== PHASE1_PLUGIN_ID
+			(pluginId) => !(EAGER_BUILTIN_PLUGIN_IDS as readonly string[]).includes(pluginId)
 		);
 	}
 	resolvedProfilePlugins = await resolveProfileBuiltinPlugins(profile);
