@@ -49,7 +49,6 @@
 		try {
 			const ok = await transfer.previewWithSlot('cqut-online', {
 				username: account,
-				account,
 				password
 			});
 			if (ok) onContinue();

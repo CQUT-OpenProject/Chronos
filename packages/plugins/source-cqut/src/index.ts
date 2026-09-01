@@ -262,7 +262,7 @@ export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 			): Promise<Timetable> {
 				const activeCtx = context ?? ctx;
 				const form = inputs;
-				const username = (form.username || form.account)?.trim();
+				const username = form.username?.trim();
 				const password = form.password;
 
 				if (!username || !password?.trim()) {

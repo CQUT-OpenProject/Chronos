@@ -4,7 +4,6 @@ import type { HtmlConfirmForm, HtmlImportForm } from './html-parser';
 
 export interface CqutImportForm {
 	username?: string;
-	account?: string;
 	password?: string;
 }
 

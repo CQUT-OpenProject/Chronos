@@ -28,12 +28,12 @@ describe('resolveDeepLinkImport', () => {
 		const tabs = [
 			makeTab('a'),
 			makeTab('share-link', {
-				fromLocation: (loc) => (loc.hash === '#payload' ? { content: 'p', fileContent: 'p' } : null)
+				fromLocation: (loc) => (loc.hash === '#payload' ? { content: 'p' } : null)
 			})
 		];
 		const match = resolveDeepLinkImport(tabs, location);
 		expect(match?.tab.id).toBe('share-link');
-		expect(match?.inputs).toEqual({ content: 'p', fileContent: 'p' });
+		expect(match?.inputs).toEqual({ content: 'p' });
 	});
 
 	it('skips tabs that return null and keeps scanning', () => {

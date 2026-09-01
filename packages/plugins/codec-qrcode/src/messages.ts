@@ -2,7 +2,6 @@ import { defineSchema } from '@chronos/core';
 
 export interface QrCodeImportForm {
 	content?: string;
-	fileContent?: string;
 }
 
 export function createQrCodeImportSchema(t: (key: string) => string) {
