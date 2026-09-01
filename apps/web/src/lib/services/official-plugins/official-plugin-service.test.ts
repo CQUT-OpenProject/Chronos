@@ -356,6 +356,47 @@ describe('OfficialPluginService', () => {
 		);
 	});
 
+	it('activates cached plugins before awaiting catalog sync', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const staleManifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '0.4.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		await engine.storage.setPluginData(OFFICIAL_PLUGINS_PLUGIN_ID, INSTALLED_STORAGE_KEY, [
+			{
+				manifest: staleManifest,
+				code: SAMPLE_BUNDLE,
+				manifestUrl: OFFICIAL_MANIFEST_URL,
+				enabled: true,
+				installedAt: Date.now()
+			}
+		]);
+
+		vi.spyOn(
+			Object.getPrototypeOf(service) as { syncInstalledWithHost(): Promise<void> },
+			'syncInstalledWithHost'
+		).mockImplementation(() => new Promise(() => {}));
+
+		const initPromise = service.init();
+		await vi.waitFor(() => {
+			expect(engine.isPluginLoaded('test-plugin')).toBe(true);
+		});
+		await expect(
+			Promise.race([
+				initPromise,
+				new Promise((_, reject) => setTimeout(() => reject(new Error('still pending')), 50))
+			])
+		).rejects.toThrow('still pending');
+	});
+
 	it('syncs stale official plugins from catalog during init without notifications', async () => {
 		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
 		const staleManifest: PluginManifest = {
