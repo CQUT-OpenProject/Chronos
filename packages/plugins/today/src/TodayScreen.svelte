@@ -30,8 +30,9 @@
 
 	const timetable = $derived(controller.currentTimetable);
 	const periodTimes = $derived(timetable?.academicConfig.periodTimes ?? []);
+	const todayIso = $derived(controller.clockTodayIso || screen.today);
 	const academicWeek = $derived(
-		timetable ? calendarService.calculateAcademicWeek(screen.today, timetable.academicConfig) : 1
+		timetable ? calendarService.calculateAcademicWeek(todayIso, timetable.academicConfig) : 1
 	);
 	const coursePaintByName = $derived.by(() => {
 		const palette = controller.coursePalette;
@@ -87,7 +88,7 @@
 
 <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
 	<header class="border-b border-outline/10 bg-surface px-4 pt-6 pb-4">
-		<p class="text-headline-small text-on-surface">{formatHeaderDate(screen.today)}</p>
+		<p class="text-headline-small text-on-surface">{formatHeaderDate(todayIso)}</p>
 		{#if timetable}
 			<div class="mt-1 flex items-center justify-between gap-3">
 				<p class="text-body-medium text-on-surface-variant">

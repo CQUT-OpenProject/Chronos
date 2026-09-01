@@ -4,6 +4,7 @@ import {
 	findCurrentPeriodIndex,
 	IStorageService,
 	parsePeriodRanges,
+	todayIsoDate,
 	type PeriodTime
 } from '@chronos/core';
 import type { TodayScope } from './constants';
@@ -38,7 +39,7 @@ export function createTodayScreenController(): TodayScreenController {
 		return getTimetable()?.academicConfig.periodTimes ?? [];
 	}
 
-	const today = $derived(chronosController?.clockTodayIso ?? '');
+	const today = $derived(chronosController?.clockTodayIso || todayIsoDate());
 	const now = $derived(chronosController?.clockNow ?? new Date());
 
 	const currentPeriodIndex = $derived.by(() => {
