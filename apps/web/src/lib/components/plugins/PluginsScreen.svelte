@@ -8,7 +8,7 @@
 		ensureEngineFullyReady
 	} from '$lib/services/app-engine';
 	import type { InstalledOfficialPluginRecord } from '$lib/services/official-plugins/official-plugin-service';
-	import type { PluginManifest, ConfigSchema } from '@chronos/core';
+	import type { ChronosPlugin, PluginManifest, ConfigSchema } from '@chronos/core';
 	import { resolveLocaleMapText } from '@chronos/core';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -28,7 +28,7 @@
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
 
 	const officialPlugins = getOfficialPluginService();
-	const profileBuiltinPlugins = $derived(getProfileBuiltinPlugins());
+	let profileBuiltinPlugins = $state.raw<ChronosPlugin[]>([...getProfileBuiltinPlugins()]);
 	const appController = getAppController();
 	const paletteMode = $derived(appController.userPreferences?.paletteMode ?? 'vibrant');
 	const visualThemeId = $derived(appController.activeThemeId);
@@ -66,6 +66,7 @@
 
 	onMount(() => {
 		void ensureEngineFullyReady().then(async () => {
+			profileBuiltinPlugins = [...getProfileBuiltinPlugins()];
 			refreshInstalled();
 			await loadOfficialCatalog();
 		});

@@ -113,4 +113,38 @@ describe('app-engine bootstrap', () => {
 		expect(ids).toContain('core-shell');
 		expect(ids.length).toBeGreaterThan(1);
 	});
+
+	it('waits for idle-scheduled phase 2 before listing deferred builtins', async () => {
+		let idleQueued: (() => void) | undefined;
+		vi.stubGlobal('requestIdleCallback', (cb: () => void) => {
+			idleQueued = cb;
+			return 1;
+		});
+
+		try {
+			const mockDb = createMockDb();
+			const mockStore = new MockLocalStorage();
+			const fullyReady = ensureEngineFullyReady({ database: mockDb, localStorage: mockStore });
+
+			await ensureEngineReady({ database: mockDb, localStorage: mockStore });
+			expect(typeof idleQueued).toBe('function');
+
+			let settled = false;
+			void fullyReady.then(() => {
+				settled = true;
+			});
+			await Promise.resolve();
+			expect(settled).toBe(false);
+
+			idleQueued?.();
+			await fullyReady;
+			expect(settled).toBe(true);
+
+			const ids = getProfileBuiltinPlugins().map((plugin) => plugin.id);
+			expect(ids).toContain('codec-share');
+			expect(ids.length).toBeGreaterThan(1);
+		} finally {
+			vi.unstubAllGlobals();
+		}
+	});
 });

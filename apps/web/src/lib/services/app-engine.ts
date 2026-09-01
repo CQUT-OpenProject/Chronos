@@ -95,19 +95,24 @@ async function bootstrapEnginePhase2(engine: ChronosEngine): Promise<void> {
 	await sharedOfficialPlugins.init();
 }
 
+function waitForIdleTurn(): Promise<void> {
+	return new Promise((resolve) => {
+		if (typeof requestIdleCallback !== 'undefined') {
+			requestIdleCallback(() => resolve());
+		} else {
+			queueMicrotask(() => resolve());
+		}
+	});
+}
+
 function scheduleBootstrapPhase2(engine: ChronosEngine): void {
 	if (enginePhase2Promise) return;
-	const run = () => {
-		enginePhase2Promise = bootstrapEnginePhase2(engine).catch((err) => {
+	enginePhase2Promise = waitForIdleTurn()
+		.then(() => bootstrapEnginePhase2(engine))
+		.catch((err) => {
 			console.error('[app-engine] Phase 2 bootstrap failed:', err);
 			enginePhase2Promise = null;
 		});
-	};
-	if (typeof requestIdleCallback !== 'undefined') {
-		requestIdleCallback(() => run());
-	} else {
-		queueMicrotask(() => run());
-	}
 }
 
 export async function ensureEngineReady(options?: WebProviderOptions): Promise<ChronosEngine> {
