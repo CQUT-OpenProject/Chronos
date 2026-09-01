@@ -380,21 +380,27 @@ describe('OfficialPluginService', () => {
 			}
 		]);
 
-		vi.spyOn(
-			Object.getPrototypeOf(service) as { syncInstalledWithHost(): Promise<void> },
-			'syncInstalledWithHost'
-		).mockImplementation(() => new Promise(() => {}));
+		const syncSpy = vi
+			.spyOn(
+				Object.getPrototypeOf(service) as { syncInstalledWithHost(): Promise<void> },
+				'syncInstalledWithHost'
+			)
+			.mockImplementation(() => new Promise(() => {}));
 
-		const initPromise = service.init();
-		await vi.waitFor(() => {
-			expect(engine.isPluginLoaded('test-plugin')).toBe(true);
-		});
-		await expect(
-			Promise.race([
-				initPromise,
-				new Promise((_, reject) => setTimeout(() => reject(new Error('still pending')), 50))
-			])
-		).rejects.toThrow('still pending');
+		try {
+			const initPromise = service.init();
+			await vi.waitFor(() => {
+				expect(engine.isPluginLoaded('test-plugin')).toBe(true);
+			});
+			await expect(
+				Promise.race([
+					initPromise,
+					new Promise((_, reject) => setTimeout(() => reject(new Error('still pending')), 50))
+				])
+			).rejects.toThrow('still pending');
+		} finally {
+			syncSpy.mockRestore();
+		}
 	});
 
 	it('syncs stale official plugins from catalog during init without notifications', async () => {
