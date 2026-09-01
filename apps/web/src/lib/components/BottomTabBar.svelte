@@ -41,7 +41,7 @@
 			void tab.onClick(event, ctx);
 			return;
 		}
-		if (tab.id === 'timetable' && activeTabId === 'timetable' && timetableScreen) {
+		if (tab.hostPanel === 'timetable' && activeTabId === tab.id && timetableScreen) {
 			timetableScreen.jumpToCurrentWeek();
 			return;
 		}

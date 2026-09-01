@@ -254,7 +254,6 @@ export function createTransferState(engine?: ChronosEngine) {
 		clearPreview,
 		setDirectPreview,
 		previewWithSlot,
-		executeSlotImport,
 		previewAndPersist,
 		previewDeepLinkImport,
 		persistPreview,

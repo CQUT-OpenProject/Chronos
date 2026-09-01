@@ -68,7 +68,7 @@
 		<div class="flex w-full gap-2 overflow-x-auto pb-1">
 			{#each availableSlots as slot (slot.id)}
 				{@const title = resolveLocalizedText(slot.title)}
-				{@const badge = typeof slot.badge === 'function' ? slot.badge() : (slot.badge ?? '')}
+				{@const badge = resolveLocalizedText(slot.badge)}
 				{@const isSelected = transfer.state.selectedSlotId === slot.id}
 				<button
 					type="button"

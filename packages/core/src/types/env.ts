@@ -62,4 +62,9 @@ export interface ChronosEnv {
 	runtime: {
 		sha256(data: string | Uint8Array): Promise<string>;
 	};
+
+	/** Optional host navigation (route transitions owned by the host shell) */
+	navigation?: {
+		openCourseEditor(courseId: string): void;
+	};
 }

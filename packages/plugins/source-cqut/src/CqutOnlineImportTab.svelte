@@ -40,7 +40,7 @@
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
 		if (errorMessage) {
-			alert(errorMessage);
+			controller?.notify(errorMessage, 'error');
 		}
 	}
 
@@ -49,7 +49,6 @@
 		try {
 			const ok = await transfer.previewWithSlot('cqut-online', {
 				username: account,
-				account,
 				password
 			});
 			if (ok) onContinue();

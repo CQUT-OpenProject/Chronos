@@ -356,4 +356,67 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(engine.state.currentTimetable?.academicConfig.holidayCalendar).toEqual(holidayCalendar);
 		engine.dispose();
 	});
+
+	it('emits time:tick with now and todayIso on init and when updateTime is called', async () => {
+		const { env, timetables } = createMockEnv();
+		const tt = createTimetable({
+			id: 't1',
+			name: '课表',
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [
+					{ index: 1, startTime: '08:00', endTime: '08:45' },
+					{ index: 2, startTime: '09:00', endTime: '09:45' }
+				]
+			}
+		});
+		timetables.set('t1', tt);
+		await env.storage.setActiveTimetableId('t1');
+
+		const engine = new ChronosEngine({ env });
+		const onTick = vi.fn();
+		engine.on('time:tick', onTick);
+
+		await engine.init();
+
+		expect(onTick).toHaveBeenCalled();
+		const lastTick = onTick.mock.calls.at(-1)![0];
+		expect(lastTick).toMatchObject({
+			currentWeek: expect.any(Number),
+			currentPeriod: null,
+			now: expect.any(Date),
+			todayIso: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)
+		});
+
+		const forcedNow = new Date('2026-03-02T09:15:00');
+		engine.updateTime(forcedNow);
+		expect(onTick).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				currentPeriod: 2,
+				now: forcedNow,
+				todayIso: '2026-03-02'
+			})
+		);
+
+		engine.dispose();
+	});
+
+	it('disposes DayClock so timers do not fire after engine.dispose()', async () => {
+		vi.useFakeTimers();
+		const { env } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		const onTick = vi.fn();
+		engine.on('time:tick', onTick);
+
+		await engine.init();
+		onTick.mockClear();
+
+		engine.dispose();
+		vi.advanceTimersByTime(86_400_000);
+		expect(onTick).not.toHaveBeenCalled();
+
+		vi.useRealTimers();
+	});
 });

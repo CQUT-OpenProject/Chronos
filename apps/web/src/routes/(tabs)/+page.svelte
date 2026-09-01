@@ -16,6 +16,9 @@
 		await ensureEngineReady();
 		shellTab.init();
 		ready = true;
+		if (typeof performance !== 'undefined') {
+			performance.mark('chronos-timetable-visible');
+		}
 		screen.refresh();
 	});
 </script>

@@ -108,7 +108,7 @@ export interface MineItemSlotContribution {
 	sectionId: string;
 	title: LocalizedText;
 	supporting?: LocalizedText;
-	icon?: unknown;
+	icon?: ShellIconRef;
 	iconTone?: 'primary' | 'secondary' | 'tertiary' | 'neutral';
 	keywords?: string[];
 	order?: number;
@@ -152,6 +152,11 @@ export interface CoursePaint {
 }
 
 // 7. Shell bottom bar navigation tab slot contribution specification
+/** Host-owned mine section used when a `mine.item` omits `sectionId`. */
+export const DEFAULT_MINE_SECTION_ID = 'app-support';
+
+export type HostShellPanel = 'timetable' | 'mine';
+
 export interface BottomTabSlotContribution {
 	id: string;
 	label: LocalizedText;
@@ -164,6 +169,8 @@ export interface BottomTabSlotContribution {
 	onClick?(event: MouseEvent, ctx?: ChronosContext): void | Promise<void>;
 	/** Declares this tab as the cold-start landing page when the app opens on `/`. */
 	defaultLaunch?: boolean;
+	/** Host-owned panel; plugin tabs omit this and render via `shell.route.screen`. */
+	hostPanel?: HostShellPanel;
 }
 
 /** Standard slot contract map */
@@ -222,7 +229,12 @@ export function pickPrimary<T extends { isPrimary?: boolean }>(items: readonly T
 export function resolveDefaultLaunchTab(
 	tabs: readonly BottomTabSlotContribution[]
 ): BottomTabSlotContribution | undefined {
-	const candidates = tabs.filter((tab) => tab.defaultLaunch);
-	if (candidates.length === 0) return undefined;
-	return [...candidates].sort((left, right) => (left.order ?? 50) - (right.order ?? 50))[0];
+	return tabs.find((tab) => tab.defaultLaunch);
+}
+
+export function resolveHostPanelTab(
+	tabs: readonly BottomTabSlotContribution[],
+	panel: HostShellPanel
+): BottomTabSlotContribution | undefined {
+	return tabs.find((tab) => tab.hostPanel === panel);
 }

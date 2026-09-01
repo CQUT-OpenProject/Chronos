@@ -57,9 +57,6 @@ importers:
       '@chronos/plugin-codec-share':
         specifier: workspace:*
         version: link:../../packages/plugins/codec-share
-      '@chronos/plugin-source-cqut':
-        specifier: workspace:*
-        version: link:../../packages/plugins/source-cqut
       '@chronos/ui-kit':
         specifier: workspace:*
         version: link:../../packages/ui-kit
@@ -154,6 +151,10 @@ importers:
       vite-plus:
         specifier: 'catalog:'
         version: 0.3.0(@types/node@24.13.3)(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2))(esbuild@0.28.2)(jiti@2.7.0)(svelte@5.56.9(@typescript-eslint/types@8.66.0))(terser@5.49.2)(tsx@4.23.12)(typescript@7.0.2)
+    optionalDependencies:
+      '@chronos/plugin-source-cqut':
+        specifier: workspace:*
+        version: link:../../packages/plugins/source-cqut
 
   packages/codec-kit: {}
 

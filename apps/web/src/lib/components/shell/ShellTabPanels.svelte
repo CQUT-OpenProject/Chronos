@@ -3,16 +3,14 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
+	import type { Component } from 'svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { ShellTabController } from '$lib/shell/shell-tab.svelte';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableScreen from '$lib/components/timetable/TimetableScreen.svelte';
-	import CourseDetailSheet from '$lib/components/timetable/CourseDetailSheet.svelte';
 	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
-	import MineScreen from '$lib/components/mine/MineScreen.svelte';
-	import { PluginScreenContainer } from '@chronos/ui-kit';
 	import { getAppController } from '$lib/services/app-engine';
 
 	interface Props {
@@ -27,15 +25,55 @@
 	const controller = getAppController();
 
 	const activeTabId = $derived(shellTab.activeTabId);
-	const pluginTabId = $derived(
-		activeTabId === 'timetable' || activeTabId === 'mine' ? undefined : activeTabId
-	);
+	const tabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
+	const activeTab = $derived(tabs.find((tab) => tab.id === activeTabId));
+	const hostPanel = $derived(activeTab?.hostPanel);
+	const pluginTabId = $derived(hostPanel ? undefined : activeTabId);
 	const pluginId = $derived(
 		pluginTabId ? controller.resolveSlotOwner('shell.bottom-bar.tab', pluginTabId) : undefined
 	);
 
 	let detailOpen = $state(false);
 	let detailCourseId = $state<string | null>(null);
+
+	let MineScreen = $state<Component<{ shell: AppShellController }> | null>(null);
+	let CourseDetailSheet = $state<Component<{
+		open: boolean;
+		courseId: string | null;
+	}> | null>(null);
+	let PluginScreenContainer = $state<Component<{
+		controller: ReturnType<typeof getAppController>;
+		pluginId: string;
+	}> | null>(null);
+
+	$effect(() => {
+		if (hostPanel === 'mine' && !MineScreen) {
+			void import('$lib/components/mine/MineScreen.svelte').then((module) => {
+				MineScreen = module.default;
+			});
+		}
+	});
+
+	$effect(() => {
+		if (
+			ready &&
+			hostPanel === 'timetable' &&
+			screen.state.hasLoadedAppState &&
+			!CourseDetailSheet
+		) {
+			void import('$lib/components/timetable/CourseDetailSheet.svelte').then((module) => {
+				CourseDetailSheet = module.default;
+			});
+		}
+	});
+
+	$effect(() => {
+		if (pluginId && !PluginScreenContainer) {
+			void import('@chronos/ui-kit').then((module) => {
+				PluginScreenContainer = module.PluginScreenContainer;
+			});
+		}
+	});
 
 	function openCourseDetail(courseId: string) {
 		detailCourseId = courseId;
@@ -48,21 +86,33 @@
 	<div class="flex min-h-[60vh] items-center justify-center p-4">
 		<LoadingIndicator />
 	</div>
-{:else if activeTabId === 'timetable' && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
+{:else if hostPanel === 'timetable' && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
 	<EmptyTimetableState />
-{:else if activeTabId === 'timetable' && screen.state.hasLoadedAppState}
+{:else if hostPanel === 'timetable' && screen.state.hasLoadedAppState}
 	<TimetableScreen
 		{screen}
 		onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
 		onCourseClick={openCourseDetail}
 	/>
-	<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
-{:else if activeTabId === 'timetable'}
+	{#if CourseDetailSheet}
+		<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
+	{/if}
+{:else if hostPanel === 'timetable'}
 	<div class="flex min-h-[60vh] items-center justify-center p-4">
 		<LoadingIndicator />
 	</div>
-{:else if activeTabId === 'mine'}
-	<MineScreen {shell} />
-{:else if pluginId}
+{:else if hostPanel === 'mine'}
+	{#if MineScreen}
+		<MineScreen {shell} />
+	{:else}
+		<div class="flex min-h-[60vh] items-center justify-center p-4">
+			<LoadingIndicator />
+		</div>
+	{/if}
+{:else if pluginId && PluginScreenContainer}
 	<PluginScreenContainer {controller} {pluginId} />
+{:else if pluginId}
+	<div class="flex min-h-[60vh] items-center justify-center p-4">
+		<LoadingIndicator />
+	</div>
 {/if}

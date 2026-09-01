@@ -7,10 +7,9 @@
 	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 
-	import { CORE_SHELL_SUPPORT_SECTION_ID } from '$lib/boot/core-shell';
-	import { MINE_ITEM_ICON_MAP } from '$lib/boot/mine-icons';
+	import { DEFAULT_MINE_SECTION_ID, resolveLocalizedText } from '@chronos/core';
 	import { CodeFill } from '$lib/icons';
-	import { resolveLocalizedText } from '@chronos/core';
+	import { resolveShellIcon } from '$lib/shell/resolve-shell-icon';
 	import type { Component } from 'svelte';
 
 	let { shell }: { shell: AppShellController } = $props();
@@ -36,14 +35,12 @@
 	};
 
 	function resolveIcon(
-		icon: string | unknown | undefined,
+		icon: string | undefined,
 		itemId: string
 	): Component<{ class?: string }> | undefined {
-		if (typeof icon === 'string' && icon in MINE_ITEM_ICON_MAP) {
-			return MINE_ITEM_ICON_MAP[icon as keyof typeof MINE_ITEM_ICON_MAP];
-		}
-		if (icon && typeof icon !== 'string') {
-			return icon as Component<{ class?: string }>;
+		const resolved = resolveShellIcon(icon);
+		if (resolved?.kind === 'component') {
+			return resolved.component;
 		}
 		return itemId ? CodeFill : undefined;
 	}
@@ -63,7 +60,7 @@
 		}
 
 		for (const item of pluginItems) {
-			const targetSectionId = item.sectionId ?? CORE_SHELL_SUPPORT_SECTION_ID;
+			const targetSectionId = item.sectionId ?? DEFAULT_MINE_SECTION_ID;
 			let section = sectionMap[targetSectionId];
 			if (!section) {
 				section = {

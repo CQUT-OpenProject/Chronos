@@ -4,6 +4,7 @@ import {
 	createTimetable,
 	createCourse,
 	deriveWeekendViewPrefs,
+	ImportSlotError,
 	type ChronosMountable,
 	type Timetable,
 	type Course
@@ -105,59 +106,64 @@ export async function deserializeTimetableFromQr(
 	const content = rawText.trim();
 
 	if (!content.startsWith(QR_CODEC_ENVELOPE_PREFIX)) {
-		throw new Error(labels['import.error.corrupt']);
+		throw new ImportSlotError('invalid-data', labels['import.error.corrupt']);
 	}
 
-	const base64 = content.slice(QR_CODEC_ENVELOPE_PREFIX.length);
-	const compressedBytes = base64ToBytes(base64);
-	const decompressedBytes = await inflateRaw(compressedBytes);
-	const jsonStr = new TextDecoder().decode(decompressedBytes);
-	const data = JSON.parse(jsonStr) as V2CompactQrPayload;
+	try {
+		const base64 = content.slice(QR_CODEC_ENVELOPE_PREFIX.length);
+		const compressedBytes = base64ToBytes(base64);
+		const decompressedBytes = await inflateRaw(compressedBytes);
+		const jsonStr = new TextDecoder().decode(decompressedBytes);
+		const data = JSON.parse(jsonStr) as V2CompactQrPayload;
 
-	const pool = data.s ?? [];
-	const courses: Course[] = (data.c ?? []).map((tuple, idx) => {
-		const name = (tuple[0] >= 0 ? pool[tuple[0]] : null) ?? labels['timetable.unnamedCourse'];
-		const teacher = (tuple[1] >= 0 ? pool[tuple[1]] : null) ?? '';
-		const location = (tuple[2] >= 0 ? pool[tuple[2]] : null) ?? '';
-		const dayOfWeek = tuple[3] ?? 1;
-		const startPeriod = tuple[4] ?? 1;
-		const endPeriod = tuple[5] ?? 1;
-		const weeks = bitmaskToWeeks(tuple[6] ?? 1);
-		const safeWeeks = weeks.length > 0 ? weeks : [1];
-		const remark = tuple[7] !== undefined && tuple[7] >= 0 ? pool[tuple[7]] : undefined;
+		const pool = data.s ?? [];
+		const courses: Course[] = (data.c ?? []).map((tuple, idx) => {
+			const name = (tuple[0] >= 0 ? pool[tuple[0]] : null) ?? labels['timetable.unnamedCourse'];
+			const teacher = (tuple[1] >= 0 ? pool[tuple[1]] : null) ?? '';
+			const location = (tuple[2] >= 0 ? pool[tuple[2]] : null) ?? '';
+			const dayOfWeek = tuple[3] ?? 1;
+			const startPeriod = tuple[4] ?? 1;
+			const endPeriod = tuple[5] ?? 1;
+			const weeks = bitmaskToWeeks(tuple[6] ?? 1);
+			const safeWeeks = weeks.length > 0 ? weeks : [1];
+			const remark = tuple[7] !== undefined && tuple[7] >= 0 ? pool[tuple[7]] : undefined;
 
-		return createCourse({
-			id: `c-qr-${idx + 1}-${Date.now().toString(36)}`,
-			name,
-			teacher,
-			location,
-			dayOfWeek,
-			startPeriod,
-			endPeriod,
-			weeks: safeWeeks,
-			remark
+			return createCourse({
+				id: `c-qr-${idx + 1}-${Date.now().toString(36)}`,
+				name,
+				teacher,
+				location,
+				dayOfWeek,
+				startPeriod,
+				endPeriod,
+				weeks: safeWeeks,
+				remark
+			});
 		});
-	});
 
-	return createTimetable({
-		id: `t-qr-${Date.now().toString(36)}`,
-		name: data.n || labels['timetable.defaultName'],
-		academicConfig: {
-			termStartDate: data.d ?? '',
-			startWeek: data.w?.[0] ?? 1,
-			endWeek: data.w?.[1] ?? 20,
-			periodTimes: (data.p ?? []).map((p) => ({
-				index: p[0],
-				startTime: p[1],
-				endTime: p[2]
-			}))
-		},
-		viewPrefs: {
-			...deriveWeekendViewPrefs(courses),
-			showNonCurrentWeekCourses: false
-		},
-		courses
-	});
+		return createTimetable({
+			id: `t-qr-${Date.now().toString(36)}`,
+			name: data.n || labels['timetable.defaultName'],
+			academicConfig: {
+				termStartDate: data.d ?? '',
+				startWeek: data.w?.[0] ?? 1,
+				endWeek: data.w?.[1] ?? 20,
+				periodTimes: (data.p ?? []).map((p) => ({
+					index: p[0],
+					startTime: p[1],
+					endTime: p[2]
+				}))
+			},
+			viewPrefs: {
+				...deriveWeekendViewPrefs(courses),
+				showNonCurrentWeekCourses: false
+			},
+			courses
+		});
+	} catch (err) {
+		if (err instanceof ImportSlotError) throw err;
+		throw new ImportSlotError('invalid-data', labels['import.error.corrupt']);
+	}
 }
 
 export type { QrCodeImportForm } from './messages';
@@ -179,7 +185,6 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}) {
 		author: 'CQUT OpenProject',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
 		async apply(ctx, t) {
-			const labels = qrCodecLabels(ctx.i18n.locale);
 			const qrCodeImportSchema = createQrCodeImportSchema(t);
 
 			registerImportTab<QrCodeImportForm>(ctx, {
@@ -192,10 +197,10 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}) {
 				component: importComponent,
 				inputSchema: qrCodeImportSchema,
 				async executeImport(inputs) {
-					const content =
-						(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
+					const labels = qrCodecLabels(ctx.i18n.locale);
+					const content = inputs.content as string | undefined;
 					if (!content?.trim()) {
-						throw new Error(t('import.error.empty'));
+						throw new ImportSlotError('no-data', t('import.error.empty'));
 					}
 					return deserializeTimetableFromQr(content, labels);
 				}

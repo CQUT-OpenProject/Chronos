@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { getAppController, resetAppEngine, ensureEngineReady } from './app-engine';
+import {
+	getAppController,
+	resetAppEngine,
+	ensureEngineReady,
+	ensureEngineFullyReady,
+	getProfileBuiltinPlugins
+} from './app-engine';
 import type { ChronosDB } from '$lib/storage/db';
 
 class MockLocalStorage implements Storage {
@@ -81,7 +87,7 @@ describe('app-engine bootstrap', () => {
 		const mockDb = createMockDb();
 		const mockStore = new MockLocalStorage();
 
-		const engine = await ensureEngineReady({ database: mockDb, localStorage: mockStore });
+		const engine = await ensureEngineFullyReady({ database: mockDb, localStorage: mockStore });
 
 		expect(engine).toBeDefined();
 		expect(engine.themes.getTheme('m3-default')).toBeDefined();
@@ -97,5 +103,48 @@ describe('app-engine bootstrap', () => {
 		expect(controller.getSlots('mine.section').length).toBeGreaterThan(0);
 		expect(controller.getSlots('mine.item').length).toBeGreaterThan(0);
 		expect(engine.themes.getThemes().length).toBeGreaterThan(0);
+	});
+
+	it('lists deferred builtins after the engine is fully ready', async () => {
+		const mockDb = createMockDb();
+		const mockStore = new MockLocalStorage();
+		await ensureEngineFullyReady({ database: mockDb, localStorage: mockStore });
+		const ids = getProfileBuiltinPlugins().map((plugin) => plugin.id);
+		expect(ids).toContain('core-shell');
+		expect(ids.length).toBeGreaterThan(1);
+	});
+
+	it('waits for idle-scheduled phase 2 before listing deferred builtins', async () => {
+		let idleQueued: (() => void) | undefined;
+		vi.stubGlobal('requestIdleCallback', (cb: () => void) => {
+			idleQueued = cb;
+			return 1;
+		});
+
+		try {
+			const mockDb = createMockDb();
+			const mockStore = new MockLocalStorage();
+			const fullyReady = ensureEngineFullyReady({ database: mockDb, localStorage: mockStore });
+
+			await ensureEngineReady({ database: mockDb, localStorage: mockStore });
+			expect(typeof idleQueued).toBe('function');
+
+			let settled = false;
+			void fullyReady.then(() => {
+				settled = true;
+			});
+			await Promise.resolve();
+			expect(settled).toBe(false);
+
+			idleQueued?.();
+			await fullyReady;
+			expect(settled).toBe(true);
+
+			const ids = getProfileBuiltinPlugins().map((plugin) => plugin.id);
+			expect(ids).toContain('codec-share');
+			expect(ids.length).toBeGreaterThan(1);
+		} finally {
+			vi.unstubAllGlobals();
+		}
 	});
 });

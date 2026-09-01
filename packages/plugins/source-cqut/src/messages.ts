@@ -4,7 +4,6 @@ import type { HtmlConfirmForm, HtmlImportForm } from './html-parser';
 
 export interface CqutImportForm {
 	username?: string;
-	account?: string;
 	password?: string;
 }
 
@@ -97,6 +96,14 @@ export const SOURCE_CQUT_MESSAGES = {
 		'import.html.confirm.termStartLabel': '学期起始日期',
 		'import.html.confirm.termStartHint': 'HTML 导入需要指定本学期第一周的周一日期。',
 		'import.html.error.termStartRequired': '请选择学期起始日期',
+		'import.html.error.tableNotFound': '未找到教务课表表格结构',
+		'import.html.error.noCourses': 'HTML 中未找到可导入的课程数据',
+		'import.html.timetableDefaultName': '导入的 HTML 课表',
+		'import.online.error.network': '网络连接失败，请稍后重试',
+		'import.online.error.upstream': '教务系统暂时不可用，请稍后重试',
+		'import.online.error.rateLimited': '请求过于频繁，请稍后再试',
+		'import.online.error.validation': '请求参数无效，请检查账号与密码',
+		'import.online.error.dataFormat': '教务返回数据格式异常',
 		'timetable.defaultName': '重庆理工大学课表',
 		'timetable.studentSuffix': '的课表'
 	},
@@ -139,7 +146,42 @@ export const SOURCE_CQUT_MESSAGES = {
 		'import.html.confirm.termStartHint':
 			'HTML import requires the Monday date of the first week of this term.',
 		'import.html.error.termStartRequired': 'Choose the term start date',
+		'import.html.error.tableNotFound': 'Timetable table structure was not found in the HTML',
+		'import.html.error.noCourses': 'No importable course data was found in the HTML',
+		'import.html.timetableDefaultName': 'Imported HTML timetable',
+		'import.online.error.network': 'Network error. Try again later.',
+		'import.online.error.upstream': 'The academic system is unavailable. Try again later.',
+		'import.online.error.rateLimited': 'Too many requests. Try again later.',
+		'import.online.error.validation': 'Invalid request. Check your account and password.',
+		'import.online.error.dataFormat': 'Unexpected response from the academic system.',
 		'timetable.defaultName': 'CQUT Timetable',
 		'timetable.studentSuffix': "'s timetable"
 	}
 } as const;
+
+export function resolveCqutServerErrorMessage(
+	body: import('@chronos/core').PluginServerResponse<unknown>,
+	t: (key: string) => string,
+	fallbackKey = 'import.online.error.authFailed'
+): string {
+	if (body.ok) return t(fallbackKey);
+	const kind = body.error.kind;
+	const keyByKind: Partial<Record<typeof kind, string>> = {
+		Auth: 'import.online.error.authFailed',
+		Validation: 'import.online.error.validation',
+		Network: 'import.online.error.network',
+		Upstream: 'import.online.error.upstream',
+		RateLimited: 'import.online.error.rateLimited',
+		DataFormat: 'import.online.error.dataFormat'
+	};
+	return t(keyByKind[kind] ?? fallbackKey);
+}
+
+export function formatStudentTimetableName(
+	studentName: string,
+	t: (key: string) => string
+): string {
+	const trimmed = studentName.trim();
+	if (!trimmed) return t('timetable.defaultName');
+	return `${trimmed}${t('timetable.studentSuffix')}`;
+}

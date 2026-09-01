@@ -1,12 +1,17 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import {
 	ChronosEngine,
+	ImportSlotError,
 	type ChronosEnv,
 	type HttpResponse,
 	type Timetable,
 	type UserPreferences
 } from '@chronos/core';
 import { cqutPlugin, parseCqutScheduleData, CQUT_DEFAULT_CAMPUS_PERIOD_TIMES } from '../src/index';
+import { SOURCE_CQUT_MESSAGES } from '../src/messages';
+
+const t = (key: string) =>
+	SOURCE_CQUT_MESSAGES['zh-cn'][key as keyof (typeof SOURCE_CQUT_MESSAGES)['zh-cn']];
 
 function createMockEnv(httpResponse?: HttpResponse): ChronosEnv {
 	const timetables = new Map<string, Timetable>();
@@ -208,7 +213,11 @@ describe('cqutPlugin', () => {
 
 		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'cqut-online')!;
 		const ctx = engine.getPluginContext('source-cqut');
-		await expect(sourceSlot.executeImport({}, ctx)).rejects.toThrow('请输入学号与密码');
+		await expect(sourceSlot.executeImport({}, ctx)).rejects.toBeInstanceOf(ImportSlotError);
+		await expect(sourceSlot.executeImport({}, ctx)).rejects.toMatchObject({
+			kind: 'unsupported',
+			message: '请输入学号与密码'
+		});
 	});
 
 	it('parses CQUT server online schedule payload format', () => {
@@ -236,7 +245,9 @@ describe('cqutPlugin', () => {
 					]
 				}
 			},
-			'2024002'
+			'2024002',
+			'liangjiang',
+			t
 		);
 
 		expect(timetable.name).toBe('2024002的课表');

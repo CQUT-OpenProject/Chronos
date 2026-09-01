@@ -24,6 +24,7 @@
 	}: Props = $props();
 
 	const calendarService = new AcademicCalendarService();
+	const hostTranslate = (key: string) => controller.translatePlugin('host-ui', key);
 
 	const timetable = $derived(controller.currentTimetable);
 	const today = $derived(todayIsoDate());
@@ -78,6 +79,7 @@
 			{isCurrentWeek}
 			{currentPeriodIndex}
 			{courseBadges}
+			{hostTranslate}
 		/>
 	</TimetableWallpaperLayer>
 {:else}

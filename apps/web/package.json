@@ -1,7 +1,7 @@
 {
 	"name": "@chronos/web",
 	"private": true,
-	"version": "0.4.1",
+	"version": "0.4.2",
 	"type": "module",
 	"scripts": {
 		"dev": "vp dev .",
@@ -16,7 +16,6 @@
 	"dependencies": {
 		"@chronos/core": "workspace:*",
 		"@chronos/plugin-codec-share": "workspace:*",
-		"@chronos/plugin-source-cqut": "workspace:*",
 		"@chronos/ui-kit": "workspace:*",
 		"@internationalized/date": "^3.12.3",
 		"@material-symbols-svg/svelte": "^0.13.0",
@@ -50,5 +49,8 @@
 		"typescript": "^7.0.2",
 		"vite": "catalog:",
 		"vite-plus": "catalog:"
+	},
+	"optionalDependencies": {
+		"@chronos/plugin-source-cqut": "workspace:*"
 	}
 }

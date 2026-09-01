@@ -26,7 +26,7 @@
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
 		if (errorMessage) {
-			alert(errorMessage);
+			controller?.notify(errorMessage, 'error');
 		}
 	}
 
@@ -41,7 +41,7 @@
 			else notifyTransferMessages();
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : pt('import.error.decodeFailed');
-			alert(msg);
+			controller?.notify(msg, 'error');
 		} finally {
 			loading = false;
 		}

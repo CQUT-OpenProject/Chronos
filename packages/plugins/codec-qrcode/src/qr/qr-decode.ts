@@ -2,8 +2,6 @@
  * QR Code image decoder leveraging Canvas rasterization and standard Web BarcodeDetector API.
  */
 
-import { qrCodecLabels } from '../messages';
-
 export const CHRONOS_QR_PNG_KEYWORD = 'chronos-qr';
 
 function readU32BE(bytes: Uint8Array, offset: number): number {
@@ -81,13 +79,10 @@ type DecodeLabelKey = 'decode.browserOnly' | 'decode.unreadableImage' | 'decode.
 
 export async function decodeQrFromBlob(
 	blob: Blob,
-	labelFor?: (key: DecodeLabelKey) => string
+	labelFor: (key: DecodeLabelKey) => string
 ): Promise<string> {
-	const labels = qrCodecLabels('zh-cn');
-	const textFor = (key: DecodeLabelKey) => labelFor?.(key) ?? labels[key];
-
 	if (typeof window === 'undefined') {
-		throw new Error(textFor('decode.browserOnly'));
+		throw new Error(labelFor('decode.browserOnly'));
 	}
 
 	const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -110,7 +105,7 @@ export async function decodeQrFromBlob(
 		const img = new Image();
 		await new Promise<void>((resolve, reject) => {
 			img.onload = () => resolve();
-			img.onerror = () => reject(new Error(textFor('decode.unreadableImage')));
+			img.onerror = () => reject(new Error(labelFor('decode.unreadableImage')));
 			img.src = url;
 		});
 
@@ -135,5 +130,5 @@ export async function decodeQrFromBlob(
 		URL.revokeObjectURL(url);
 	}
 
-	throw new Error(textFor('decode.noQrFound'));
+	throw new Error(labelFor('decode.noQrFound'));
 }

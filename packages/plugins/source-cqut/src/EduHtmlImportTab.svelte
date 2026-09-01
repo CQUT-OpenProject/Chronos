@@ -20,7 +20,7 @@
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
 		if (errorMessage) {
-			alert(errorMessage);
+			controller?.notify(errorMessage, 'error');
 		}
 	}
 
@@ -30,10 +30,9 @@
 		if (!file) return;
 		loading = true;
 		try {
-			const fileContent = await file.text();
+			const html = await file.text();
 			const ok = await transfer.previewWithSlot('edu-html', {
-				file: fileContent,
-				fileContent
+				file: html
 			});
 			if (ok) onContinue();
 			else notifyTransferMessages();

@@ -3,6 +3,10 @@ import { ChronosEngine, type ChronosEnv, type UserPreferences } from '@chronos/c
 import { parseHTML } from 'linkedom';
 import { cqutPlugin } from '../src/index';
 import { parseHtmlTimetable, finalizeHtmlPreview } from '../src/html-parser';
+import { SOURCE_CQUT_MESSAGES } from '../src/messages';
+
+const t = (key: string) =>
+	SOURCE_CQUT_MESSAGES['zh-cn'][key as keyof (typeof SOURCE_CQUT_MESSAGES)['zh-cn']];
 
 function customDocParser(html: string): Document {
 	const { document } = parseHTML(html);
@@ -74,7 +78,7 @@ const sampleHtml = `
 
 describe('cqut html parser', () => {
 	it('parses educational HTML timetable structure', () => {
-		const timetable = parseHtmlTimetable(sampleHtml, { customDocParser });
+		const timetable = parseHtmlTimetable(sampleHtml, { customDocParser, t });
 		expect(timetable.name).toBe('王五的课表');
 		expect(timetable.courses.length).toBe(1);
 
@@ -91,7 +95,7 @@ describe('cqut html parser', () => {
 	});
 
 	it('parses educational HTML timetable structure without campus options', () => {
-		const timetable = parseHtmlTimetable(sampleHtml, { customDocParser });
+		const timetable = parseHtmlTimetable(sampleHtml, { customDocParser, t });
 		expect(timetable.academicConfig.periodTimes).toEqual([]);
 		expect(timetable.importMetadata).toBeUndefined();
 	});
@@ -101,6 +105,7 @@ describe('cqut html parser', () => {
 		const finalized = finalizeHtmlPreview(
 			preview,
 			{ campusId: 'huaxi', termStartDate: '2025-02-24' },
+			t,
 			'2025-02-20'
 		);
 		expect(finalized.academicConfig.termStartDate).toBe('2025-02-24');
