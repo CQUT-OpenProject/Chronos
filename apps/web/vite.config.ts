@@ -118,6 +118,7 @@ export default defineConfig(({ mode }) => {
 				},
 				workbox: {
 					globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
+					globIgnores: ['**/official-plugins/**'],
 					navigateFallback: null,
 					runtimeCaching: [
 						{
@@ -126,6 +127,14 @@ export default defineConfig(({ mode }) => {
 							options: {
 								cacheName: 'pages-cache',
 								expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 }
+							}
+						},
+						{
+							urlPattern: /\/official-plugins\//i,
+							handler: 'CacheFirst',
+							options: {
+								cacheName: 'official-plugins',
+								expiration: { maxEntries: 64, maxAgeSeconds: 2_592_000 }
 							}
 						},
 						{

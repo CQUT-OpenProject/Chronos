@@ -3,16 +3,14 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
+	import type { Component } from 'svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { ShellTabController } from '$lib/shell/shell-tab.svelte';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableScreen from '$lib/components/timetable/TimetableScreen.svelte';
-	import CourseDetailSheet from '$lib/components/timetable/CourseDetailSheet.svelte';
 	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
-	import MineScreen from '$lib/components/mine/MineScreen.svelte';
-	import { PluginScreenContainer } from '@chronos/ui-kit';
 	import { getAppController } from '$lib/services/app-engine';
 
 	interface Props {
@@ -37,6 +35,45 @@
 	let detailOpen = $state(false);
 	let detailCourseId = $state<string | null>(null);
 
+	let MineScreen = $state<Component<{ shell: AppShellController }> | null>(null);
+	let CourseDetailSheet = $state<Component<{
+		open: boolean;
+		courseId: string | null;
+	}> | null>(null);
+	let PluginScreenContainer = $state<Component<{
+		controller: ReturnType<typeof getAppController>;
+		pluginId: string;
+	}> | null>(null);
+
+	$effect(() => {
+		if (activeTabId === 'mine' && !MineScreen) {
+			void import('$lib/components/mine/MineScreen.svelte').then((module) => {
+				MineScreen = module.default;
+			});
+		}
+	});
+
+	$effect(() => {
+		if (
+			ready &&
+			activeTabId === 'timetable' &&
+			screen.state.hasLoadedAppState &&
+			!CourseDetailSheet
+		) {
+			void import('$lib/components/timetable/CourseDetailSheet.svelte').then((module) => {
+				CourseDetailSheet = module.default;
+			});
+		}
+	});
+
+	$effect(() => {
+		if (pluginId && !PluginScreenContainer) {
+			void import('@chronos/ui-kit').then((module) => {
+				PluginScreenContainer = module.PluginScreenContainer;
+			});
+		}
+	});
+
 	function openCourseDetail(courseId: string) {
 		detailCourseId = courseId;
 		detailOpen = true;
@@ -56,13 +93,25 @@
 		onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
 		onCourseClick={openCourseDetail}
 	/>
-	<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
+	{#if CourseDetailSheet}
+		<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
+	{/if}
 {:else if activeTabId === 'timetable'}
 	<div class="flex min-h-[60vh] items-center justify-center p-4">
 		<LoadingIndicator />
 	</div>
 {:else if activeTabId === 'mine'}
-	<MineScreen {shell} />
-{:else if pluginId}
+	{#if MineScreen}
+		<MineScreen {shell} />
+	{:else}
+		<div class="flex min-h-[60vh] items-center justify-center p-4">
+			<LoadingIndicator />
+		</div>
+	{/if}
+{:else if pluginId && PluginScreenContainer}
 	<PluginScreenContainer {controller} {pluginId} />
+{:else if pluginId}
+	<div class="flex min-h-[60vh] items-center justify-center p-4">
+		<LoadingIndicator />
+	</div>
 {/if}
