@@ -24,7 +24,7 @@
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
 		if (errorMessage) {
-			alert(errorMessage);
+			controller?.notify(errorMessage, 'error');
 		}
 	}
 
@@ -47,7 +47,7 @@
 							SHARE_CODEC_MESSAGES,
 							'import.ui.clipboardError'
 						);
-			alert(msg);
+			controller?.notify(msg, 'error');
 		} finally {
 			loading = false;
 		}

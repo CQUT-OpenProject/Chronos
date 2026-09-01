@@ -20,7 +20,7 @@
 	function notifyTransferMessages() {
 		const { errorMessage } = transfer.state;
 		if (errorMessage) {
-			alert(errorMessage);
+			controller?.notify(errorMessage, 'error');
 		}
 	}
 

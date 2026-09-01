@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import {
 	ChronosEngine,
+	ImportSlotError,
 	type ChronosEnv,
 	type HttpResponse,
 	type Timetable,
@@ -212,7 +213,11 @@ describe('cqutPlugin', () => {
 
 		const sourceSlot = engine.slots.getSlotItem('import.source.tab', 'cqut-online')!;
 		const ctx = engine.getPluginContext('source-cqut');
-		await expect(sourceSlot.executeImport({}, ctx)).rejects.toThrow('请输入学号与密码');
+		await expect(sourceSlot.executeImport({}, ctx)).rejects.toBeInstanceOf(ImportSlotError);
+		await expect(sourceSlot.executeImport({}, ctx)).rejects.toMatchObject({
+			kind: 'unsupported',
+			message: '请输入学号与密码'
+		});
 	});
 
 	it('parses CQUT server online schedule payload format', () => {

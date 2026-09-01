@@ -47,13 +47,7 @@
 	);
 
 	function pt(key: keyof (typeof TODAY_MESSAGES)['zh-cn'], params?: Record<string, unknown>) {
-		let text = pluginText(controller, TODAY_PLUGIN_ID, TODAY_MESSAGES, key);
-		if (params) {
-			for (const [name, value] of Object.entries(params)) {
-				text = text.replace(`{${name}}`, String(value));
-			}
-		}
-		return text;
+		return pluginText(controller, TODAY_PLUGIN_ID, TODAY_MESSAGES, key, params);
 	}
 
 	function formatHeaderDate(iso: string): string {

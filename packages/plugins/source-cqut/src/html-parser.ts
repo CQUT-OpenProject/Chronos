@@ -1,6 +1,7 @@
 import type { Timetable, Course } from '@chronos/core';
 import {
 	AcademicCalendarService,
+	ImportSlotError,
 	createCourse,
 	createTimetable,
 	deriveWeekendViewPrefs,
@@ -35,7 +36,7 @@ export function finalizeHtmlPreview(
 	const campusId = confirmInputs.campusId ?? DEFAULT_CQUT_CAMPUS_ID;
 	const rawTermStartDate = confirmInputs.termStartDate?.trim() ?? '';
 	if (!rawTermStartDate) {
-		throw new Error(t('import.html.error.termStartRequired'));
+		throw new ImportSlotError('invalid-data', t('import.html.error.termStartRequired'));
 	}
 
 	const termStartDate = calendarService.normalizeTermStartDate(rawTermStartDate, referenceDate);
@@ -141,7 +142,7 @@ export function parseHtmlTimetable(
 		doc.querySelector('table[id*="kbgrid"]');
 
 	if (!table) {
-		throw new Error(t('import.html.error.tableNotFound'));
+		throw new ImportSlotError('invalid-data', t('import.html.error.tableNotFound'));
 	}
 
 	const titleContainer = table.querySelector('.timetable_title');
@@ -206,7 +207,7 @@ export function parseHtmlTimetable(
 	});
 
 	if (courses.length === 0) {
-		throw new Error(t('import.html.error.noCourses'));
+		throw new ImportSlotError('no-data', t('import.html.error.noCourses'));
 	}
 
 	let maxWeek = 20;

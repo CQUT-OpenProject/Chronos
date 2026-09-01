@@ -3,6 +3,7 @@ import {
 	defineChronosPlugin,
 	callPluginServerJson,
 	registerImportTab,
+	ImportSlotError,
 	type ChronosMountable
 } from '@chronos/core';
 import {
@@ -265,14 +266,14 @@ export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 				const password = form.password;
 
 				if (!username || !password?.trim()) {
-					throw new Error(t('import.online.error.credentials'));
+					throw new ImportSlotError('unsupported', t('import.online.error.credentials'));
 				}
 
 				activeCtx.actions.notify(t('import.online.notify.connecting'), 'info');
 
 				const http = activeCtx.service(IHttpService);
 				if (!http.proxy) {
-					throw new Error(t('import.online.error.proxyUnsupported'));
+					throw new ImportSlotError('unsupported', t('import.online.error.proxyUnsupported'));
 				}
 
 				const { response, body } = await callPluginServerJson<CqutScheduleRawInput>(
@@ -283,7 +284,7 @@ export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 				);
 
 				if (!response.ok || !body.ok) {
-					throw new Error(resolveCqutServerErrorMessage(body, t));
+					throw new ImportSlotError('network', resolveCqutServerErrorMessage(body, t));
 				}
 
 				return parseCqutScheduleData(body.payload, username, DEFAULT_CQUT_CAMPUS_ID, t);
@@ -292,7 +293,7 @@ export function createCqutPlugin(options: CreateCqutPluginOptions = {}) {
 			async function doHtmlImport(inputs: HtmlImportForm): Promise<Timetable> {
 				const fileContent = inputs.file;
 				if (!fileContent || typeof fileContent !== 'string') {
-					throw new Error(t('import.html.error.invalidFile'));
+					throw new ImportSlotError('no-data', t('import.html.error.invalidFile'));
 				}
 				return parseHtmlTimetable(fileContent, {
 					campusId: DEFAULT_CQUT_CAMPUS_ID,
