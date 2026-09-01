@@ -1,6 +1,6 @@
 # 部署指南
 
-面对不同的部署需求，Chronos 支持通过两个独立的、互不绑定的环境变量导出不同的应用形态：
+面对不同的部署需求，Chronos 通过两个环境变量导出不同形态：`CHRONOS_PROFILE` 选产品变体，`CHRONOS_DEPLOY_TARGET` 选适配器。两者可独立设置；**未设** `CHRONOS_PROFILE` 时，pages 缺省 `chronos-default`，否则 `chronos-cqut`（codegen 与运行装配共用 `resolveProfileId`）。
 
 | 环境变量                | 控制什么                                 |
 | ----------------------- | ---------------------------------------- |
@@ -258,7 +258,7 @@ export default defineChronosPlugin({
 
 ### Profile 内置插件打包
 
-`apps/web` 的 builtin 列表由 `chronos-profile-plugin` 按 `CHRONOS_PROFILE` 生成 `available-plugins.generated.ts`；`chronos-default` 构建不会静态 import `@chronos/plugin-source-cqut`。修改 profile 启用插件时，同步更新 `profile-registry.ts` 与 `profile-definitions.ts`，并运行 `node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts`（`prepare` 也会执行）。
+`apps/web` 的 builtin 列表由 `chronos-profile-plugin` 按 `CHRONOS_PROFILE` 生成 `available-plugins.generated.ts`；`chronos-default` 构建不会静态 import `@chronos/plugin-source-cqut`。修改 profile 启用插件时只改 `profile-definitions.ts`，并运行 `node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts`（`prepare` 也会执行）。
 
 ### 官方插件 Tailwind
 

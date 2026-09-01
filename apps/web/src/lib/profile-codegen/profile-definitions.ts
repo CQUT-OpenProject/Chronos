@@ -80,8 +80,14 @@ export const SERVER_PLUGIN_MODULES: Record<
 	}
 };
 
-export function resolveProfileId(): string {
-	return process.env.CHRONOS_PROFILE ?? 'chronos-cqut';
+export type ProfileResolveEnv = {
+	CHRONOS_PROFILE?: string;
+	CHRONOS_DEPLOY_TARGET?: string;
+};
+
+export function resolveProfileId(env: ProfileResolveEnv = process.env): string {
+	if (env.CHRONOS_PROFILE) return env.CHRONOS_PROFILE;
+	return env.CHRONOS_DEPLOY_TARGET === 'pages' ? 'chronos-default' : 'chronos-cqut';
 }
 
 function resolveProfile(profileId: string): ChronosProfile {
