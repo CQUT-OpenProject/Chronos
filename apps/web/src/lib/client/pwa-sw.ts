@@ -11,16 +11,25 @@ export function isSwUpdatePending(): boolean {
 	return needRefresh;
 }
 
-export function ensurePwaSwRegistered() {
-	if (registered || typeof window === 'undefined') return;
-	registered = true;
-
+function registerServiceWorker() {
 	updateServiceWorker = registerSW({
 		immediate: true,
 		onNeedRefresh() {
 			needRefresh = true;
 		}
 	});
+}
+
+export function ensurePwaSwRegistered() {
+	if (registered || typeof window === 'undefined') return;
+	registered = true;
+
+	const schedule = () => registerServiceWorker();
+	if (typeof requestIdleCallback !== 'undefined') {
+		requestIdleCallback(schedule);
+	} else {
+		requestAnimationFrame(schedule);
+	}
 }
 
 export async function checkAndApplySwUpdate(): Promise<boolean> {

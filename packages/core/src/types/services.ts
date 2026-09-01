@@ -105,3 +105,9 @@ export interface IAnalyticsService {
 	track(event: string, properties?: Record<string, unknown>): void;
 }
 export const IAnalyticsService = createServiceIdentifier<IAnalyticsService>('analytics');
+
+// 6. Host navigation port (optional — opens host-specific routes from plugins)
+export interface IHostNavigation {
+	openCourseEditor(courseId: string): void;
+}
+export const IHostNavigation = createServiceIdentifier<IHostNavigation>('hostNavigation');

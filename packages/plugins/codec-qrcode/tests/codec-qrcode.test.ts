@@ -181,11 +181,15 @@ describe('codec-qrcode high-compression serialization & slot execution', () => {
 		await engine.loadPlugin(qrPlugin);
 		const importSlot = engine.slots.getSlotItem('import.source.tab', 'qrcode');
 
-		await expect(importSlot!.executeImport({ content: '' })).rejects.toThrow(
-			'未识别到有效的二维码内容'
-		);
+		await expect(importSlot!.executeImport({ content: '' })).rejects.toMatchObject({
+			kind: 'no-data',
+			message: '未识别到有效的二维码内容'
+		});
 		await expect(
 			importSlot!.executeImport({ content: 'invalid-content-without-data' })
-		).rejects.toThrow('二维码数据格式损坏或无法解析为课表');
+		).rejects.toMatchObject({
+			kind: 'invalid-data',
+			message: '二维码数据格式损坏或无法解析为课表'
+		});
 	});
 });

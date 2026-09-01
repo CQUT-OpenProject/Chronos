@@ -10,6 +10,23 @@
 		/>
 		<meta name="theme-color" content="#0068B7" />
 
+		<script>
+			(function () {
+				try {
+					var mode = localStorage.getItem('chronos_preferences:theme_mode');
+					var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+					var dark = mode === 'dark' || ((mode === 'auto' || !mode) && prefersDark);
+					if (dark) {
+						document.documentElement.classList.add('dark');
+					}
+					var meta = document.querySelector('meta[name="theme-color"]');
+					if (meta) {
+						meta.setAttribute('content', dark ? '#1a1c1e' : '#0068B7');
+					}
+				} catch (e) {}
+			})();
+		</script>
+
 		<meta name="text-scale" content="scale" />
 		<script>
 			window.__chronosInstallPrompt = null;

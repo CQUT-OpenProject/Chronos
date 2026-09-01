@@ -11,6 +11,7 @@ import { createChronosAlias } from '../../scripts/resolve-chronos-aliases.ts';
 import { writeGeneratedThemeCss } from './src/lib/theme/theme';
 import { writeGeneratedVersionJson } from './src/lib/content/releases/version-generator';
 import { chronosProfilePlugin } from './src/lib/profile-codegen/chronos-profile-plugin';
+import { resolveProfileId } from './src/lib/profile-codegen/profile-definitions';
 
 const webRoot = fileURLToPath(new URL('.', import.meta.url));
 const monorepoRoot = fileURLToPath(new URL('../..', import.meta.url));
@@ -43,9 +44,7 @@ export default defineConfig(({ mode }) => {
 		},
 		define: {
 			__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
-			__CHRONOS_PROFILE__: JSON.stringify(
-				process.env.CHRONOS_PROFILE ?? (isPagesBuild ? 'chronos-default' : 'chronos-cqut')
-			),
+			__CHRONOS_PROFILE__: JSON.stringify(resolveProfileId()),
 			__ANALYTICS_ENABLED__: JSON.stringify(
 				mode === 'test' || Boolean(env.PUBLIC_POSTHOG_KEY?.trim())
 			)
@@ -118,6 +117,7 @@ export default defineConfig(({ mode }) => {
 				},
 				workbox: {
 					globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
+					globIgnores: ['**/official-plugins/**'],
 					navigateFallback: null,
 					runtimeCaching: [
 						{
@@ -126,6 +126,14 @@ export default defineConfig(({ mode }) => {
 							options: {
 								cacheName: 'pages-cache',
 								expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 }
+							}
+						},
+						{
+							urlPattern: /\/official-plugins\//i,
+							handler: 'CacheFirst',
+							options: {
+								cacheName: 'official-plugins',
+								expiration: { maxEntries: 64, maxAgeSeconds: 2_592_000 }
 							}
 						},
 						{

@@ -4,6 +4,7 @@
 	import {
 		placeCapsules,
 		type Course,
+		type CoursePaletteEntry,
 		type PlacedCourseCapsule,
 		type TimetableCourseDisplayModel,
 		type TimetableGridModel
@@ -21,14 +22,8 @@
 		calculatePeriodCenterScrollOffset,
 		calculatePeriodOffsetByIndex
 	} from '$lib/timetable/period-scroll';
-	import {
-		computeDelayUntilNextCurrentTimeRefreshMillis,
-		currentTimeMinutes,
-		findCurrentPeriodIndex,
-		parsePeriodRanges,
-		type CoursePaletteEntry
-	} from '@chronos/core';
 	import { getAppController } from '$lib/services/app-engine';
+	import { trackEvent } from '$lib/client/analytics';
 
 	import {
 		timetableBodyTintClass,
@@ -36,14 +31,13 @@
 		timetableSolidBgClass
 	} from '@chronos/ui-kit';
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
-	import { createTimetableInteractionMediator } from '$lib/timetable/timetable-interaction-mediator';
 
 	const SCROLL_ROW_HEIGHT = '5.5rem';
 
 	interface Props {
 		displayedWeek: number;
 		isCurrentWeek: boolean;
-		currentPeriodIndex?: number | null;
+		currentPeriodIndex: number | null;
 		expandedSlots?: ReadonlySet<string>;
 		onExpandSlot?: (slotKey: string) => void;
 		gridModel: TimetableGridModel;
@@ -59,7 +53,7 @@
 	let {
 		displayedWeek,
 		isCurrentWeek,
-		currentPeriodIndex: propCurrentPeriodIndex,
+		currentPeriodIndex,
 		expandedSlots: propExpandedSlots,
 		onExpandSlot,
 		gridModel,
@@ -79,13 +73,10 @@
 	let gridBodyWidth = $state(0);
 	let centeredFor = $state<string | null>(null);
 	let internalExpandedSlots = $state(new Set<string>());
-	let now = $state(new Date());
 
 	const effectiveExpandedSlots = $derived(propExpandedSlots ?? internalExpandedSlots);
-	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
-	const mediator = $derived(createTimetableInteractionMediator({ onCourseClick }));
 
 	const placements = $derived(
 		placeCapsules({
@@ -98,12 +89,6 @@
 			layoutMode,
 			capsuleCornerStyle
 		})
-	);
-
-	const currentPeriodIndex = $derived(
-		propCurrentPeriodIndex !== undefined
-			? propCurrentPeriodIndex
-			: findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
 	);
 
 	const solidBgClass = $derived(timetableSolidBgClass(hasDynamicBackground));
@@ -181,29 +166,12 @@
 		}
 	});
 
-	$effect(() => {
-		if (propCurrentPeriodIndex !== undefined) return;
-
-		let timeoutId: ReturnType<typeof setTimeout>;
-
-		const schedule = () => {
-			const delay = computeDelayUntilNextCurrentTimeRefreshMillis(new Date(), parsedPeriods);
-			timeoutId = setTimeout(() => {
-				now = new Date();
-				schedule();
-			}, delay);
-		};
-
-		schedule();
-		return () => clearTimeout(timeoutId);
-	});
-
 	function dayOfMonth(date: string): string {
 		return date.slice(8, 10);
 	}
 
 	function expandSlot(key: string) {
-		mediator.handleOverlapExpand(key);
+		trackEvent('timetable_overlap_expand');
 		if (onExpandSlot) {
 			onExpandSlot(key);
 		} else {
@@ -360,7 +328,7 @@
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
 	{@const handlers = createCourseCardHandlers(placed.course, {
-		onCourseClick: mediator.handleCourseClick
+		onCourseClick
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}

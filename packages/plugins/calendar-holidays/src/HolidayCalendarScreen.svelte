@@ -28,9 +28,11 @@
 			: []
 	);
 	const syncYears = $derived(
-		timetable ? inferYearsFromAcademicConfig(timetable.academicConfig).join('、') : ''
+		timetable
+			? inferYearsFromAcademicConfig(timetable.academicConfig).join(pt('screen.sync.yearSeparator'))
+			: ''
 	);
-	const groupedHolidays = $derived(groupByMonth(termHolidays));
+	const groupedHolidays = $derived(groupByMonth(termHolidays, controller.currentLocale));
 	const hasSyncedBefore = $derived(Boolean(holidayCalendar?.syncedAt));
 
 	function pt(key: keyof (typeof HOLIDAY_MESSAGES)['zh-cn']) {
@@ -38,11 +40,13 @@
 	}
 
 	function groupByMonth(
-		holidays: CalendarHoliday[]
+		holidays: CalendarHoliday[],
+		locale: string
 	): Array<{ month: string; items: CalendarHoliday[] }> {
 		const groups = new Map<string, CalendarHoliday[]>();
 		for (const holiday of holidays) {
-			const month = `${Number(holiday.date.slice(5, 7))}月`;
+			const monthNumber = Number(holiday.date.slice(5, 7));
+			const month = pt('screen.list.month').replace('{month}', String(monthNumber));
 			const bucket = groups.get(month) ?? [];
 			bucket.push(holiday);
 			groups.set(month, bucket);
@@ -50,13 +54,19 @@
 		return [...groups.entries()].map(([month, items]) => ({ month, items }));
 	}
 
-	function formatHolidayRow(holiday: CalendarHoliday): string {
-		const month = Number(holiday.date.slice(5, 7));
-		const day = Number(holiday.date.slice(8, 10));
-		const weekday = new Date(`${holiday.date}T12:00:00`).toLocaleDateString('zh-CN', {
+	function formatHolidayRow(holiday: CalendarHoliday, locale: string): string {
+		const date = new Date(`${holiday.date}T12:00:00`);
+		const dateLabel = date.toLocaleDateString(locale, {
+			month: 'long',
+			day: 'numeric'
+		});
+		const weekday = date.toLocaleDateString(locale, {
 			weekday: 'short'
 		});
-		return `${month}月${day}日 · ${holiday.label} · ${weekday}`;
+		return pt('screen.list.row')
+			.replace('{date}', dateLabel)
+			.replace('{label}', holiday.label)
+			.replace('{weekday}', weekday);
 	}
 
 	function formatSyncedAt(syncedAt?: number): string {
@@ -144,7 +154,9 @@
 					<ul class="divide-y divide-outline/10">
 						{#each group.items as holiday (holiday.date)}
 							<li class="py-3">
-								<span class="text-body-medium text-on-surface">{formatHolidayRow(holiday)}</span>
+								<span class="text-body-medium text-on-surface"
+									>{formatHolidayRow(holiday, controller.currentLocale)}</span
+								>
 							</li>
 						{/each}
 					</ul>

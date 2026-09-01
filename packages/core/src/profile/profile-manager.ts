@@ -3,9 +3,12 @@ import type { ChronosPlugin } from '../types/context';
 import type { Disposable } from '../types/services';
 import { type ChronosProfile, resolveLayeredPluginConfig } from './profile';
 
+export type ResolveProfilePlugin = (id: string) => Promise<ChronosPlugin | undefined>;
+
 export class ProfileManager implements Disposable {
 	private activeProfile: ChronosProfile | null = null;
 	private loadedHandles: Disposable[] = [];
+	private loadedPlugins: ChronosPlugin[] = [];
 
 	constructor(private engine: ChronosEngine) {}
 
@@ -13,44 +16,60 @@ export class ProfileManager implements Disposable {
 		return this.activeProfile;
 	}
 
+	listLoadedPlugins(): readonly ChronosPlugin[] {
+		return this.loadedPlugins;
+	}
+
+	async loadPlugins(
+		profile: ChronosProfile,
+		resolvePlugin: ResolveProfilePlugin,
+		filter: (pluginId: string) => boolean = () => true
+	): Promise<void> {
+		this.activeProfile = profile;
+		await this.loadMatching(profile, resolvePlugin, filter);
+	}
+
 	async applyProfile(
 		profile: ChronosProfile,
-		availablePlugins: readonly ChronosPlugin[]
+		resolvePlugin: ResolveProfilePlugin
 	): Promise<Disposable> {
-		// Clean up previous profile loads
 		this.disposeLoaded();
 		this.activeProfile = profile;
 
-		// 1. Apply theme preset if specified
 		if (profile.defaultTheme) {
 			this.engine.setTheme(profile.defaultTheme);
 		}
 
-		// 2. Apply user preferences preset if specified
 		if (profile.preferences) {
 			await this.engine.updatePreferences(profile.preferences);
 		}
 
-		// 3. Assemble and activate plugins according to profile configuration
-		const pluginMap = new Map<string, ChronosPlugin>();
-		for (const plugin of availablePlugins) {
-			pluginMap.set(plugin.id, plugin);
-		}
+		await this.loadMatching(profile, resolvePlugin, () => true);
 
-		for (const profilePlugin of profile.plugins) {
-			if (profilePlugin.enabled === false) {
-				continue;
+		return {
+			dispose: () => {
+				this.disposeLoaded();
 			}
+		};
+	}
 
-			const targetPlugin = pluginMap.get(profilePlugin.id);
+	private async loadMatching(
+		profile: ChronosProfile,
+		resolvePlugin: ResolveProfilePlugin,
+		filter: (pluginId: string) => boolean
+	): Promise<void> {
+		for (const profilePlugin of profile.plugins) {
+			if (profilePlugin.enabled === false) continue;
+			if (!filter(profilePlugin.id)) continue;
+
+			const targetPlugin = await resolvePlugin(profilePlugin.id);
 			if (!targetPlugin) {
 				console.warn(
-					`[ProfileManager] Plugin "${profilePlugin.id}" declared in profile "${profile.profileId}" was not found in available plugins.`
+					`[ProfileManager] Plugin "${profilePlugin.id}" declared in profile "${profile.profileId}" was not found.`
 				);
 				continue;
 			}
 
-			// Pre-configure layered defaults (profile disabledSlots → plugin config)
 			const profileConfig = {
 				...profilePlugin.config,
 				...(profilePlugin.disabledSlots?.length
@@ -71,13 +90,8 @@ export class ProfileManager implements Disposable {
 
 			const handle = await this.engine.loadPlugin(pluginToLoad);
 			this.loadedHandles.push(handle);
+			this.loadedPlugins.push(pluginToLoad);
 		}
-
-		return {
-			dispose: () => {
-				this.disposeLoaded();
-			}
-		};
 	}
 
 	private disposeLoaded(): void {
@@ -89,6 +103,7 @@ export class ProfileManager implements Disposable {
 			}
 		}
 		this.loadedHandles = [];
+		this.loadedPlugins = [];
 	}
 
 	dispose(): void {

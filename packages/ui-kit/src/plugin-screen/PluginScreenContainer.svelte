@@ -12,6 +12,9 @@
 
 	let { controller, pluginId, viewId = 'index' }: Props = $props();
 
+	const hostT = (key: string, params?: Record<string, unknown>) =>
+		controller.translatePlugin('host-ui', key, params);
+
 	const screenSlot = $derived(
 		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
 	);
@@ -38,7 +41,10 @@
 			const ctx = controller.getPluginContext(pluginId);
 			await ctx.updateConfig(formValues);
 		} catch (err: unknown) {
-			saveError = err instanceof Error ? err.message : '保存失败';
+			saveError =
+				err instanceof Error
+					? hostT('plugins.config.saveFailed', { message: err.message })
+					: hostT('plugins.config.saveFailed', { message: hostT('common.loadFailed') });
 		} finally {
 			saving = false;
 		}
@@ -64,7 +70,7 @@
 				disabled={saving}
 				onclick={saveSchemaConfig}
 			>
-				{saving ? '保存中…' : '保存设置'}
+				{saving ? hostT('plugins.config.saving') : hostT('plugins.config.save')}
 			</button>
 		</div>
 	</div>
@@ -73,8 +79,10 @@
 		<div
 			class="flex flex-col items-center justify-center py-16 text-center text-on-surface-variant"
 		>
-			<p class="text-base font-medium">页面不存在或插件已卸载</p>
-			<p class="mt-1 text-xs opacity-75">Plugin: {pluginId} / View: {viewId}</p>
+			<p class="text-base font-medium">{hostT('pluginScreen.notFound')}</p>
+			<p class="mt-1 text-xs opacity-75">
+				{hostT('pluginScreen.notFoundDetail', { pluginId, viewId })}
+			</p>
 		</div>
 	</div>
 {/if}

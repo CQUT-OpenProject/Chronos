@@ -29,6 +29,15 @@ function resolveMessageFallback(
 	return messages[locale]?.[key] ?? messages.en?.[key] ?? key;
 }
 
+declare const __CHRONOS_PLUGIN_VERSION__: string | undefined;
+
+function readBundledPluginVersion(): string {
+	if (typeof __CHRONOS_PLUGIN_VERSION__ === 'string' && __CHRONOS_PLUGIN_VERSION__) {
+		return __CHRONOS_PLUGIN_VERSION__;
+	}
+	return '1.0.0';
+}
+
 export function defineChronosPlugin<Config extends object = Record<string, unknown>>(
 	options: DefineChronosPluginOptions<Config>
 ): ChronosPlugin<Config> {
@@ -38,7 +47,7 @@ export function defineChronosPlugin<Config extends object = Record<string, unkno
 		id: options.id,
 		name: () =>
 			translate?.(options.nameKey) ?? resolveMessageFallback(options.messages, options.nameKey),
-		version: options.version ?? '1.0.0',
+		version: options.version ?? readBundledPluginVersion(),
 		description: options.descriptionKey
 			? () =>
 					translate?.(options.descriptionKey!) ??

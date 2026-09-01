@@ -15,7 +15,8 @@ import {
 	IStorageService,
 	IVaultService,
 	IRuntimeService,
-	IAnalyticsService
+	IAnalyticsService,
+	IHostNavigation
 } from '../types/services';
 import type { ChronosPlugin } from '../types/context';
 import type { ChronosEvents } from '../types/context';
@@ -30,9 +31,11 @@ import { ScopedContext, type EngineContextHost } from './scoped-context';
 import { AcademicCalendarService } from '../engine/calendar';
 import { formatIsoDate } from '../engine/date';
 import {
+	createDayClock,
 	currentTimeMinutes,
 	findCurrentPeriodIndex,
-	parsePeriodRanges
+	parsePeriodRanges,
+	type DayClockHandle
 } from '../engine/period-clock';
 import { I18nCatalog, interpolateMessage } from '../i18n/i18n-catalog';
 import type { ThemeContribution } from '../types/contributions';
@@ -118,6 +121,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	private storageSubscription?: Disposable;
+	private dayClock: DayClockHandle | null = null;
 	private calendarService = new AcademicCalendarService();
 
 	private registerEnvProviders(env: ChronosEnv): void {
@@ -138,6 +142,9 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		}
 		if (!this.services.has(IAnalyticsService) && env.analytics) {
 			this.services.register(IAnalyticsService, env.analytics);
+		}
+		if (!this.services.has(IHostNavigation) && env.navigation) {
+			this.services.register(IHostNavigation, env.navigation);
 		}
 	}
 
@@ -217,6 +224,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		}
 
 		this.updateTime();
+		this.startDayClock();
 
 		if (this._currentTimetable) {
 			await this.badges.recalculate(this._currentTimetable.courses);
@@ -248,6 +256,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				if (updated) {
 					this._currentTimetable = updated;
 					this.updateTime();
+					this.dayClock?.reschedule();
 					await this.badges.recalculate(updated.courses);
 					this.events.emit('timetable:updated', { timetable: updated });
 				}
@@ -276,6 +285,19 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.events.emit('preferences:updated', { preferences: this._userPreferences });
 	}
 
+	private startDayClock(): void {
+		this.dayClock?.dispose();
+		this.dayClock = createDayClock({
+			getPeriodTimes: () => this._currentTimetable?.academicConfig.periodTimes ?? [],
+			onMidnight: () => {
+				this.updateTime();
+			},
+			onPeriodBoundary: () => {
+				this.updateTime();
+			}
+		});
+	}
+
 	updateTime(now = new Date()): void {
 		const todayIso = formatIsoDate(now);
 		const academicConfig = this._currentTimetable?.academicConfig;
@@ -293,14 +315,15 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 					)
 				: null;
 
-		const changed = currentWeek !== this._activeWeek || currentPeriod !== this._currentPeriodIndex;
-
 		this._activeWeek = currentWeek;
 		this._currentPeriodIndex = currentPeriod;
 
-		if (changed) {
-			this.events.emit('time:tick', { currentWeek, currentPeriod });
-		}
+		this.events.emit('time:tick', {
+			currentWeek,
+			currentPeriod,
+			now,
+			todayIso
+		});
 	}
 
 	async createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable> {
@@ -385,6 +408,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 				await this.storage.setActiveTimetableId(targetId);
 				this._currentTimetable = timetable;
 				this.updateTime();
+				this.dayClock?.reschedule();
 				await this.badges.recalculate(timetable.courses);
 
 				this.events.emit('timetable:switched', {
@@ -447,6 +471,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this._currentTimetable = updated;
 		await this.refreshTimetables();
 		this.updateTime();
+		this.dayClock?.reschedule();
 		await this.badges.recalculate(updated.courses);
 		this.events.emit('timetable:updated', { timetable: updated });
 	}
@@ -670,6 +695,9 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 
 		this.storageSubscription?.dispose();
 		this.storageSubscription = undefined;
+
+		this.dayClock?.dispose();
+		this.dayClock = null;
 
 		this.i18nCatalog.dispose();
 		this.events.dispose();

@@ -3,11 +3,10 @@
 	import type { Pathname } from '$app/types';
 	import { beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import type { Component } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
 	import { createPlatformBootstrap } from '$lib/platform/platform-bootstrap.svelte';
-	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
-	import OnboardingFlow from '$lib/components/onboarding/OnboardingFlow.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
@@ -38,6 +37,9 @@
 	const platform = createPlatformBootstrap({ shell, timetableScreen });
 	const shellTab = createShellTabController(() => getAppController());
 
+	let InstallPrompt = $state<Component | null>(null);
+	let OnboardingFlow = $state<Component | null>(null);
+
 	setContext('appShell', shell);
 	setContext('timetableScreen', timetableScreen);
 	setContext('shellTab', shellTab);
@@ -47,7 +49,15 @@
 		shellTab.reconcileActiveTab();
 	});
 
-	onMount(() => platform.init(page.url.pathname));
+	onMount(() => {
+		platform.init(page.url.pathname);
+		void import('$lib/components/pwa/InstallPrompt.svelte').then((module) => {
+			InstallPrompt = module.default;
+		});
+		void import('$lib/components/onboarding/OnboardingFlow.svelte').then((module) => {
+			OnboardingFlow = module.default;
+		});
+	});
 </script>
 
 <svelte:head>
@@ -58,13 +68,17 @@
 <div
 	class="relative grid min-h-dvh w-full grid-cols-1 grid-rows-1 overflow-x-clip bg-canvas text-ink"
 >
-	<div class="page-root col-start-1 row-start-1 min-h-dvh w-full bg-canvas text-ink">
+	<div class="page-root col-start-1 row-start-1 h-dvh w-full bg-canvas text-ink">
 		{@render children()}
 	</div>
 </div>
 
-<InstallPrompt />
-<OnboardingFlow />
+{#if InstallPrompt}
+	<InstallPrompt />
+{/if}
+{#if OnboardingFlow}
+	<OnboardingFlow />
+{/if}
 <Snackbar />
 
 <div style="display:none">

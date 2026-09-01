@@ -34,17 +34,6 @@ export const SHELL_ICON_MAP = {
 	'add-home': AddHomeFill,
 	info: InfoFill,
 	today: Today,
-	'calendar-today': CalendarTodayFill
-} as const satisfies Record<string, Component<{ class?: string }>>;
-export const MINE_ITEM_ICON_MAP = {
-	'list-alt': ListAltFill,
-	download: DownloadFill,
-	share: IosShareFill,
-	palette: PaletteFill,
-	vibrate: MobileVibrateFill,
-	wallpaper: WallpaperFill,
-	code: CodeFill,
-	event: EventFill,
-	'add-home': AddHomeFill,
-	info: InfoFill
+	'calendar-today': CalendarTodayFill,
+	event: EventFill
 } as const satisfies Record<string, Component<{ class?: string }>>;

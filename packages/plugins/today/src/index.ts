@@ -1,4 +1,4 @@
-import { defineChronosPlugin, defineSchema } from '@chronos/core';
+import { defineChronosPlugin } from '@chronos/core';
 import type { ChronosMountable } from '@chronos/core';
 import { TODAY_MESSAGES } from './messages';
 import { TODAY_PLUGIN_ID, type TodayScope } from './constants';
@@ -11,19 +11,6 @@ export interface CreateTodayPluginOptions {
 	screenComponent?: ChronosMountable;
 }
 
-const todayConfigSchema = defineSchema<TodayPluginConfig>({
-	scope: {
-		type: 'select',
-		title: () => 'Scope',
-		options: [
-			{ label: () => 'Current timetable', value: 'active' },
-			{ label: () => 'All timetables', value: 'all' }
-		],
-		default: 'active',
-		hidden: true
-	}
-});
-
 export function createTodayPlugin(options: CreateTodayPluginOptions = {}) {
 	const { screenComponent } = options;
 
@@ -35,7 +22,6 @@ export function createTodayPlugin(options: CreateTodayPluginOptions = {}) {
 		category: 'tool',
 		order: 35,
 		author: 'Chronos',
-		configSchema: todayConfigSchema,
 		defaultConfig: { scope: 'active' },
 		async apply(ctx, t) {
 			ctx.registerSlot('shell.bottom-bar.tab', {

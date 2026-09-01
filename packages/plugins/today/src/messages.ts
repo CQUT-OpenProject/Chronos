@@ -21,7 +21,8 @@ export const TODAY_MESSAGES = {
 		'screen.course.teacher': '教师 {teacher}',
 		'screen.course.timetable': '{name}',
 		'screen.course.periodSingle': '第 {n} 节',
-		'screen.course.periodRange': '第 {start}-{end} 节'
+		'screen.course.periodRange': '第 {start}-{end} 节',
+		'config.scope.title': '范围'
 	},
 	en: {
 		'plugin.name': 'Today',
@@ -43,6 +44,7 @@ export const TODAY_MESSAGES = {
 		'screen.course.teacher': 'Teacher {teacher}',
 		'screen.course.timetable': '{name}',
 		'screen.course.periodSingle': 'Period {n}',
-		'screen.course.periodRange': 'Periods {start}-{end}'
+		'screen.course.periodRange': 'Periods {start}-{end}',
+		'config.scope.title': 'Scope'
 	}
 } satisfies PluginMessageCatalog;

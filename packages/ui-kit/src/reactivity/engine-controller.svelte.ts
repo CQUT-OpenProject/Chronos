@@ -10,7 +10,7 @@ import type {
 	AcademicConfig,
 	ChronosContext
 } from '@chronos/core';
-import { COURSE_PALETTE_ENTRIES, type CoursePaletteEntry } from '@chronos/core';
+import { COURSE_PALETTE_ENTRIES, todayIsoDate, type CoursePaletteEntry } from '@chronos/core';
 
 /**
  * ReactiveChronosController serves as the Svelte 5 Runes reactive bridge
@@ -31,6 +31,8 @@ export class ReactiveChronosController implements Disposable {
 	activeIconThemeId = $state<string>('host-default');
 	userPreferences = $state<UserPreferences | null>(null);
 	currentLocale = $state<string>('zh-cn');
+	clockNow = $state<Date>(new Date());
+	clockTodayIso = $state<string>(todayIsoDate());
 
 	// Slot reactivity version signal (increments on slot changes or locale switches)
 	slotVersion = $state<number>(0);
@@ -70,9 +72,21 @@ export class ReactiveChronosController implements Disposable {
 			}),
 			this.engine.on(
 				'time:tick',
-				({ currentWeek, currentPeriod }: { currentWeek: number; currentPeriod: number | null }) => {
+				({
+					currentWeek,
+					currentPeriod,
+					now,
+					todayIso
+				}: {
+					currentWeek: number;
+					currentPeriod: number | null;
+					now: Date;
+					todayIso: string;
+				}) => {
 					this.activeWeek = currentWeek;
 					this.currentPeriodIndex = currentPeriod;
+					this.clockNow = now;
+					this.clockTodayIso = todayIso;
 				}
 			),
 			this.engine.on('theme:changed', ({ themeId }: { themeId: string }) => {
@@ -148,6 +162,8 @@ export class ReactiveChronosController implements Disposable {
 		this.activeIconThemeId = this.engine.state.activeIconThemeId;
 		this.userPreferences = this.engine.state.userPreferences;
 		this.currentLocale = this.engine.locale;
+		this.clockNow = new Date();
+		this.clockTodayIso = todayIsoDate();
 		this.courseBadges = this.engine.badges.getAll();
 		this.slotVersion++;
 	}
@@ -204,10 +220,6 @@ export class ReactiveChronosController implements Disposable {
 
 	notify(message: string, type: 'info' | 'warn' | 'error' = 'info'): void {
 		this.engine.notify(message, type);
-	}
-
-	updateTime(now?: Date): void {
-		this.engine.updateTime(now);
 	}
 
 	/** Resolve a plugin message catalog key for the current locale (reactive via slotVersion). */

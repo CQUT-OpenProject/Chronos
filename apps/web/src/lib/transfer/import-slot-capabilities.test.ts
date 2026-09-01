@@ -28,6 +28,13 @@ const fileSlot: ImportTabSlotContribution = {
 	executeImport: async () => ({}) as never
 };
 
+const qrFileSlot: ImportTabSlotContribution = {
+	id: 'qrcode',
+	title: () => '二维码',
+	importKind: 'file',
+	executeImport: async () => ({}) as never
+};
+
 describe('import-slot-capabilities', () => {
 	it('detects import kinds from slot metadata', () => {
 		const slots = [onlineSlot, linkSlot, fileSlot];
@@ -35,16 +42,17 @@ describe('import-slot-capabilities', () => {
 		expect(slotsHaveImportKind(slots, 'link')).toBe(true);
 		expect(slotsHaveImportKind(slots, 'file')).toBe(true);
 		expect(slotsHaveImportKind([linkSlot], 'online')).toBe(false);
+		expect(slotsHaveImportKind([qrFileSlot], 'file')).toBe(true);
 	});
 
 	it('builds transfer import descriptions from registered slots', () => {
 		expect(buildImportDescription([onlineSlot, linkSlot, fileSlot])).toBe(
-			'支持知行理工在线导入、分享口令、教务系统导出的 HTML 文件。'
+			'支持知行理工在线导入、分享口令、HTML 文件。'
 		);
-		expect(buildImportDescription([linkSlot, fileSlot])).toBe(
-			'支持分享口令、教务系统导出的 HTML 文件。'
-		);
+		expect(buildImportDescription([linkSlot, fileSlot])).toBe('支持分享口令、HTML 文件。');
 		expect(buildImportDescription([linkSlot])).toBe('支持分享口令导入课表。');
+		expect(buildImportDescription([linkSlot, qrFileSlot])).toBe('支持分享口令、二维码。');
+		expect(buildImportDescription([linkSlot, qrFileSlot])).not.toContain('教务系统导出的 HTML');
 	});
 
 	it('builds onboarding highlight copy without host plugin ids', () => {
@@ -54,6 +62,7 @@ describe('import-slot-capabilities', () => {
 		expect(buildOnboardingImportHighlight([linkSlot, fileSlot])).toBe(
 			'分享口令、HTML 文件均可导入'
 		);
+		expect(buildOnboardingImportHighlight([linkSlot, qrFileSlot])).toBe('分享口令、二维码均可导入');
 	});
 
 	it('formats import method titles from slot metadata', () => {

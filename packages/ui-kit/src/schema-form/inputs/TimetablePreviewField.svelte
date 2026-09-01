@@ -37,6 +37,9 @@
 	const layoutMode = $derived(controller?.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const courseBadges = $derived(controller?.courseBadges ?? {});
+	const hostTranslate = $derived(
+		controller ? (key: string) => controller.translatePlugin('host-ui', key) : (key: string) => key
+	);
 
 	const preview = $derived(
 		timetable
@@ -76,6 +79,7 @@
 					{isCurrentWeek}
 					{currentPeriodIndex}
 					{courseBadges}
+					{hostTranslate}
 					interactive={false}
 				/>
 			</div>

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { resolveDefaultLaunchTab, type BottomTabSlotContribution } from '../src/types/slots';
+import {
+	resolveDefaultLaunchTab,
+	resolveHostPanelTab,
+	type BottomTabSlotContribution
+} from '../src/types/slots';
 
 function tab(
 	overrides: Partial<BottomTabSlotContribution> & Pick<BottomTabSlotContribution, 'id'>
@@ -10,6 +14,19 @@ function tab(
 	};
 }
 
+describe('resolveHostPanelTab', () => {
+	it('returns the tab that declares the requested host panel', () => {
+		const timetable = tab({ id: 'timetable', order: 10, hostPanel: 'timetable' });
+		const mine = tab({ id: 'mine', order: 20, hostPanel: 'mine' });
+		expect(resolveHostPanelTab([timetable, mine], 'timetable')).toBe(timetable);
+		expect(resolveHostPanelTab([timetable, mine], 'mine')).toBe(mine);
+	});
+
+	it('returns undefined when no tab declares the panel', () => {
+		expect(resolveHostPanelTab([tab({ id: 'today', order: 15 })], 'timetable')).toBeUndefined();
+	});
+});
+
 describe('resolveDefaultLaunchTab', () => {
 	it('returns undefined when no tab declares defaultLaunch', () => {
 		expect(
@@ -17,7 +34,7 @@ describe('resolveDefaultLaunchTab', () => {
 		).toBeUndefined();
 	});
 
-	it('returns the tab with defaultLaunch', () => {
+	it('returns the first tab with defaultLaunch in registry order', () => {
 		const today = tab({ id: 'today', order: 15, defaultLaunch: true });
 		expect(
 			resolveDefaultLaunchTab([
@@ -28,9 +45,10 @@ describe('resolveDefaultLaunchTab', () => {
 		).toBe(today);
 	});
 
-	it('picks the lowest order when multiple tabs declare defaultLaunch', () => {
+	it('returns the first defaultLaunch tab when multiple declare it', () => {
 		const earlier = tab({ id: 'today', order: 15, defaultLaunch: true });
 		const later = tab({ id: 'other', order: 25, defaultLaunch: true });
-		expect(resolveDefaultLaunchTab([later, earlier])).toBe(earlier);
+		expect(resolveDefaultLaunchTab([earlier, later])).toBe(earlier);
+		expect(resolveDefaultLaunchTab([later, earlier])).toBe(later);
 	});
 });

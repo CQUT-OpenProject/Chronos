@@ -129,6 +129,10 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		return this.host.services.get(identifier);
 	}
 
+	tryService<T>(identifier: ServiceIdentifier<T>): T | undefined {
+		return this.host.services.tryGet(identifier);
+	}
+
 	get state() {
 		return this.host.state;
 	}

@@ -18,6 +18,9 @@ export interface WebProviderOptions {
 	localStorage?: Storage | null;
 	allowedDomains?: string[];
 	enablePluginProxy?: boolean;
+	navigation?: {
+		openCourseEditor(courseId: string): void;
+	};
 }
 
 /**
@@ -46,6 +49,7 @@ export function createWebChronosEnv(options?: WebProviderOptions) {
 		http: providers.http,
 		storage: providers.storage,
 		runtime: providers.runtime,
-		analytics: providers.analytics
+		analytics: providers.analytics,
+		...(options?.navigation ? { navigation: options.navigation } : {})
 	};
 }

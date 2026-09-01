@@ -44,6 +44,16 @@ export function defaultImportMethodSubtitle(slot: ImportTabSlotContribution): st
 	}
 }
 
+function fileCapabilityParts(slots: ReadonlyArray<ImportTabSlotContribution>): string[] {
+	const parts: string[] = [];
+	for (const slot of slots) {
+		if (slot.importKind === 'file') {
+			parts.push(hostT('transfer.import.capability.file', { title: resolveSlotTitle(slot) }));
+		}
+	}
+	return parts;
+}
+
 function buildCapabilityLabels(slots: ReadonlyArray<ImportTabSlotContribution>): string[] {
 	const parts: string[] = [];
 	for (const slot of slots) {
@@ -54,18 +64,16 @@ function buildCapabilityLabels(slots: ReadonlyArray<ImportTabSlotContribution>):
 	if (slotsHaveImportKind(slots, 'link')) {
 		parts.push(hostT('transfer.import.capability.shareCode'));
 	}
-	if (slotsHaveImportKind(slots, 'file')) {
-		parts.push(hostT('transfer.import.capability.htmlFile'));
-	}
+	parts.push(...fileCapabilityParts(slots));
 	return parts;
 }
 
 export function buildImportDescription(slots: ReadonlyArray<ImportTabSlotContribution>): string {
 	const onlineSlots = slots.filter((slot) => slot.importKind === 'online');
 	const hasLink = slotsHaveImportKind(slots, 'link');
-	const hasFile = slotsHaveImportKind(slots, 'file');
+	const fileParts = fileCapabilityParts(slots);
 
-	if (onlineSlots.length === 0 && !hasLink && !hasFile) {
+	if (onlineSlots.length === 0 && !hasLink && fileParts.length === 0) {
 		return hostT('transfer.import.description.linkOnly');
 	}
 
@@ -74,9 +82,9 @@ export function buildImportDescription(slots: ReadonlyArray<ImportTabSlotContrib
 		parts.push(hostT('transfer.import.capability.online', { title: resolveSlotTitle(slot) }));
 	}
 	if (hasLink) parts.push(hostT('transfer.import.capability.shareCode'));
-	if (hasFile) parts.push(hostT('transfer.import.description.htmlPart'));
+	parts.push(...fileParts);
 
-	if (hasLink && !hasFile && onlineSlots.length === 0) {
+	if (hasLink && fileParts.length === 0 && onlineSlots.length === 0) {
 		return hostT('transfer.import.description.linkOnly');
 	}
 

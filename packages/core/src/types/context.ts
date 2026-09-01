@@ -46,6 +46,9 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 	/** Access an injected capability service (Capability Seam) */
 	service<T>(identifier: ServiceIdentifier<T>): T;
 
+	/** Access an optional injected capability service */
+	tryService<T>(identifier: ServiceIdentifier<T>): T | undefined;
+
 	/** Type-safe private plugin configuration (synchronized with persistent storage) */
 	readonly config: Readonly<Config>;
 	updateConfig(patch: Partial<Config>): Promise<void>;
@@ -126,7 +129,12 @@ export interface ChronosEvents {
 		timetables: Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>;
 	};
 	'preferences:updated': { preferences: UserPreferences };
-	'time:tick': { currentWeek: number; currentPeriod: number | null };
+	'time:tick': {
+		currentWeek: number;
+		currentPeriod: number | null;
+		now: Date;
+		todayIso: string;
+	};
 	'theme:changed': { themeId: string };
 	'iconTheme:changed': { iconThemeId: string };
 	'i18n:localeChanged': { locale: string };

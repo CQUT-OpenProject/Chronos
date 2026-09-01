@@ -1,6 +1,6 @@
 # 部署指南
 
-面对不同的部署需求，Chronos 支持通过两个独立的、互不绑定的环境变量导出不同的应用形态：
+面对不同的部署需求，Chronos 通过两个环境变量导出不同形态：`CHRONOS_PROFILE` 选产品变体，`CHRONOS_DEPLOY_TARGET` 选适配器。两者可独立设置；**未设** `CHRONOS_PROFILE` 时，pages 缺省 `chronos-default`，否则 `chronos-cqut`（codegen 与运行装配共用 `resolveProfileId`）。
 
 | 环境变量                | 控制什么                                 |
 | ----------------------- | ---------------------------------------- |
@@ -254,6 +254,15 @@ export default defineChronosPlugin({
 - 浏览器直连受 CORS 约束；`IHttpRequestOptions.bypassCors` 由原生宿主兑现。
 - 需要服务端中转时实现插件服务端 handler，暴露为 `/api/plugins/{pluginId}/{action}`；浏览器侧用 `IHttpService.proxy(pluginId, action, payload)` 调用。wire 信封是 core 单源的 `PluginServerResponse<T>`（见 [ADR 0025](.agents/docs/adr/0025-official-plugin-modules-and-proxy-contract.md)）。
 - `allowedDomains` 声明网络白名单。
+- 需要打开宿主自有页面（如课程编辑器）时，使用 `ctx.tryService(IHostNavigation)?.openCourseEditor(courseId)`，**禁止**在插件内硬编码 `/timetable/...` 等宿主路径（见 [ADR 0031](.agents/docs/adr/0031-round7-clock-profile-codegen-navigation-i18n.md)）。
+
+### Profile 内置插件打包
+
+`apps/web` 的 builtin 列表由 `chronos-profile-plugin` 按 `CHRONOS_PROFILE` 生成 `available-plugins.generated.ts`；`chronos-default` 构建不会静态 import `@chronos/plugin-source-cqut`。修改 profile 启用插件时只改 `profile-definitions.ts`，并运行 `node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts`（`prepare` 也会执行）。
+
+### 官方插件 Tailwind
+
+官方插件 bundle 的 Svelte `<style>` 由构建产出 `bundle.css`；**Tailwind utility class** 仍依赖宿主 `apps/web/src/routes/layout.css` 的 `@source` 扫描插件 `src` 目录——不要在插件构建中重复跑 Tailwind，除非另开专门 ADR。
 
 ### 分发形态
 
@@ -346,10 +355,11 @@ export interface StandardSlotMap {
 消费端只允许一套通用机制：
 
 - 排序：`order` 升序，缺省排前；主操作用 `pickPrimary()`（显式 `isPrimary` 优先）。
-- 文本：`resolveLocalizedText()` 单一实现。
+- 文本：`resolveLocalizedText()` 单一实现（含 badge）。
 - 富 UI：`MountableSlotOutlet` 渲染，缺失组件时回退 `SchemaForm`。
+- 底栏宿主屏：只认 `BottomTabSlotContribution.hostPanel`（`'timetable' | 'mine'`），不认 tab id 字面量；无 `hostPanel` 则 `resolveSlotOwner` + `PluginScreenContainer`。
 
-禁止在消费点写 `typeof x === 'function' ? x() : x` 之类的本地实现——这些工具已收敛为内核单源（[ADR 0021](.agents/docs/adr/0021-slot-consumption-seam.md)）。
+禁止在消费点写 `typeof x === 'function' ? x() : x` 之类的本地实现——这些工具已收敛为内核单源（[ADR 0021](.agents/docs/adr/0021-slot-consumption-seam.md)、[ADR 0032](.agents/docs/adr/0032-round8-dual-track-collapse.md)）。
 
 ### 3. 补充冲突策略
 
@@ -419,17 +429,17 @@ proxy?(pluginId, action, payload, options?): Promise<HttpResponse>
 
 ### 总览
 
-| 槽位路径                     | 用途                                                                 | 多贡献者策略                                       |
-| ---------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
-| `import.source.tab`          | 导入数据源标签页（在线/文件/链接）                                   | 共存，按 `order` 排序                              |
-| `export.action`              | 课表导出动作（复制/下载/自定义）                                     | 共存，`isPrimary` 选主                             |
-| `mine.section` / `mine.item` | 「我的」页分区与条目                                                 | 共存，按 `order` 排序                              |
-| `shell.route.screen`         | 插件全屏页面（`/plugins/[pluginId]/[id]`）                           | 每 id 一屏                                         |
-| `shell.bottom-bar.tab`       | 底栏导航标签（仅 `id`，宿主壳内 `activeTabId` 切换，无 per-tab URL） | 共存，按 `order` 排序                              |
-| `timetable.cell.badge`       | 课程卡徽章                                                           | 聚合所有贡献者（RESERVED，零生产者时早退）         |
-| `course.detail.action`       | 课程详情操作项                                                       | 共存，按 `order` 排序                              |
-| `theme.definition`           | 配色主题                                                             | 注册多个，用户选择其一                             |
-| `theme.icon.definition`      | 图标主题                                                             | 由激活主题 `recommendedIconTheme` 派生，无独立偏好 |
+| 槽位路径                     | 用途                                                                   | 多贡献者策略                                       |
+| ---------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- |
+| `import.source.tab`          | 导入数据源标签页（在线/文件/链接）                                     | 共存，按 `order` 排序                              |
+| `export.action`              | 课表导出动作（复制/下载/自定义）                                       | 共存，`isPrimary` 选主                             |
+| `mine.section` / `mine.item` | 「我的」页分区与条目                                                   | 共存，按 `order` 排序                              |
+| `shell.route.screen`         | 插件全屏页面（`/plugins/[pluginId]/[id]`）                             | 每 id 一屏                                         |
+| `shell.bottom-bar.tab`       | 底栏导航标签（仅 `id`；宿主屏用 `hostPanel`，壳内 `activeTabId` 切换） | 共存，按 `order` 排序                              |
+| `timetable.cell.badge`       | 课程卡徽章                                                             | 聚合所有贡献者（RESERVED，零生产者时早退）         |
+| `course.detail.action`       | 课程详情操作项                                                         | 共存，按 `order` 排序                              |
+| `theme.definition`           | 配色主题                                                               | 注册多个，用户选择其一                             |
+| `theme.icon.definition`      | 图标主题                                                               | 由激活主题 `recommendedIconTheme` 派生，无独立偏好 |
 
 ### 通用约定
 
@@ -494,9 +504,25 @@ interface PluginScreenSlotContribution {
 }
 ```
 
+### shell.bottom-bar.tab
+
+```ts
+interface BottomTabSlotContribution {
+	id: string;
+	label: LocalizedText;
+	order?: number;
+	icon?: ShellIconRef;
+	iconFill?: ShellIconRef;
+	hostPanel?: 'timetable' | 'mine'; // 宿主屏；插件 tab 省略
+	defaultLaunch?: boolean;
+}
+```
+
+宿主只认 `hostPanel` 渲染课表/我的屏。冷启动 fallback 用 `resolveHostPanelTab(tabs, 'timetable')`，否则 registry 第一项。插件 tab 不声明 `hostPanel`，消费端走 `resolveSlotOwner` + `PluginScreenContainer`。
+
 ### mine.item
 
-`sectionId` 关联到某个 `mine.section` 贡献；`href` 指向内置路由或插件动态路由；`keywords` 支撑搜索；`iconTone` 取 `primary | secondary | tertiary | neutral`。
+`sectionId` 关联到某个 `mine.section` 贡献；省略时宿主使用 `DEFAULT_MINE_SECTION_ID`（`app-support`）。`href` 指向内置路由或插件动态路由；`keywords` 支撑搜索；`iconTone` 取 `primary | secondary | tertiary | neutral`。
 
 ### theme.definition
 

@@ -63,8 +63,14 @@ export class OfficialPluginService implements Disposable {
 		if (this.initialized) return;
 		await this.installedStore.load();
 		await this.installedStore.dedupeBuiltinOverlap();
+		await this.activateInstalledFromCache();
+		this.initialized = true;
+		this.installedStore.notify();
 		await this.syncInstalledWithHost();
+		this.installedStore.notify();
+	}
 
+	private async activateInstalledFromCache(): Promise<void> {
 		for (const record of this.installedStore.getCache()) {
 			if (record.enabled) {
 				try {
@@ -77,8 +83,6 @@ export class OfficialPluginService implements Disposable {
 				}
 			}
 		}
-		this.initialized = true;
-		this.installedStore.notify();
 	}
 
 	onChanged(listener: () => void): Disposable {

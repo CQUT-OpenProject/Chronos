@@ -1,9 +1,17 @@
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite-plus';
 import { createChronosAlias } from './scripts/resolve-chronos-aliases.ts';
 
 const chronosAlias = createChronosAlias();
+const appVersion = JSON.parse(
+	readFileSync(
+		resolve(fileURLToPath(new URL('.', import.meta.url)), 'apps/web/package.json'),
+		'utf8'
+	)
+).version as string;
 
 export default defineConfig({
 	defaultPackage: './apps/web',
@@ -69,7 +77,7 @@ export default defineConfig({
 		__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
 		__CHRONOS_PROFILE__: JSON.stringify('chronos-cqut'),
 		__ANALYTICS_ENABLED__: JSON.stringify(true),
-		__SVELTEKIT_APP_VERSION__: JSON.stringify('0.3.0'),
+		__SVELTEKIT_APP_VERSION__: JSON.stringify(appVersion),
 		__SVELTEKIT_DEV__: JSON.stringify(false),
 		__SVELTEKIT_PAYLOAD_URL__: JSON.stringify(''),
 		__SVELTEKIT_EXPERIMENTAL_EXPLICIT_ENVIRONMENT_VARIABLES__: JSON.stringify(false)

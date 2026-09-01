@@ -2,13 +2,11 @@ import { SvelteSet } from 'svelte/reactivity';
 import { trackEvent } from '$lib/client/analytics';
 import {
 	AcademicCalendarService,
-	createDayClock,
 	currentTimeMinutes,
 	findCurrentPeriodIndex,
 	formatWeekDateRange,
 	parsePeriodRanges,
 	todayIsoDate,
-	type DayClockHandle,
 	type Timetable,
 	type TimetableCourseDisplayModel,
 	type TimetableGridModel,
@@ -56,20 +54,19 @@ export function getTimetableScreen(): TimetableScreenController {
 
 function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
-	let today = $state(todayIsoDate());
-	let now = $state(new Date());
 	let expandedSlots = $state(new SvelteSet<string>());
 	let displayedWeekMemory = $state(1);
 	let displayedWeekTimetableIdMemory = $state<string | null>(null);
 
 	const layoutCache = createWeekLayoutCache();
-	let dayClock: DayClockHandle | null = null;
 
 	function currentTimetable(): Timetable | null {
 		return shellRef?.controller.currentTimetable ?? null;
 	}
 
 	const navigation = $derived.by(() => {
+		const shell = shellRef;
+		const today = shell?.controller.clockTodayIso ?? todayIsoDate();
 		const timetable = currentTimetable();
 		const academicWeek = calendarService.calculateAcademicWeek(today, timetable?.academicConfig);
 		const displayedWeek = resolveDisplayedWeek(
@@ -81,6 +78,7 @@ function createTimetableScreen() {
 		const { startWeek, endWeek } = academicBounds(timetable);
 		return {
 			timetable,
+			today,
 			academicWeek,
 			displayedWeek,
 			startWeek,
@@ -90,7 +88,7 @@ function createTimetableScreen() {
 	});
 
 	const weekViewport = $derived.by(() => {
-		const { timetable, displayedWeek } = navigation;
+		const { timetable, displayedWeek, today } = navigation;
 		void expandedSlots.size;
 		void [...expandedSlots];
 		return buildWeekViewport(
@@ -110,6 +108,8 @@ function createTimetableScreen() {
 		const timetableId = timetable?.id ?? null;
 		if (displayedWeekTimetableIdMemory === timetableId) return;
 
+		const shell = shellRef;
+		const today = shell?.controller.clockTodayIso ?? todayIsoDate();
 		const academicWeek = calendarService.calculateAcademicWeek(today, timetable?.academicConfig);
 		displayedWeekMemory = resolveDisplayedWeek(
 			timetable,
@@ -120,20 +120,12 @@ function createTimetableScreen() {
 		displayedWeekTimetableIdMemory = timetableId;
 	});
 
-	$effect(() => {
-		const shell = shellRef;
-		if (!shell || !dayClock) return;
-		const timetable = shell.controller.currentTimetable;
-		void timetable?.id;
-		void timetable?.academicConfig.periodTimes;
-		dayClock.reschedule();
-	});
-
 	const state = $derived.by(() => {
-		void now;
-		const { timetable, academicWeek, displayedWeek, startWeek, endWeek, weeks } = navigation;
+		const shell = shellRef;
+		const now = shell?.controller.clockNow ?? new Date();
+		const { timetable, today, academicWeek, displayedWeek, startWeek, endWeek, weeks } = navigation;
 		const { weekLayouts, weekGridModels, weekCourseDisplayModels } = weekViewport;
-		const hasLoadedAppState = shellRef?.state.initialized ?? false;
+		const hasLoadedAppState = shell?.state.initialized ?? false;
 		const isCurrentWeek = displayedWeek === academicWeek;
 		const slideIndex = slideIndexFromWeek(startWeek, displayedWeek, weeks.length);
 
@@ -173,16 +165,6 @@ function createTimetableScreen() {
 	function init(shell: AppShellController) {
 		if (shellRef) return;
 		shellRef = shell;
-		dayClock = createDayClock({
-			getPeriodTimes: () => currentTimetable()?.academicConfig.periodTimes ?? [],
-			onMidnight: () => {
-				today = todayIsoDate();
-				now = new Date();
-			},
-			onPeriodBoundary: () => {
-				now = new Date();
-			}
-		});
 	}
 
 	function refresh() {
@@ -190,8 +172,6 @@ function createTimetableScreen() {
 	}
 
 	function destroy() {
-		dayClock?.dispose();
-		dayClock = null;
 		shellRef = null;
 	}
 
@@ -207,6 +187,7 @@ function createTimetableScreen() {
 		const timetable = currentTimetable();
 		if (!timetable) return;
 		trackEvent('timetable_week_jump_current');
+		const today = shellRef?.controller.clockTodayIso ?? '';
 		const academicWeek = calendarService.calculateAcademicWeek(today, timetable.academicConfig);
 		const { startWeek, endWeek } = academicBounds(timetable);
 		displayedWeekMemory = clampDisplayedWeek(academicWeek, startWeek, endWeek);

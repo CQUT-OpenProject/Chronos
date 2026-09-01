@@ -8,6 +8,7 @@ import {
 } from '@chronos/core';
 import { createMockEnv } from '@chronos/core/test-utils';
 import { createTodayPlugin } from '../src/index';
+import { createTodayScreenController } from '../src/today-screen.svelte';
 import {
 	attachCourseStatuses,
 	queryTodayCourses,
@@ -36,6 +37,11 @@ describe('today plugin', () => {
 		handle.dispose();
 		expect(engine.slots.getSlotItem('shell.bottom-bar.tab', 'today')).toBeUndefined();
 		engine.dispose();
+	});
+
+	it('exposes a valid today ISO date before init', () => {
+		const screen = createTodayScreenController();
+		expect(screen.today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 	});
 });
 

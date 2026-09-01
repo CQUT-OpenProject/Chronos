@@ -1,20 +1,40 @@
 import { truncateHolidayLabel } from '@chronos/core';
 
-const DAY_LABELS = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-const DAY_SHORT_LABELS = ['', '一', '二', '三', '四', '五', '六', '日'];
+const DAY_SUFFIXES = ['', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
-export function timetableDayLabel(dayOfWeek: number): string {
-	return DAY_LABELS[dayOfWeek] ?? '未知';
+export type HostDayLabelTranslate = (key: string) => string;
+
+function resolveDayKey(
+	dayOfWeek: number,
+	variant: 'full' | 'short'
+):
+	| `timetable.day.${(typeof DAY_SUFFIXES)[number]}`
+	| `timetable.dayShort.${(typeof DAY_SUFFIXES)[number]}`
+	| null {
+	const suffix = DAY_SUFFIXES[dayOfWeek];
+	if (!suffix) return null;
+	return `${variant === 'full' ? 'timetable.day.' : 'timetable.dayShort.'}${suffix}`;
 }
 
-export function timetableDayShortLabel(dayOfWeek: number): string {
-	return DAY_SHORT_LABELS[dayOfWeek] ?? '?';
+export function timetableDayLabel(dayOfWeek: number, t: HostDayLabelTranslate): string {
+	const key = resolveDayKey(dayOfWeek, 'full');
+	if (!key) return dayOfWeek === 0 ? '' : t('timetable.day.unknown');
+	return t(key);
 }
 
-export function timetableDayColumnHeaderLabel(day: {
-	dayOfWeek: number;
-	holiday?: { label: string };
-}): string {
+export function timetableDayShortLabel(dayOfWeek: number, t: HostDayLabelTranslate): string {
+	const key = resolveDayKey(dayOfWeek, 'short');
+	if (!key) return dayOfWeek === 0 ? '' : '?';
+	return t(key);
+}
+
+export function timetableDayColumnHeaderLabel(
+	day: {
+		dayOfWeek: number;
+		holiday?: { label: string };
+	},
+	t: HostDayLabelTranslate
+): string {
 	if (day.holiday) return truncateHolidayLabel(day.holiday.label);
-	return timetableDayShortLabel(day.dayOfWeek);
+	return timetableDayShortLabel(day.dayOfWeek, t);
 }

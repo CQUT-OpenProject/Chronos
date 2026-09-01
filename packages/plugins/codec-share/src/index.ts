@@ -64,12 +64,11 @@ export function createShareCodecPlugin(options: CreateShareCodecPluginOptions = 
 				deepLink: {
 					fromLocation(location) {
 						const payload = extractSharePayloadFromLocation(location as Location);
-						return payload ? { content: payload, fileContent: payload } : null;
+						return payload ? { content: payload } : null;
 					}
 				},
 				async executeImport(inputs) {
-					const content =
-						(inputs.content as string | undefined) ?? (inputs.fileContent as string | undefined);
+					const content = inputs.content as string | undefined;
 					if (!content?.trim()) {
 						throw new ImportSlotError('no-data', t('import.error.empty'));
 					}

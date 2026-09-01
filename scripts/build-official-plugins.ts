@@ -82,6 +82,9 @@ for (const plugin of plugins) {
 		await build({
 			configFile: false,
 			plugins: [svelte({ compilerOptions: { runes: true } })],
+			define: {
+				__CHRONOS_PLUGIN_VERSION__: JSON.stringify(releaseVersion)
+			},
 			resolve: { alias: createChronosAliasRecord(root) },
 			build: {
 				emptyOutDir: true,

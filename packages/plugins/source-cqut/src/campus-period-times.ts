@@ -42,10 +42,6 @@ export function getCampusApiName(id: CqutCampusId): string {
 	return CQUT_CAMPUSES[id].apiName;
 }
 
-export function getCampusDefaultPeriodTimes(id: CqutCampusId): PeriodTime[] {
-	return CQUT_DEFAULT_CAMPUS_PERIOD_TIMES[id].map((period) => ({ ...period }));
-}
-
 export function isCqutCampusId(value: string): value is CqutCampusId {
 	return value in CQUT_CAMPUSES;
 }
@@ -72,21 +68,4 @@ export function inferCampusIdFromCourses(courses: Course[]): CqutCampusId {
 	if (huaxiCount > liangjiangCount) return 'huaxi';
 	if (liangjiangCount > huaxiCount) return 'liangjiang';
 	return DEFAULT_CQUT_CAMPUS_ID;
-}
-
-export function campusIdToShareIndex(id: CqutCampusId): number {
-	const index = CQUT_CAMPUS_IDS.indexOf(id);
-	return index >= 0 ? index : 0;
-}
-
-export function shareIndexToCampusId(index: number): CqutCampusId {
-	return CQUT_CAMPUS_IDS[index] ?? DEFAULT_CQUT_CAMPUS_ID;
-}
-
-export function resolveShareCampusId(
-	explicit: CqutCampusId | null | undefined,
-	courses: Course[]
-): CqutCampusId {
-	if (explicit && isCqutCampusId(explicit)) return explicit;
-	return inferCampusIdFromCourses(courses);
 }
