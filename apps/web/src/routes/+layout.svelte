@@ -68,7 +68,7 @@
 <div
 	class="relative grid min-h-dvh w-full grid-cols-1 grid-rows-1 overflow-x-clip bg-canvas text-ink"
 >
-	<div class="page-root col-start-1 row-start-1 min-h-dvh w-full bg-canvas text-ink">
+	<div class="page-root col-start-1 row-start-1 h-dvh w-full bg-canvas text-ink">
 		{@render children()}
 	</div>
 </div>
