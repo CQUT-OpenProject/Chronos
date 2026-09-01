@@ -6,7 +6,7 @@
 	import { browser } from '$app/environment';
 	import { trackEvent } from '$lib/client/analytics';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
-	import { ensureEngineReady } from '$lib/services/app-engine';
+	import { ensureEngineFullyReady } from '$lib/services/app-engine';
 	import {
 		createTransferState,
 		shareImportErrorSnackbarKey
@@ -19,7 +19,7 @@
 
 		void (async () => {
 			try {
-				const engine = await ensureEngineReady();
+				const engine = await ensureEngineFullyReady();
 				const transfer = createTransferState(engine);
 				const result = await transfer.previewDeepLinkImport(window.location);
 

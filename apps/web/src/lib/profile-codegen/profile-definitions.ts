@@ -1,5 +1,8 @@
 /** Build-time profile → plugin mapping (keep in sync with profile-registry). */
 
+/** Builtins loaded before first timetable paint; all others are deferred dynamic imports. */
+export const EAGER_BUILTIN_PLUGIN_IDS = ['core-shell'] as const;
+
 export const PROFILE_SERVER_PLUGINS: Record<string, readonly string[]> = {
 	'chronos-default': [],
 	'chronos-cqut': ['source-cqut'],
