@@ -2116,7 +2116,7 @@ function yi(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function bi() {
-	return "0.4.1";
+	return "0.4.2";
 }
 function xi(e) {
 	let t;
