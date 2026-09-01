@@ -1,12 +1,11 @@
 import { ChronosEngine, ProfileManager, DEFAULT_VISUAL_THEME_ID } from '@chronos/core';
 import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
-import type { Disposable } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
-import { getAvailablePluginsForProfile, resolveActiveProfile } from '$lib/boot/profile-registry';
+import { resolveActiveProfile } from '$lib/boot/profile-registry';
 import {
-	loadProfilePlugins,
 	PHASE1_PLUGIN_ID,
+	resolveBuiltinPlugin,
 	resolveProfileBuiltinPlugins
 } from '$lib/boot/profile-bootstrap';
 
@@ -20,7 +19,6 @@ let sharedOfficialPlugins: OfficialPluginService | null = null;
 let enginePhase1Promise: Promise<ChronosEngine> | null = null;
 let enginePhase2Promise: Promise<void> | null = null;
 let profileManager: ProfileManager | null = null;
-let profileBootstrapHandles: Disposable[] = [];
 let resolvedProfilePlugins: ChronosPlugin[] = [];
 
 import { bindAnalyticsPort } from '$lib/client/analytics';
@@ -65,25 +63,35 @@ async function applyThemeFromPreferences(engine: ChronosEngine): Promise<void> {
 	}
 }
 
+function scheduleBuiltinPluginCatalog(profile: ChronosProfile, manager: ProfileManager): void {
+	void resolveProfileBuiltinPlugins(profile).then((plugins) => {
+		if (profileManager === manager) {
+			resolvedProfilePlugins = plugins;
+		}
+	});
+}
+
 async function bootstrapEnginePhase1(engine: ChronosEngine): Promise<void> {
 	profileManager = new ProfileManager(engine);
 	const profile = resolveActiveProfile();
-	profileBootstrapHandles = await loadProfilePlugins(
-		engine,
+	await profileManager.loadPlugins(
 		profile,
+		resolveBuiltinPlugin,
 		(pluginId) => pluginId === PHASE1_PLUGIN_ID
 	);
+	scheduleBuiltinPluginCatalog(profile, profileManager);
 	await applyThemeFromPreferences(engine);
 }
 
 async function bootstrapEnginePhase2(engine: ChronosEngine): Promise<void> {
 	const profile = resolveActiveProfile();
-	const deferredHandles = await loadProfilePlugins(
-		engine,
-		profile,
-		(pluginId) => pluginId !== PHASE1_PLUGIN_ID
-	);
-	profileBootstrapHandles.push(...deferredHandles);
+	if (profileManager) {
+		await profileManager.loadPlugins(
+			profile,
+			resolveBuiltinPlugin,
+			(pluginId) => pluginId !== PHASE1_PLUGIN_ID
+		);
+	}
 	resolvedProfilePlugins = await resolveProfileBuiltinPlugins(profile);
 
 	if (!sharedOfficialPlugins) {
@@ -123,7 +131,7 @@ export async function ensureEngineReady(options?: WebProviderOptions): Promise<C
 	return enginePhase1Promise;
 }
 
-/** Waits for deferred builtins and official plugins (import/share codecs, marketplace tabs). */
+/** Waits for deferred builtins and official plugins (import/share codecs, official catalog tabs). */
 export async function ensureEngineFullyReady(options?: WebProviderOptions): Promise<ChronosEngine> {
 	const engine = await ensureEngineReady(options);
 	if (!enginePhase2Promise) {
@@ -159,19 +167,11 @@ export function getOfficialPluginService(options?: WebProviderOptions): Official
 	return sharedOfficialPlugins;
 }
 
-function getActiveProfile(): ChronosProfile {
-	return profileManager?.getActiveProfile() ?? resolveActiveProfile();
-}
-
 export function getProfileBuiltinPlugins(): ChronosPlugin[] {
-	const profile = getActiveProfile();
 	if (resolvedProfilePlugins.length > 0) {
-		const enabledIds = new Set(
-			profile.plugins.filter((entry) => entry.enabled !== false).map((entry) => entry.id)
-		);
-		return resolvedProfilePlugins.filter((plugin) => enabledIds.has(plugin.id));
+		return resolvedProfilePlugins;
 	}
-	return getAvailablePluginsForProfile(profile);
+	return [...(profileManager?.listLoadedPlugins() ?? [])];
 }
 
 export async function resetAppToInitialState(): Promise<void> {
@@ -179,34 +179,17 @@ export async function resetAppToInitialState(): Promise<void> {
 	await engine.clearAllData();
 	await getOfficialPluginService().resetAfterFactoryClear();
 	const profile = resolveActiveProfile();
-	for (const handle of profileBootstrapHandles) {
-		try {
-			handle.dispose();
-		} catch (err) {
-			console.error('[app-engine] Error disposing profile plugin:', err);
-		}
-	}
-	profileBootstrapHandles = [];
 	resolvedProfilePlugins = [];
-	if (profileManager) {
-		await profileManager.applyProfile(profile, await resolveProfileBuiltinPlugins(profile));
-	} else {
-		profileBootstrapHandles = await loadProfilePlugins(engine, profile, () => true);
-		resolvedProfilePlugins = await resolveProfileBuiltinPlugins(profile);
+	if (!profileManager) {
+		profileManager = new ProfileManager(engine);
 	}
+	await profileManager.applyProfile(profile, resolveBuiltinPlugin);
+	resolvedProfilePlugins = await resolveProfileBuiltinPlugins(profile);
 	engine.setTheme(profile.defaultTheme ?? DEFAULT_VISUAL_THEME_ID);
 	engine.events.emit('dynamicColor:hydrate', undefined);
 }
 
 export function resetAppEngine(): void {
-	for (const handle of profileBootstrapHandles) {
-		try {
-			handle.dispose();
-		} catch (err) {
-			console.error('[app-engine] Error disposing profile plugin:', err);
-		}
-	}
-	profileBootstrapHandles = [];
 	resolvedProfilePlugins = [];
 	profileManager?.dispose();
 	profileManager = null;

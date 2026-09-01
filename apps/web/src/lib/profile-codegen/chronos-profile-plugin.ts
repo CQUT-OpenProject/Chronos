@@ -80,9 +80,6 @@ export const eagerPlugins: readonly ChronosPlugin[] = [
 export const deferredPluginLoaders: Record<string, BuiltinPluginLoader> = {
 ${deferredEntries.join(',\n')}
 };
-
-/** Eager builtins only; use resolveBuiltinPlugin() for deferred builtins. */
-export const availablePlugins: readonly ChronosPlugin[] = eagerPlugins;
 `;
 }
 

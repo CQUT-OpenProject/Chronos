@@ -3,7 +3,8 @@ import {
 	getAppController,
 	resetAppEngine,
 	ensureEngineReady,
-	ensureEngineFullyReady
+	ensureEngineFullyReady,
+	getProfileBuiltinPlugins
 } from './app-engine';
 import type { ChronosDB } from '$lib/storage/db';
 
@@ -102,5 +103,14 @@ describe('app-engine bootstrap', () => {
 		expect(controller.getSlots('mine.section').length).toBeGreaterThan(0);
 		expect(controller.getSlots('mine.item').length).toBeGreaterThan(0);
 		expect(engine.themes.getThemes().length).toBeGreaterThan(0);
+	});
+
+	it('lists deferred builtins after the engine is fully ready', async () => {
+		const mockDb = createMockDb();
+		const mockStore = new MockLocalStorage();
+		await ensureEngineFullyReady({ database: mockDb, localStorage: mockStore });
+		const ids = getProfileBuiltinPlugins().map((plugin) => plugin.id);
+		expect(ids).toContain('core-shell');
+		expect(ids.length).toBeGreaterThan(1);
 	});
 });

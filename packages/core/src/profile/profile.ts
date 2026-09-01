@@ -3,6 +3,8 @@ export interface PluginProfileConfig {
 	enabled?: boolean;
 	/** Slot IDs to skip when activating this plugin (e.g. `cqut-online`). */
 	disabledSlots?: string[];
+	/** When true, codegen emits a plugin-server proxy route for this builtin. */
+	server?: boolean;
 	config?: Record<string, unknown>;
 }
 

@@ -111,7 +111,10 @@ describe('Profile System and Layered Config', () => {
 			}
 		};
 
-		const handle = await manager.applyProfile(profile, [pluginA, pluginB]);
+		const resolvePlugin = async (id: string) =>
+			[pluginA, pluginB].find((plugin) => plugin.id === id);
+
+		const handle = await manager.applyProfile(profile, resolvePlugin);
 
 		expect(manager.getActiveProfile()?.profileId).toBe('test-profile');
 		expect(engine.state.activeThemeId).toBe('catppuccin-latte');
@@ -120,6 +123,7 @@ describe('Profile System and Layered Config', () => {
 
 		expect(engine.isPluginLoaded('plugin-a')).toBe(true);
 		expect(engine.isPluginLoaded('plugin-b')).toBe(false);
+		expect(manager.listLoadedPlugins().map((plugin) => plugin.id)).toEqual(['plugin-a']);
 		expect(appliedConfig).toEqual({
 			mode: 'thorough',
 			customFlag: true
@@ -127,6 +131,87 @@ describe('Profile System and Layered Config', () => {
 
 		handle.dispose();
 		expect(engine.isPluginLoaded('plugin-a')).toBe(false);
+		expect(manager.listLoadedPlugins()).toEqual([]);
+
+		engine.dispose();
+	});
+
+	it('loadPlugins incrementally then applyProfile replaces the loaded set', async () => {
+		const engine = new ChronosEngine({
+			env: {
+				platform: 'web',
+				http: { request: vi.fn() },
+				storage: {
+					getTimetable: vi.fn().mockResolvedValue(null),
+					listTimetables: vi.fn().mockResolvedValue([]),
+					saveTimetable: vi.fn().mockResolvedValue(undefined),
+					deleteTimetable: vi.fn().mockResolvedValue(undefined),
+					getActiveTimetableId: vi.fn().mockResolvedValue(null),
+					setActiveTimetableId: vi.fn().mockResolvedValue(undefined),
+					queryCourses: vi.fn().mockResolvedValue([]),
+					getPreferences: vi.fn().mockResolvedValue({
+						schemaVersion: 1,
+						themeMode: 'auto',
+						paletteMode: 'vibrant',
+						timetableLayoutMode: 'fixed',
+						capsuleCornerStyle: 'rounded',
+						hapticFeedbackEnabled: true
+					}),
+					savePreferences: vi.fn().mockResolvedValue(undefined),
+					getPluginData: vi.fn().mockResolvedValue(null),
+					setPluginData: vi.fn().mockResolvedValue(undefined),
+					deletePluginData: vi.fn().mockResolvedValue(undefined)
+				},
+				runtime: { sha256: async () => '' }
+			}
+		});
+
+		const manager = new ProfileManager(engine);
+		const pluginA: ChronosPlugin = {
+			id: 'plugin-a',
+			name: 'Plugin A',
+			version: '1.0.0',
+			apply: vi.fn()
+		};
+		const pluginB: ChronosPlugin = {
+			id: 'plugin-b',
+			name: 'Plugin B',
+			version: '1.0.0',
+			apply: vi.fn()
+		};
+		const resolvePlugin = async (id: string) =>
+			[pluginA, pluginB].find((plugin) => plugin.id === id);
+
+		const profile: ChronosProfile = {
+			profileId: 'phased',
+			name: 'Phased',
+			version: '1.0.0',
+			plugins: [
+				{ id: 'plugin-a', enabled: true },
+				{ id: 'plugin-b', enabled: true }
+			]
+		};
+
+		await manager.loadPlugins(profile, resolvePlugin, (id) => id === 'plugin-a');
+		expect(engine.isPluginLoaded('plugin-a')).toBe(true);
+		expect(engine.isPluginLoaded('plugin-b')).toBe(false);
+		expect(manager.listLoadedPlugins().map((plugin) => plugin.id)).toEqual(['plugin-a']);
+
+		await manager.loadPlugins(profile, resolvePlugin, (id) => id !== 'plugin-a');
+		expect(engine.isPluginLoaded('plugin-a')).toBe(true);
+		expect(engine.isPluginLoaded('plugin-b')).toBe(true);
+		expect(manager.listLoadedPlugins().map((plugin) => plugin.id)).toEqual([
+			'plugin-a',
+			'plugin-b'
+		]);
+
+		await manager.applyProfile(profile, resolvePlugin);
+		expect(engine.isPluginLoaded('plugin-a')).toBe(true);
+		expect(engine.isPluginLoaded('plugin-b')).toBe(true);
+		expect(manager.listLoadedPlugins().map((plugin) => plugin.id)).toEqual([
+			'plugin-a',
+			'plugin-b'
+		]);
 
 		engine.dispose();
 	});

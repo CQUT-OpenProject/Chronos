@@ -1,18 +1,53 @@
-/** Build-time profile → plugin mapping (keep in sync with profile-registry). */
+import type { ChronosProfile } from '@chronos/core';
 
 /** Builtins loaded before first timetable paint; all others are deferred dynamic imports. */
 export const EAGER_BUILTIN_PLUGIN_IDS = ['core-shell'] as const;
 
-export const PROFILE_SERVER_PLUGINS: Record<string, readonly string[]> = {
-	'chronos-default': [],
-	'chronos-cqut': ['source-cqut'],
-	'chronos-cqut-offline': []
+const DEFAULT_PROFILE: ChronosProfile = {
+	profileId: 'chronos-default',
+	name: 'Chronos 标准开源版',
+	version: '0.3.0',
+	description: '包含分享短链与标准备份能力',
+	defaultTheme: 'm3-default',
+	defaultImportSlot: 'share-link',
+	plugins: [
+		{ id: 'core-shell', enabled: true },
+		{ id: 'codec-share', enabled: true }
+	]
 };
 
-export const PROFILE_BUILTIN_PLUGINS: Record<string, readonly string[]> = {
-	'chronos-default': ['core-shell', 'codec-share'],
-	'chronos-cqut': ['core-shell', 'source-cqut', 'codec-share'],
-	'chronos-cqut-offline': ['core-shell', 'source-cqut', 'codec-share']
+const CQUT_PROFILE: ChronosProfile = {
+	profileId: 'chronos-cqut',
+	name: '重庆理工大学在线版',
+	version: '0.3.0',
+	description: '专为重庆理工大学定制，内置知行理工教务直连与校区专属节次',
+	defaultTheme: 'm3-default',
+	defaultImportSlot: 'cqut-online',
+	plugins: [
+		{ id: 'core-shell', enabled: true },
+		{ id: 'source-cqut', enabled: true, server: true },
+		{ id: 'codec-share', enabled: true }
+	]
+};
+
+const CQUT_OFFLINE_PROFILE: ChronosProfile = {
+	profileId: 'chronos-cqut-offline',
+	name: '重庆理工大学离线版',
+	version: '0.3.0',
+	description: 'HTML 课表导入与分享短链，不含知行理工在线同步',
+	defaultTheme: 'm3-default',
+	defaultImportSlot: 'edu-html',
+	plugins: [
+		{ id: 'core-shell', enabled: true },
+		{ id: 'source-cqut', enabled: true, disabledSlots: ['cqut-online'] },
+		{ id: 'codec-share', enabled: true }
+	]
+};
+
+export const CHRONOS_PROFILES: Record<string, ChronosProfile> = {
+	'chronos-default': DEFAULT_PROFILE,
+	'chronos-cqut': CQUT_PROFILE,
+	'chronos-cqut-offline': CQUT_OFFLINE_PROFILE
 };
 
 export const CLIENT_BUILTIN_PLUGIN_MODULES: Record<
@@ -33,7 +68,7 @@ export const CLIENT_BUILTIN_PLUGIN_MODULES: Record<
 	}
 };
 
-/** Literal proxy contract — keep in sync with plugin server manifests and profile-sync.test.ts */
+/** Literal proxy contract — keep in sync with plugin server manifests. */
 export const SERVER_PLUGIN_MODULES: Record<
 	string,
 	{ importPath: string; domains: readonly string[]; action: string }
@@ -49,14 +84,24 @@ export function resolveProfileId(): string {
 	return process.env.CHRONOS_PROFILE ?? 'chronos-cqut';
 }
 
+function resolveProfile(profileId: string): ChronosProfile {
+	return CHRONOS_PROFILES[profileId] ?? DEFAULT_PROFILE;
+}
+
+export function enabledBuiltinPluginIds(profile: ChronosProfile): string[] {
+	return profile.plugins.filter((entry) => entry.enabled !== false).map((entry) => entry.id);
+}
+
+export function enabledServerPluginIds(profile: ChronosProfile): string[] {
+	return profile.plugins
+		.filter((entry) => entry.enabled !== false && entry.server)
+		.map((entry) => entry.id);
+}
+
 export function resolveActiveServerPluginIds(profileId: string): string[] {
-	return [
-		...(PROFILE_SERVER_PLUGINS[profileId] ?? PROFILE_SERVER_PLUGINS['chronos-default'] ?? [])
-	];
+	return enabledServerPluginIds(resolveProfile(profileId));
 }
 
 export function resolveActiveBuiltinPluginIds(profileId: string): string[] {
-	return [
-		...(PROFILE_BUILTIN_PLUGINS[profileId] ?? PROFILE_BUILTIN_PLUGINS['chronos-default'] ?? [])
-	];
+	return enabledBuiltinPluginIds(resolveProfile(profileId));
 }
