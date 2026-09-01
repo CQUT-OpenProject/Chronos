@@ -89,4 +89,26 @@ describe('createShellTabController', () => {
 		shellTab.init();
 		expect(shellTab.activeTabId).toBe('mine');
 	});
+
+	it('applies deferred defaultLaunch when the tab registers after init', async () => {
+		const shellTab = createShellTabController(() => controller);
+		shellTab.init();
+		expect(shellTab.activeTabId).toBe('timetable');
+
+		const todayHandle = await engine.loadPlugin(createTodayTabPlugin());
+		shellTab.reconcileActiveTab();
+		expect(shellTab.activeTabId).toBe('today');
+		todayHandle.dispose();
+	});
+
+	it('does not override a user-selected tab when deferred defaultLaunch appears', async () => {
+		const shellTab = createShellTabController(() => controller);
+		shellTab.init();
+		shellTab.setActiveTab('mine');
+
+		const todayHandle = await engine.loadPlugin(createTodayTabPlugin());
+		shellTab.reconcileActiveTab();
+		expect(shellTab.activeTabId).toBe('mine');
+		todayHandle.dispose();
+	});
 });

@@ -23,6 +23,7 @@
 		interactive = false
 	}: Props = $props();
 
+	const calendarService = new AcademicCalendarService();
 	const hostTranslate = (key: string) => controller.translatePlugin('host-ui', key);
 
 	const timetable = $derived(controller.currentTimetable);
