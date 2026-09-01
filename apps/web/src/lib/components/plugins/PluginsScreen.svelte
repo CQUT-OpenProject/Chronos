@@ -4,7 +4,8 @@
 	import {
 		getOfficialPluginService,
 		getProfileBuiltinPlugins,
-		getAppController
+		getAppController,
+		ensureEngineFullyReady
 	} from '$lib/services/app-engine';
 	import type { InstalledOfficialPluginRecord } from '$lib/services/official-plugins/official-plugin-service';
 	import type { PluginManifest, ConfigSchema } from '@chronos/core';
@@ -64,7 +65,7 @@
 	}
 
 	onMount(() => {
-		void officialPlugins.init().then(async () => {
+		void ensureEngineFullyReady().then(async () => {
 			refreshInstalled();
 			await loadOfficialCatalog();
 		});
