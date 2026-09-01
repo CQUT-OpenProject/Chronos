@@ -7,10 +7,9 @@
 	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 
-	import { CORE_SHELL_SUPPORT_SECTION_ID } from '$lib/boot/core-shell';
+	import { DEFAULT_MINE_SECTION_ID, resolveLocalizedText } from '@chronos/core';
 	import { CodeFill } from '$lib/icons';
 	import { resolveShellIcon } from '$lib/shell/resolve-shell-icon';
-	import { resolveLocalizedText } from '@chronos/core';
 	import type { Component } from 'svelte';
 
 	let { shell }: { shell: AppShellController } = $props();
@@ -61,7 +60,7 @@
 		}
 
 		for (const item of pluginItems) {
-			const targetSectionId = item.sectionId ?? CORE_SHELL_SUPPORT_SECTION_ID;
+			const targetSectionId = item.sectionId ?? DEFAULT_MINE_SECTION_ID;
 			let section = sectionMap[targetSectionId];
 			if (!section) {
 				section = {

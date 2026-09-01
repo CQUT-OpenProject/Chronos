@@ -1,19 +1,25 @@
-import type { ChronosPlugin, ChronosContext } from '@chronos/core';
+import type { ChronosContext } from '@chronos/core';
+import { DEFAULT_MINE_SECTION_ID, defineChronosPlugin, type PluginTranslate } from '@chronos/core';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 import { CORE_SHELL_MESSAGES } from '$lib/boot/core-shell-messages';
 
 const CORE_SHELL_PLUGIN_ID = 'core-shell';
-export const CORE_SHELL_SUPPORT_SECTION_ID = 'app-support';
 
-let coreShellTranslate: ((key: string) => string) | undefined;
+function keywordList(t: PluginTranslate, key: string): string[] {
+	return t(key)
+		.split(',')
+		.map((entry) => entry.trim())
+		.filter(Boolean);
+}
 
-function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string): void {
+function registerCoreShellSlots(ctx: ChronosContext, t: PluginTranslate): void {
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'timetable',
 		label: () => t('tab.timetable'),
 		order: 10,
 		icon: 'calendar-month',
-		iconFill: 'calendar-month-fill'
+		iconFill: 'calendar-month-fill',
+		hostPanel: 'timetable'
 	});
 
 	ctx.registerSlot('shell.bottom-bar.tab', {
@@ -21,7 +27,8 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 		label: () => t('tab.mine'),
 		order: 20,
 		icon: 'person',
-		iconFill: 'person-fill'
+		iconFill: 'person-fill',
+		hostPanel: 'mine'
 	});
 
 	ctx.registerSlot('mine.section', {
@@ -43,7 +50,7 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 	});
 
 	ctx.registerSlot('mine.section', {
-		id: CORE_SHELL_SUPPORT_SECTION_ID,
+		id: DEFAULT_MINE_SECTION_ID,
 		title: () => t('section.app-support'),
 		order: 40
 	});
@@ -55,7 +62,7 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 		href: '/manage-timetables',
 		icon: 'list-alt',
 		iconTone: 'primary',
-		keywords: ['课表', '管理', '切换', '编辑', '课程'],
+		keywords: keywordList(t, 'item.manage-timetables.keywords'),
 		order: 10
 	});
 
@@ -66,7 +73,7 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 		href: '/transfer/import',
 		icon: 'download',
 		iconTone: 'secondary',
-		keywords: ['导入', '数据', '共享', '文件', '扫码', '课表'],
+		keywords: keywordList(t, 'item.import.keywords'),
 		order: 10
 	});
 
@@ -77,7 +84,7 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 		href: '/transfer/export',
 		icon: 'share',
 		iconTone: 'tertiary',
-		keywords: ['导出', '分享', '备份', '数据', '链接', '二维码'],
+		keywords: keywordList(t, 'item.export.keywords'),
 		order: 20
 	});
 
@@ -88,25 +95,7 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 		href: '/display-settings',
 		icon: 'palette',
 		iconTone: 'secondary',
-		keywords: [
-			'主题',
-			'显示',
-			'外观',
-			'深色',
-			'夜间',
-			'亮色',
-			'白天',
-			'模式',
-			'颜色',
-			'跟随系统',
-			'滚动',
-			'一屏',
-			'布局',
-			'课表',
-			'配色',
-			'配色方案',
-			'随机'
-		],
+		keywords: keywordList(t, 'item.display.keywords'),
 		order: 10
 	});
 
@@ -117,25 +106,25 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 		href: '/feedback-settings',
 		icon: 'vibrate',
 		iconTone: 'tertiary',
-		keywords: ['反馈', '震动', '振动', '触感', '马达', '声音', '音效', 'haptic', 'feedback'],
+		keywords: keywordList(t, 'item.feedback.keywords'),
 		order: 20
 	});
 
 	ctx.registerSlot('mine.item', {
 		id: 'plugins',
-		sectionId: CORE_SHELL_SUPPORT_SECTION_ID,
+		sectionId: DEFAULT_MINE_SECTION_ID,
 		title: () => t('item.plugins'),
 		supporting: () => t('item.plugins.supporting'),
 		href: '/plugins',
 		icon: 'code',
 		iconTone: 'secondary',
-		keywords: ['插件', '官方', '扩展', 'plugin', 'official', '主题', '工具', '安装'],
+		keywords: keywordList(t, 'item.plugins.keywords'),
 		order: 5
 	});
 
 	ctx.registerSlot('mine.item', {
 		id: 'install',
-		sectionId: CORE_SHELL_SUPPORT_SECTION_ID,
+		sectionId: DEFAULT_MINE_SECTION_ID,
 		title: () => t('item.install'),
 		supporting: () =>
 			pwaInstallController.isStandalone
@@ -146,32 +135,31 @@ function registerCoreShellSlots(ctx: ChronosContext, t: (key: string) => string)
 		href: '/about/install',
 		icon: 'add-home',
 		iconTone: 'primary',
-		keywords: ['安装', 'PWA', '桌面', '应用', '主屏幕', '快捷', '下载'],
+		keywords: keywordList(t, 'item.install.keywords'),
 		order: 10
 	});
 
 	ctx.registerSlot('mine.item', {
 		id: 'about',
-		sectionId: CORE_SHELL_SUPPORT_SECTION_ID,
+		sectionId: DEFAULT_MINE_SECTION_ID,
 		title: () => t('item.about'),
 		href: '/about',
 		icon: 'info',
 		iconTone: 'tertiary',
-		keywords: ['关于', '版本', '开源', '协议', '许可', '开发者', '更新', '说明'],
+		keywords: keywordList(t, 'item.about.keywords'),
 		order: 20
 	});
 }
 
-export const coreShellPlugin: ChronosPlugin = {
+export const coreShellPlugin = defineChronosPlugin({
 	id: CORE_SHELL_PLUGIN_ID,
-	name: () => coreShellTranslate?.('plugin.name') ?? 'Chronos UI Core',
+	messages: CORE_SHELL_MESSAGES,
+	nameKey: 'plugin.name',
+	descriptionKey: 'plugin.description',
 	version: 'builtin',
-	description: () => coreShellTranslate?.('plugin.description') ?? 'Core navigation shell',
 	category: 'tool',
 	order: 0,
-	apply(ctx) {
-		ctx.i18n.registerMessages(CORE_SHELL_MESSAGES);
-		coreShellTranslate = (key) => ctx.i18n.t(key);
-		registerCoreShellSlots(ctx, coreShellTranslate);
+	apply(ctx, t) {
+		registerCoreShellSlots(ctx, t);
 	}
-};
+});

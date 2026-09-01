@@ -25,9 +25,10 @@
 	const controller = getAppController();
 
 	const activeTabId = $derived(shellTab.activeTabId);
-	const pluginTabId = $derived(
-		activeTabId === 'timetable' || activeTabId === 'mine' ? undefined : activeTabId
-	);
+	const tabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
+	const activeTab = $derived(tabs.find((tab) => tab.id === activeTabId));
+	const hostPanel = $derived(activeTab?.hostPanel);
+	const pluginTabId = $derived(hostPanel ? undefined : activeTabId);
 	const pluginId = $derived(
 		pluginTabId ? controller.resolveSlotOwner('shell.bottom-bar.tab', pluginTabId) : undefined
 	);
@@ -46,7 +47,7 @@
 	}> | null>(null);
 
 	$effect(() => {
-		if (activeTabId === 'mine' && !MineScreen) {
+		if (hostPanel === 'mine' && !MineScreen) {
 			void import('$lib/components/mine/MineScreen.svelte').then((module) => {
 				MineScreen = module.default;
 			});
@@ -56,7 +57,7 @@
 	$effect(() => {
 		if (
 			ready &&
-			activeTabId === 'timetable' &&
+			hostPanel === 'timetable' &&
 			screen.state.hasLoadedAppState &&
 			!CourseDetailSheet
 		) {
@@ -85,9 +86,9 @@
 	<div class="flex min-h-[60vh] items-center justify-center p-4">
 		<LoadingIndicator />
 	</div>
-{:else if activeTabId === 'timetable' && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
+{:else if hostPanel === 'timetable' && screen.state.hasLoadedAppState && !screen.state.currentTimetable}
 	<EmptyTimetableState />
-{:else if activeTabId === 'timetable' && screen.state.hasLoadedAppState}
+{:else if hostPanel === 'timetable' && screen.state.hasLoadedAppState}
 	<TimetableScreen
 		{screen}
 		onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
@@ -96,11 +97,11 @@
 	{#if CourseDetailSheet}
 		<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
 	{/if}
-{:else if activeTabId === 'timetable'}
+{:else if hostPanel === 'timetable'}
 	<div class="flex min-h-[60vh] items-center justify-center p-4">
 		<LoadingIndicator />
 	</div>
-{:else if activeTabId === 'mine'}
+{:else if hostPanel === 'mine'}
 	{#if MineScreen}
 		<MineScreen {shell} />
 	{:else}

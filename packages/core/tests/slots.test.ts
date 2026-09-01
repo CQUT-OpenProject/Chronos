@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { resolveDefaultLaunchTab, type BottomTabSlotContribution } from '../src/types/slots';
+import {
+	resolveDefaultLaunchTab,
+	resolveHostPanelTab,
+	type BottomTabSlotContribution
+} from '../src/types/slots';
 
 function tab(
 	overrides: Partial<BottomTabSlotContribution> & Pick<BottomTabSlotContribution, 'id'>
@@ -9,6 +13,19 @@ function tab(
 		...overrides
 	};
 }
+
+describe('resolveHostPanelTab', () => {
+	it('returns the tab that declares the requested host panel', () => {
+		const timetable = tab({ id: 'timetable', order: 10, hostPanel: 'timetable' });
+		const mine = tab({ id: 'mine', order: 20, hostPanel: 'mine' });
+		expect(resolveHostPanelTab([timetable, mine], 'timetable')).toBe(timetable);
+		expect(resolveHostPanelTab([timetable, mine], 'mine')).toBe(mine);
+	});
+
+	it('returns undefined when no tab declares the panel', () => {
+		expect(resolveHostPanelTab([tab({ id: 'today', order: 15 })], 'timetable')).toBeUndefined();
+	});
+});
 
 describe('resolveDefaultLaunchTab', () => {
 	it('returns undefined when no tab declares defaultLaunch', () => {

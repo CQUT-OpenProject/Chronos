@@ -18,6 +18,15 @@ const zhCn = {
 	'item.install.supporting.local': '已安装，可在应用中打开',
 	'item.install.supporting.prompt': '添加到主屏幕，快捷打开应用',
 	'item.about': '关于 Chronos',
+	'item.manage-timetables.keywords': '课表,管理,切换,编辑,课程',
+	'item.import.keywords': '导入,数据,共享,文件,扫码,课表',
+	'item.export.keywords': '导出,分享,备份,数据,链接,二维码',
+	'item.display.keywords':
+		'主题,显示,外观,深色,夜间,亮色,白天,模式,颜色,跟随系统,滚动,一屏,布局,课表,配色,配色方案,随机',
+	'item.feedback.keywords': '反馈,震动,振动,触感,马达,声音,音效,haptic,feedback',
+	'item.plugins.keywords': '插件,官方,扩展,plugin,official,主题,工具,安装',
+	'item.install.keywords': '安装,PWA,桌面,应用,主屏幕,快捷,下载',
+	'item.about.keywords': '关于,版本,开源,协议,许可,开发者,更新,说明',
 	'plugin.name': 'Chronos UI Core',
 	'plugin.description': '核心导航与基础界面框架',
 
@@ -530,6 +539,15 @@ const en = {
 	'item.install.supporting.local': 'Installed — open in the app',
 	'item.install.supporting.prompt': 'Add to home screen for quick access',
 	'item.about': 'About Chronos',
+	'item.manage-timetables.keywords': 'timetable,manage,switch,edit,courses',
+	'item.import.keywords': 'import,data,share,file,scan,qr,timetable',
+	'item.export.keywords': 'export,share,backup,data,link,qr',
+	'item.display.keywords':
+		'theme,display,appearance,dark,night,light,day,mode,color,system,scroll,layout,timetable,palette,scheme,random',
+	'item.feedback.keywords': 'feedback,vibration,haptic,motor,sound,audio',
+	'item.plugins.keywords': 'plugins,official,extension,plugin,theme,tools,install',
+	'item.install.keywords': 'install,PWA,desktop,app,homescreen,shortcut,download',
+	'item.about.keywords': 'about,version,open source,license,developer,update,info',
 	'plugin.name': 'Chronos UI Core',
 	'plugin.description': 'Core navigation and shell framework',
 
@@ -1057,6 +1075,14 @@ export const CORE_SHELL_MESSAGE_KEYS = [
 	'item.install.supporting.local',
 	'item.install.supporting.prompt',
 	'item.about',
+	'item.manage-timetables.keywords',
+	'item.import.keywords',
+	'item.export.keywords',
+	'item.display.keywords',
+	'item.feedback.keywords',
+	'item.plugins.keywords',
+	'item.install.keywords',
+	'item.about.keywords',
 	'plugin.name',
 	'plugin.description'
 ] as const satisfies readonly HostMessageKey[];

@@ -1,15 +1,13 @@
-import { resolveDefaultLaunchTab } from '@chronos/core';
+import { resolveDefaultLaunchTab, resolveHostPanelTab } from '@chronos/core';
 import type { ReactiveChronosController } from '@chronos/ui-kit';
-
-const FALLBACK_TAB_ID = 'timetable';
 
 function pickFallbackTabId(controller: ReactiveChronosController): string {
 	const tabs = controller.getSlots('shell.bottom-bar.tab');
-	return tabs[0]?.id ?? FALLBACK_TAB_ID;
+	return resolveHostPanelTab(tabs, 'timetable')?.id ?? tabs[0]?.id ?? '';
 }
 
 export function createShellTabController(getController: () => ReactiveChronosController) {
-	let activeTabId = $state(FALLBACK_TAB_ID);
+	let activeTabId = $state('');
 	let initialized = false;
 	let defaultLaunchPending = false;
 
@@ -40,7 +38,7 @@ export function createShellTabController(getController: () => ReactiveChronosCon
 			activeTabId = defaultTab.id;
 			defaultLaunchPending = false;
 		} else {
-			activeTabId = tabs[0]?.id ?? FALLBACK_TAB_ID;
+			activeTabId = pickFallbackTabId(controller);
 			defaultLaunchPending = true;
 		}
 		initialized = true;

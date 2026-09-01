@@ -8,12 +8,14 @@ function registerCoreTabs(ctx: ChronosContext): void {
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'timetable',
 		label: () => 'Timetable',
-		order: 10
+		order: 10,
+		hostPanel: 'timetable'
 	});
 	ctx.registerSlot('shell.bottom-bar.tab', {
 		id: 'mine',
 		label: () => 'Mine',
-		order: 20
+		order: 20,
+		hostPanel: 'mine'
 	});
 }
 
