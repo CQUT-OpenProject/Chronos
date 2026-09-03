@@ -1950,7 +1950,7 @@ function qr(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Jr() {
-	return "0.4.2";
+	return "0.4.3";
 }
 function Yr(e) {
 	let t;

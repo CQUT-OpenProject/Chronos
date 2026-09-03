@@ -4,7 +4,7 @@
 		"zh-CN": "今日",
 		"en": "Today"
 	},
-	"version": "0.4.2",
+	"version": "0.4.3",
 	"description": {
 		"zh-CN": "快速查看当天课程",
 		"en": "Bottom tab showing today's courses"
@@ -13,7 +13,7 @@
 	"type": "tool",
 	"bundleFormat": "esm",
 	"bundleUrl": "/official-plugins/bundles/tool-today/bundle.js",
-	"sha256": "fd1a4461b892e23ddcf38e803fb10faff0dc678aca6498858dfa290a04f92c99",
+	"sha256": "4c3e1338d35776d4d289d3dc2757ef3152e816a91d488d25ec67685b62cd5353",
 	"cssUrl": "/official-plugins/bundles/tool-today/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }

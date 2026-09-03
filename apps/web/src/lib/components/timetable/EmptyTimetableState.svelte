@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import favicon from '$lib/assets/favicon.svg';
 	import { trackEvent } from '$lib/client/analytics';
-	import { onboardingController } from '$lib/client/onboarding.svelte';
+	import { onboardingController, ONBOARDING_STEP } from '$lib/client/onboarding.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 
@@ -15,7 +15,7 @@
 
 	function showImportGuide() {
 		trackEvent('empty_import_guide_open');
-		onboardingController.openAt(3);
+		onboardingController.openAt(ONBOARDING_STEP.highlights);
 	}
 </script>
 

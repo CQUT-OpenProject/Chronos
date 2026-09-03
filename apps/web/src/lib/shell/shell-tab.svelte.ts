@@ -1,5 +1,6 @@
 import { resolveDefaultLaunchTab, resolveHostPanelTab } from '@chronos/core';
 import type { ReactiveChronosController } from '@chronos/ui-kit';
+import { SvelteSet } from 'svelte/reactivity';
 
 function pickFallbackTabId(controller: ReactiveChronosController): string {
 	const tabs = controller.getSlots('shell.bottom-bar.tab');
@@ -8,8 +9,19 @@ function pickFallbackTabId(controller: ReactiveChronosController): string {
 
 export function createShellTabController(getController: () => ReactiveChronosController) {
 	let activeTabId = $state('');
+	const mountedTabIds = new SvelteSet<string>();
 	let initialized = false;
 	let defaultLaunchPending = false;
+
+	function mountTab(id: string): void {
+		if (!id) return;
+		mountedTabIds.add(id);
+	}
+
+	function activateTab(id: string): void {
+		activeTabId = id;
+		mountTab(id);
+	}
 
 	function reconcileActiveTab(): void {
 		if (!initialized) return;
@@ -19,14 +31,14 @@ export function createShellTabController(getController: () => ReactiveChronosCon
 		if (defaultLaunchPending) {
 			const defaultTab = resolveDefaultLaunchTab(tabs);
 			if (defaultTab) {
-				activeTabId = defaultTab.id;
+				activateTab(defaultTab.id);
 				defaultLaunchPending = false;
 				return;
 			}
 		}
 
 		if (tabs.some((tab) => tab.id === activeTabId)) return;
-		activeTabId = pickFallbackTabId(controller);
+		activateTab(pickFallbackTabId(controller));
 	}
 
 	function init(): void {
@@ -35,10 +47,10 @@ export function createShellTabController(getController: () => ReactiveChronosCon
 		const tabs = controller.getSlots('shell.bottom-bar.tab');
 		const defaultTab = resolveDefaultLaunchTab(tabs);
 		if (defaultTab) {
-			activeTabId = defaultTab.id;
+			activateTab(defaultTab.id);
 			defaultLaunchPending = false;
 		} else {
-			activeTabId = pickFallbackTabId(controller);
+			activateTab(pickFallbackTabId(controller));
 			defaultLaunchPending = true;
 		}
 		initialized = true;
@@ -46,17 +58,25 @@ export function createShellTabController(getController: () => ReactiveChronosCon
 	}
 
 	function setActiveTab(id: string): void {
-		activeTabId = id;
+		activateTab(id);
 		defaultLaunchPending = false;
+	}
+
+	function warmup(id: string): void {
+		mountTab(id);
 	}
 
 	return {
 		get activeTabId() {
 			return activeTabId;
 		},
+		get mountedTabIds() {
+			return mountedTabIds;
+		},
 		init,
 		reconcileActiveTab,
-		setActiveTab
+		setActiveTab,
+		warmup
 	};
 }
 
