@@ -6,6 +6,7 @@ export type AnalyticsEvent =
 	| 'onboarding_step_next'
 	| 'onboarding_step_back'
 	| 'onboarding_skip'
+	| 'onboarding_legal_continue'
 	| 'onboarding_start_import'
 	| 'onboarding_layout_selected'
 	| 'empty_import_click'
