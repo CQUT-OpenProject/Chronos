@@ -506,6 +506,7 @@ const zhCn = {
 	'ui.date.confirm': '确认',
 	'ui.date.trigger.labeled': '{label}：{display}',
 	'ui.date.trigger.empty': '选择{label}',
+	'ui.bottomSheet.dragDismissAria': '向下拖动关闭',
 	'ui.nav.back': '返回',
 	'ui.nav.main': '主导航',
 
@@ -1036,6 +1037,7 @@ Aside from GitHub Issues, this project has no other public feedback channels
 	'ui.date.confirm': 'Confirm',
 	'ui.date.trigger.labeled': '{label}: {display}',
 	'ui.date.trigger.empty': 'Select {label}',
+	'ui.bottomSheet.dragDismissAria': 'Drag down to close',
 	'ui.nav.back': 'Back',
 	'ui.nav.main': 'Main navigation',
 
