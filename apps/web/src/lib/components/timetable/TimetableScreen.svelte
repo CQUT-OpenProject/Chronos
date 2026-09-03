@@ -16,10 +16,12 @@
 
 	let {
 		screen,
+		active = true,
 		onEditTimetableDetails,
 		onCourseClick
 	}: {
 		screen: TimetableScreenController;
+		active?: boolean;
 		onEditTimetableDetails: () => void;
 		onCourseClick: (courseId: string) => void;
 	} = $props();
@@ -98,9 +100,9 @@
 </script>
 
 <svelte:window
-	onpointermove={weekGesture.onWindowPointerMove}
-	onpointerup={weekGesture.onWindowPointerUp}
-	onpointercancel={weekGesture.onWindowPointerCancel}
+	onpointermove={active ? weekGesture.onWindowPointerMove : undefined}
+	onpointerup={active ? weekGesture.onWindowPointerUp : undefined}
+	onpointercancel={active ? weekGesture.onWindowPointerCancel : undefined}
 />
 
 <div class="flex h-[calc(100dvh-var(--bottom-bar-height))] flex-col">

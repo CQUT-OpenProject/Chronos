@@ -33,6 +33,13 @@
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 
 	const SCROLL_ROW_HEIGHT = '5.5rem';
+	const SIDEBAR_WIDTH_REM = 3.25;
+
+	function estimateGridBodyWidth(): number {
+		if (typeof window === 'undefined') return 0;
+		const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+		return Math.max(0, window.innerWidth - SIDEBAR_WIDTH_REM * rem);
+	}
 
 	interface Props {
 		displayedWeek: number;
@@ -70,7 +77,7 @@
 
 	let scrollContainer = $state<HTMLDivElement | undefined>();
 	let bodyViewportHeight = $state(0);
-	let gridBodyWidth = $state(0);
+	let gridBodyWidth = $state(estimateGridBodyWidth());
 	let centeredFor = $state<string | null>(null);
 	let internalExpandedSlots = $state(new Set<string>());
 

@@ -3,17 +3,11 @@
 	import { fade } from 'svelte/transition';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
-	import { onboardingController } from '$lib/client/onboarding.svelte';
-	import { getAppController } from '$lib/services/app-engine';
-	import {
-		buildImportDescription,
-		buildOnboardingImportHighlight,
-		defaultImportMethodSubtitle,
-		formatImportMethodTitle
-	} from '$lib/transfer/import-slot-capabilities';
+	import { onboardingController, ONBOARDING_STEP } from '$lib/client/onboarding.svelte';
 	import type { TimetableLayoutMode } from '@chronos/core';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -23,19 +17,20 @@
 	import HighlightRow from '$lib/components/ui/HighlightRow.svelte';
 	import InstallGuideCard from '$lib/components/pwa/InstallGuideCard.svelte';
 	import {
+		CheckCircleFill,
 		DownloadFill,
-		PaletteFill,
+		GavelFill,
+		RocketLaunchFill,
+		ShieldFill,
 		WifiOffFill,
-		IosShareFill,
-		DescriptionFill
+		ChevronRight
 	} from '$lib/icons';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const shell = getContext<AppShellController>('appShell');
-	const controller = getAppController();
-	const importSlots = $derived(controller.getSlots('import.source.tab'));
-	const onboardingImportHighlight = $derived(buildOnboardingImportHighlight(importSlots));
 	const step = $derived(onboardingController.step);
+	const showOnboarding = $derived(onboardingController.isActive(page.url.pathname));
+	const shouldRenderOnboarding = $derived(onboardingController.shouldRender(page.url.pathname));
 	const stepIndices = [0, 1, 2, 3, 4, 5] as const;
 	const isLastStep = $derived(step === onboardingController.totalSteps - 1);
 	const stepTitleId = 'onboarding-step-title';
@@ -57,7 +52,7 @@
 	});
 
 	$effect(() => {
-		if (!onboardingController.open) return;
+		if (!showOnboarding) return;
 		const prevOverflow = document.body.style.overflow;
 		document.body.style.overflow = 'hidden';
 		return () => {
@@ -108,7 +103,11 @@
 	const stepTransitionDuration = $derived(prefersReducedMotion() ? 1 : 200);
 
 	function handleNext() {
-		trackEvent('onboarding_step_next', { step });
+		if (step === ONBOARDING_STEP.legal) {
+			trackEvent('onboarding_legal_continue');
+		} else {
+			trackEvent('onboarding_step_next', { step });
+		}
 		haptic.light();
 		onboardingController.next();
 	}
@@ -140,29 +139,47 @@
 		haptic.light();
 		await shell.setTimetableLayoutMode(mode);
 	}
+
+	function openLegalDocument(href: string) {
+		haptic.light();
+		void goto(href);
+	}
 </script>
 
-{#snippet importMethodCard(Icon: typeof DownloadFill, title: string, description: string)}
-	<Card variant="outlined" class="flex items-start gap-3.5">
-		<span class="ui-leading-icon tone-primary" aria-hidden="true">
-			<Icon />
-		</span>
-		<div class="flex min-w-0 flex-1 flex-col justify-center">
-			<p class="text-body-large text-on-surface">{title}</p>
-			<p class="text-body-small text-on-surface-variant">{description}</p>
-		</div>
-	</Card>
+{#snippet legalLinkCard(Icon: typeof GavelFill, title: string, description: string, href: string)}
+	<button
+		type="button"
+		class="block w-full cursor-pointer border-none bg-transparent p-0 text-left"
+		onclick={() => openLegalDocument(href)}
+	>
+		<Card variant="outlined" class="flex items-start gap-3.5">
+			<span class="ui-leading-icon tone-primary" aria-hidden="true">
+				<Icon />
+			</span>
+			<div class="flex min-w-0 flex-1 flex-col justify-center">
+				<p class="text-body-large text-on-surface">{title}</p>
+				<p class="text-body-small text-on-surface-variant">{description}</p>
+			</div>
+			<ChevronRight
+				class="size-4.5 shrink-0 self-center text-on-surface-variant"
+				aria-hidden="true"
+			/>
+		</Card>
+	</button>
 {/snippet}
 
-{#if onboardingController.open}
+{#if shouldRenderOnboarding}
 	<div
 		class="fixed inset-0 z-[85] flex flex-col bg-canvas text-ink outline-none"
+		class:invisible={!showOnboarding}
+		class:pointer-events-none={!showOnboarding}
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby={stepTitleId}
+		aria-hidden={!showOnboarding}
+		inert={!showOnboarding || undefined}
 		tabindex="-1"
 		{@attach dialogAttach}
-		transition:fade={{ duration: stepTransitionDuration }}
 	>
 		<div class="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col">
 			<div
@@ -185,7 +202,7 @@
 						in:fade={{ duration: stepTransitionDuration, delay: stepTransitionDuration }}
 						out:fade={{ duration: stepTransitionDuration }}
 					>
-						{#if step === 0}
+						{#if step === ONBOARDING_STEP.welcome}
 							<div class="flex flex-1 flex-col items-center justify-center gap-4 text-center">
 								<AppHero
 									title={hostT('onboarding.welcome.title')}
@@ -193,7 +210,36 @@
 									titleId={stepTitleId}
 								/>
 							</div>
-						{:else if step === 1}
+						{:else if step === ONBOARDING_STEP.legal}
+							<div class="flex flex-1 flex-col justify-center gap-4">
+								<h2
+									id={stepTitleId}
+									class="text-headline-small text-center font-semibold text-on-surface"
+								>
+									{hostT('onboarding.legal.title')}
+								</h2>
+								<p class="text-body-small text-center text-on-surface-variant">
+									{hostT('onboarding.legal.subtitle')}
+								</p>
+								<div class="flex flex-col gap-3">
+									{@render legalLinkCard(
+										GavelFill,
+										hostT('about.legal.terms'),
+										hostT('onboarding.legal.terms.desc'),
+										resolve('/legal/terms')
+									)}
+									{@render legalLinkCard(
+										ShieldFill,
+										hostT('about.legal.privacy'),
+										hostT('onboarding.legal.privacy.desc'),
+										resolve('/legal/privacy')
+									)}
+								</div>
+								<p class="text-body-small text-center text-on-surface-variant">
+									{hostT('legal.zhOnlyNotice')}
+								</p>
+							</div>
+						{:else if step === ONBOARDING_STEP.highlights}
 							<div class="flex flex-1 flex-col items-center justify-center gap-6">
 								<h2
 									id={stepTitleId}
@@ -203,23 +249,23 @@
 								</h2>
 								<HighlightRowList>
 									<HighlightRow
-										icon={DownloadFill}
-										title={hostT('onboarding.highlights.import.title')}
-										subtitle={onboardingImportHighlight}
-									/>
-									<HighlightRow
-										icon={PaletteFill}
-										title={hostT('onboarding.highlights.theme.title')}
-										subtitle={hostT('onboarding.highlights.theme.subtitle')}
+										icon={RocketLaunchFill}
+										title={hostT('onboarding.highlights.plugins.title')}
+										subtitle={hostT('onboarding.highlights.plugins.subtitle')}
 									/>
 									<HighlightRow
 										icon={WifiOffFill}
 										title={hostT('onboarding.highlights.offline.title')}
 										subtitle={hostT('onboarding.highlights.offline.subtitle')}
 									/>
+									<HighlightRow
+										icon={CheckCircleFill}
+										title={hostT('onboarding.highlights.lightweight.title')}
+										subtitle={hostT('onboarding.highlights.lightweight.subtitle')}
+									/>
 								</HighlightRowList>
 							</div>
-						{:else if step === 2}
+						{:else if step === ONBOARDING_STEP.layout}
 							<div class="flex flex-1 flex-col justify-center gap-4">
 								<h2
 									id={stepTitleId}
@@ -258,31 +304,7 @@
 									{/each}
 								</div>
 							</div>
-						{:else if step === 3}
-							<div class="flex flex-1 flex-col justify-center gap-4">
-								<h2
-									id={stepTitleId}
-									class="text-headline-small text-center font-semibold text-on-surface"
-								>
-									{hostT('onboarding.import.title')}
-								</h2>
-								<div class="flex flex-col gap-3">
-									{#each importSlots as slot (slot.id)}
-										{@const icon =
-											slot.importKind === 'online'
-												? DownloadFill
-												: slot.importKind === 'file'
-													? DescriptionFill
-													: IosShareFill}
-										{@render importMethodCard(
-											icon,
-											formatImportMethodTitle(slot),
-											defaultImportMethodSubtitle(slot)
-										)}
-									{/each}
-								</div>
-							</div>
-						{:else if step === 4}
+						{:else if step === ONBOARDING_STEP.install}
 							<div class="flex flex-1 flex-col justify-center gap-4">
 								<h2
 									id={stepTitleId}
@@ -343,7 +365,9 @@
 							</Button>
 						{/if}
 						<Button variant="filled" class="flex-1" onclick={handleNext}>
-							{hostT('onboarding.next')}
+							{step === ONBOARDING_STEP.legal
+								? hostT('onboarding.legal.continue')
+								: hostT('onboarding.next')}
 						</Button>
 					{:else}
 						<Button variant="text" class="flex-1" onclick={handleLater}>

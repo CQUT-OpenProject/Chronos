@@ -84,6 +84,40 @@ describe('createShellTabController', () => {
 		expect(shellTab.activeTabId).toBe('mine');
 	});
 
+	it('keeps previously visited tabs mounted after switching away', () => {
+		const shellTab = createShellTabController(() => controller);
+		shellTab.init();
+		expect(shellTab.mountedTabIds.has('timetable')).toBe(true);
+
+		shellTab.setActiveTab('mine');
+		expect(shellTab.activeTabId).toBe('mine');
+		expect(shellTab.mountedTabIds.has('timetable')).toBe(true);
+		expect(shellTab.mountedTabIds.has('mine')).toBe(true);
+	});
+
+	it('warms up a tab without changing the active tab', () => {
+		const shellTab = createShellTabController(() => controller);
+		shellTab.init();
+		shellTab.setActiveTab('mine');
+
+		shellTab.warmup('timetable');
+		expect(shellTab.activeTabId).toBe('mine');
+		expect(shellTab.mountedTabIds.has('timetable')).toBe(true);
+	});
+
+	it('keeps the fallback tab mounted when deferred defaultLaunch takes over', async () => {
+		const shellTab = createShellTabController(() => controller);
+		shellTab.init();
+		expect(shellTab.mountedTabIds.has('timetable')).toBe(true);
+
+		const todayHandle = await engine.loadPlugin(createTodayTabPlugin());
+		shellTab.reconcileActiveTab();
+		expect(shellTab.activeTabId).toBe('today');
+		expect(shellTab.mountedTabIds.has('timetable')).toBe(true);
+		expect(shellTab.mountedTabIds.has('today')).toBe(true);
+		todayHandle.dispose();
+	});
+
 	it('does not reset active tab when init is called again', () => {
 		const shellTab = createShellTabController(() => controller);
 		shellTab.init();

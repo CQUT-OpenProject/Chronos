@@ -1,13 +1,25 @@
-<script lang="ts">
-	import { untrack } from 'svelte';
+<script module>
 	import { register } from 'swiper/element/bundle';
+
+	let swiperRegistered = false;
+
+	function ensureSwiperRegistered() {
+		if (swiperRegistered) return;
+		register();
+		swiperRegistered = true;
+	}
+</script>
+
+<script lang="ts">
+	import { onMount, untrack } from 'svelte';
 	import type { SwiperContainer } from 'swiper/element/bundle';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { CoursePaletteEntry } from '@chronos/core';
+	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableGrid from './TimetableGrid.svelte';
 
-	register();
+	ensureSwiperRegistered();
 
 	let {
 		screen,
@@ -29,6 +41,7 @@
 
 	let swiperEl = $state<SwiperContainer | undefined>();
 	let suppressPagerWeekSync = $state(true);
+	let paintAdjacent = $state(false);
 
 	function onSlideSettled() {
 		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
@@ -85,6 +98,13 @@
 	$effect(() => {
 		syncSwiperToSlideIndex(screenState.slideIndex);
 	});
+
+	onMount(() => {
+		const frame = requestAnimationFrame(() => {
+			paintAdjacent = true;
+		});
+		return () => cancelAnimationFrame(frame);
+	});
 </script>
 
 <swiper-container bind:this={swiperEl} init={false} class="timetable-week-swiper">
@@ -92,7 +112,7 @@
 		{@const gridModel = screenState.weekGridModels.get(week)}
 		{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
 		<swiper-slide class="timetable-week-slide">
-			{#if gridModel}
+			{#if gridModel && (week === screenState.displayedWeek || paintAdjacent)}
 				<TimetableGrid
 					displayedWeek={week}
 					isCurrentWeek={week === screenState.academicWeek}
