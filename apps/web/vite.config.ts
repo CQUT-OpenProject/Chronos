@@ -104,6 +104,8 @@ export default defineConfig(({ mode }) => {
 					theme_color: '#0068B7',
 					background_color: '#f0f4f8',
 					display: 'standalone',
+					orientation: 'portrait-primary',
+					display_override: ['standalone', 'minimal-ui', 'browser'],
 					start_url: `${basePath}/`,
 					id: `${basePath}/`,
 					scope: basePath ? `${basePath}/` : '/',
@@ -111,12 +113,45 @@ export default defineConfig(({ mode }) => {
 						client_mode: 'auto'
 					},
 					icons: [
-						{ src: `${basePath}/pwa-192.png`, sizes: '192x192', type: 'image/png' },
+						{
+							src: `${basePath}/pwa-192.png`,
+							sizes: '192x192',
+							type: 'image/png',
+							purpose: 'any'
+						},
 						{
 							src: `${basePath}/pwa-512.png`,
 							sizes: '512x512',
 							type: 'image/png',
-							purpose: 'any maskable'
+							purpose: 'any'
+						},
+						{
+							src: `${basePath}/pwa-192-maskable.png`,
+							sizes: '192x192',
+							type: 'image/png',
+							purpose: 'maskable'
+						},
+						{
+							src: `${basePath}/pwa-512-maskable.png`,
+							sizes: '512x512',
+							type: 'image/png',
+							purpose: 'maskable'
+						}
+					],
+					screenshots: [
+						{
+							src: `${basePath}/pwa/screenshot-narrow.png`,
+							sizes: '1080x1920',
+							type: 'image/png',
+							form_factor: 'narrow',
+							label: 'Chronos'
+						},
+						{
+							src: `${basePath}/pwa/screenshot-wide.png`,
+							sizes: '1920x1080',
+							type: 'image/png',
+							form_factor: 'wide',
+							label: 'Chronos'
 						}
 					]
 				},
