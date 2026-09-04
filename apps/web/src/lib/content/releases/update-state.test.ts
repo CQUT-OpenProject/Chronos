@@ -77,7 +77,8 @@ describe('createUpdateState', () => {
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
 			has_update: true,
-			latest_version: 'v0.2.0'
+			latest_version: 'v0.2.0',
+			update_source: 'semver'
 		});
 	});
 
@@ -104,7 +105,8 @@ describe('createUpdateState', () => {
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
 			has_update: false,
-			latest_version: 'v0.2.0'
+			latest_version: 'v0.2.0',
+			update_source: 'none'
 		});
 	});
 
@@ -130,7 +132,8 @@ describe('createUpdateState', () => {
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
 			has_update: false,
-			latest_version: 'v0.2.0'
+			latest_version: 'v0.2.0',
+			update_source: 'none'
 		});
 	});
 
@@ -150,7 +153,8 @@ describe('createUpdateState', () => {
 							body: '本地最新'
 						}
 					])
-			}
+			},
+			checkSwUpdate: async () => false
 		});
 
 		await updateState.checkUpdate();
@@ -159,10 +163,73 @@ describe('createUpdateState', () => {
 		expect(updateState.state.hasUpdate).toBe(false);
 		expect(updateState.state.latestRelease?.tagName).toBe('v0.2.0');
 		expect(updateState.state.errorMessage).toBeNull();
-		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
 			has_update: false,
-			latest_version: 'v0.2.0'
+			latest_version: 'v0.2.0',
+			update_source: 'none'
+		});
+	});
+
+	it('detects update when catalog fallback matches current version but SW is waiting', async () => {
+		mockTrackEvent.mockClear();
+		const updateState = createUpdateState({
+			currentVersion: '0.2.0',
+			fetchLatestRelease: async () => failure(AppError.network('Offline')),
+			localCatalog: {
+				getRelease: async () => failure(AppError.notFound('none')),
+				listReleases: async () =>
+					success([
+						{
+							tagName: 'v0.2.0',
+							name: 'Chronos 0.2.0',
+							publishedAt: '2026-08-18',
+							body: '本地最新'
+						}
+					])
+			},
+			checkSwUpdate: async () => true,
+			applyUpdate: async () => {}
+		});
+
+		await updateState.checkUpdate();
+
+		expect(updateState.state.checking).toBe(false);
+		expect(updateState.state.hasUpdate).toBe(true);
+		expect(updateState.state.hasNewerVersion).toBe(false);
+		expect(updateState.state.updateSource).toBe('sw');
+		expect(updateState.state.latestRelease?.tagName).toBe('v0.2.0');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
+			has_update: true,
+			latest_version: 'v0.2.0',
+			update_source: 'sw'
+		});
+	});
+
+	it('detects update when remote reports same version but SW is waiting', async () => {
+		mockTrackEvent.mockClear();
+		const updateState = createUpdateState({
+			currentVersion: '0.2.0',
+			fetchLatestRelease: async () =>
+				success({
+					tagName: 'v0.2.0',
+					name: 'Chronos 0.2.0',
+					publishedAt: '2026-08-18',
+					body: '当前版本'
+				}),
+			checkSwUpdate: async () => true,
+			applyUpdate: async () => {}
+		});
+
+		await updateState.checkUpdate();
+
+		expect(updateState.state.checking).toBe(false);
+		expect(updateState.state.hasUpdate).toBe(true);
+		expect(updateState.state.hasNewerVersion).toBe(false);
+		expect(updateState.state.updateSource).toBe('sw');
+		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
+			has_update: true,
+			latest_version: 'v0.2.0',
+			update_source: 'sw'
 		});
 	});
 
@@ -186,7 +253,8 @@ describe('createUpdateState', () => {
 		expect(updateState.state.errorMessage).toBeNull();
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_attempt');
 		expect(mockTrackEvent).toHaveBeenCalledWith('update_check_success', {
-			has_update: true
+			has_update: true,
+			update_source: 'sw'
 		});
 	});
 
