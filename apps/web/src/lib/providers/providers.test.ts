@@ -128,6 +128,18 @@ describe('Web Providers', () => {
 		expect(prefs.timetableLayoutMode).toBe('compact');
 	});
 
+	it('DexieStorageProvider persists capsuleCornerStyle rounded', async () => {
+		const storage = new DexieStorageProvider(db, localStorage);
+		await storage.savePreferences({ capsuleCornerStyle: 'rounded' });
+		expect((await storage.getPreferences()).capsuleCornerStyle).toBe('rounded');
+
+		await storage.savePreferences({ capsuleCornerStyle: 'pill' });
+		expect((await storage.getPreferences()).capsuleCornerStyle).toBe('pill');
+
+		await storage.savePreferences({ capsuleCornerStyle: 'sharp' });
+		expect((await storage.getPreferences()).capsuleCornerStyle).toBe('sharp');
+	});
+
 	it('DexieStorageProvider persists locale preference', async () => {
 		const storage = new DexieStorageProvider(db, localStorage);
 		await storage.savePreferences({ locale: 'en' });

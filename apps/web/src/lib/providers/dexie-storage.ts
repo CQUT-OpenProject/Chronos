@@ -49,6 +49,7 @@ function normalizePaletteMode(raw: string | null): import('@chronos/core').Palet
 
 function normalizeCornerStyle(raw: string | null): import('@chronos/core').CapsuleCornerStyle {
 	const value = raw?.trim().toLowerCase();
+	if (value === 'rounded') return 'rounded';
 	if (value === 'sharp') return 'sharp';
 	if (value === 'pill') return 'pill';
 	return DEFAULT_USER_PREFERENCES.capsuleCornerStyle;
