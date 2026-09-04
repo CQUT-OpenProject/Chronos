@@ -1,4 +1,4 @@
-import { checkAndApplySwUpdate, applyUpdateAndReload, isSwUpdatePending } from '$lib/client/pwa-sw';
+import { probeSwUpdate, applyUpdateAndReload, isSwUpdatePending } from '$lib/client/pwa-sw';
 
 /**
  * Seam for ServiceWorker update lifecycle operations.
@@ -19,7 +19,7 @@ export function createDefaultServiceWorkerAdapter(): ServiceWorkerAdapter {
 			return isSwUpdatePending();
 		},
 		async checkForUpdate() {
-			return checkAndApplySwUpdate();
+			return probeSwUpdate();
 		},
 		async applyUpdateAndReload() {
 			return applyUpdateAndReload();
