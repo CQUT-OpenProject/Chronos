@@ -1,6 +1,6 @@
 import { hostT } from '$lib/i18n/host-i18n.svelte';
 import type { ChronosEngine, Disposable, PluginManifest } from '@chronos/core';
-import { PLUGIN_CONFIG_STORAGE_KEY } from '@chronos/core';
+import { clearHolidayCalendarFromStorage, PLUGIN_CONFIG_STORAGE_KEY } from '@chronos/core';
 import { APP_VERSION } from '$lib/config/app-meta';
 import { OfficialPluginAssetPipeline } from './asset-pipeline';
 import { OfficialPluginCatalogClient } from './catalog-client';
@@ -17,6 +17,8 @@ import {
 } from './sync-installed-plugins';
 
 export type { InstalledOfficialPluginRecord } from './official-plugin-types';
+
+const HOLIDAY_PLUGIN_ID = 'tool-calendar-holidays';
 
 export interface OfficialPluginServiceDeps {
 	catalogClient: OfficialPluginCatalogClient;
@@ -142,6 +144,9 @@ export class OfficialPluginService implements Disposable {
 	}
 
 	async uninstall(pluginId: string): Promise<void> {
+		if (pluginId === HOLIDAY_PLUGIN_ID) {
+			await clearHolidayCalendarFromStorage(this.engine.storage);
+		}
 		await this.runtimeActivator.deactivate(pluginId, { revertThemes: true });
 		await this.installedStore.remove(pluginId);
 		await this.engine.storage.clearPluginData?.(pluginId);

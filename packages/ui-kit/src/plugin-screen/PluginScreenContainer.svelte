@@ -8,9 +8,10 @@
 		controller: ReactiveChronosController;
 		pluginId: string;
 		viewId?: string;
+		active?: boolean;
 	}
 
-	let { controller, pluginId, viewId = 'index' }: Props = $props();
+	let { controller, pluginId, viewId = 'index', active = true }: Props = $props();
 
 	const hostT = (key: string, params?: Record<string, unknown>) =>
 		controller.translatePlugin('host-ui', key, params);
@@ -54,7 +55,7 @@
 {#if screenSlot?.component}
 	<MountableSlotOutlet
 		component={screenSlot.component}
-		props={{ controller, pluginId }}
+		props={{ controller, pluginId, active }}
 		class="flex min-h-0 w-full flex-1 flex-col"
 	/>
 {:else if screenSlot?.schema}

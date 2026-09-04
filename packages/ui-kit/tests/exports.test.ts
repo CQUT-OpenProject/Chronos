@@ -4,7 +4,8 @@ import {
 	PluginScreenContainer,
 	MountableSlotOutlet,
 	ReactiveChronosController,
-	m3DefaultTheme
+	m3DefaultTheme,
+	PREVIEW_PAINT_READY_CONTEXT
 } from '../src/index';
 
 describe('ui-kit exports', () => {
@@ -14,5 +15,6 @@ describe('ui-kit exports', () => {
 		expect(MountableSlotOutlet).toBeDefined();
 		expect(ReactiveChronosController).toBeDefined();
 		expect(m3DefaultTheme).toBeDefined();
+		expect(PREVIEW_PAINT_READY_CONTEXT).toBe('chronos.previewPaintReady');
 	});
 });

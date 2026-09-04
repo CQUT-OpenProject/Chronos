@@ -37,7 +37,7 @@
 	}
 </script>
 
-<div class="relative z-[60] flex h-dvh flex-col overflow-hidden bg-canvas">
+<div class="secondary-page relative z-[60] flex h-dvh flex-col overflow-hidden bg-canvas">
 	<TopAppBar {title} {actions} class="shrink-0">
 		{#snippet leading()}
 			<IconButton

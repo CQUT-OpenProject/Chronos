@@ -49,6 +49,11 @@ export default defineConfig(({ mode }) => {
 				mode === 'test' || Boolean(env.PUBLIC_POSTHOG_KEY?.trim())
 			)
 		},
+		server: {
+			fs: {
+				allow: [webRoot, monorepoRoot]
+			}
+		},
 		staged: {
 			'*': 'vp check --fix'
 		},

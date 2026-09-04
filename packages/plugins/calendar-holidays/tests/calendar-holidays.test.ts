@@ -275,7 +275,7 @@ describe('calendar-holidays plugin', () => {
 		engine.dispose();
 	});
 
-	it('clears holiday data from all timetables on dispose', async () => {
+	it('unload does not clear holiday data (silent bundle reload must preserve sync state)', async () => {
 		const academicConfig = {
 			termStartDate: '2026-03-02',
 			startWeek: 1,
@@ -310,7 +310,9 @@ describe('calendar-holidays plugin', () => {
 		await engine.loadPlugin(createHolidayPlugin());
 		await engine.unloadPlugin('tool-calendar-holidays');
 
-		expect(timetables.get('t1')?.academicConfig.holidayCalendar).toBeUndefined();
+		expect(timetables.get('t1')?.academicConfig.holidayCalendar).toEqual(
+			academicConfig.holidayCalendar
+		);
 		expect(timetables.get('t2')?.academicConfig.holidayCalendar).toBeUndefined();
 
 		engine.dispose();
