@@ -52,10 +52,22 @@
 
 			(function () {
 				var bootFailureShown = false;
+				// Splash stays until hide; only upgrade to the error card after a long delay
+				// (or on real script-load errors). Slow engine boot must not flash failure.
+				var BOOT_FAILURE_MS = 25000;
+				var bootFailureTimer = null;
+
+				function clearBootFailureTimer() {
+					if (bootFailureTimer != null) {
+						clearTimeout(bootFailureTimer);
+						bootFailureTimer = null;
+					}
+				}
 
 				function applyBootFailure() {
-					if (bootFailureShown) return;
+					if (bootFailureShown || window.__chronosAppMounted) return;
 					bootFailureShown = true;
+					clearBootFailureTimer();
 
 					var el = document.getElementById('chronos-boot-fallback');
 					var splash = document.getElementById('chronos-boot-splash');
@@ -90,6 +102,7 @@
 
 				window.__chronosHideBootFallback = function () {
 					window.__chronosAppMounted = true;
+					clearBootFailureTimer();
 					var el = document.getElementById('chronos-boot-fallback');
 					if (el) el.hidden = true;
 				};
@@ -105,11 +118,12 @@
 					true
 				);
 
-				setTimeout(function () {
+				bootFailureTimer = setTimeout(function () {
+					bootFailureTimer = null;
 					if (!window.__chronosAppMounted) {
 						showBootFailure();
 					}
-				}, 5000);
+				}, BOOT_FAILURE_MS);
 			})();
 		</script>
 		%sveltekit.head%

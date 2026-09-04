@@ -104,7 +104,7 @@ export default defineConfig(({ mode }) => {
 					theme_color: '#0068B7',
 					background_color: '#f0f4f8',
 					display: 'standalone',
-					orientation: 'portrait-primary',
+					orientation: 'any',
 					display_override: ['standalone', 'minimal-ui', 'browser'],
 					start_url: `${basePath}/`,
 					id: `${basePath}/`,
