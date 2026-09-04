@@ -13,6 +13,16 @@ export function isSwUpdatePending(): boolean {
 	return needRefresh;
 }
 
+/** @internal Resets module state between unit tests. */
+export function resetPwaSwStateForTesting(): void {
+	needRefresh = false;
+}
+
+/** @internal Emits the SW update-available event for unit tests. */
+export function emitSwUpdateAvailableForTesting(): void {
+	notifyUpdateAvailable();
+}
+
 export function onSwUpdateAvailable(listener: () => void): () => void {
 	updateAvailableListeners.add(listener);
 	return () => {
@@ -111,29 +121,10 @@ export async function probeSwUpdate(): Promise<boolean> {
 		}
 
 		if (registration.installing) {
-			const installingFound = await waitForInstallingWorker(registration);
-			if (installingFound) return true;
+			return (await waitForInstallingWorker(registration)) || needRefresh;
 		}
 
-		return await new Promise<boolean>((resolve) => {
-			let settled = false;
-			const finish = (value: boolean) => {
-				if (settled) return;
-				settled = true;
-				clearTimeout(timeoutId);
-				registration.removeEventListener('updatefound', onUpdateFound);
-				resolve(value);
-			};
-
-			const onUpdateFound = () => {
-				void waitForInstallingWorker(registration).then((found) => {
-					if (found) finish(true);
-				});
-			};
-
-			registration.addEventListener('updatefound', onUpdateFound);
-			const timeoutId = setTimeout(() => finish(needRefresh), SW_PROBE_TIMEOUT_MS);
-		});
+		return false;
 	} catch {
 		return needRefresh;
 	}
@@ -147,17 +138,19 @@ function reloadPage(): void {
 export async function waitForSwActivationAndReload(
 	getRegistration: () => Promise<ServiceWorkerRegistration | undefined>,
 	reload: () => void = reloadPage,
-	timeoutMs = CONTROLLER_CHANGE_TIMEOUT_MS
+	timeoutMs = CONTROLLER_CHANGE_TIMEOUT_MS,
+	swUpdater: ((reloadPage?: boolean) => Promise<void>) | undefined = updateServiceWorker
 ): Promise<void> {
 	const registration = await getRegistration();
 	const waiting = registration?.waiting;
 
 	if (!waiting) {
-		if (updateServiceWorker) {
-			await updateServiceWorker(true);
-		} else {
-			reload();
+		try {
+			await swUpdater?.(true);
+		} catch {
+			// ignore updater errors; reload below still applies cache-bust update
 		}
+		reload();
 		return;
 	}
 
