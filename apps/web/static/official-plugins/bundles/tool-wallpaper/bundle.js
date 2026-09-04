@@ -2610,7 +2610,7 @@ function wa(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Ta() {
-	return "0.4.4";
+	return "0.4.5";
 }
 function Ea(e) {
 	let t;
