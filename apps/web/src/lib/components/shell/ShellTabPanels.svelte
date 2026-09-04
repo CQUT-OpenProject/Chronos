@@ -15,9 +15,10 @@
 
 	interface Props {
 		ready: boolean;
+		frozen?: boolean;
 	}
 
-	let { ready }: Props = $props();
+	let { ready, frozen = false }: Props = $props();
 
 	const shellTab = getContext<ShellTabController>('shellTab');
 	const shell = getContext<AppShellController>('appShell');
@@ -28,8 +29,10 @@
 	const tabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
 	const timetableTabId = $derived(tabs.find((tab) => tab.hostPanel === 'timetable')?.id);
 	const mineTabId = $derived(tabs.find((tab) => tab.hostPanel === 'mine')?.id);
-	const timetableActive = $derived(Boolean(timetableTabId && activeTabId === timetableTabId));
-	const mineActive = $derived(Boolean(mineTabId && activeTabId === mineTabId));
+	const timetableSelected = $derived(Boolean(timetableTabId && activeTabId === timetableTabId));
+	const mineSelected = $derived(Boolean(mineTabId && activeTabId === mineTabId));
+	const timetableActive = $derived(!frozen && timetableSelected);
+	const mineActive = $derived(!frozen && mineSelected);
 	const timetableMounted = $derived(
 		Boolean(timetableTabId && shellTab.mountedTabIds.has(timetableTabId))
 	);
@@ -76,7 +79,7 @@
 	});
 
 	$effect(() => {
-		if (!ready) return;
+		if (!ready || frozen) return;
 		const tabId = timetableTabId;
 		if (!tabId || activeTabId === tabId || shellTab.mountedTabIds.has(tabId)) return;
 		return scheduleIdle(() => {
@@ -102,7 +105,7 @@
 
 {#snippet panel(active: boolean, content: Snippet)}
 	<div
-		class={['absolute inset-0 overflow-y-auto', !active && 'pointer-events-none invisible']}
+		class={['absolute inset-0 overflow-y-auto', active ? 'z-10' : 'pointer-events-none z-0 hidden']}
 		inert={!active}
 		aria-hidden={!active}
 	>
@@ -121,24 +124,25 @@
 {:else}
 	<div class="relative h-[calc(100dvh-var(--bottom-bar-height))] overflow-hidden">
 		{#if timetableMounted}
-			{@render panel(timetableActive, timetablePanel)}
+			{@render panel(timetableSelected, timetablePanel)}
 		{/if}
 		{#if mineMounted}
-			{@render panel(mineActive, minePanel)}
+			{@render panel(mineSelected, minePanel)}
 		{/if}
 		{#each mountedPluginTabs as tab (tab.id)}
 			{@const ownerId = controller.resolveSlotOwner('shell.bottom-bar.tab', tab.id)}
-			{@const pluginActive = activeTabId === tab.id}
+			{@const pluginSelected = activeTabId === tab.id}
+			{@const pluginActive = !frozen && pluginSelected}
 			<div
 				class={[
 					'absolute inset-0 overflow-y-auto',
-					!pluginActive && 'pointer-events-none invisible'
+					pluginSelected ? 'z-10' : 'pointer-events-none z-0 hidden'
 				]}
 				inert={!pluginActive}
-				aria-hidden={!pluginActive}
+				aria-hidden={!pluginSelected}
 			>
 				{#if ownerId && PluginScreenContainer}
-					<PluginScreenContainer {controller} pluginId={ownerId} />
+					<PluginScreenContainer {controller} pluginId={ownerId} active={pluginActive} />
 				{:else}
 					{@render loading()}
 				{/if}

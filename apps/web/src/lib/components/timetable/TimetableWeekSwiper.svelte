@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts">
-	import { onMount, untrack } from 'svelte';
+	import { untrack } from 'svelte';
 	import type { SwiperContainer } from 'swiper/element/bundle';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
@@ -27,6 +27,7 @@
 		coursePalette,
 		layoutMode,
 		capsuleCornerStyle = 'sharp',
+		active = true,
 		onCourseClick
 	}: {
 		screen: TimetableScreenController;
@@ -34,6 +35,7 @@
 		coursePalette: readonly CoursePaletteEntry[];
 		layoutMode: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
+		active?: boolean;
 		onCourseClick: (courseId: string) => void;
 	} = $props();
 
@@ -99,7 +101,11 @@
 		syncSwiperToSlideIndex(screenState.slideIndex);
 	});
 
-	onMount(() => {
+	$effect(() => {
+		if (!active) {
+			paintAdjacent = false;
+			return;
+		}
 		const frame = requestAnimationFrame(() => {
 			paintAdjacent = true;
 		});

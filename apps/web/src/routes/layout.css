@@ -21,8 +21,30 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* MD3 secondary page transitions via View Transitions API */
-.page-root {
+.secondary-page {
 	view-transition-name: page-root;
+}
+
+.shell-root {
+	view-transition-name: none;
+}
+
+.shell-root.is-frozen {
+	content-visibility: hidden;
+	pointer-events: none;
+}
+
+.shell-root.is-receded {
+	transform: translateX(-25%);
+	opacity: 0.55;
+}
+
+.secondary-root {
+	pointer-events: none;
+}
+
+.secondary-root:not(.is-blocked) > * {
+	pointer-events: auto;
 }
 
 @keyframes vt-forward-old {
@@ -81,6 +103,63 @@
 	height: 100%;
 }
 
+:root.nav-forward::view-transition,
+:root.nav-back::view-transition {
+	background-color: var(--color-canvas);
+}
+
+:root.nav-forward::view-transition-group(root),
+:root.nav-back::view-transition-group(root) {
+	animation: none;
+}
+
+:root.nav-forward::view-transition-old(root),
+:root.nav-forward::view-transition-new(root),
+:root.nav-back::view-transition-old(root),
+:root.nav-back::view-transition-new(root) {
+	mix-blend-mode: normal;
+}
+
+:root.nav-forward:not(.vt-cross-shell)::view-transition-old(root),
+:root.nav-forward:not(.vt-cross-shell)::view-transition-new(root),
+:root.nav-back:not(.vt-cross-shell)::view-transition-old(root),
+:root.nav-back:not(.vt-cross-shell)::view-transition-new(root) {
+	animation: none;
+	display: none;
+}
+
+:root.nav-forward.vt-cross-shell::view-transition-old(root) {
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	overflow: clip;
+	animation: 500ms cubic-bezier(0.05, 0.7, 0.1, 1) both vt-forward-old;
+}
+
+:root.nav-forward.vt-cross-shell::view-transition-new(root) {
+	display: none;
+}
+
+:root.nav-forward.vt-cross-shell::view-transition-old(page-root) {
+	display: none;
+}
+
+:root.nav-back.vt-cross-shell::view-transition-old(root) {
+	display: none;
+}
+
+:root.nav-back.vt-cross-shell::view-transition-new(root) {
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	overflow: clip;
+	animation: 450ms cubic-bezier(0.05, 0.7, 0.1, 1) both vt-back-new;
+}
+
+:root.nav-back.vt-cross-shell::view-transition-new(page-root) {
+	display: none;
+}
+
 :root.nav-forward::view-transition-old(page-root),
 :root.nav-forward::view-transition-new(page-root),
 :root.nav-back::view-transition-old(page-root),
@@ -117,8 +196,17 @@
 	:root.nav-forward::view-transition-old(page-root),
 	:root.nav-forward::view-transition-new(page-root),
 	:root.nav-back::view-transition-old(page-root),
-	:root.nav-back::view-transition-new(page-root) {
+	:root.nav-back::view-transition-new(page-root),
+	:root.nav-forward::view-transition-old(root),
+	:root.nav-forward::view-transition-new(root),
+	:root.nav-back::view-transition-old(root),
+	:root.nav-back::view-transition-new(root) {
 		animation: none !important;
+	}
+
+	.shell-root.is-receded {
+		transform: none;
+		opacity: 1;
 	}
 }
 

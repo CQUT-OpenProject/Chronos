@@ -16,6 +16,9 @@
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import { updateTransitionDirection } from '$lib/navigation/navigation-direction';
 	import { setupSecondaryPageViewTransition } from '$lib/navigation/setup-secondary-page-view-transition';
+	import { secondaryTransitionGate } from '$lib/navigation/secondary-transition-gate.svelte';
+	import ShellRouteHost from '$lib/components/shell/ShellRouteHost.svelte';
+	import { PREVIEW_PAINT_READY_CONTEXT } from '@chronos/ui-kit';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
@@ -24,6 +27,7 @@
 	setupSecondaryPageViewTransition();
 
 	const webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
+	const gate = secondaryTransitionGate;
 
 	beforeNavigate(({ from, to, type, delta }) => {
 		const fromPath = from?.url.pathname;
@@ -46,6 +50,7 @@
 	setContext('appShell', shell);
 	setContext('timetableScreen', timetableScreen);
 	setContext('shellTab', shellTab);
+	setContext(PREVIEW_PAINT_READY_CONTEXT, () => gate.previewPaintReady);
 
 	$effect(() => {
 		void getAppController().slotVersion;
@@ -69,9 +74,21 @@
 	class="relative grid min-h-dvh w-full grid-cols-1 grid-rows-1 overflow-x-clip bg-canvas text-ink"
 >
 	<div
-		class="page-root col-start-1 row-start-1 h-dvh w-full bg-canvas text-ink"
+		class={[
+			'shell-root col-start-1 row-start-1 h-dvh w-full bg-canvas text-ink',
+			gate.skipPaint && 'is-frozen',
+			gate.receded && gate.skipPaint && 'is-receded'
+		]}
 		class:invisible={blockShell}
-		class:pointer-events-none={blockShell}
+		class:pointer-events-none={blockShell || gate.frozen}
+		inert={gate.frozen}
+	>
+		<ShellRouteHost />
+	</div>
+	<div
+		class="secondary-root col-start-1 row-start-1 h-dvh w-full"
+		class:is-blocked={blockShell}
+		class:invisible={blockShell}
 	>
 		{@render children()}
 	</div>

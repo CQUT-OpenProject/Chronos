@@ -29,7 +29,7 @@ ADR 0028 为底栏 Tab 引入 `defaultLaunch` 与 `HOST_SHELL_TAB_ROUTES`，要�
 
 ### 3 — 单一路由壳与 `ShellTabPanels`
 
-唯一壳路由 `/`（[`(tabs)/+page.svelte`](<../../apps/web/src/routes/(tabs)/+page.svelte>)）渲染 [`ShellTabPanels`](../../apps/web/src/lib/components/shell/ShellTabPanels.svelte)：
+唯一壳路由 `/`（[`(tabs)/+page.svelte`](<../../apps/web/src/routes/(tabs)/+page.svelte>)）标识壳表面；面板由根 layout [`ShellRouteHost`](../../apps/web/src/lib/components/shell/ShellRouteHost.svelte) 常驻渲染 [`ShellTabPanels`](../../apps/web/src/lib/components/shell/ShellTabPanels.svelte)（见 [ADR 0033](./0033-persistent-shell-freeze-and-secondary-view-transition.md)）：
 
 | `activeTabId` | 渲染                                         |
 | ------------- | -------------------------------------------- |
@@ -66,3 +66,4 @@ ADR 0028 为底栏 Tab 引入 `defaultLaunch` 与 `HOST_SHELL_TAB_ROUTES`，要�
 ## 修订记录
 
 - 2026-08-30：初版 Accepted。
+- 2026-09-03：`ShellTabPanels` 改由根 layout `ShellRouteHost` 常驻，见 ADR 0033。

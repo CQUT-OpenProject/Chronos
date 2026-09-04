@@ -18,9 +18,10 @@
 	interface Props {
 		controller: ReactiveChronosController;
 		pluginId: string;
+		active?: boolean;
 	}
 
-	let { controller, pluginId }: Props = $props();
+	let { controller, pluginId, active = true }: Props = $props();
 
 	const HEADLINE_SMALL_FONT_PX = 24;
 	const PERIOD_LABEL_MIN_FONT_PX = 6;
@@ -107,7 +108,9 @@
 		>
 			{#if selectedScopeIndex >= 0}
 				<div
-					class="rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
+					class="rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs {active
+						? 'transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]'
+						: ''}"
 					style:left="calc(0.375rem + {selectedScopeIndex} * ((100% - 0.75rem) / 2))"
 					style:width="calc((100% - 0.75rem) / 2)"
 				></div>

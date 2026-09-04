@@ -27,4 +27,5 @@ export type {
 export { default as TimetableWallpaperLayer } from './timetable-preview/TimetableWallpaperLayer.svelte';
 export { default as TimetablePreviewGrid } from './timetable-preview/TimetablePreviewGrid.svelte';
 export { default as TimetableLivePreview } from './timetable-preview/TimetableLivePreview.svelte';
+export { PREVIEW_PAINT_READY_CONTEXT } from './timetable-preview/preview-paint-ready';
 export * from './timetable-preview/timetable-grid-chrome';

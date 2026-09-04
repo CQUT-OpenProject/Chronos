@@ -6,6 +6,7 @@ export type ViewTransitionNavigation = {
 };
 
 export const NAV_DIRECTION_CLASSES = ['nav-forward', 'nav-back'] as const;
+export const NAV_CROSS_SHELL_CLASS = 'vt-cross-shell';
 
 export function hasViewTransitionSupport(): boolean {
 	return typeof document !== 'undefined' && 'startViewTransition' in document;
@@ -32,13 +33,14 @@ export function shouldUseViewTransition(
 	return shouldUseViewTransitionWhenSupported(direction, navigation);
 }
 
-export function setNavDirectionClass(direction: 'forward' | 'back'): void {
-	document.documentElement.classList.remove(...NAV_DIRECTION_CLASSES);
+export function setNavDirectionClass(direction: 'forward' | 'back', crossShell = false): void {
+	document.documentElement.classList.remove(...NAV_DIRECTION_CLASSES, NAV_CROSS_SHELL_CLASS);
 	document.documentElement.classList.add(`nav-${direction}`);
+	document.documentElement.classList.toggle(NAV_CROSS_SHELL_CLASS, crossShell);
 }
 
 export function clearNavDirectionClass(): void {
-	document.documentElement.classList.remove(...NAV_DIRECTION_CLASSES);
+	document.documentElement.classList.remove(...NAV_DIRECTION_CLASSES, NAV_CROSS_SHELL_CLASS);
 }
 
 let activeTransitionGeneration = 0;
@@ -51,9 +53,12 @@ export function isActiveNavDirectionTransition(generation: number): boolean {
 	return generation === activeTransitionGeneration;
 }
 
-export function beginNavDirectionTransition(direction: 'forward' | 'back'): number {
+export function beginNavDirectionTransition(
+	direction: 'forward' | 'back',
+	crossShell = false
+): number {
 	const generation = nextNavDirectionTransitionGeneration();
-	setNavDirectionClass(direction);
+	setNavDirectionClass(direction, crossShell);
 	return generation;
 }
 
