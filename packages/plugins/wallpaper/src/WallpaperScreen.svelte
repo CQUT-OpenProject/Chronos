@@ -42,11 +42,7 @@
 				error instanceof DOMException && error.name === 'QuotaExceededError'
 					? pt('screen.error.tooLarge')
 					: pt('screen.error.importFailed');
-			try {
-				controller.getPluginContext(pluginId).actions.notify(msg, 'error');
-			} catch {
-				alert(msg);
-			}
+			controller.getPluginContext(pluginId).actions.notify(msg, 'error');
 		} finally {
 			input.value = '';
 		}

@@ -98,11 +98,6 @@ function waitForInstallingWorker(
 	});
 }
 
-/** @deprecated Use `probeSwUpdate` instead. */
-export async function checkAndApplySwUpdate(): Promise<boolean> {
-	return probeSwUpdate();
-}
-
 export async function probeSwUpdate(): Promise<boolean> {
 	if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
 	if (needRefresh) return true;

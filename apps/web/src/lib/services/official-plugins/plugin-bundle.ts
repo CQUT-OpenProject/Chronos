@@ -9,7 +9,6 @@ function resolvePluginExport(
 ): import('@chronos/core').ChronosPlugin | null {
 	const candidate =
 		(mod.default as import('@chronos/core').ChronosPlugin) ??
-		(mod.plugin as import('@chronos/core').ChronosPlugin) ??
 		(isChronosPlugin(mod) ? (mod as unknown as import('@chronos/core').ChronosPlugin) : null);
 	if (isChronosPlugin(candidate)) return candidate;
 	return null;

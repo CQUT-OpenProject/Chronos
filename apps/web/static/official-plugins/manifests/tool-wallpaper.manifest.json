@@ -13,7 +13,7 @@
 	"type": "tool",
 	"bundleFormat": "esm",
 	"bundleUrl": "/official-plugins/bundles/tool-wallpaper/bundle.js",
-	"sha256": "f798a64a0dd8b2f382cbfe1e3ee9428dbe8b795d485acae4546fef3f25f6c60d",
+	"sha256": "d77e2541c8e8060f2f6bdad34a765f7c85975ebd5f15d8e6ea5b69d4d217b632",
 	"cssUrl": "/official-plugins/bundles/tool-wallpaper/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }
