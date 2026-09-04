@@ -31,6 +31,27 @@
 		font-size: 15px;
 		line-height: 1.47;
 		touch-action: pan-x pan-y;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	/* Native-feel: no accidental text selection on chrome / controls */
+	button,
+	a,
+	.shell-tab-bar,
+	.bottom-bar,
+	.ui-shell-top-bar,
+	.m3-top-app-bar {
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	/* Keep form fields and copyable body text selectable */
+	input,
+	textarea,
+	[contenteditable='true'],
+	.shell-page {
+		-webkit-user-select: text;
+		user-select: text;
 	}
 
 	@media (min-width: 768px) {

@@ -26,6 +26,9 @@ export function isHapticFeedbackEnabled(): boolean {
 /**
  * Perform a vibration pattern if supported and enabled.
  * Returns true if vibration was successfully triggered, false otherwise.
+ *
+ * Future native-bridge swap point: when a Chronos native shell exposes haptics,
+ * route through that bridge here without changing the public haptic API/call sites.
  */
 export function triggerVibrate(pattern: number | number[]): boolean {
 	if (!isVibrationSupported() || !isHapticFeedbackEnabled()) {
