@@ -25,6 +25,17 @@ function syncThemeColorMeta(isDark: boolean) {
 	}
 }
 
+/** Keep in sync with app.html boot IIFE status-bar-style literals. */
+function syncAppleStatusBarStyle(isDark: boolean) {
+	if (typeof document === 'undefined') return;
+	const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+	if (meta) {
+		// Dark: black-translucent (light icons + content under status bar; --topbar-safe
+		// already pads chrome). Light: default (dark icons on light top bar). Android no-op.
+		meta.setAttribute('content', isDark ? 'black-translucent' : 'default');
+	}
+}
+
 export async function applyAppearance(
 	input: ApplyAppearanceInput,
 	options: {
@@ -43,6 +54,7 @@ export async function applyAppearance(
 		target.style.colorScheme = isDark ? 'dark' : 'light';
 		if (typeof document !== 'undefined' && target === document.documentElement) {
 			syncThemeColorMeta(isDark);
+			syncAppleStatusBarStyle(isDark);
 		}
 	}
 

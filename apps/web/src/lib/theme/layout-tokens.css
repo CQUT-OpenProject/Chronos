@@ -73,6 +73,8 @@
 		--spacing-tabbar: 4.25rem;
 		--top-bar-height: calc(var(--spacing-topbar) + var(--topbar-safe));
 		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
+		/* ShellRouteHost sets this to --tabbar-safe when the tab bar is hidden. */
+		--snackbar-bottom-offset: var(--bottom-bar-height);
 	}
 
 	@media (max-height: 720px) {

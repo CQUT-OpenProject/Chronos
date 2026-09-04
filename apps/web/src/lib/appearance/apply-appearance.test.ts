@@ -224,18 +224,29 @@ describe('applyAppearance', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('syncs theme-color meta when applying to documentElement', async () => {
-		const attrs = new Map<string, string>([['content', THEME_COLOR_LIGHT]]);
-		const meta = {
-			getAttribute: (name: string) => attrs.get(name) ?? null,
+	it('syncs theme-color and apple status-bar-style when applying to documentElement', async () => {
+		const themeAttrs = new Map<string, string>([['content', THEME_COLOR_LIGHT]]);
+		const statusAttrs = new Map<string, string>([['content', 'default']]);
+		const themeMeta = {
+			getAttribute: (name: string) => themeAttrs.get(name) ?? null,
 			setAttribute: (name: string, value: string) => {
-				attrs.set(name, value);
+				themeAttrs.set(name, value);
+			}
+		};
+		const statusMeta = {
+			getAttribute: (name: string) => statusAttrs.get(name) ?? null,
+			setAttribute: (name: string, value: string) => {
+				statusAttrs.set(name, value);
 			}
 		};
 		const documentElement = createFakeElement();
 		vi.stubGlobal('document', {
 			documentElement,
-			querySelector: (selector: string) => (selector === 'meta[name="theme-color"]' ? meta : null)
+			querySelector: (selector: string) => {
+				if (selector === 'meta[name="theme-color"]') return themeMeta;
+				if (selector === 'meta[name="apple-mobile-web-app-status-bar-style"]') return statusMeta;
+				return null;
+			}
 		});
 
 		const { dynamicColorAdapter } = createDynamicColorAdapter();
@@ -250,7 +261,8 @@ describe('applyAppearance', () => {
 			{ target: documentElement, dynamicColorAdapter }
 		);
 
-		expect(meta.getAttribute('content')).toBe(THEME_COLOR_DARK);
+		expect(themeMeta.getAttribute('content')).toBe(THEME_COLOR_DARK);
+		expect(statusMeta.getAttribute('content')).toBe('black-translucent');
 		expect(documentElement.classList.contains('dark')).toBe(true);
 
 		await applyAppearance(
@@ -263,21 +275,33 @@ describe('applyAppearance', () => {
 			{ target: documentElement, dynamicColorAdapter }
 		);
 
-		expect(meta.getAttribute('content')).toBe(THEME_COLOR_LIGHT);
+		expect(themeMeta.getAttribute('content')).toBe(THEME_COLOR_LIGHT);
+		expect(statusMeta.getAttribute('content')).toBe('default');
 	});
 
-	it('does not sync theme-color meta for non-documentElement targets', async () => {
-		const attrs = new Map<string, string>([['content', THEME_COLOR_LIGHT]]);
-		const meta = {
-			getAttribute: (name: string) => attrs.get(name) ?? null,
+	it('does not sync theme-color or status-bar meta for non-documentElement targets', async () => {
+		const themeAttrs = new Map<string, string>([['content', THEME_COLOR_LIGHT]]);
+		const statusAttrs = new Map<string, string>([['content', 'default']]);
+		const themeMeta = {
+			getAttribute: (name: string) => themeAttrs.get(name) ?? null,
 			setAttribute: (name: string, value: string) => {
-				attrs.set(name, value);
+				themeAttrs.set(name, value);
+			}
+		};
+		const statusMeta = {
+			getAttribute: (name: string) => statusAttrs.get(name) ?? null,
+			setAttribute: (name: string, value: string) => {
+				statusAttrs.set(name, value);
 			}
 		};
 		const documentElement = createFakeElement();
 		vi.stubGlobal('document', {
 			documentElement,
-			querySelector: (selector: string) => (selector === 'meta[name="theme-color"]' ? meta : null)
+			querySelector: (selector: string) => {
+				if (selector === 'meta[name="theme-color"]') return themeMeta;
+				if (selector === 'meta[name="apple-mobile-web-app-status-bar-style"]') return statusMeta;
+				return null;
+			}
 		});
 
 		const target = createFakeElement();
@@ -293,7 +317,8 @@ describe('applyAppearance', () => {
 			{ target, dynamicColorAdapter }
 		);
 
-		expect(meta.getAttribute('content')).toBe(THEME_COLOR_LIGHT);
+		expect(themeMeta.getAttribute('content')).toBe(THEME_COLOR_LIGHT);
+		expect(statusMeta.getAttribute('content')).toBe('default');
 		expect(target.classList.contains('dark')).toBe(true);
 	});
 

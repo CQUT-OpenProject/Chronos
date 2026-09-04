@@ -28,6 +28,14 @@
 						// Keep in sync with THEME_COLOR_* in apply-appearance.ts
 						meta.setAttribute('content', dark ? '#1a1c1e' : '#0068B7');
 					}
+					// Immersive status bar under viewport-fit=cover: white icons on dark,
+					// system default (dark icons) on light. Android ignores this meta.
+					var statusBar = document.querySelector(
+						'meta[name="apple-mobile-web-app-status-bar-style"]'
+					);
+					if (statusBar) {
+						statusBar.setAttribute('content', dark ? 'black-translucent' : 'default');
+					}
 				} catch (e) {}
 			})();
 		</script>
