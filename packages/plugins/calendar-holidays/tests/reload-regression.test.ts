@@ -4,7 +4,7 @@ import { createMockEnv } from '@chronos/core/test-utils';
 import { createHolidayPlugin } from '../src/index';
 
 describe('calendar-holidays reload regression', () => {
-	it('bundle reload preserves holidays and skips re-sync notification', async () => {
+	it('bundle reload clears then re-syncs holidays without warn notification when sync succeeds', async () => {
 		const timetable = createTimetable({
 			id: 't1',
 			name: '测试课表',
@@ -35,7 +35,7 @@ describe('calendar-holidays reload regression', () => {
 			bytes: async () => new Uint8Array()
 		}));
 
-		const notifications: string[] = [];
+		const notifications: Array<{ message: string; type: string }> = [];
 		const { env, timetables } = createMockEnv({
 			http: { request: httpRequest as IHttpService['request'] }
 		});
@@ -43,7 +43,7 @@ describe('calendar-holidays reload regression', () => {
 
 		const engine = new ChronosEngine({
 			env,
-			onNotification: (message) => notifications.push(message)
+			onNotification: (message, type) => notifications.push({ message, type })
 		});
 		await engine.init();
 		await engine.switchTimetable(timetable.id);
@@ -54,13 +54,14 @@ describe('calendar-holidays reload regression', () => {
 		expect(notifications).toEqual([]);
 
 		await engine.unloadPlugin('tool-calendar-holidays');
-		expect(timetables.get('t1')?.academicConfig.holidayCalendar).toEqual(
-			timetable.academicConfig.holidayCalendar
-		);
+		expect(timetables.get('t1')?.academicConfig.holidayCalendar).toBeUndefined();
 
 		await engine.loadPlugin(plugin);
-		expect(httpRequest).not.toHaveBeenCalled();
-		expect(notifications).toEqual([]);
+		expect(httpRequest).toHaveBeenCalled();
+		expect(timetables.get('t1')?.academicConfig.holidayCalendar?.holidays).toEqual([
+			{ date: '2026-10-01', label: '国庆节' }
+		]);
+		expect(notifications.filter((n) => n.type === 'warn')).toEqual([]);
 
 		engine.dispose();
 	});

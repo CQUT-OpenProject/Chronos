@@ -229,4 +229,50 @@ describe('Native Host Baseline (iOS JSCore / Android QuickJS)', () => {
 
 		engine.dispose();
 	});
+
+	it('records haptic bridge calls via requestNativeHaptic', async () => {
+		const nativeCalls: Array<{ capability: string; method: string; params: unknown }> = [];
+
+		const bridge: import('../src/index').NativeHostBridge = {
+			async callNative<T = unknown, R = unknown>(
+				capability: import('../src/index').NativeHostCapability,
+				method: string,
+				params?: T
+			): Promise<R> {
+				nativeCalls.push({ capability, method, params });
+				return undefined as unknown as R;
+			}
+		};
+
+		const { requestNativeHaptic } = await import('../src/index');
+
+		await requestNativeHaptic(bridge, { method: 'impact', params: { style: 'light' } });
+		await requestNativeHaptic(bridge, { method: 'impact', params: { style: 'medium' } });
+		await requestNativeHaptic(bridge, { method: 'impact', params: { style: 'heavy' } });
+		await requestNativeHaptic(bridge, {
+			method: 'notification',
+			params: { type: 'success' }
+		});
+		await requestNativeHaptic(bridge, {
+			method: 'notification',
+			params: { type: 'warning' }
+		});
+		await requestNativeHaptic(bridge, {
+			method: 'notification',
+			params: { type: 'error' }
+		});
+		await requestNativeHaptic(bridge, { method: 'selection' });
+		await requestNativeHaptic(bridge, { method: 'selection', params: {} });
+
+		expect(nativeCalls).toEqual([
+			{ capability: 'haptic', method: 'impact', params: { style: 'light' } },
+			{ capability: 'haptic', method: 'impact', params: { style: 'medium' } },
+			{ capability: 'haptic', method: 'impact', params: { style: 'heavy' } },
+			{ capability: 'haptic', method: 'notification', params: { type: 'success' } },
+			{ capability: 'haptic', method: 'notification', params: { type: 'warning' } },
+			{ capability: 'haptic', method: 'notification', params: { type: 'error' } },
+			{ capability: 'haptic', method: 'selection', params: {} },
+			{ capability: 'haptic', method: 'selection', params: {} }
+		]);
+	});
 });

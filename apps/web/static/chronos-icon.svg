@@ -22,7 +22,7 @@
 		</filter>
 	</defs>
 
-	<rect width="108" height="108" fill="#F7FAFC" />
+	<rect width="108" height="108" fill="#f0f4f8" />
 
 	<g filter="url(#card-shadow)">
 		<path

@@ -54,6 +54,16 @@
 		const id = setTimeout(callback, 0);
 		return () => clearTimeout(id);
 	}
+
+	// Drive snackbar clearance from the same gate that hides the tab bar.
+	$effect(() => {
+		if (!browser) return;
+		const painted = gate.shellHostEnabled && !gate.skipPaint;
+		document.documentElement.style.setProperty(
+			'--snackbar-bottom-offset',
+			painted ? 'var(--bottom-bar-height)' : 'var(--tabbar-safe)'
+		);
+	});
 </script>
 
 {#if browser && gate.shellHostEnabled}

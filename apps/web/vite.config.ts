@@ -102,8 +102,10 @@ export default defineConfig(({ mode }) => {
 					short_name: 'Chronos',
 					description: '课程表应用',
 					theme_color: '#0068B7',
-					background_color: '#F7FAFC',
+					background_color: '#f0f4f8',
 					display: 'standalone',
+					orientation: 'any',
+					display_override: ['standalone', 'minimal-ui', 'browser'],
 					start_url: `${basePath}/`,
 					id: `${basePath}/`,
 					scope: basePath ? `${basePath}/` : '/',
@@ -111,26 +113,61 @@ export default defineConfig(({ mode }) => {
 						client_mode: 'auto'
 					},
 					icons: [
-						{ src: `${basePath}/pwa-192.png`, sizes: '192x192', type: 'image/png' },
+						{
+							src: `${basePath}/pwa-192.png`,
+							sizes: '192x192',
+							type: 'image/png',
+							purpose: 'any'
+						},
 						{
 							src: `${basePath}/pwa-512.png`,
 							sizes: '512x512',
 							type: 'image/png',
-							purpose: 'any maskable'
+							purpose: 'any'
+						},
+						{
+							src: `${basePath}/pwa-192-maskable.png`,
+							sizes: '192x192',
+							type: 'image/png',
+							purpose: 'maskable'
+						},
+						{
+							src: `${basePath}/pwa-512-maskable.png`,
+							sizes: '512x512',
+							type: 'image/png',
+							purpose: 'maskable'
+						}
+					],
+					screenshots: [
+						{
+							src: `${basePath}/pwa/screenshot-narrow.png`,
+							sizes: '1080x1920',
+							type: 'image/png',
+							form_factor: 'narrow',
+							label: 'Chronos'
+						},
+						{
+							src: `${basePath}/pwa/screenshot-wide.png`,
+							sizes: '1920x1080',
+							type: 'image/png',
+							form_factor: 'wide',
+							label: 'Chronos'
 						}
 					]
 				},
 				workbox: {
+					clientsClaim: true,
 					globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
 					globIgnores: ['**/official-plugins/**'],
 					navigateFallback: null,
 					runtimeCaching: [
 						{
 							urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
-							handler: 'CacheFirst',
+							handler: 'NetworkFirst',
 							options: {
 								cacheName: 'pages-cache',
-								expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 }
+								networkTimeoutSeconds: 5,
+								expiration: { maxEntries: 16, maxAgeSeconds: 86_400 }
 							}
 						},
 						{
@@ -155,10 +192,11 @@ export default defineConfig(({ mode }) => {
 						},
 						{
 							urlPattern: /\/manifest\.webmanifest$/i,
-							handler: 'CacheFirst',
+							handler: 'NetworkFirst',
 							options: {
 								cacheName: 'pwa-manifest',
-								expiration: { maxEntries: 1, maxAgeSeconds: 2_592_000 }
+								networkTimeoutSeconds: 5,
+								expiration: { maxEntries: 1, maxAgeSeconds: 86_400 }
 							}
 						}
 					]

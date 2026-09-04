@@ -4,18 +4,44 @@ let registered = false;
 let needRefresh = false;
 
 let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
+const updateAvailableListeners = new Set<() => void>();
 
 const CONTROLLER_CHANGE_TIMEOUT_MS = 3000;
+const SW_PROBE_TIMEOUT_MS = 5000;
 
 export function isSwUpdatePending(): boolean {
 	return needRefresh;
+}
+
+/** @internal Resets module state between unit tests. */
+export function resetPwaSwStateForTesting(): void {
+	needRefresh = false;
+}
+
+/** @internal Emits the SW update-available event for unit tests. */
+export function emitSwUpdateAvailableForTesting(): void {
+	notifyUpdateAvailable();
+}
+
+export function onSwUpdateAvailable(listener: () => void): () => void {
+	updateAvailableListeners.add(listener);
+	return () => {
+		updateAvailableListeners.delete(listener);
+	};
+}
+
+function notifyUpdateAvailable() {
+	needRefresh = true;
+	for (const listener of updateAvailableListeners) {
+		listener();
+	}
 }
 
 function registerServiceWorker() {
 	updateServiceWorker = registerSW({
 		immediate: true,
 		onNeedRefresh() {
-			needRefresh = true;
+			notifyUpdateAvailable();
 		}
 	});
 }
@@ -32,21 +58,71 @@ export function ensurePwaSwRegistered() {
 	}
 }
 
-export async function checkAndApplySwUpdate(): Promise<boolean> {
+function markUpdatePending(): boolean {
+	notifyUpdateAvailable();
+	return true;
+}
+
+function waitForInstallingWorker(
+	registration: ServiceWorkerRegistration,
+	timeoutMs = SW_PROBE_TIMEOUT_MS
+): Promise<boolean> {
+	return new Promise((resolve) => {
+		const worker = registration.installing;
+		if (!worker) {
+			resolve(false);
+			return;
+		}
+
+		let settled = false;
+		const finish = (value: boolean) => {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timeoutId);
+			resolve(value);
+		};
+
+		const onStateChange = () => {
+			if (worker.state === 'installed' && registration.waiting) {
+				finish(markUpdatePending());
+			}
+			if (worker.state === 'redundant') {
+				finish(false);
+			}
+		};
+
+		worker.addEventListener('statechange', onStateChange);
+		onStateChange();
+
+		const timeoutId = setTimeout(() => finish(false), timeoutMs);
+	});
+}
+
+export async function probeSwUpdate(): Promise<boolean> {
 	if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
+	if (needRefresh) return true;
+
 	try {
 		const registration = await navigator.serviceWorker.getRegistration();
-		if (registration) {
-			await registration.update();
-			if (registration.waiting) {
-				needRefresh = true;
-				return true;
-			}
+		if (!registration) return false;
+
+		if (registration.waiting) {
+			return markUpdatePending();
 		}
+
+		await registration.update();
+		if (registration.waiting) {
+			return markUpdatePending();
+		}
+
+		if (registration.installing) {
+			return (await waitForInstallingWorker(registration)) || needRefresh;
+		}
+
+		return false;
 	} catch {
-		// ignore
+		return needRefresh;
 	}
-	return needRefresh;
 }
 
 function reloadPage(): void {
@@ -57,13 +133,18 @@ function reloadPage(): void {
 export async function waitForSwActivationAndReload(
 	getRegistration: () => Promise<ServiceWorkerRegistration | undefined>,
 	reload: () => void = reloadPage,
-	timeoutMs = CONTROLLER_CHANGE_TIMEOUT_MS
+	timeoutMs = CONTROLLER_CHANGE_TIMEOUT_MS,
+	swUpdater: ((reloadPage?: boolean) => Promise<void>) | undefined = updateServiceWorker
 ): Promise<void> {
 	const registration = await getRegistration();
 	const waiting = registration?.waiting;
 
 	if (!waiting) {
-		void updateServiceWorker?.(true);
+		try {
+			await swUpdater?.(true);
+		} catch {
+			// ignore updater errors; reload below still applies cache-bust update
+		}
 		reload();
 		return;
 	}
@@ -79,7 +160,6 @@ export async function waitForSwActivationAndReload(
 
 		navigator.serviceWorker.addEventListener('controllerchange', finish, { once: true });
 		waiting.postMessage({ type: 'SKIP_WAITING' });
-		void updateServiceWorker?.(true);
 		setTimeout(finish, timeoutMs);
 	});
 }

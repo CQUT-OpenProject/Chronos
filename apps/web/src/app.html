@@ -9,6 +9,10 @@
 			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
 		/>
 		<meta name="theme-color" content="#0068B7" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="apple-mobile-web-app-title" content="Chronos" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
 
 		<script>
 			(function () {
@@ -21,7 +25,16 @@
 					}
 					var meta = document.querySelector('meta[name="theme-color"]');
 					if (meta) {
+						// Keep in sync with THEME_COLOR_* in apply-appearance.ts
 						meta.setAttribute('content', dark ? '#1a1c1e' : '#0068B7');
+					}
+					// Immersive status bar under viewport-fit=cover: white icons on dark,
+					// system default (dark icons) on light. Android ignores this meta.
+					var statusBar = document.querySelector(
+						'meta[name="apple-mobile-web-app-status-bar-style"]'
+					);
+					if (statusBar) {
+						statusBar.setAttribute('content', dark ? 'black-translucent' : 'default');
 					}
 				} catch (e) {}
 			})();
@@ -46,13 +59,27 @@
 			});
 
 			(function () {
-				var bootFallbackShown = false;
+				var bootFailureShown = false;
+				// Splash stays until hide; only upgrade to the error card after a long delay
+				// (or on real script-load errors). Slow engine boot must not flash failure.
+				var BOOT_FAILURE_MS = 25000;
+				var bootFailureTimer = null;
 
-				function applyBootFallback() {
-					if (bootFallbackShown) return;
-					bootFallbackShown = true;
+				function clearBootFailureTimer() {
+					if (bootFailureTimer != null) {
+						clearTimeout(bootFailureTimer);
+						bootFailureTimer = null;
+					}
+				}
+
+				function applyBootFailure() {
+					if (bootFailureShown || window.__chronosAppMounted) return;
+					bootFailureShown = true;
+					clearBootFailureTimer();
 
 					var el = document.getElementById('chronos-boot-fallback');
+					var splash = document.getElementById('chronos-boot-splash');
+					var failure = document.getElementById('chronos-boot-failure');
 					var detail = document.getElementById('chronos-boot-fallback-detail');
 					if (!el) return;
 
@@ -62,18 +89,20 @@
 							: '当前处于离线状态，无法加载应用资源。请先在线打开一次，或连接网络后重试。';
 					}
 
+					if (splash) splash.hidden = true;
+					if (failure) failure.hidden = false;
 					el.hidden = false;
 				}
 
-				function showBootFallback() {
+				function showBootFailure() {
 					if (document.getElementById('chronos-boot-fallback')) {
-						applyBootFallback();
+						applyBootFailure();
 						return;
 					}
 					document.addEventListener(
 						'DOMContentLoaded',
 						function () {
-							applyBootFallback();
+							applyBootFailure();
 						},
 						{ once: true }
 					);
@@ -81,6 +110,7 @@
 
 				window.__chronosHideBootFallback = function () {
 					window.__chronosAppMounted = true;
+					clearBootFailureTimer();
 					var el = document.getElementById('chronos-boot-fallback');
 					if (el) el.hidden = true;
 				};
@@ -90,25 +120,35 @@
 					function (event) {
 						var isScript = event.target && event.target.tagName === 'SCRIPT';
 						if (isScript && !window.__chronosAppMounted) {
-							showBootFallback();
+							showBootFailure();
 						}
 					},
 					true
 				);
 
-				setTimeout(function () {
+				bootFailureTimer = setTimeout(function () {
+					bootFailureTimer = null;
 					if (!window.__chronosAppMounted) {
-						showBootFallback();
+						showBootFailure();
 					}
-				}, 5000);
+				}, BOOT_FAILURE_MS);
 			})();
 		</script>
 		%sveltekit.head%
 	</head>
 
 	<body data-sveltekit-preload-data="hover">
-		<div id="chronos-boot-fallback" hidden>
-			<div class="chronos-boot-fallback-card">
+		<div id="chronos-boot-fallback">
+			<div id="chronos-boot-splash" class="chronos-boot-splash" aria-hidden="true">
+				<img
+					src="%sveltekit.assets%/chronos-icon.svg"
+					alt=""
+					width="72"
+					height="72"
+					decoding="async"
+				/>
+			</div>
+			<div id="chronos-boot-failure" class="chronos-boot-fallback-card" hidden>
 				<p class="chronos-boot-fallback-title">无法加载 Chronos</p>
 				<p id="chronos-boot-fallback-detail" class="chronos-boot-fallback-detail">
 					应用资源加载失败，请刷新重试。
@@ -137,13 +177,38 @@
 					sans-serif;
 			}
 
+			html.dark #chronos-boot-fallback {
+				background: #121316;
+				color: #e2e5ef;
+			}
+
 			#chronos-boot-fallback[hidden] {
 				display: none !important;
+			}
+
+			.chronos-boot-splash {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.chronos-boot-splash[hidden] {
+				display: none !important;
+			}
+
+			.chronos-boot-splash img {
+				display: block;
+				width: 72px;
+				height: 72px;
 			}
 
 			.chronos-boot-fallback-card {
 				max-width: 20rem;
 				text-align: center;
+			}
+
+			.chronos-boot-fallback-card[hidden] {
+				display: none !important;
 			}
 
 			.chronos-boot-fallback-title {
@@ -157,6 +222,10 @@
 				font-size: 0.875rem;
 				line-height: 1.5;
 				color: #475569;
+			}
+
+			html.dark .chronos-boot-fallback-detail {
+				color: #a7abb4;
 			}
 
 			.chronos-boot-fallback-button {

@@ -126,6 +126,18 @@ describe('loadEsmPluginFromCode', () => {
 			/Invalid plugin bundle/
 		);
 	});
+
+	it('does not fall back to named export plugin', async () => {
+		const namedOnly = `
+export const plugin = {
+  id: 'named-plugin',
+  name: function () { return 'Named'; },
+  version: '1.0.0',
+  apply: function () {}
+};
+`;
+		await expect(loadEsmPluginFromCode(namedOnly)).rejects.toThrow(/Invalid plugin bundle/);
+	});
 });
 
 describe('OfficialPluginService', () => {

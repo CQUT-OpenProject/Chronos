@@ -2,7 +2,11 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
-import { getLatestReleaseFromEntries } from './version-generator';
+import {
+	assertReleaseEntryMatchesPackage,
+	getLatestReleaseFromEntries,
+	writeGeneratedVersionJson
+} from './version-generator';
 
 describe('version-generator', () => {
 	let entriesDir: string;
@@ -62,6 +66,36 @@ publishedAt: 2026-01-15
 			expect(getLatestReleaseFromEntries(emptyDir)).toBeNull();
 		} finally {
 			rmSync(emptyDir, { recursive: true, force: true });
+		}
+	});
+
+	it('asserts that a matching release entry exists for the package version', () => {
+		expect(() => assertReleaseEntryMatchesPackage(entriesDir, '2.0.0')).not.toThrow();
+		expect(() => assertReleaseEntryMatchesPackage(entriesDir, '9.9.9')).toThrow(
+			/Release entry missing/
+		);
+	});
+
+	it('writes version.json when package version matches the latest entry', () => {
+		const outputDir = mkdtempSync(join(tmpdir(), 'chronos-version-json-'));
+		const outputPath = join(outputDir, 'version.json');
+		try {
+			const result = writeGeneratedVersionJson(entriesDir, outputPath, '2.0.0');
+			expect(result).toBe(outputPath);
+		} finally {
+			rmSync(outputDir, { recursive: true, force: true });
+		}
+	});
+
+	it('fails when package version does not match the latest entry', () => {
+		const outputDir = mkdtempSync(join(tmpdir(), 'chronos-version-json-mismatch-'));
+		const outputPath = join(outputDir, 'version.json');
+		try {
+			expect(() => writeGeneratedVersionJson(entriesDir, outputPath, '1.0.0')).toThrow(
+				/does not match package\.json version/
+			);
+		} finally {
+			rmSync(outputDir, { recursive: true, force: true });
 		}
 	});
 });
