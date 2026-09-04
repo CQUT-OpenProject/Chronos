@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import {
 	COURSE_PALETTE_ENTRIES,
 	type CoursePaletteEntry,
@@ -8,7 +8,7 @@ import colorsJson from '@chronos/plugin-theme-yumemita/colors.json';
 
 const YUMEMITA_THEME_ID = 'yumemita';
 const YUMEMITA_PALETTE_ENTRIES = colorsJson.coursePalette.light;
-import { applyAppearance } from './apply-appearance';
+import { applyAppearance, THEME_COLOR_DARK, THEME_COLOR_LIGHT } from './apply-appearance';
 
 function createFakeElement() {
 	const classes = new Set<string>();
@@ -218,6 +218,108 @@ describe('applyAppearance', () => {
 		expect(paintWallpaperTheme).not.toHaveBeenCalled();
 		expect(clearWallpaperTheme).toHaveBeenCalledWith(target);
 		expect(result.coursePalette).toBe(COURSE_PALETTE_ENTRIES);
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it('syncs theme-color and apple status-bar-style when applying to documentElement', async () => {
+		const themeAttrs = new Map<string, string>([['content', THEME_COLOR_LIGHT]]);
+		const statusAttrs = new Map<string, string>([['content', 'default']]);
+		const themeMeta = {
+			getAttribute: (name: string) => themeAttrs.get(name) ?? null,
+			setAttribute: (name: string, value: string) => {
+				themeAttrs.set(name, value);
+			}
+		};
+		const statusMeta = {
+			getAttribute: (name: string) => statusAttrs.get(name) ?? null,
+			setAttribute: (name: string, value: string) => {
+				statusAttrs.set(name, value);
+			}
+		};
+		const documentElement = createFakeElement();
+		vi.stubGlobal('document', {
+			documentElement,
+			querySelector: (selector: string) => {
+				if (selector === 'meta[name="theme-color"]') return themeMeta;
+				if (selector === 'meta[name="apple-mobile-web-app-status-bar-style"]') return statusMeta;
+				return null;
+			}
+		});
+
+		const { dynamicColorAdapter } = createDynamicColorAdapter();
+
+		await applyAppearance(
+			{
+				paletteMode: 'vibrant',
+				isDark: true,
+				dynamicColorUri: null,
+				activeThemeId: 'm3-default'
+			},
+			{ target: documentElement, dynamicColorAdapter }
+		);
+
+		expect(themeMeta.getAttribute('content')).toBe(THEME_COLOR_DARK);
+		expect(statusMeta.getAttribute('content')).toBe('black-translucent');
+		expect(documentElement.classList.contains('dark')).toBe(true);
+
+		await applyAppearance(
+			{
+				paletteMode: 'vibrant',
+				isDark: false,
+				dynamicColorUri: null,
+				activeThemeId: 'm3-default'
+			},
+			{ target: documentElement, dynamicColorAdapter }
+		);
+
+		expect(themeMeta.getAttribute('content')).toBe(THEME_COLOR_LIGHT);
+		expect(statusMeta.getAttribute('content')).toBe('default');
+	});
+
+	it('does not sync theme-color or status-bar meta for non-documentElement targets', async () => {
+		const themeAttrs = new Map<string, string>([['content', THEME_COLOR_LIGHT]]);
+		const statusAttrs = new Map<string, string>([['content', 'default']]);
+		const themeMeta = {
+			getAttribute: (name: string) => themeAttrs.get(name) ?? null,
+			setAttribute: (name: string, value: string) => {
+				themeAttrs.set(name, value);
+			}
+		};
+		const statusMeta = {
+			getAttribute: (name: string) => statusAttrs.get(name) ?? null,
+			setAttribute: (name: string, value: string) => {
+				statusAttrs.set(name, value);
+			}
+		};
+		const documentElement = createFakeElement();
+		vi.stubGlobal('document', {
+			documentElement,
+			querySelector: (selector: string) => {
+				if (selector === 'meta[name="theme-color"]') return themeMeta;
+				if (selector === 'meta[name="apple-mobile-web-app-status-bar-style"]') return statusMeta;
+				return null;
+			}
+		});
+
+		const target = createFakeElement();
+		const { dynamicColorAdapter } = createDynamicColorAdapter();
+
+		await applyAppearance(
+			{
+				paletteMode: 'vibrant',
+				isDark: true,
+				dynamicColorUri: null,
+				activeThemeId: 'm3-default'
+			},
+			{ target, dynamicColorAdapter }
+		);
+
+		expect(themeMeta.getAttribute('content')).toBe(THEME_COLOR_LIGHT);
+		expect(statusMeta.getAttribute('content')).toBe('default');
+		expect(target.classList.contains('dark')).toBe(true);
 	});
 
 	it('does not paint after abort', async () => {

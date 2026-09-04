@@ -2610,7 +2610,7 @@ function wa(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Ta() {
-	return "0.4.4";
+	return "0.4.5";
 }
 function Ea(e) {
 	let t;
@@ -7588,11 +7588,7 @@ function Wc(e, t) {
 			await n.setWallpaper(i);
 		} catch (e) {
 			let n = e instanceof DOMException && e.name === "QuotaExceededError" ? o("screen.error.tooLarge") : o("screen.error.importFailed");
-			try {
-				t.controller.getPluginContext(t.pluginId).actions.notify(n, "error");
-			} catch {
-				alert(n);
-			}
+			t.controller.getPluginContext(t.pluginId).actions.notify(n, "error");
 		} finally {
 			r.value = "";
 		}

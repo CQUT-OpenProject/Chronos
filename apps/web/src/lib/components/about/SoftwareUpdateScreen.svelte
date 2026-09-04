@@ -57,7 +57,9 @@
 
 	const heroSubtitle = $derived(
 		updateState.state.hasUpdate
-			? hostT('about.update.subtitle.new')
+			? updateState.state.hasNewerVersion
+				? hostT('about.update.subtitle.new')
+				: hostT('about.update.subtitle.swOnly')
 			: hostT('about.update.subtitle.current', { version: APP_VERSION })
 	);
 
@@ -87,7 +89,7 @@
 	{:else if updateState.state.hasUpdate}
 		<div class="flex flex-col gap-4">
 			<HighlightRowList>
-				{#if updateState.state.latestRelease}
+				{#if updateState.state.latestRelease && updateState.state.hasNewerVersion}
 					<HighlightRow
 						icon={Update}
 						title={hostT('about.update.latest')}
@@ -107,7 +109,7 @@
 				/>
 			</HighlightRowList>
 
-			{#if htmlBody}
+			{#if htmlBody && updateState.state.hasNewerVersion}
 				<MineSection title={hostT('about.update.changelog')}>
 					<div
 						class="markdown-prose markdown-prose--release prose prose-sm max-w-none px-2 dark:prose-invert"

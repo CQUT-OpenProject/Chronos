@@ -6,7 +6,7 @@
 
 {#if snackbarStore.open}
 	<div
-		class="pointer-events-none fixed inset-x-4 bottom-20 z-[80] flex justify-center"
+		class="pointer-events-none fixed inset-x-4 bottom-[calc(var(--snackbar-bottom-offset)+0.75rem)] z-[80] flex justify-center"
 		role="status"
 		aria-live={snackbarStore.priority}
 	>

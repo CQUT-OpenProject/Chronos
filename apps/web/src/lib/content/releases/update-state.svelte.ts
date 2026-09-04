@@ -10,10 +10,14 @@ import {
 	type ServiceWorkerAdapter
 } from './service-worker-adapter';
 
+export type UpdateSource = 'none' | 'semver' | 'sw' | 'both';
+
 interface SoftwareUpdateState {
 	checking: boolean;
 	updating: boolean;
 	hasUpdate: boolean;
+	hasNewerVersion: boolean;
+	updateSource: UpdateSource;
 	currentVersion: string;
 	latestRelease: Release | null;
 	errorMessage: string | null;
@@ -50,6 +54,8 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 	let checking = $state(false);
 	let updating = $state(false);
 	let hasUpdate = $state(false);
+	let hasNewerVersion = $state(false);
+	let updateSource = $state<UpdateSource>('none');
 	let latestRelease = $state<Release | null>(null);
 	let errorMessage = $state<string | null>(null);
 	let lastChecked = $state<SvelteDate | null>(null);
@@ -61,38 +67,54 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 
 		const swHasUpdate = await swAdapter.checkForUpdate();
 
+		function applyUpdateSignals(newerVersion: boolean) {
+			hasNewerVersion = newerVersion;
+			hasUpdate = newerVersion || swHasUpdate;
+			updateSource =
+				newerVersion && swHasUpdate
+					? 'both'
+					: newerVersion
+						? 'semver'
+						: swHasUpdate
+							? 'sw'
+							: 'none';
+		}
+
 		try {
 			const result = await feedAdapter.fetchLatestRelease();
 			if (result.ok) {
 				const release = result.value;
 				latestRelease = release;
-				const hasNewerVersion = compareReleaseVersions(release.tagName, currentVersion) > 0;
-				hasUpdate = hasNewerVersion;
+				const newerVersion = compareReleaseVersions(release.tagName, currentVersion) > 0;
+				applyUpdateSignals(newerVersion);
 				trackEvent('update_check_success', {
 					has_update: hasUpdate,
-					latest_version: release.tagName
+					latest_version: release.tagName,
+					update_source: updateSource
 				});
 			} else if (swHasUpdate) {
-				hasUpdate = true;
+				applyUpdateSignals(false);
 				trackEvent('update_check_success', {
-					has_update: true
+					has_update: true,
+					update_source: updateSource
 				});
 			} else {
 				errorMessage = result.error.message;
-				hasUpdate = false;
+				applyUpdateSignals(false);
 				trackEvent('update_check_fail', {
 					error_message: errorMessage
 				});
 			}
 		} catch (err) {
 			if (swHasUpdate) {
-				hasUpdate = true;
+				applyUpdateSignals(false);
 				trackEvent('update_check_success', {
-					has_update: true
+					has_update: true,
+					update_source: updateSource
 				});
 			} else {
 				errorMessage = err instanceof Error ? err.message : '检查更新失败';
-				hasUpdate = false;
+				applyUpdateSignals(false);
 				trackEvent('update_check_fail', {
 					error_message: errorMessage
 				});
@@ -121,6 +143,8 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 		checking,
 		updating,
 		hasUpdate,
+		hasNewerVersion,
+		updateSource,
 		currentVersion,
 		latestRelease,
 		errorMessage,

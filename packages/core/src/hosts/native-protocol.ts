@@ -35,15 +35,68 @@ export interface NativeHostBridge {
 	onNativeNotification?(event: string, handler: (payload: unknown) => void): Disposable;
 }
 
+/** Maps to iOS UIImpactFeedbackStyle / Android CLOCK_TICK · KEYBOARD_TAP-style semantics. */
+export type NativeHapticImpactStyle = 'light' | 'medium' | 'heavy';
+
+/** Maps to iOS UINotificationFeedbackType / Android confirm · reject style semantics. */
+export type NativeHapticNotificationType = 'success' | 'warning' | 'error';
+
+export interface NativeHapticImpactParams {
+	readonly style: NativeHapticImpactStyle;
+}
+
+export interface NativeHapticNotificationParams {
+	readonly type: NativeHapticNotificationType;
+}
+
+/** Optional empty params for selection-changed ticks (iOS UISelectionFeedbackGenerator). */
+export type NativeHapticSelectionParams = Record<string, never> | undefined;
+
+/**
+ * Haptic capability methods on a native host bridge.
+ *
+ * | method         | params                                      | result                          |
+ * |----------------|---------------------------------------------|---------------------------------|
+ * | `impact`       | `{ style: NativeHapticImpactStyle }`        | `void` on success; reject/error |
+ * | `notification` | `{ type: NativeHapticNotificationType }`    | `void` on success; reject/error |
+ * | `selection`    | `{}` / omitted (optional)                   | `void` on success; reject/error |
+ *
+ * Hosts should play feedback immediately and resolve with `undefined` (or omit `result`).
+ * Reject / return `{ error }` when the platform cannot fire haptics.
+ */
+export type NativeHapticMethod = 'impact' | 'notification' | 'selection';
+
+export type NativeHapticRequest =
+	| { readonly method: 'impact'; readonly params: NativeHapticImpactParams }
+	| { readonly method: 'notification'; readonly params: NativeHapticNotificationParams }
+	| { readonly method: 'selection'; readonly params?: NativeHapticSelectionParams };
+
+/**
+ * Request a haptic from a {@link NativeHostBridge}.
+ * Keeps {@link createNativeHostEnv} focused on ChronosEnv ports — haptic is a
+ * bridge-level seam consumed by web shells / future native UI, not a ChronosEnv field.
+ */
+export async function requestNativeHaptic(
+	bridge: NativeHostBridge,
+	request: NativeHapticRequest
+): Promise<void> {
+	if (request.method === 'selection') {
+		await bridge.callNative('haptic', 'selection', request.params ?? {});
+		return;
+	}
+	await bridge.callNative('haptic', request.method, request.params);
+}
+
 /**
  * Creates a standard Headless ChronosEnv driven entirely by a NativeHostBridge
  * (suitable for iOS Swift JavaScriptCore and Android Kotlin QuickJS engines).
  *
- * FROZEN BASELINE — no production adapters exist. This module is versioned and
- * covered by `native-host-baseline.test.ts` only; do not extend the protocol
- * until a native host project actually consumes it. If no native host is
- * started within two release cycles, remove this module entirely rather than
- * letting it linger half-frozen on the export surface.
+ * BASELINE — no production ChronosEnv adapters exist yet for storage/http/vault.
+ * The `haptic` capability is an intentionally defined, consumable seam: web may
+ * probe a host-injected bridge (`window.__CHRONOS_NATIVE__`) and call
+ * {@link requestNativeHaptic} / `callNative('haptic', …)` without waiting on a
+ * full native ChronosEnv. Do not expand other frozen capabilities here until a
+ * native host project actually consumes them.
  */
 export function createNativeHostEnv(
 	bridge: NativeHostBridge,

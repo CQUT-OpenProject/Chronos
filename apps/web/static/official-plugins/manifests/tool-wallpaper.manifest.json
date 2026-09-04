@@ -4,7 +4,7 @@
 		"zh-CN": "自定义壁纸",
 		"en": "Custom Wallpaper"
 	},
-	"version": "0.4.4",
+	"version": "0.4.5",
 	"description": {
 		"zh-CN": "自定义课表页壁纸，支持动态取色",
 		"en": "Custom timetable wallpaper with dynamic color"
@@ -13,7 +13,7 @@
 	"type": "tool",
 	"bundleFormat": "esm",
 	"bundleUrl": "/official-plugins/bundles/tool-wallpaper/bundle.js",
-	"sha256": "f798a64a0dd8b2f382cbfe1e3ee9428dbe8b795d485acae4546fef3f25f6c60d",
+	"sha256": "a37e415b5c3ec53d3da7f43bedeb7e34da63d7b073a5491def4e6d1ffbefb46a",
 	"cssUrl": "/official-plugins/bundles/tool-wallpaper/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }

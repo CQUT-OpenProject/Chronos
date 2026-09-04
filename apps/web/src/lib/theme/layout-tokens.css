@@ -22,10 +22,36 @@
 }
 
 @layer base {
+	html,
+	body {
+		overscroll-behavior: none;
+	}
+
 	html {
 		font-size: 15px;
 		line-height: 1.47;
 		touch-action: pan-x pan-y;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	/* Native-feel: no accidental text selection on chrome / controls */
+	button,
+	a,
+	.shell-tab-bar,
+	.bottom-bar,
+	.ui-shell-top-bar,
+	.m3-top-app-bar {
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	/* Keep form fields and copyable body text selectable */
+	input,
+	textarea,
+	[contenteditable='true'],
+	.shell-page {
+		-webkit-user-select: text;
+		user-select: text;
 	}
 
 	@media (min-width: 768px) {
@@ -47,6 +73,8 @@
 		--spacing-tabbar: 4.25rem;
 		--top-bar-height: calc(var(--spacing-topbar) + var(--topbar-safe));
 		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
+		/* ShellRouteHost sets this to --tabbar-safe when the tab bar is hidden. */
+		--snackbar-bottom-offset: var(--bottom-bar-height);
 	}
 
 	@media (max-height: 720px) {

@@ -1,6 +1,10 @@
 import type { DynamicColorAdapter, PaletteMode, CoursePaletteEntry } from '@chronos/core';
 import { PALETTE_MODE_VIBRANT, resolveCoursePalette } from '@chronos/core';
 
+/** Keep in sync with app.html boot IIFE theme-color literals. */
+export const THEME_COLOR_LIGHT = '#0068B7';
+export const THEME_COLOR_DARK = '#1a1c1e';
+
 export type ApplyAppearanceInput = {
 	paletteMode: PaletteMode;
 	isDark: boolean;
@@ -11,6 +15,25 @@ export type ApplyAppearanceInput = {
 
 function abortIfNeeded(signal: AbortSignal | undefined) {
 	if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+}
+
+function syncThemeColorMeta(isDark: boolean) {
+	if (typeof document === 'undefined') return;
+	const meta = document.querySelector('meta[name="theme-color"]');
+	if (meta) {
+		meta.setAttribute('content', isDark ? THEME_COLOR_DARK : THEME_COLOR_LIGHT);
+	}
+}
+
+/** Keep in sync with app.html boot IIFE status-bar-style literals. */
+function syncAppleStatusBarStyle(isDark: boolean) {
+	if (typeof document === 'undefined') return;
+	const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+	if (meta) {
+		// Dark: black-translucent (light icons + content under status bar; --topbar-safe
+		// already pads chrome). Light: default (dark icons on light top bar). Android no-op.
+		meta.setAttribute('content', isDark ? 'black-translucent' : 'default');
+	}
 }
 
 export async function applyAppearance(
@@ -29,6 +52,10 @@ export async function applyAppearance(
 	if (target) {
 		target.classList.toggle('dark', isDark);
 		target.style.colorScheme = isDark ? 'dark' : 'light';
+		if (typeof document !== 'undefined' && target === document.documentElement) {
+			syncThemeColorMeta(isDark);
+			syncAppleStatusBarStyle(isDark);
+		}
 	}
 
 	abortIfNeeded(signal);
