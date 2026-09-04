@@ -22,6 +22,11 @@
 }
 
 @layer base {
+	html,
+	body {
+		overscroll-behavior: none;
+	}
+
 	html {
 		font-size: 15px;
 		line-height: 1.47;

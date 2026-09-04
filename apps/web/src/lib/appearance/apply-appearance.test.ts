@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import {
 	COURSE_PALETTE_ENTRIES,
 	type CoursePaletteEntry,
@@ -8,7 +8,7 @@ import colorsJson from '@chronos/plugin-theme-yumemita/colors.json';
 
 const YUMEMITA_THEME_ID = 'yumemita';
 const YUMEMITA_PALETTE_ENTRIES = colorsJson.coursePalette.light;
-import { applyAppearance } from './apply-appearance';
+import { applyAppearance, THEME_COLOR_DARK, THEME_COLOR_LIGHT } from './apply-appearance';
 
 function createFakeElement() {
 	const classes = new Set<string>();
@@ -218,6 +218,83 @@ describe('applyAppearance', () => {
 		expect(paintWallpaperTheme).not.toHaveBeenCalled();
 		expect(clearWallpaperTheme).toHaveBeenCalledWith(target);
 		expect(result.coursePalette).toBe(COURSE_PALETTE_ENTRIES);
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it('syncs theme-color meta when applying to documentElement', async () => {
+		const attrs = new Map<string, string>([['content', THEME_COLOR_LIGHT]]);
+		const meta = {
+			getAttribute: (name: string) => attrs.get(name) ?? null,
+			setAttribute: (name: string, value: string) => {
+				attrs.set(name, value);
+			}
+		};
+		const documentElement = createFakeElement();
+		vi.stubGlobal('document', {
+			documentElement,
+			querySelector: (selector: string) => (selector === 'meta[name="theme-color"]' ? meta : null)
+		});
+
+		const { dynamicColorAdapter } = createDynamicColorAdapter();
+
+		await applyAppearance(
+			{
+				paletteMode: 'vibrant',
+				isDark: true,
+				dynamicColorUri: null,
+				activeThemeId: 'm3-default'
+			},
+			{ target: documentElement, dynamicColorAdapter }
+		);
+
+		expect(meta.getAttribute('content')).toBe(THEME_COLOR_DARK);
+		expect(documentElement.classList.contains('dark')).toBe(true);
+
+		await applyAppearance(
+			{
+				paletteMode: 'vibrant',
+				isDark: false,
+				dynamicColorUri: null,
+				activeThemeId: 'm3-default'
+			},
+			{ target: documentElement, dynamicColorAdapter }
+		);
+
+		expect(meta.getAttribute('content')).toBe(THEME_COLOR_LIGHT);
+	});
+
+	it('does not sync theme-color meta for non-documentElement targets', async () => {
+		const attrs = new Map<string, string>([['content', THEME_COLOR_LIGHT]]);
+		const meta = {
+			getAttribute: (name: string) => attrs.get(name) ?? null,
+			setAttribute: (name: string, value: string) => {
+				attrs.set(name, value);
+			}
+		};
+		const documentElement = createFakeElement();
+		vi.stubGlobal('document', {
+			documentElement,
+			querySelector: (selector: string) => (selector === 'meta[name="theme-color"]' ? meta : null)
+		});
+
+		const target = createFakeElement();
+		const { dynamicColorAdapter } = createDynamicColorAdapter();
+
+		await applyAppearance(
+			{
+				paletteMode: 'vibrant',
+				isDark: true,
+				dynamicColorUri: null,
+				activeThemeId: 'm3-default'
+			},
+			{ target, dynamicColorAdapter }
+		);
+
+		expect(meta.getAttribute('content')).toBe(THEME_COLOR_LIGHT);
+		expect(target.classList.contains('dark')).toBe(true);
 	});
 
 	it('does not paint after abort', async () => {

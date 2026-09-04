@@ -102,7 +102,7 @@ export default defineConfig(({ mode }) => {
 					short_name: 'Chronos',
 					description: '课程表应用',
 					theme_color: '#0068B7',
-					background_color: '#F7FAFC',
+					background_color: '#f0f4f8',
 					display: 'standalone',
 					start_url: `${basePath}/`,
 					id: `${basePath}/`,
