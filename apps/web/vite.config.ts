@@ -121,16 +121,18 @@ export default defineConfig(({ mode }) => {
 					]
 				},
 				workbox: {
+					clientsClaim: true,
 					globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
 					globIgnores: ['**/official-plugins/**'],
 					navigateFallback: null,
 					runtimeCaching: [
 						{
 							urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
-							handler: 'CacheFirst',
+							handler: 'NetworkFirst',
 							options: {
 								cacheName: 'pages-cache',
-								expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 }
+								networkTimeoutSeconds: 5,
+								expiration: { maxEntries: 16, maxAgeSeconds: 86_400 }
 							}
 						},
 						{
@@ -155,10 +157,11 @@ export default defineConfig(({ mode }) => {
 						},
 						{
 							urlPattern: /\/manifest\.webmanifest$/i,
-							handler: 'CacheFirst',
+							handler: 'NetworkFirst',
 							options: {
 								cacheName: 'pwa-manifest',
-								expiration: { maxEntries: 1, maxAgeSeconds: 2_592_000 }
+								networkTimeoutSeconds: 5,
+								expiration: { maxEntries: 1, maxAgeSeconds: 86_400 }
 							}
 						}
 					]
