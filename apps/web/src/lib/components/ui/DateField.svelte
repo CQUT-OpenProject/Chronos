@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
-	import { DateField as UiDateField, type DateFieldLabels } from '@chronos/ui-kit';
+	import { getAppController } from '$lib/services/app-engine';
+	import {
+		DateField as UiDateField,
+		appLocaleToBcp47,
+		type DateFieldLabels
+	} from '@chronos/ui-kit';
 
 	let {
 		label,
@@ -10,7 +15,8 @@
 		onValueChange,
 		disabled = false,
 		calendarLabel = label,
-		labels
+		labels,
+		locale
 	}: {
 		label: string;
 		value?: string;
@@ -20,8 +26,11 @@
 		disabled?: boolean;
 		calendarLabel?: string;
 		labels?: DateFieldLabels;
+		locale?: string;
 	} = $props();
 
+	const controller = getAppController();
+	const resolvedLocale = $derived(locale ?? appLocaleToBcp47(controller.currentLocale));
 	const resolvedLabels = $derived<DateFieldLabels>(
 		labels ?? {
 			placeholder: hostT('ui.date.placeholder'),
@@ -44,4 +53,5 @@
 	{disabled}
 	{calendarLabel}
 	labels={resolvedLabels}
+	locale={resolvedLocale}
 />

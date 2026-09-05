@@ -7,11 +7,14 @@ export { default as Radio } from './form/Radio.svelte';
 export { default as SelectableOption } from './form/SelectableOption.svelte';
 export { default as RadioGroupField } from './form/RadioGroupField.svelte';
 export {
+	appLocaleToBcp47,
 	buildDateFieldTriggerLabel,
 	calendarDateToIso,
 	DEFAULT_DATE_FIELD_LABELS,
 	formatDateDisplay,
+	isValidIsoDateString,
 	isoToCalendarDate,
+	resolvePickerMonthIso,
 	type DateFieldLabels
 } from './form/date-field-utils';
 export { default as PluginScreenContainer } from './plugin-screen/PluginScreenContainer.svelte';
