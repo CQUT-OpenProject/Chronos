@@ -14,6 +14,19 @@ interface FutureCourseCandidate {
 	originalIndex: number;
 }
 
+/**
+ * Whether a course overlaps the configured period rows.
+ * Zero configured periods means "unknown": show everything (legacy fallback).
+ * Courses are only hidden, never deleted — re-adding periods restores them.
+ */
+export function isCoursePeriodVisible(
+	course: Pick<Course, 'startPeriod' | 'endPeriod'>,
+	configuredPeriodCount: number
+): boolean {
+	if (configuredPeriodCount <= 0) return true;
+	return course.endPeriod >= 1 && course.startPeriod <= configuredPeriodCount;
+}
+
 function isBetterFutureCandidate(
 	left: FutureCourseCandidate,
 	right: FutureCourseCandidate
@@ -32,10 +45,16 @@ export function buildTimetableCourseDisplayModels(
 ): TimetableCourseDisplayModel[] {
 	const currentEntries: TimetableCourseDisplayModel[] = [];
 	const nonCurrentCandidates: Array<{ course: Course; originalIndex: number }> = [];
+	const configuredPeriodCount = timetable.academicConfig.periodTimes.length;
 
 	for (let i = 0; i < timetable.courses.length; i += 1) {
 		const course = timetable.courses[i]!;
 		if (!visibleDayOfWeeks.has(course.dayOfWeek)) continue;
+		// Hide courses attached to removed periods (restored automatically when
+		// periods are re-added). Zero configured periods means "unknown": show all.
+		if (!isCoursePeriodVisible(course, configuredPeriodCount)) {
+			continue;
+		}
 
 		if (course.weeks.length === 0 || course.weeks.includes(displayedWeek)) {
 			currentEntries.push({

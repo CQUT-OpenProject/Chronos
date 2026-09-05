@@ -2,6 +2,7 @@ import type { ReactiveChronosController } from '@chronos/ui-kit';
 import {
 	currentTimeMinutes,
 	findCurrentPeriodIndex,
+	isCoursePeriodVisible,
 	IStorageService,
 	parsePeriodRanges,
 	todayIsoDate,
@@ -69,9 +70,13 @@ export function createTodayScreenController(): TodayScreenController {
 				scope,
 				timetable
 			});
+			const periodTimes = getPeriodTimes();
+			const visibleHits = hits.filter((hit) =>
+				isCoursePeriodVisible(hit.course, periodTimes.length)
+			);
 			courseEntries = attachCourseStatuses(
-				hits,
-				getPeriodTimes(),
+				visibleHits,
+				periodTimes,
 				currentTimeMinutes(now),
 				currentPeriodIndex
 			);
