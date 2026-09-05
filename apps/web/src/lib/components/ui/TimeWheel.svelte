@@ -120,8 +120,7 @@
 
 <div class="flex justify-center gap-3">
 	{#each [{ kind: 'hour', items: hours, current: value.hour, name: labels.hour } as const, { kind: 'minute', items: minutes, current: value.minute, name: labels.minute } as const] as column (column.kind)}
-		<div class="flex min-w-0 flex-1 flex-col items-center gap-1">
-			<span class="text-label-small text-on-surface-variant">{column.name}</span>
+		<div class="flex min-w-0 flex-1 flex-col items-center">
 			<div class="relative w-full">
 				<div
 					role="listbox"
