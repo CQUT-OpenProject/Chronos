@@ -86,6 +86,27 @@ describe('OfficialPluginAssetPipeline', () => {
 		await expect(pipeline.download(manifest)).rejects.toThrow(/integrity check failed/);
 	});
 
+	it('rejects css sha256 mismatch', async () => {
+		const manifest: PluginManifest = {
+			id: 'test',
+			name: { 'zh-CN': 'T' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'T' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/bundle.js',
+			sha256: await engine.env.runtime.sha256(SAMPLE_BUNDLE),
+			cssUrl: '/bundle.css',
+			cssSha256: 'deadbeef'
+		};
+
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => '.x{color:red}' }));
+
+		await expect(pipeline.download(manifest)).rejects.toThrow(/integrity check failed/);
+	});
+
 	it('skips optional assets when URLs absent', async () => {
 		const manifest: PluginManifest = {
 			id: 'theme-only',
