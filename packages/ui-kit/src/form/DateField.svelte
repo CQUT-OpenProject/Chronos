@@ -171,14 +171,13 @@
 				{#if open}
 					<div
 						aria-hidden="true"
-						class="date-picker-overlay pointer-events-none fixed inset-0 z-[70] bg-black/50"
+						class="date-picker-overlay fixed inset-0 z-[70] bg-black/50"
 					></div>
 				{/if}
-				<DatePicker.Content
-					sideOffset={8}
-					class="ui-date-picker-content z-[70] rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
+				<DatePicker.ContentStatic
+					class="ui-date-picker-content fixed top-1/2 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
 				>
-					<DatePicker.Calendar>
+					<DatePicker.Calendar class="flex w-full flex-col">
 						{#snippet children({ months, weekdays })}
 							<DatePicker.Header class="mb-3 flex items-center justify-between gap-2">
 								<DatePicker.PrevButton
@@ -199,33 +198,66 @@
 							</DatePicker.Header>
 
 							{#each months as month (month.value)}
-								<DatePicker.Grid class="w-full border-collapse">
-									<DatePicker.GridHead>
-										<DatePicker.GridRow class="mb-1 flex w-full justify-between">
-											{#each weekdays as day}
-												<DatePicker.HeadCell
-													class="text-label-small flex size-10 items-center justify-center text-on-surface-variant"
-												>
-													{day}
-												</DatePicker.HeadCell>
-											{/each}
-										</DatePicker.GridRow>
-									</DatePicker.GridHead>
-									<DatePicker.GridBody>
-										{#each month.weeks as weekDates (weekDates)}
-											<DatePicker.GridRow class="flex w-full">
-												{#each weekDates as date (date)}
-													<DatePicker.Cell {date} month={month.value} class="p-0 text-center">
-														<DatePicker.Day
-															class="m3-date-picker-day text-body-medium inline-flex size-10 items-center justify-center rounded-full border border-transparent text-on-surface transition-colors hover:bg-on-surface/5 data-disabled:pointer-events-none data-disabled:text-on-surface/30 data-outside-month:text-on-surface-variant/50 data-selected:bg-brand data-selected:font-medium data-selected:text-on-primary data-unavailable:text-on-surface-variant data-unavailable:line-through"
-														>
-															{date.day}
-														</DatePicker.Day>
-													</DatePicker.Cell>
-												{/each}
-											</DatePicker.GridRow>
-										{/each}
-									</DatePicker.GridBody>
+								<DatePicker.Grid class="w-full">
+									{#snippet child({ props })}
+										<div {...props} class="w-full">
+											<DatePicker.GridHead>
+												{#snippet child({ props: headProps })}
+													<div {...headProps}>
+														<DatePicker.GridRow>
+															{#snippet child({ props: rowProps })}
+																<div {...rowProps} role="row" class="mb-1 grid grid-cols-7">
+																	{#each weekdays as day}
+																		<DatePicker.HeadCell>
+																			{#snippet child({ props: cellProps })}
+																				<div
+																					{...cellProps}
+																					role="columnheader"
+																					class="text-label-small flex h-10 w-full items-center justify-center text-on-surface-variant"
+																				>
+																					{day}
+																				</div>
+																			{/snippet}
+																		</DatePicker.HeadCell>
+																	{/each}
+																</div>
+															{/snippet}
+														</DatePicker.GridRow>
+													</div>
+												{/snippet}
+											</DatePicker.GridHead>
+											<DatePicker.GridBody>
+												{#snippet child({ props: bodyProps })}
+													<div {...bodyProps}>
+														{#each month.weeks as weekDates (weekDates)}
+															<DatePicker.GridRow>
+																{#snippet child({ props: rowProps })}
+																	<div {...rowProps} role="row" class="grid grid-cols-7">
+																		{#each weekDates as date (date)}
+																			<DatePicker.Cell {date} month={month.value}>
+																				{#snippet child({ props: cellProps })}
+																					<div
+																						{...cellProps}
+																						class="flex h-10 w-full items-center justify-center p-0"
+																					>
+																						<DatePicker.Day
+																							class="m3-date-picker-day text-body-medium inline-flex size-10 items-center justify-center rounded-full border border-transparent text-on-surface transition-colors hover:bg-on-surface/5 data-disabled:pointer-events-none data-disabled:text-on-surface/30 data-outside-month:text-on-surface-variant/50 data-selected:bg-brand data-selected:font-medium data-selected:text-on-primary data-unavailable:text-on-surface-variant data-unavailable:line-through"
+																						>
+																							{date.day}
+																						</DatePicker.Day>
+																					</div>
+																				{/snippet}
+																			</DatePicker.Cell>
+																		{/each}
+																	</div>
+																{/snippet}
+															</DatePicker.GridRow>
+														{/each}
+													</div>
+												{/snippet}
+											</DatePicker.GridBody>
+										</div>
+									{/snippet}
 								</DatePicker.Grid>
 							{/each}
 
@@ -260,7 +292,7 @@
 							</div>
 						{/snippet}
 					</DatePicker.Calendar>
-				</DatePicker.Content>
+				</DatePicker.ContentStatic>
 			</DatePicker.Portal>
 		</div>
 	</DatePicker.Root>
