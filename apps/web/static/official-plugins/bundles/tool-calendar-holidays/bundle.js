@@ -5659,11 +5659,19 @@ function fa(e, t) {
 	};
 }
 //#endregion
+//#region packages/ui-kit/src/schema-form/inputs/WallpaperPreviewField.svelte
+Kr(fa("light"), fa("dark")), typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Jn(["input"]), Jn(["change"]), Jn(["change"]), Jn(["change"]), Jn(["click"]), Jn(["change"]);
+//#endregion
+//#region packages/ui-kit/src/form/date-field-utils.ts
+function pa(e) {
+	return e?.toLowerCase() === "en" ? "en" : "zh-CN";
+}
+//#endregion
 //#region packages/ui-kit/src/plugin-screen/PluginScreenContainer.svelte
-Kr(fa("light"), fa("dark")), typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Jn(["input"]), Jn(["change"]), Jn(["change"]), Jn(["change"]), Jn(["click"]), Jn(["change"]), Jn(["click"]), Jn(["click"]), Jn(["click"]);
+Jn(["click"]), Jn(["click"]), Jn(["click"]);
 //#endregion
 //#region packages/ui-kit/src/plugin-screen/mountable-svelte.ts
-function pa(e) {
+function ma(e) {
 	return {
 		[Ur]: !0,
 		mount(t, n) {
@@ -5679,7 +5687,7 @@ function pa(e) {
 }
 //#endregion
 //#region packages/ui-kit/src/i18n/plugin-text.ts
-function ma(e, t, n, r, i) {
+function ha(e, t, n, r, i) {
 	let a = n["zh-cn"][r] ?? n.en?.[r] ?? String(r);
 	if (!e) return Hr(a, i);
 	e.slotVersion;
@@ -5688,7 +5696,7 @@ function ma(e, t, n, r, i) {
 }
 //#endregion
 //#region packages/plugins/calendar-holidays/src/messages.ts
-var ha = {
+var ga = {
 	"zh-cn": {
 		"plugin.name": "法定节假日",
 		"plugin.description": "在课表中展示法定节假日",
@@ -5741,7 +5749,7 @@ var ha = {
 		"screen.error.syncFailed": "Sync failed. Check your network and try again.",
 		"screen.notify.synced": "Public holidays synced"
 	}
-}, ga = "tool-calendar-holidays", _a = "https://fastly.jsdelivr.net/gh/NateScarlet/holiday-cn@master", va = {
+}, _a = "tool-calendar-holidays", va = "https://fastly.jsdelivr.net/gh/NateScarlet/holiday-cn@master", ya = {
 	2025: {
 		$schema: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json",
 		$id: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2025.json",
@@ -6126,14 +6134,14 @@ var ha = {
 		days: []
 	}
 };
-function ya(e) {
+function ba(e) {
 	return e.days.filter((e) => e.isOffDay).map((e) => ({
 		date: e.date,
 		label: e.name
 	}));
 }
-async function ba(e, t) {
-	let n = `${_a}/${t}.json`;
+async function xa(e, t) {
+	let n = `${va}/${t}.json`;
 	try {
 		let t = await e.request(n, {
 			method: "GET",
@@ -6142,45 +6150,45 @@ async function ba(e, t) {
 		if (!t.ok) throw Error(`HTTP ${t.status}`);
 		return await t.json();
 	} catch (e) {
-		return va[t] || (console.warn(`[calendar-holidays] No holiday-cn data for ${t}`, e), null);
+		return ya[t] || (console.warn(`[calendar-holidays] No holiday-cn data for ${t}`, e), null);
 	}
 }
-async function xa(e, t) {
-	let n = (await Promise.all(t.map((t) => ba(e, t)))).filter((e) => e !== null);
+async function Sa(e, t) {
+	let n = (await Promise.all(t.map((t) => xa(e, t)))).filter((e) => e !== null);
 	if (n.length === 0) throw Error(`No holiday-cn data for years: ${t.join(", ")}`);
-	let r = n.flatMap((e) => ya(e)), i = /* @__PURE__ */ new Map();
+	let r = n.flatMap((e) => ba(e)), i = /* @__PURE__ */ new Map();
 	for (let e of r) i.has(e.date) || i.set(e.date, e);
 	return { holidays: [...i.values()].sort((e, t) => e.date.localeCompare(t.date)) };
 }
 //#endregion
 //#region packages/plugins/calendar-holidays/src/holiday-sync.ts
-var Sa = /* @__PURE__ */ new Map();
-async function Ca(e) {
+var Ca = /* @__PURE__ */ new Map();
+async function wa(e) {
 	return Fr(e.service(Vr));
 }
-function wa(e, t) {
+function Ta(e, t) {
 	if (!e?.syncedAt || !e.syncedYears?.length) return !0;
 	let n = new Set(e.syncedYears);
 	return t.some((e) => !n.has(e));
 }
-async function Ta(e, t = {}) {
+async function Ea(e, t = {}) {
 	let n = e.state.currentTimetable;
 	if (!n) throw Error("No active timetable");
-	let r = n.id, i = Sa.get(r);
+	let r = n.id, i = Ca.get(r);
 	if (i) return i;
-	let a = Da(e, r, n.academicConfig, t).finally(() => {
-		Sa.delete(r);
+	let a = Oa(e, r, n.academicConfig, t).finally(() => {
+		Ca.delete(r);
 	});
-	return Sa.set(r, a), a;
+	return Ca.set(r, a), a;
 }
-async function Ea(e, t = {}) {
-	return e.state.currentTimetable ? Ta(e, t) : !1;
+async function Da(e, t = {}) {
+	return e.state.currentTimetable ? Ea(e, t) : !1;
 }
-async function Da(e, t, n, r) {
+async function Oa(e, t, n, r) {
 	let i = Rr(n), a = e.service(Vr), o = await a.getTimetable(t);
 	if (!o) throw Error(`Timetable not found: ${t}`);
-	if (!r.force && !wa(o.academicConfig.holidayCalendar, i)) return !1;
-	let { holidays: s } = await xa(e.service(Br), i), c = {
+	if (!r.force && !Ta(o.academicConfig.holidayCalendar, i)) return !1;
+	let { holidays: s } = await Sa(e.service(Br), i), c = {
 		holidays: s,
 		syncedAt: Date.now(),
 		syncedYears: [...i]
@@ -6198,11 +6206,11 @@ async function Da(e, t, n, r) {
 }
 //#endregion
 //#region packages/plugins/calendar-holidays/src/index.ts
-function Oa(e = {}) {
+function ka(e = {}) {
 	let { screenComponent: t } = e, n;
 	return Yr({
-		id: ga,
-		messages: ha,
+		id: _a,
+		messages: ga,
 		nameKey: "plugin.name",
 		descriptionKey: "plugin.description",
 		category: "tool",
@@ -6217,41 +6225,41 @@ function Oa(e = {}) {
 				id: "holiday-calendar",
 				sectionId: "data-sync",
 				title: () => r("mine.title"),
-				href: `/plugins/${ga}`,
+				href: `/plugins/${_a}`,
 				icon: "event",
 				iconTone: "secondary",
 				keywords: i,
 				order: 25
 			}), e.registerSlot("shell.route.screen", {
-				id: ga,
+				id: _a,
 				title: () => r("screen.title"),
 				...t ? { component: t } : {}
 			});
 			try {
-				await Ea(e);
+				await Da(e);
 			} catch {
 				e.actions.notify(r("screen.error.syncFailed"), "warn");
 			}
 			e.on("timetable:switched", async () => {
 				try {
-					await Ea(e);
+					await Da(e);
 				} catch {}
 			});
 		},
 		async dispose() {
 			let e = n;
-			n = void 0, e && await Ca(e);
+			n = void 0, e && await wa(e);
 		}
 	});
 }
 //#endregion
 //#region packages/plugins/calendar-holidays/src/HolidayCalendarScreen.svelte
-var ka = /* @__PURE__ */ nr("<p class=\"text-body-small mt-1 text-on-surface-variant\"> </p>"), Aa = /* @__PURE__ */ nr("<p class=\"text-body-medium py-6 text-center text-on-surface-variant\"> </p>"), ja = /* @__PURE__ */ nr("<li class=\"py-3\"><span class=\"text-body-medium text-on-surface\"> </span></li>"), Ma = /* @__PURE__ */ nr("<div class=\"mt-3 mb-3\"><p class=\"text-label-large mb-1 text-on-surface-variant\"> </p> <ul class=\"divide-y divide-outline/10\"></ul></div>"), Na = /* @__PURE__ */ nr("<p class=\"text-body-small text-error\"> </p>"), Pa = /* @__PURE__ */ nr("<div class=\"flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4\"><section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h2 class=\"text-title-medium text-on-surface\"> </h2> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p> <a class=\"text-body-small mt-2 inline-block text-primary\" href=\"https://github.com/NateScarlet/holiday-cn\" target=\"_blank\" rel=\"noreferrer\"> </a></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"text-title-small text-on-surface\"> </h3> <!> <p class=\"text-body-small mt-2 text-on-surface-variant\"> </p> <button type=\"button\" class=\"text-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50\"> </button></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"text-title-small text-on-surface\"> </h3> <!></section> <!></div>");
-function Fa(e, t) {
+var Aa = /* @__PURE__ */ nr("<p class=\"text-body-small mt-1 text-on-surface-variant\"> </p>"), ja = /* @__PURE__ */ nr("<p class=\"text-body-medium py-6 text-center text-on-surface-variant\"> </p>"), Ma = /* @__PURE__ */ nr("<li class=\"py-3\"><span class=\"text-body-medium text-on-surface\"> </span></li>"), Na = /* @__PURE__ */ nr("<div class=\"mt-3 mb-3\"><p class=\"text-label-large mb-1 text-on-surface-variant\"> </p> <ul class=\"divide-y divide-outline/10\"></ul></div>"), Pa = /* @__PURE__ */ nr("<p class=\"text-body-small text-error\"> </p>"), Fa = /* @__PURE__ */ nr("<div class=\"flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4\"><section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h2 class=\"text-title-medium text-on-surface\"> </h2> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p> <a class=\"text-body-small mt-2 inline-block text-primary\" href=\"https://github.com/NateScarlet/holiday-cn\" target=\"_blank\" rel=\"noreferrer\"> </a></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"text-title-small text-on-surface\"> </h3> <!> <p class=\"text-body-small mt-2 text-on-surface-variant\"> </p> <button type=\"button\" class=\"text-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50\"> </button></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"text-title-small text-on-surface\"> </h3> <!></section> <!></div>");
+function Ia(e, t) {
 	je(t, !0);
 	let n = /* @__PURE__ */ kt(!1), r = /* @__PURE__ */ kt(null), i = /* @__PURE__ */ tt(() => t.controller.currentTimetable), a = /* @__PURE__ */ tt(() => L(i)?.academicConfig.holidayCalendar), o = /* @__PURE__ */ tt(() => L(i) && L(a) ? Lr(L(a).holidays, L(i).academicConfig) : []), s = /* @__PURE__ */ tt(() => L(i) ? Rr(L(i).academicConfig).join(u("screen.sync.yearSeparator")) : ""), c = /* @__PURE__ */ tt(() => d(L(o), t.controller.currentLocale)), l = /* @__PURE__ */ tt(() => !!L(a)?.syncedAt);
 	function u(e) {
-		return ma(t.controller, ga, ha, e);
+		return ha(t.controller, _a, ga, e);
 	}
 	function d(e, t) {
 		let n = /* @__PURE__ */ new Map();
@@ -6273,8 +6281,8 @@ function Fa(e, t) {
 	}
 	function p(e) {
 		if (!e) return u("screen.sync.never");
-		let t = new Date(e);
-		return u("screen.sync.last").replace("{time}", t.toLocaleString(void 0, {
+		let n = new Date(e);
+		return u("screen.sync.last").replace("{time}", n.toLocaleString(pa(t.controller.currentLocale), {
 			month: "numeric",
 			day: "numeric",
 			hour: "2-digit",
@@ -6289,14 +6297,14 @@ function Fa(e, t) {
 		jt(n, !0), jt(r, null);
 		try {
 			let e = t.controller.getPluginContext(t.pluginId);
-			await Ta(e, { force: !0 }), e.actions.notify(u("screen.notify.synced"), "info");
+			await Ea(e, { force: !0 }), e.actions.notify(u("screen.notify.synced"), "info");
 		} catch (e) {
 			jt(r, e instanceof Error ? e.message : u("screen.error.syncFailed"), !0);
 		} finally {
 			jt(n, !1);
 		}
 	}
-	var h = Pa(), g = j(h), _ = j(g), v = j(_, !0);
+	var h = Fa(), g = j(h), _ = j(g), v = j(_, !0);
 	O(_);
 	var y = Kt(_, 2), b = j(y, !0);
 	O(y);
@@ -6305,7 +6313,7 @@ function Fa(e, t) {
 	var C = Kt(g, 2), w = j(C), ee = j(w, !0);
 	O(w);
 	var te = Kt(w, 2), ne = (e) => {
-		var t = ka(), n = j(t, !0);
+		var t = Aa(), n = j(t, !0);
 		O(t), on((e) => sr(n, e), [() => u("screen.sync.years").replace("{years}", L(s))]), ir(e, t);
 	};
 	mr(te, (e) => {
@@ -6318,16 +6326,16 @@ function Fa(e, t) {
 	var oe = Kt(C, 2), se = j(oe), ce = j(se, !0);
 	O(se);
 	var le = Kt(se, 2), ue = (e) => {
-		var t = Aa(), n = j(t, !0);
+		var t = ja(), n = j(t, !0);
 		O(t), on((e) => sr(n, e), [() => L(a)?.holidays.length ? u("screen.list.empty") : u("screen.list.emptyHint")]), ir(e, t);
 	}, de = (e) => {
 		var n = rr();
 		vr(Gt(n), 17, () => L(c), (e) => e.month, (e, n) => {
-			var r = Ma(), i = j(r), a = j(i, !0);
+			var r = Na(), i = j(r), a = j(i, !0);
 			O(i);
 			var o = Kt(i, 2);
 			vr(o, 21, () => L(n).items, (e) => e.date, (e, n) => {
-				var r = ja(), i = j(r), a = j(i, !0);
+				var r = Ma(), i = j(r), a = j(i, !0);
 				O(i), O(r), on((e) => sr(a, e), [() => f(L(n), t.controller.currentLocale)]), ir(e, r);
 			}), O(o), O(r), on(() => sr(a, L(n).month)), ir(e, r);
 		}), ir(e, n);
@@ -6336,7 +6344,7 @@ function Fa(e, t) {
 		L(o).length === 0 ? e(ue) : e(de, -1);
 	}), O(oe);
 	var fe = Kt(oe, 2), pe = (e) => {
-		var t = Na(), n = j(t, !0);
+		var t = Pa(), n = j(t, !0);
 		O(t), on(() => sr(n, L(r))), ir(e, t);
 	};
 	mr(fe, (e) => {
@@ -6356,6 +6364,6 @@ function Fa(e, t) {
 Jn(["click"]);
 //#endregion
 //#region packages/plugins/calendar-holidays/bundle/entry.ts
-var Ia = Oa({ screenComponent: pa(Fa) });
+var La = ka({ screenComponent: ma(Ia) });
 //#endregion
-export { Ia as default };
+export { La as default };

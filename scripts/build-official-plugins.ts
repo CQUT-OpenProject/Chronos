@@ -95,7 +95,7 @@ for (const plugin of plugins) {
 					fileName: () => `${plugin.id}.bundle.js`
 				},
 				outDir: perPluginDist,
-				rollupOptions: { output: { inlineDynamicImports: true } }
+				rollupOptions: { output: { codeSplitting: false } }
 			}
 		});
 
