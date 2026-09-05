@@ -132,24 +132,24 @@ describe('haptic feedback service', () => {
 		expect(mockVibrate).not.toHaveBeenCalled();
 	});
 
-	it('calls semantic vibration patterns correctly (button-click tuned)', () => {
+	it('calls semantic vibration patterns correctly (restored + strengthened)', () => {
 		const mockVibrate = stubNavigatorVibrate(vi.fn(() => true))!;
 		enableHaptic();
 
 		haptic.light();
-		expect(mockVibrate).toHaveBeenLastCalledWith(12);
+		expect(mockVibrate).toHaveBeenLastCalledWith(25);
 
 		haptic.medium();
-		expect(mockVibrate).toHaveBeenLastCalledWith(24);
+		expect(mockVibrate).toHaveBeenLastCalledWith(50);
 
 		haptic.heavy();
-		expect(mockVibrate).toHaveBeenLastCalledWith(40);
+		expect(mockVibrate).toHaveBeenLastCalledWith(80);
 
 		haptic.success();
-		expect(mockVibrate).toHaveBeenLastCalledWith([12, 40, 18]);
+		expect(mockVibrate).toHaveBeenLastCalledWith([30, 60, 40]);
 
 		haptic.warning();
-		expect(mockVibrate).toHaveBeenLastCalledWith([18, 40, 18]);
+		expect(mockVibrate).toHaveBeenLastCalledWith([50, 60, 50]);
 
 		haptic.cancel();
 		expect(mockVibrate).toHaveBeenLastCalledWith(0);
@@ -186,7 +186,7 @@ describe('haptic feedback service', () => {
 		enableHaptic();
 
 		expect(haptic.light()).toBe(true);
-		await vi.waitFor(() => expect(mockVibrate).toHaveBeenCalledWith(12));
+		await vi.waitFor(() => expect(mockVibrate).toHaveBeenCalledWith(25));
 		expect(callNative).toHaveBeenCalledWith('haptic', 'impact', { style: 'light' });
 	});
 
@@ -207,9 +207,9 @@ describe('haptic feedback service', () => {
 		installNativeBridge(callNative);
 		enableHaptic();
 
-		triggerVibrate(12);
-		triggerVibrate(24);
-		triggerVibrate(40);
+		triggerVibrate(25);
+		triggerVibrate(50);
+		triggerVibrate(80);
 		await vi.waitFor(() => expect(callNative).toHaveBeenCalledTimes(3));
 		expect(callNative).toHaveBeenNthCalledWith(1, 'haptic', 'impact', { style: 'light' });
 		expect(callNative).toHaveBeenNthCalledWith(2, 'haptic', 'impact', { style: 'medium' });
