@@ -209,7 +209,7 @@ describe('OfficialPluginService', () => {
 			sha256: 'deadbeef'
 		};
 
-		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		httpRequest.mockResolvedValue(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 
 		await expect(service.install(manifest)).rejects.toThrow(/integrity check failed/);
 	});
@@ -370,7 +370,7 @@ describe('OfficialPluginService', () => {
 			if (url === manifestUrl) {
 				return httpResponse({ json: async <T>() => manifest as T });
 			}
-			if (url === 'https://cdn.example.com/plugins/link/bundle.js') {
+			if (url.startsWith('https://cdn.example.com/plugins/link/bundle.js')) {
 				return httpResponse({ text: async () => SAMPLE_BUNDLE });
 			}
 			throw new Error(`Unexpected URL: ${url}`);
@@ -379,7 +379,7 @@ describe('OfficialPluginService', () => {
 		await service.installFromManifestUrl(manifestUrl);
 		expect(engine.isPluginLoaded('test-plugin')).toBe(true);
 		expect(httpRequest).toHaveBeenCalledWith(
-			'https://cdn.example.com/plugins/link/bundle.js',
+			expect.stringContaining('https://cdn.example.com/plugins/link/bundle.js?v='),
 			expect.anything()
 		);
 	});
@@ -479,7 +479,10 @@ describe('OfficialPluginService', () => {
 			if (url === OFFICIAL_MANIFEST_URL) {
 				return httpResponse({ json: async <T>() => freshManifest as T });
 			}
-			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+			if (
+				url.split('?')[0] === '/test.bundle.js' ||
+				url.split('?')[0] === 'http://localhost/test.bundle.js'
+			) {
 				return httpResponse({ text: async () => SAMPLE_BUNDLE });
 			}
 			throw new Error(`Unexpected URL: ${url}`);
@@ -597,7 +600,10 @@ describe('OfficialPluginService', () => {
 			if (url === OFFICIAL_MANIFEST_URL) {
 				return httpResponse({ json: async <T>() => freshManifest as T });
 			}
-			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+			if (
+				url.split('?')[0] === '/test.bundle.js' ||
+				url.split('?')[0] === 'http://localhost/test.bundle.js'
+			) {
 				return httpResponse({ text: async () => SAMPLE_BUNDLE });
 			}
 			throw new Error(`Unexpected URL: ${url}`);

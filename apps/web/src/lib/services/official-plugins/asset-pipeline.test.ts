@@ -81,9 +81,33 @@ describe('OfficialPluginAssetPipeline', () => {
 			sha256: 'deadbeef'
 		};
 
-		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		httpRequest.mockResolvedValue(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 
 		await expect(pipeline.download(manifest)).rejects.toThrow(/integrity check failed/);
+	});
+
+	it('retries once with an integrity-busted URL after sha256 mismatch', async () => {
+		const expected = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test',
+			name: { 'zh-CN': 'T' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'T' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/bundle.js',
+			sha256: expected
+		};
+
+		httpRequest
+			.mockResolvedValueOnce(httpResponse({ text: async () => 'stale-bytes' }))
+			.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+
+		const assets = await pipeline.download(manifest);
+		expect(assets.code).toBe(SAMPLE_BUNDLE);
+		expect(httpRequest).toHaveBeenCalledTimes(2);
+		expect(httpRequest.mock.calls[1]?.[0]).toContain('?v=');
 	});
 
 	it('rejects css sha256 mismatch', async () => {
@@ -101,8 +125,11 @@ describe('OfficialPluginAssetPipeline', () => {
 			cssSha256: 'deadbeef'
 		};
 
-		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
-		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => '.x{color:red}' }));
+		httpRequest.mockImplementation(async (url: string) =>
+			httpResponse({
+				text: async () => (url.split('?')[0] === '/bundle.css' ? '.x{color:red}' : SAMPLE_BUNDLE)
+			})
+		);
 
 		await expect(pipeline.download(manifest)).rejects.toThrow(/integrity check failed/);
 	});
