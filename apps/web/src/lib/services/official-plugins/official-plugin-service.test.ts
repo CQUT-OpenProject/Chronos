@@ -214,6 +214,28 @@ describe('OfficialPluginService', () => {
 		await expect(service.install(manifest)).rejects.toThrow(/integrity check failed/);
 	});
 
+	it('does not persist record when activation fails', async () => {
+		const mismatchedBundle = SAMPLE_BUNDLE.replace("id: 'test-plugin'", "id: 'other-plugin'");
+		const hash = await engine.env.runtime.sha256(mismatchedBundle);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => mismatchedBundle }));
+
+		await expect(service.install(manifest)).rejects.toThrow(/id mismatch/);
+		expect(service.getInstalled('test-plugin')).toBeUndefined();
+		expect(service.listInstalled()).toHaveLength(0);
+	});
+
 	it('uninstalls plugin and clears engine state', async () => {
 		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
 		const manifest: PluginManifest = {

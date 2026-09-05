@@ -26,8 +26,6 @@ export class OfficialPluginRuntimeActivator {
 		const manifest = record.manifest;
 		await this.deactivate(manifest.id);
 
-		if (record.cssCode) this.injectCss(manifest.id, record.cssCode);
-
 		const disposables: Disposable[] = [];
 
 		if (record.colorsJson || record.iconThemeJson) {
@@ -69,6 +67,9 @@ export class OfficialPluginRuntimeActivator {
 				for (const d of disposables) d.dispose();
 			}
 		};
+		// Inject CSS only after every verification step passed, so a rejected
+		// bundle/theme never leaves styles behind in the document.
+		if (record.cssCode) this.injectCss(manifest.id, record.cssCode);
 		this.activeHandles.set(manifest.id, composite);
 		return composite;
 	}
