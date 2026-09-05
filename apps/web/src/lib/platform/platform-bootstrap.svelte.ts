@@ -38,11 +38,12 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 			});
 			deps.shell.init();
 			deps.timetableScreen.init(deps.shell);
+			// Gate first so the async install init cannot auto-popup behind onboarding.
+			pwaInstallController.setInstallPromptGate(() => onboardingController.open);
 			void pwaInstallController.init();
 			initAnalytics();
 			window.__chronosHideBootFallback?.();
 
-			pwaInstallController.setInstallPromptGate(() => onboardingController.open);
 			disposeOfflineUx = attachOfflineUx(connectivity);
 
 			disposeEffects = $effect.root(() => {

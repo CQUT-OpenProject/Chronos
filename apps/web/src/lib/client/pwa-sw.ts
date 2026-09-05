@@ -50,12 +50,9 @@ export function ensurePwaSwRegistered() {
 	if (registered || typeof window === 'undefined') return;
 	registered = true;
 
-	const schedule = () => registerServiceWorker();
-	if (typeof requestIdleCallback !== 'undefined') {
-		requestIdleCallback(schedule);
-	} else {
-		requestAnimationFrame(schedule);
-	}
+	// Register immediately: installability requires an active SW with a
+	// fetch handler, idle-deferral delays beforeinstallprompt eligibility.
+	registerServiceWorker();
 }
 
 function markUpdatePending(): boolean {
