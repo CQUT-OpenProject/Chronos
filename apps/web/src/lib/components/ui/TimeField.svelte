@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { TimeField, type TimeValue } from 'bits-ui';
+	import { getAppController } from '$lib/services/app-engine';
+	import { appLocaleToBcp47 } from '@chronos/ui-kit';
 	import { ScheduleFill } from '$lib/icons';
 	import { parseTimeString, timeToString } from '$lib/components/ui/time-field-utils';
 
@@ -9,7 +11,8 @@
 		id,
 		class: className = '',
 		onValueChange,
-		disabled = false
+		disabled = false,
+		locale
 	}: {
 		label: string;
 		value?: string;
@@ -17,12 +20,15 @@
 		class?: string;
 		onValueChange?: (value: string) => void;
 		disabled?: boolean;
+		locale?: string;
 	} = $props();
 
 	const instanceId = $props.id();
 	const fieldId = $derived(id ?? instanceId);
 	const labelId = $derived(`${fieldId}-label`);
 
+	const controller = getAppController();
+	const resolvedLocale = $derived(locale ?? appLocaleToBcp47(controller.currentLocale));
 	const pickerValue = $derived(parseTimeString(value));
 
 	function handleValueChange(next: TimeValue | undefined) {
@@ -35,13 +41,15 @@
 <TimeField.Root
 	value={pickerValue}
 	onValueChange={handleValueChange}
-	locale="zh-CN"
+	locale={resolvedLocale}
 	hourCycle={24}
 	granularity="minute"
 	{disabled}
 >
 	<div class={['ui-form-field', className]}>
-		<span id={labelId} class="ui-field-label">{label}</span>
+		<TimeField.Label id={labelId} class="ui-field-label cursor-pointer">
+			{label}
+		</TimeField.Label>
 		<TimeField.Input
 			id={fieldId}
 			aria-labelledby={labelId}

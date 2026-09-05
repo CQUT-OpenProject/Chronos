@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import { pluginText } from '@chronos/ui-kit';
+	import { appLocaleToBcp47, pluginText } from '@chronos/ui-kit';
 	import {
 		filterHolidaysInTermRange,
 		inferYearsFromAcademicConfig,
@@ -74,7 +74,7 @@
 		const date = new Date(syncedAt);
 		return pt('screen.sync.last').replace(
 			'{time}',
-			date.toLocaleString(undefined, {
+			date.toLocaleString(appLocaleToBcp47(controller.currentLocale), {
 				month: 'numeric',
 				day: 'numeric',
 				hour: '2-digit',

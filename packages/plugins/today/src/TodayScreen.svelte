@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import { pluginText } from '@chronos/ui-kit';
+	import { appLocaleToBcp47, pluginText } from '@chronos/ui-kit';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import {
 		AcademicCalendarService,
@@ -54,7 +54,7 @@
 
 	function formatHeaderDate(iso: string): string {
 		const date = new Date(`${iso}T12:00:00`);
-		return date.toLocaleDateString(undefined, {
+		return date.toLocaleDateString(appLocaleToBcp47(controller.currentLocale), {
 			month: 'long',
 			day: 'numeric',
 			weekday: 'long'

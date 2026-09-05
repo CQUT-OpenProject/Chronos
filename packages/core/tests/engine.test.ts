@@ -101,6 +101,33 @@ describe('ChronosEngine in @chronos/core', () => {
 		});
 	});
 
+	it('announces the hydrated locale on init so reactive mirrors can sync', async () => {
+		const { env } = createMockEnv();
+		await env.storage.savePreferences({ locale: 'en' });
+
+		const engine = new ChronosEngine({ env });
+		const onLocaleChanged = vi.fn();
+		engine.on('i18n:localeChanged', onLocaleChanged);
+
+		await engine.init();
+
+		expect(engine.locale).toBe('en');
+		expect(onLocaleChanged).toHaveBeenCalledWith({ locale: 'en' });
+	});
+
+	it('skips the locale announcement when the hydrated locale already matches', async () => {
+		const { env } = createMockEnv();
+
+		const engine = new ChronosEngine({ env, initialLocale: 'zh-cn' });
+		const onLocaleChanged = vi.fn();
+		engine.on('i18n:localeChanged', onLocaleChanged);
+
+		await engine.init();
+
+		expect(engine.locale).toBe('zh-cn');
+		expect(onLocaleChanged).not.toHaveBeenCalled();
+	});
+
 	it('creates and switches timetable', async () => {
 		const { env } = createMockEnv();
 		const engine = new ChronosEngine({ env });

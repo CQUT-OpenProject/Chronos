@@ -226,17 +226,20 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.updateTime();
 		this.startDayClock();
 
+		const savedLocale = this._userPreferences.locale;
+		if (savedLocale && savedLocale !== this._locale) {
+			// Route through setLocale so reactive mirrors (controller.currentLocale,
+			// host-i18n) observe the hydrated locale instead of going stale.
+			// Emitted before timetable events so first renders already use it.
+			this.setLocale(savedLocale);
+		}
+
 		if (this._currentTimetable) {
 			await this.badges.recalculate(this._currentTimetable.courses);
 			this.events.emit('timetable:loaded', { timetable: this._currentTimetable });
 		}
 		this.events.emit('timetables:updated', { timetables: this._timetables });
 		this.events.emit('preferences:updated', { preferences: this._userPreferences });
-
-		const savedLocale = this._userPreferences.locale;
-		if (savedLocale) {
-			this._locale = savedLocale;
-		}
 
 		if (storage.onChanged) {
 			this.storageSubscription = storage.onChanged(this.handleStorageChange.bind(this));
