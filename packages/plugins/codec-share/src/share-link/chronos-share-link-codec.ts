@@ -140,8 +140,18 @@ function stripSharePayloadTail(candidate: string): string {
 	return candidate.replace(/[^A-Za-z0-9\-_]+$/, '');
 }
 
+function tryDecodeURIComponent(value: string): string {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
+	}
+}
+
 function normalizeSharePayload(candidate: string): string | null {
-	const payload = stripSharePayloadTail(candidate.trim().split(/\s/)[0] ?? '');
+	const payload = stripSharePayloadTail(
+		tryDecodeURIComponent(candidate.trim().split(/\s/)[0] ?? '')
+	);
 	return isValidSharePayloadFormat(payload) ? payload : null;
 }
 
@@ -166,10 +176,11 @@ function extractSharePayloadFromUrlString(value: string): string | null {
 
 export function extractSharePayloadFromLocation(location: Location): string | null {
 	const hash = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
-	const strippedHash = stripSharePayloadTail(hash);
+	const strippedHash = stripSharePayloadTail(tryDecodeURIComponent(hash));
 	if (isValidSharePayloadFormat(strippedHash)) return strippedHash;
 	const queryPayload = new URLSearchParams(location.search).get('d');
 	if (queryPayload) {
+		// URLSearchParams already percent-decodes: strip only, never decode twice.
 		const stripped = stripSharePayloadTail(queryPayload);
 		if (isValidSharePayloadFormat(stripped)) return stripped;
 	}
