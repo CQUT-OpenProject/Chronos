@@ -4,7 +4,7 @@
 		"zh-CN": "法定节假日",
 		"en": "Public Holidays"
 	},
-	"version": "0.4.5",
+	"version": "0.4.6",
 	"description": {
 		"zh-CN": "在课表中展示法定节假日",
 		"en": "Show public holidays on the timetable"
@@ -13,7 +13,7 @@
 	"type": "tool",
 	"bundleFormat": "esm",
 	"bundleUrl": "/official-plugins/bundles/tool-calendar-holidays/bundle.js",
-	"sha256": "f6f5a7d08455951e914d48de4f503f4f3e9c2c957d74fb008e09e337bd4bdcc6",
+	"sha256": "c27783bed7449145842dc7e90f17e01b8bec8901cff3398b961407fdab9986f1",
 	"cssUrl": "/official-plugins/bundles/tool-calendar-holidays/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }
