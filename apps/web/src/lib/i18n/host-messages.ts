@@ -356,9 +356,11 @@ const zhCn = {
 	'pwa.guide.chrome.install': '安装 Chronos 到设备…',
 	'pwa.guide.chrome.hint.title': '提示：',
 	'pwa.guide.chrome.hint.body':
-		'若点击按钮未弹出安装窗口，亦可点击地址栏右侧的安装图标 ⊕，或在菜单中选择「安装 Chronos」。',
+		'若点击按钮未弹出安装窗口，亦可在 Chrome / Edge 地址栏右侧点击安装图标 ⊕，或在菜单中选择「安装 Chronos」。Firefox 等浏览器暂不支持一键安装。',
 	'pwa.snackbar.alreadyInstalled': '当前已成功安装为桌面应用',
-	'pwa.snackbar.manualInstall': '请点击地址栏右侧的安装图标 ⊕ 或菜单中的“安装 Chronos”',
+	'pwa.snackbar.manualInstall':
+		'请用 Chrome / Edge 地址栏右侧的安装图标 ⊕ 或菜单中的“安装 Chronos”',
+	'pwa.snackbar.unsupportedInstall': '当前浏览器不支持一键安装，请改用 Chrome / Edge 打开后安装',
 	'pwa.snackbar.updateAvailable': '检测到新版本，建议尽快更新',
 	'pwa.snackbar.updateAction': '查看更新',
 	'pwa.openInApp.hint': '如未自动跳转，请从程序坞、启动台或开始菜单手动打开 Chronos。',
@@ -892,10 +894,12 @@ const en = {
 	'pwa.guide.chrome.install': 'Install Chronos on this device…',
 	'pwa.guide.chrome.hint.title': 'Tip:',
 	'pwa.guide.chrome.hint.body':
-		'If the install prompt does not appear, tap the install icon in the address bar or choose Install Chronos from the menu.',
+		'If the install prompt does not appear, use the install icon in the Chrome / Edge address bar or choose Install Chronos from the menu. One-tap install is not supported in Firefox and similar browsers.',
 	'pwa.snackbar.alreadyInstalled': 'Already installed as a desktop app',
 	'pwa.snackbar.manualInstall':
-		'Use the install icon in the address bar, or choose Install Chronos from the menu',
+		'Use the install icon in the Chrome / Edge address bar, or choose Install Chronos from the menu',
+	'pwa.snackbar.unsupportedInstall':
+		'One-tap install is not supported in this browser, please open this page in Chrome / Edge instead',
 	'pwa.snackbar.updateAvailable': 'A new version is available',
 	'pwa.snackbar.updateAction': 'View update',
 	'pwa.openInApp.hint':
