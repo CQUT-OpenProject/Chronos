@@ -51,12 +51,13 @@ function stubBrowser(options: { standalone?: boolean; userAgent?: string } = {})
 }
 
 function fakePrompt(outcome: 'accepted' | 'dismissed', promptImpl?: () => Promise<void>) {
-	const prompt = vi.fn(promptImpl ?? (() => Promise.resolve()));
-	return {
+	const promptMock = vi.fn(promptImpl ?? (() => Promise.resolve()));
+	const event = {
 		preventDefault: vi.fn(),
-		prompt,
+		prompt: promptMock,
 		userChoice: Promise.resolve({ outcome, platform: 'web' })
 	} as unknown as BeforeInstallPromptEvent & { preventDefault: () => void };
+	return { event, promptMock };
 }
 
 describe('PWAInstallController', () => {
@@ -71,7 +72,7 @@ describe('PWAInstallController', () => {
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
 		controller.resetForTesting();
-		controller.deferredPrompt = fakePrompt('accepted');
+		controller.deferredPrompt = fakePrompt('accepted').event;
 
 		await expect(controller.install()).resolves.toBe(true);
 		expect(controller.deferredPrompt).toBeNull();
@@ -85,12 +86,12 @@ describe('PWAInstallController', () => {
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
 		controller.resetForTesting();
-		const prompt = fakePrompt('dismissed');
-		controller.deferredPrompt = prompt;
+		const { event, promptMock } = fakePrompt('dismissed');
+		controller.deferredPrompt = event;
 
 		await expect(controller.install()).resolves.toBe(false);
 		expect(controller.deferredPrompt).toBeNull();
-		expect(prompt.prompt).toHaveBeenCalledOnce();
+		expect(promptMock).toHaveBeenCalledOnce();
 	});
 
 	it('survives prompt() rejection without unhandled errors', async () => {
@@ -100,7 +101,7 @@ describe('PWAInstallController', () => {
 		controller.resetForTesting();
 		controller.deferredPrompt = fakePrompt('accepted', () =>
 			Promise.reject(new DOMException('NotAllowedError'))
-		);
+		).event;
 
 		await expect(controller.install()).resolves.toBe(false);
 		expect(controller.deferredPrompt).toBeNull();
@@ -165,7 +166,7 @@ describe('PWAInstallController', () => {
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
 		controller.resetForTesting();
-		controller.deferredPrompt = fakePrompt('accepted');
+		controller.deferredPrompt = fakePrompt('accepted').event;
 
 		const handlers = listeners.get('appinstalled') ?? new Set();
 		expect(handlers.size).toBeGreaterThanOrEqual(1);
