@@ -3,10 +3,40 @@ import {
 	countDistinctCourseNames,
 	countDistinctCoursesAffectedByPeriodDelete,
 	countDistinctHiddenCourses,
-	createCourse
+	createCourse,
+	listDistinctCourses
 } from '../src/domain/course';
 
 describe('course counting', () => {
+	it('returns an empty list for no courses', () => {
+		expect(listDistinctCourses([])).toEqual([]);
+		expect(countDistinctCourseNames([])).toBe(0);
+	});
+
+	it('lists distinct courses with entry counts and stable zh-CN ordering', () => {
+		const courses = [
+			createCourse({ id: '1', name: '操作系统', dayOfWeek: 1, startPeriod: 1, endPeriod: 2 }),
+			createCourse({
+				id: '2',
+				name: '数据库原理及应用★',
+				dayOfWeek: 2,
+				startPeriod: 1,
+				endPeriod: 2
+			}),
+			createCourse({
+				id: '3',
+				name: '数据库原理及应用☆',
+				dayOfWeek: 3,
+				startPeriod: 3,
+				endPeriod: 4
+			})
+		];
+		expect(listDistinctCourses(courses)).toEqual([
+			{ name: '操作系统', entryCount: 1 },
+			{ name: '数据库原理及应用', entryCount: 2 }
+		]);
+	});
+
 	it('counts distinct normalized course names', () => {
 		const courses = [
 			createCourse({

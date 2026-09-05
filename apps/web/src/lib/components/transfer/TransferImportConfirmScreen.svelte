@@ -14,8 +14,9 @@
 	import { getAppController } from '$lib/services/app-engine';
 
 	import { DownloadFill } from '$lib/icons';
-	import { countDistinctCourseNames } from '@chronos/core';
+	import { listDistinctCourses } from '@chronos/core';
 	import {
+		ImportCourseList,
 		MountableSlotOutlet,
 		SchemaForm,
 		findInvalidSchemaFields,
@@ -53,10 +54,7 @@
 			: false
 	);
 	const canOverwrite = $derived(Boolean(currentTimetableName));
-	const displayedCourseCount = $derived.by(() => {
-		if (!preview) return 0;
-		return countDistinctCourseNames(preview.courses);
-	});
+	const displayedCourseCount = $derived(preview ? listDistinctCourses(preview.courses).length : 0);
 	let loading = $state(false);
 
 	const dateFieldLabels = $derived<DateFieldLabels>({
@@ -175,6 +173,10 @@
 							>
 						</div>
 					</div>
+
+					{#if preview.courses.length > 0}
+						<ImportCourseList courses={preview.courses} coursePalette={controller.coursePalette} />
+					{/if}
 				</div>
 			</Card>
 

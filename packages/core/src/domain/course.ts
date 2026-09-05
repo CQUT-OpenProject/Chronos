@@ -32,9 +32,25 @@ export function createCourse(
 	};
 }
 
+export interface DistinctCourseSummary {
+	name: string;
+	entryCount: number;
+}
+
+export function listDistinctCourses(courses: Course[]): DistinctCourseSummary[] {
+	const counts = new Map<string, number>();
+	for (const course of courses) {
+		const name = normalizedCourseName(course.name);
+		if (!name) continue;
+		counts.set(name, (counts.get(name) ?? 0) + 1);
+	}
+	return [...counts.entries()]
+		.map(([name, entryCount]) => ({ name, entryCount }))
+		.sort((left, right) => left.name.localeCompare(right.name, 'zh-CN'));
+}
+
 export function countDistinctCourseNames(courses: Course[]): number {
-	if (courses.length === 0) return 0;
-	return new Set(courses.map((course) => normalizedCourseName(course.name))).size;
+	return listDistinctCourses(courses).length;
 }
 
 /** User-facing count of distinct courses hidden when period rows are trimmed. */
