@@ -11,23 +11,53 @@
 	const controller = getAppController();
 
 	function goToInstallPage() {
+		programmaticClose = true;
 		trackEvent('pwa_install_cta_click');
 		pwaInstallController.dismiss({ track: false });
 		void goto(resolve('/about/install'));
+	}
+
+	// Overlay / Esc closes bypass footer buttons: count them as dismissals.
+	// Footer actions set this flag so their programmatic close isn't double-counted.
+	let programmaticClose = false;
+
+	function trackOverlayClose(open: boolean) {
+		if (open) return;
+		if (programmaticClose) {
+			programmaticClose = false;
+			return;
+		}
+		pwaInstallController.dismiss();
+	}
+
+	function dismissWithTrack() {
+		programmaticClose = true;
+		pwaInstallController.dismiss();
+	}
+
+	function snooze() {
+		programmaticClose = true;
+		pwaInstallController.snoozeInstallPrompt();
+	}
+
+	function openInApp() {
+		programmaticClose = true;
+		pwaInstallController.openInApp();
 	}
 </script>
 
 <!-- Already installed: open in standalone app -->
 <Dialog
 	bind:open={pwaInstallController.openInAppDialogOpen}
+	onOpenChange={trackOverlayClose}
 	title={hostT('pwa.dialog.installed.title')}
 	description={hostT('pwa.dialog.installed.desc')}
 >
 	{#snippet footer()}
-		<Button variant="text" onclick={() => pwaInstallController.dismiss()}>
+		<Button variant="text" onclick={dismissWithTrack}>
 			{hostT('pwa.dialog.installed.continueBrowser')}
 		</Button>
-		<Button variant="filled" onclick={() => pwaInstallController.openInApp()}>
+		<Button variant="filled" onclick={openInApp}>
 			{hostT('pwa.dialog.installed.openApp')}
 		</Button>
 	{/snippet}
@@ -36,11 +66,12 @@
 <!-- Android / Desktop Install Dialog -->
 <Dialog
 	bind:open={pwaInstallController.installDialogOpen}
+	onOpenChange={trackOverlayClose}
 	title={hostT('pwa.dialog.install.title')}
 	description={hostT('pwa.dialog.install.desc')}
 >
 	{#snippet footer()}
-		<Button variant="text" onclick={() => pwaInstallController.snoozeInstallPrompt()}>
+		<Button variant="text" onclick={snooze}>
 			{hostT('pwa.dialog.install.later')}
 		</Button>
 		<Button variant="filled" onclick={goToInstallPage}>
@@ -50,7 +81,11 @@
 </Dialog>
 
 <!-- iOS Safari Guide Dialog -->
-<Dialog bind:open={pwaInstallController.iosGuideOpen} title={hostT('pwa.dialog.install.title')}>
+<Dialog
+	bind:open={pwaInstallController.iosGuideOpen}
+	onOpenChange={trackOverlayClose}
+	title={hostT('pwa.dialog.install.title')}
+>
 	<div
 		class="text-body-medium flex flex-col gap-3 text-left leading-relaxed text-on-surface-variant"
 	>
@@ -71,6 +106,9 @@
 		</ol>
 	</div>
 	{#snippet footer()}
+		<Button variant="text" onclick={snooze}>
+			{hostT('pwa.dialog.install.later')}
+		</Button>
 		<Button variant="filled" onclick={goToInstallPage}>
 			{hostT('pwa.dialog.ios.guide')}
 		</Button>

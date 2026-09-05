@@ -206,6 +206,62 @@ describe('chronos-share-binary', () => {
 	});
 });
 
+describe('chronos-share-binary-decode-guards', () => {
+	/** Minimal valid 1-course payload: flags=0, no remarks/masks, name 'T'. */
+	function buildSingleCourseBytes(options: { dayPeriod?: number; endWeek?: number } = {}) {
+		const textEncoder = new TextEncoder();
+		const name = [...textEncoder.encode('T')];
+		const bytes = [
+			0x43,
+			0x53,
+			0x01,
+			options.endWeek === undefined ? 0x00 : 0x02,
+			0xe2,
+			0x61,
+			...(options.endWeek === undefined ? [] : [options.endWeek]),
+			0x01, // courseCount
+			0x00, // periodCount
+			0x01, // stringCount
+			name.length,
+			...name,
+			0x01, // weekMask table: 1 entry
+			0x02,
+			0x81,
+			0x01, // range 1..1
+			0x00, // teacher table: empty
+			0x00, // nameIdx
+			options.dayPeriod ?? 0x21, // day=1, start=1
+			0x1f, // end=1, no teacher
+			0x00, // buildingIdx
+			0x20,
+			0x20,
+			0x20,
+			0x20,
+			0x20, // room
+			0x00 // weekMaskIdx
+		];
+		return new Uint8Array(bytes);
+	}
+
+	it('rejects dayOfWeek 0 in course columns', () => {
+		expect(() => decodeBinaryToTimetable(buildSingleCourseBytes({ dayPeriod: 0x00 }))).toThrow(
+			/invalid day of week/
+		);
+	});
+
+	it('rejects endWeek beyond the supported range', () => {
+		expect(() => decodeBinaryToTimetable(buildSingleCourseBytes({ endWeek: 200 }))).toThrow(
+			/week out of range/
+		);
+	});
+
+	it('accepts the minimal valid payload', () => {
+		const decoded = decodeBinaryToTimetable(buildSingleCourseBytes());
+		expect(decoded.courses).toHaveLength(1);
+		expect(decoded.courses[0]?.dayOfWeek).toBe(1);
+	});
+});
+
 describe('chronos-share-link-codec', () => {
 	it('round-trips share payload and link', async () => {
 		const timetable = sampleTimetable();
@@ -255,6 +311,27 @@ describe('chronos-share-link-codec', () => {
 		expect(decoded.errorMessage).toBe(SHARE_CODEC_MESSAGES['zh-cn']['share.error.corrupted']);
 	});
 
+	it('rejects oversized payloads without decoding', async () => {
+		const bomb = `2.${'A'.repeat(70_000)}`;
+		const decoded = await decodeSharePayload(bomb);
+
+		expect(decoded.ok).toBe(false);
+		if (decoded.ok) return;
+		expect(decoded.errorMessage).toBe(SHARE_CODEC_MESSAGES['zh-cn']['share.error.corrupted']);
+	});
+
+	it('rejects decompression bombs that exceed the output cap', async () => {
+		const repetitive = new Uint8Array(300_000).fill(0x41);
+		const { bytesToBase64Url } = await import('@chronos/codec-kit');
+		const bomb = `2.${bytesToBase64Url(await deflateRaw(repetitive))}`;
+		expect(bomb.length).toBeLessThan(65_536);
+		const decoded = await decodeSharePayload(bomb);
+
+		expect(decoded.ok).toBe(false);
+		if (decoded.ok) return;
+		expect(decoded.errorMessage).toBe(SHARE_CODEC_MESSAGES['zh-cn']['share.error.corrupted']);
+	});
+
 	it('extracts payload from hash and query', () => {
 		const payload = '1.abc';
 		expect(
@@ -279,6 +356,16 @@ describe('chronos-share-link-codec', () => {
 		expect(extractSharePayloadFromText(`https://chronos.test/s#${payload}`)).toBe(payload);
 		expect(extractSharePayloadFromText(`https://chronos.test/s?d=${payload}`)).toBe(payload);
 		expect(extractSharePayloadFromText('not-a-share-link')).toBeNull();
+	});
+
+	it('tolerates trailing punctuation around pasted links', () => {
+		const payload = '1.abc';
+		expect(extractSharePayloadFromText(`链接：https://chronos.test/s#${payload}。`)).toBe(payload);
+		expect(extractSharePayloadFromText(`(https://chronos.test/s#${payload})`)).toBe(payload);
+		expect(extractSharePayloadFromLocation({ hash: `#${payload}.`, search: '' } as Location)).toBe(
+			payload
+		);
+		expect(extractSharePayloadFromText(payload)).toBe(payload);
 	});
 
 	it('formats and extracts share clipboard text', () => {

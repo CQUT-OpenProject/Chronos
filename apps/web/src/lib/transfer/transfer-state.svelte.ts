@@ -99,14 +99,6 @@ export function createTransferState(engine?: ChronosEngine) {
 		clearMessages();
 	}
 
-	function setDirectPreview(t: Timetable, slotId: string) {
-		clearMessages();
-		preview = t;
-		previewSlotId = slotId;
-		confirmInputs = resolveConfirmDefaults(slotId);
-		return true;
-	}
-
 	async function executeSlotImport(
 		tabId: string,
 		inputs: Record<string, unknown>
@@ -252,7 +244,6 @@ export function createTransferState(engine?: ChronosEngine) {
 		setImportMode,
 		setConfirmInputs,
 		clearPreview,
-		setDirectPreview,
 		previewWithSlot,
 		previewAndPersist,
 		previewDeepLinkImport,
@@ -288,7 +279,7 @@ export function shareImportErrorSnackbarKey(kind: ImportSlotErrorKind): string {
 		case 'unsupported':
 			return 'share.error.parseFailed';
 		case 'network':
-			return 'share.error.parseFailed';
+			return 'share.error.network';
 		default:
 			return 'share.error.parseFailed';
 	}

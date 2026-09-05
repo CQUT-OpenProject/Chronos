@@ -104,8 +104,7 @@ export default defineConfig(({ mode }) => {
 					theme_color: '#0068B7',
 					background_color: '#f0f4f8',
 					display: 'standalone',
-					orientation: 'any',
-					display_override: ['standalone', 'minimal-ui', 'browser'],
+					display_override: ['standalone', 'minimal-ui'],
 					start_url: `${basePath}/`,
 					id: `${basePath}/`,
 					scope: basePath ? `${basePath}/` : '/',
@@ -171,10 +170,14 @@ export default defineConfig(({ mode }) => {
 							}
 						},
 						{
+							// Plugin assets ship stable URLs with changing content+sha per
+							// release: CacheFirst would pin stale bytes (and stale sha in
+							// catalog/manifests) for up to 30d and break boot-time sync.
 							urlPattern: /\/official-plugins\//i,
-							handler: 'CacheFirst',
+							handler: 'NetworkFirst',
 							options: {
 								cacheName: 'official-plugins',
+								networkTimeoutSeconds: 5,
 								expiration: { maxEntries: 64, maxAgeSeconds: 2_592_000 }
 							}
 						},

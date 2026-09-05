@@ -91,4 +91,9 @@ export function validatePluginManifest(
 			throw new Error('Invalid plugin manifest: missing iconThemeSha256 for iconThemeUrl');
 		}
 	}
+	if (typeof m.cssUrl === 'string' && m.cssUrl) {
+		if (typeof m.cssSha256 !== 'string' || !m.cssSha256) {
+			throw new Error('Invalid plugin manifest: missing cssSha256 for cssUrl');
+		}
+	}
 }

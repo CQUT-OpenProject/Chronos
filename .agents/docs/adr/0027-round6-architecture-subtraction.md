@@ -126,3 +126,8 @@ Round 4–5 之后，质量门禁与插槽单轨已经稳定；但架构评审�
 - 手动回归：yumemita 配色、分享链接/二维码导入导出、`/s` 深链、覆盖导入非法组合拦截、en/zh-cn 切换
 - 两个发布周期后复审 C1 FROZEN BASELINE 与 `queryCourses` RESERVED
 - 单独评审 C7 `bootstrapChronos` 启动收拢
+
+## 修订记录
+
+- 2026-08-24：初版 Accepted；C1（serial/waterfall 零注册）挂起、C7（`bootstrapChronos` 收拢）缓议，复审时钟见 `frozen-baseline-review.md`。
+- 2026-08-28 · [ADR 0028](./0028-today-plugin-default-launch-and-day-clock.md) §6：`queryCourses` 出现首个生产消费者（`tool-today`），RESERVED 保留、形状冻结。

@@ -9,8 +9,25 @@ import {
 import { isPwaStandalone, PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalone';
 
 const INSTALLED_KEY = 'chronos:pwa-installed';
+const APPINSTALLED_DEDUP_MS = 2000;
 
-class PWAInstallController {
+function safeSetItem(key: string, value: string): void {
+	try {
+		localStorage.setItem(key, value);
+	} catch {
+		// private mode / storage denied: install flag stays in-memory only
+	}
+}
+
+function safeGetItem(key: string): string | null {
+	try {
+		return localStorage.getItem(key);
+	} catch {
+		return null;
+	}
+}
+
+export class PWAInstallController {
 	deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
 	installDialogOpen = $state(false);
 	openInAppDialogOpen = $state(false);
@@ -28,6 +45,9 @@ class PWAInstallController {
 	private dialogScheduled = false;
 	private dialogTimer: ReturnType<typeof setTimeout> | null = null;
 	private environmentRecheckTimers: ReturnType<typeof setTimeout>[] = [];
+	private lastAppInstalledAt = 0;
+	private displayModeCleanups: (() => void)[] = [];
+	private appInstalledHandler: (() => void) | null = null;
 
 	constructor() {
 		if (typeof window !== 'undefined') {
@@ -51,7 +71,7 @@ class PWAInstallController {
 		this.isStandalone = isPwaStandalone();
 
 		if (this.isStandalone) {
-			localStorage.setItem(INSTALLED_KEY, '1');
+			safeSetItem(INSTALLED_KEY, '1');
 			this.isInstalledLocally = true;
 		}
 
@@ -93,7 +113,58 @@ class PWAInstallController {
 
 		for (const mode of PWA_DISPLAY_MODE_MEDIA_QUERIES) {
 			const mq = window.matchMedia(`(display-mode: ${mode})`);
-			mq.addEventListener('change', () => this.checkEnvironment());
+			const onChange = () => this.checkEnvironment();
+			mq.addEventListener('change', onChange);
+			this.displayModeCleanups.push(() => mq.removeEventListener('change', onChange));
+		}
+	}
+
+	/** Detaches display-mode listeners and timers (teardown / tests). */
+	dispose() {
+		for (const cleanup of this.displayModeCleanups) {
+			try {
+				cleanup();
+			} catch {
+				// ignore
+			}
+		}
+		this.displayModeCleanups = [];
+		this.displayModeListenerAttached = false;
+		if (this.appInstalledHandler && typeof window !== 'undefined') {
+			window.removeEventListener('appinstalled', this.appInstalledHandler);
+			this.appInstalledHandler = null;
+		}
+		this.installListenerAttached = false;
+		this.cancelScheduledDialog();
+		for (const timer of this.environmentRecheckTimers) {
+			clearTimeout(timer);
+		}
+		this.environmentRecheckTimers = [];
+	}
+
+	/** @internal Resets mutable state between unit tests. */
+	resetForTesting() {
+		this.deferredPrompt = null;
+		this.installDialogOpen = false;
+		this.openInAppDialogOpen = false;
+		this.iosGuideOpen = false;
+		this.isStandalone = false;
+		this.isInstalledLocally = false;
+		this.isIOS = false;
+		this.isMacSafari = false;
+		this.installPromptGate = null;
+		this.dialogScheduled = false;
+		this.lastAppInstalledAt = 0;
+		if (this.dialogTimer) {
+			clearTimeout(this.dialogTimer);
+			this.dialogTimer = null;
+		}
+		for (const timer of this.environmentRecheckTimers) {
+			clearTimeout(timer);
+		}
+		this.environmentRecheckTimers = [];
+		if (typeof window !== 'undefined') {
+			window.__chronosInstallPrompt = null;
 		}
 	}
 
@@ -102,6 +173,9 @@ class PWAInstallController {
 		this.installListenerAttached = true;
 
 		const onBeforeInstall = (event: Event) => {
+			// app.html already captured + preventDefault() at parse time;
+			// second preventDefault() here is a harmless no-op that keeps
+			// late-attached listeners eligible for the deferred prompt.
 			event.preventDefault();
 			const prompt = event as BeforeInstallPromptEvent;
 			window.__chronosInstallPrompt = prompt;
@@ -109,18 +183,43 @@ class PWAInstallController {
 			this.tryScheduleInstallDialog();
 		};
 
+		this.appInstalledHandler = () => this.onAppInstalled();
 		window.addEventListener('beforeinstallprompt', onBeforeInstall);
-		window.addEventListener('appinstalled', () => this.onAppInstalled());
+		window.addEventListener('appinstalled', this.appInstalledHandler);
 	}
 
 	private markInstalled() {
-		localStorage.setItem(INSTALLED_KEY, '1');
+		safeSetItem(INSTALLED_KEY, '1');
 		this.isInstalledLocally = true;
+	}
+
+	/** Clears install-related local flags (e.g. on full data wipe). */
+	resetInstalledFlag() {
+		this.isInstalledLocally = false;
+		try {
+			localStorage.removeItem(INSTALLED_KEY);
+		} catch {
+			// ignore
+		}
 	}
 
 	private clearDeferredPrompt() {
 		this.deferredPrompt = null;
 		window.__chronosInstallPrompt = null;
+	}
+
+	private onAppInstalled() {
+		const now = Date.now();
+		if (now - this.lastAppInstalledAt < APPINSTALLED_DEDUP_MS) return;
+		this.lastAppInstalledAt = now;
+
+		this.markInstalled();
+		this.clearDeferredPrompt();
+		this.checkEnvironment();
+
+		if (this.isStandalone) return;
+
+		this.scheduleEnvironmentRecheck();
 	}
 
 	private scheduleEnvironmentRecheck() {
@@ -137,63 +236,38 @@ class PWAInstallController {
 		}
 	}
 
-	private getAppUrl() {
-		return `${window.location.origin}${window.location.pathname}${window.location.search}`;
-	}
-
-	/** Chromium may route this to the installed app window instead of a browser tab. */
-	private tryFocusInstalledAppWindow() {
-		window.open(this.getAppUrl(), '_blank', 'noopener,noreferrer');
-	}
-
-	private onAppInstalled() {
-		this.markInstalled();
-		this.checkEnvironment();
-
-		if (this.isStandalone) return;
-
-		this.scheduleEnvironmentRecheck();
-
-		if (!this.shouldDeferInstallPrompt()) {
-			this.tryFocusInstalledAppWindow();
-		}
-	}
-
 	private async detectInstalledLocally() {
 		if (this.isStandalone) return;
 
-		if (localStorage.getItem(INSTALLED_KEY) === '1') {
+		// NOTE: getInstalledRelatedApps() is intentionally unused: it only
+		// resolves entries declared in manifest `related_applications`,
+		// which Chronos does not ship, so it would always return [].
+		if (safeGetItem(INSTALLED_KEY) === '1') {
 			this.isInstalledLocally = true;
-			return;
-		}
-
-		try {
-			const getInstalled = (
-				navigator as Navigator & { getInstalledRelatedApps?: () => Promise<unknown[]> }
-			).getInstalledRelatedApps;
-			if (!getInstalled) return;
-
-			const apps = await getInstalled.call(navigator);
-			if (apps.length > 0) {
-				this.isInstalledLocally = true;
-				localStorage.setItem(INSTALLED_KEY, '1');
-			}
-		} catch {
-			// API unavailable or denied
 		}
 	}
 
 	private readSnoozedUntil(): number | null {
 		if (typeof localStorage === 'undefined') return null;
-		return parseSnoozedUntil(localStorage.getItem(SNOOZE_KEY));
+		return parseSnoozedUntil(safeGetItem(SNOOZE_KEY));
 	}
 
 	private isSnoozed(): boolean {
 		return isInstallPromptSnoozed(this.readSnoozedUntil());
 	}
 
+	/** Whether the current browser can show a meaningful install entry. */
+	canShowInstallEntry(): boolean {
+		return this.canPrompt || this.isIOS || this.isMacSafari || this.isInstalledLocally;
+	}
+
 	private scheduleDialog() {
 		if (this.dialogScheduled || this.isStandalone || this.isSnoozed()) return;
+		// Unsupported browsers (e.g. Firefox desktop) have no install entry:
+		// skip the auto-popup, the static /about/install page stays available.
+		// Once beforeinstallprompt arrives, canPrompt becomes true and the
+		// onBeforeInstall -> tryScheduleInstallDialog path schedules again.
+		if (!this.canShowInstallEntry()) return;
 		this.dialogScheduled = true;
 
 		this.dialogTimer = setTimeout(() => {
@@ -217,7 +291,6 @@ class PWAInstallController {
 	}
 
 	tryScheduleInstallDialog() {
-		if (this.isInstalledLocally) return;
 		this.scheduleDialog();
 	}
 
@@ -255,32 +328,43 @@ class PWAInstallController {
 	}
 
 	async install(): Promise<boolean> {
-		if (!this.deferredPrompt) return false;
+		const prompt = this.deferredPrompt;
+		if (!prompt) return false;
 
-		await this.deferredPrompt.prompt();
-		const choice = await this.deferredPrompt.userChoice;
-		if (choice.outcome === 'accepted') {
-			trackEvent('pwa_install_accept');
-			this.installDialogOpen = false;
+		// BeforeInstallPromptEvent is single-use: always clear, even on
+		// dismiss/error, and wait for the next beforeinstallprompt to re-arm.
+		try {
+			await prompt.prompt();
+			const choice = await prompt.userChoice;
+			if (choice.outcome === 'accepted') {
+				trackEvent('pwa_install_accept');
+				this.installDialogOpen = false;
+				return true;
+			}
+			trackEvent('pwa_install_dismiss');
+			return false;
+		} catch {
+			return false;
+		} finally {
 			this.clearDeferredPrompt();
-			this.onAppInstalled();
-			return true;
 		}
-		return false;
 	}
 
 	openInApp() {
+		// No window.open: the installed PWA cannot be focused from a browser
+		// tab via script (same-URL _blank only opens another browser tab and
+		// loses transient activation after awaits). Guide the user to launch
+		// from the OS surface instead.
 		this.openInAppDialogOpen = false;
-		this.tryFocusInstalledAppWindow();
 		snackbarKey('pwa.openInApp.hint');
 	}
 
 	snoozeInstallPrompt() {
 		trackEvent('pwa_install_snooze');
-		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_DURATION_MS));
-		}
+		safeSetItem(SNOOZE_KEY, String(Date.now() + SNOOZE_DURATION_MS));
 		this.installDialogOpen = false;
+		this.iosGuideOpen = false;
+		this.openInAppDialogOpen = false;
 	}
 
 	dismiss({ track = true }: { track?: boolean } = {}) {

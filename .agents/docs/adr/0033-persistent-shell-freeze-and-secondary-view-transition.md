@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-09-03
+- **关联提交**: `b07458a`
 - **关联**: 延续 [ADR 0029](./0029-shell-internal-tab-navigation.md) 壳内 Tab；不改变二级页 URL 与 `backShellTab`
 - **范围**: `apps/web`, `packages/ui-kit`
 

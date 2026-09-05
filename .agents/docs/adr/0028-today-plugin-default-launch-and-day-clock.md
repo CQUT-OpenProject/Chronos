@@ -1,7 +1,8 @@
 # ADR 0028: 今日插件、defaultLaunch 冷启动与 day-clock 收敛
 
-- **状态**: Accepted
+- **状态**: Accepted（§3–§4 路由约定 Superseded by ADR 0029）
 - **日期**: 2026-08-28
+- **关联提交**: `c8fc9e7`, `f8b71f4`, `29ad4c1`, `1dd631a`
 - **关联**: 落实代码审查修复；**延续** [ADR 0003](./0003-hierarchical-slot-registry-and-extensibility.md) 底栏插槽；**延续** [ADR 0023](./0023-round4-gate-typing-dead-face-component-single-track.md) `queryCourses` RESERVED 决策（首消费者落地）
 - **范围**: `packages/core`, `packages/plugins/today`, `apps/web`
 
@@ -90,3 +91,4 @@ export function isHostShellTabRoute(href: string): boolean;
 ## 修订记录
 
 - 2026-08-28：初版 Accepted。
+- 2026-08-30 · [ADR 0029](./0029-shell-internal-tab-navigation.md)：本文 §3–§4 路由约定（`href` / `HOST_SHELL_TAB_ROUTES` 三处对齐）被取代，底栏去 URL 化。

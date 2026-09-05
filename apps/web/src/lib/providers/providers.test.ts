@@ -45,6 +45,9 @@ function createMockDb(): ChronosDB {
 
 	return {
 		timetables: {
+			clear: vi.fn(async () => {
+				timetablesMap.clear();
+			}),
 			get: vi.fn(async (id: string) => timetablesMap.get(id) ?? undefined),
 			put: vi.fn(async (row: TimetableRow) => {
 				timetablesMap.set(row.id, row);
@@ -62,6 +65,9 @@ function createMockDb(): ChronosDB {
 			toArray: async () => Array.from(timetablesMap.values())
 		},
 		courses: {
+			clear: vi.fn(async () => {
+				coursesMap.clear();
+			}),
 			where: vi.fn((_field: string) => ({
 				equals: (val: unknown) => ({
 					toArray: async () => Array.from(coursesMap.values()).filter((c) => c.timetableId === val),
@@ -91,6 +97,9 @@ function createMockDb(): ChronosDB {
 			})
 		},
 		pluginData: {
+			clear: vi.fn(async () => {
+				pluginDataMap.clear();
+			}),
 			get: vi.fn(async (id: string) => pluginDataMap.get(id) ?? undefined),
 			put: vi.fn(async (row: PluginDataRow) => {
 				pluginDataMap.set(row.id, row);
@@ -126,6 +135,18 @@ describe('Web Providers', () => {
 		const prefs = await storage.getPreferences();
 		expect(prefs.themeMode).toBe('dark');
 		expect(prefs.timetableLayoutMode).toBe('compact');
+	});
+
+	it('DexieStorageProvider persists capsuleCornerStyle rounded', async () => {
+		const storage = new DexieStorageProvider(db, localStorage);
+		await storage.savePreferences({ capsuleCornerStyle: 'rounded' });
+		expect((await storage.getPreferences()).capsuleCornerStyle).toBe('rounded');
+
+		await storage.savePreferences({ capsuleCornerStyle: 'pill' });
+		expect((await storage.getPreferences()).capsuleCornerStyle).toBe('pill');
+
+		await storage.savePreferences({ capsuleCornerStyle: 'sharp' });
+		expect((await storage.getPreferences()).capsuleCornerStyle).toBe('sharp');
 	});
 
 	it('DexieStorageProvider persists locale preference', async () => {
@@ -302,5 +323,28 @@ describe('Web Providers', () => {
 		const providers = createWebProviders({ database: db, localStorage, enablePluginProxy: false });
 		expect(providers.http).toBeInstanceOf(WebHttpProxyProvider);
 		expect(providers.http).not.toBeInstanceOf(PluginProxyHttpAdapter);
+	});
+
+	it('clearAllData purges app-owned caches and keeps third-party ones', async () => {
+		const remaining = new Set(['pages-cache', 'official-plugins', 'other-cache']);
+		const deleted: string[] = [];
+		const fakeCaches = {
+			keys: async () => [...remaining],
+			open: async () => ({ keys: async () => [], match: async () => undefined }),
+			delete: async (name: string) => {
+				deleted.push(name);
+				return remaining.delete(name);
+			}
+		};
+		const storage = new DexieStorageProvider(
+			db,
+			localStorage,
+			fakeCaches as unknown as CacheStorage
+		);
+
+		await storage.clearAllData();
+
+		expect(deleted.sort()).toEqual(['official-plugins', 'pages-cache']);
+		expect([...remaining]).toEqual(['other-cache']);
 	});
 });

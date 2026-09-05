@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { probeSwUpdate, resetPwaSwStateForTesting, waitForSwActivationAndReload } from './pwa-sw';
+import {
+	applyUpdateAndReload,
+	probeSwUpdate,
+	resetPwaSwStateForTesting,
+	waitForSwActivationAndReload
+} from './pwa-sw';
 
 describe('probeSwUpdate', () => {
 	beforeEach(() => {
@@ -162,5 +167,59 @@ describe('waitForSwActivationAndReload', () => {
 		expect(reload).toHaveBeenCalledOnce();
 		expect(swUpdater).not.toHaveBeenCalled();
 		vi.useRealTimers();
+	});
+});
+
+describe('applyUpdateAndReload', () => {
+	beforeEach(() => {
+		resetPwaSwStateForTesting();
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.useRealTimers();
+	});
+
+	it('keeps pages-cache when no worker is waiting (semver-only update)', async () => {
+		const reload = vi.fn();
+		const cachesDelete = vi.fn().mockResolvedValue(true);
+		const cachesStub = { delete: cachesDelete };
+		vi.stubGlobal('window', { location: { reload }, caches: cachesStub });
+		vi.stubGlobal('caches', cachesStub);
+		vi.stubGlobal('navigator', {
+			serviceWorker: { getRegistration: vi.fn().mockResolvedValue({ waiting: undefined }) }
+		});
+
+		await applyUpdateAndReload();
+
+		expect(cachesDelete).not.toHaveBeenCalled();
+		expect(reload).toHaveBeenCalledOnce();
+	});
+
+	it('drops pages-cache only when activating a waiting worker', async () => {
+		const reload = vi.fn();
+		const cachesDelete = vi.fn().mockResolvedValue(true);
+		const postMessage = vi.fn();
+		let controllerListener: (() => void) | undefined;
+		const cachesStub = { delete: cachesDelete };
+		vi.stubGlobal('window', { location: { reload }, caches: cachesStub });
+		vi.stubGlobal('caches', cachesStub);
+		vi.stubGlobal('navigator', {
+			serviceWorker: {
+				getRegistration: vi.fn().mockResolvedValue({ waiting: { postMessage } }),
+				addEventListener: vi.fn((event, listener) => {
+					if (event === 'controllerchange') controllerListener = listener;
+				})
+			}
+		});
+
+		const pending = applyUpdateAndReload();
+		await Promise.resolve();
+		controllerListener?.();
+		await pending;
+
+		expect(cachesDelete).toHaveBeenCalledWith('pages-cache');
+		expect(postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
+		expect(reload).toHaveBeenCalledOnce();
 	});
 });

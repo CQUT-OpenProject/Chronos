@@ -3,6 +3,14 @@ import { deflateRaw, inflateRaw } from '@chronos/codec-kit';
 export const SHARE_BROTLI_QUALITY = 11;
 export const SHARE_LINK_VERSION_BROTLI = 1;
 export const SHARE_LINK_VERSION_DEFLATE = 2;
+/** Upper bound for decompressed share payloads (legit timetables decode to tens of KB). */
+export const MAX_SHARE_DECOMPRESSED_BYTES = 262_144;
+
+export class ShareDecompressionTooLargeError extends Error {
+	constructor() {
+		super('share payload exceeds decompression limit');
+	}
+}
 
 interface BrotliApi {
 	compress(bytes: Uint8Array, options?: { quality?: number }): Uint8Array;
@@ -70,11 +78,57 @@ export async function decompressShareAdaptive(
 	bytes: Uint8Array
 ): Promise<Uint8Array> {
 	if (version === SHARE_LINK_VERSION_DEFLATE) {
-		return inflateRaw(bytes);
+		return inflateRawCapped(bytes);
 	}
 	if (version === SHARE_LINK_VERSION_BROTLI) {
 		await ensureShareLinkBrotliReady();
-		return brotliDecompressShare(bytes);
+		const decompressed = brotliDecompressShare(bytes);
+		if (decompressed.length > MAX_SHARE_DECOMPRESSED_BYTES) {
+			throw new ShareDecompressionTooLargeError();
+		}
+		return decompressed;
 	}
 	throw new Error('unsupported share link compression version');
+}
+
+async function inflateRawCapped(
+	bytes: Uint8Array,
+	maxBytes: number = MAX_SHARE_DECOMPRESSED_BYTES
+): Promise<Uint8Array> {
+	if (typeof DecompressionStream === 'undefined') {
+		const decompressed = await inflateRaw(bytes);
+		if (decompressed.length > maxBytes) throw new ShareDecompressionTooLargeError();
+		return decompressed;
+	}
+	const stream = new ReadableStream<Uint8Array>({
+		start(controller) {
+			controller.enqueue(bytes);
+			controller.close();
+		}
+	}).pipeThrough(
+		new DecompressionStream('deflate-raw') as unknown as ReadableWritablePair<
+			Uint8Array,
+			Uint8Array
+		>
+	);
+	const reader = stream.getReader();
+	const chunks: Uint8Array[] = [];
+	let total = 0;
+	for (;;) {
+		const { done, value } = await reader.read();
+		if (done) break;
+		total += value.byteLength;
+		if (total > maxBytes) {
+			await reader.cancel().catch(() => {});
+			throw new ShareDecompressionTooLargeError();
+		}
+		chunks.push(value);
+	}
+	const output = new Uint8Array(total);
+	let offset = 0;
+	for (const chunk of chunks) {
+		output.set(chunk, offset);
+		offset += chunk.byteLength;
+	}
+	return output;
 }

@@ -8,6 +8,7 @@
 	} from '$lib/navigation/history-overlay';
 	import {
 		clampDragOffset,
+		needsSnapBackAnimation,
 		overlayOpacityFromDrag,
 		shouldDismissSheet
 	} from '$lib/components/ui/bottom-sheet-drag';
@@ -106,6 +107,10 @@
 	function startSnapBackAnimation() {
 		if (prefersReducedMotion()) {
 			dragOffsetPx = 0;
+			resetDragState();
+			return;
+		}
+		if (!needsSnapBackAnimation(dragOffsetPx)) {
 			resetDragState();
 			return;
 		}
@@ -253,7 +258,7 @@
 		>
 			<div
 				bind:this={dragHandleRef}
-				class="flex shrink-0 touch-none justify-center py-3"
+				class="relative flex shrink-0 touch-none justify-center py-3 before:absolute before:inset-x-0 before:-top-4 before:-bottom-4 before:content-['']"
 				aria-label={hostT('ui.bottomSheet.dragDismissAria')}
 				onpointerdown={onHandlePointerDown}
 			>

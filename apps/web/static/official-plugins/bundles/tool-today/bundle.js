@@ -2166,7 +2166,7 @@ function wi(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Ti() {
-	return "0.4.5";
+	return "0.4.6";
 }
 function Ei(e) {
 	let t;

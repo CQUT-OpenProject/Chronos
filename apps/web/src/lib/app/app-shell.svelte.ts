@@ -1,6 +1,7 @@
 import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { applyActiveTheme } from '$lib/appearance/apply-active-theme';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
+import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 import { getAppController, getAppEngine, resetAppToInitialState } from '$lib/services/app-engine';
 import type {
 	CapsuleCornerStyle,
@@ -154,6 +155,9 @@ export function createAppShell() {
 	async function clearAllData() {
 		await resetAppToInitialState();
 		dynamicColorUri = null;
+		// localStorage chronos:* keys are wiped by storage; drop in-memory PWA flags too.
+		pwaInstallController.resetInstalledFlag();
+		pwaInstallController.dismiss({ track: false });
 	}
 
 	return {
