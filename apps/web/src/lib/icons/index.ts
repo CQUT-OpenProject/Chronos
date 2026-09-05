@@ -41,3 +41,5 @@ export { Update } from '@material-symbols-svg/svelte/icons/update';
 export { Refresh } from '@material-symbols-svg/svelte/icons/refresh';
 export { MobileVibrateFill } from '@material-symbols-svg/svelte/icons/mobile-vibrate';
 export { TuneFill } from '@material-symbols-svg/svelte/icons/tune';
+export { Add } from '@material-symbols-svg/svelte/icons/add';
+export { Remove } from '@material-symbols-svg/svelte/icons/remove';
