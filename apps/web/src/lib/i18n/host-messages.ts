@@ -109,6 +109,7 @@ const zhCn = {
 	'plugins.link.confirm': '确认安装',
 	'plugins.link.installing': '正在从链接安装…',
 	'plugins.link.placeholder': 'https://example.com/plugin.manifest.json',
+	'plugins.link.source': '来源：{origin}，请确认信任该来源后再安装',
 	'plugins.notify.themeInstalled': '插件已安装并启用，可在「显示设置」中选择此外观主题',
 	'plugins.notify.installed': '插件「{pluginId}」已安装并启用',
 	'plugins.notify.uninstalled': '插件「{pluginId}」已卸载',
@@ -641,6 +642,7 @@ const en = {
 	'plugins.link.confirm': 'Confirm install',
 	'plugins.link.installing': 'Installing from link…',
 	'plugins.link.placeholder': 'https://example.com/plugin.manifest.json',
+	'plugins.link.source': 'Source: {origin}. Only install if you trust this source',
 	'plugins.notify.themeInstalled':
 		'Plugin installed and enabled. Choose this theme in Display settings.',
 	'plugins.notify.installed': 'Plugin "{pluginId}" installed and enabled',
