@@ -34,4 +34,4 @@ Ensure compliance with Chronos coding standards and clean design practices:
 
 ## Post-Review Delivery
 
-Once the two-axis review passes, complete validation per the checklist in [AGENTS.md](file:///Users/uednd/code/Chronos/AGENTS.md) (`vp check` & `vp test`) and format the commit message using the Gitmoji convention.
+Once the two-axis review passes, complete validation per the checklist in [AGENTS.md](file:///Users/uednd/code/Chronos/AGENTS.md) (`vp run check` & `vp run test`) and format the commit message using the Gitmoji convention.

@@ -1,11 +1,11 @@
 ## CLI tools
 
-You have access to `@sveltejs/mcp` CLI for Svelte-specific assistance. Use these commands via `npx`:
+You have access to `@sveltejs/mcp` CLI for Svelte-specific assistance. Use these commands via `vpx` (never `npx`; `vpx` is the only allowed runner):
 
 ### List documentation sections
 
 ```bash
-npx @sveltejs/mcp list-sections
+vpx @sveltejs/mcp list-sections
 ```
 
 Lists all available Svelte 5 and SvelteKit documentation sections with titles and paths.
@@ -13,7 +13,7 @@ Lists all available Svelte 5 and SvelteKit documentation sections with titles an
 ### Get documentation
 
 ```bash
-npx @sveltejs/mcp get-documentation "<section1>,<section2>,..."
+vpx @sveltejs/mcp get-documentation "<section1>,<section2>,..."
 ```
 
 Retrieves full documentation for specified sections. Use after `list-sections` to fetch relevant docs.
@@ -21,13 +21,13 @@ Retrieves full documentation for specified sections. Use after `list-sections` t
 **Example:**
 
 ```bash
-npx @sveltejs/mcp get-documentation "$state,$derived,$effect"
+vpx @sveltejs/mcp get-documentation "$state,$derived,$effect"
 ```
 
 ### Svelte autofixer
 
 ```bash
-npx @sveltejs/mcp svelte-autofixer "<code_or_path>" [options]
+vpx @sveltejs/mcp svelte-autofixer "<code_or_path>" [options]
 ```
 
 Analyzes Svelte code and suggests fixes for common issues.
@@ -41,13 +41,13 @@ Analyzes Svelte code and suggests fixes for common issues.
 
 ```bash
 # Analyze inline code (escape $ as \$)
-npx @sveltejs/mcp svelte-autofixer '<script>let count = \$state(0);</script>'
+vpx @sveltejs/mcp svelte-autofixer '<script>let count = \$state(0);</script>'
 
 # Analyze a file
-npx @sveltejs/mcp svelte-autofixer ./src/lib/Component.svelte
+vpx @sveltejs/mcp svelte-autofixer ./src/lib/Component.svelte
 
 # Target Svelte 4
-npx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 4
+vpx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 4
 ```
 
 **Important:** When passing code with runes (`$state`, `$derived`, etc.) via the terminal, escape the `$` character as `\$` to prevent shell variable substitution.
@@ -56,4 +56,4 @@ npx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 4
 
 1. **Uncertain about syntax?** Run `list-sections` then `get-documentation` for relevant topics
 2. **Reviewing/debugging?** Run `svelte-autofixer` on the code to detect issues
-3. **Always validate** - Run `svelte-autofixer` before finalizing any Svelte component
+3. **Validate logic changes** - Run `svelte-autofixer` before finalizing any Svelte logic change (typo/format-only skips; if tool unavailable twice, note and proceed)

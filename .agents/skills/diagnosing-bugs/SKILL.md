@@ -1,10 +1,10 @@
 # Diagnosing Bugs
 
-Never modify production code without a reproducible feedback loop.
+For logic / parser / storage / controller bugs with regression risk, do not fix without a reproducible feedback loop. Obvious typo / null-guard / config one-liners may use the existing suite + repro steps instead.
 
-## 1. Build a Deterministic Red Loop (Mandatory)
+## 1. Build a Deterministic Red Loop (Mandatory for regression-risk bugs)
 
-Before touching implementation code, construct and run one specific command that deterministically fails on this bug:
+Before fixing such bugs, construct and run one specific command that deterministically fails on this bug:
 
 - Seam Test: Write a failing test in `src/lib/**/*.test.ts` (Domain, Parser/Codec, Storage, Clock).
 - Harness/CLI: For complex Dexie timings or Brotli streams, run a standalone script under `scripts/`.
@@ -18,5 +18,5 @@ Before touching implementation code, construct and run one specific command that
 ## 3. Verify & Guard
 
 - Confirm the Phase 1 test turns green.
-- Run `vp test` and `vp check` across the full codebase.
-- Retain the test as a permanent regression guard.
+- Run `vp run test` and `vp run check` (full suite once at the end; scoped single-file run during iteration).
+- Retain the test as a permanent regression guard for regression-risk bugs; trivial one-liners need no new permanent test.
