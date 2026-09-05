@@ -131,8 +131,17 @@ function isValidSharePayloadFormat(payload: string): boolean {
 	return v === SHARE_LINK_VERSION_BROTLI || v === SHARE_LINK_VERSION_DEFLATE;
 }
 
+/**
+ * Drops trailing punctuation users pick up when copying links from chat apps
+ * (e.g. 。, ., )). Only the trailing run is stripped: legitimate payloads
+ * always end with base64url characters, while the version dot never trails.
+ */
+function stripSharePayloadTail(candidate: string): string {
+	return candidate.replace(/[^A-Za-z0-9\-_]+$/, '');
+}
+
 function normalizeSharePayload(candidate: string): string | null {
-	const payload = candidate.trim().split(/\s/)[0] ?? '';
+	const payload = stripSharePayloadTail(candidate.trim().split(/\s/)[0] ?? '');
 	return isValidSharePayloadFormat(payload) ? payload : null;
 }
 
@@ -157,9 +166,13 @@ function extractSharePayloadFromUrlString(value: string): string | null {
 
 export function extractSharePayloadFromLocation(location: Location): string | null {
 	const hash = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
-	if (isValidSharePayloadFormat(hash)) return hash;
+	const strippedHash = stripSharePayloadTail(hash);
+	if (isValidSharePayloadFormat(strippedHash)) return strippedHash;
 	const queryPayload = new URLSearchParams(location.search).get('d');
-	if (queryPayload && isValidSharePayloadFormat(queryPayload)) return queryPayload;
+	if (queryPayload) {
+		const stripped = stripSharePayloadTail(queryPayload);
+		if (isValidSharePayloadFormat(stripped)) return stripped;
+	}
 	return null;
 }
 

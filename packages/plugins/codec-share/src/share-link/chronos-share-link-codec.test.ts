@@ -302,6 +302,16 @@ describe('chronos-share-link-codec', () => {
 		expect(extractSharePayloadFromText('not-a-share-link')).toBeNull();
 	});
 
+	it('tolerates trailing punctuation around pasted links', () => {
+		const payload = '1.abc';
+		expect(extractSharePayloadFromText(`链接：https://chronos.test/s#${payload}。`)).toBe(payload);
+		expect(extractSharePayloadFromText(`(https://chronos.test/s#${payload})`)).toBe(payload);
+		expect(extractSharePayloadFromLocation({ hash: `#${payload}.`, search: '' } as Location)).toBe(
+			payload
+		);
+		expect(extractSharePayloadFromText(payload)).toBe(payload);
+	});
+
 	it('formats and extracts share clipboard text', () => {
 		const link = 'https://chronos.test/s#1.abc';
 		const clipboardText = formatShareClipboardText('知行理工', link);
