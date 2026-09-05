@@ -28,4 +28,20 @@ describe('validatePluginManifest', () => {
 			/missing sha256/
 		);
 	});
+
+	it('rejects cssUrl without cssSha256', () => {
+		expect(() => validatePluginManifest({ ...BASE_MANIFEST, cssUrl: '/test.bundle.css' })).toThrow(
+			/missing cssSha256/
+		);
+	});
+
+	it('accepts cssUrl with cssSha256', () => {
+		expect(() =>
+			validatePluginManifest({
+				...BASE_MANIFEST,
+				cssUrl: '/test.bundle.css',
+				cssSha256: 'def'
+			})
+		).not.toThrow();
+	});
 });

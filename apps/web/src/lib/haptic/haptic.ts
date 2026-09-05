@@ -103,9 +103,9 @@ export function triggerVibrate(pattern: number | number[]): boolean {
 	if (bridge) {
 		const style =
 			typeof pattern === 'number'
-				? pattern <= 16
+				? pattern <= 30
 					? 'light'
-					: pattern <= 28
+					: pattern <= 60
 						? 'medium'
 						: 'heavy'
 				: 'medium';
@@ -118,22 +118,22 @@ export function triggerVibrate(pattern: number | number[]): boolean {
 	return vibrateFallback(pattern);
 }
 
-/** Button-click-tuned Vibration API fallbacks (short, sharp — not long buzzes). */
+/** Vibration API fallbacks (restored pre-native durations, slightly strengthened). */
 const FALLBACK = {
-	light: 12,
-	medium: 24,
-	heavy: 40,
-	success: [12, 40, 18] as number[],
-	warning: [18, 40, 18] as number[]
+	light: 25,
+	medium: 50,
+	heavy: 80,
+	success: [30, 60, 40] as number[],
+	warning: [50, 60, 50] as number[]
 };
 
 export const haptic = {
-	/** 轻微反馈：Tab 切换、按钮/开关点击、Radio 勾选 (~12ms fallback) */
+	/** 轻微反馈：Tab 切换、按钮/开关点击、Radio 勾选 (~25ms fallback) */
 	light(): boolean {
 		return triggerNativeOrVibrate({ method: 'impact', params: { style: 'light' } }, FALLBACK.light);
 	},
 
-	/** 中度反馈：周数滑动吸附、分段切换 (~24ms fallback) */
+	/** 中度反馈：周数滑动吸附、分段切换 (~50ms fallback) */
 	medium(): boolean {
 		return triggerNativeOrVibrate(
 			{ method: 'impact', params: { style: 'medium' } },
@@ -141,7 +141,7 @@ export const haptic = {
 		);
 	},
 
-	/** 重度/确认反馈：长按课程卡片触发、拖拽开始 (~40ms fallback) */
+	/** 重度/确认反馈：长按课程卡片触发、拖拽开始 (~80ms fallback) */
 	heavy(): boolean {
 		return triggerNativeOrVibrate({ method: 'impact', params: { style: 'heavy' } }, FALLBACK.heavy);
 	},

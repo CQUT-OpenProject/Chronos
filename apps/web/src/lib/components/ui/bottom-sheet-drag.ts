@@ -20,3 +20,7 @@ export function overlayOpacityFromDrag(offsetPx: number, sheetHeightPx: number):
 	if (sheetHeightPx <= 0) return 1;
 	return Math.max(0, 1 - offsetPx / sheetHeightPx);
 }
+
+export function needsSnapBackAnimation(offsetPx: number): boolean {
+	return offsetPx > 0;
+}

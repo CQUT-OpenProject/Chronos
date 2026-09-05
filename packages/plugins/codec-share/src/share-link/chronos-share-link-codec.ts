@@ -15,7 +15,8 @@ import {
 	compressShareAdaptive,
 	decompressShareAdaptive,
 	SHARE_LINK_VERSION_BROTLI,
-	SHARE_LINK_VERSION_DEFLATE
+	SHARE_LINK_VERSION_DEFLATE,
+	ShareDecompressionTooLargeError
 } from './share-link-brotli';
 import { SHARE_CODEC_MESSAGES } from '../messages';
 
@@ -23,6 +24,8 @@ export const SHARE_LINK_VERSION = SHARE_LINK_VERSION_BROTLI;
 export const SHARE_LINK_PREFIX = `${SHARE_LINK_VERSION}.`;
 export const SHARE_LINK_PREFIX_DEFLATE = `${SHARE_LINK_VERSION_DEFLATE}.`;
 export const SHARE_LINK_WARNING_LENGTH = 800;
+/** Upper bound for encoded share payloads (worst legit timetable encodes to ~10K chars). */
+export const MAX_SHARE_PAYLOAD_CHARS = 65_536;
 
 type ShareCodecLabels = (typeof SHARE_CODEC_MESSAGES)['zh-cn'];
 const DEFAULT_SHARE_LABELS: ShareCodecLabels = SHARE_CODEC_MESSAGES['zh-cn'];
@@ -69,6 +72,9 @@ export async function decodeSharePayload(
 	labels: ShareDecodeLabels = DEFAULT_SHARE_LABELS
 ): Promise<ShareLinkResult<Timetable>> {
 	const normalized = payload.trim();
+	if (normalized.length > MAX_SHARE_PAYLOAD_CHARS) {
+		return shareFailure(labels['share.error.corrupted']);
+	}
 	const parsed = parseShareLinkVersion(normalized);
 	if (
 		!parsed ||
@@ -84,6 +90,9 @@ export async function decodeSharePayload(
 		if (!verified) throw new ShareBinaryDecodeError('checksum mismatch');
 		return shareSuccess(decodeBinaryToTimetable(verified));
 	} catch (error) {
+		if (error instanceof ShareDecompressionTooLargeError) {
+			return shareFailure(labels['share.error.corrupted']);
+		}
 		const message =
 			error instanceof ShareBinaryDecodeError
 				? error.message === 'checksum mismatch'
@@ -122,8 +131,27 @@ function isValidSharePayloadFormat(payload: string): boolean {
 	return v === SHARE_LINK_VERSION_BROTLI || v === SHARE_LINK_VERSION_DEFLATE;
 }
 
+/**
+ * Drops trailing punctuation users pick up when copying links from chat apps
+ * (e.g. 。, ., )). Only the trailing run is stripped: legitimate payloads
+ * always end with base64url characters, while the version dot never trails.
+ */
+function stripSharePayloadTail(candidate: string): string {
+	return candidate.replace(/[^A-Za-z0-9\-_]+$/, '');
+}
+
+function tryDecodeURIComponent(value: string): string {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
+	}
+}
+
 function normalizeSharePayload(candidate: string): string | null {
-	const payload = candidate.trim().split(/\s/)[0] ?? '';
+	const payload = stripSharePayloadTail(
+		tryDecodeURIComponent(candidate.trim().split(/\s/)[0] ?? '')
+	);
 	return isValidSharePayloadFormat(payload) ? payload : null;
 }
 
@@ -148,9 +176,14 @@ function extractSharePayloadFromUrlString(value: string): string | null {
 
 export function extractSharePayloadFromLocation(location: Location): string | null {
 	const hash = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
-	if (isValidSharePayloadFormat(hash)) return hash;
+	const strippedHash = stripSharePayloadTail(tryDecodeURIComponent(hash));
+	if (isValidSharePayloadFormat(strippedHash)) return strippedHash;
 	const queryPayload = new URLSearchParams(location.search).get('d');
-	if (queryPayload && isValidSharePayloadFormat(queryPayload)) return queryPayload;
+	if (queryPayload) {
+		// URLSearchParams already percent-decodes: strip only, never decode twice.
+		const stripped = stripSharePayloadTail(queryPayload);
+		if (isValidSharePayloadFormat(stripped)) return stripped;
+	}
 	return null;
 }
 

@@ -109,6 +109,7 @@ const zhCn = {
 	'plugins.link.confirm': '确认安装',
 	'plugins.link.installing': '正在从链接安装…',
 	'plugins.link.placeholder': 'https://example.com/plugin.manifest.json',
+	'plugins.link.source': '来源：{origin}，请确认信任该来源后再安装',
 	'plugins.notify.themeInstalled': '插件已安装并启用，可在「显示设置」中选择此外观主题',
 	'plugins.notify.installed': '插件「{pluginId}」已安装并启用',
 	'plugins.notify.uninstalled': '插件「{pluginId}」已卸载',
@@ -183,6 +184,7 @@ const zhCn = {
 	// share
 	'share.error.noData': '链接中未找到课表数据',
 	'share.error.invalidData': '分享链接中未找到有效课表数据',
+	'share.error.network': '网络异常，无法获取分享数据，请重试',
 	'share.error.parseFailed': '无法解析分享链接',
 	'share.loading': '正在导入课表…',
 	'share.failed': '无法导入课表',
@@ -356,9 +358,11 @@ const zhCn = {
 	'pwa.guide.chrome.install': '安装 Chronos 到设备…',
 	'pwa.guide.chrome.hint.title': '提示：',
 	'pwa.guide.chrome.hint.body':
-		'若点击按钮未弹出安装窗口，亦可点击地址栏右侧的安装图标 ⊕，或在菜单中选择「安装 Chronos」。',
+		'若点击按钮未弹出安装窗口，亦可在 Chrome / Edge 地址栏右侧点击安装图标 ⊕，或在菜单中选择「安装 Chronos」。Firefox 等浏览器暂不支持一键安装。',
 	'pwa.snackbar.alreadyInstalled': '当前已成功安装为桌面应用',
-	'pwa.snackbar.manualInstall': '请点击地址栏右侧的安装图标 ⊕ 或菜单中的“安装 Chronos”',
+	'pwa.snackbar.manualInstall':
+		'请用 Chrome / Edge 地址栏右侧的安装图标 ⊕ 或菜单中的“安装 Chronos”',
+	'pwa.snackbar.unsupportedInstall': '当前浏览器不支持一键安装，请改用 Chrome / Edge 打开后安装',
 	'pwa.snackbar.updateAvailable': '检测到新版本，建议尽快更新',
 	'pwa.snackbar.updateAction': '查看更新',
 	'pwa.openInApp.hint': '如未自动跳转，请从程序坞、启动台或开始菜单手动打开 Chronos。',
@@ -639,6 +643,7 @@ const en = {
 	'plugins.link.confirm': 'Confirm install',
 	'plugins.link.installing': 'Installing from link…',
 	'plugins.link.placeholder': 'https://example.com/plugin.manifest.json',
+	'plugins.link.source': 'Source: {origin}. Only install if you trust this source',
 	'plugins.notify.themeInstalled':
 		'Plugin installed and enabled. Choose this theme in Display settings.',
 	'plugins.notify.installed': 'Plugin "{pluginId}" installed and enabled',
@@ -714,6 +719,7 @@ const en = {
 	// share
 	'share.error.noData': 'No timetable data found in the link',
 	'share.error.invalidData': 'No valid timetable data found in the share link',
+	'share.error.network': 'Network error while fetching share data, please retry',
 	'share.error.parseFailed': 'Could not parse the share link',
 	'share.loading': 'Importing timetable…',
 	'share.failed': 'Could not import timetable',
@@ -892,10 +898,12 @@ const en = {
 	'pwa.guide.chrome.install': 'Install Chronos on this device…',
 	'pwa.guide.chrome.hint.title': 'Tip:',
 	'pwa.guide.chrome.hint.body':
-		'If the install prompt does not appear, tap the install icon in the address bar or choose Install Chronos from the menu.',
+		'If the install prompt does not appear, use the install icon in the Chrome / Edge address bar or choose Install Chronos from the menu. One-tap install is not supported in Firefox and similar browsers.',
 	'pwa.snackbar.alreadyInstalled': 'Already installed as a desktop app',
 	'pwa.snackbar.manualInstall':
-		'Use the install icon in the address bar, or choose Install Chronos from the menu',
+		'Use the install icon in the Chrome / Edge address bar, or choose Install Chronos from the menu',
+	'pwa.snackbar.unsupportedInstall':
+		'One-tap install is not supported in this browser, please open this page in Chrome / Edge instead',
 	'pwa.snackbar.updateAvailable': 'A new version is available',
 	'pwa.snackbar.updateAction': 'View update',
 	'pwa.openInApp.hint':

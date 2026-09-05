@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { ChronosEngine } from '@chronos/core';
 import type { ChronosEnv } from '@chronos/core';
 import { DEFAULT_USER_PREFERENCES } from '@chronos/core';
@@ -74,6 +74,10 @@ describe('OfficialPluginRuntimeActivator', () => {
 		activator = new OfficialPluginRuntimeActivator(engine, (id) => installed.has(id));
 	});
 
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
 	it('registers JSON-only theme via ScopedContext', async () => {
 		installed.add('theme-json');
 		await activator.activate({
@@ -116,6 +120,64 @@ describe('OfficialPluginRuntimeActivator', () => {
 				installedAt: 1
 			})
 		).rejects.toThrow(/id mismatch/);
+	});
+
+	it('leaves no CSS in DOM when activation fails', async () => {
+		type FakeStyle = {
+			attrs: Map<string, string>;
+			textContent: string | null;
+			removed: boolean;
+			setAttribute: (key: string, value: string) => void;
+			remove: () => void;
+		};
+		const styles: FakeStyle[] = [];
+		vi.stubGlobal('document', {
+			createElement: () => {
+				const el: FakeStyle = {
+					attrs: new Map(),
+					textContent: null,
+					removed: false,
+					setAttribute(key: string, value: string) {
+						el.attrs.set(key, value);
+					},
+					remove() {
+						el.removed = true;
+					}
+				};
+				styles.push(el);
+				return el;
+			},
+			head: { appendChild: vi.fn() },
+			querySelector: (selector: string) => {
+				const match = /data-plugin-id="([^"]+)"/.exec(selector);
+				return (
+					styles.find((el) => !el.removed && el.attrs.get('data-plugin-id') === match?.[1]) ?? null
+				);
+			}
+		});
+
+		installed.add('wrong-id');
+		await expect(
+			activator.activate({
+				manifest: {
+					id: 'wrong-id',
+					name: { 'zh-CN': 'T' },
+					version: '1',
+					description: { 'zh-CN': 'T' },
+					author: 'Chronos',
+					type: 'tool',
+					bundleFormat: 'esm',
+					bundleUrl: '/b.js',
+					sha256: 'x'
+				},
+				code: SAMPLE_BUNDLE,
+				cssCode: '.x{color:red}',
+				enabled: true,
+				installedAt: 1
+			})
+		).rejects.toThrow(/id mismatch/);
+
+		expect(styles.filter((el) => !el.removed)).toHaveLength(0);
 	});
 
 	it('unload disposes engine plugin handle', async () => {

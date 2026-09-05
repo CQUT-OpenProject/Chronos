@@ -3,6 +3,7 @@ import {
 	clampDragOffset,
 	DISMISS_FALLBACK_THRESHOLD_PX,
 	DISMISS_THRESHOLD_RATIO,
+	needsSnapBackAnimation,
 	overlayOpacityFromDrag,
 	shouldDismissSheet
 } from './bottom-sheet-drag';
@@ -31,5 +32,10 @@ describe('bottom-sheet-drag', () => {
 		expect(overlayOpacityFromDrag(100, 200)).toBe(0.5);
 		expect(overlayOpacityFromDrag(250, 200)).toBe(0);
 		expect(overlayOpacityFromDrag(40, 0)).toBe(1);
+	});
+
+	it('skips snap-back animation when already reset to zero', () => {
+		expect(needsSnapBackAnimation(0)).toBe(false);
+		expect(needsSnapBackAnimation(24)).toBe(true);
 	});
 });

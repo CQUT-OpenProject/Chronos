@@ -13,6 +13,9 @@
 	const controller = getAppController();
 
 	async function handleInstallAction() {
+		// Note: this handler only runs from the generic Chromium branch below
+		// (standalone / installed / macSafari / iOS render their own cards),
+		// but the guards stay for robustness if the branch structure changes.
 		if (pwaInstallController.isStandalone) {
 			snackbarKey('pwa.snackbar.alreadyInstalled');
 			return;
@@ -24,16 +27,12 @@
 		}
 
 		if (pwaInstallController.canPrompt) {
-			await pwaInstallController.install();
+			const installed = await pwaInstallController.install();
+			if (!installed) snackbarKey('pwa.snackbar.manualInstall');
 			return;
 		}
 
-		if (pwaInstallController.isIOS) {
-			pwaInstallController.iosGuideOpen = true;
-			return;
-		}
-
-		snackbarKey('pwa.snackbar.manualInstall');
+		snackbarKey('pwa.snackbar.unsupportedInstall');
 	}
 </script>
 

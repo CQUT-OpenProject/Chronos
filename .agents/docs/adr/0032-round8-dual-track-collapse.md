@@ -1,14 +1,18 @@
-# ADR 0032：Round 8 双轨塌缩与插件契约收口
+# ADR 0032: Round 8 双轨塌缩与插件契约收口
 
-## 状态
+- **状态**: Accepted
+- **日期**: 2026-09-01
+- **关联提交**: `c426f19`, `f835e02`, `f0171c7`
+- **关联**: 延续 [ADR 0029](./0029-shell-internal-tab-navigation.md) 壳内 Tab（`hostPanel` 建于 `activeTabId` 之上）与 [ADR 0021](./0021-slot-consumption-seam.md) 消费缝隙；catalog 双源维持 [ADR 0027](./0027-round6-architecture-subtraction.md) 结论
+- **范围**: `packages/core`, `apps/web`, `packages/plugins/*`, `packages/ui-kit`
 
-Accepted
+---
 
-## 背景
+## 背景与问题
 
 Round 7 之后审查仍核对到几处真实双轨：宿主 `loadProfilePlugins` 与 `ProfileManager.applyProfile` 并行、`availablePlugins` 被当成全量 builtin、profile 插件列表在 `profile-registry` 与 `profile-definitions` 各写一份、导入插件未统一 `ImportSlotError`、壳消费点硬编码 `'timetable' | 'mine'` tab id。`core-shell` 仍手写 `ChronosPlugin` 与模块级 translate。
 
-## 决策
+## 架构决策
 
 ### 1. ProfileManager 唯一装配面
 
@@ -42,7 +46,7 @@ Round 7 之后审查仍核对到几处真实双轨：宿主 `loadProfilePlugins`
 - QR `qrCodecLabels(locale)` 在 `executeImport` / deserialize 调用点解析；`decodeQrFromBlob` 必传 `labelFor`。
 - `pluginText` 可选 `params`，转 `translatePlugin` / `interpolateMessage`。
 
-## 明确不做
+## 非目标
 
 - 不删 FROZEN serial/waterfall，不碰 BadgeManager / `queryCourses` 形状。
 - 不把课表/我的屏改成 `ChronosMountable`。
@@ -52,3 +56,7 @@ Round 7 之后审查仍核对到几处真实双轨：宿主 `loadProfilePlugins`
 ## 后果
 
 Profile 装配、字面量与壳消费各剩一条缝；导入失败与插件 i18n 与既有内核契约对齐。
+
+## 修订记录
+
+- 2026-09-01：初版 Accepted。

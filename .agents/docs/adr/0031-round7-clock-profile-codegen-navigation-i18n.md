@@ -1,14 +1,18 @@
-# ADR 0031：Round 7 时钟单轨、Profile 客户端 codegen、导航端口与插件规范收口
+# ADR 0031: Round 7 时钟单轨、Profile 客户端 codegen、导航端口与插件规范收口
 
-## 状态
+- **状态**: Accepted
+- **日期**: 2026-09-01
+- **关联提交**: `c25424e`, `e400d11`, `31e607e`
+- **关联**: 对齐 [ADR 0024](./0024-plugin-message-catalog-i18n.md) 插件 i18n 与 [ADR 0021](./0021-slot-consumption-seam.md) 消费缝隙；C7 缓议延续 [ADR 0027](./0027-round6-architecture-subtraction.md)
+- **范围**: `packages/core`, `apps/web`, `packages/plugins/*`, `packages/ui-kit`
 
-Accepted
+---
 
-## 背景
+## 背景与问题
 
 Round 6 之后仍存在三处 `createDayClock` 并行、`profile-registry` 静态 import `source-cqut`、今日插件硬编码宿主路径、以及若干插件 i18n / 图标 / 排序双轨残留。
 
-## 决策
+## 架构决策
 
 ### 1. 引擎独占 DayClock
 
@@ -36,7 +40,7 @@ Round 6 之后仍存在三处 `createDayClock` 并行、`profile-registry` 静�
 - `resolveDefaultLaunchTab` / `pickFallbackTabId` 假定 registry 已排序，不再二次 `order ?? 50` 比较。
 - 插件 message catalog 覆盖 parser / screen 文案；官方 bundle Vite `define` 注入 `__CHRONOS_PLUGIN_VERSION__`；内置列表隐藏默认 `1.0.0` 版本徽章。
 
-## 明确不做
+## 非目标
 
 - 不删宿主对 catalog 插件目录的 Tailwind `@source`（utility 仍靠宿主扫描）。
 - 不改 `DYNAMIC_COLOR_SCHEME_ID = 'wallpaper'`。
@@ -45,3 +49,7 @@ Round 6 之后仍存在三处 `createDayClock` 并行、`profile-registry` 静�
 ## 后果
 
 - 时钟边界与 profile 打包在构建期可验证；插件跳转经端口解耦；i18n 与图标单轨与 ADR 0024/0021 对齐。
+
+## 修订记录
+
+- 2026-09-01：初版 Accepted。

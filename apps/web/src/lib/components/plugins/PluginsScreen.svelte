@@ -22,7 +22,10 @@
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { groupCatalogManifestsByCategory } from '$lib/services/official-plugins/catalog-sort';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
-	import { assertValidManifestInstallUrl } from '$lib/services/official-plugins/manifest-url';
+	import {
+		assertValidManifestInstallUrl,
+		describeInstallSource
+	} from '$lib/services/official-plugins/manifest-url';
 	import { CheckCircleFill, TuneFill } from '$lib/icons';
 
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
@@ -59,6 +62,7 @@
 	let linkInstallDialogOpen = $state(false);
 	let linkInstallInProgress = $state(false);
 	let manifestUrlInput = $state('');
+	const linkInstallSource = $derived(describeInstallSource(manifestUrlInput.trim()));
 
 	function refreshInstalled() {
 		installedRecords = [...officialPlugins.listInstalled()];
@@ -597,6 +601,11 @@
 			bind:value={manifestUrlInput}
 			disabled={linkInstallInProgress}
 		/>
+		{#if linkInstallSource}
+			<p class="text-body-small text-on-surface-variant">
+				{hostT('plugins.link.source', { origin: linkInstallSource })}
+			</p>
+		{/if}
 		{#if linkInstallInProgress}
 			<div class="flex items-center gap-2 text-on-surface-variant">
 				<LoadingIndicator size="small" />

@@ -32,17 +32,22 @@ Chronos is a PWA timetable app.
 
 - Stack: TypeScript, Svelte 5, SvelteKit, Tailwind CSS 4
 - Data & i18n: Dexie (Client-side), Paraglide (en / zh-cn), PostHog
-- Package Manager: Use `vp` (Vite+) CLI only (do not invoke pnpm / npm / yarn directly)
+- Package Manager: Use `vp` / `vpx` CLI only (do not invoke pnpm / npm / yarn / npx directly). `vpx` is the only allowed runner for one-off package binaries (e.g. `vpx @sveltejs/mcp ...`).
 - Developer docs: See `CONTRIBUTING.md` at the repository root
 
 ## Write Code
 
-Plan first; do NOT rush to code. Before planning, read `.agents/skills/tobelazy/SKILL.md`.
+Plan internally first; do NOT rush to code. Before planning, read `.agents/skills/tobelazy/SKILL.md`. Proceed to implement without waiting for plan approval. Only pause for plan confirmation on ambiguous / high-risk tasks (data loss, breaking protocol, new dependency).
 
 ## Response Format
 
-Be concise. Do not write unsolicited "WHY" explanations.
+Be concise. Do not write unsolicited "WHY" explanations. Required declarations (breaking changes, root cause, validation results) always override this.
 
 ## Commit Convention
 
 Use Gitmoji format: `<emoji> <concise Chinese>` (no `feat:`/`fix:` prefix). e.g., `✨ 新增课表导出功能`.
+Do not commit / push unless explicitly requested; reporting completion ≠ committing.
+
+## Validation
+
+Canonical commands are `vp run check` and `vp run test` (see `CONTRIBUTING.md`; `vite.config.ts` tasks wrap `vp check` / `vp test` with `svelte-kit sync` / cwd). Run scoped single-file tests during iteration, full suite once at the end; docs-only changes may skip tests with a note. Run `vp install` only when deps / manifest changed or install is stale. On env issues run `vp env doctor`, attempt the obvious fix first, and only ask for help if still blocked.

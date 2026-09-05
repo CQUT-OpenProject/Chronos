@@ -118,3 +118,4 @@ flowchart TD
 ## 修订记录
 
 - 2026-08-22 · [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md) §1：闭环本文 §3 构建 CSS 归属待办。
+- 2026-08-31 · [ADR 0030](./0030-official-plugin-version-co-shipping-and-host-sync.md)：撤销 `minEngineVersion` 运行时校验，后续相关项不再执行。

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vite-plus/test';
 import type { PluginManifest } from '@chronos/core';
 import {
 	assertValidManifestInstallUrl,
+	describeInstallSource,
 	resolveManifestAssetUrl,
 	resolveManifestForDownload
 } from './manifest-url';
@@ -74,5 +75,22 @@ describe('resolveManifestForDownload', () => {
 		);
 		expect(resolved.bundleUrl).toBe('https://cdn.example.com/plugins/foo/bundle.js');
 		expect(resolved.cssUrl).toBe('https://cdn.example.com/styles/bundle.css');
+	});
+});
+
+describe('describeInstallSource', () => {
+	it('returns the origin for valid manifest URLs', () => {
+		expect(describeInstallSource('https://example.com/a/plugin.manifest.json')).toBe(
+			'https://example.com'
+		);
+		expect(describeInstallSource('http://localhost:3000/plugin.manifest.json')).toBe(
+			'http://localhost:3000'
+		);
+	});
+
+	it('returns null for invalid manifest URLs', () => {
+		expect(describeInstallSource('')).toBeNull();
+		expect(describeInstallSource('not-a-url')).toBeNull();
+		expect(describeInstallSource('javascript:alert(1)')).toBeNull();
 	});
 });

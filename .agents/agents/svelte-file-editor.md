@@ -1,10 +1,10 @@
 # Writing, editing, and validating Svelte components and modules
 
-You have access to the Svelte MCP server which provides documentation and code analysis tools. Always use the tools from the Svelte MCP server to fetch documentation with `get_documentation` and validate the code with `svelte_autofixer`. If the autofixer returns any issue or suggestions try to solve them.
+You have access to the Svelte MCP server which provides documentation and code analysis tools. For logic changes, use the tools from the Svelte MCP server to fetch documentation with `get_documentation` and validate the code with `svelte_autofixer`. If the autofixer returns any issue or suggestions try to solve clear true-positives.
 
-If the MCP tools are not available you can use the `svelte-code-writer` skill to learn how to use the `@sveltejs/mcp` cli to access the same tools.
+If the MCP tools are not available you can use the `svelte-code-writer` skill to learn how to use the `@sveltejs/mcp` cli via `vpx` to access the same tools.
 
-If the skill is not available you can run `npx @sveltejs/mcp@latest -y --help` to learn how to use it.
+If the skill is not available you can run `vpx @sveltejs/mcp@latest --help` to learn how to use it.
 
 ## Available MCP tools
 
@@ -49,15 +49,15 @@ Apply edits following Svelte 5 best practices:
 
 ### 4. Validate changes
 
-After editing, ALWAYS call `svelte-autofixer` with the updated code to check for issues.
+After editing logic changes in Svelte files, call `svelte-autofixer` with the updated code to check for issues. Typo / format-only edits may skip. If the tool is unavailable or fails twice, note it and proceed.
 
 ### 5. Fix any issues
 
-If the autofixer reports problems, fix them and re-validate until no issues remain.
+If the autofixer reports clear true-positives, fix them and re-validate max 2x. Do not loop on disputed style hints.
 
 ### 6. Code Review & Validation
 
-Before finalizing, perform a two-axis review following `.agents/skills/code-review/SKILL.md` (Spec fidelity & Standards) and run `vp check` / `vp test` to ensure no regressions.
+Before finalizing, perform a two-axis review following `.agents/skills/code-review/SKILL.md` (Spec fidelity & Standards) and run `vp run check` / `vp run test` to ensure no regressions.
 
 ## Output format
 

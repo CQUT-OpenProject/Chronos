@@ -127,10 +127,24 @@ export class OfficialPluginService implements Disposable {
 			await this.runtimeActivator.deactivate(manifest.id);
 		}
 
-		await this.installedStore.upsert(record);
+		// Activate before persisting: a rejected bundle must not leave a
+		// dirty enabled record that errors on every boot.
 		if (record.enabled) {
-			await this.runtimeActivator.activate(record);
+			try {
+				await this.runtimeActivator.activate(record);
+			} catch (err) {
+				if (existing) {
+					try {
+						await this.runtimeActivator.activate(existing);
+					} catch {
+						// best effort: previous version also unloadable, keep it deactivated
+					}
+				}
+				throw err;
+			}
 		}
+
+		await this.installedStore.upsert(record);
 
 		if (options?.silent) return;
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vite-plus/test';
 import { ImportMode } from '$lib/domain/import-mode';
-import { createTransferState } from './transfer-state.svelte';
+import { createTransferState, shareImportErrorSnackbarKey } from './transfer-state.svelte';
 
 vi.mock('$lib/i18n/host-i18n.svelte', () => ({
 	hostT: (key: string) => key
@@ -13,7 +13,13 @@ const finalizePreview = vi.fn(async (preview: { name: string }) => ({
 
 vi.mock('$lib/services/app-engine', () => ({
 	getAppController: () => ({
-		getSlots: () => [],
+		getSlots: (slot: string) =>
+			slot === 'import.source.tab'
+				? [...slotImportHandlers.entries()].map(([id, executeImport]) => ({
+						id,
+						executeImport
+					}))
+				: [],
 		getSlotItem: (_slot: string, id: string) =>
 			id === 'finalize-slot'
 				? {
@@ -25,11 +31,14 @@ vi.mock('$lib/services/app-engine', () => ({
 	})
 }));
 
+const slotImportHandlers = new Map<string, (inputs: Record<string, unknown>) => Promise<unknown>>();
+
 describe('createTransferState', () => {
 	let mockStorage: Record<string, string> = {};
 
 	beforeEach(() => {
 		mockStorage = {};
+		slotImportHandlers.clear();
 		vi.stubGlobal('sessionStorage', {
 			getItem: (key: string) => mockStorage[key] ?? null,
 			setItem: (key: string, value: string) => {
@@ -75,7 +84,15 @@ describe('createTransferState', () => {
 		expect(controller.state.confirmInputs).toBe(snapshot);
 	});
 
-	it('persists and restores confirmInputs with preview snapshot', () => {
+	describe('shareImportErrorSnackbarKey', () => {
+		it('maps failure kinds to distinct messages', () => {
+			expect(shareImportErrorSnackbarKey('no-data')).toBe('share.error.noData');
+			expect(shareImportErrorSnackbarKey('invalid-data')).toBe('share.error.invalidData');
+			expect(shareImportErrorSnackbarKey('network')).toBe('share.error.network');
+		});
+	});
+
+	it('persists and restores confirmInputs with preview snapshot', async () => {
 		const controller = createTransferState();
 		const sampleTimetable = {
 			id: 'preview-1',
@@ -84,10 +101,10 @@ describe('createTransferState', () => {
 			academicConfig: { termStartDate: '', startWeek: 1, endWeek: 20, periodTimes: [] }
 		} as never;
 
-		controller.setDirectPreview(sampleTimetable, 'edu-html');
+		slotImportHandlers.set('edu-html', async () => sampleTimetable);
+		expect(await controller.previewWithSlot('edu-html', {})).toBe(true);
 		controller.setConfirmInputs({ campusId: 'huaxi', termStartDate: '2026-02-23' });
 		controller.persistPreview();
-
 		const next = createTransferState();
 		expect(next.loadPersistedPreview()).toBe(true);
 		expect(next.state.confirmInputs).toEqual({
@@ -113,7 +130,8 @@ describe('createTransferState', () => {
 			academicConfig: { termStartDate: '', startWeek: 1, endWeek: 20, periodTimes: [] }
 		} as never;
 
-		controller.setDirectPreview(sampleTimetable, 'finalize-slot');
+		slotImportHandlers.set('finalize-slot', async () => sampleTimetable);
+		expect(await controller.previewWithSlot('finalize-slot', {})).toBe(true);
 		controller.setConfirmInputs({ termStartDate: '2026-02-23' });
 
 		const success = await controller.confirmImport();
@@ -142,7 +160,8 @@ describe('createTransferState', () => {
 			importMetadata: { source: 'share-link' }
 		} as never;
 
-		controller.setDirectPreview(sampleTimetable, 'share-link');
+		slotImportHandlers.set('share-link', async () => sampleTimetable);
+		expect(await controller.previewWithSlot('share-link', {})).toBe(true);
 		controller.persistPreview();
 
 		expect(mockStorage['chronos:import-preview']).toBeDefined();
@@ -180,7 +199,8 @@ describe('createTransferState', () => {
 			academicConfig: { termStartDate: '2026-02-23', startWeek: 1, endWeek: 20, periodTimes: [] }
 		} as never;
 
-		controller.setDirectPreview(sampleTimetable, 'share-link');
+		slotImportHandlers.set('share-link', async () => sampleTimetable);
+		expect(await controller.previewWithSlot('share-link', {})).toBe(true);
 		expect(controller.setImportMode(ImportMode.OVERWRITE_CURRENT)).toBe(false);
 		expect(controller.state.importMode).toBe(ImportMode.AS_NEW);
 

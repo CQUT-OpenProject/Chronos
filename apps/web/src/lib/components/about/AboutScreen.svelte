@@ -9,6 +9,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import { estimateAppDataBytes, formatAppDataSize } from '$lib/storage/clear-app-data';
+	import { isSwUpdatePending, onSwUpdateAvailable } from '$lib/client/pwa-sw';
 	import {
 		APP_VERSION,
 		BUILD_TIME,
@@ -28,6 +29,9 @@
 	let clearDialogOpen = $state(false);
 	let clearing = $state(false);
 	let dataUsageBytes = $state<number | null>(null);
+	// Durable update entry: the transient update snackbar can be overwritten
+	// by connectivity/install snackbars, so the About version row keeps the signal.
+	let swUpdatePending = $state(false);
 
 	const dataUsageSupporting = $derived(
 		dataUsageBytes === null
@@ -43,6 +47,10 @@
 
 	onMount(() => {
 		void refreshDataUsage();
+		swUpdatePending = isSwUpdatePending();
+		return onSwUpdateAvailable(() => {
+			swUpdatePending = true;
+		});
 	});
 
 	function formatBuildTime(value: string) {
@@ -85,7 +93,7 @@
 	<MineSection title={hostT('about.section.version')}>
 		<MineRow
 			title={hostT('about.version.current')}
-			supporting={APP_VERSION}
+			supporting={swUpdatePending ? hostT('about.update.title.new') : APP_VERSION}
 			href={resolve('/about/update')}
 			icon={InfoFill}
 			iconTone="primary"

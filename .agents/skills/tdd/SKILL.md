@@ -12,6 +12,6 @@ Test only public contracts at these defined seams. Do not test private `$state` 
 
 ## The Cycle
 
-1. Red: Write a test describing the public behavior and run `vp test` to observe the failure.
+1. Red: Write a test describing the public behavior (or reuse an existing failing test) and run the scoped single-file test to observe the failure; full `vp run test` once at the end.
 2. Green: Write the minimal code required to pass the test (per `tobelazy`).
 3. Refactor: Simplify structure and deduplicate while keeping tests green.

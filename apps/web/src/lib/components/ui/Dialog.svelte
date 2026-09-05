@@ -7,17 +7,19 @@
 		title = '',
 		description = '',
 		children,
-		footer
+		footer,
+		onOpenChange
 	}: {
 		open?: boolean;
 		title?: string;
 		description?: string;
 		children?: Snippet;
 		footer?: Snippet;
+		onOpenChange?: (open: boolean) => void;
 	} = $props();
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root bind:open {onOpenChange}>
 	<Dialog.Portal>
 		<Dialog.Overlay
 			class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-xs transition-opacity duration-200"

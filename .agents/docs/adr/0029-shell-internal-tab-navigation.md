@@ -2,6 +2,7 @@
 
 - **状态**: Accepted
 - **日期**: 2026-08-30
+- **关联提交**: `ffbd2c7`, `f028e0d`
 - **关联**: 取代 [ADR 0028](./0028-today-plugin-default-launch-and-day-clock.md) §3–§4 的路由约定；延续 [ADR 0003](./0003-hierarchical-slot-registry-and-extensibility.md) 底栏插槽；延续 [ADR 0021](./0021-slot-consumption-seam.md) `resolveSlotOwner` 消费缝隙
 - **范围**: `packages/core`, `packages/plugins/today`, `apps/web`
 

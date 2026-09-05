@@ -360,6 +360,7 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 	if ((flags & FLAG_CUSTOM_END_WEEK) !== 0) {
 		endWeek = bytes[offset];
 		if (endWeek === undefined) throw new ShareBinaryDecodeError('truncated header');
+		if (endWeek > MAX_WEEK) throw new ShareBinaryDecodeError(`week out of range: ${endWeek}`);
 		offset += 1;
 	}
 
@@ -427,6 +428,9 @@ export function decodeBinaryToTimetable(bytes: Uint8Array, now = Date.now()): Ti
 
 		const room = readRoomBytes(bytes, roomColumnOffset + index * ROOM_BYTE_LENGTH);
 		const { dayOfWeek, startPeriod } = unpackDayPeriod(dayPeriod);
+		if (dayOfWeek < 1 || dayOfWeek > 7) {
+			throw new ShareBinaryDecodeError('invalid day of week');
+		}
 		const { endPeriod, teacherSlot } = unpackEndTeacher(endTeacher);
 		const name = strings[nameIdx];
 		if (!name) throw new ShareBinaryDecodeError('invalid course name index');

@@ -209,9 +209,31 @@ describe('OfficialPluginService', () => {
 			sha256: 'deadbeef'
 		};
 
-		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		httpRequest.mockResolvedValue(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 
 		await expect(service.install(manifest)).rejects.toThrow(/integrity check failed/);
+	});
+
+	it('does not persist record when activation fails', async () => {
+		const mismatchedBundle = SAMPLE_BUNDLE.replace("id: 'test-plugin'", "id: 'other-plugin'");
+		const hash = await engine.env.runtime.sha256(mismatchedBundle);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => mismatchedBundle }));
+
+		await expect(service.install(manifest)).rejects.toThrow(/id mismatch/);
+		expect(service.getInstalled('test-plugin')).toBeUndefined();
+		expect(service.listInstalled()).toHaveLength(0);
 	});
 
 	it('uninstalls plugin and clears engine state', async () => {
@@ -348,7 +370,7 @@ describe('OfficialPluginService', () => {
 			if (url === manifestUrl) {
 				return httpResponse({ json: async <T>() => manifest as T });
 			}
-			if (url === 'https://cdn.example.com/plugins/link/bundle.js') {
+			if (url.startsWith('https://cdn.example.com/plugins/link/bundle.js')) {
 				return httpResponse({ text: async () => SAMPLE_BUNDLE });
 			}
 			throw new Error(`Unexpected URL: ${url}`);
@@ -357,7 +379,7 @@ describe('OfficialPluginService', () => {
 		await service.installFromManifestUrl(manifestUrl);
 		expect(engine.isPluginLoaded('test-plugin')).toBe(true);
 		expect(httpRequest).toHaveBeenCalledWith(
-			'https://cdn.example.com/plugins/link/bundle.js',
+			expect.stringContaining('https://cdn.example.com/plugins/link/bundle.js?v='),
 			expect.anything()
 		);
 	});
@@ -457,7 +479,10 @@ describe('OfficialPluginService', () => {
 			if (url === OFFICIAL_MANIFEST_URL) {
 				return httpResponse({ json: async <T>() => freshManifest as T });
 			}
-			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+			if (
+				url.split('?')[0] === '/test.bundle.js' ||
+				url.split('?')[0] === 'http://localhost/test.bundle.js'
+			) {
 				return httpResponse({ text: async () => SAMPLE_BUNDLE });
 			}
 			throw new Error(`Unexpected URL: ${url}`);
@@ -575,7 +600,10 @@ describe('OfficialPluginService', () => {
 			if (url === OFFICIAL_MANIFEST_URL) {
 				return httpResponse({ json: async <T>() => freshManifest as T });
 			}
-			if (url === '/test.bundle.js' || url === 'http://localhost/test.bundle.js') {
+			if (
+				url.split('?')[0] === '/test.bundle.js' ||
+				url.split('?')[0] === 'http://localhost/test.bundle.js'
+			) {
 				return httpResponse({ text: async () => SAMPLE_BUNDLE });
 			}
 			throw new Error(`Unexpected URL: ${url}`);

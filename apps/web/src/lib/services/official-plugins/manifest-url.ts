@@ -32,6 +32,19 @@ export function assertValidManifestInstallUrl(url: string): void {
 	}
 }
 
+/**
+ * Returns the install source origin for display (e.g. "https://example.com"),
+ * or null when the URL is not a valid manifest install URL.
+ */
+export function describeInstallSource(url: string): string | null {
+	try {
+		assertValidManifestInstallUrl(url);
+		return new URL(url.trim()).origin;
+	} catch {
+		return null;
+	}
+}
+
 function resolveManifestBase(manifestUrl: string): URL {
 	try {
 		return new URL(manifestUrl);
