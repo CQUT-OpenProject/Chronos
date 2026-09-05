@@ -24,7 +24,7 @@ Core owns the shapes. Web Dexie / Share codecs are strict Zod adapters (schemaVe
 - **Timetable**: courses, `academicConfig` (including `periodTimes`), `viewPrefs`, optional `importMetadata`, optional `customMetadata`. `academicConfig.holidayCalendar` is **plugin-managed** (`tool-calendar-holidays` syncs public holidays); core only renders holidays already on the timetable (`buildHolidayLookup`, grid column headers, muted courses).
 - **ImportMetadata**: `{ source: string; campusId?: string }`. Campus period tables live in `customMetadata['source-cqut']`, not on `importMetadata`.
 - **Weekend columns**: initial `showSaturday` / `showSunday` derive from course occupancy via core `deriveWeekendViewPrefs` — import-constructing plugins must use it; users override afterwards in details editing.
-- **UserPreferences** tokens: theme `light` \| `dark` \| `auto`; palette `vibrant` \| `wallpaper`; layout `fixed` \| `compact`; corners `rounded` \| `sharp` \| `pill`; `visualThemeId`; optional `locale` (`zh-cn` \| `en`). Active icon theme is **derived**, never stored: engine resolves it from the active theme's `recommendedIconTheme` (fallback `host-default`) — see ADR 0026.
+- **UserPreferences** tokens: `themeMode` `light` \| `dark` \| `auto`; `paletteMode` (current `vibrant`, legacy-compat `wallpaper`); `timetableLayoutMode` `fixed` \| `compact`; `capsuleCornerStyle` `rounded` \| `sharp` \| `pill`; `visualThemeId`; optional `locale` (`zh-cn` \| `en`). Active icon theme is **derived**, never stored: engine resolves it from the active theme's `recommendedIconTheme` (fallback `host-default`) — see ADR 0026.
 
 ## Period clock
 
