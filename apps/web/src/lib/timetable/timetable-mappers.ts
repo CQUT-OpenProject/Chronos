@@ -25,6 +25,10 @@ export function toSettingsDraft(timetable: Timetable): TimetableSettingsDraft {
 				timetable.academicConfig?.termStartDate ?? '',
 				todayIsoDate()
 			),
+			// Preserve the stored startWeek verbatim: week dates resolve as
+			// termStart + (week - startWeek), so normalizing legacy offsets
+			// here would silently shift every week. Total-weeks editing keeps
+			// the offset (endWeek = startWeek + total - 1).
 			startWeek: timetable.academicConfig?.startWeek ?? 1,
 			endWeek: timetable.academicConfig?.endWeek ?? 20,
 			periodTimes: (timetable.academicConfig?.periodTimes ?? []).map((period) => ({

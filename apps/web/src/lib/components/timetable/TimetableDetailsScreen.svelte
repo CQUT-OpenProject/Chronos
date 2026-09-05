@@ -5,6 +5,7 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import TimetableDetailsEditor from '$lib/components/timetable/TimetableDetailsEditor.svelte';
+	import { validatePeriodTimes } from '$lib/timetable/period-times';
 	import { getAppController } from '$lib/services/app-engine';
 
 	let {
@@ -14,6 +15,10 @@
 	} = $props();
 
 	const controller = getAppController();
+
+	const periodsBlocked = $derived(
+		editor.draft ? validatePeriodTimes(editor.draft.academicConfig.periodTimes).length > 0 : false
+	);
 
 	let resetDialogOpen = $state(false);
 
@@ -25,18 +30,25 @@
 
 {#if editor.draft}
 	{#snippet footer()}
-		<div class="flex w-full gap-3">
-			<Button variant="outlined" class="w-full flex-1" onclick={() => (resetDialogOpen = true)}>
-				{hostT('timetable.details.reset')}
-			</Button>
-			<Button
-				variant="filled"
-				class="w-full flex-1"
-				disabled={!editor.canSave}
-				onclick={editor.save}
-			>
-				{hostT('timetable.details.save')}
-			</Button>
+		<div class="flex w-full flex-col gap-2">
+			{#if periodsBlocked}
+				<p class="text-body-small px-1 text-error">
+					{hostT('timetable.details.periods.saveBlocked')}
+				</p>
+			{/if}
+			<div class="flex w-full gap-3">
+				<Button variant="outlined" class="w-full flex-1" onclick={() => (resetDialogOpen = true)}>
+					{hostT('timetable.details.reset')}
+				</Button>
+				<Button
+					variant="filled"
+					class="w-full flex-1"
+					disabled={!editor.canSave}
+					onclick={editor.save}
+				>
+					{hostT('timetable.details.save')}
+				</Button>
+			</div>
 		</div>
 	{/snippet}
 

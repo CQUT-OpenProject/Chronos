@@ -3,6 +3,7 @@ import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import type { Timetable } from '@chronos/core';
 import { trackEvent } from '$lib/client/analytics';
 import { toSettingsDraft } from '$lib/timetable/timetable-mappers';
+import { validatePeriodTimes } from '$lib/timetable/period-times';
 import { getAppController } from '$lib/services/app-engine';
 import { currentWeekMonday, todayIsoDate } from '@chronos/core';
 import { defaultPeriodTimes } from '$lib/models/defaults';
@@ -28,7 +29,10 @@ export class TimetableDetailsEditor {
 	}
 
 	get canSave() {
-		return Boolean(this.draft);
+		return (
+			Boolean(this.draft) &&
+			validatePeriodTimes(this.draft?.academicConfig.periodTimes ?? []).length === 0
+		);
 	}
 
 	save = async () => {
