@@ -15,7 +15,8 @@ import {
 	compressShareAdaptive,
 	decompressShareAdaptive,
 	SHARE_LINK_VERSION_BROTLI,
-	SHARE_LINK_VERSION_DEFLATE
+	SHARE_LINK_VERSION_DEFLATE,
+	ShareDecompressionTooLargeError
 } from './share-link-brotli';
 import { SHARE_CODEC_MESSAGES } from '../messages';
 
@@ -23,6 +24,8 @@ export const SHARE_LINK_VERSION = SHARE_LINK_VERSION_BROTLI;
 export const SHARE_LINK_PREFIX = `${SHARE_LINK_VERSION}.`;
 export const SHARE_LINK_PREFIX_DEFLATE = `${SHARE_LINK_VERSION_DEFLATE}.`;
 export const SHARE_LINK_WARNING_LENGTH = 800;
+/** Upper bound for encoded share payloads (worst legit timetable encodes to ~10K chars). */
+export const MAX_SHARE_PAYLOAD_CHARS = 65_536;
 
 type ShareCodecLabels = (typeof SHARE_CODEC_MESSAGES)['zh-cn'];
 const DEFAULT_SHARE_LABELS: ShareCodecLabels = SHARE_CODEC_MESSAGES['zh-cn'];
@@ -69,6 +72,9 @@ export async function decodeSharePayload(
 	labels: ShareDecodeLabels = DEFAULT_SHARE_LABELS
 ): Promise<ShareLinkResult<Timetable>> {
 	const normalized = payload.trim();
+	if (normalized.length > MAX_SHARE_PAYLOAD_CHARS) {
+		return shareFailure(labels['share.error.corrupted']);
+	}
 	const parsed = parseShareLinkVersion(normalized);
 	if (
 		!parsed ||
@@ -84,6 +90,9 @@ export async function decodeSharePayload(
 		if (!verified) throw new ShareBinaryDecodeError('checksum mismatch');
 		return shareSuccess(decodeBinaryToTimetable(verified));
 	} catch (error) {
+		if (error instanceof ShareDecompressionTooLargeError) {
+			return shareFailure(labels['share.error.corrupted']);
+		}
 		const message =
 			error instanceof ShareBinaryDecodeError
 				? error.message === 'checksum mismatch'

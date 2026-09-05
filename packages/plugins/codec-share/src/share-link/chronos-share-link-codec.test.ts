@@ -255,6 +255,27 @@ describe('chronos-share-link-codec', () => {
 		expect(decoded.errorMessage).toBe(SHARE_CODEC_MESSAGES['zh-cn']['share.error.corrupted']);
 	});
 
+	it('rejects oversized payloads without decoding', async () => {
+		const bomb = `2.${'A'.repeat(70_000)}`;
+		const decoded = await decodeSharePayload(bomb);
+
+		expect(decoded.ok).toBe(false);
+		if (decoded.ok) return;
+		expect(decoded.errorMessage).toBe(SHARE_CODEC_MESSAGES['zh-cn']['share.error.corrupted']);
+	});
+
+	it('rejects decompression bombs that exceed the output cap', async () => {
+		const repetitive = new Uint8Array(300_000).fill(0x41);
+		const { bytesToBase64Url } = await import('@chronos/codec-kit');
+		const bomb = `2.${bytesToBase64Url(await deflateRaw(repetitive))}`;
+		expect(bomb.length).toBeLessThan(65_536);
+		const decoded = await decodeSharePayload(bomb);
+
+		expect(decoded.ok).toBe(false);
+		if (decoded.ok) return;
+		expect(decoded.errorMessage).toBe(SHARE_CODEC_MESSAGES['zh-cn']['share.error.corrupted']);
+	});
+
 	it('extracts payload from hash and query', () => {
 		const payload = '1.abc';
 		expect(
