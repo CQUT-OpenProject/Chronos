@@ -2,6 +2,16 @@
 export * from './reactivity/engine-controller.svelte';
 export * from './theme/m3-theme';
 export { default as SchemaForm } from './schema-form/SchemaForm.svelte';
+export {
+	DEFAULT_TIME_PICKER_LABELS,
+	formatTimeValue,
+	hourItems,
+	isValidTimeValue,
+	minuteItems,
+	parseTimeValue,
+	type TimePickerLabels,
+	type TimeValue
+} from './form/time-wheel-utils';
 export { findInvalidSchemaFields } from './schema-form/validate-schema';
 export { default as DateField } from './form/DateField.svelte';
 export { default as Radio } from './form/Radio.svelte';
