@@ -184,6 +184,7 @@ const zhCn = {
 	// share
 	'share.error.noData': '链接中未找到课表数据',
 	'share.error.invalidData': '分享链接中未找到有效课表数据',
+	'share.error.network': '网络异常，无法获取分享数据，请重试',
 	'share.error.parseFailed': '无法解析分享链接',
 	'share.loading': '正在导入课表…',
 	'share.failed': '无法导入课表',
@@ -718,6 +719,7 @@ const en = {
 	// share
 	'share.error.noData': 'No timetable data found in the link',
 	'share.error.invalidData': 'No valid timetable data found in the share link',
+	'share.error.network': 'Network error while fetching share data, please retry',
 	'share.error.parseFailed': 'Could not parse the share link',
 	'share.loading': 'Importing timetable…',
 	'share.failed': 'Could not import timetable',
