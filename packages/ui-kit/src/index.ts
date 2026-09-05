@@ -2,6 +2,7 @@
 export * from './reactivity/engine-controller.svelte';
 export * from './theme/m3-theme';
 export { default as SchemaForm } from './schema-form/SchemaForm.svelte';
+export { findInvalidSchemaFields } from './schema-form/validate-schema';
 export { default as DateField } from './form/DateField.svelte';
 export { default as Radio } from './form/Radio.svelte';
 export { default as SelectableOption } from './form/SelectableOption.svelte';

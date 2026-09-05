@@ -2,7 +2,7 @@
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { SchemaForm } from '@chronos/ui-kit';
+	import { SchemaForm, findInvalidSchemaFields } from '@chronos/ui-kit';
 	import type { ConfigSchema } from '@chronos/core';
 	import {
 		getAppEngine,
@@ -30,6 +30,8 @@
 	let formValues = $state<Record<string, unknown>>({});
 	let saving = $state(false);
 
+	const invalidFields = $derived(findInvalidSchemaFields(schema, formValues));
+
 	$effect(() => {
 		if (open && pluginId) {
 			void loadConfig();
@@ -51,6 +53,7 @@
 	}
 
 	async function handleSave() {
+		if (findInvalidSchemaFields(schema, formValues).length > 0) return;
 		saving = true;
 		try {
 			const ctx = engine.getPluginContext(pluginId);
@@ -69,7 +72,7 @@
 <Dialog bind:open title={hostT('plugins.config.title', { name: pluginName || pluginId })}>
 	<div class="max-h-[60vh] overflow-y-auto py-2">
 		{#if Object.keys(schema).length > 0}
-			<SchemaForm {schema} bind:value={formValues} disabled={saving} />
+			<SchemaForm {schema} bind:value={formValues} controller={appController} disabled={saving} />
 		{:else}
 			<p class="text-body-medium text-on-surface-variant">
 				{hostT('plugins.config.empty')}
@@ -81,7 +84,7 @@
 		<Button variant="text" disabled={saving} onclick={() => (open = false)}>
 			{hostT('common.cancel')}
 		</Button>
-		<Button variant="filled" disabled={saving} onclick={handleSave}>
+		<Button variant="filled" disabled={saving || invalidFields.length > 0} onclick={handleSave}>
 			{saving ? hostT('plugins.config.saving') : hostT('plugins.config.save')}
 		</Button>
 	{/snippet}
