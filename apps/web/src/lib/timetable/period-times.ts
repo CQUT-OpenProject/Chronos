@@ -1,4 +1,5 @@
 import type { Course, PeriodTime } from '@chronos/core';
+import { countDistinctCoursesAffectedByPeriodDelete } from '@chronos/core';
 
 const TIME_PATTERN = /^(\d{1,2}):(\d{2})$/;
 
@@ -116,12 +117,12 @@ export function hasRoomForNextPeriod(
 }
 
 /**
- * Courses whose period pointers change meaning when the period with the
+ * Distinct courses whose period pointers change when the period with the
  * given 1-based index is deleted and later periods shift down.
  */
 export function countCoursesAffectedByPeriodDelete(
 	courses: Course[],
 	deletedIndex: number
 ): number {
-	return courses.filter((course) => course.endPeriod >= deletedIndex).length;
+	return countDistinctCoursesAffectedByPeriodDelete(courses, deletedIndex);
 }

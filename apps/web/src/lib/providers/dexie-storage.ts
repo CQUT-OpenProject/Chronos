@@ -13,7 +13,8 @@ import {
 	PALETTE_MODE_VIBRANT,
 	LEGACY_PALETTE_MODE_DYNAMIC,
 	matchesCourseQuery,
-	DEFAULT_VISUAL_THEME_ID
+	DEFAULT_VISUAL_THEME_ID,
+	countDistinctCourseNames
 } from '@chronos/core';
 import { db, type ChronosDB } from '$lib/storage/db';
 import { courseToRow, timetableFromRow, timetableToRow, courseFromRow } from '$lib/storage/mappers';
@@ -122,7 +123,11 @@ export class DexieStorageProvider implements IStorageService {
 			const rows = await this.database.timetables.orderBy('updatedAt').reverse().toArray();
 			const results = await Promise.all(
 				rows.map(async (r) => {
-					const count = await this.database.courses.where('timetableId').equals(r.id).count();
+					const courseRows = await this.database.courses
+						.where('timetableId')
+						.equals(r.id)
+						.toArray();
+					const count = countDistinctCourseNames(courseRows.map(courseFromRow));
 					return { id: r.id, name: r.name, courseCount: count, updatedAt: r.updatedAt };
 				})
 			);

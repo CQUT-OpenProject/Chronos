@@ -13,7 +13,7 @@
 		validatePeriodTimes,
 		type PeriodProblem
 	} from '$lib/timetable/period-times';
-	import { isCoursePeriodVisible } from '@chronos/core';
+	import { countDistinctCourseNames, countDistinctHiddenCourses } from '@chronos/core';
 	import { formatTimeValue, parseTimeValue, type TimeValue } from '@chronos/ui-kit';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -97,9 +97,7 @@
 	const canAddPeriod = $derived(hasRoomForNextPeriod(value));
 	// Courses are only hidden, never deleted: surface the count so a trimmed
 	// timetable never looks like data loss. Re-adding periods restores them.
-	const hiddenCourseCount = $derived(
-		courses.filter((course) => !isCoursePeriodVisible(course, value.length)).length
-	);
+	const hiddenCourseCount = $derived(countDistinctHiddenCourses(courses, value.length));
 
 	async function openEdit(pos: number) {
 		const period = value[pos];
@@ -314,7 +312,9 @@
 <Dialog
 	bind:open={resetConfirmOpen}
 	title={hostT('timetable.details.periods.resetTitle')}
-	description={hostT('timetable.details.periods.resetDesc', { count: courses.length })}
+	description={hostT('timetable.details.periods.resetDesc', {
+		count: countDistinctCourseNames(courses)
+	})}
 >
 	{#snippet footer()}
 		<Button variant="text" onclick={() => (resetConfirmOpen = false)}>

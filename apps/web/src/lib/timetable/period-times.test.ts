@@ -80,14 +80,23 @@ describe('period-times', () => {
 		expect(suggestNextPeriodTime([])).toEqual({ startTime: '08:10', endTime: '08:55' });
 	});
 
-	it('counts courses whose pointers shift when a period is deleted', () => {
+	it('counts distinct courses whose pointers shift when a period is deleted', () => {
 		const courses = [
-			{ startPeriod: 1, endPeriod: 1 },
-			{ startPeriod: 2, endPeriod: 4 },
-			{ startPeriod: 5, endPeriod: 6 }
+			{ name: '高等数学', startPeriod: 1, endPeriod: 1 },
+			{ name: '线性代数', startPeriod: 2, endPeriod: 4 },
+			{ name: '大学物理', startPeriod: 5, endPeriod: 6 }
 		] as Course[];
 		expect(countCoursesAffectedByPeriodDelete(courses, 2)).toBe(2);
 		expect(countCoursesAffectedByPeriodDelete(courses, 5)).toBe(1);
 		expect(countCoursesAffectedByPeriodDelete(courses, 7)).toBe(0);
+	});
+
+	it('deduplicates split entries of the same course when counting period-delete impact', () => {
+		const courses = [
+			{ name: '数据库原理及应用★', startPeriod: 1, endPeriod: 1 },
+			{ name: '数据库原理及应用☆', startPeriod: 2, endPeriod: 4 },
+			{ name: '操作系统', startPeriod: 5, endPeriod: 6 }
+		] as Course[];
+		expect(countCoursesAffectedByPeriodDelete(courses, 2)).toBe(2);
 	});
 });
