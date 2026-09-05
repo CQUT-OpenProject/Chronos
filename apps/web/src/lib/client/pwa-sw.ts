@@ -164,21 +164,24 @@ export async function waitForSwActivationAndReload(
 export async function applyUpdateAndReload(): Promise<void> {
 	if (typeof window === 'undefined') return;
 
-	try {
-		if ('caches' in window) {
-			await caches.delete('pages-cache');
-		}
-	} catch {
-		// ignore cache deletion errors
-	}
-
 	if (!('serviceWorker' in navigator)) {
 		reloadPage();
 		return;
 	}
 
 	try {
-		await waitForSwActivationAndReload(() => navigator.serviceWorker.getRegistration());
+		const registration = await navigator.serviceWorker.getRegistration();
+		// Only drop the pages runtime cache when a waiting worker will actually
+		// take over; a semver-only update has nothing to activate and a bare
+		// reload would needlessly force every page back to network.
+		if (registration?.waiting && 'caches' in window) {
+			try {
+				await caches.delete('pages-cache');
+			} catch {
+				// ignore cache deletion errors
+			}
+		}
+		await waitForSwActivationAndReload(() => Promise.resolve(registration ?? undefined));
 	} catch {
 		reloadPage();
 	}

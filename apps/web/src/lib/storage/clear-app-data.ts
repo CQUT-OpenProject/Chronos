@@ -1,5 +1,6 @@
 import type { ChronosEngine } from '@chronos/core';
 import { getAppEngine } from '$lib/services/app-engine';
+import { estimateCacheStorageBytes } from './cache-storage';
 
 const CHRONOS_STORAGE_PREFIX = 'chronos';
 const textEncoder = new TextEncoder();
@@ -44,6 +45,9 @@ export async function estimateAppDataBytes(engine?: ChronosEngine): Promise<numb
 	}
 	if (typeof sessionStorage !== 'undefined') {
 		total += estimateStorageBytes(sessionStorage, CHRONOS_STORAGE_PREFIX);
+	}
+	if (typeof caches !== 'undefined') {
+		total += await estimateCacheStorageBytes(caches);
 	}
 	return total;
 }

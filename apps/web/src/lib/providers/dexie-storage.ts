@@ -17,6 +17,7 @@ import {
 } from '@chronos/core';
 import { db, type ChronosDB } from '$lib/storage/db';
 import { courseToRow, timetableFromRow, timetableToRow, courseFromRow } from '$lib/storage/mappers';
+import { clearAppCaches } from '$lib/storage/cache-storage';
 
 const SETTINGS_KEYS = {
 	currentTimetableId: 'chronos_preferences:current_timetable_id',
@@ -71,7 +72,8 @@ export class DexieStorageProvider implements IStorageService {
 
 	constructor(
 		private database: ChronosDB = db,
-		private localStore: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null
+		private localStore: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null,
+		private cacheStore: CacheStorage | null = typeof caches !== 'undefined' ? caches : null
 	) {
 		if (typeof window !== 'undefined') {
 			this.storageListener = (e: StorageEvent) => {
@@ -375,6 +377,7 @@ export class DexieStorageProvider implements IStorageService {
 					sessionStorage.removeItem(k);
 				}
 			}
+			await clearAppCaches(this.cacheStore);
 			this.notifyChange({ type: 'preferences', key: 'clearAllData' });
 			this.notifyChange({ type: 'timetable', key: 'clearAllData' });
 		} catch (err) {
