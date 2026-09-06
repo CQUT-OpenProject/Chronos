@@ -1,4 +1,6 @@
 import { haptic } from '$lib/haptic/haptic';
+import { createRafCoalescer } from '$lib/utils/raf-coalescer';
+import { createThrottledCallback } from '$lib/utils/throttle';
 
 export interface WeekFromClientXInput {
 	clientX: number;
@@ -35,6 +37,26 @@ export interface WeekSliderGestureOptions {
 	onWeekStepFeedback?: () => void;
 }
 
+function trySetPointerCapture(target: HTMLElement | null, pointerId: number): void {
+	if (target?.setPointerCapture) {
+		try {
+			target.setPointerCapture(pointerId);
+		} catch {
+			// Ignore
+		}
+	}
+}
+
+function tryReleasePointerCapture(element: HTMLElement | null, pointerId: number): void {
+	if (element && element.hasPointerCapture(pointerId)) {
+		try {
+			element.releasePointerCapture(pointerId);
+		} catch {
+			// Ignore
+		}
+	}
+}
+
 export function createWeekSliderGesture({
 	getStartWeek,
 	getEndWeek,
@@ -49,61 +71,23 @@ export function createWeekSliderGesture({
 	let headerContainerEl = $state<HTMLElement | null>(null);
 
 	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
-	let pendingWeekChange: number | null = null;
-	let rafHandle: number | null = null;
 	let activePointerId: number | null = null;
 	let startX = 0;
 	let startY = 0;
 	let isPressDragging = false;
-	let lastHapticTime = -Infinity;
 
-	const HAPTIC_THROTTLE_MS = 40;
+	const weekChangeRaf = createRafCoalescer(onWeekChange);
+	const triggerStepFeedback = createThrottledCallback(onWeekStepFeedback, 40);
 
-	function triggerStepFeedback() {
-		const now = Date.now();
-		if (now - lastHapticTime >= HAPTIC_THROTTLE_MS) {
-			lastHapticTime = now;
-			onWeekStepFeedback();
-		}
-	}
-
-	function scheduleWeekChange(week: number) {
-		pendingWeekChange = week;
-		if (rafHandle == null) {
-			const requestFrame =
-				typeof requestAnimationFrame === 'function'
-					? requestAnimationFrame
-					: (cb: FrameRequestCallback) => setTimeout(cb, 0);
-			rafHandle = requestFrame(() => {
-				rafHandle = null;
-				if (pendingWeekChange != null) {
-					const target = pendingWeekChange;
-					pendingWeekChange = null;
-					onWeekChange(target);
-				}
-			});
-		}
-	}
-
-	function flushWeekChange(week: number) {
-		if (rafHandle != null) {
-			const cancelFrame =
-				typeof cancelAnimationFrame === 'function' ? cancelAnimationFrame : clearTimeout;
-			cancelFrame(rafHandle);
-			rafHandle = null;
-		}
-		pendingWeekChange = null;
-		onWeekChange(week);
+	function applyWeekStep(week: number): void {
+		if (dragWeek === week) return;
+		dragWeek = week;
+		triggerStepFeedback();
+		weekChangeRaf.schedule(week);
 	}
 
 	function onHeaderTap() {
-		if (rafHandle != null) {
-			const cancelFrame =
-				typeof cancelAnimationFrame === 'function' ? cancelAnimationFrame : clearTimeout;
-			cancelFrame(rafHandle);
-			rafHandle = null;
-		}
-		pendingWeekChange = null;
+		weekChangeRaf.cancel();
 		if (weekSliderVisible) {
 			weekSliderVisible = false;
 			return;
@@ -120,14 +104,7 @@ export function createWeekSliderGesture({
 		startY = e.clientY;
 		isPressDragging = false;
 
-		const target = e.currentTarget as HTMLElement | null;
-		if (target?.setPointerCapture) {
-			try {
-				target.setPointerCapture(e.pointerId);
-			} catch {
-				// Ignore
-			}
-		}
+		trySetPointerCapture(e.currentTarget as HTMLElement | null, e.pointerId);
 
 		if (longPressTimer) clearTimeout(longPressTimer);
 		longPressTimer = setTimeout(() => {
@@ -137,16 +114,6 @@ export function createWeekSliderGesture({
 			isPressDragging = true;
 			longPressTimer = null;
 		}, 350);
-	}
-
-	function releaseCapture(pointerId: number) {
-		if (headerContainerEl && headerContainerEl.hasPointerCapture(pointerId)) {
-			try {
-				headerContainerEl.releasePointerCapture(pointerId);
-			} catch {
-				// Ignore
-			}
-		}
 	}
 
 	function updateWeekFromClientX(clientX: number) {
@@ -159,10 +126,8 @@ export function createWeekSliderGesture({
 			startWeek: getStartWeek(),
 			endWeek: getEndWeek()
 		});
-		if (nextWeek == null || dragWeek === nextWeek) return;
-		dragWeek = nextWeek;
-		triggerStepFeedback();
-		scheduleWeekChange(nextWeek);
+		if (nextWeek == null) return;
+		applyWeekStep(nextWeek);
 	}
 
 	function onWindowPointerMove(e: PointerEvent) {
@@ -176,7 +141,7 @@ export function createWeekSliderGesture({
 					clearTimeout(longPressTimer);
 					longPressTimer = null;
 				}
-				releaseCapture(e.pointerId);
+				tryReleasePointerCapture(headerContainerEl, e.pointerId);
 			}
 			return;
 		}
@@ -185,47 +150,38 @@ export function createWeekSliderGesture({
 		updateWeekFromClientX(e.clientX);
 	}
 
-	function onWindowPointerUp(e: PointerEvent) {
-		if (activePointerId !== e.pointerId) return;
-		releaseCapture(e.pointerId);
+	function finishPointerInteraction(pointerId: number, flushDrag: boolean) {
+		tryReleasePointerCapture(headerContainerEl, pointerId);
 		activePointerId = null;
 
 		if (longPressTimer) {
 			clearTimeout(longPressTimer);
 			longPressTimer = null;
 			onHeaderTap();
-		} else if (isPressDragging) {
+		} else if (flushDrag && isPressDragging) {
 			isPressDragging = false;
 			weekSliderVisible = false;
-			flushWeekChange(dragWeek);
+			weekChangeRaf.flush(dragWeek);
 		}
+	}
+
+	function onWindowPointerUp(e: PointerEvent) {
+		if (activePointerId !== e.pointerId) return;
+		finishPointerInteraction(e.pointerId, true);
 	}
 
 	function onWindowPointerCancel(e: PointerEvent) {
 		if (activePointerId !== e.pointerId) return;
-		releaseCapture(e.pointerId);
-		activePointerId = null;
-		if (longPressTimer) {
-			clearTimeout(longPressTimer);
-			longPressTimer = null;
-		}
-		if (isPressDragging) {
-			isPressDragging = false;
-			weekSliderVisible = false;
-			flushWeekChange(dragWeek);
-		}
+		finishPointerInteraction(e.pointerId, true);
 	}
 
 	function onSliderValueChange(week: number) {
-		if (dragWeek === week) return;
-		dragWeek = week;
-		triggerStepFeedback();
-		scheduleWeekChange(week);
+		applyWeekStep(week);
 	}
 
 	function onSliderCommit(week?: number) {
 		const targetWeek = typeof week === 'number' ? week : dragWeek;
-		flushWeekChange(targetWeek);
+		weekChangeRaf.flush(targetWeek);
 		weekSliderVisible = false;
 	}
 
