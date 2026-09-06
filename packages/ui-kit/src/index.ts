@@ -46,3 +46,4 @@ export { default as TimetableLivePreview } from './timetable-preview/TimetableLi
 export { default as ImportCourseList } from './import-preview/ImportCourseList.svelte';
 export { PREVIEW_PAINT_READY_CONTEXT } from './timetable-preview/preview-paint-ready';
 export * from './timetable-preview/timetable-grid-chrome';
+export * from './haptic/haptic';

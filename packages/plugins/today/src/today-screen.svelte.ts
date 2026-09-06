@@ -1,4 +1,5 @@
 import type { ReactiveChronosController } from '@chronos/ui-kit';
+import { haptic } from '@chronos/ui-kit';
 import {
 	currentTimeMinutes,
 	findCurrentPeriodIndex,
@@ -122,6 +123,9 @@ export function createTodayScreenController(): TodayScreenController {
 	}
 
 	async function persistScope(nextScope: TodayScope) {
+		if (nextScope !== scope) {
+			haptic.medium();
+		}
 		scope = nextScope;
 		const controller = chronosController;
 		if (!controller) return;

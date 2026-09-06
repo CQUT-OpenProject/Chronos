@@ -8,10 +8,6 @@ import {
 	triggerVibrate
 } from './haptic';
 
-vi.mock('$app/environment', () => ({
-	browser: true
-}));
-
 const mockLocalStorage = new Map<string, string>();
 
 function enableHaptic() {

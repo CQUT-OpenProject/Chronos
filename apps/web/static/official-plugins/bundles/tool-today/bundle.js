@@ -5973,8 +5973,95 @@ function eo(e, t, n, r, i) {
 	return o === r ? bi(a, i) : o;
 }
 //#endregion
-//#region packages/plugins/today/src/messages.ts
-var to = {
+//#region packages/ui-kit/src/haptic/haptic.ts
+var to = "chronos_preferences:haptic_feedback_enabled", no = "__CHRONOS_NATIVE__";
+function ro() {
+	if (typeof window > "u") return null;
+	let e = window[no];
+	return typeof e == "object" && e && typeof e.callNative == "function" ? e : null;
+}
+function io() {
+	return typeof navigator < "u" && typeof navigator.vibrate == "function";
+}
+function ao() {
+	if (typeof window > "u") return !1;
+	try {
+		if (typeof localStorage > "u") return !0;
+		let e = localStorage.getItem(to);
+		return e !== "0" && e !== "false";
+	} catch {
+		return !0;
+	}
+}
+function oo(e) {
+	if (!io()) return !1;
+	try {
+		return navigator.vibrate(e);
+	} catch {
+		return !1;
+	}
+}
+function so(e, t) {
+	if (!ao()) return !1;
+	let n = ro();
+	return n ? (n.callNative("haptic", e.method, e.params ?? {}).catch(() => {
+		oo(t);
+	}), !0) : oo(t);
+}
+var co = {
+	light: 25,
+	medium: 50,
+	heavy: 80,
+	success: [
+		30,
+		60,
+		40
+	],
+	warning: [
+		50,
+		60,
+		50
+	]
+}, lo = {
+	light() {
+		return so({
+			method: "impact",
+			params: { style: "light" }
+		}, co.light);
+	},
+	medium() {
+		return so({
+			method: "impact",
+			params: { style: "medium" }
+		}, co.medium);
+	},
+	heavy() {
+		return so({
+			method: "impact",
+			params: { style: "heavy" }
+		}, co.heavy);
+	},
+	success() {
+		return so({
+			method: "notification",
+			params: { type: "success" }
+		}, co.success);
+	},
+	warning() {
+		return so({
+			method: "notification",
+			params: { type: "warning" }
+		}, co.warning);
+	},
+	cancel() {
+		if (io()) try {
+			return navigator.vibrate(0);
+		} catch {
+			return !1;
+		}
+		return !1;
+	}
+}, uo = {
 	"zh-cn": {
 		"plugin.name": "今日",
 		"plugin.description": "快速查看当天课程",
@@ -6021,14 +6108,14 @@ var to = {
 		"screen.course.periodRange": "Periods {start}-{end}",
 		"config.scope.title": "Scope"
 	}
-}, no = "tool-today";
+}, fo = "tool-today";
 //#endregion
 //#region packages/plugins/today/src/index.ts
-function ro(e = {}) {
+function po(e = {}) {
 	let { screenComponent: t } = e;
 	return Di({
-		id: no,
-		messages: to,
+		id: fo,
+		messages: uo,
 		nameKey: "plugin.name",
 		descriptionKey: "plugin.description",
 		category: "tool",
@@ -6044,7 +6131,7 @@ function ro(e = {}) {
 				iconFill: "calendar-today",
 				defaultLaunch: !0
 			}), e.registerSlot("shell.route.screen", {
-				id: no,
+				id: fo,
 				title: () => n("screen.title"),
 				...t ? { component: t } : {}
 			});
@@ -6053,15 +6140,15 @@ function ro(e = {}) {
 }
 //#endregion
 //#region packages/plugins/today/src/today-courses.ts
-var io = new fi();
-function ao(e, t, n) {
+var mo = new fi();
+function ho(e, t, n) {
 	let r = e.find((e) => e.index === t), i = e.find((e) => e.index === n);
 	return !r || !i ? null : {
 		startTime: r.startTime,
 		endTime: i.endTime
 	};
 }
-function oo(e) {
+function go(e) {
 	return [...e].sort((e, t) => {
 		let n = e.course.startPeriod - t.course.startPeriod;
 		if (n !== 0) return n;
@@ -6069,7 +6156,7 @@ function oo(e) {
 		return r === 0 ? e.course.name.localeCompare(t.course.name, "zh-CN") : r;
 	});
 }
-function so(e, t, n, r) {
+function _o(e, t, n, r) {
 	let i = mi(t), a = i.find((t) => t.index === e.startPeriod), o = i.find((t) => t.index === e.endPeriod);
 	if (a && o) {
 		if (n > o.endMinutes) return "past";
@@ -6078,18 +6165,18 @@ function so(e, t, n, r) {
 	}
 	return r == null ? "upcoming" : e.endPeriod < r ? "past" : e.startPeriod <= r && e.endPeriod >= r ? "current" : "upcoming";
 }
-function co(e, t, n, r) {
-	return oo(e).map((e) => ({
+function vo(e, t, n, r) {
+	return go(e).map((e) => ({
 		hit: e,
-		status: so(e.course, t, n, r)
+		status: _o(e.course, t, n, r)
 	}));
 }
-async function lo(e, t) {
+async function yo(e, t) {
 	let { todayIso: n, scope: r, timetable: i } = t;
 	if (!i) return [];
 	let a = di(n);
 	if (r === "active") {
-		let t = io.calculateAcademicWeek(n, i.academicConfig);
+		let t = mo.calculateAcademicWeek(n, i.academicConfig);
 		return e.queryCourses({
 			dayOfWeek: a,
 			week: t,
@@ -6100,7 +6187,7 @@ async function lo(e, t) {
 	if (o.length === 0) return [];
 	let s = (await Promise.all(o.map((t) => e.getTimetable(t.id)))).filter((e) => e != null), c = /* @__PURE__ */ new Map();
 	for (let e of s) {
-		let t = io.calculateAcademicWeek(n, e.academicConfig), r = c.get(t) ?? [];
+		let t = mo.calculateAcademicWeek(n, e.academicConfig), r = c.get(t) ?? [];
 		r.push(e.id), c.set(t, r);
 	}
 	return (await Promise.all([...c.entries()].map(([t, n]) => e.queryCourses({
@@ -6111,7 +6198,7 @@ async function lo(e, t) {
 }
 //#endregion
 //#region packages/plugins/today/src/today-screen.svelte.ts
-function uo() {
+function bo() {
 	let e = /* @__PURE__ */ zt(null), t = "", n = /* @__PURE__ */ zt("active"), r = /* @__PURE__ */ zt([]), i, a;
 	function o() {
 		return I(e)?.currentTimetable ?? null;
@@ -6130,12 +6217,12 @@ function uo() {
 			return;
 		}
 		try {
-			let e = await lo(i.getPluginContext(t).service(vi), {
+			let e = await yo(i.getPluginContext(t).service(vi), {
 				todayIso: I(c),
 				scope: I(n),
 				timetable: a
 			}), o = s(), d = e.filter((e) => Kr(e.course, o.length));
-			A(r, co(d, o, hi(I(l)), I(u)));
+			A(r, vo(d, o, hi(I(l)), I(u)));
 		} catch {
 			A(r, []);
 		}
@@ -6166,7 +6253,7 @@ function uo() {
 		}
 	}
 	async function m(r) {
-		A(n, r, !0);
+		r !== I(n) && lo.medium(), A(n, r, !0);
 		let i = I(e);
 		if (i) {
 			try {
@@ -6205,10 +6292,10 @@ function uo() {
 }
 //#endregion
 //#region packages/plugins/today/src/TodayScreen.svelte
-var fo = /* @__PURE__ */ L("<p class=\"text-label-large shrink-0 text-on-surface-variant\"> </p>"), po = /* @__PURE__ */ L("<div class=\"mt-1 flex items-center justify-between gap-3\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <!></div>"), mo = /* @__PURE__ */ L("<div></div>"), ho = /* @__PURE__ */ L("<button type=\"button\"> </button>"), go = /* @__PURE__ */ L("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p></section>"), _o = /* @__PURE__ */ L("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p></section>"), vo = /* @__PURE__ */ L("<p class=\"text-label-medium text-on-surface tabular-nums\"> </p>"), yo = /* @__PURE__ */ L("<span class=\"text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary\"> </span>"), bo = /* @__PURE__ */ L("<p> </p>"), xo = /* @__PURE__ */ L("<div class=\"text-body-small mt-1 flex flex-col gap-1 text-on-surface-variant\"><!> <!> <!></div>"), So = /* @__PURE__ */ L("<div class=\"flex w-11 shrink-0 flex-col items-center self-stretch\"><!> <div class=\"flex min-h-0 w-full flex-1 flex-col items-center justify-center\"><p class=\"text-headline-small w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant\"> </p></div> <!></div> <div class=\"w-1 shrink-0 self-stretch rounded-full\" aria-hidden=\"true\"></div> <div class=\"min-w-0 flex-1\"><div class=\"flex items-start justify-between gap-2\"><p class=\"text-title-medium truncate text-on-surface\"> </p> <!></div> <!></div>", 1), Co = /* @__PURE__ */ L("<button type=\"button\"><!></button>"), wo = /* @__PURE__ */ L("<div><!></div>"), To = /* @__PURE__ */ L("<li><!></li>"), Eo = /* @__PURE__ */ L("<section class=\"overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs\"><ul class=\"divide-y divide-outline/10\"></ul></section>"), Do = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 flex-col overflow-y-auto\"><header class=\"border-b border-outline/10 bg-surface px-4 pt-6 pb-4\"><p class=\"text-headline-small text-on-surface\"> </p> <!> <div class=\"rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs\"><!> <!></div></header> <div class=\"flex flex-1 flex-col gap-4 p-4\"><!></div></div>");
-function Oo(e, t) {
+var xo = /* @__PURE__ */ L("<p class=\"text-label-large shrink-0 text-on-surface-variant\"> </p>"), So = /* @__PURE__ */ L("<div class=\"mt-1 flex items-center justify-between gap-3\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <!></div>"), Co = /* @__PURE__ */ L("<div></div>"), wo = /* @__PURE__ */ L("<button type=\"button\"> </button>"), To = /* @__PURE__ */ L("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p></section>"), Eo = /* @__PURE__ */ L("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p></section>"), Do = /* @__PURE__ */ L("<p class=\"text-label-medium text-on-surface tabular-nums\"> </p>"), Oo = /* @__PURE__ */ L("<span class=\"text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary\"> </span>"), ko = /* @__PURE__ */ L("<p> </p>"), Ao = /* @__PURE__ */ L("<div class=\"text-body-small mt-1 flex flex-col gap-1 text-on-surface-variant\"><!> <!> <!></div>"), jo = /* @__PURE__ */ L("<div class=\"flex w-11 shrink-0 flex-col items-center self-stretch\"><!> <div class=\"flex min-h-0 w-full flex-1 flex-col items-center justify-center\"><p class=\"text-headline-small w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant\"> </p></div> <!></div> <div class=\"w-1 shrink-0 self-stretch rounded-full\" aria-hidden=\"true\"></div> <div class=\"min-w-0 flex-1\"><div class=\"flex items-start justify-between gap-2\"><p class=\"text-title-medium truncate text-on-surface\"> </p> <!></div> <!></div>", 1), Mo = /* @__PURE__ */ L("<button type=\"button\"><!></button>"), No = /* @__PURE__ */ L("<div><!></div>"), Po = /* @__PURE__ */ L("<li><!></li>"), Fo = /* @__PURE__ */ L("<section class=\"overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs\"><ul class=\"divide-y divide-outline/10\"></ul></section>"), Io = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 flex-col overflow-y-auto\"><header class=\"border-b border-outline/10 bg-surface px-4 pt-6 pb-4\"><p class=\"text-headline-small text-on-surface\"> </p> <!> <div class=\"rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs\"><!> <!></div></header> <div class=\"flex flex-1 flex-col gap-4 p-4\"><!></div></div>");
+function Lo(e, t) {
 	ze(t, !0);
-	let n = Gr(t, "active", 3, !0), r = new fi(), i = uo(), a = /* @__PURE__ */ dt(() => t.controller.currentTimetable), o = /* @__PURE__ */ dt(() => I(a)?.academicConfig.periodTimes ?? []), s = /* @__PURE__ */ dt(() => t.controller.clockTodayIso || i.today), c = /* @__PURE__ */ dt(() => I(a) ? r.calculateAcademicWeek(I(s), I(a).academicConfig) : 1), l = /* @__PURE__ */ dt(() => {
+	let n = Gr(t, "active", 3, !0), r = new fi(), i = bo(), a = /* @__PURE__ */ dt(() => t.controller.currentTimetable), o = /* @__PURE__ */ dt(() => I(a)?.academicConfig.periodTimes ?? []), s = /* @__PURE__ */ dt(() => t.controller.clockTodayIso || i.today), c = /* @__PURE__ */ dt(() => I(a) ? r.calculateAcademicWeek(I(s), I(a).academicConfig) : 1), l = /* @__PURE__ */ dt(() => {
 		let e = t.controller.coursePalette;
 		return ti(i.courseEntries.map((e) => e.hit.course), e);
 	}), u = /* @__PURE__ */ dt(() => [{
@@ -6219,7 +6306,7 @@ function Oo(e, t) {
 		label: f("screen.scope.all")
 	}]), d = /* @__PURE__ */ dt(() => I(u).findIndex((e) => e.value === i.scope));
 	function f(e, n) {
-		return eo(t.controller, no, to, e, n);
+		return eo(t.controller, fo, uo, e, n);
 	}
 	function p(e) {
 		return (/* @__PURE__ */ new Date(`${e}T12:00:00`)).toLocaleDateString(Qa(t.controller.currentLocale), {
@@ -6243,13 +6330,13 @@ function Oo(e, t) {
 		I(h)?.openCourseEditor(e);
 	}
 	Tr(() => (i.init(t.controller, t.pluginId), () => i.dispose()));
-	var _ = Do(), v = j(_), y = j(v), b = j(y, !0);
+	var _ = Io(), v = j(_), y = j(v), b = j(y, !0);
 	D(y);
 	var x = M(y, 2), S = (e) => {
-		var t = po(), n = j(t), r = j(n, !0);
+		var t = So(), n = j(t), r = j(n, !0);
 		D(n);
 		var a = M(n, 2), o = (e) => {
-			var t = fo(), n = j(t, !0);
+			var t = xo(), n = j(t, !0);
 			D(t), N((e) => vr(n, e), [() => f("screen.summary.count", { count: i.courseEntries.length })]), R(e, t);
 		};
 		Er(a, (e) => {
@@ -6260,7 +6347,7 @@ function Oo(e, t) {
 		I(a) && e(S);
 	});
 	var C = M(x, 2), w = j(C), ee = (e) => {
-		var t = mo();
+		var t = Co();
 		let r;
 		N(() => {
 			Hr(t, 1, `rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs ${n() ? "transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]" : ""}`), r = Wr(t, "", r, {
@@ -6272,29 +6359,29 @@ function Oo(e, t) {
 	Er(w, (e) => {
 		I(d) >= 0 && e(ee);
 	}), Ar(M(w, 2), 17, () => I(u), (e) => e.value, (e, t) => {
-		var n = ho(), r = j(n, !0);
+		var n = wo(), r = j(n, !0);
 		D(n), N(() => {
 			Hr(n, 1, `text-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 ${i.scope === I(t).value ? "text-on-secondary-container" : "text-on-surface-variant hover:text-on-surface"}`), vr(r, I(t).label);
 		}), sr("click", n, () => void i.persistScope(I(t).value)), R(e, n);
 	}), D(C), D(v);
 	var te = M(v, 2), ne = j(te), re = (e) => {
-		var t = go(), n = M(j(t), 2), r = j(n, !0);
+		var t = To(), n = M(j(t), 2), r = j(n, !0);
 		D(n), D(t), N((e) => vr(r, e), [() => f("screen.empty.noTimetable")]), R(e, t);
 	}, ie = (e) => {
-		var t = _o(), n = M(j(t), 2), r = j(n, !0);
+		var t = Eo(), n = M(j(t), 2), r = j(n, !0);
 		D(n);
 		var i = M(n, 2), a = j(i, !0);
 		D(i), D(t), N((e, t) => {
 			vr(r, e), vr(a, t);
 		}, [() => f("screen.empty.noCourses"), () => f("screen.empty.noCoursesHint")]), R(e, t);
 	}, ae = (e) => {
-		var t = Eo(), n = j(t);
+		var t = Fo(), n = j(t);
 		Ar(n, 21, () => i.courseEntries, (e) => `${e.hit.timetableId}-${e.hit.course.id}`, (e, t) => {
-			var n = To();
+			var n = Po();
 			{
 				let e = (e) => {
-					var n = So(), r = en(n), a = j(r), o = (e) => {
-						var t = vo(), n = j(t, !0);
+					var n = jo(), r = en(n), a = j(r), o = (e) => {
+						var t = Do(), n = j(t, !0);
 						D(t), N(() => vr(n, I(l).startTime)), R(e, t);
 					};
 					Er(a, (e) => {
@@ -6308,7 +6395,7 @@ function Oo(e, t) {
 						fromParent: !0
 					}))), D(s);
 					var m = M(s, 2), h = (e) => {
-						var t = vo(), n = j(t, !0);
+						var t = Do(), n = j(t, !0);
 						D(t), N(() => vr(n, I(l).endTime)), R(e, t);
 					};
 					Er(m, (e) => {
@@ -6319,29 +6406,29 @@ function Oo(e, t) {
 					var v = M(g, 2), y = j(v), b = j(y), x = j(b, !0);
 					D(b);
 					var S = M(b, 2), C = (e) => {
-						var t = yo(), n = j(t, !0);
+						var t = Oo(), n = j(t, !0);
 						D(t), N((e) => vr(n, e), [() => f("screen.status.current")]), R(e, t);
 					};
 					Er(S, (e) => {
 						I(t).status === "current" && e(C);
 					}), D(y);
 					var w = M(y, 2), ee = (e) => {
-						var n = xo(), r = j(n), a = (e) => {
-							var n = bo(), r = j(n, !0);
+						var n = Ao(), r = j(n), a = (e) => {
+							var n = ko(), r = j(n, !0);
 							D(n), N((e) => vr(r, e), [() => f("screen.course.timetable", { name: I(t).hit.timetableName })]), R(e, n);
 						};
 						Er(r, (e) => {
 							i.scope === "all" && I(t).hit.timetableName && e(a);
 						});
 						var o = M(r, 2), s = (e) => {
-							var n = bo(), r = j(n, !0);
+							var n = ko(), r = j(n, !0);
 							D(n), N(() => vr(r, I(t).hit.course.location)), R(e, n);
 						};
 						Er(o, (e) => {
 							I(t).hit.course.location && e(s);
 						});
 						var c = M(o, 2), l = (e) => {
-							var n = bo(), r = j(n, !0);
+							var n = ko(), r = j(n, !0);
 							D(n), N(() => vr(r, I(t).hit.course.teacher)), R(e, n);
 						};
 						Er(c, (e) => {
@@ -6353,15 +6440,15 @@ function Oo(e, t) {
 					}), D(v), N(() => {
 						vr(p, I(u)), _ = Wr(g, "", _, { "background-color": I(c).background }), vr(x, I(t).hit.course.name);
 					}), R(e, n);
-				}, c = /* @__PURE__ */ dt(() => m(I(t).hit)), l = /* @__PURE__ */ dt(() => ao(I(o), I(t).hit.course.startPeriod, I(t).hit.course.endPeriod)), u = /* @__PURE__ */ dt(() => I(t).hit.course.startPeriod === I(t).hit.course.endPeriod ? f("screen.course.periodSingle", { n: I(t).hit.course.startPeriod }) : f("screen.course.periodRange", {
+				}, c = /* @__PURE__ */ dt(() => m(I(t).hit)), l = /* @__PURE__ */ dt(() => ho(I(o), I(t).hit.course.startPeriod, I(t).hit.course.endPeriod)), u = /* @__PURE__ */ dt(() => I(t).hit.course.startPeriod === I(t).hit.course.endPeriod ? f("screen.course.periodSingle", { n: I(t).hit.course.startPeriod }) : f("screen.course.periodRange", {
 					start: I(t).hit.course.startPeriod,
 					end: I(t).hit.course.endPeriod
 				}));
 				var r = j(n), a = (n) => {
-					var r = Co(), i = j(r);
+					var r = Mo(), i = j(r);
 					e(i), D(r), N(() => Hr(r, 1, `flex w-full gap-3 px-4 py-4 text-left transition-colors hover:bg-surface-container-low ${I(t).status === "past" ? "opacity-60" : ""}`)), sr("click", r, () => g(I(t).hit.course.id)), R(n, r);
 				}, s = (n) => {
-					var r = wo(), i = j(r);
+					var r = No(), i = j(r);
 					e(i), D(r), N(() => Hr(r, 1, `flex gap-3 px-4 py-4 ${I(t).status === "past" ? "opacity-60" : ""}`)), R(n, r);
 				};
 				Er(r, (e) => {
@@ -6378,6 +6465,6 @@ function Oo(e, t) {
 cr(["click"]);
 //#endregion
 //#region packages/plugins/today/bundle/entry.ts
-var ko = ro({ screenComponent: $a(Oo) });
+var Ro = po({ screenComponent: $a(Lo) });
 //#endregion
-export { ko as default };
+export { Ro as default };
