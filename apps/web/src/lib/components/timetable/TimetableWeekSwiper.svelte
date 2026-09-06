@@ -1,25 +1,11 @@
-<script module>
-	import { register } from 'swiper/element/bundle';
-
-	let swiperRegistered = false;
-
-	function ensureSwiperRegistered() {
-		if (swiperRegistered) return;
-		register();
-		swiperRegistered = true;
-	}
-</script>
-
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import type { SwiperContainer } from 'swiper/element/bundle';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { CoursePaletteEntry } from '@chronos/core';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import TimetableGrid from './TimetableGrid.svelte';
-
-	ensureSwiperRegistered();
 
 	let {
 		screen,
@@ -41,9 +27,26 @@
 
 	const screenState = $derived(screen.state);
 
+	let swiperReady = $state(false);
 	let swiperEl = $state<SwiperContainer | undefined>();
 	let suppressPagerWeekSync = $state(true);
 	let paintAdjacent = $state(false);
+
+	onMount(() => {
+		let cancelled = false;
+
+		void (async () => {
+			await import('swiper/css');
+			const { register } = await import('swiper/element/bundle');
+			if (cancelled) return;
+			register();
+			swiperReady = true;
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	});
 
 	function onSlideSettled() {
 		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
@@ -65,6 +68,7 @@
 	}
 
 	$effect(() => {
+		if (!swiperReady) return;
 		const el = swiperEl;
 		if (!el) return;
 
@@ -113,31 +117,33 @@
 	});
 </script>
 
-<swiper-container bind:this={swiperEl} init={false} class="timetable-week-swiper">
-	{#each screenState.weeks as week (week)}
-		{@const gridModel = screenState.weekGridModels.get(week)}
-		{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
-		<swiper-slide class="timetable-week-slide">
-			{#if gridModel && (week === screenState.displayedWeek || paintAdjacent)}
-				<TimetableGrid
-					displayedWeek={week}
-					isCurrentWeek={week === screenState.academicWeek}
-					currentPeriodIndex={screenState.currentPeriodIndex}
-					expandedSlots={screenState.expandedSlots}
-					onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
-					{gridModel}
-					courseDisplayModels={courseModels}
-					{hasDynamicBackground}
-					{coursePalette}
-					paletteCourses={screenState.currentTimetable?.courses}
-					{layoutMode}
-					{capsuleCornerStyle}
-					onCourseClick={(course) => onCourseClick(course.id)}
-				/>
-			{/if}
-		</swiper-slide>
-	{/each}
-</swiper-container>
+{#if swiperReady}
+	<swiper-container bind:this={swiperEl} init={false} class="timetable-week-swiper">
+		{#each screenState.weeks as week (week)}
+			{@const gridModel = screenState.weekGridModels.get(week)}
+			{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
+			<swiper-slide class="timetable-week-slide">
+				{#if gridModel && (week === screenState.displayedWeek || paintAdjacent)}
+					<TimetableGrid
+						displayedWeek={week}
+						isCurrentWeek={week === screenState.academicWeek}
+						currentPeriodIndex={screenState.currentPeriodIndex}
+						expandedSlots={screenState.expandedSlots}
+						onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
+						{gridModel}
+						courseDisplayModels={courseModels}
+						{hasDynamicBackground}
+						{coursePalette}
+						paletteCourses={screenState.currentTimetable?.courses}
+						{layoutMode}
+						{capsuleCornerStyle}
+						onCourseClick={(course) => onCourseClick(course.id)}
+					/>
+				{/if}
+			</swiper-slide>
+		{/each}
+	</swiper-container>
+{/if}
 
 <style>
 	.timetable-week-swiper {
