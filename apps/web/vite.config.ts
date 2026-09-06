@@ -7,6 +7,7 @@ import adapter from '@sveltejs/adapter-vercel';
 import adapterStatic from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import { chronosBundleAnalyzer } from './src/lib/profile-codegen/chronos-bundle-analyzer.ts';
 import { createChronosAlias } from '../../scripts/resolve-chronos-aliases.ts';
 import { writeGeneratedThemeCss } from './src/lib/theme/theme';
 import { writeGeneratedVersionJson } from './src/lib/content/releases/version-generator';
@@ -98,6 +99,7 @@ export default defineConfig(({ mode }) => {
 			]
 		},
 		plugins: lazyPlugins(() => [
+			chronosBundleAnalyzer(shouldAnalyze),
 			chronosProfilePlugin(webRoot),
 			chronosThemeTokensPlugin(),
 			functionsMixins(),

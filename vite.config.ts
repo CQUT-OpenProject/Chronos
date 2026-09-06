@@ -112,6 +112,8 @@ export default defineConfig({
 					'node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && (cd apps/web && svelte-kit sync) && vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html',
 				env: ['CHRONOS_DEPLOY_TARGET', 'CHRONOS_PROFILE']
 			},
+			'bundle:analyze':
+				'CHRONOS_PROFILE=chronos-default node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && ANALYZE=true CHRONOS_PROFILE=chronos-default vp -C apps/web build',
 			check: '(cd apps/web && svelte-kit sync) && vp check',
 			'check:watch': {
 				command:
