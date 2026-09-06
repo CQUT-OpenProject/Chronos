@@ -31,8 +31,19 @@ function chronosThemeTokensPlugin() {
 }
 
 const isPagesBuild = process.env.CHRONOS_DEPLOY_TARGET === 'pages';
+const shouldAnalyze = process.env.ANALYZE === 'true';
 const pagesBase = '/Chronos';
 const basePath = isPagesBuild ? pagesBase : '';
+
+function resolveManualChunk(id: string): string | undefined {
+	if (!id.includes('node_modules')) return undefined;
+	if (id.includes('dexie')) return 'vendor-dexie';
+	if (id.includes('swiper')) return 'vendor-swiper';
+	if (id.includes('marked')) return 'vendor-marked';
+	if (id.includes('posthog-js')) return 'vendor-posthog';
+	if (id.includes('brotli-wasm')) return 'vendor-brotli';
+	return undefined;
+}
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), 'PUBLIC_');
@@ -48,6 +59,15 @@ export default defineConfig(({ mode }) => {
 			__ANALYTICS_ENABLED__: JSON.stringify(
 				mode === 'test' || Boolean(env.PUBLIC_POSTHOG_KEY?.trim())
 			)
+		},
+		build: {
+			rolldownOptions: {
+				output: {
+					manualChunks(id) {
+						return resolveManualChunk(id);
+					}
+				}
+			}
 		},
 		server: {
 			fs: {

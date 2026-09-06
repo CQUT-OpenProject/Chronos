@@ -72,8 +72,8 @@
 
 	$effect(() => {
 		if (mountedPluginTabs.length > 0 && !PluginScreenContainer) {
-			void import('@chronos/ui-kit').then((module) => {
-				PluginScreenContainer = module.PluginScreenContainer;
+			void import('@chronos/ui-kit/plugin-screen/PluginScreenContainer.svelte').then((module) => {
+				PluginScreenContainer = module.default;
 			});
 		}
 	});
