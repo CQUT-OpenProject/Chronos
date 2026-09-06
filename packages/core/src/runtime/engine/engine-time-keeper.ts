@@ -1,12 +1,12 @@
-import { AcademicCalendarService } from '../../engine/calendar';
-import { formatIsoDate } from '../../engine/date';
+import { AcademicCalendarService } from '../../algorithms/calendar';
+import { formatIsoDate } from '../../algorithms/date';
 import {
 	createDayClock,
 	currentTimeMinutes,
 	findCurrentPeriodIndex,
 	parsePeriodRanges,
 	type DayClockHandle
-} from '../../engine/period-clock';
+} from '../../algorithms/period-clock';
 import type { Timetable } from '../../domain/timetable';
 import type { EventPipeline } from '../event-pipeline';
 

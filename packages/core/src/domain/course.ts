@@ -1,5 +1,5 @@
-import { isCoursePeriodVisible } from '../engine/display-models';
-import { normalizedCourseName } from '../engine/palette';
+import { isCoursePeriodVisible } from '../algorithms/display-models';
+import { normalizedCourseName } from '../algorithms/palette';
 
 export const COURSE_REMARK_MAX_LENGTH = 200;
 

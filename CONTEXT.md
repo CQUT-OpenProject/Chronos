@@ -28,14 +28,14 @@ Core owns the shapes. Web Dexie / Share codecs are strict Zod adapters (schemaVe
 
 ## Period clock
 
-One lookup module (`packages/core/src/engine/period-clock.ts`), two fallbacks:
+One lookup module (`packages/core/src/algorithms/period-clock.ts`), two fallbacks:
 
 - `'none'` — Engine `updateTime` / `currentPeriodIndex` (period only while in progress).
 - `'upcomingOrLast'` — grid highlight (host/plugin screens derive from `clockNow`).
 
 **Scheduler (single):** `ChronosEngine` owns the only `createDayClock` instance (midnight + period-boundary timers with `reschedule`/`dispose`). `time:tick` emits `{ currentWeek, currentPeriod, now, todayIso }`; `ReactiveChronosController` mirrors `clockNow` / `clockTodayIso`. Host timetable screen and `tool-today` must not instantiate their own clocks.
 
-Also exports period parsing helpers and delay utilities. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/engine/date.ts`.
+Also exports period parsing helpers and delay utilities. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/algorithms/date.ts`.
 
 CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live only in `@chronos/plugin-source-cqut`.
 
