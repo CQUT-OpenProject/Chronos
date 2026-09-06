@@ -15,12 +15,12 @@
 
 	import { DownloadFill } from '$lib/icons';
 	import { listDistinctCourses } from '@chronos/core';
+	import { createHostDateFieldLabels } from '$lib/components/ui/host-form-labels';
 	import {
 		ImportCourseList,
 		MountableSlotOutlet,
 		SchemaForm,
-		findInvalidSchemaFields,
-		type DateFieldLabels
+		findInvalidSchemaFields
 	} from '@chronos/ui-kit';
 
 	let {
@@ -57,14 +57,7 @@
 	const displayedCourseCount = $derived(preview ? listDistinctCourses(preview.courses).length : 0);
 	let loading = $state(false);
 
-	const dateFieldLabels = $derived<DateFieldLabels>({
-		placeholder: hostT('ui.date.placeholder'),
-		today: hostT('ui.date.today'),
-		clear: hostT('ui.date.clear'),
-		confirm: hostT('ui.date.confirm'),
-		triggerEmpty: (label) => hostT('ui.date.trigger.empty', { label }),
-		triggerLabeled: (label, display) => hostT('ui.date.trigger.labeled', { label, display })
-	});
+	const dateFieldLabels = $derived(createHostDateFieldLabels());
 
 	function analyticsImportMode(mode: ImportMode) {
 		return mode === ImportMode.AS_NEW ? 'as_new' : 'overwrite';

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { hostT } from '$lib/i18n/host-i18n.svelte';
+	import { createHostTimePickerLabels } from '$lib/components/ui/host-form-labels';
 	import {
-		DEFAULT_TIME_PICKER_LABELS,
 		formatTimeValue,
 		parseTimeValue,
 		type TimePickerLabels,
@@ -37,20 +36,7 @@
 	let draft = $state<TimeValue>({ hour: 0, minute: 0 });
 	let wheel: TimeWheel | null = $state(null);
 
-	const resolvedLabels = $derived<TimePickerLabels>(
-		labels ?? {
-			...DEFAULT_TIME_PICKER_LABELS,
-			placeholder: hostT('ui.time.placeholder'),
-			hour: hostT('ui.time.hour'),
-			minute: hostT('ui.time.minute'),
-			cancel: hostT('common.cancel'),
-			confirm: hostT('common.confirm'),
-			triggerEmpty: (fieldLabel) => hostT('ui.time.trigger.empty', { label: fieldLabel }),
-			triggerLabeled: (fieldLabel, display) =>
-				hostT('ui.time.trigger.labeled', { label: fieldLabel, display }),
-			columnAria: (fieldLabel, column) => hostT('ui.time.column', { label: fieldLabel, column })
-		}
-	);
+	const resolvedLabels = $derived<TimePickerLabels>(labels ?? createHostTimePickerLabels());
 
 	const safeValue = $derived(parseTimeValue(value) ?? { hour: 0, minute: 0 });
 	const hasValue = $derived(parseTimeValue(value) !== undefined);

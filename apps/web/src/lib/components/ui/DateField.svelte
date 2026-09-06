@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { getAppController } from '$lib/services/app-engine';
+	import { createHostDateFieldLabels } from '$lib/components/ui/host-form-labels';
 	import {
 		DateField as UiDateField,
 		appLocaleToBcp47,
@@ -31,17 +31,7 @@
 
 	const controller = getAppController();
 	const resolvedLocale = $derived(locale ?? appLocaleToBcp47(controller.currentLocale));
-	const resolvedLabels = $derived<DateFieldLabels>(
-		labels ?? {
-			placeholder: hostT('ui.date.placeholder'),
-			today: hostT('ui.date.today'),
-			clear: hostT('ui.date.clear'),
-			confirm: hostT('ui.date.confirm'),
-			triggerEmpty: (fieldLabel) => hostT('ui.date.trigger.empty', { label: fieldLabel }),
-			triggerLabeled: (fieldLabel, display) =>
-				hostT('ui.date.trigger.labeled', { label: fieldLabel, display })
-		}
-	);
+	const resolvedLabels = $derived<DateFieldLabels>(labels ?? createHostDateFieldLabels());
 </script>
 
 <UiDateField

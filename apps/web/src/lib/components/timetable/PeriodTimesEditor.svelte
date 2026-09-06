@@ -4,6 +4,7 @@
 	import type { PeriodTimeDraft } from '$lib/models/drafts';
 	import { defaultPeriodTimes } from '$lib/models/defaults';
 	import { getAppController } from '$lib/services/app-engine';
+	import { createHostTimeWheelColumnLabels } from '$lib/components/ui/host-form-labels';
 	import { removePeriodAt, reindexPeriodTimes } from '$lib/timetable/timetable-mappers';
 	import {
 		countDistinctCourseNames,
@@ -170,16 +171,16 @@
 			? countDistinctCoursesAffectedByPeriodDelete(courses, pendingDeletePeriod.index)
 			: 0
 	);
+	const wheelColumnLabels = $derived(createHostTimeWheelColumnLabels());
 	const wheelLabels = $derived({
 		placeholder: '',
-		hour: hostT('ui.time.hour'),
-		minute: hostT('ui.time.minute'),
+		hour: wheelColumnLabels.hour,
+		minute: wheelColumnLabels.minute,
 		cancel: '',
 		confirm: '',
 		triggerEmpty: () => '',
 		triggerLabeled: () => '',
-		columnAria: (fieldLabel: string, column: string) =>
-			hostT('ui.time.column', { label: fieldLabel, column })
+		columnAria: wheelColumnLabels.columnAria
 	});
 </script>
 
