@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 export * from './reactivity/engine-controller.svelte';
-export * from './theme/m3-theme';
+export { m3DefaultTheme } from './theme/m3-default-theme';
 export { default as SchemaForm } from './schema-form/SchemaForm.svelte';
 export {
 	DEFAULT_TIME_PICKER_LABELS,

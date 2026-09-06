@@ -95,7 +95,8 @@ export default defineConfig(({ mode }) => {
 				'bun.lock',
 				'bun.lockb',
 				'static/',
-				'.svelte-kit/'
+				'.svelte-kit/',
+				'**/*.generated.ts'
 			]
 		},
 		plugins: lazyPlugins(() => [

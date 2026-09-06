@@ -7,8 +7,7 @@ import {
 	TonalPalette,
 	Variant
 } from '@ktibow/material-color-utilities-nightly';
-import type { CoursePaint, ThemeContribution, CoursePaletteEntry } from '@chronos/core';
-import { createWorkbenchColorsFromTokens } from '@chronos/core/theme/workbench-colors';
+import type { CoursePaint, CoursePaletteEntry } from '@chronos/core';
 
 export const BRAND_SOURCE_ARGB = 0xff0068b7;
 
@@ -359,10 +358,3 @@ export function buildM3Tokens(mode: 'light' | 'dark', seedColor?: string): Recor
 export function buildM3CoursePalette(sourceArgb: number = BRAND_SOURCE_ARGB): CoursePaint[] {
 	return coursePaletteFromSource(sourceArgb);
 }
-
-export const m3DefaultTheme: ThemeContribution = {
-	id: 'm3-default',
-	name: () => 'Material 3 (Default)',
-	supportsDynamicColor: true,
-	workbenchColors: createWorkbenchColorsFromTokens(buildM3Tokens('light'), buildM3Tokens('dark'))
-};
