@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
-	import type { SwiperContainer } from 'swiper/element/bundle';
+	import type { SwiperContainer } from 'swiper/element';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { CoursePaletteEntry } from '@chronos/core';
@@ -37,7 +37,7 @@
 
 		void (async () => {
 			await import('swiper/css');
-			const { register } = await import('swiper/element/bundle');
+			const { register } = await import('swiper/element');
 			if (cancelled) return;
 			register();
 			swiperReady = true;
