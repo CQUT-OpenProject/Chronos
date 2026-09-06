@@ -4,6 +4,55 @@ import { fileURLToPath } from 'node:url';
 
 export type ChronosAliasEntry = { find: string | RegExp; replacement: string };
 
+export interface PackageExportAlias {
+	find: string | RegExp;
+	replacement: string;
+}
+
+export function parsePackageExports(
+	pkgDir: string,
+	pkg: { name: string; exports?: Record<string, unknown>; main?: string },
+	seen: Set<string>
+): PackageExportAlias[] {
+	const alias: PackageExportAlias[] = [];
+	const exportsMap = pkg.exports as
+		| Record<string, { import?: string; default?: string } | string>
+		| undefined;
+
+	if (exportsMap) {
+		for (const [key, value] of Object.entries(exportsMap)) {
+			const importPath = key === '.' ? pkg.name : `${pkg.name}${key.slice(1)}`;
+			if (seen.has(importPath)) continue;
+			seen.add(importPath);
+			const target =
+				typeof value === 'string'
+					? value
+					: ((value as { import?: string; default?: string }).import ??
+						(value as { import?: string; default?: string }).default);
+			if (!target) continue;
+			const replacement = fileURLToPath(new URL(target as string, `file://${pkgDir}/`));
+			if (key === '.') {
+				alias.push({
+					find: new RegExp(`^${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
+					replacement
+				});
+			} else {
+				alias.push({ find: importPath, replacement });
+			}
+		}
+	} else if (pkg.name && pkg.main) {
+		if (!seen.has(pkg.name)) {
+			seen.add(pkg.name);
+			alias.push({
+				find: new RegExp(`^${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
+				replacement: resolve(pkgDir, pkg.main)
+			});
+		}
+	}
+
+	return alias;
+}
+
 /**
  * Build Vite/Rolldown resolve aliases for all @chronos/* workspace packages.
  * Subpath exports are sorted before package roots to avoid prefix shadowing.
@@ -22,40 +71,10 @@ export function createChronosAlias(root?: string): ChronosAliasEntry[] {
 				exports?: Record<string, unknown>;
 				main?: string;
 			};
-			const exportsMap = pkg.exports as
-				| Record<string, { import?: string; default?: string } | string>
-				| undefined;
-			if (exportsMap) {
-				for (const [key, value] of Object.entries(exportsMap)) {
-					const importPath = key === '.' ? pkg.name : `${pkg.name}${key.slice(1)}`;
-					if (seen.has(importPath)) continue;
-					seen.add(importPath);
-					const target =
-						typeof value === 'string'
-							? value
-							: ((value as { import?: string; default?: string }).import ??
-								(value as { import?: string; default?: string }).default);
-					if (!target) continue;
-					const replacement = fileURLToPath(new URL(target as string, `file://${pkgDir}/`));
-					if (key === '.') {
-						alias.push({
-							find: new RegExp(`^${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
-							replacement
-						});
-					} else {
-						alias.push({ find: importPath, replacement });
-					}
-				}
-			} else if (pkg.name && pkg.main) {
-				if (!seen.has(pkg.name)) {
-					seen.add(pkg.name);
-					alias.push({
-						find: new RegExp(`^${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
-						replacement: resolve(pkgDir, pkg.main)
-					});
-				}
-			}
-		} catch {}
+			alias.push(...parsePackageExports(pkgDir, pkg, seen));
+		} catch (error) {
+			console.warn(`[resolve-chronos-aliases] Failed to parse ${pkgJsonPath}:`, error);
+		}
 	}
 
 	for (const entry of readdirSync(resolve(monorepoRoot, 'packages'))) {

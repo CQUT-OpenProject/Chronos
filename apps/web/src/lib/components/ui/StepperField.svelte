@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
+	import { Add, Remove } from '$lib/icons';
 
 	let {
 		label,
@@ -43,25 +44,27 @@
 	]}
 >
 	<span class={embedded ? 'ui-field-label' : 'text-body-medium'}>{label}</span>
-	<div class="flex items-center gap-2">
-		<Button
-			variant="text"
-			class="size-8 min-w-8 px-0"
-			aria-label={decreaseAriaLabel}
+	<div class="flex items-center gap-1">
+		<IconButton
+			variant="tonal"
+			size="sm"
+			class="!p-2"
+			ariaLabel={decreaseAriaLabel}
 			disabled={value <= min}
 			onclick={() => step(-1)}
 		>
-			-
-		</Button>
-		<span class="text-body-large">{value}</span>
-		<Button
-			variant="text"
-			class="size-8 min-w-8 px-0"
-			aria-label={increaseAriaLabel}
+			<Remove class="size-5" />
+		</IconButton>
+		<span class="text-body-large min-w-8 text-center tabular-nums">{value}</span>
+		<IconButton
+			variant="tonal"
+			size="sm"
+			class="!p-2"
+			ariaLabel={increaseAriaLabel}
 			disabled={value >= max}
 			onclick={() => step(1)}
 		>
-			+
-		</Button>
+			<Add class="size-5" />
+		</IconButton>
 	</div>
 </div>

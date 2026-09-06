@@ -40,7 +40,7 @@
 			}
 
 			const markdown = await response.text();
-			htmlContent = parseMarkdown(markdown);
+			htmlContent = await parseMarkdown(markdown);
 			loadState = 'ready';
 		} catch {
 			errorMessage = resolveFetchErrorMessage(!connectivity.isOnline, hostT('legal.loadFailed'));

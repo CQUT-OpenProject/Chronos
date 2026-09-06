@@ -1568,7 +1568,7 @@ function _r(e) {
 	};
 }
 //#endregion
-//#region packages/core/src/schema/schema.ts
+//#region packages/core/src/schema/schema-types.ts
 function vr(e) {
 	return e;
 }
@@ -1609,7 +1609,7 @@ function Tr(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Er() {
-	return "0.4.6";
+	return "0.4.7";
 }
 function Dr(e) {
 	let t;
@@ -5439,33 +5439,7 @@ var ra = class {
 		let r = this.strings.length;
 		return this.strings.push(t), this.index.set(t, r), r;
 	}
-}, ia = /* @__PURE__ */ new Uint8Array(512), aa = /* @__PURE__ */ new Uint8Array(256);
-(() => {
-	let e = 1;
-	for (let t = 0; t < 255; t++) ia[t] = e, ia[t + 255] = e, aa[e] = t, e <<= 1, e & 256 && (e ^= 285);
-})();
-function oa(e, t) {
-	return e === 0 || t === 0 ? 0 : ia[aa[e] + aa[t]];
-}
-function sa(e) {
-	let t = new Uint8Array([1]);
-	for (let n = 0; n < e; n++) {
-		let e = new Uint8Array(t.length + 1);
-		for (let r = 0; r < t.length; r++) e[r] ^= oa(t[r], ia[n]), e[r + 1] ^= t[r];
-		t = e;
-	}
-	return t;
-}
-function ca(e, t) {
-	let n = sa(t), r = new Uint8Array(t);
-	for (let i = 0; i < e.length; i++) {
-		let a = e[i] ^ r[0];
-		for (let e = 0; e < t - 1; e++) r[e] = r[e + 1] ^ oa(n[e + 1], a);
-		r[t - 1] = oa(n[t], a);
-	}
-	return r;
-}
-var la = [
+}, ia = [
 	{
 		eccPerBlock: 7,
 		blocks: [{
@@ -5898,7 +5872,78 @@ var la = [
 			dataCodewords: 119
 		}]
 	}
-], ua = [
+], aa = /* @__PURE__ */ new Uint8Array(512), oa = /* @__PURE__ */ new Uint8Array(256);
+(() => {
+	let e = 1;
+	for (let t = 0; t < 255; t++) aa[t] = e, aa[t + 255] = e, oa[e] = t, e <<= 1, e & 256 && (e ^= 285);
+})();
+function sa(e, t) {
+	return e === 0 || t === 0 ? 0 : aa[oa[e] + oa[t]];
+}
+function ca(e) {
+	let t = new Uint8Array([1]);
+	for (let n = 0; n < e; n++) {
+		let e = new Uint8Array(t.length + 1);
+		for (let r = 0; r < t.length; r++) e[r] ^= sa(t[r], aa[n]), e[r + 1] ^= t[r];
+		t = e;
+	}
+	return t;
+}
+function la(e, t) {
+	let n = ca(t), r = new Uint8Array(t);
+	for (let i = 0; i < e.length; i++) {
+		let a = e[i] ^ r[0];
+		for (let e = 0; e < t - 1; e++) r[e] = r[e + 1] ^ sa(n[e + 1], a);
+		r[t - 1] = sa(n[t], a);
+	}
+	return r;
+}
+//#endregion
+//#region packages/plugins/codec-qrcode/src/qr/qr-payload-encoder.ts
+function ua(e) {
+	let t = ia[e - 1];
+	if (!t) throw Error(`Unsupported QR version: ${e}`);
+	return t;
+}
+function da(e) {
+	for (let t = 1; t <= 40; t++) {
+		let n = ua(t).blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0);
+		if (e + (t <= 9 ? 2 : 3) <= n) return t;
+	}
+	throw Error(`Data payload too large for QR Code (length: ${e}, max capacity: 2953 bytes)`);
+}
+function fa(e, t) {
+	let n = new TextEncoder().encode(e), r = ua(t), i = r.blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0), a = [];
+	function o(e, t) {
+		for (let n = t - 1; n >= 0; n--) a.push(e >> n & 1);
+	}
+	o(4, 4);
+	let s = t <= 9 ? 8 : 16;
+	o(n.length, s);
+	for (let e of n) o(e, 8);
+	let c = i * 8;
+	for (o(0, Math.min(4, c - a.length)); a.length % 8 != 0;) a.push(0);
+	let l = new Uint8Array(i);
+	for (let e = 0; e < a.length / 8; e++) {
+		let t = 0;
+		for (let n = 0; n < 8; n++) t = t << 1 | a[e * 8 + n];
+		l[e] = t;
+	}
+	let u = 236;
+	for (let e = a.length / 8; e < i; e++) l[e] = u, u = u === 236 ? 17 : 236;
+	let d = [], f = [], p = 0;
+	for (let e of r.blocks) for (let t = 0; t < e.count; t++) {
+		let t = l.subarray(p, p + e.dataCodewords);
+		d.push(t), f.push(la(t, r.eccPerBlock)), p += e.dataCodewords;
+	}
+	let m = [], h = Math.max(...d.map((e) => e.length));
+	for (let e = 0; e < h; e++) for (let t of d) e < t.length && m.push(t[e]);
+	for (let e = 0; e < r.eccPerBlock; e++) for (let t of f) m.push(t[e]);
+	return Uint8Array.from(m);
+}
+//#endregion
+//#region packages/plugins/codec-qrcode/src/qr/qr-layout-tables.ts
+var pa = [
 	[],
 	[6, 18],
 	[6, 22],
@@ -6141,7 +6186,7 @@ var la = [
 		142,
 		170
 	]
-], da = [
+], ma = [
 	31892,
 	34236,
 	39577,
@@ -6176,104 +6221,72 @@ var la = [
 	158308,
 	161089,
 	167017
-], fa = 9174;
-function pa(e) {
-	let t = la[e - 1];
-	if (!t) throw Error(`Unsupported QR version: ${e}`);
-	return t;
-}
-function ma(e) {
-	for (let t = 1; t <= 40; t++) {
-		let n = pa(t).blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0);
-		if (e + (t <= 9 ? 2 : 3) <= n) return t;
+], ha = 9174;
+//#endregion
+//#region packages/plugins/codec-qrcode/src/qr/qr-matrix-layout.ts
+function ga(e, t, n, r, i) {
+	function a(e, i, a, o = !0) {
+		e >= 0 && e < t && i >= 0 && i < t && (n[e][i] = a, o && (r[e][i] = !0));
 	}
-	throw Error(`Data payload too large for QR Code (length: ${e}, max capacity: 2953 bytes)`);
-}
-function ha(e, t) {
-	let n = new TextEncoder().encode(e), r = pa(t), i = r.blocks.reduce((e, t) => e + t.count * t.dataCodewords, 0), a = [];
-	function o(e, t) {
-		for (let n = t - 1; n >= 0; n--) a.push(e >> n & 1);
-	}
-	o(4, 4);
-	let s = t <= 9 ? 8 : 16;
-	o(n.length, s);
-	for (let e of n) o(e, 8);
-	let c = i * 8;
-	for (o(0, Math.min(4, c - a.length)); a.length % 8 != 0;) a.push(0);
-	let l = new Uint8Array(i);
-	for (let e = 0; e < a.length / 8; e++) {
-		let t = 0;
-		for (let n = 0; n < 8; n++) t = t << 1 | a[e * 8 + n];
-		l[e] = t;
-	}
-	let u = 236;
-	for (let e = a.length / 8; e < i; e++) l[e] = u, u = u === 236 ? 17 : 236;
-	let d = [], f = [], p = 0;
-	for (let e of r.blocks) for (let t = 0; t < e.count; t++) {
-		let t = l.subarray(p, p + e.dataCodewords);
-		d.push(t), f.push(ca(t, r.eccPerBlock)), p += e.dataCodewords;
-	}
-	let m = [], h = Math.max(...d.map((e) => e.length));
-	for (let e = 0; e < h; e++) for (let t of d) e < t.length && m.push(t[e]);
-	for (let e = 0; e < r.eccPerBlock; e++) for (let t of f) m.push(t[e]);
-	return Uint8Array.from(m);
-}
-function ga(e) {
-	let t = ma(new TextEncoder().encode(e).length), n = t * 4 + 17, r = Array.from({ length: n }, () => Array(n).fill(null)), i = Array.from({ length: n }, () => Array(n).fill(!1));
-	function a(e, t, a, o = !0) {
-		e >= 0 && e < n && t >= 0 && t < n && (r[e][t] = a, o && (i[e][t] = !0));
-	}
-	function o(e, t) {
+	function o(e, n) {
 		for (let r = -1; r <= 7; r++) for (let i = -1; i <= 7; i++) {
-			let o = e + r, s = t + i;
-			o < 0 || o >= n || s < 0 || s >= n || (r === -1 || r === 7 || i === -1 || i === 7 ? a(o, s, !1) : r === 0 || r === 6 || i === 0 || i === 6 || r >= 2 && r <= 4 && i >= 2 && i <= 4 ? a(o, s, !0) : a(o, s, !1));
+			let o = e + r, s = n + i;
+			o < 0 || o >= t || s < 0 || s >= t || (r === -1 || r === 7 || i === -1 || i === 7 ? a(o, s, !1) : r === 0 || r === 6 || i === 0 || i === 6 || r >= 2 && r <= 4 && i >= 2 && i <= 4 ? a(o, s, !0) : a(o, s, !1));
 		}
 	}
-	o(0, 0), o(0, n - 7), o(n - 7, 0);
-	for (let e = 8; e < n - 8; e++) r[6][e] === null && a(6, e, e % 2 == 0), r[e][6] === null && a(e, 6, e % 2 == 0);
-	let s = ua[t - 1] ?? [];
-	for (let e of s) for (let t of s) if (!i[e][t]) for (let n = -2; n <= 2; n++) for (let r = -2; r <= 2; r++) {
+	o(0, 0), o(0, t - 7), o(t - 7, 0);
+	for (let e = 8; e < t - 8; e++) n[6][e] === null && a(6, e, e % 2 == 0), n[e][6] === null && a(e, 6, e % 2 == 0);
+	let s = pa[e - 1] ?? [];
+	for (let e of s) for (let t of s) if (!r[e][t]) for (let n = -2; n <= 2; n++) for (let r = -2; r <= 2; r++) {
 		let i = Math.max(Math.abs(n), Math.abs(r)) !== 1;
 		a(e + n, t + r, i);
 	}
-	a(n - 8, 8, !0);
-	for (let e = 0; e < 9; e++) r[8][e] === null && a(8, e, !1, !0), r[e][8] === null && a(e, 8, !1, !0);
-	for (let e = 0; e < 8; e++) r[8][n - 1 - e] === null && a(8, n - 1 - e, !1, !0), r[n - 1 - e][8] === null && a(n - 1 - e, 8, !1, !0);
-	if (t >= 7) {
-		let e = da[t - 7];
-		for (let t = 0; t < 18; t++) {
-			let r = (e >> t & 1) == 1, i = Math.floor(t / 3), o = t % 3 + n - 11;
+	a(t - 8, 8, !0);
+	for (let e = 0; e < 9; e++) n[8][e] === null && a(8, e, !1, !0), n[e][8] === null && a(e, 8, !1, !0);
+	for (let e = 0; e < 8; e++) n[8][t - 1 - e] === null && a(8, t - 1 - e, !1, !0), n[t - 1 - e][8] === null && a(t - 1 - e, 8, !1, !0);
+	if (e >= 7) {
+		let n = ma[e - 7];
+		for (let e = 0; e < 18; e++) {
+			let r = (n >> e & 1) == 1, i = Math.floor(e / 3), o = e % 3 + t - 11;
 			a(i, o, r), a(o, i, r);
 		}
 	}
-	let c = ha(e, t), l = 0, u = n - 1, d = -1;
-	for (let e = n - 1; e > 0; e -= 2) for (e === 6 && e--;;) {
+	let c = 0, l = t - 1, u = -1;
+	for (let e = t - 1; e > 0; e -= 2) for (e === 6 && e--;;) {
 		for (let t = 0; t < 2; t++) {
-			let n = e - t;
-			if (!i[u][n]) {
-				let e = Math.floor(l / 8), t = 7 - l % 8, i = e < c.length && (c[e] >> t & 1) == 1;
-				r[u][n] = i, l++;
+			let a = e - t;
+			if (!r[l][a]) {
+				let e = Math.floor(c / 8), t = 7 - c % 8, r = e < i.length && (i[e] >> t & 1) == 1;
+				n[l][a] = r, c++;
 			}
 		}
-		if (u += d, u < 0 || u >= n) {
-			d = -d, u += d;
+		if (l += u, l < 0 || l >= t) {
+			u = -u, l += u;
 			break;
 		}
 	}
-	for (let e = 0; e < n; e++) for (let t = 0; t < n; t++) i[e][t] || (e + t) % 2 == 0 && (r[e][t] = !r[e][t]);
-	let f = fa;
+	for (let e = 0; e < t; e++) for (let i = 0; i < t; i++) r[e][i] || (e + i) % 2 == 0 && (n[e][i] = !n[e][i]);
+	let d = ha;
 	for (let e = 0; e < 15; e++) {
-		let t = (f >> e & 1) == 1;
-		e < 6 ? r[8][e] = t : e < 8 ? r[8][e + 1] = t : r[8][n - 15 + e] = t, e < 8 ? r[n - 1 - e][8] = t : r[14 - e][8] = t;
+		let r = (d >> e & 1) == 1;
+		e < 6 ? n[8][e] = r : e < 8 ? n[8][e + 1] = r : n[8][t - 15 + e] = r, e < 8 ? n[t - 1 - e][8] = r : n[14 - e][8] = r;
 	}
-	return {
+}
+function _a(e, t) {
+	let n = t * 4 + 17, r = Array.from({ length: n }, () => Array(n).fill(null));
+	return ga(t, n, r, Array.from({ length: n }, () => Array(n).fill(!1)), fa(e, t)), {
 		size: n,
 		modules: r.map((e) => e.map((e) => !!e))
 	};
 }
 //#endregion
+//#region packages/plugins/codec-qrcode/src/qr/qr-encode.ts
+function va(e) {
+	return _a(e, da(new TextEncoder().encode(e).length));
+}
+//#endregion
 //#region packages/plugins/codec-qrcode/src/qr/qr-png.ts
-var _a = new Uint8Array([
+var ya = new Uint8Array([
 	137,
 	80,
 	78,
@@ -6282,7 +6295,7 @@ var _a = new Uint8Array([
 	10,
 	26,
 	10
-]), va = (() => {
+]), ba = (() => {
 	let e = /* @__PURE__ */ new Uint32Array(256);
 	for (let t = 0; t < 256; t++) {
 		let n = t;
@@ -6291,25 +6304,25 @@ var _a = new Uint8Array([
 	}
 	return e;
 })();
-function ya(e) {
+function xa(e) {
 	let t = 4294967295;
-	for (let n = 0; n < e.length; n++) t = va[(t ^ e[n]) & 255] ^ t >>> 8;
+	for (let n = 0; n < e.length; n++) t = ba[(t ^ e[n]) & 255] ^ t >>> 8;
 	return (t ^ 4294967295) >>> 0;
 }
-function ba(e, t, n) {
+function Sa(e, t, n) {
 	e.setUint32(t, n, !1);
 }
-function xa(e, t) {
+function Ca(e, t) {
 	let n = new TextEncoder().encode(e), r = new Uint8Array(8 + t.length + 4), i = new DataView(r.buffer);
-	ba(i, 0, t.length), r.set(n, 4), r.set(t, 8);
+	Sa(i, 0, t.length), r.set(n, 4), r.set(t, 8);
 	let a = new Uint8Array(n.length + t.length);
-	return a.set(n, 0), a.set(t, n.length), ba(i, 8 + t.length, ya(a)), r;
+	return a.set(n, 0), a.set(t, n.length), Sa(i, 8 + t.length, xa(a)), r;
 }
-function Sa(e, t) {
+function wa(e, t) {
 	let n = new TextEncoder().encode(e), r = new TextEncoder().encode(t), i = new Uint8Array(n.length + 1 + r.length);
-	return i.set(n, 0), i[n.length] = 0, i.set(r, n.length + 1), xa("tEXt", i);
+	return i.set(n, 0), i[n.length] = 0, i.set(r, n.length + 1), Ca("tEXt", i);
 }
-async function Ca(e) {
+async function Ta(e) {
 	if (typeof CompressionStream > "u") {
 		let t = await import(
 			/* @vite-ignore */
@@ -6322,7 +6335,7 @@ async function Ca(e) {
 	} }).pipeThrough(new CompressionStream("deflate"));
 	return new Uint8Array(await new Response(t).arrayBuffer());
 }
-function wa(e, t = {}) {
+function Ea(e, t = {}) {
 	let { margin: n = 2, size: r = 512 } = t, i = e.size + n * 2, a = Math.max(1, Math.floor(r / i)), o = i * a, s = i * a, c = new Uint8Array(o * s * 4);
 	for (let t = 0; t < s; t++) {
 		let r = Math.floor(t / a) - n;
@@ -6337,39 +6350,39 @@ function wa(e, t = {}) {
 		height: s
 	};
 }
-async function Ta(e, t, n, r = {}) {
+async function Da(e, t, n, r = {}) {
 	let i = 1 + t * 4, a = new Uint8Array(n * i);
 	for (let r = 0; r < n; r++) {
 		let n = r * i;
 		a[n] = 0, a.set(e.subarray(r * t * 4, (r + 1) * t * 4), n + 1);
 	}
-	let o = await Ca(a), s = /* @__PURE__ */ new Uint8Array(13), c = new DataView(s.buffer);
-	ba(c, 0, t), ba(c, 4, n), s[8] = 8, s[9] = 6, s[10] = 0, s[11] = 0, s[12] = 0;
+	let o = await Ta(a), s = /* @__PURE__ */ new Uint8Array(13), c = new DataView(s.buffer);
+	Sa(c, 0, t), Sa(c, 4, n), s[8] = 8, s[9] = 6, s[10] = 0, s[11] = 0, s[12] = 0;
 	let l = [
-		_a,
-		xa("IHDR", s),
-		xa("IDAT", o),
-		...r.metadata ? [Sa("chronos-qr", r.metadata)] : [],
-		xa("IEND", /* @__PURE__ */ new Uint8Array())
+		ya,
+		Ca("IHDR", s),
+		Ca("IDAT", o),
+		...r.metadata ? [wa("chronos-qr", r.metadata)] : [],
+		Ca("IEND", /* @__PURE__ */ new Uint8Array())
 	], u = l.reduce((e, t) => e + t.length, 0), d = new Uint8Array(u), f = 0;
 	for (let e of l) d.set(e, f), f += e.length;
 	return d;
 }
-async function Ea(e, t = {}) {
-	let { rgba: n, width: r, height: i } = wa(ga(e), t);
-	return Ta(n, r, i, { metadata: e });
+async function Oa(e, t = {}) {
+	let { rgba: n, width: r, height: i } = Ea(va(e), t);
+	return Da(n, r, i, { metadata: e });
 }
-function Da(e, t) {
+function ka(e, t) {
 	return e[t] << 24 | e[t + 1] << 16 | e[t + 2] << 8 | e[t + 3];
 }
-function Oa(e) {
+function Aa(e) {
 	return e.length >= 8 && e[0] === 137 && e[1] === 80 && e[2] === 78 && e[3] === 71;
 }
-function ka(e) {
-	if (!Oa(e)) return null;
+function ja(e) {
+	if (!Aa(e)) return null;
 	let t = 8;
 	for (; t + 12 <= e.length;) {
-		let n = Da(e, t), r = String.fromCharCode(e[t + 4], e[t + 5], e[t + 6], e[t + 7]), i = t + 8, a = i + n;
+		let n = ka(e, t), r = String.fromCharCode(e[t + 4], e[t + 5], e[t + 6], e[t + 7]), i = t + 8, a = i + n;
 		if (a > e.length) break;
 		if (r === "tEXt") {
 			let t = e.subarray(i, a), n = t.indexOf(0);
@@ -6382,9 +6395,9 @@ function ka(e) {
 	}
 	return null;
 }
-async function Aa(e, t) {
+async function Ma(e, t) {
 	if (typeof window > "u") throw Error(t("decode.browserOnly"));
-	let n = new Uint8Array(await e.arrayBuffer()), r = ka(n);
+	let n = new Uint8Array(await e.arrayBuffer()), r = ja(n);
 	if (r) return r;
 	try {
 		let e = new TextDecoder().decode(n), t = /chronos-qr:[A-Za-z0-9+/=:_-]+/.exec(e);
@@ -6410,7 +6423,7 @@ async function Aa(e, t) {
 }
 //#endregion
 //#region packages/plugins/codec-qrcode/src/messages.ts
-function ja(e) {
+function Na(e) {
 	return vr({ content: {
 		type: "string",
 		title: () => e("import.field.content.title"),
@@ -6418,7 +6431,7 @@ function ja(e) {
 		required: !0
 	} });
 }
-var Ma = {
+var Pa = {
 	"zh-cn": {
 		"plugin.name": "二维码",
 		"plugin.description": "通过二维码导入/导出课表",
@@ -6476,17 +6489,17 @@ var Ma = {
 		"decode.noQrFound": "No valid QR code was found in this image, or the browser does not support native scanning"
 	}
 };
-function Na(e) {
-	return Ma[e.toLowerCase() === "en" ? "en" : "zh-cn"];
+function Fa(e) {
+	return Pa[e.toLowerCase() === "en" ? "en" : "zh-cn"];
 }
 //#endregion
 //#region packages/plugins/codec-qrcode/src/QrCodeImportTab.svelte
-var Pa = /* @__PURE__ */ Un("<div class=\"rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs\"><div class=\"flex flex-col gap-4\"><div><h2 class=\"text-title-medium text-on-surface\"> </h2> <p class=\"text-body-small mt-0.5 text-on-surface-variant\"> </p></div> <input type=\"file\" accept=\"image/*,.svg\" class=\"hidden\"/> <div role=\"region\"><svg class=\"size-10 text-on-surface-variant/80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><path d=\"M14 14h3v3h-3z\"></path><path d=\"M20 14v3h-3\"></path><path d=\"M14 20h7\"></path></svg> <div class=\"flex flex-col gap-1\"><span class=\"text-body-medium font-medium text-on-surface\"> </span> <span class=\"text-body-small text-on-surface-variant\"> </span></div> <button type=\"button\" class=\"text-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50\"> </button></div></div></div>");
-function Fa(e, t) {
+var Ia = /* @__PURE__ */ Un("<div class=\"rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs\"><div class=\"flex flex-col gap-4\"><div><h2 class=\"text-title-medium text-on-surface\"> </h2> <p class=\"text-body-small mt-0.5 text-on-surface-variant\"> </p></div> <input type=\"file\" accept=\"image/*,.svg\" class=\"hidden\"/> <div role=\"region\"><svg class=\"size-10 text-on-surface-variant/80\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1.5\"></rect><path d=\"M14 14h3v3h-3z\"></path><path d=\"M20 14v3h-3\"></path><path d=\"M14 20h7\"></path></svg> <div class=\"flex flex-col gap-1\"><span class=\"text-body-medium font-medium text-on-surface\"> </span> <span class=\"text-body-small text-on-surface-variant\"> </span></div> <button type=\"button\" class=\"text-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50\"> </button></div></div></div>");
+function La(e, t) {
 	Te(t, !0);
 	let n = /* @__PURE__ */ O(!1), r = /* @__PURE__ */ O(null), i = /* @__PURE__ */ O(!1);
 	function a(e) {
-		return Ki(t.controller, "tool-qrcode", Ma, e);
+		return Ki(t.controller, "tool-qrcode", Pa, e);
 	}
 	let o = /* @__PURE__ */ Ye(() => a("import.ui.title")), s = /* @__PURE__ */ Ye(() => a("import.ui.subtitle")), c = /* @__PURE__ */ Ye(() => a("import.ui.dropLabel")), l = /* @__PURE__ */ Ye(() => a("import.ui.formats")), u = /* @__PURE__ */ Ye(() => a("import.ui.select")), d = /* @__PURE__ */ Ye(() => a("import.ui.scanning")), f = /* @__PURE__ */ Ye(() => a("import.ui.dropAria"));
 	function p() {
@@ -6496,7 +6509,7 @@ function Fa(e, t) {
 	async function m(e) {
 		k(n, !0);
 		try {
-			let n = await Aa(e, (e) => a(e));
+			let n = await Ma(e, (e) => a(e));
 			await t.transfer.previewWithSlot("qrcode", { content: n }) ? t.onContinue() : p();
 		} catch (e) {
 			let n = e instanceof Error ? e.message : a("import.error.decodeFailed");
@@ -6514,7 +6527,7 @@ function Fa(e, t) {
 		let t = e.dataTransfer?.files?.[0];
 		t && await m(t);
 	}
-	var _ = Pa(), v = Ft(Ft(_)), y = Ft(v), ee = Ft(y, !0), b = Ft(It(y, 2), !0), x = It(v, 2);
+	var _ = Ia(), v = Ft(Ft(_)), y = Ft(v), ee = Ft(y, !0), b = Ft(It(y, 2), !0), x = It(v, 2);
 	lr(x, (e) => k(r, e), () => I(r));
 	var S = It(x, 2), C = It(Ft(S), 2), te = Ft(C), ne = Ft(te, !0), re = Ft(It(te, 2), !0), ie = It(C, 2), ae = Ft(ie, !0);
 	qt(() => {
@@ -6526,8 +6539,8 @@ function Fa(e, t) {
 Fn(["change", "click"]);
 //#endregion
 //#region packages/plugins/codec-qrcode/src/index.ts
-var Ia = "chronos-qr:v1:";
-async function La(e) {
+var Ra = "chronos-qr:v1:";
+async function za(e) {
 	let t = new ra(), n = e.courses.map((e) => {
 		let n = t.intern(e.name), r = t.intern(e.teacher), i = t.intern(e.location), a = t.intern(e.remark), o = ta(e.weeks), s = [
 			n,
@@ -6551,9 +6564,9 @@ async function La(e) {
 		e.endTime
 	]));
 	let i = JSON.stringify(r);
-	return `${Ia}${Qi(await qi(new TextEncoder().encode(i)))}`;
+	return `${Ra}${Qi(await qi(new TextEncoder().encode(i)))}`;
 }
-async function Ra(e, t = Na("zh-cn")) {
+async function Ba(e, t = Fa("zh-cn")) {
 	let n = e.trim();
 	if (!n.startsWith("chronos-qr:v1:")) throw new br("invalid-data", t["import.error.corrupt"]);
 	try {
@@ -6594,11 +6607,11 @@ async function Ra(e, t = Na("zh-cn")) {
 		throw e instanceof br ? e : new br("invalid-data", t["import.error.corrupt"]);
 	}
 }
-function za(e = {}) {
-	let { importComponent: t = Gi(Fa) } = e;
+function Va(e = {}) {
+	let { importComponent: t = Gi(La) } = e;
 	return Dr({
 		id: "tool-qrcode",
-		messages: Ma,
+		messages: Pa,
 		nameKey: "plugin.name",
 		descriptionKey: "plugin.description",
 		category: "tool",
@@ -6606,7 +6619,7 @@ function za(e = {}) {
 		author: "CQUT OpenProject",
 		homepage: "https://github.com/CQUT-OpenProject/Chronos",
 		async apply(e, n) {
-			let r = ja(n);
+			let r = Na(n);
 			Or(e, {
 				id: "qrcode",
 				title: () => n("import.tab.title"),
@@ -6617,9 +6630,9 @@ function za(e = {}) {
 				component: t,
 				inputSchema: r,
 				async executeImport(t) {
-					let r = Na(e.i18n.locale), i = t.content;
+					let r = Fa(e.i18n.locale), i = t.content;
 					if (!i?.trim()) throw new br("no-data", n("import.error.empty"));
-					return Ra(i, r);
+					return Ba(i, r);
 				}
 			}), e.registerSlot("export.action", {
 				id: "qrcode",
@@ -6631,7 +6644,7 @@ function za(e = {}) {
 				async export(e, t) {
 					let r = e ?? t?.state.currentTimetable;
 					if (!r) throw Error(n("export.error.noTimetable"));
-					let i = await Ea(await La(r), { margin: 2 });
+					let i = await Oa(await za(r), { margin: 2 });
 					return {
 						filename: `${(r.name || "timetable").replace(/[/\\?%*:|"<>]/g, "_")}-qrcode.png`,
 						mimeType: "image/png",
@@ -6644,9 +6657,9 @@ function za(e = {}) {
 		}
 	});
 }
-za();
+Va();
 //#endregion
 //#region packages/plugins/codec-qrcode/bundle/entry.ts
-var Ba = za({ importComponent: Gi(Fa) });
+var Ha = Va({ importComponent: Gi(La) });
 //#endregion
-export { Ba as default };
+export { Ha as default };

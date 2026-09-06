@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vite-plus/test';
 import type { Course } from '@chronos/core';
 import { createTimetable } from '@chronos/core';
 import { bitmaskToWeeks, deflateRaw, inflateRaw, weeksToBitmask } from '@chronos/codec-kit';
-import { decodeBinaryToTimetable, encodeTimetableToBinary } from './chronos-share-binary';
-import { parseLocation } from './location-codec';
-import { WeekMaskTable } from './week-mask-table';
+import {
+	decodeBinaryToTimetable,
+	encodeTimetableToBinary
+} from '../src/share-link/chronos-share-binary';
+import { parseLocation } from '../src/share-link/location-codec';
+import { WeekMaskTable } from '../src/share-link/week-mask-table';
 import {
 	decodeSharePayload,
 	encodeShareLink,
@@ -14,8 +17,8 @@ import {
 	extractSharePayloadFromText,
 	formatShareClipboardText,
 	SHARE_LINK_PREFIX_DEFLATE
-} from './chronos-share-link-codec';
-import { SHARE_CODEC_MESSAGES } from '../messages';
+} from '../src/share-link/chronos-share-link-codec';
+import { SHARE_CODEC_MESSAGES } from '../src/messages';
 
 const SAMPLE_PERIOD_TIMES = [
 	{ index: 1, startTime: '08:30', endTime: '09:15' },

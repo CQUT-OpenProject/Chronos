@@ -84,12 +84,13 @@ export function calculateTimetableGrid(
 		};
 	});
 
-	const displayedPeriodCount = Math.max(
-		10,
-		timetable.academicConfig.periodTimes.length,
-		...timetable.courses.map((course) => course.endPeriod),
-		0
-	);
+	const displayedPeriodCount =
+		timetable.academicConfig.periodTimes.length > 0
+			? // Configured rows win: removed periods (and their courses) stay hidden
+				// until re-added. Courses are never deleted, only filtered downstream.
+				timetable.academicConfig.periodTimes.length
+			: // No periods configured at all: fall back to course-driven rows.
+				Math.max(...timetable.courses.map((course) => course.endPeriod), 0);
 
 	return {
 		monthLabel: weekMonthLabel(weekDays.map((day) => day.date)),

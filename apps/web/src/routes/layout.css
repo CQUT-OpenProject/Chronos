@@ -1,10 +1,6 @@
 @import 'tailwindcss';
 @source '..';
 @source '../../../../packages/ui-kit/src';
-@source '../../../../packages/plugins/wallpaper/src';
-@source '../../../../packages/plugins/calendar-holidays/src';
-@source '../../../../packages/plugins/today/src';
-@source '../../../../packages/plugins/codec-qrcode/src';
 @source '../../../../packages/plugins/source-cqut/src';
 @source '../../../../packages/plugins/codec-share/src';
 @import '../../../../packages/ui-kit/src/timetable-preview/timetable-dynamic-tint.css';
@@ -14,7 +10,6 @@
 @import '../lib/theme/layout-tokens.css';
 @import '../lib/theme/ui-patterns.css';
 @import '../lib/content/markdown-prose.css';
-@import 'swiper/css';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 

@@ -27,51 +27,60 @@ export class OfficialPluginRuntimeActivator {
 		await this.deactivate(manifest.id);
 
 		const disposables: Disposable[] = [];
-
-		if (record.colorsJson || record.iconThemeJson) {
-			const ctx = new ScopedContext(manifest.id, this.engine);
-			if (record.colorsJson) {
-				disposables.push(
-					ctx.registerSlot(
-						'theme.definition',
-						createThemeFromColorJson(parseColorThemeJson(JSON.parse(record.colorsJson)))
-					)
-				);
-			}
-			if (record.iconThemeJson) {
-				disposables.push(
-					ctx.registerSlot(
-						'theme.icon.definition',
-						createIconThemeFromJson(parseIconThemeJson(JSON.parse(record.iconThemeJson)))
-					)
-				);
-			}
-			disposables.push({ dispose: () => ctx.dispose() });
-		}
-
-		if (record.code) {
-			const plugin = await loadEsmPluginFromCode(record.code);
-			if (plugin.id !== manifest.id) {
-				throw new Error(`Plugin id mismatch: manifest "${manifest.id}" vs bundle "${plugin.id}"`);
-			}
-			const handle = await this.engine.loadPlugin({
-				...plugin,
-				configSchema: manifest.configSchema ?? plugin.configSchema,
-				allowedDomains: manifest.allowedDomains ?? plugin.allowedDomains
-			});
-			disposables.push(handle);
-		}
+		disposables.push(...this.activateThemeAssets(record));
+		disposables.push(...(await this.activateBundledPlugin(record)));
 
 		const composite: Disposable = {
 			dispose: () => {
 				for (const d of disposables) d.dispose();
 			}
 		};
-		// Inject CSS only after every verification step passed, so a rejected
-		// bundle/theme never leaves styles behind in the document.
 		if (record.cssCode) this.injectCss(manifest.id, record.cssCode);
 		this.activeHandles.set(manifest.id, composite);
 		return composite;
+	}
+
+	private activateThemeAssets(record: InstalledOfficialPluginRecord): Disposable[] {
+		const manifest = record.manifest;
+		if (!record.colorsJson && !record.iconThemeJson) return [];
+
+		const disposables: Disposable[] = [];
+		const ctx = new ScopedContext(manifest.id, this.engine);
+		if (record.colorsJson) {
+			disposables.push(
+				ctx.registerSlot(
+					'theme.definition',
+					createThemeFromColorJson(parseColorThemeJson(JSON.parse(record.colorsJson)))
+				)
+			);
+		}
+		if (record.iconThemeJson) {
+			disposables.push(
+				ctx.registerSlot(
+					'theme.icon.definition',
+					createIconThemeFromJson(parseIconThemeJson(JSON.parse(record.iconThemeJson)))
+				)
+			);
+		}
+		disposables.push({ dispose: () => ctx.dispose() });
+		return disposables;
+	}
+
+	private async activateBundledPlugin(
+		record: InstalledOfficialPluginRecord
+	): Promise<Disposable[]> {
+		if (!record.code) return [];
+		const manifest = record.manifest;
+		const plugin = await loadEsmPluginFromCode(record.code);
+		if (plugin.id !== manifest.id) {
+			throw new Error(`Plugin id mismatch: manifest "${manifest.id}" vs bundle "${plugin.id}"`);
+		}
+		const handle = await this.engine.loadPlugin({
+			...plugin,
+			configSchema: manifest.configSchema ?? plugin.configSchema,
+			allowedDomains: manifest.allowedDomains ?? plugin.allowedDomains
+		});
+		return [handle];
 	}
 
 	async deactivate(pluginId: string, options?: { revertThemes?: boolean }): Promise<void> {

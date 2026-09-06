@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { ChronosEngine, type ChronosEnv, type UserPreferences } from '@chronos/core';
+import {
+	ChronosEngine,
+	countDistinctCourseNames,
+	type ChronosEnv,
+	type UserPreferences
+} from '@chronos/core';
 import { parseHTML } from 'linkedom';
 import { cqutPlugin } from '../src/index';
 import { parseHtmlTimetable, finalizeHtmlPreview } from '../src/html-parser';
@@ -76,6 +81,40 @@ const sampleHtml = `
 </html>
 `;
 
+const splitEntryHtml = `
+<!DOCTYPE html>
+<html>
+<body>
+<table id="kbgrid_table_0">
+	<div class="timetable_title">
+		<h6 class="pull-left">2026-2027学年第1学期</h6>
+		张三的课表
+	</div>
+	<tbody>
+		<tr>
+			<td id="1-1" rowspan="2" class="td_wrap">
+				<div class="timetable_con">
+					<span class="title">数据库原理及应用★</span>
+					<p><span title="教师"></span>李老师</p>
+					<p><span title="上课地点"></span>A101</p>
+					<p><span title="节/周"></span>1-8周</p>
+				</div>
+			</td>
+			<td id="2-1" rowspan="2" class="td_wrap">
+				<div class="timetable_con">
+					<span class="title">数据库原理及应用☆</span>
+					<p><span title="教师"></span>李老师</p>
+					<p><span title="上课地点"></span>B202</p>
+					<p><span title="节/周"></span>9-16周</p>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
+</body>
+</html>
+`;
+
 describe('cqut html parser', () => {
 	it('parses educational HTML timetable structure', () => {
 		const timetable = parseHtmlTimetable(sampleHtml, { customDocParser, t });
@@ -92,6 +131,15 @@ describe('cqut html parser', () => {
 		expect(course.weeks).toEqual([1, 3, 5, 7, 9, 11, 13, 15]);
 		expect(timetable.viewPrefs.showSaturday).toBe(false);
 		expect(timetable.viewPrefs.showSunday).toBe(false);
+	});
+
+	it('keeps split theory/lab entries separate while deduplicating course names for display', () => {
+		const timetable = parseHtmlTimetable(splitEntryHtml, { customDocParser, t });
+		expect(timetable.courses).toHaveLength(2);
+		expect(countDistinctCourseNames(timetable.courses)).toBe(1);
+		expect(timetable.courses.every((course) => course.name === '数据库原理及应用')).toBe(true);
+		expect(timetable.courses[0]?.weeks).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+		expect(timetable.courses[1]?.weeks).toEqual([9, 10, 11, 12, 13, 14, 15, 16]);
 	});
 
 	it('parses educational HTML timetable structure without campus options', () => {

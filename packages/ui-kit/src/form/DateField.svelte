@@ -7,6 +7,7 @@
 		DEFAULT_DATE_FIELD_LABELS,
 		formatDateDisplay,
 		isoToCalendarDate,
+		resolvePickerMonthIso,
 		type DateFieldLabels
 	} from './date-field-utils';
 
@@ -21,7 +22,8 @@
 		labels = DEFAULT_DATE_FIELD_LABELS,
 		required = false,
 		description,
-		variant = 'field'
+		variant = 'field',
+		locale = 'zh-CN'
 	}: {
 		label: string;
 		value?: string;
@@ -34,6 +36,8 @@
 		required?: boolean;
 		description?: string;
 		variant?: 'field' | 'section';
+		/** BCP-47 locale for the calendar heading and weekdays. */
+		locale?: string;
 	} = $props();
 
 	const instanceId = $props.id();
@@ -43,16 +47,21 @@
 
 	let open = $state(false);
 	let draftIso = $state('');
+	let placeholder = $state<DateValue | undefined>(undefined);
 
-	const displayValue = $derived(formatDateDisplay(value));
+	const safeValue = $derived(typeof value === 'string' ? value : '');
+	const displayValue = $derived(formatDateDisplay(safeValue));
 	const triggerAriaLabel = $derived(
-		buildDateFieldTriggerLabel(label, open ? draftIso : value, labels)
+		buildDateFieldTriggerLabel(label, open ? draftIso : safeValue, labels)
 	);
 	const draftPickerValue = $derived(isoToCalendarDate(draftIso));
 
 	function handleOpenChange(nextOpen: boolean) {
 		if (nextOpen) {
-			draftIso = value;
+			draftIso = safeValue;
+			placeholder = isoToCalendarDate(
+				resolvePickerMonthIso(safeValue, today(getLocalTimeZone()).toString())
+			);
 		}
 	}
 
@@ -61,7 +70,8 @@
 	}
 
 	function confirmSelection() {
-		if (draftIso !== value) {
+		if (required && !draftIso) return;
+		if (draftIso !== safeValue) {
 			value = draftIso;
 			onValueChange?.(draftIso);
 		}
@@ -69,15 +79,14 @@
 	}
 
 	function selectToday() {
-		draftIso = calendarDateToIso(today(getLocalTimeZone()));
+		const next = today(getLocalTimeZone());
+		draftIso = calendarDateToIso(next);
+		placeholder = next;
 	}
 
 	function clearDate() {
+		if (required) return;
 		draftIso = '';
-	}
-
-	function dismissPicker() {
-		open = false;
 	}
 </script>
 
@@ -101,9 +110,10 @@
 		onOpenChange={handleOpenChange}
 		value={draftPickerValue}
 		onValueChange={handleDraftChange}
+		bind:placeholder
 		closeOnDateSelect={false}
-		locale="zh-CN"
-		weekdayFormat="short"
+		{locale}
+		weekdayFormat="narrow"
 		weekStartsOn={1}
 		fixedWeeks
 		{disabled}
@@ -111,12 +121,17 @@
 	>
 		<div class={isSection ? 'ui-form-field' : ['ui-form-field', className]}>
 			{#if !isSection}
-				<span id={labelId} class="ui-field-label">
+				<button
+					type="button"
+					id={labelId}
+					class="ui-field-label cursor-pointer border-0 bg-transparent p-0 text-left"
+					onclick={() => (open = true)}
+				>
 					{label}
 					{#if required}
 						<span class="ml-0.5 text-error">*</span>
 					{/if}
-				</span>
+				</button>
 			{/if}
 			<DatePicker.Input aria-labelledby={labelId}>
 				{#snippet child({ props })}
@@ -154,19 +169,15 @@
 
 			<DatePicker.Portal>
 				{#if open}
-					<button
-						type="button"
-						tabindex="-1"
-						class="date-picker-overlay fixed inset-0 z-[70] bg-black/50 backdrop-blur-xs"
-						aria-label="关闭"
-						onclick={dismissPicker}
-					></button>
+					<div
+						aria-hidden="true"
+						class="date-picker-overlay fixed inset-0 z-[70] bg-black/50"
+					></div>
 				{/if}
-				<DatePicker.Content
-					sideOffset={8}
-					class="ui-date-picker-content z-[70] rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
+				<DatePicker.ContentStatic
+					class="ui-date-picker-content fixed top-1/2 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
 				>
-					<DatePicker.Calendar>
+					<DatePicker.Calendar class="flex w-full flex-col">
 						{#snippet children({ months, weekdays })}
 							<DatePicker.Header class="mb-3 flex items-center justify-between gap-2">
 								<DatePicker.PrevButton
@@ -187,33 +198,66 @@
 							</DatePicker.Header>
 
 							{#each months as month (month.value)}
-								<DatePicker.Grid class="w-full border-collapse">
-									<DatePicker.GridHead>
-										<DatePicker.GridRow class="mb-1 flex w-full justify-between">
-											{#each weekdays as day (day)}
-												<DatePicker.HeadCell
-													class="text-label-small flex size-10 items-center justify-center text-on-surface-variant"
-												>
-													{day.slice(-1)}
-												</DatePicker.HeadCell>
-											{/each}
-										</DatePicker.GridRow>
-									</DatePicker.GridHead>
-									<DatePicker.GridBody>
-										{#each month.weeks as weekDates (weekDates)}
-											<DatePicker.GridRow class="flex w-full">
-												{#each weekDates as date (date)}
-													<DatePicker.Cell {date} month={month.value} class="p-0 text-center">
-														<DatePicker.Day
-															class="m3-date-picker-day text-body-medium inline-flex size-10 items-center justify-center rounded-full border border-transparent text-on-surface transition-colors hover:bg-on-surface/5 data-disabled:pointer-events-none data-disabled:text-on-surface/30 data-outside-month:text-on-surface-variant/50 data-selected:bg-brand data-selected:font-medium data-selected:text-on-primary data-unavailable:text-on-surface-variant data-unavailable:line-through"
-														>
-															{date.day}
-														</DatePicker.Day>
-													</DatePicker.Cell>
-												{/each}
-											</DatePicker.GridRow>
-										{/each}
-									</DatePicker.GridBody>
+								<DatePicker.Grid class="w-full">
+									{#snippet child({ props })}
+										<div {...props} class="w-full">
+											<DatePicker.GridHead>
+												{#snippet child({ props: headProps })}
+													<div {...headProps}>
+														<DatePicker.GridRow>
+															{#snippet child({ props: rowProps })}
+																<div {...rowProps} role="row" class="mb-1 grid grid-cols-7">
+																	{#each weekdays as day}
+																		<DatePicker.HeadCell>
+																			{#snippet child({ props: cellProps })}
+																				<div
+																					{...cellProps}
+																					role="columnheader"
+																					class="text-label-small flex h-10 w-full items-center justify-center text-on-surface-variant"
+																				>
+																					{day}
+																				</div>
+																			{/snippet}
+																		</DatePicker.HeadCell>
+																	{/each}
+																</div>
+															{/snippet}
+														</DatePicker.GridRow>
+													</div>
+												{/snippet}
+											</DatePicker.GridHead>
+											<DatePicker.GridBody>
+												{#snippet child({ props: bodyProps })}
+													<div {...bodyProps}>
+														{#each month.weeks as weekDates (weekDates)}
+															<DatePicker.GridRow>
+																{#snippet child({ props: rowProps })}
+																	<div {...rowProps} role="row" class="grid grid-cols-7">
+																		{#each weekDates as date (date)}
+																			<DatePicker.Cell {date} month={month.value}>
+																				{#snippet child({ props: cellProps })}
+																					<div
+																						{...cellProps}
+																						class="flex h-10 w-full items-center justify-center p-0"
+																					>
+																						<DatePicker.Day
+																							class="m3-date-picker-day text-body-medium inline-flex size-10 items-center justify-center rounded-full border border-transparent text-on-surface transition-colors hover:bg-on-surface/5 data-disabled:pointer-events-none data-disabled:text-on-surface/30 data-outside-month:text-on-surface-variant/50 data-selected:bg-brand data-selected:font-medium data-selected:text-on-primary data-unavailable:text-on-surface-variant data-unavailable:line-through"
+																						>
+																							{date.day}
+																						</DatePicker.Day>
+																					</div>
+																				{/snippet}
+																			</DatePicker.Cell>
+																		{/each}
+																	</div>
+																{/snippet}
+															</DatePicker.GridRow>
+														{/each}
+													</div>
+												{/snippet}
+											</DatePicker.GridBody>
+										</div>
+									{/snippet}
 								</DatePicker.Grid>
 							{/each}
 
@@ -231,7 +275,7 @@
 									<button
 										type="button"
 										class="text-label-large h-9 rounded-full px-3 text-on-surface-variant hover:bg-on-surface/5 disabled:opacity-40"
-										disabled={!draftIso}
+										disabled={required || !draftIso}
 										onclick={clearDate}
 									>
 										{labels.clear}
@@ -239,7 +283,8 @@
 								</div>
 								<button
 									type="button"
-									class="text-label-large h-9 rounded-full bg-brand px-4 text-on-primary hover:shadow-xs active:opacity-90"
+									class="text-label-large h-9 rounded-full bg-brand px-4 text-on-primary hover:shadow-xs active:opacity-90 disabled:opacity-40"
+									disabled={required && !draftIso}
 									onclick={confirmSelection}
 								>
 									{labels.confirm}
@@ -247,7 +292,7 @@
 							</div>
 						{/snippet}
 					</DatePicker.Calendar>
-				</DatePicker.Content>
+				</DatePicker.ContentStatic>
 			</DatePicker.Portal>
 		</div>
 	</DatePicker.Root>

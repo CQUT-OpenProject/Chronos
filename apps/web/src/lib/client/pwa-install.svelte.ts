@@ -6,10 +6,17 @@ import {
 	SNOOZE_DURATION_MS,
 	SNOOZE_KEY
 } from './pwa-install-snooze';
-import { isPwaStandalone, PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalone';
+import { PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalone';
+import { readPwaEnvironmentFromWindow } from './pwa-environment';
+import {
+	APPINSTALLED_DEDUP_MS,
+	attachInstallPromptLifecycle,
+	restoreStoredInstallPrompt,
+	scheduleEnvironmentRecheck,
+	storeInstallPrompt
+} from './pwa-prompt-lifecycle';
 
 const INSTALLED_KEY = 'chronos:pwa-installed';
-const APPINSTALLED_DEDUP_MS = 2000;
 
 function safeSetItem(key: string, value: string): void {
 	try {
@@ -39,72 +46,36 @@ export class PWAInstallController {
 
 	canPrompt = $derived(this.deferredPrompt !== null);
 
-	private installListenerAttached = false;
+	private installLifecycleCleanup: (() => void) | null = null;
 	private displayModeListenerAttached = false;
 	private installPromptGate: (() => boolean) | null = null;
 	private dialogScheduled = false;
 	private dialogTimer: ReturnType<typeof setTimeout> | null = null;
-	private environmentRecheckTimers: ReturnType<typeof setTimeout>[] = [];
+	private environmentRecheckCleanup: (() => void) | null = null;
 	private lastAppInstalledAt = 0;
 	private displayModeCleanups: (() => void)[] = [];
-	private appInstalledHandler: (() => void) | null = null;
 
 	constructor() {
 		if (typeof window !== 'undefined') {
 			this.checkEnvironment();
-			this.restoreDeferredPrompt();
+			this.deferredPrompt = restoreStoredInstallPrompt(window);
 			this.attachInstallListener();
 			this.attachDisplayModeListener();
 		}
 	}
 
-	private restoreDeferredPrompt() {
-		const stored = window.__chronosInstallPrompt;
-		if (!stored) return;
-
-		this.deferredPrompt = stored;
-	}
-
 	checkEnvironment() {
 		if (typeof window === 'undefined') return;
 
-		this.isStandalone = isPwaStandalone();
+		const flags = readPwaEnvironmentFromWindow(window);
+		this.isStandalone = flags.isStandalone;
+		this.isIOS = flags.isIOS;
+		this.isMacSafari = flags.isMacSafari;
 
 		if (this.isStandalone) {
 			safeSetItem(INSTALLED_KEY, '1');
 			this.isInstalledLocally = true;
 		}
-
-		const ua = window.navigator.userAgent;
-		const navData = window.navigator as unknown as {
-			userAgentData?: { platform?: string; brands?: { brand: string }[] };
-		};
-		const platform = navData.userAgentData?.platform ?? '';
-
-		// 1. Chromium check (Chrome, Edge, Opera, Brave)
-		const hasChromiumBrands = navData.userAgentData?.brands?.some((b) =>
-			/Chrome|Chromium|Microsoft Edge|Brave/.test(b.brand)
-		);
-		const isChromium =
-			Boolean(hasChromiumBrands) ||
-			(/Chrome|Chromium|Edg|OPR|Brave/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua));
-
-		// 2. iOS / iPadOS check (Strict: Never true if Chromium or Android/Windows)
-		const isAndroid = platform === 'Android' || /Android/.test(ua);
-		const isWindows = platform === 'Windows' || /Windows/.test(ua);
-
-		const isRealIOS = platform === 'iOS' || /iPhone|iPod|iPad/.test(ua);
-		// iPadOS Safari reports Macintosh, but hasTouch is true. macOS Desktop has maxTouchPoints === 0.
-		const isMacUA = platform === 'macOS' || /Macintosh/.test(ua);
-		const hasTouch = window.navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
-		const isIPadOS = isMacUA && hasTouch && !isChromium && !isAndroid && !isWindows;
-
-		this.isIOS = (isRealIOS || isIPadOS) && !isChromium && !isAndroid && !isWindows;
-
-		// 3. macOS Safari check (Mac + Safari + NOT Chromium)
-		const isMac = isMacUA && !this.isIOS && !isWindows && !isAndroid;
-		const isSafari = /Safari/.test(ua) && !isChromium;
-		this.isMacSafari = isMac && isSafari;
 	}
 
 	private attachDisplayModeListener() {
@@ -130,16 +101,11 @@ export class PWAInstallController {
 		}
 		this.displayModeCleanups = [];
 		this.displayModeListenerAttached = false;
-		if (this.appInstalledHandler && typeof window !== 'undefined') {
-			window.removeEventListener('appinstalled', this.appInstalledHandler);
-			this.appInstalledHandler = null;
-		}
-		this.installListenerAttached = false;
+		this.installLifecycleCleanup?.();
+		this.installLifecycleCleanup = null;
 		this.cancelScheduledDialog();
-		for (const timer of this.environmentRecheckTimers) {
-			clearTimeout(timer);
-		}
-		this.environmentRecheckTimers = [];
+		this.environmentRecheckCleanup?.();
+		this.environmentRecheckCleanup = null;
 	}
 
 	/** @internal Resets mutable state between unit tests. */
@@ -159,33 +125,24 @@ export class PWAInstallController {
 			clearTimeout(this.dialogTimer);
 			this.dialogTimer = null;
 		}
-		for (const timer of this.environmentRecheckTimers) {
-			clearTimeout(timer);
-		}
-		this.environmentRecheckTimers = [];
+		this.environmentRecheckCleanup?.();
+		this.environmentRecheckCleanup = null;
 		if (typeof window !== 'undefined') {
-			window.__chronosInstallPrompt = null;
+			storeInstallPrompt(window, null);
 		}
 	}
 
 	private attachInstallListener() {
-		if (this.installListenerAttached) return;
-		this.installListenerAttached = true;
+		if (this.installLifecycleCleanup || typeof window === 'undefined') return;
 
-		const onBeforeInstall = (event: Event) => {
-			// app.html already captured + preventDefault() at parse time;
-			// second preventDefault() here is a harmless no-op that keeps
-			// late-attached listeners eligible for the deferred prompt.
-			event.preventDefault();
-			const prompt = event as BeforeInstallPromptEvent;
-			window.__chronosInstallPrompt = prompt;
-			this.deferredPrompt = prompt;
-			this.tryScheduleInstallDialog();
-		};
-
-		this.appInstalledHandler = () => this.onAppInstalled();
-		window.addEventListener('beforeinstallprompt', onBeforeInstall);
-		window.addEventListener('appinstalled', this.appInstalledHandler);
+		this.installLifecycleCleanup = attachInstallPromptLifecycle(window, {
+			onBeforeInstall: (prompt) => {
+				storeInstallPrompt(window, prompt);
+				this.deferredPrompt = prompt;
+				this.tryScheduleInstallDialog();
+			},
+			onAppInstalled: () => this.onAppInstalled()
+		});
 	}
 
 	private markInstalled() {
@@ -205,7 +162,9 @@ export class PWAInstallController {
 
 	private clearDeferredPrompt() {
 		this.deferredPrompt = null;
-		window.__chronosInstallPrompt = null;
+		if (typeof window !== 'undefined') {
+			storeInstallPrompt(window, null);
+		}
 	}
 
 	private onAppInstalled() {
@@ -219,29 +178,13 @@ export class PWAInstallController {
 
 		if (this.isStandalone) return;
 
-		this.scheduleEnvironmentRecheck();
-	}
-
-	private scheduleEnvironmentRecheck() {
-		for (const timer of this.environmentRecheckTimers) {
-			clearTimeout(timer);
-		}
-		this.environmentRecheckTimers = [];
-
-		for (const delay of [100, 500, 1000]) {
-			const timer = setTimeout(() => {
-				this.checkEnvironment();
-			}, delay);
-			this.environmentRecheckTimers.push(timer);
-		}
+		this.environmentRecheckCleanup?.();
+		this.environmentRecheckCleanup = scheduleEnvironmentRecheck(() => this.checkEnvironment());
 	}
 
 	private async detectInstalledLocally() {
 		if (this.isStandalone) return;
 
-		// NOTE: getInstalledRelatedApps() is intentionally unused: it only
-		// resolves entries declared in manifest `related_applications`,
-		// which Chronos does not ship, so it would always return [].
 		if (safeGetItem(INSTALLED_KEY) === '1') {
 			this.isInstalledLocally = true;
 		}
@@ -263,10 +206,6 @@ export class PWAInstallController {
 
 	private scheduleDialog() {
 		if (this.dialogScheduled || this.isStandalone || this.isSnoozed()) return;
-		// Unsupported browsers (e.g. Firefox desktop) have no install entry:
-		// skip the auto-popup, the static /about/install page stays available.
-		// Once beforeinstallprompt arrives, canPrompt becomes true and the
-		// onBeforeInstall -> tryScheduleInstallDialog path schedules again.
 		if (!this.canShowInstallEntry()) return;
 		this.dialogScheduled = true;
 
@@ -331,8 +270,6 @@ export class PWAInstallController {
 		const prompt = this.deferredPrompt;
 		if (!prompt) return false;
 
-		// BeforeInstallPromptEvent is single-use: always clear, even on
-		// dismiss/error, and wait for the next beforeinstallprompt to re-arm.
 		try {
 			await prompt.prompt();
 			const choice = await prompt.userChoice;
@@ -351,10 +288,6 @@ export class PWAInstallController {
 	}
 
 	openInApp() {
-		// No window.open: the installed PWA cannot be focused from a browser
-		// tab via script (same-URL _blank only opens another browser tab and
-		// loses transient activation after awaits). Guide the user to launch
-		// from the OS surface instead.
 		this.openInAppDialogOpen = false;
 		snackbarKey('pwa.openInApp.hint');
 	}

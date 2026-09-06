@@ -5,12 +5,12 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
 	import { formatWeekDateRange, dayOfWeekFromIso } from '@chronos/core';
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
+	import type { Component } from 'svelte';
 	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
-	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
 
@@ -28,6 +28,14 @@
 
 	const screenState = $derived(screen.state);
 	const shell = getContext<AppShellController>('appShell');
+
+	let TimetableWeekSwiper = $state<Component | null>(null);
+
+	onMount(() => {
+		void import('./TimetableWeekSwiper.svelte').then((module) => {
+			TimetableWeekSwiper = module.default;
+		});
+	});
 	const startWeek = $derived(screenState.startWeek);
 	const endWeek = $derived(screenState.endWeek);
 	const coursePalette = $derived(shell.appearance.coursePalette);
@@ -167,15 +175,17 @@
 
 	<TimetableWallpaperLayer wallpaperUri={hasDynamicColorBackground ? dynamicColorUri : null}>
 		{#key screenState.currentTimetable?.id}
-			<TimetableWeekSwiper
-				{screen}
-				{active}
-				hasDynamicBackground={hasDynamicColorBackground}
-				{coursePalette}
-				{layoutMode}
-				{capsuleCornerStyle}
-				{onCourseClick}
-			/>
+			{#if TimetableWeekSwiper}
+				<TimetableWeekSwiper
+					{screen}
+					{active}
+					hasDynamicBackground={hasDynamicColorBackground}
+					{coursePalette}
+					{layoutMode}
+					{capsuleCornerStyle}
+					{onCourseClick}
+				/>
+			{/if}
 		{/key}
 	</TimetableWallpaperLayer>
 </div>

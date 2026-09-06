@@ -9,6 +9,7 @@ export interface ParsedPeriodRange {
 }
 
 export function parseTimeMinutes(value: string): number {
+	// Lenient parse for runtime period lookup (invalid input → 0). For editing/forms use parseTimeMinutesStrict.
 	const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
 	if (!match) return 0;
 	return Number(match[1]) * 60 + Number(match[2]);

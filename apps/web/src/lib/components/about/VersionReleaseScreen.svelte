@@ -33,9 +33,18 @@
 		void detailState.load();
 	});
 
-	const htmlBody = $derived(
-		detailState.state.release?.body ? parseMarkdown(detailState.state.release.body) : ''
-	);
+	let htmlBody = $state('');
+
+	$effect(() => {
+		const body = detailState.state.release?.body;
+		if (!body) {
+			htmlBody = '';
+			return;
+		}
+		void parseMarkdown(body).then((html) => {
+			htmlBody = html;
+		});
+	});
 
 	const emptyBodyHtml = $derived(`<p>${hostT('about.release.detail.noBody')}</p>`);
 </script>

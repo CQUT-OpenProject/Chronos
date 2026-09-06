@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { dayOfWeekFromIso } from '../src/engine/date';
+import { dayOfWeekFromIso } from '../src/algorithms/date';
 
 describe('dayOfWeekFromIso', () => {
 	it('maps Sunday to 7 and Monday to 1', () => {

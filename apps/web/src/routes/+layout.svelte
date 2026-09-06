@@ -8,7 +8,6 @@
 	import { getTimetableScreen } from '$lib/timetable/timetable-screen.svelte';
 	import { createPlatformBootstrap } from '$lib/platform/platform-bootstrap.svelte';
 	import Snackbar from '$lib/components/ui/Snackbar.svelte';
-	import OnboardingFlow from '$lib/components/onboarding/OnboardingFlow.svelte';
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { createShellTabController } from '$lib/shell/shell-tab.svelte';
@@ -44,8 +43,10 @@
 	const shellTab = createShellTabController(() => getAppController());
 
 	const blockShell = $derived(onboardingController.isActive(page.url.pathname));
+	const shouldLoadOnboarding = $derived(onboardingController.shouldRender(page.url.pathname));
 
 	let InstallPrompt = $state<Component | null>(null);
+	let OnboardingFlow = $state<Component | null>(null);
 
 	setContext('appShell', shell);
 	setContext('timetableScreen', timetableScreen);
@@ -55,6 +56,13 @@
 	$effect(() => {
 		void getAppController().slotVersion;
 		shellTab.reconcileActiveTab();
+	});
+
+	$effect(() => {
+		if (!shouldLoadOnboarding || OnboardingFlow) return;
+		void import('$lib/components/onboarding/OnboardingFlow.svelte').then((module) => {
+			OnboardingFlow = module.default;
+		});
 	});
 
 	onMount(() => {
@@ -97,7 +105,9 @@
 {#if InstallPrompt}
 	<InstallPrompt />
 {/if}
-<OnboardingFlow />
+{#if OnboardingFlow}
+	<OnboardingFlow />
+{/if}
 <Snackbar />
 
 <div style="display:none">

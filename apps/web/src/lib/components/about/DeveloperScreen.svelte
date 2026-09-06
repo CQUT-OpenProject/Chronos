@@ -5,7 +5,14 @@
 
 	const controller = getAppController();
 	const markdownContent = $derived(hostT('developer.markdown'));
-	const htmlContent = $derived(parseMarkdown(markdownContent));
+	let htmlContent = $state('');
+
+	$effect(() => {
+		const markdown = markdownContent;
+		void parseMarkdown(markdown).then((html) => {
+			htmlContent = html;
+		});
+	});
 </script>
 
 <div
