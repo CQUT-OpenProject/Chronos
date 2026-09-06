@@ -6,14 +6,15 @@
 	import { getAppController } from '$lib/services/app-engine';
 	import { removePeriodAt, reindexPeriodTimes } from '$lib/timetable/timetable-mappers';
 	import {
-		countCoursesAffectedByPeriodDelete,
+		countDistinctCourseNames,
+		countDistinctCoursesAffectedByPeriodDelete,
+		countDistinctHiddenCourses,
 		hasRoomForNextPeriod,
 		periodDurationMinutes,
 		suggestNextPeriodTime,
 		validatePeriodTimes,
 		type PeriodProblem
-	} from '$lib/timetable/period-times';
-	import { countDistinctCourseNames, countDistinctHiddenCourses } from '@chronos/core';
+	} from '@chronos/core';
 	import { formatTimeValue, parseTimeValue, type TimeValue } from '@chronos/ui-kit';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -142,7 +143,7 @@
 	function requestDelete(pos: number) {
 		const period = value[pos];
 		if (!period) return;
-		if (countCoursesAffectedByPeriodDelete(courses, period.index) === 0) {
+		if (countDistinctCoursesAffectedByPeriodDelete(courses, period.index) === 0) {
 			confirmDelete(pos);
 			return;
 		}
@@ -165,7 +166,9 @@
 		pendingDeletePos !== null ? (value[pendingDeletePos] ?? null) : null
 	);
 	const pendingDeleteCount = $derived(
-		pendingDeletePeriod ? countCoursesAffectedByPeriodDelete(courses, pendingDeletePeriod.index) : 0
+		pendingDeletePeriod
+			? countDistinctCoursesAffectedByPeriodDelete(courses, pendingDeletePeriod.index)
+			: 0
 	);
 	const wheelLabels = $derived({
 		placeholder: '',

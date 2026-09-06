@@ -1,24 +1,25 @@
 import { describe, expect, it } from 'vitest';
+import type { Course } from '../src/domain/course';
+import { countDistinctCoursesAffectedByPeriodDelete } from '../src/domain/course';
 import {
-	countCoursesAffectedByPeriodDelete,
 	hasRoomForNextPeriod,
 	minutesToTimeString,
+	parseTimeMinutesStrict,
 	periodDurationMinutes,
 	suggestNextPeriodTime,
 	timeToMinutes,
 	validatePeriodTimes
-} from './period-times';
-import type { Course } from '@chronos/core';
+} from '../src/algorithms/period-time-edit';
 
 const P = (index: number, startTime: string, endTime: string) => ({ index, startTime, endTime });
 
-describe('period-times', () => {
+describe('period-time-edit', () => {
 	it('parses and formats clock times defensively', () => {
-		expect(timeToMinutes('08:45')).toBe(525);
+		expect(parseTimeMinutesStrict('08:45')).toBe(525);
 		expect(timeToMinutes(' 8:05 ')).toBe(485);
-		expect(timeToMinutes('24:00')).toBeUndefined();
-		expect(timeToMinutes('nope')).toBeUndefined();
-		expect(timeToMinutes(undefined)).toBeUndefined();
+		expect(parseTimeMinutesStrict('24:00')).toBeUndefined();
+		expect(parseTimeMinutesStrict('nope')).toBeUndefined();
+		expect(parseTimeMinutesStrict(undefined)).toBeUndefined();
 		expect(minutesToTimeString(525)).toBe('08:45');
 	});
 
@@ -86,9 +87,9 @@ describe('period-times', () => {
 			{ name: '线性代数', startPeriod: 2, endPeriod: 4 },
 			{ name: '大学物理', startPeriod: 5, endPeriod: 6 }
 		] as Course[];
-		expect(countCoursesAffectedByPeriodDelete(courses, 2)).toBe(2);
-		expect(countCoursesAffectedByPeriodDelete(courses, 5)).toBe(1);
-		expect(countCoursesAffectedByPeriodDelete(courses, 7)).toBe(0);
+		expect(countDistinctCoursesAffectedByPeriodDelete(courses, 2)).toBe(2);
+		expect(countDistinctCoursesAffectedByPeriodDelete(courses, 5)).toBe(1);
+		expect(countDistinctCoursesAffectedByPeriodDelete(courses, 7)).toBe(0);
 	});
 
 	it('deduplicates split entries of the same course when counting period-delete impact', () => {
@@ -97,6 +98,6 @@ describe('period-times', () => {
 			{ name: '数据库原理及应用☆', startPeriod: 2, endPeriod: 4 },
 			{ name: '操作系统', startPeriod: 5, endPeriod: 6 }
 		] as Course[];
-		expect(countCoursesAffectedByPeriodDelete(courses, 2)).toBe(2);
+		expect(countDistinctCoursesAffectedByPeriodDelete(courses, 2)).toBe(2);
 	});
 });

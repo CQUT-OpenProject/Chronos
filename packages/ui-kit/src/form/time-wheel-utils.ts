@@ -1,3 +1,5 @@
+import { parseTimeMinutesStrict } from '@chronos/core';
+
 export interface TimeValue {
 	hour: number;
 	minute: number;
@@ -25,17 +27,11 @@ export const DEFAULT_TIME_PICKER_LABELS: TimePickerLabels = {
 	columnAria: (label, column) => `${label}${column}`
 };
 
-const TIME_PATTERN = /^(\d{1,2}):(\d{2})$/;
-
 /** Strict 'HH:MM' parse; undefined for dirty input. */
 export function parseTimeValue(value: unknown): TimeValue | undefined {
-	if (typeof value !== 'string') return undefined;
-	const match = TIME_PATTERN.exec(value.trim());
-	if (!match) return undefined;
-	const hour = Number(match[1]);
-	const minute = Number(match[2]);
-	if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return undefined;
-	return { hour, minute };
+	const total = parseTimeMinutesStrict(value);
+	if (total === undefined) return undefined;
+	return { hour: Math.floor(total / 60), minute: total % 60 };
 }
 
 export function formatTimeValue(value: TimeValue): string {

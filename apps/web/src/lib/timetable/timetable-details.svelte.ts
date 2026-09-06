@@ -3,7 +3,7 @@ import type { TimetableSettingsDraft } from '$lib/models/drafts';
 import type { Timetable } from '@chronos/core';
 import { trackEvent } from '$lib/client/analytics';
 import { toSettingsDraft } from '$lib/timetable/timetable-mappers';
-import { validatePeriodTimes } from '$lib/timetable/period-times';
+import { validatePeriodTimes } from '@chronos/core';
 import { getAppController } from '$lib/services/app-engine';
 import { currentWeekMonday, todayIsoDate } from '@chronos/core';
 import { defaultPeriodTimes } from '$lib/models/defaults';

@@ -5,7 +5,7 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import TimetableDetailsEditor from '$lib/components/timetable/TimetableDetailsEditor.svelte';
-	import { validatePeriodTimes } from '$lib/timetable/period-times';
+	import { validatePeriodTimes } from '@chronos/core';
 	import { getAppController } from '$lib/services/app-engine';
 
 	let {

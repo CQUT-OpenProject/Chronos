@@ -1,10 +1,12 @@
-import type { Course, PeriodTime } from '@chronos/core';
-import { countDistinctCoursesAffectedByPeriodDelete } from '@chronos/core';
+import type { PeriodTime } from '../domain/timetable';
 
 const TIME_PATTERN = /^(\d{1,2}):(\d{2})$/;
 
-/** Minutes since midnight, or undefined for dirty input. */
-export function timeToMinutes(value: unknown): number | undefined {
+/**
+ * Strict HH:MM parse for editing and form input.
+ * Returns undefined for invalid or out-of-range values (unlike period-clock.parseTimeMinutes).
+ */
+export function parseTimeMinutesStrict(value: unknown): number | undefined {
 	if (typeof value !== 'string') return undefined;
 	const match = TIME_PATTERN.exec(value.trim());
 	if (!match) return undefined;
@@ -14,6 +16,9 @@ export function timeToMinutes(value: unknown): number | undefined {
 	return hour * 60 + minute;
 }
 
+/** @deprecated Prefer parseTimeMinutesStrict; kept for call-site clarity during migration. */
+export const timeToMinutes = parseTimeMinutesStrict;
+
 export function minutesToTimeString(total: number): string {
 	const wrapped = ((Math.trunc(total) % 1440) + 1440) % 1440;
 	return `${String(Math.floor(wrapped / 60)).padStart(2, '0')}:${String(wrapped % 60).padStart(2, '0')}`;
@@ -22,7 +27,7 @@ export function minutesToTimeString(total: number): string {
 /**
  * Same-day clock formatting without midnight wrapping, so overflow stays
  * visible (e.g. '24:10') instead of silently becoming a morning time.
- * Out-of-day results are rejected by timeToMinutes on purpose.
+ * Out-of-day results are rejected by parseTimeMinutesStrict on purpose.
  */
 function formatClockWithoutWrapping(total: number): string {
 	const floored = Math.trunc(total);
@@ -33,8 +38,8 @@ function formatClockWithoutWrapping(total: number): string {
 export function periodDurationMinutes(
 	period: Pick<PeriodTime, 'startTime' | 'endTime'>
 ): number | undefined {
-	const start = timeToMinutes(period.startTime);
-	const end = timeToMinutes(period.endTime);
+	const start = parseTimeMinutesStrict(period.startTime);
+	const end = parseTimeMinutesStrict(period.endTime);
 	if (start === undefined || end === undefined || end <= start) return undefined;
 	return end - start;
 }
@@ -66,12 +71,12 @@ export function validatePeriodTimes(periods: PeriodTime[]): PeriodProblem[] {
 		const prev = ordered[i - 1];
 		const curr = ordered[i];
 		if (!prev || !curr) continue;
-		const prevEnd = timeToMinutes(prev.endTime);
+		const prevEnd = parseTimeMinutesStrict(prev.endTime);
 		if (prevEnd !== undefined && prevEnd > maxEnd) {
 			maxEnd = prevEnd;
 			maxEndIndex = prev.index;
 		}
-		const currStart = timeToMinutes(curr.startTime);
+		const currStart = parseTimeMinutesStrict(curr.startTime);
 		if (currStart !== undefined && maxEndIndex !== undefined && currStart < maxEnd) {
 			problems.push({ index: curr.index, kind: 'overlap', withIndex: maxEndIndex });
 		}
@@ -86,7 +91,7 @@ export function suggestNextPeriodTime(
 	fallbackDurationMinutes = 45
 ): { startTime: string; endTime: string } {
 	const last = periods[periods.length - 1];
-	const lastEnd = last ? timeToMinutes(last.endTime) : undefined;
+	const lastEnd = last ? parseTimeMinutesStrict(last.endTime) : undefined;
 	const lastDuration = last
 		? (periodDurationMinutes(last) ?? fallbackDurationMinutes)
 		: fallbackDurationMinutes;
@@ -108,21 +113,10 @@ export function hasRoomForNextPeriod(
 	fallbackDurationMinutes = 45
 ): boolean {
 	const last = periods[periods.length - 1];
-	const lastEnd = last ? timeToMinutes(last.endTime) : undefined;
+	const lastEnd = last ? parseTimeMinutesStrict(last.endTime) : undefined;
 	if (lastEnd === undefined) return true;
 	const lastDuration = last
 		? (periodDurationMinutes(last) ?? fallbackDurationMinutes)
 		: fallbackDurationMinutes;
 	return lastEnd + breakMinutes + lastDuration <= 24 * 60 - 1;
-}
-
-/**
- * Distinct courses whose period pointers change when the period with the
- * given 1-based index is deleted and later periods shift down.
- */
-export function countCoursesAffectedByPeriodDelete(
-	courses: Course[],
-	deletedIndex: number
-): number {
-	return countDistinctCoursesAffectedByPeriodDelete(courses, deletedIndex);
 }
