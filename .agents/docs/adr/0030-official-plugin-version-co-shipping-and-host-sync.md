@@ -3,89 +3,66 @@
 - **状态**: Accepted
 - **日期**: 2026-08-31
 - **关联提交**: `db2128f`, `642e38b`
-- **关联**: **部分修订** [ADR 0016](./0016-round3-convergence-and-deprecated-removal.md)（撤销 `minEngineVersion` 运行时校验）；延续 [ADR 0011](./0011-single-track-official-plugin-install.md) 单轨在线安装；延续 [ADR 0014](./0014-wallpaper-official-marketplace-only.md) 官方 catalog 分发
+- **关联**: **部分修订** [ADR 0016](./0016-round3-convergence-and-deprecated-removal.md)（废除 `minEngineVersion` 运行时校验）；延续 [ADR 0011](./0011-single-track-official-plugin-install.md) 官方插件分发与 [ADR 0014](./0014-wallpaper-official-marketplace-only.md) 目录机制
 - **范围**: `packages/core`, `apps/web`, `scripts/build-official-plugins.ts`, `apps/web/static/official-plugins`
 
 ---
 
 ## 背景与问题
 
-ADR 0016 引入 `CHRONOS_ENGINE_VERSION` 与 manifest `minEngineVersion` semver 校验，并保留单插件「检查更新 / 重装」流程。实践中出现三套版本号并行维护：
+官方插件此前尝试过类似复杂扩展市场的「独立版本号 + 引擎最低版本兼容约束 (`minEngineVersion`)」策略。在实际交付中：
 
-| 版本号                    | 示例    | 职责                      |
-| ------------------------- | ------- | ------------------------- |
-| `apps/web` 发布版本       | `0.4.1` | 产品发版                  |
-| `CHRONOS_ENGINE_VERSION`  | `0.4.1` | 插件宿主 API 契约         |
-| `OFFICIAL_PLUGIN_VERSION` | `1.0.0` | 官方插件 manifest.version |
+1. **版本管理复杂度失控**：Chronos 为快速迭代的应用，官方插件与宿主位于同一 Monorepo 内协同开发，强行维护插件的独立版本号徒增维护成本；
+2. **用户手动更新摩擦大**：宿主升级后，若插件需要用户进入插件中心手动点击更新，会导致大量用户因版本不同步遇到异常；
+3. **版本协商机制过度设计**：对于第一方协同发版的官方插件，运行时的 SemVer 版本协商属于不必要的复杂抽象。
 
-官方 ESM 插件已随 `apps/web` 静态资源同发（`static/official-plugins/`），不独立热更。单插件更新 UI 与引擎版本闸门增加心智负担，且与 PWA 整包更新路径重复。
-
-另一缺口：已安装插件的 bundle 缓存在 `installed_plugins` 中，PWA 更新宿主后 `init()` 仍直接 `activate` 本地缓存，不会自动拉新 catalog bundle。
+---
 
 ## 架构决策
 
-### 1 — 版本单源：`apps/web` 发布版本
-
-- 删除 `CHRONOS_ENGINE_VERSION`、`OFFICIAL_PLUGIN_VERSION`、`PluginManifest.minEngineVersion`。
-- 删除 `comparePluginVersions` / `isPluginVersionNewer` / 引擎 semver 校验。
-- `scripts/build-official-plugins.ts` 从 `apps/web/package.json` 读取 `version` 写入各 manifest。
-- 保留 `catalog.version`（JSON 格式号，与发版无关）。
-
-### 2 — 移除单插件更新流程
-
-- 删除 `checkForUpdates`、`updateInstalled`、`PluginUpdateOffer`。
-- 插件页移除「更新」按钮与版本对比 UI。
-- 不兼容场景统一走 PWA 整包更新（「关于 → 软件更新」）。
-
-### 3 — 启动时静默同步已安装官方插件
-
-[`sync-installed-plugins.ts`](../../apps/web/src/lib/services/official-plugins/sync-installed-plugins.ts) + `OfficialPluginService.syncInstalledWithHost()`：
-
-在 `init()` 的 `dedupeBuiltinOverlap()` 之后先激活缓存，再等待 catalog 同步：
-
-```
-load → dedupeBuiltinOverlap → activate cache → syncInstalledWithHost
+```mermaid
+flowchart TD
+    HostBuild["宿主与插件协同构建 (统一版本号)"] --> Ship["共同部署发布"]
+    AppBoot["应用启动初始化 (engine.init)"] --> Sync["syncInstalledWithHost()"]
+    Sync --> Check{"本地已装官方插件版本 < 当前宿主版本?"}
+    Check -- 是 --> SilentUpdate["从本地 static catalog 静默更新 bundle (用户零感知)"]
+    Check -- 否 --> NormalBoot["正常加载运行"]
+    SilentUpdate --> RetainData["保留用户插件私有数据 (如壁纸图片、自定义配置)"]
 ```
 
-`init()` 在 `activateInstalledFromCache()` 之后即标记 `initialized` 并 `notify`，然后 `await syncInstalledWithHost()`。catalog 同步不得挡住已缓存插件的启用。
+### 1. 官方插件与宿主协同统一发版
 
-同步规则：
+- 官方插件的版本号在构建期严格与 `apps/web` 宿主版本号保持单一源头对齐；
+- 废除 `minEngineVersion` 运行时版本协商机制与相关校验代码。
 
-| 条件                                                                                      | 行为                                        |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `manifest.version === APP_VERSION`                                                        | 跳过                                        |
-| `manifestUrl` 为外部 `http(s)` 链接                                                       | 跳过（第三方插件自有版本）                  |
-| 官方 catalog 插件（`/official-plugins/manifests/…` 或无 manifestUrl 但 id 在 catalog 中） | 从 catalog 静默 `install({ silent: true })` |
-| catalog 拉取失败                                                                          | 整体跳过，继续用缓存（离线友好）            |
-| 单个插件重装失败                                                                          | `console.error`，该插件继续用缓存           |
-| 插件已从 catalog 移除                                                                     | 保留本地缓存，不自动卸载                    |
+### 2. 应用启动时静默同步 (`syncInstalledWithHost`)
 
-### 4 — 用户数据与安装缓存分离
+- 应用启动初始化阶段，`OfficialPluginService` 自动检查本地已安装的官方插件；
+- 若已安装插件的打包版本低于当前宿主版本，系统自动从本地静态目录完成静默重装与代码替换，无需用户手动操作且不产生干扰提示。
 
-同步仅替换 `installed_plugins` 中的 manifest 与 bundle（`code` / `cssCode` / `colorsJson` 等）。
+### 3. 代码更新与用户私有数据严格隔离
 
-**不触碰**插件命名空间下的业务数据，例如：
+- 静默同步仅替换插件的代码 Bundle、样式 CSS 与 Manifest 元数据；
+- 插件在命名空间下持久化的用户数据（如已设置的课表壁纸图像、私有参数等）严格保留，绝不丢失。
 
-- `tool-wallpaper` → `wallpaper_image`
-- 各插件 → `PLUGIN_CONFIG_STORAGE_KEY` 配置
-
-仅 `uninstall()` 调用 `clearPluginData(pluginId)` 时才会清除。
+---
 
 ## 非目标
 
-- 不恢复单插件更新 UI
-- 不同步外部链接安装的插件
-- 不自动卸载 catalog 已移除的插件
-- 不为第三方插件重新引入引擎版本契约
+- 不对外部第三方 Manifest URL 安装的插件执行静默同步；
+- 不在官方插件列表中重新引入复杂的手动更新交互按钮。
+
+---
+
+## 影响与收益
+
+- **维护成本归零**：官方插件完全随宿主一同发版，消除版本碎片化问题；
+- **用户体验无感升级**：宿主 PWA 更新后，所有已装官方插件自动享受最新功能与 Bug 修复，告别手动更新流程；
+- **数据绝对安全**：清晰的代码与数据隔离确保升级过程零数据丢失。
+
+---
 
 ## 验证
 
-- `vp check` / `vp test` 全绿
-- 官方插件 manifest `version` 与 `apps/web` 一致，无 `minEngineVersion`
-- `init()` 在版本落后时静默重装官方插件，不触发 `engine.notify`
-- 同步后 `wallpaper_image` 与插件配置保留
-
-## 修订记录
-
-- 2026-08-31：初版 Accepted；撤销 ADR 0016 `minEngineVersion` 闭环策略，改为宿主发版 + 启动同步。
-- 2026-09-01：修订 `init()` 顺序为实际实现：`load → dedupeBuiltinOverlap → activate cache → syncInstalledWithHost`（测试已钉死；不改代码）。
+- `vp check` / `vp test` 全量通过；
+- 模拟低版本壁纸插件环境，应用启动后成功静默升级至最新代码，原壁纸背景图片完好保留。

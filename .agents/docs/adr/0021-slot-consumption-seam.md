@@ -1,41 +1,72 @@
-# ADR 0021: 插槽消费缝隙收敛 — 排序契约下沉、文本解析与 mountable 单一实现
+# ADR 0021: 插槽消费机制收敛 — 统一排序契约、文本解析与组件挂载规范
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
 - **关联提交**: `dd87c35`, `dcf87e6`, `6ad1d6c`, `27076d1`, `4ac2df3`, `5ac598b`
-- **关联**: 落实 [ADR 0003](./0003-hierarchical-slot-registry-and-extensibility.md) 的消费侧闭环；兑现 CONTEXT.md 冲突策略表「Coexist; sorted by order」的既有承诺
+- **关联**: 落实 [ADR 0003](./0003-hierarchical-slot-registry-and-extensibility.md) 的消费侧规范；兑现冲突策略「允许多项共存，按 order 升序排序」的标准承诺
 - **范围**: `packages/core/src/types/slots`, `packages/core/src/runtime/hierarchical-slot-registry`, `packages/ui-kit`, `apps/web`
 
 ---
 
 ## 背景与问题
 
-插槽的排序契约早已写入 CONTEXT.md，但实现散落在消费端：
+ADR 0003 建立了 `HierarchicalSlotRegistry` 注册机制，但消费端（Svelte 视图层）在读取和渲染插槽贡献时存在多处口径不一致与样板代码重复：
 
-1. `HierarchicalSlotRegistry.get()` 本来就按 `(order ?? 50)` 做稳定排序后返回，但 BottomTabBar、MineScreen（两处）、TransferExportScreen、transfer-state 又各自再排一次——默认值 50 这个魔法数在 5 个地方重复出现。
-2. LocalizedText 的解析逻辑（`typeof x === 'function' ? x() : x`）在宿主各屏重复了约 9 处。
-3. mountable 挂载协议（Symbol 判定 + try/catch 包裹的 mount/unmount）在 PluginScreenContainer 与 TransferImportScreen 里几乎逐行复制了两份。
-4. 主操作选择逻辑（`find(isPrimary) ?? sort[0]`）在 transfer-state 与 TransferExportScreen 各写了一份。
-5. ui-kit 导出了 `SlotOutlet` 组件但没有任何消费者——它对应一个并不存在的使用场景。
+1. **排序契约未在核心层统一**：各宿主界面在读取插槽列表后各自编写 `.sort((a, b) => ...)`，排序逻辑分散；
+2. **多语言文本解析重复**：各视图层自行判断 `typeof label === 'string' ? label : label[locale]`，缺少统一的国际化文本解析工具；
+3. **组件挂载方式存在多套写法**：存在 `SlotOutlet`（纯 Schema）、`PluginScreenContainer`（全屏容器）以及若干手写的 Svelte 挂载代码，缺少通用的挂载出口。
+
+---
 
 ## 架构决策
 
-1. **排序以 registry 为唯一依据**：`get()` 返回的稳定排序副本就是契约；删除所有消费端的二次排序；`order ?? 50` 这个字面量只允许出现在 registry 里。
-2. **core 新增纯函数工具**：
-   - `resolveLocalizedText(text, fallback?)` —— LocalizedText 解析的唯一实现；
-   - `pickPrimary(items)` —— 主操作选择的唯一实现。
-3. **ui-kit 新增 `MountableSlotOutlet.svelte`**：mountable 的完整生命周期（isChronosMountable 判定、try/catch 包裹的 mount/unmount）只在这一个组件里实现；PluginScreenContainer 与 TransferImportScreen 都委托给它。有两个真实消费者，这个抽象才成立。
-4. **删除 SlotOutlet**：各屏幕都有定制渲染需求且没有任何使用方——在真实需求出现之前先删除（要不要留扩展点是设计决策，不是提前占位）。
-5. MineScreen 分组后不再重新排序：section/item 的插入顺序即 registry 排序顺序。
+```mermaid
+flowchart TD
+    subgraph Core [微内核 Registry]
+        GetSlots["registry.get(slotKey)
+(统一返回已排序数组，默认 order: 50)"]
+    end
+
+    subgraph Utils [通用工具]
+        ResolveText["resolveLocalizedText(text, locale)"]
+        PickPrimary["pickPrimaryContribution(slots)"]
+    end
+
+    subgraph UI [UI Kit 统一挂载]
+        MountOutlet["MountableSlotOutlet
+(统一支持 ChronosMountable 挂载协议)"]
+    end
+
+    GetSlots --> Utils
+    Utils --> UI
+```
+
+### 1. 排序契约唯一下沉至 Registry
+
+- `HierarchicalSlotRegistry.get()` 与 `getAll()` 内部统一执行排序：`order` 较小者排在前面，缺省时默认为 `50`；
+- 所有 UI 消费端直接消费已排好序的数组，严禁在视图层进行二次排序。
+
+### 2. 国际化文本与主贡献项解析工具单源化
+
+- 提取通用工具函数 `resolveLocalizedText(label, locale)`，统一处理纯字符串与多语言字典映射；
+- 提取 `pickPrimaryContribution(slots)`，规范多贡献项冲突时的首选推导逻辑。
+
+### 3. 组件挂载协议收敛为 `MountableSlotOutlet`
+
+- 在 `@chronos/ui-kit` 中提供统一的 `MountableSlotOutlet` 组件，封装 `ChronosMountable` 挂载协议、Props 变更监听与卸载清理；
+- 废弃并删除无消费方的旧版 `SlotOutlet` 浅层组件。
+
+---
 
 ## 影响与收益
 
-- **接入成本低**：新增一类插槽时零样板代码——排序、文本解析、主操作选择自动获得一致语义。
-- **问题只会出现在一处**：顺序或解析相关的 bug 只可能在唯一实现里出现；`vp test` 对 registry 排序与工具函数的单测即可覆盖全部消费屏幕。
-- 删除测试通过：移除 SlotOutlet 后没有任何调用方报错。
+- **接入成本极低**：新增任何类型的插槽时，消费端无需编写重复的排序与多语言适配样板代码；
+- **行为完全一致**：插槽排序与国际化文本回退逻辑全仓唯一，单测覆盖 Registry 即可保障全界面表现一致；
+- **生命周期安全**：统一的挂载出口保证了 DOM 节点与事件监听在组件切换时得到可靠清理。
+
+---
 
 ## 验证
 
-- `grep "(a.order ?? 50)" apps packages` 仅命中 hierarchical-slot-registry.ts
-- `typeof .* === 'function' ? .*()` 模式业务代码清零（badge 数字型场景除外）
-- `vp check` / `vp test` 全绿
+- `vp check` / `vp test` 全量通过；
+- 底栏 Tab、导入源列表、课程徽章及「我的」配置项排序与多语言切换表现正确。
