@@ -7,7 +7,7 @@ import {
 	ensureShareLinkBrotliReady,
 	SHARE_BROTLI_QUALITY,
 	SHARE_LINK_VERSION_DEFLATE
-} from './share-link-brotli';
+} from '../src/share-link/share-link-brotli';
 
 describe('share-link-brotli', () => {
 	beforeAll(async () => {

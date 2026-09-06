@@ -5,16 +5,17 @@ export * from './domain/timetable';
 export * from './domain/preferences';
 
 // Engine
-export * from './engine/date';
-export * from './engine/calendar';
-export * from './engine/holiday-calendar';
-export * from './engine/slot-key';
-export * from './engine/grid';
-export * from './engine/display-models';
-export * from './engine/capsule-layout';
-export * from './engine/palette';
-export * from './engine/timetable-layout';
-export * from './engine/period-clock';
+export * from './algorithms/date';
+export * from './algorithms/calendar';
+export * from './algorithms/holiday-calendar';
+export * from './algorithms/slot-key';
+export * from './algorithms/grid';
+export * from './algorithms/display-models';
+export * from './algorithms/capsule-layout';
+export * from './algorithms/palette';
+export * from './algorithms/timetable-layout';
+export * from './algorithms/period-clock';
+export * from './algorithms/period-time-edit';
 
 // Shell
 

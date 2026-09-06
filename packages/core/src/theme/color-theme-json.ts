@@ -1,4 +1,4 @@
-import type { CoursePaletteEntry } from '../engine/palette';
+import type { CoursePaletteEntry } from '../algorithms/palette';
 import type { ThemeContribution, ThemeWorkbenchColors } from '../types/contributions';
 import { validateWorkbenchColors } from './workbench-colors';
 

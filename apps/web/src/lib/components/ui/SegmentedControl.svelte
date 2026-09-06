@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { haptic } from '$lib/haptic/haptic';
+
 	type Segment = {
 		value: string;
 		label: string;
@@ -17,6 +19,13 @@
 	const selectedIndex = $derived(segments.findIndex((segment) => segment.value === value));
 	const segmentCount = $derived(segments.length);
 	const safeIndex = $derived(selectedIndex < 0 ? 0 : selectedIndex);
+
+	function handleSegmentClick(segmentValue: string) {
+		if (segmentValue !== value) {
+			haptic.medium();
+		}
+		onValueChange(segmentValue);
+	}
 </script>
 
 <div class="rounded-pill relative flex w-full border border-border bg-surface p-1.5 shadow-xs">
@@ -35,7 +44,7 @@
 			segment.value
 				? 'text-on-secondary-container'
 				: 'text-on-surface-variant hover:text-on-surface'}"
-			onclick={() => onValueChange(segment.value)}
+			onclick={() => handleSegmentClick(segment.value)}
 		>
 			{segment.label}
 		</button>

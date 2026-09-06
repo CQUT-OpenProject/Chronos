@@ -1,13 +1,13 @@
 {
 	"name": "chronos-monorepo",
 	"private": true,
-	"version": "0.4.6",
+	"version": "0.4.7",
 	"type": "module",
 	"packageManager": "pnpm@11.20.0",
 	"scripts": {
 		"dev": "vp -C apps/web dev",
 		"build": "vp -C apps/web build",
-		"prepare": "vp config && node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && (cd apps/web && svelte-kit sync || echo '') && ln -sfn apps/web/.svelte-kit .svelte-kit"
+		"prepare": "vp config && node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && ln -sfn apps/web/.svelte-kit .svelte-kit"
 	},
 	"devDependencies": {
 		"@resvg/resvg-js": "^2.6.2",

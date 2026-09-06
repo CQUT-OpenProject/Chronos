@@ -22,4 +22,9 @@ describe('date-field-utils', () => {
 		expect(buildDateFieldTriggerLabel('学期起始日', '2026-02-23')).toBe('学期起始日：2026/2/23');
 		expect(buildDateFieldTriggerLabel('学期起始日', '')).toBe('选择学期起始日');
 	});
+
+	it('falls back to the empty label for invalid ISO strings', () => {
+		expect(formatDateDisplay('foo')).toBe('');
+		expect(buildDateFieldTriggerLabel('学期起始日', 'foo')).toBe('选择学期起始日');
+	});
 });

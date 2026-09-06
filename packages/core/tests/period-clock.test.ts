@@ -4,7 +4,7 @@ import {
 	createDayClock,
 	findCurrentPeriodIndex,
 	parsePeriodRanges
-} from '../src/engine/period-clock';
+} from '../src/algorithms/period-clock';
 
 describe('period-clock', () => {
 	const periods = parsePeriodRanges([

@@ -1,4 +1,4 @@
-import type { CoursePaletteEntry } from '../engine/palette';
+import type { CoursePaletteEntry } from '../algorithms/palette';
 import type { LocalizedText } from './slots';
 
 export type { CoursePaint, CourseBadgeSlotContribution } from './slots';

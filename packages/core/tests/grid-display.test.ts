@@ -58,8 +58,78 @@ describe('Grid & Display Models in @chronos/core', () => {
 		expect(grid.visibleDays.length).toBe(7);
 		expect(grid.visibleDays[0]?.date).toBe('2026-03-02');
 		expect(grid.visibleDays[2]?.isToday).toBe(true);
-		expect(grid.displayedPeriodCount).toBeGreaterThanOrEqual(10);
+		expect(grid.displayedPeriodCount).toBe(2);
+		expect(grid.periods).toHaveLength(2);
 		expect(grid.periods[0]?.startTime).toBe('08:30');
+	});
+
+	it('hides rows and courses beyond the configured periods, restoring them when re-added', () => {
+		const base = {
+			termStartDate: '2026-03-02',
+			startWeek: 1,
+			endWeek: 20
+		};
+		const fullPeriods = Array.from({ length: 10 }, (_, i) => ({
+			index: i + 1,
+			startTime: '08:00',
+			endTime: '08:45'
+		}));
+		const course = createCourse({
+			id: 'c9',
+			name: '第九节课',
+			teacher: '',
+			location: '',
+			dayOfWeek: 1,
+			startPeriod: 9,
+			endPeriod: 10,
+			weeks: [1]
+		});
+		const trimmed = createTimetable({
+			id: 't1',
+			name: '测试课表',
+			courses: [course],
+			academicConfig: { ...base, periodTimes: fullPeriods.slice(0, 8) }
+		});
+
+		const trimmedGrid = calculateTimetableGrid('2026-03-04', 1, trimmed);
+		expect(trimmedGrid.displayedPeriodCount).toBe(8);
+		expect(
+			buildTimetableCourseDisplayModels(trimmed, new Set([1, 2, 3, 4, 5, 6, 7]), 1)
+		).toHaveLength(0);
+		// Courses are only hidden, never removed: re-adding periods restores them.
+		expect(trimmed.courses).toHaveLength(1);
+
+		const restored = createTimetable({
+			id: 't1',
+			name: '测试课表',
+			courses: [course],
+			academicConfig: { ...base, periodTimes: fullPeriods }
+		});
+		expect(calculateTimetableGrid('2026-03-04', 1, restored).displayedPeriodCount).toBe(10);
+		expect(
+			buildTimetableCourseDisplayModels(restored, new Set([1, 2, 3, 4, 5, 6, 7]), 1)
+		).toHaveLength(1);
+	});
+
+	it('keeps legacy course-driven rows when no periods are configured', () => {
+		const course = createCourse({
+			id: 'c1',
+			name: '课',
+			teacher: '',
+			location: '',
+			dayOfWeek: 1,
+			startPeriod: 1,
+			endPeriod: 3,
+			weeks: [1]
+		});
+		const timetable = createTimetable({ id: 't1', name: '测试课表', courses: [course] });
+		expect(timetable.academicConfig.periodTimes).toHaveLength(0);
+
+		const grid = calculateTimetableGrid('2026-03-04', 1, timetable);
+		expect(grid.displayedPeriodCount).toBe(3);
+		expect(
+			buildTimetableCourseDisplayModels(timetable, new Set([1, 2, 3, 4, 5, 6, 7]), 1)
+		).toHaveLength(1);
 	});
 
 	it('builds course display models including future candidates when enabled', () => {

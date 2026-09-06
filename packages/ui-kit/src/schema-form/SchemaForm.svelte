@@ -11,6 +11,7 @@
 	import DateField from '../form/DateField.svelte';
 	import RadioGroupField from '../form/RadioGroupField.svelte';
 	import type { DateFieldLabels } from '../form/date-field-utils';
+	import { appLocaleToBcp47 } from '../form/date-field-utils';
 
 	interface Props {
 		schema: ConfigSchema<Record<string, unknown>>;
@@ -19,6 +20,7 @@
 		controller?: ReactiveChronosController;
 		onValueChange?: (value: Record<string, unknown>) => void;
 		dateFieldLabels?: DateFieldLabels;
+		dateFieldLocale?: string;
 	}
 
 	let {
@@ -27,11 +29,15 @@
 		disabled = false,
 		controller,
 		onValueChange,
-		dateFieldLabels
+		dateFieldLabels,
+		dateFieldLocale
 	}: Props = $props();
 
 	const entries = $derived(Object.entries(schema) as Array<[string, SchemaField<unknown>]>);
 	const resolvedValue = $derived(value ?? {});
+	const resolvedDateFieldLocale = $derived(
+		dateFieldLocale ?? appLocaleToBcp47(controller?.currentLocale)
+	);
 
 	function updateField(key: string, nextValue: unknown) {
 		const next = {
@@ -137,8 +143,9 @@
 					description={resolveLocalizedText(field.description)}
 					required={field.required}
 					variant="section"
-					value={(resolvedValue[key] as string) ?? ''}
+					value={typeof resolvedValue[key] === 'string' ? resolvedValue[key] : ''}
 					labels={dateFieldLabels}
+					locale={resolvedDateFieldLocale}
 					{disabled}
 					onValueChange={(nextValue) => updateField(key, nextValue)}
 				/>

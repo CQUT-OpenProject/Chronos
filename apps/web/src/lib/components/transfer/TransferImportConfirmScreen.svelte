@@ -14,8 +14,14 @@
 	import { getAppController } from '$lib/services/app-engine';
 
 	import { DownloadFill } from '$lib/icons';
-	import { countDistinctCourseNames } from '@chronos/core';
-	import { MountableSlotOutlet, SchemaForm, type DateFieldLabels } from '@chronos/ui-kit';
+	import { listDistinctCourses } from '@chronos/core';
+	import { createHostDateFieldLabels } from '$lib/components/ui/host-form-labels';
+	import {
+		ImportCourseList,
+		MountableSlotOutlet,
+		SchemaForm,
+		findInvalidSchemaFields
+	} from '@chronos/ui-kit';
 
 	let {
 		transfer,
@@ -42,21 +48,16 @@
 		if (!activeSlot?.validateConfirmInputs) return null;
 		return activeSlot.validateConfirmInputs(transferState.confirmInputs);
 	});
+	const hasInvalidConfirmInputs = $derived(
+		activeSlot?.confirmSchema
+			? findInvalidSchemaFields(activeSlot.confirmSchema, transferState.confirmInputs).length > 0
+			: false
+	);
 	const canOverwrite = $derived(Boolean(currentTimetableName));
-	const displayedCourseCount = $derived.by(() => {
-		if (!preview) return 0;
-		return countDistinctCourseNames(preview.courses);
-	});
+	const displayedCourseCount = $derived(preview ? listDistinctCourses(preview.courses).length : 0);
 	let loading = $state(false);
 
-	const dateFieldLabels = $derived<DateFieldLabels>({
-		placeholder: hostT('ui.date.placeholder'),
-		today: hostT('ui.date.today'),
-		clear: hostT('ui.date.clear'),
-		confirm: hostT('ui.date.confirm'),
-		triggerEmpty: (label) => hostT('ui.date.trigger.empty', { label }),
-		triggerLabeled: (label, display) => hostT('ui.date.trigger.labeled', { label, display })
-	});
+	const dateFieldLabels = $derived(createHostDateFieldLabels());
 
 	function analyticsImportMode(mode: ImportMode) {
 		return mode === ImportMode.AS_NEW ? 'as_new' : 'overwrite';
@@ -71,6 +72,7 @@
 	}
 
 	async function handleConfirm() {
+		if (hasInvalidConfirmInputs) return;
 		if (transferState.importMode === ImportMode.OVERWRITE_CURRENT && !canOverwrite) {
 			snackbarKey('transfer.confirm.noOverwrite');
 			return;
@@ -98,6 +100,7 @@
 		<Button
 			variant="filled"
 			disabled={loading ||
+				hasInvalidConfirmInputs ||
 				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
 				Boolean(confirmValidationError)}
 			class="text-body-large h-12 w-full shadow-xs"
@@ -163,6 +166,10 @@
 							>
 						</div>
 					</div>
+
+					{#if preview.courses.length > 0}
+						<ImportCourseList courses={preview.courses} coursePalette={controller.coursePalette} />
+					{/if}
 				</div>
 			</Card>
 

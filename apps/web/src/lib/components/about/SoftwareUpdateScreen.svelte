@@ -43,9 +43,18 @@
 		void updateState.checkUpdate();
 	});
 
-	const htmlBody = $derived(
-		updateState.state.latestRelease?.body ? parseMarkdown(updateState.state.latestRelease.body) : ''
-	);
+	let htmlBody = $state('');
+
+	$effect(() => {
+		const body = updateState.state.latestRelease?.body;
+		if (!body) {
+			htmlBody = '';
+			return;
+		}
+		void parseMarkdown(body).then((html) => {
+			htmlBody = html;
+		});
+	});
 
 	const heroTitle = $derived(
 		updateState.state.hasUpdate
