@@ -137,50 +137,41 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	private createActionHost(): EngineActionHost {
-		const engine = this;
 		return {
-			get storage() {
-				return engine.storage;
-			},
-			get events() {
-				return engine.events;
-			},
-			get badges() {
-				return engine.badges;
-			},
-			get themes() {
-				return engine.themes;
-			},
-			getCurrentTimetable: () => engine._currentTimetable,
+			storage: this.storage,
+			events: this.events,
+			badges: this.badges,
+			themes: this.themes,
+			getCurrentTimetable: () => this._currentTimetable,
 			setCurrentTimetable: (timetable) => {
-				engine._currentTimetable = timetable;
+				this._currentTimetable = timetable;
 			},
-			getTimetables: () => engine._timetables,
+			getTimetables: () => this._timetables,
 			setTimetables: (timetables) => {
-				engine._timetables = timetables;
+				this._timetables = timetables;
 			},
-			getUserPreferences: () => engine._userPreferences,
+			getUserPreferences: () => this._userPreferences,
 			setUserPreferences: (preferences) => {
-				engine._userPreferences = preferences;
+				this._userPreferences = preferences;
 			},
-			getActiveThemeId: () => engine._activeThemeId,
+			getActiveThemeId: () => this._activeThemeId,
 			setActiveThemeId: (themeId) => {
-				engine._activeThemeId = themeId;
+				this._activeThemeId = themeId;
 			},
-			getLocale: () => engine._locale,
+			getLocale: () => this._locale,
 			setLocale: (locale) => {
-				engine._locale = locale;
+				this._locale = locale;
 			},
-			refreshTimetables: () => engine.refreshTimetables(),
-			updateTime: (now) => engine.updateTime(now),
-			rescheduleDayClock: () => engine.timeKeeper.reschedule(),
-			emitIconThemeChanged: () => engine.emitIconThemeChanged(),
-			switchTimetable: (id) => engine.timetableActions.switchTimetable(id),
+			refreshTimetables: () => this.refreshTimetables(),
+			updateTime: (now) => this.updateTime(now),
+			rescheduleDayClock: () => this.timeKeeper.reschedule(),
+			emitIconThemeChanged: () => this.emitIconThemeChanged(),
+			switchTimetable: (id) => this.timetableActions.switchTimetable(id),
 			saveCurrentTimetableDetails: (patch) =>
-				engine.timetableActions.saveCurrentTimetableDetails(patch),
-			updatePreferences: (patch) => engine.updatePreferences(patch),
+				this.timetableActions.saveCurrentTimetableDetails(patch),
+			updatePreferences: (patch) => this.updatePreferences(patch),
 			emit: (event, payload) => {
-				engine.events.emit(event, payload);
+				this.events.emit(event, payload);
 			}
 		};
 	}
