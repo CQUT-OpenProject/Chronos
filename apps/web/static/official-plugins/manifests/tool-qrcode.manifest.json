@@ -13,7 +13,7 @@
 	"type": "tool",
 	"bundleFormat": "esm",
 	"bundleUrl": "/official-plugins/bundles/tool-qrcode/bundle.js",
-	"sha256": "49eecd43d4103142201e4ca04e4b8a698f3abf308ba0027b0ab390541303bfb1",
+	"sha256": "e13e47a578aa162478c02303c78e64268a430888f1937e66100531a5670f8e4a",
 	"cssUrl": "/official-plugins/bundles/tool-qrcode/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }

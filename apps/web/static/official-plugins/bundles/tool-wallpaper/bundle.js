@@ -2016,7 +2016,66 @@ function Xr(e, t, n, r) {
 		return In && v || b.f & 16384 ? y.v : I(y);
 	});
 }
-var Zr = [
+//#endregion
+//#region packages/core/src/algorithms/slot-key.ts
+function Zr(e, t, n) {
+	return `${e}:${t}:${n}`;
+}
+function Qr(e) {
+	return Zr(e.dayOfWeek, e.startPeriod, e.endPeriod);
+}
+//#endregion
+//#region packages/core/src/algorithms/display-models.ts
+function $r(e, t) {
+	return t <= 0 || e.endPeriod >= 1 && e.startPeriod <= t;
+}
+function ei(e, t) {
+	return e.nextWeek === t.nextWeek ? e.originalIndex < t.originalIndex : e.nextWeek < t.nextWeek;
+}
+function ti(e, t, n, r = /* @__PURE__ */ new Set()) {
+	let i = [], a = [], o = e.academicConfig.periodTimes.length;
+	for (let s = 0; s < e.courses.length; s += 1) {
+		let c = e.courses[s];
+		t.has(c.dayOfWeek) && $r(c, o) && (c.weeks.length === 0 || c.weeks.includes(n) ? i.push({
+			course: {
+				...c,
+				weeks: [...c.weeks]
+			},
+			isInDisplayedWeek: !0,
+			...r.has(c.dayOfWeek) ? { isHolidayMuted: !0 } : {}
+		}) : a.push({
+			course: c,
+			originalIndex: s
+		}));
+	}
+	if (!e.viewPrefs.showNonCurrentWeekCourses) return i;
+	let s = new Set(i.map((e) => Qr(e.course))), c = /* @__PURE__ */ new Map();
+	for (let { course: e, originalIndex: t } of a) {
+		let r = Infinity;
+		for (let t of e.weeks) t >= n && t < r && (r = t);
+		if (!Number.isFinite(r)) continue;
+		let i = Qr(e);
+		if (s.has(i)) continue;
+		let a = {
+			course: e,
+			nextWeek: r,
+			originalIndex: t
+		}, o = c.get(i);
+		(!o || ei(a, o)) && c.set(i, a);
+	}
+	let l = [...c.values()].sort((e, t) => e.originalIndex - t.originalIndex).map((e) => ({
+		course: {
+			...e.course,
+			weeks: [...e.course.weeks]
+		},
+		isInDisplayedWeek: !1,
+		...r.has(e.course.dayOfWeek) ? { isHolidayMuted: !0 } : {}
+	}));
+	return [...i, ...l];
+}
+//#endregion
+//#region packages/core/src/algorithms/palette.ts
+var ni = [
 	["#EADDFF", "#21005D"],
 	["#FFDBC9", "#311100"],
 	["#C4EED0", "#072711"],
@@ -2025,38 +2084,38 @@ var Zr = [
 	["#F6E1B0", "#241A00"],
 	["#A9F0E4", "#00201C"],
 	["#DCE9A1", "#181E00"]
-], Qr = Zr.map(([e, t]) => ({
+], ri = ni.map(([e, t]) => ({
 	background: e,
 	foreground: t
-})), $r = /\s+/g;
-function ei(e) {
+})), ii = /\s+/g;
+function ai(e) {
 	let t = 0;
 	for (let n = 0; n < e.length; n += 1) t = t * 31 + e.charCodeAt(n) | 0;
 	return t;
 }
-function ti(e) {
-	return e.replace(/^【调】/, "").replace(/[★☆〇■◆]$/u, "").trim().replace($r, " ");
+function oi(e) {
+	return e.replace(/^【调】/, "").replace(/[★☆〇■◆]$/u, "").trim().replace(ii, " ");
 }
-function ni(e) {
-	return Zr[Math.abs(ei(e) % Zr.length)] ?? Zr[0];
+function si(e) {
+	return ni[Math.abs(ai(e) % ni.length)] ?? ni[0];
 }
-function ri(e) {
-	let [t] = ni(e), n = Zr.findIndex(([e]) => e === t);
+function ci(e) {
+	let [t] = si(e), n = ni.findIndex(([e]) => e === t);
 	return n >= 0 ? n : 0;
 }
-function ii(e, t = Qr) {
-	let n = e.name ? ti(e.name) : "";
-	return !n || t.length === 0 ? Qr[0] : t[ri(n) % t.length];
+function li(e, t = ri) {
+	let n = e.name ? oi(e.name) : "";
+	return !n || t.length === 0 ? ri[0] : t[ci(n) % t.length];
 }
-function ai(e, t = Qr) {
+function ui(e, t = ri) {
 	if (t.length === 0) return /* @__PURE__ */ new Map();
 	let n = /* @__PURE__ */ new Map();
 	for (let t of e) {
-		let e = ti(t.name), r = ri(e);
+		let e = oi(t.name), r = ci(e);
 		n.has(e) || n.set(e, {
 			name: e,
 			slot: r,
-			hash: ei(e)
+			hash: ai(e)
 		});
 	}
 	let r = [...n.values()].sort((e, t) => e.hash - t.hash || e.name.localeCompare(t.name)), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Set(), o = [];
@@ -2076,7 +2135,7 @@ function ai(e, t = Qr) {
 	}
 	return i;
 }
-var oi = {
+var di = {
 	schemaVersion: 2,
 	themeMode: "auto",
 	paletteMode: "vibrant",
@@ -2086,49 +2145,49 @@ var oi = {
 	visualThemeId: "m3-default"
 };
 //#endregion
-//#region packages/core/src/engine/date.ts
-function si(e) {
+//#region packages/core/src/algorithms/date.ts
+function fi(e) {
 	let t = e.trim(), n = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
 	if (!n) throw Error(`Invalid ISO date: ${e}`);
 	let [, r, i, a] = n;
 	return new Date(Date.UTC(Number(r), Number(i) - 1, Number(a), 12));
 }
-function ci(e) {
+function pi(e) {
 	return `${e.getUTCFullYear()}-${String(e.getUTCMonth() + 1).padStart(2, "0")}-${String(e.getUTCDate()).padStart(2, "0")}`;
 }
-function li(e) {
+function mi(e) {
 	let t = new Date(e.getTime()), n = t.getUTCDay(), r = n === 0 ? -6 : 1 - n;
 	return t.setUTCDate(t.getUTCDate() + r), t;
 }
-function ui(e, t) {
+function hi(e, t) {
 	let n = new Date(e.getTime());
 	return n.setUTCDate(n.getUTCDate() + t), n;
 }
-function di(e, t) {
-	return ui(e, t * 7);
+function gi(e, t) {
+	return hi(e, t * 7);
 }
-function fi(e, t) {
+function _i(e, t) {
 	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
 }
-function pi(e, t) {
+function vi(e, t) {
 	return e.getTime() < t.getTime();
 }
-function mi(e) {
-	return ci(li(si(e)));
+function yi(e) {
+	return pi(mi(fi(e)));
 }
-function hi(e = /* @__PURE__ */ new Date()) {
+function bi(e = /* @__PURE__ */ new Date()) {
 	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
 }
 //#endregion
-//#region packages/core/src/engine/calendar.ts
-var gi = class {
+//#region packages/core/src/algorithms/calendar.ts
+var xi = class {
 	normalizeTermStartDate(e, t) {
-		let n = si(mi(t));
-		if (!e || !e.trim()) return ci(li(n));
+		let n = fi(yi(t));
+		if (!e || !e.trim()) return pi(mi(n));
 		try {
-			return ci(li(si(e)));
+			return pi(mi(fi(e)));
 		} catch {
-			return ci(li(this.inferTermStartDateFromTermName(e) || n));
+			return pi(mi(this.inferTermStartDateFromTermName(e) || n));
 		}
 	}
 	inferTermStartDateFromTermName(e) {
@@ -2143,56 +2202,48 @@ var gi = class {
 			startWeek: 1,
 			endWeek: 20,
 			periodTimes: []
-		}, r = si(this.normalizeTermStartDate(n.termStartDate, e)), i = si(e);
-		if (pi(i, r)) return n.startWeek;
-		let a = fi(r, i);
+		}, r = fi(this.normalizeTermStartDate(n.termStartDate, e)), i = fi(e);
+		if (vi(i, r)) return n.startWeek;
+		let a = _i(r, i);
 		return Math.min(Math.max(n.startWeek + a, n.startWeek), n.endWeek);
 	}
 	resolveWeekStart(e, t, n) {
-		return ci(di(si(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
+		return pi(gi(fi(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
 	}
 	resolveCourseDate(e, t, n, r) {
-		return ci(ui(si(this.resolveWeekStart(e, t, r)), n - 1));
+		return pi(hi(fi(this.resolveWeekStart(e, t, r)), n - 1));
 	}
-}, _i = {
+}, Si = {
 	termStartDate: "",
 	startWeek: 1,
 	endWeek: 20,
 	periodTimes: []
 };
-function vi(e) {
+function Ci(e) {
 	let [, t, n] = e.split("-");
 	return `${Number(t)}/${Number(n)}`;
 }
-function yi(e, t, n, r, i = new gi()) {
-	let a = e ?? _i, o = i.resolveWeekStart(a, t, n), s = 5;
+function wi(e, t, n, r, i = new xi()) {
+	let a = e ?? Si, o = i.resolveWeekStart(a, t, n), s = 5;
 	r?.showSunday ? s = 7 : r?.showSaturday && (s = 6);
-	let c = ui(si(o), s - 1);
-	return `${vi(o)} - ${vi(ci(c))}`;
+	let c = hi(fi(o), s - 1);
+	return `${Ci(o)} - ${Ci(pi(c))}`;
 }
 //#endregion
-//#region packages/core/src/engine/holiday-calendar.ts
-function bi(e) {
+//#region packages/core/src/algorithms/holiday-calendar.ts
+function Ti(e) {
 	let t = /* @__PURE__ */ new Map();
 	if (!e?.holidays?.length) return t;
 	for (let n of e.holidays) t.set(n.date, n);
 	return t;
 }
-function xi(e, t = 4) {
+function Ei(e, t = 4) {
 	let n = e.trim();
 	return n.length <= t ? n : n.slice(0, t);
 }
 //#endregion
-//#region packages/core/src/engine/slot-key.ts
-function Si(e, t, n) {
-	return `${e}:${t}:${n}`;
-}
-function Ci(e) {
-	return Si(e.dayOfWeek, e.startPeriod, e.endPeriod);
-}
-//#endregion
-//#region packages/core/src/engine/grid.ts
-function wi(e) {
+//#region packages/core/src/algorithms/grid.ts
+function Di(e) {
 	let t = [
 		1,
 		2,
@@ -2202,11 +2253,11 @@ function wi(e) {
 	];
 	return e.viewPrefs.showSaturday && t.push(6), e.viewPrefs.showSunday && t.push(7), t;
 }
-function Ti(e) {
+function Oi(e) {
 	let t = e[0] ? Number(e[0].slice(5, 7)) : 0, n = e[e.length - 1] ? Number(e[e.length - 1].slice(5, 7)) : 0;
 	return t ? t === n ? String(t) : `${t}/${n}` : "";
 }
-function Ei(e, t, n = []) {
+function ki(e, t, n = []) {
 	let r = /* @__PURE__ */ new Map();
 	for (let t of e) r.set(t.index, t);
 	return Array.from({ length: t }, (e, t) => {
@@ -2218,9 +2269,9 @@ function Ei(e, t, n = []) {
 		};
 	});
 }
-function Di(e, t, n, r) {
-	let i = r?.academicCalendarService ?? new gi(), a = bi(n.academicConfig.holidayCalendar), o = wi(n), s = si(i.resolveWeekStart(n.academicConfig, t, e)), c = o.map((t) => {
-		let n = ci(ui(s, t - 1));
+function Ai(e, t, n, r) {
+	let i = r?.academicCalendarService ?? new xi(), a = Ti(n.academicConfig.holidayCalendar), o = Di(n), s = fi(i.resolveWeekStart(n.academicConfig, t, e)), c = o.map((t) => {
+		let n = pi(hi(s, t - 1));
 		return {
 			dayOfWeek: t,
 			date: n,
@@ -2229,63 +2280,14 @@ function Di(e, t, n, r) {
 		};
 	}), l = n.academicConfig.periodTimes.length > 0 ? n.academicConfig.periodTimes.length : Math.max(...n.courses.map((e) => e.endPeriod), 0);
 	return {
-		monthLabel: Ti(c.map((e) => e.date)),
+		monthLabel: Oi(c.map((e) => e.date)),
 		visibleDays: c,
-		periods: Ei(n.academicConfig.periodTimes, l, r?.defaultPeriods),
+		periods: ki(n.academicConfig.periodTimes, l, r?.defaultPeriods),
 		displayedPeriodCount: l
 	};
 }
 //#endregion
-//#region packages/core/src/engine/display-models.ts
-function Oi(e, t) {
-	return t <= 0 || e.endPeriod >= 1 && e.startPeriod <= t;
-}
-function ki(e, t) {
-	return e.nextWeek === t.nextWeek ? e.originalIndex < t.originalIndex : e.nextWeek < t.nextWeek;
-}
-function Ai(e, t, n, r = /* @__PURE__ */ new Set()) {
-	let i = [], a = [], o = e.academicConfig.periodTimes.length;
-	for (let s = 0; s < e.courses.length; s += 1) {
-		let c = e.courses[s];
-		t.has(c.dayOfWeek) && Oi(c, o) && (c.weeks.length === 0 || c.weeks.includes(n) ? i.push({
-			course: {
-				...c,
-				weeks: [...c.weeks]
-			},
-			isInDisplayedWeek: !0,
-			...r.has(c.dayOfWeek) ? { isHolidayMuted: !0 } : {}
-		}) : a.push({
-			course: c,
-			originalIndex: s
-		}));
-	}
-	if (!e.viewPrefs.showNonCurrentWeekCourses) return i;
-	let s = new Set(i.map((e) => Ci(e.course))), c = /* @__PURE__ */ new Map();
-	for (let { course: e, originalIndex: t } of a) {
-		let r = Infinity;
-		for (let t of e.weeks) t >= n && t < r && (r = t);
-		if (!Number.isFinite(r)) continue;
-		let i = Ci(e);
-		if (s.has(i)) continue;
-		let a = {
-			course: e,
-			nextWeek: r,
-			originalIndex: t
-		}, o = c.get(i);
-		(!o || ki(a, o)) && c.set(i, a);
-	}
-	let l = [...c.values()].sort((e, t) => e.originalIndex - t.originalIndex).map((e) => ({
-		course: {
-			...e.course,
-			weeks: [...e.course.weeks]
-		},
-		isInDisplayedWeek: !1,
-		...r.has(e.course.dayOfWeek) ? { isHolidayMuted: !0 } : {}
-	}));
-	return [...i, ...l];
-}
-//#endregion
-//#region packages/core/src/engine/capsule-layout.ts
+//#region packages/core/src/algorithms/capsule-layout.ts
 var ji = "非本周", Mi = 70, Ni = 2, Pi = 1, Fi = 1, Ii = 12, Li = 8, Ri = 8, zi = 1.25, Bi = 2, Vi = [
 	[50, 12],
 	[70, 14],
@@ -2303,11 +2305,11 @@ var ji = "非本周", Mi = 70, Ni = 2, Pi = 1, Fi = 1, Ii = 12, Li = 8, Ri = 8, 
 	[110, 12]
 ];
 function Wi(e) {
-	let { courseDisplayModels: t, visibleDays: n, columnWidthPx: r, expandedSlotKeys: i, layoutMode: a = "fixed", coursePalette: o = Qr, paletteCourses: s, capsuleCornerStyle: c = oi.capsuleCornerStyle } = e, l = a === "compact", u = n.length;
+	let { courseDisplayModels: t, visibleDays: n, columnWidthPx: r, expandedSlotKeys: i, layoutMode: a = "fixed", coursePalette: o = ri, paletteCourses: s, capsuleCornerStyle: c = di.capsuleCornerStyle } = e, l = a === "compact", u = n.length;
 	if (u === 0) return [];
-	let d = ai(s ?? t.map((e) => e.course), o), f = new Map(n.map((e, t) => [e.dayOfWeek, t])), p = 100 / u, m = [];
+	let d = ui(s ?? t.map((e) => e.course), o), f = new Map(n.map((e, t) => [e.dayOfWeek, t])), p = 100 / u, m = [];
 	for (let e of ra(t)) {
-		let t = Si(e.dayOfWeek, e.startPeriod, e.endPeriod), n = e.courses.length, a = (f.get(e.dayOfWeek) ?? 0) * p;
+		let t = Zr(e.dayOfWeek, e.startPeriod, e.endPeriod), n = e.courses.length, a = (f.get(e.dayOfWeek) ?? 0) * p;
 		if (n === 1) {
 			let n = e.courses[0];
 			m.push(Gi({
@@ -2487,7 +2489,7 @@ function oa(e) {
 	return /^#[0-9A-Fa-f]{6}$/.test(t) ? t : "#EADDFF";
 }
 function sa(e, t, n) {
-	let r = n.get(ti(e.name)) ?? ii(e, t);
+	let r = n.get(oi(e.name)) ?? li(e, t);
 	return {
 		background: oa(r.background),
 		text: oa(r.foreground)
@@ -2525,9 +2527,9 @@ function da(e) {
 	return Math.round(e * 10) / 10;
 }
 //#endregion
-//#region packages/core/src/engine/timetable-layout.ts
+//#region packages/core/src/algorithms/timetable-layout.ts
 function fa(e) {
-	let { timetable: t, displayedWeek: n, todayIso: r, columnWidthPx: i = 0, expandedSlotKeys: a = /* @__PURE__ */ new Set(), layoutMode: o = "fixed", capsuleCornerStyle: s = oi.capsuleCornerStyle, coursePalette: c = Qr, paletteCourses: l, academicCalendarService: u = new gi() } = e, d = u.calculateAcademicWeek(r, t.academicConfig), f = n === d, p = Di(r, n, t, { academicCalendarService: u }), m = Ai(t, new Set(p.visibleDays.map((e) => e.dayOfWeek)), n, new Set(p.visibleDays.filter((e) => e.holiday).map((e) => e.dayOfWeek)));
+	let { timetable: t, displayedWeek: n, todayIso: r, columnWidthPx: i = 0, expandedSlotKeys: a = /* @__PURE__ */ new Set(), layoutMode: o = "fixed", capsuleCornerStyle: s = di.capsuleCornerStyle, coursePalette: c = ri, paletteCourses: l, academicCalendarService: u = new xi() } = e, d = u.calculateAcademicWeek(r, t.academicConfig), f = n === d, p = Ai(r, n, t, { academicCalendarService: u }), m = ti(t, new Set(p.visibleDays.map((e) => e.dayOfWeek)), n, new Set(p.visibleDays.filter((e) => e.holiday).map((e) => e.dayOfWeek)));
 	return {
 		gridModel: p,
 		courseDisplayModels: m,
@@ -2541,13 +2543,13 @@ function fa(e) {
 			coursePalette: c,
 			paletteCourses: l
 		}),
-		weekRangeText: yi(t.academicConfig, n, r, t.viewPrefs, u),
+		weekRangeText: wi(t.academicConfig, n, r, t.viewPrefs, u),
 		isCurrentWeek: f,
 		academicWeek: d
 	};
 }
 //#endregion
-//#region packages/core/src/engine/period-clock.ts
+//#region packages/core/src/algorithms/period-clock.ts
 function pa(e) {
 	let t = /^(\d{1,2}):(\d{2})$/.exec(e.trim());
 	return t ? Number(t[1]) * 60 + Number(t[2]) : 0;
@@ -2571,7 +2573,7 @@ function ga(e, t, n = "upcomingOrLast") {
 	return n === "none" ? null : r ?? e.at(-1)?.index ?? null;
 }
 //#endregion
-//#region packages/core/src/schema/schema.ts
+//#region packages/core/src/schema/schema-types.ts
 function _a(e) {
 	return e;
 }
@@ -6720,7 +6722,7 @@ function ws(e, t) {
 	return n ? t(n) : e === 0 ? "" : "?";
 }
 function Ts(e, t) {
-	return e.holiday ? xi(e.holiday.label) : ws(e.dayOfWeek, t);
+	return e.holiday ? Ei(e.holiday.label) : ws(e.dayOfWeek, t);
 }
 //#endregion
 //#region packages/ui-kit/src/utils/middle-truncate.ts
@@ -7227,7 +7229,7 @@ function hc(e, t, n, r, i) {
 var gc = /* @__PURE__ */ L("<div class=\"flex min-h-[12rem] items-center justify-center p-8\"><p class=\"text-body-medium text-center text-on-surface-variant\">暂无课表，导入后可预览效果</p></div>");
 function _c(e, t) {
 	He(t, !0);
-	let n = Xr(t, "hasDynamicBackground", 3, !1), r = Xr(t, "dynamicColorUri", 3, null), i = Xr(t, "interactive", 3, !1), a = new gi(), o = (e) => t.controller.translatePlugin("host-ui", e), s = /* @__PURE__ */ k(() => t.controller.currentTimetable), c = /* @__PURE__ */ k(hi), l = /* @__PURE__ */ k(() => I(s) ? a.calculateAcademicWeek(I(c), I(s).academicConfig) : null), u = /* @__PURE__ */ k(() => t.controller.displayedWeek ?? t.controller.activeWeek ?? I(l) ?? 1), d = /* @__PURE__ */ k(() => I(u) === (I(l) ?? t.controller.activeWeek ?? 1)), f = /* @__PURE__ */ k(() => t.controller.currentPeriodIndex), p = /* @__PURE__ */ k(() => t.controller.userPreferences?.timetableLayoutMode ?? "fixed"), m = /* @__PURE__ */ k(() => t.controller.userPreferences?.capsuleCornerStyle ?? "sharp"), h = /* @__PURE__ */ k(() => t.controller.coursePalette.length > 0 ? t.controller.coursePalette : Qr), g = /* @__PURE__ */ k(() => I(s)?.courses ?? []), _ = /* @__PURE__ */ k(() => t.controller.courseBadges ?? {}), v = /* @__PURE__ */ k(() => I(s) ? fa({
+	let n = Xr(t, "hasDynamicBackground", 3, !1), r = Xr(t, "dynamicColorUri", 3, null), i = Xr(t, "interactive", 3, !1), a = new xi(), o = (e) => t.controller.translatePlugin("host-ui", e), s = /* @__PURE__ */ k(() => t.controller.currentTimetable), c = /* @__PURE__ */ k(bi), l = /* @__PURE__ */ k(() => I(s) ? a.calculateAcademicWeek(I(c), I(s).academicConfig) : null), u = /* @__PURE__ */ k(() => t.controller.displayedWeek ?? t.controller.activeWeek ?? I(l) ?? 1), d = /* @__PURE__ */ k(() => I(u) === (I(l) ?? t.controller.activeWeek ?? 1)), f = /* @__PURE__ */ k(() => t.controller.currentPeriodIndex), p = /* @__PURE__ */ k(() => t.controller.userPreferences?.timetableLayoutMode ?? "fixed"), m = /* @__PURE__ */ k(() => t.controller.userPreferences?.capsuleCornerStyle ?? "sharp"), h = /* @__PURE__ */ k(() => t.controller.coursePalette.length > 0 ? t.controller.coursePalette : ri), g = /* @__PURE__ */ k(() => I(s)?.courses ?? []), _ = /* @__PURE__ */ k(() => t.controller.courseBadges ?? {}), v = /* @__PURE__ */ k(() => I(s) ? fa({
 		timetable: I(s),
 		displayedWeek: I(u),
 		todayIso: I(c),

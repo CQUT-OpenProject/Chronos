@@ -1970,7 +1970,14 @@ function Gr(e, t, n, r) {
 		return Nn && v || b.f & 16384 ? y.v : I(y);
 	});
 }
-var Kr = [
+//#endregion
+//#region packages/core/src/algorithms/display-models.ts
+function Kr(e, t) {
+	return t <= 0 || e.endPeriod >= 1 && e.startPeriod <= t;
+}
+//#endregion
+//#region packages/core/src/algorithms/palette.ts
+var qr = [
 	["#EADDFF", "#21005D"],
 	["#FFDBC9", "#311100"],
 	["#C4EED0", "#072711"],
@@ -1979,38 +1986,38 @@ var Kr = [
 	["#F6E1B0", "#241A00"],
 	["#A9F0E4", "#00201C"],
 	["#DCE9A1", "#181E00"]
-], qr = Kr.map(([e, t]) => ({
+], Jr = qr.map(([e, t]) => ({
 	background: e,
 	foreground: t
-})), Jr = /\s+/g;
-function Yr(e) {
+})), Yr = /\s+/g;
+function Xr(e) {
 	let t = 0;
 	for (let n = 0; n < e.length; n += 1) t = t * 31 + e.charCodeAt(n) | 0;
 	return t;
 }
-function Xr(e) {
-	return e.replace(/^【调】/, "").replace(/[★☆〇■◆]$/u, "").trim().replace(Jr, " ");
-}
 function Zr(e) {
-	return Kr[Math.abs(Yr(e) % Kr.length)] ?? Kr[0];
+	return e.replace(/^【调】/, "").replace(/[★☆〇■◆]$/u, "").trim().replace(Yr, " ");
 }
 function Qr(e) {
-	let [t] = Zr(e), n = Kr.findIndex(([e]) => e === t);
+	return qr[Math.abs(Xr(e) % qr.length)] ?? qr[0];
+}
+function $r(e) {
+	let [t] = Qr(e), n = qr.findIndex(([e]) => e === t);
 	return n >= 0 ? n : 0;
 }
-function $r(e, t = qr) {
-	let n = e.name ? Xr(e.name) : "";
-	return !n || t.length === 0 ? qr[0] : t[Qr(n) % t.length];
+function ei(e, t = Jr) {
+	let n = e.name ? Zr(e.name) : "";
+	return !n || t.length === 0 ? Jr[0] : t[$r(n) % t.length];
 }
-function ei(e, t = qr) {
+function ti(e, t = Jr) {
 	if (t.length === 0) return /* @__PURE__ */ new Map();
 	let n = /* @__PURE__ */ new Map();
 	for (let t of e) {
-		let e = Xr(t.name), r = Qr(e);
+		let e = Zr(t.name), r = $r(e);
 		n.has(e) || n.set(e, {
 			name: e,
 			slot: r,
-			hash: Yr(e)
+			hash: Xr(e)
 		});
 	}
 	let r = [...n.values()].sort((e, t) => e.hash - t.hash || e.name.localeCompare(t.name)), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Set(), o = [];
@@ -2031,53 +2038,53 @@ function ei(e, t = qr) {
 	return i;
 }
 //#endregion
-//#region packages/core/src/engine/date.ts
-function ti(e) {
+//#region packages/core/src/algorithms/date.ts
+function ni(e) {
 	let t = e.trim(), n = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
 	if (!n) throw Error(`Invalid ISO date: ${e}`);
 	let [, r, i, a] = n;
 	return new Date(Date.UTC(Number(r), Number(i) - 1, Number(a), 12));
 }
-function ni(e) {
+function ri(e) {
 	return `${e.getUTCFullYear()}-${String(e.getUTCMonth() + 1).padStart(2, "0")}-${String(e.getUTCDate()).padStart(2, "0")}`;
 }
-function ri(e) {
+function ii(e) {
 	let t = new Date(e.getTime()), n = t.getUTCDay(), r = n === 0 ? -6 : 1 - n;
 	return t.setUTCDate(t.getUTCDate() + r), t;
 }
-function ii(e, t) {
+function ai(e, t) {
 	let n = new Date(e.getTime());
 	return n.setUTCDate(n.getUTCDate() + t), n;
 }
-function ai(e, t) {
-	return ii(e, t * 7);
-}
 function oi(e, t) {
-	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+	return ai(e, t * 7);
 }
 function si(e, t) {
+	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+}
+function ci(e, t) {
 	return e.getTime() < t.getTime();
 }
-function ci(e) {
-	return ni(ri(ti(e)));
+function li(e) {
+	return ri(ii(ni(e)));
 }
-function li(e = /* @__PURE__ */ new Date()) {
+function ui(e = /* @__PURE__ */ new Date()) {
 	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
 }
-function ui(e) {
+function di(e) {
 	let t = (/* @__PURE__ */ new Date(`${e}T12:00:00`)).getDay();
 	return t === 0 ? 7 : t;
 }
 //#endregion
-//#region packages/core/src/engine/calendar.ts
-var di = class {
+//#region packages/core/src/algorithms/calendar.ts
+var fi = class {
 	normalizeTermStartDate(e, t) {
-		let n = ti(ci(t));
-		if (!e || !e.trim()) return ni(ri(n));
+		let n = ni(li(t));
+		if (!e || !e.trim()) return ri(ii(n));
 		try {
-			return ni(ri(ti(e)));
+			return ri(ii(ni(e)));
 		} catch {
-			return ni(ri(this.inferTermStartDateFromTermName(e) || n));
+			return ri(ii(this.inferTermStartDateFromTermName(e) || n));
 		}
 	}
 	inferTermStartDateFromTermName(e) {
@@ -2092,25 +2099,20 @@ var di = class {
 			startWeek: 1,
 			endWeek: 20,
 			periodTimes: []
-		}, r = ti(this.normalizeTermStartDate(n.termStartDate, e)), i = ti(e);
-		if (si(i, r)) return n.startWeek;
-		let a = oi(r, i);
+		}, r = ni(this.normalizeTermStartDate(n.termStartDate, e)), i = ni(e);
+		if (ci(i, r)) return n.startWeek;
+		let a = si(r, i);
 		return Math.min(Math.max(n.startWeek + a, n.startWeek), n.endWeek);
 	}
 	resolveWeekStart(e, t, n) {
-		return ni(ai(ti(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
+		return ri(oi(ni(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
 	}
 	resolveCourseDate(e, t, n, r) {
-		return ni(ii(ti(this.resolveWeekStart(e, t, r)), n - 1));
+		return ri(ai(ni(this.resolveWeekStart(e, t, r)), n - 1));
 	}
 };
 //#endregion
-//#region packages/core/src/engine/display-models.ts
-function fi(e, t) {
-	return t <= 0 || e.endPeriod >= 1 && e.startPeriod <= t;
-}
-//#endregion
-//#region packages/core/src/engine/period-clock.ts
+//#region packages/core/src/algorithms/period-clock.ts
 function pi(e) {
 	let t = /^(\d{1,2}):(\d{2})$/.exec(e.trim());
 	return t ? Number(t[1]) * 60 + Number(t[2]) : 0;
@@ -6051,7 +6053,7 @@ function ro(e = {}) {
 }
 //#endregion
 //#region packages/plugins/today/src/today-courses.ts
-var io = new di();
+var io = new fi();
 function ao(e, t, n) {
 	let r = e.find((e) => e.index === t), i = e.find((e) => e.index === n);
 	return !r || !i ? null : {
@@ -6085,7 +6087,7 @@ function co(e, t, n, r) {
 async function lo(e, t) {
 	let { todayIso: n, scope: r, timetable: i } = t;
 	if (!i) return [];
-	let a = ui(n);
+	let a = di(n);
 	if (r === "active") {
 		let t = io.calculateAcademicWeek(n, i.academicConfig);
 		return e.queryCourses({
@@ -6117,7 +6119,7 @@ function uo() {
 	function s() {
 		return o()?.academicConfig.periodTimes ?? [];
 	}
-	let c = /* @__PURE__ */ dt(() => I(e)?.clockTodayIso || li()), l = /* @__PURE__ */ dt(() => I(e)?.clockNow ?? /* @__PURE__ */ new Date()), u = /* @__PURE__ */ dt(() => {
+	let c = /* @__PURE__ */ dt(() => I(e)?.clockTodayIso || ui()), l = /* @__PURE__ */ dt(() => I(e)?.clockNow ?? /* @__PURE__ */ new Date()), u = /* @__PURE__ */ dt(() => {
 		let t = I(e), n = t?.clockNow ?? /* @__PURE__ */ new Date(), r = mi(s());
 		return r.length === 0 ? t?.currentPeriodIndex ?? null : gi(r, hi(n));
 	});
@@ -6132,7 +6134,7 @@ function uo() {
 				todayIso: I(c),
 				scope: I(n),
 				timetable: a
-			}), o = s(), d = e.filter((e) => fi(e.course, o.length));
+			}), o = s(), d = e.filter((e) => Kr(e.course, o.length));
 			A(r, co(d, o, hi(I(l)), I(u)));
 		} catch {
 			A(r, []);
@@ -6206,9 +6208,9 @@ function uo() {
 var fo = /* @__PURE__ */ L("<p class=\"text-label-large shrink-0 text-on-surface-variant\"> </p>"), po = /* @__PURE__ */ L("<div class=\"mt-1 flex items-center justify-between gap-3\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <!></div>"), mo = /* @__PURE__ */ L("<div></div>"), ho = /* @__PURE__ */ L("<button type=\"button\"> </button>"), go = /* @__PURE__ */ L("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p></section>"), _o = /* @__PURE__ */ L("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p></section>"), vo = /* @__PURE__ */ L("<p class=\"text-label-medium text-on-surface tabular-nums\"> </p>"), yo = /* @__PURE__ */ L("<span class=\"text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary\"> </span>"), bo = /* @__PURE__ */ L("<p> </p>"), xo = /* @__PURE__ */ L("<div class=\"text-body-small mt-1 flex flex-col gap-1 text-on-surface-variant\"><!> <!> <!></div>"), So = /* @__PURE__ */ L("<div class=\"flex w-11 shrink-0 flex-col items-center self-stretch\"><!> <div class=\"flex min-h-0 w-full flex-1 flex-col items-center justify-center\"><p class=\"text-headline-small w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant\"> </p></div> <!></div> <div class=\"w-1 shrink-0 self-stretch rounded-full\" aria-hidden=\"true\"></div> <div class=\"min-w-0 flex-1\"><div class=\"flex items-start justify-between gap-2\"><p class=\"text-title-medium truncate text-on-surface\"> </p> <!></div> <!></div>", 1), Co = /* @__PURE__ */ L("<button type=\"button\"><!></button>"), wo = /* @__PURE__ */ L("<div><!></div>"), To = /* @__PURE__ */ L("<li><!></li>"), Eo = /* @__PURE__ */ L("<section class=\"overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs\"><ul class=\"divide-y divide-outline/10\"></ul></section>"), Do = /* @__PURE__ */ L("<div class=\"flex min-h-0 flex-1 flex-col overflow-y-auto\"><header class=\"border-b border-outline/10 bg-surface px-4 pt-6 pb-4\"><p class=\"text-headline-small text-on-surface\"> </p> <!> <div class=\"rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs\"><!> <!></div></header> <div class=\"flex flex-1 flex-col gap-4 p-4\"><!></div></div>");
 function Oo(e, t) {
 	ze(t, !0);
-	let n = Gr(t, "active", 3, !0), r = new di(), i = uo(), a = /* @__PURE__ */ dt(() => t.controller.currentTimetable), o = /* @__PURE__ */ dt(() => I(a)?.academicConfig.periodTimes ?? []), s = /* @__PURE__ */ dt(() => t.controller.clockTodayIso || i.today), c = /* @__PURE__ */ dt(() => I(a) ? r.calculateAcademicWeek(I(s), I(a).academicConfig) : 1), l = /* @__PURE__ */ dt(() => {
+	let n = Gr(t, "active", 3, !0), r = new fi(), i = uo(), a = /* @__PURE__ */ dt(() => t.controller.currentTimetable), o = /* @__PURE__ */ dt(() => I(a)?.academicConfig.periodTimes ?? []), s = /* @__PURE__ */ dt(() => t.controller.clockTodayIso || i.today), c = /* @__PURE__ */ dt(() => I(a) ? r.calculateAcademicWeek(I(s), I(a).academicConfig) : 1), l = /* @__PURE__ */ dt(() => {
 		let e = t.controller.coursePalette;
-		return ei(i.courseEntries.map((e) => e.hit.course), e);
+		return ti(i.courseEntries.map((e) => e.hit.course), e);
 	}), u = /* @__PURE__ */ dt(() => [{
 		value: "active",
 		label: f("screen.scope.active")
@@ -6228,7 +6230,7 @@ function Oo(e, t) {
 	}
 	function m(e) {
 		let n = t.controller.coursePalette;
-		return I(l).get(Xr(e.course.name)) ?? $r(e.course, n);
+		return I(l).get(Zr(e.course.name)) ?? ei(e.course, n);
 	}
 	let h = /* @__PURE__ */ dt(() => {
 		try {
