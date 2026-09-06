@@ -17,9 +17,17 @@
 	} = $props();
 
 	const draft = $derived(editor.draft);
+
+	/** Align with `MAX_TIMETABLE_WEEK` in `@chronos/codec-kit`. */
+	const MAX_TOTAL_WEEKS = 32;
 </script>
 
 {#if draft}
+	{@const totalWeeks = Math.max(
+		1,
+		draft.academicConfig.endWeek - draft.academicConfig.startWeek + 1
+	)}
+	{@const totalWeeksMax = Math.max(MAX_TOTAL_WEEKS, totalWeeks)}
 	<div class="space-y-4">
 		<FormCard>
 			<TextField
@@ -33,9 +41,9 @@
 			/>
 			<StepperField
 				label={hostT('timetable.details.totalWeeks')}
-				value={Math.max(1, draft.academicConfig.endWeek - draft.academicConfig.startWeek + 1)}
+				value={totalWeeks}
 				min={1}
-				max={30}
+				max={totalWeeksMax}
 				embedded
 				onchange={(total) => {
 					draft.academicConfig.endWeek = draft.academicConfig.startWeek + total - 1;
