@@ -2173,7 +2173,7 @@ function Ti(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Ei() {
-	return "0.4.6";
+	return "0.4.7";
 }
 function Di(e) {
 	let t;

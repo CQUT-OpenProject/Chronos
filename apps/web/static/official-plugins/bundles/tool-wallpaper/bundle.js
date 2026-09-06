@@ -2615,7 +2615,7 @@ function Ta(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Ea() {
-	return "0.4.6";
+	return "0.4.7";
 }
 function Da(e) {
 	let t;
