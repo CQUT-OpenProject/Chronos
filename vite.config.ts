@@ -96,20 +96,23 @@ export default defineConfig({
 				cache: false
 			},
 			'build:cqut': {
-				command: 'CHRONOS_PROFILE=chronos-cqut vp -C apps/web build',
+				command:
+					'CHRONOS_PROFILE=chronos-cqut node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && CHRONOS_PROFILE=chronos-cqut vp -C apps/web build',
 				env: ['CHRONOS_PROFILE']
 			},
 			'build:cqut-offline': {
-				command: 'CHRONOS_PROFILE=chronos-cqut-offline vp -C apps/web build',
+				command:
+					'CHRONOS_PROFILE=chronos-cqut-offline node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && CHRONOS_PROFILE=chronos-cqut-offline vp -C apps/web build',
 				env: ['CHRONOS_PROFILE']
 			},
 			'build:default': {
-				command: 'CHRONOS_PROFILE=chronos-default vp -C apps/web build',
+				command:
+					'CHRONOS_PROFILE=chronos-default node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && CHRONOS_PROFILE=chronos-default vp -C apps/web build',
 				env: ['CHRONOS_PROFILE']
 			},
 			'build:pages': {
 				command:
-					'node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && (cd apps/web && svelte-kit sync) && vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html',
+					'CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-default node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-default vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html',
 				env: ['CHRONOS_DEPLOY_TARGET', 'CHRONOS_PROFILE']
 			},
 			'bundle:analyze':
