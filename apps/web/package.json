@@ -27,8 +27,7 @@
 		"posthog-js": "^1.427.2",
 		"swiper": "^14.2.0",
 		"vite-plugin-functions-mixins": "^0.4.1",
-		"workbox-window": "^7.4.1",
-		"zod": "^4.5.4"
+		"workbox-window": "^7.4.1"
 	},
 	"devDependencies": {
 		"@chronos/plugin-theme-miami": "workspace:*",
