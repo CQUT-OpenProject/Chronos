@@ -53,3 +53,14 @@ export function hourItems(): number[] {
 export function minuteItems(): number[] {
 	return Array.from({ length: 60 }, (_, i) => i);
 }
+
+export const TIME_WHEEL_ROW_HEIGHT = 40;
+
+/** Map scroll offset to a snapped wheel index (0..maxIndex). */
+export function snapTimeWheelIndex(
+	scrollTop: number,
+	maxIndex: number,
+	rowHeight = TIME_WHEEL_ROW_HEIGHT
+): number {
+	return Math.min(Math.max(Math.round(scrollTop / rowHeight), 0), maxIndex);
+}

@@ -115,6 +115,8 @@
 
 	function confirmEdit() {
 		if (editPos === null) return;
+		wheelStart?.commitDraft();
+		wheelEnd?.commitDraft();
 		const pos = editPos;
 		value = value.map((period, i) =>
 			i === pos

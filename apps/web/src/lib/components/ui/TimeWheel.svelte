@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { haptic } from '$lib/haptic/haptic';
-	import { hourItems, minuteItems, type TimePickerLabels, type TimeValue } from '@chronos/ui-kit';
+	import {
+		hourItems,
+		minuteItems,
+		snapTimeWheelIndex,
+		TIME_WHEEL_ROW_HEIGHT,
+		type TimePickerLabels,
+		type TimeValue
+	} from '@chronos/ui-kit';
 
-	const ROW_HEIGHT = 40;
+	const ROW_HEIGHT = TIME_WHEEL_ROW_HEIGHT;
 
 	let {
 		value = $bindable({ hour: 0, minute: 0 }),
@@ -61,7 +68,7 @@
 		// Fast path only: track the snapped index and vibrate. No reactive writes
 		// here — mutating the subtree mid-gesture kills fling momentum on iOS.
 		const max = kind === 'hour' ? hours.length - 1 : minutes.length - 1;
-		const index = Math.min(Math.max(Math.round(node.scrollTop / ROW_HEIGHT), 0), max);
+		const index = snapTimeWheelIndex(node.scrollTop, max, ROW_HEIGHT);
 		if (liveIndex[kind] !== index) {
 			liveIndex[kind] = index;
 			fireTick();
@@ -70,10 +77,26 @@
 		settleTimer = window.setTimeout(settleDraft, 90);
 	}
 
+	function readLiveIndexFromDom(kind: 'hour' | 'minute') {
+		const node = wheelNodes[kind];
+		if (!node) return;
+		const max = kind === 'hour' ? hours.length - 1 : minutes.length - 1;
+		liveIndex[kind] = snapTimeWheelIndex(node.scrollTop, max, ROW_HEIGHT);
+	}
+
 	function settleDraft() {
 		settleTimer = 0;
 		if (liveIndex.hour === value.hour && liveIndex.minute === value.minute) return;
 		value = { hour: liveIndex.hour, minute: liveIndex.minute };
+	}
+
+	/** Flush scroll position into bindable value before parent confirms. */
+	export function commitDraft(): TimeValue {
+		window.clearTimeout(settleTimer);
+		readLiveIndexFromDom('hour');
+		readLiveIndexFromDom('minute');
+		settleDraft();
+		return { hour: liveIndex.hour, minute: liveIndex.minute };
 	}
 
 	function pick(kind: 'hour' | 'minute', index: number) {

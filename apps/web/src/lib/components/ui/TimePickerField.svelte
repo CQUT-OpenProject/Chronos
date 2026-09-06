@@ -70,7 +70,8 @@
 	}
 
 	function confirmSelection() {
-		const next = formatTimeValue(draft);
+		const committed = wheel?.commitDraft() ?? draft;
+		const next = formatTimeValue(committed);
 		if (next !== value) {
 			value = next;
 			onValueChange?.(next);

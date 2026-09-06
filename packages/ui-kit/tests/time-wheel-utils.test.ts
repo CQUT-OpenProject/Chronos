@@ -4,7 +4,8 @@ import {
 	hourItems,
 	isValidTimeValue,
 	minuteItems,
-	parseTimeValue
+	parseTimeValue,
+	snapTimeWheelIndex
 } from '../src/form/time-wheel-utils';
 
 describe('time-wheel-utils', () => {
@@ -29,5 +30,15 @@ describe('time-wheel-utils', () => {
 		expect(hourItems()[23]).toBe(23);
 		expect(minuteItems()).toHaveLength(60);
 		expect(minuteItems()[59]).toBe(59);
+	});
+
+	it('snaps scroll offset to wheel index', () => {
+		expect(snapTimeWheelIndex(0, 23)).toBe(0);
+		expect(snapTimeWheelIndex(20, 23)).toBe(1);
+		expect(snapTimeWheelIndex(39, 23)).toBe(1);
+		expect(snapTimeWheelIndex(40, 23)).toBe(1);
+		expect(snapTimeWheelIndex(60, 23)).toBe(2);
+		expect(snapTimeWheelIndex(1000, 23)).toBe(23);
+		expect(snapTimeWheelIndex(-10, 23)).toBe(0);
 	});
 });

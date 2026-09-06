@@ -9,6 +9,8 @@ export {
 	isValidTimeValue,
 	minuteItems,
 	parseTimeValue,
+	snapTimeWheelIndex,
+	TIME_WHEEL_ROW_HEIGHT,
 	type TimePickerLabels,
 	type TimeValue
 } from './form/time-wheel-utils';
