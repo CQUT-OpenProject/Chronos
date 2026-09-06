@@ -1,5 +1,5 @@
 import type { Course } from '../domain/course';
-import { type AcademicConfig, type Timetable, createTimetable } from '../domain/timetable';
+import { type AcademicConfig, type Timetable } from '../domain/timetable';
 import {
 	type UserPreferences,
 	DEFAULT_USER_PREFERENCES,
@@ -7,8 +7,7 @@ import {
 	PALETTE_MODE_VIBRANT
 } from '../domain/preferences';
 import { DEFAULT_VISUAL_THEME_ID, HOST_DEFAULT_ICON_THEME_ID } from '../theme/theme-defaults';
-import { PLUGIN_CONFIG_STORAGE_KEY } from '../constants/plugin-storage';
-import type { ChronosEnv, StorageChangeEvent } from '../types/env';
+import type { ChronosEnv } from '../types/env';
 import type { Disposable } from '../types/services';
 import {
 	IHttpService,
@@ -27,18 +26,16 @@ import { ServiceContainer } from './service-container';
 import { ThemeRegistry } from './theme-registry';
 import { IconThemeRegistry } from './icon-theme-registry';
 import { BadgeManager } from './badge-manager';
-import { ScopedContext, type EngineContextHost } from './scoped-context';
-import { AcademicCalendarService } from '../engine/calendar';
-import { formatIsoDate } from '../engine/date';
-import {
-	createDayClock,
-	currentTimeMinutes,
-	findCurrentPeriodIndex,
-	parsePeriodRanges,
-	type DayClockHandle
-} from '../engine/period-clock';
+import { ScopedContext } from './scoped-context';
+import type { EngineContextHost } from './engine-context-host';
 import { I18nCatalog, interpolateMessage } from '../i18n/i18n-catalog';
 import type { ThemeContribution } from '../types/contributions';
+import type { EngineActionHost, TimetableListEntry } from './engine/engine-action-host';
+import { EngineTimeKeeper } from './engine/engine-time-keeper';
+import { TimetableActions } from './engine/timetable-actions';
+import { CourseActions } from './engine/course-actions';
+import { StorageSyncHandler } from './engine/storage-sync-handler';
+import { PluginLifecycleManager } from './engine/plugin-lifecycle-manager';
 
 export interface ChronosEngineOptions {
 	env: ChronosEnv;
@@ -66,24 +63,20 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	private _onNotification?: (message: string, type: 'info' | 'warn' | 'error') => void;
 
 	private _currentTimetable: Timetable | null = null;
-	private _timetables: Array<{
-		id: string;
-		name: string;
-		courseCount?: number;
-		updatedAt: number;
-	}> = [];
+	private _timetables: TimetableListEntry[] = [];
 	private _activeWeek = 1;
 	private _currentPeriodIndex: number | null = null;
 	private _activeThemeId = DEFAULT_VISUAL_THEME_ID;
 	private _userPreferences: UserPreferences = { ...DEFAULT_USER_PREFERENCES };
 
-	private loadedPlugins = new Map<
-		string,
-		{
-			plugin: ChronosPlugin<Record<string, unknown>>;
-			context: ScopedContext<Record<string, unknown>>;
-		}
-	>();
+	private readonly actionHost: EngineActionHost;
+	private readonly timeKeeper: EngineTimeKeeper;
+	private readonly timetableActions: TimetableActions;
+	private readonly courseActions: CourseActions;
+	private readonly storageSync: StorageSyncHandler;
+	private readonly pluginLifecycle: PluginLifecycleManager;
+
+	private storageSubscription?: Disposable;
 
 	constructor(options: ChronosEngineOptions) {
 		if (!options.env) {
@@ -118,11 +111,79 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		for (const { pluginId, messages } of options.presetI18nCatalogs ?? []) {
 			this.i18nCatalog.register(pluginId, messages);
 		}
+
+		this.actionHost = this.createActionHost();
+		this.timeKeeper = new EngineTimeKeeper(
+			this.events,
+			() => this._currentTimetable,
+			(week) => {
+				this._activeWeek = week;
+			},
+			(index) => {
+				this._currentPeriodIndex = index;
+			}
+		);
+		this.timetableActions = new TimetableActions(this.actionHost);
+		this.courseActions = new CourseActions(this.actionHost, this.timetableActions);
+		this.storageSync = new StorageSyncHandler(this.actionHost, this.timeKeeper, (locale) =>
+			this.setLocale(locale)
+		);
+		this.pluginLifecycle = new PluginLifecycleManager(
+			this,
+			this.storage,
+			this.events,
+			this.i18nCatalog
+		);
 	}
 
-	private storageSubscription?: Disposable;
-	private dayClock: DayClockHandle | null = null;
-	private calendarService = new AcademicCalendarService();
+	private createActionHost(): EngineActionHost {
+		const engine = this;
+		return {
+			get storage() {
+				return engine.storage;
+			},
+			get events() {
+				return engine.events;
+			},
+			get badges() {
+				return engine.badges;
+			},
+			get themes() {
+				return engine.themes;
+			},
+			getCurrentTimetable: () => engine._currentTimetable,
+			setCurrentTimetable: (timetable) => {
+				engine._currentTimetable = timetable;
+			},
+			getTimetables: () => engine._timetables,
+			setTimetables: (timetables) => {
+				engine._timetables = timetables;
+			},
+			getUserPreferences: () => engine._userPreferences,
+			setUserPreferences: (preferences) => {
+				engine._userPreferences = preferences;
+			},
+			getActiveThemeId: () => engine._activeThemeId,
+			setActiveThemeId: (themeId) => {
+				engine._activeThemeId = themeId;
+			},
+			getLocale: () => engine._locale,
+			setLocale: (locale) => {
+				engine._locale = locale;
+			},
+			refreshTimetables: () => engine.refreshTimetables(),
+			updateTime: (now) => engine.updateTime(now),
+			rescheduleDayClock: () => engine.timeKeeper.reschedule(),
+			emitIconThemeChanged: () => engine.emitIconThemeChanged(),
+			switchTimetable: (id) => engine.timetableActions.switchTimetable(id),
+			saveCurrentTimetableDetails: (patch) =>
+				engine.timetableActions.saveCurrentTimetableDetails(patch),
+			updatePreferences: (patch) => engine.updatePreferences(patch),
+			emit: (event, payload) => {
+				engine.events.emit(event, payload);
+			}
+		};
+	}
 
 	private registerEnvProviders(env: ChronosEnv): void {
 		if (!this.services.has(IStorageService) && env.storage) {
@@ -207,334 +268,50 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	async init(): Promise<void> {
-		const storage = this.storage;
-		this._userPreferences = await storage.getPreferences();
-		this._timetables = await storage.listTimetables();
-
-		let activeId = await storage.getActiveTimetableId();
-		if (!activeId) {
-			if (this._timetables.length > 0 && this._timetables[0]) {
-				activeId = this._timetables[0].id;
-				await storage.setActiveTimetableId(activeId);
-			}
-		}
-
-		if (activeId) {
-			this._currentTimetable = await storage.getTimetable(activeId);
-		}
-
-		this.updateTime();
-		this.startDayClock();
-
-		const savedLocale = this._userPreferences.locale;
-		if (savedLocale && savedLocale !== this._locale) {
-			// Route through setLocale so reactive mirrors (controller.currentLocale,
-			// host-i18n) observe the hydrated locale instead of going stale.
-			// Emitted before timetable events so first renders already use it.
-			this.setLocale(savedLocale);
-		}
-
-		if (this._currentTimetable) {
-			await this.badges.recalculate(this._currentTimetable.courses);
-			this.events.emit('timetable:loaded', { timetable: this._currentTimetable });
-		}
-		this.events.emit('timetables:updated', { timetables: this._timetables });
-		this.events.emit('preferences:updated', { preferences: this._userPreferences });
-
-		if (storage.onChanged) {
-			this.storageSubscription = storage.onChanged(this.handleStorageChange.bind(this));
-		}
-	}
-
-	private async handleStorageChange(event: StorageChangeEvent): Promise<void> {
-		const storage = this.storage;
-		if (event.type === 'preferences') {
-			this._userPreferences = await storage.getPreferences();
-			this.events.emit('preferences:updated', { preferences: this._userPreferences });
-		} else if (event.type === 'timetable') {
-			await this.refreshTimetables();
-			const activeId = await storage.getActiveTimetableId();
-			if (activeId) {
-				const updated = await storage.getTimetable(activeId);
-				if (updated) {
-					this._currentTimetable = updated;
-					this.updateTime();
-					this.dayClock?.reschedule();
-					await this.badges.recalculate(updated.courses);
-					this.events.emit('timetable:updated', { timetable: updated });
-				}
-			} else if (this._timetables.length === 0) {
-				this._currentTimetable = null;
-				this.events.emit('timetable:updated', { timetable: null as unknown as Timetable });
-			}
-		}
+		this.storageSubscription = await this.storageSync.hydrate();
 	}
 
 	async clearAllData(): Promise<void> {
-		if (this.storage.clearAllData) {
-			await this.storage.clearAllData();
-		} else {
-			const list = await this.storage.listTimetables();
-			for (const t of list) {
-				await this.storage.deleteTimetable(t.id);
-			}
-			await this.storage.setActiveTimetableId('');
-		}
-		this._currentTimetable = null;
-		this._timetables = [];
-		this._userPreferences = { ...DEFAULT_USER_PREFERENCES };
-		this.events.emit('timetables:updated', { timetables: [] });
-		this.events.emit('timetable:updated', { timetable: null as unknown as Timetable });
-		this.events.emit('preferences:updated', { preferences: this._userPreferences });
-	}
-
-	private startDayClock(): void {
-		this.dayClock?.dispose();
-		this.dayClock = createDayClock({
-			getPeriodTimes: () => this._currentTimetable?.academicConfig.periodTimes ?? [],
-			onMidnight: () => {
-				this.updateTime();
-			},
-			onPeriodBoundary: () => {
-				this.updateTime();
-			}
-		});
+		await this.storageSync.clearAllData();
 	}
 
 	updateTime(now = new Date()): void {
-		const todayIso = formatIsoDate(now);
-		const academicConfig = this._currentTimetable?.academicConfig;
-
-		const currentWeek = academicConfig
-			? this.calendarService.calculateAcademicWeek(todayIso, academicConfig)
-			: 1;
-
-		const currentPeriod =
-			academicConfig?.periodTimes && academicConfig.periodTimes.length > 0
-				? findCurrentPeriodIndex(
-						parsePeriodRanges(academicConfig.periodTimes),
-						currentTimeMinutes(now),
-						'none'
-					)
-				: null;
-
-		this._activeWeek = currentWeek;
-		this._currentPeriodIndex = currentPeriod;
-
-		this.events.emit('time:tick', {
-			currentWeek,
-			currentPeriod,
-			now,
-			todayIso
-		});
+		this.timeKeeper.updateTime(now);
 	}
 
 	async createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable> {
-		const allowed = await this.events.serial('guard:createTimetable', { name, config });
-		if (!allowed) {
-			throw new Error('[ChronosEngine] createTimetable action was rejected by guard');
-		}
-
-		return this.events.waterfall(
-			'action:createTimetable',
-			{ name, config },
-			async ({ name: finalName, config: finalConfig }) => {
-				const id = `tt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-				const timetable = createTimetable({
-					id,
-					name: finalName,
-					academicConfig: {
-						termStartDate: finalConfig?.termStartDate ?? '',
-						startWeek: finalConfig?.startWeek ?? 1,
-						endWeek: finalConfig?.endWeek ?? 20,
-						periodTimes: finalConfig?.periodTimes ?? []
-					}
-				});
-
-				await this.storage.saveTimetable(timetable);
-				await this.refreshTimetables();
-
-				if (!this._currentTimetable) {
-					await this.switchTimetable(timetable.id);
-				}
-
-				return timetable;
-			}
-		);
+		return this.timetableActions.createTimetable(name, config);
 	}
 
 	async importTimetable(
 		timetable: Timetable,
 		options: { overwriteActive?: boolean } = {}
 	): Promise<Timetable> {
-		const allowed = await this.events.serial('guard:importTimetable', { timetable, options });
-		if (!allowed) {
-			throw new Error('[ChronosEngine] importTimetable action was rejected by guard');
-		}
-
-		return this.events.waterfall(
-			'action:importTimetable',
-			{ timetable, options },
-			async ({ timetable: incoming, options: finalOptions }) => {
-				let toSave = incoming;
-				if (finalOptions.overwriteActive) {
-					const activeId = await this.storage.getActiveTimetableId();
-					if (activeId) {
-						toSave = { ...incoming, id: activeId };
-					}
-				}
-
-				await this.storage.saveTimetable(toSave);
-				await this.refreshTimetables();
-				await this.switchTimetable(toSave.id);
-				return toSave;
-			}
-		);
+		return this.timetableActions.importTimetable(timetable, options);
 	}
 
 	async switchTimetable(timetableId: string): Promise<void> {
-		const allowed = await this.events.serial('guard:switchTimetable', { timetableId });
-		if (!allowed) {
-			throw new Error('[ChronosEngine] switchTimetable action was rejected by guard');
-		}
-
-		return this.events.waterfall(
-			'action:switchTimetable',
-			{ timetableId },
-			async ({ timetableId: targetId }) => {
-				const previousId = this._currentTimetable?.id ?? null;
-				const timetable = await this.storage.getTimetable(targetId);
-				if (!timetable) {
-					throw new Error(`Timetable not found: ${targetId}`);
-				}
-
-				await this.storage.setActiveTimetableId(targetId);
-				this._currentTimetable = timetable;
-				this.updateTime();
-				this.dayClock?.reschedule();
-				await this.badges.recalculate(timetable.courses);
-
-				this.events.emit('timetable:switched', {
-					previousId,
-					currentId: targetId,
-					timetable
-				});
-			}
-		);
+		return this.timetableActions.switchTimetable(timetableId);
 	}
 
 	async deleteTimetable(timetableId: string): Promise<void> {
-		const allowed = await this.events.serial('guard:deleteTimetable', { timetableId });
-		if (!allowed) {
-			throw new Error('[ChronosEngine] deleteTimetable action was rejected by guard');
-		}
-
-		return this.events.waterfall(
-			'action:deleteTimetable',
-			{ timetableId },
-			async ({ timetableId: targetId }) => {
-				await this.storage.deleteTimetable(targetId);
-				await this.refreshTimetables();
-
-				if (this._currentTimetable?.id === targetId) {
-					const remaining = await this.storage.listTimetables();
-					if (remaining.length > 0 && remaining[0]) {
-						await this.switchTimetable(remaining[0].id);
-					} else {
-						this._currentTimetable = null;
-						await this.storage.setActiveTimetableId('');
-						this.events.emit('timetable:updated', { timetable: null as unknown as Timetable });
-					}
-				}
-			}
-		);
+		return this.timetableActions.deleteTimetable(timetableId);
 	}
 
 	async saveCurrentTimetableDetails(patch: Partial<Timetable>): Promise<void> {
-		if (!this._currentTimetable) {
-			throw new Error('No active timetable to update');
-		}
-
-		const current = this._currentTimetable;
-		const updated: Timetable = {
-			...current,
-			...patch,
-			...(patch.academicConfig
-				? {
-						academicConfig: {
-							...current.academicConfig,
-							...patch.academicConfig
-						}
-					}
-				: {}),
-			updatedAt: Date.now()
-		};
-
-		await this.storage.saveTimetable(updated);
-		this._currentTimetable = updated;
-		await this.refreshTimetables();
-		this.updateTime();
-		this.dayClock?.reschedule();
-		await this.badges.recalculate(updated.courses);
-		this.events.emit('timetable:updated', { timetable: updated });
+		return this.timetableActions.saveCurrentTimetableDetails(patch);
 	}
 
 	async saveCourse(course: Course): Promise<void> {
-		if (!this._currentTimetable) {
-			throw new Error('No active timetable to save course');
-		}
-		const allowed = await this.events.serial('guard:saveCourse', { course });
-		if (!allowed) {
-			throw new Error('[ChronosEngine] saveCourse action was rejected by guard');
-		}
-
-		return this.events.waterfall(
-			'action:saveCourse',
-			{ course },
-			async ({ course: targetCourse }) => {
-				const courses = [...this._currentTimetable!.courses];
-				const index = courses.findIndex((c) => c.id === targetCourse.id);
-				if (index >= 0) {
-					courses[index] = targetCourse;
-				} else {
-					courses.push(targetCourse);
-				}
-
-				await this.saveCurrentTimetableDetails({ courses });
-			}
-		);
+		return this.courseActions.saveCourse(course);
 	}
 
-	// C1 suspended: saveCourse/deleteCourse use serial/waterfall guards; align updateCourse when C1 resolves.
 	async updateCourse(courseId: string, patch: Partial<Course>): Promise<void> {
-		if (!this._currentTimetable) {
-			throw new Error('No active timetable to update course');
-		}
-
-		const courses = this._currentTimetable.courses.map((c) =>
-			c.id === courseId ? { ...c, ...patch } : c
-		);
-
-		await this.saveCurrentTimetableDetails({ courses });
+		return this.courseActions.updateCourse(courseId, patch);
 	}
 
 	async deleteCourse(courseId: string): Promise<void> {
-		if (!this._currentTimetable) {
-			throw new Error('No active timetable to delete course');
-		}
-		const allowed = await this.events.serial('guard:deleteCourse', { courseId });
-		if (!allowed) {
-			throw new Error('[ChronosEngine] deleteCourse action was rejected by guard');
-		}
-
-		return this.events.waterfall(
-			'action:deleteCourse',
-			{ courseId },
-			async ({ courseId: targetId }) => {
-				const courses = this._currentTimetable!.courses.filter((c) => c.id !== targetId);
-				await this.saveCurrentTimetableDetails({ courses });
-			}
-		);
+		return this.courseActions.deleteCourse(courseId);
 	}
 
 	setTheme(themeId: string): void {
@@ -596,86 +373,28 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	getPluginContext(pluginId: string): ScopedContext<Record<string, unknown>> {
-		const entry = this.loadedPlugins.get(pluginId);
-		if (entry) {
-			return entry.context;
-		}
-		return new ScopedContext<Record<string, unknown>>(pluginId, this);
+		return this.pluginLifecycle.getPluginContext(pluginId);
 	}
 
 	getPluginContextForSlot<K extends keyof ChronosSlotMap>(
 		slotName: K,
 		slotId: string
 	): ScopedContext<Record<string, unknown>> {
-		const ownerPluginId = this.slots.resolveOwner(slotName, slotId);
-		if (!ownerPluginId) {
-			throw new Error(`No owner plugin registered for slot ${String(slotName)}/${slotId}`);
-		}
-		const entry = this.loadedPlugins.get(ownerPluginId);
-		if (!entry) {
-			throw new Error(`Owner plugin "${ownerPluginId}" is not loaded`);
-		}
-		return entry.context;
+		return this.pluginLifecycle.getPluginContextForSlot(slotName, slotId);
 	}
 
 	isPluginLoaded(pluginId: string): boolean {
-		return this.loadedPlugins.has(pluginId);
+		return this.pluginLifecycle.isPluginLoaded(pluginId);
 	}
 
 	async loadPlugin<Config extends object = Record<string, unknown>>(
 		plugin: ChronosPlugin<Config>
 	): Promise<Disposable> {
-		if (this.loadedPlugins.has(plugin.id)) {
-			await this.unloadPlugin(plugin.id);
-		}
-
-		await this.activatePlugin(plugin as unknown as ChronosPlugin<Record<string, unknown>>);
-
-		return {
-			dispose: () => {
-				void this.unloadPlugin(plugin.id);
-			}
-		};
-	}
-
-	private async activatePlugin(plugin: ChronosPlugin<Record<string, unknown>>): Promise<void> {
-		let initialConfig: Record<string, unknown> = { ...plugin.defaultConfig };
-		try {
-			const savedConfig = await this.storage.getPluginData<Record<string, unknown>>(
-				plugin.id,
-				PLUGIN_CONFIG_STORAGE_KEY
-			);
-			if (savedConfig) {
-				initialConfig = { ...initialConfig, ...savedConfig };
-			}
-		} catch (err) {
-			console.warn(`[ChronosEngine] Failed to load saved config for plugin "${plugin.id}":`, err);
-		}
-
-		const context = new ScopedContext(plugin.id, this, initialConfig);
-		await plugin.apply(context);
-		this.loadedPlugins.set(plugin.id, {
-			plugin,
-			context
-		});
-
-		this.events.emit('plugin:loaded', { pluginId: plugin.id });
+		return this.pluginLifecycle.loadPlugin(plugin);
 	}
 
 	async unloadPlugin(pluginId: string): Promise<void> {
-		const entry = this.loadedPlugins.get(pluginId);
-		if (!entry) return;
-
-		this.loadedPlugins.delete(pluginId);
-		this.i18nCatalog.disposePlugin(pluginId);
-		entry.context.dispose();
-		try {
-			await entry.plugin.dispose?.();
-		} catch (error) {
-			console.error(`[ChronosEngine] Error in plugin "${pluginId}" dispose hook:`, error);
-		}
-
-		this.events.emit('plugin:unloaded', { pluginId });
+		return this.pluginLifecycle.unloadPlugin(pluginId);
 	}
 
 	on<E extends keyof ChronosEvents>(
@@ -686,22 +405,10 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	dispose(): void {
-		for (const [pluginId, entry] of this.loadedPlugins) {
-			try {
-				entry.context.dispose();
-				void entry.plugin.dispose?.();
-			} catch (error) {
-				console.error(`[ChronosEngine] Error disposing plugin ${pluginId}:`, error);
-			}
-		}
-		this.loadedPlugins.clear();
-
+		this.pluginLifecycle.disposeAll();
 		this.storageSubscription?.dispose();
 		this.storageSubscription = undefined;
-
-		this.dayClock?.dispose();
-		this.dayClock = null;
-
+		this.timeKeeper.dispose();
 		this.i18nCatalog.dispose();
 		this.events.dispose();
 		this.slots.dispose();

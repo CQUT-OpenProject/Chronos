@@ -52,11 +52,18 @@ function createMockEnv() {
 			deletePluginData: async (pluginId: string, key: string): Promise<void> => {
 				kv.delete(`${pluginId}:${key}`);
 			},
+			clearPluginData: async () => {},
 			onChanged: (l: (e: StorageChangeEvent) => void) => {
 				listeners.add(l);
 				return { dispose: () => listeners.delete(l) };
+			},
+			clearAllData: async () => {
+				timetables.clear();
+				activeId = null;
+				prefs = { ...DEFAULT_USER_PREFERENCES };
+				kv.clear();
 			}
-		},
+		} as ChronosEnv['storage'] & { clearAllData: () => Promise<void> },
 		vault: {
 			isSupported: async () => false,
 			storeSecret: vi.fn(),
@@ -71,8 +78,8 @@ function createMockEnv() {
 	return {
 		env,
 		timetables,
-		triggerStorageChange: (e: StorageChangeEvent) => {
-			for (const l of listeners) l(e);
+		triggerStorageChange: async (e: StorageChangeEvent) => {
+			await Promise.all([...listeners].map((l) => Promise.resolve(l(e))));
 		}
 	};
 }
@@ -445,5 +452,66 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(onTick).not.toHaveBeenCalled();
 
 		vi.useRealTimers();
+	});
+
+	it('clearAllData resets engine state and invokes storage.clearAllData', async () => {
+		const { env, timetables } = createMockEnv();
+		const tt = createTimetable({ id: 't1', name: '课表' });
+		timetables.set('t1', tt);
+		await env.storage.setActiveTimetableId('t1');
+		await env.storage.savePreferences({ themeMode: 'dark' });
+
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		await engine.clearAllData();
+
+		expect(engine.state.currentTimetable).toBeNull();
+		expect(engine.state.timetables).toEqual([]);
+		expect(engine.state.userPreferences.themeMode).toBe('auto');
+		expect(timetables.size).toBe(0);
+		engine.dispose();
+	});
+
+	it('reacts to storage preference changes via onChanged subscription', async () => {
+		const { env, triggerStorageChange } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		const onPrefUpdated = vi.fn();
+		engine.on('preferences:updated', onPrefUpdated);
+		await engine.init();
+
+		await env.storage.savePreferences({ themeMode: 'dark' });
+		await triggerStorageChange({ type: 'preferences', key: 'themeMode' });
+
+		expect(engine.state.userPreferences.themeMode).toBe('dark');
+		expect(onPrefUpdated).toHaveBeenCalled();
+		engine.dispose();
+	});
+
+	it('deleteTimetable removes timetable and switches to remaining one', async () => {
+		const { env, timetables } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		const first = await engine.createTimetable('第一张');
+		const second = await engine.createTimetable('第二张');
+		await engine.switchTimetable(second.id);
+
+		await engine.deleteTimetable(second.id);
+
+		expect(timetables.has(second.id)).toBe(false);
+		expect(engine.state.currentTimetable?.id).toBe(first.id);
+		engine.dispose();
+	});
+
+	it('rejects createTimetable when guard returns false', async () => {
+		const { env } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		engine.events.registerSerial('guard:createTimetable', async () => false);
+
+		await expect(engine.createTimetable('blocked')).rejects.toThrow(/rejected by guard/);
+		engine.dispose();
 	});
 });

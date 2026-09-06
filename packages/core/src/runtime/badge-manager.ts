@@ -3,6 +3,22 @@ import type { Course } from '../domain/course';
 import type { ChronosContext } from '../types/context';
 import type { CourseBadge, CourseBadgeSlotContribution } from '../types/slots';
 
+function evaluateBadgeForCourse(
+	badge: CourseBadgeSlotContribution,
+	course: Course,
+	ctx?: ChronosContext
+): CourseBadge[] {
+	if (!badge.getBadge) return [];
+	try {
+		const result = badge.getBadge(course, ctx as ChronosContext);
+		if (!result) return [];
+		return Array.isArray(result) ? result : [result];
+	} catch (error) {
+		console.error(`[BadgeManager] Error in badge provider "${badge.id}":`, error);
+		return [];
+	}
+}
+
 export class BadgeManager implements Disposable {
 	private contributions = new Map<
 		string,
@@ -37,18 +53,8 @@ export class BadgeManager implements Disposable {
 		}
 
 		for (const { badge, ctx } of this.contributions.values()) {
-			if (badge.getBadge) {
-				for (const course of courses) {
-					try {
-						const result = badge.getBadge(course, ctx as ChronosContext);
-						if (result) {
-							const list = Array.isArray(result) ? result : [result];
-							nextBadges[course.id]?.push(...list);
-						}
-					} catch (error) {
-						console.error(`[BadgeManager] Error in badge provider "${badge.id}":`, error);
-					}
-				}
+			for (const course of courses) {
+				nextBadges[course.id]?.push(...evaluateBadgeForCourse(badge, course, ctx));
 			}
 		}
 
