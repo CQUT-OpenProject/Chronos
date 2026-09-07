@@ -15,10 +15,20 @@ export function formatIsoDate(date: Date): string {
 	return `${year}-${month}-${day}`;
 }
 
-export function formatSlashDate(iso: string): string {
+/** Canonical full date format: YYYY/MM/DD */
+export function formatFullDate(iso: string): string {
 	const [year, month, day] = iso.split('-');
-	return `${year}/${Number(month)}/${Number(day)}`;
+	return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`;
 }
+
+/** Canonical compact date format: MM/DD */
+export function formatCompactDate(iso: string): string {
+	const [, month, day] = iso.split('-');
+	return `${month.padStart(2, '0')}/${day.padStart(2, '0')}`;
+}
+
+/** Alias of formatFullDate for backwards compatibility. */
+export const formatSlashDate = formatFullDate;
 
 export function previousOrSameMonday(date: Date): Date {
 	const result = new Date(date.getTime());

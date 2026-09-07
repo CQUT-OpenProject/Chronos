@@ -14,12 +14,12 @@ describe('date-field-utils', () => {
 		expect(calendarDateToIso(parseDate(iso))).toBe(iso);
 	});
 
-	it('formats display dates without leading zeros in month/day', () => {
-		expect(formatDateDisplay('2026-02-23')).toBe('2026/2/23');
+	it('formats display dates with padded month and day as YYYY/MM/DD', () => {
+		expect(formatDateDisplay('2026-02-23')).toBe('2026/02/23');
 	});
 
 	it('builds trigger labels for committed and draft values', () => {
-		expect(buildDateFieldTriggerLabel('学期起始日', '2026-02-23')).toBe('学期起始日：2026/2/23');
+		expect(buildDateFieldTriggerLabel('学期起始日', '2026-02-23')).toBe('学期起始日：2026/02/23');
 		expect(buildDateFieldTriggerLabel('学期起始日', '')).toBe('选择学期起始日');
 	});
 

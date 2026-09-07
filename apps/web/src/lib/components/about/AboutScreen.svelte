@@ -17,6 +17,7 @@
 		formatCopyrightYearRange,
 		PROJECT_LICENSE
 	} from '$lib/config/app-meta';
+	import { formatFullDate } from '@chronos/core';
 
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
@@ -55,7 +56,12 @@
 
 	function formatBuildTime(value: string) {
 		if (!value) return '-';
-		return value.replace('T', ' ').replace(/\.\d+Z$/, 'Z');
+		const datePart = value.slice(0, 10);
+		const timePart = value.slice(11, 19);
+		if (/^\d{4}-\d{2}-\d{2}$/.test(datePart) && /^\d{2}:\d{2}:\d{2}$/.test(timePart)) {
+			return `${formatFullDate(datePart)} ${timePart}`;
+		}
+		return value.replace('T', ' ').replace(/\.\d+Z$/, '');
 	}
 
 	function handleBuildTimeClick() {

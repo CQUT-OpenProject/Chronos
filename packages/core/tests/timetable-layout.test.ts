@@ -50,20 +50,20 @@ describe('Timetable Layout Pipeline', () => {
 	});
 
 	it('formats short dates and week ranges correctly', () => {
-		expect(formatShortDate('2026-03-02')).toBe('3/2');
-		expect(formatShortDate('2026-11-09')).toBe('11/9');
+		expect(formatShortDate('2026-03-02')).toBe('03/02');
+		expect(formatShortDate('2026-11-09')).toBe('11/09');
 
 		const range5Days = formatWeekDateRange(sampleTimetable.academicConfig, 1, '2026-03-02', {
 			showSaturday: false,
 			showSunday: false
 		});
-		expect(range5Days).toBe('3/2 - 3/6');
+		expect(range5Days).toBe('03/02 - 03/06');
 
 		const range7Days = formatWeekDateRange(sampleTimetable.academicConfig, 1, '2026-03-02', {
 			showSaturday: true,
 			showSunday: true
 		});
-		expect(range7Days).toBe('3/2 - 3/8');
+		expect(range7Days).toBe('03/02 - 03/08');
 	});
 
 	it('computes full week layout pipeline with active and future courses', () => {
@@ -77,7 +77,7 @@ describe('Timetable Layout Pipeline', () => {
 		expect(layoutWeek1.isCurrentWeek).toBe(true);
 		expect(layoutWeek1.academicWeek).toBe(1);
 		expect(layoutWeek1.gridModel.visibleDays.length).toBe(5);
-		expect(layoutWeek1.weekRangeText).toBe('3/2 - 3/6');
+		expect(layoutWeek1.weekRangeText).toBe('03/02 - 03/06');
 
 		// In week 1: c-1 is active, so it occupies slot (1, 1-2)
 		expect(layoutWeek1.courseDisplayModels.length).toBe(1);
