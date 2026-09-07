@@ -2544,35 +2544,46 @@ async function Hi(e, t) {
 //#endregion
 //#region packages/plugins/today/src/today-screen.svelte.ts
 function Ui() {
-	let e = /* @__PURE__ */ N(null), t = "", n = /* @__PURE__ */ N("active"), r = /* @__PURE__ */ N([]), i, a;
-	function o() {
+	let e = /* @__PURE__ */ N(null), t = "", n = /* @__PURE__ */ N("active"), r = /* @__PURE__ */ N([]), i = !1, a, o;
+	function s() {
 		return Y(e)?.currentTimetable ?? null;
 	}
-	function s() {
-		return o()?.academicConfig.periodTimes ?? [];
+	function c() {
+		return s()?.academicConfig.periodTimes ?? [];
 	}
-	let c = /* @__PURE__ */ A(() => Y(e)?.clockTodayIso || ei()), l = /* @__PURE__ */ A(() => Y(e)?.clockNow ?? /* @__PURE__ */ new Date()), u = /* @__PURE__ */ A(() => {
-		let t = Y(e), n = t?.clockNow ?? /* @__PURE__ */ new Date(), r = ii(s());
-		return r.length === 0 ? t?.currentPeriodIndex ?? null : oi(r, ai(n));
-	});
-	async function d() {
-		let i = Y(e), a = o();
-		if (!i || !a) {
+	function l() {
+		return Y(e)?.clockTodayIso || ei();
+	}
+	function u() {
+		return Y(e)?.clockNow ?? /* @__PURE__ */ new Date();
+	}
+	function d() {
+		let t = Y(e);
+		if (!t) return null;
+		let n = ii(c());
+		return n.length === 0 ? t.currentPeriodIndex ?? null : oi(n, ai(t.clockNow));
+	}
+	async function f() {
+		if (i) return;
+		let a = Y(e), o = s();
+		if (!a || !o) {
 			P(r, []);
 			return;
 		}
 		try {
-			let e = await Hi(i.getPluginContext(t).service(ci), {
-				todayIso: Y(c),
+			let s = a.getPluginContext(t), f = l(), p = u(), m = await Hi(s.service(ci), {
+				todayIso: f,
 				scope: Y(n),
-				timetable: a
-			}), o = s(), d = e.filter((e) => Fr(e.course, o.length));
-			P(r, Vi(d, o, ai(Y(l)), Y(u)));
+				timetable: o
+			});
+			if (i || Y(e) !== a) return;
+			let h = c(), g = m.filter((e) => Fr(e.course, h.length));
+			P(r, Vi(g, h, ai(p), d()));
 		} catch {
-			P(r, []);
+			i || P(r, []);
 		}
 	}
-	async function f() {
+	async function p() {
 		let r = Y(e);
 		if (r) try {
 			let e = r.getPluginContext(t);
@@ -2581,44 +2592,45 @@ function Ui() {
 			P(n, "active");
 		}
 	}
-	async function p(n, r) {
-		if (!Y(e)) {
-			P(e, n, !0), t = r, await f();
+	async function m(n, r) {
+		if (!i && !Y(e) && (P(e, n, !0), t = r, await p(), !(i || Y(e) !== n))) {
 			try {
 				let e = n.getPluginContext(t), r = e.on("time:tick", () => {
-					d();
+					i || f();
 				});
-				i = () => r.dispose();
-				let o = e.on("timetable:switched", () => {
-					d();
+				a = () => r.dispose();
+				let s = e.on("timetable:switched", () => {
+					i || f();
 				});
-				a = () => o.dispose();
+				o = () => s.dispose();
 			} catch {}
-			await d();
+			i || Y(e) !== n || await f();
 		}
 	}
-	async function m(r) {
+	async function h(r) {
+		if (i) return;
 		r !== Y(n) && Ni.medium(), P(n, r, !0);
-		let i = Y(e);
-		if (i) {
+		let a = Y(e);
+		if (a) {
 			try {
-				await i.getPluginContext(t).updateConfig({ scope: r });
+				await a.getPluginContext(t).updateConfig({ scope: r });
 			} catch {}
-			await d();
+			i || await f();
 		}
 	}
-	function h() {
-		i?.(), i = void 0, a?.(), a = void 0, P(e, null), t = "", P(r, []);
+	function g() {
+		i = !0, a?.(), a = void 0, o?.(), o = void 0, P(e, null), t = "", P(r, []);
 	}
 	return rn(() => {
+		if (i) return;
 		let t = Y(e);
-		t && (t.clockNow, t.clockTodayIso, Y(n), o()?.id, o()?.academicConfig.periodTimes, d());
+		t && (t.clockNow, t.clockTodayIso, Y(n), s()?.id, s()?.academicConfig.periodTimes, f());
 	}), {
 		get today() {
-			return Y(c);
+			return l();
 		},
 		get now() {
-			return Y(l);
+			return u();
 		},
 		get scope() {
 			return Y(n);
@@ -2627,12 +2639,12 @@ function Ui() {
 			return Y(r);
 		},
 		get currentPeriodIndex() {
-			return Y(u);
+			return d();
 		},
-		init: p,
-		dispose: h,
-		persistScope: m,
-		refreshCourses: d
+		init: m,
+		dispose: g,
+		persistScope: h,
+		refreshCourses: f
 	};
 }
 //#endregion
