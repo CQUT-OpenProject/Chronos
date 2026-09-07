@@ -1,6 +1,6 @@
 import type { Course, PlacedCourseCapsule } from '@chronos/core';
 
-export const TIMETABLE_POINTER_THRESHOLD_PX = 8;
+export const TIMETABLE_POINTER_THRESHOLD_PX = 5;
 export const TIMETABLE_LONG_PRESS_DELAY_MS = 450;
 export const TIMETABLE_CLICK_GUARD_MS = 120;
 export const TIMETABLE_LONG_PRESS_CLICK_SUPPRESS_MS = 50;
