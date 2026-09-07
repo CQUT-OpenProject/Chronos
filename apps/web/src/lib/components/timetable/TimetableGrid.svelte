@@ -98,6 +98,37 @@
 	let centeredFor = $state<string | null>(null);
 	let internalExpandedSlots = $state(new Set<string>());
 
+	interface DragSettlePreview {
+		courseId: string;
+		targetColIndex: number;
+		targetDayOfWeek: number;
+		targetStartPeriod: number;
+		course: Course;
+		placed: PlacedCourseCapsule;
+	}
+
+	let settling = $state<DragSettlePreview | null>(null);
+
+	const concealedCourseId = $derived(dragState?.course.id ?? settling?.courseId ?? null);
+
+	const dropPreview = $derived(
+		dragState
+			? {
+					targetColIndex: dragState.targetColIndex,
+					targetStartPeriod: dragState.targetStartPeriod,
+					course: dragState.course,
+					placed: dragState.placed
+				}
+			: settling
+				? {
+						targetColIndex: settling.targetColIndex,
+						targetStartPeriod: settling.targetStartPeriod,
+						course: settling.course,
+						placed: settling.placed
+					}
+				: null
+	);
+
 	const effectiveExpandedSlots = $derived(propExpandedSlots ?? internalExpandedSlots);
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
@@ -327,7 +358,10 @@
 		}
 	}
 
-	function persistDragSession(current: TimetableDragSession) {
+	function buildDragUpdate(current: TimetableDragSession): {
+		updatedCourses: Course[];
+		settling: DragSettlePreview;
+	} | null {
 		const academicConfig = controller.currentTimetable?.academicConfig;
 		const totalWeeks = academicConfig
 			? { startWeek: academicConfig.startWeek ?? 1, endWeek: academicConfig.endWeek ?? 20 }
@@ -343,17 +377,46 @@
 			displayedPeriodCount: gridModel.displayedPeriodCount
 		});
 
-		if (updatedCourses) {
-			void controller.saveCurrentTimetableDetails({ courses: updatedCourses });
+		if (!updatedCourses) return null;
+
+		const updated = updatedCourses.find((course) => course.id === current.course.id);
+		if (!updated) return null;
+
+		const targetColIndex = gridModel.visibleDays.findIndex(
+			(day) => day.dayOfWeek === updated.dayOfWeek
+		);
+
+		return {
+			updatedCourses,
+			settling: {
+				courseId: updated.id,
+				targetColIndex: targetColIndex >= 0 ? targetColIndex : current.targetColIndex,
+				targetDayOfWeek: updated.dayOfWeek,
+				targetStartPeriod: updated.startPeriod,
+				course: updated,
+				placed: current.placed
+			}
+		};
+	}
+
+	async function commitDragSession(current: TimetableDragSession) {
+		const update = buildDragUpdate(current);
+		if (!update) return;
+
+		settling = update.settling;
+		try {
+			await controller.saveCurrentTimetableDetails({ courses: update.updatedCourses });
 			haptic.medium();
 			trackEvent('timetable_course_reorder');
+		} catch {
+			settling = null;
 		}
 	}
 
 	function handleWindowPointerUp(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
 		const current = interaction.endDrag();
-		if (current) persistDragSession(current);
+		if (current) void commitDragSession(current);
 	}
 
 	function handleWindowPointerCancel(event: PointerEvent) {
@@ -373,6 +436,19 @@
 				interaction.exitEdit();
 			}
 		}
+	});
+
+	$effect(() => {
+		if (!settling) return;
+
+		const matched = placements.some(
+			(item) =>
+				item.kind === 'course' &&
+				item.course.id === settling.courseId &&
+				item.course.dayOfWeek === settling.targetDayOfWeek &&
+				item.course.startPeriod === settling.targetStartPeriod
+		);
+		if (matched) settling = null;
 	});
 
 	$effect(() => {
@@ -497,11 +573,10 @@
 				{#if capsuleLayoutReady}
 					{#each placements as item (item.key)}
 						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
-						{@const isBeingDragged =
-							dragState?.course.id === (item.kind === 'course' ? item.course.id : null)}
+						{@const isConcealed = item.kind === 'course' && item.course.id === concealedCourseId}
 						<div
-							class="absolute box-border overflow-hidden transition-[transform,opacity] duration-200 ease-out {isBeingDragged
-								? 'opacity-25'
+							class="absolute box-border overflow-hidden transition-[transform,opacity] duration-200 ease-out {isConcealed
+								? 'opacity-0'
 								: ''}"
 							style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
 							style:left="{item.geometry.leftPercent}%"
@@ -528,28 +603,39 @@
 						</div>
 					{/each}
 				{/if}
-				{#if dragState}
-					{@const span = dragState.course.endPeriod - dragState.course.startPeriod + 1}
+				{#if dropPreview}
+					{@const span = dropPreview.course.endPeriod - dropPreview.course.startPeriod + 1}
+					{@const periodEnd = dropPreview.targetStartPeriod + span - 1}
+					{@const periodLabel =
+						dropPreview.targetStartPeriod === periodEnd
+							? `${dropPreview.targetStartPeriod}节`
+							: `${dropPreview.targetStartPeriod}-${periodEnd}节`}
 					<div
-						class="pointer-events-none absolute z-20 box-border transition-all duration-100 ease-out"
-						style:top="calc(var(--row-height) * {dragState.targetStartPeriod - 1})"
-						style:left="{(dragState.targetColIndex / visibleDayCount) * 100}%"
+						class="pointer-events-none absolute z-20 box-border transition-[top,left,transform] duration-100 ease-out"
+						style:top="calc(var(--row-height) * {dropPreview.targetStartPeriod - 1})"
+						style:left="{(dropPreview.targetColIndex / visibleDayCount) * 100}%"
 						style:width="{100 / visibleDayCount}%"
 						style:height="calc(var(--row-height) * {span})"
 						style:transform="scale(0.92)"
 						style:transform-origin="center center"
 					>
 						<div
-							class="flex h-full w-full flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-primary bg-primary/20 p-1.5 text-center shadow-inner"
-							style={capsuleCornerAttrs(dragState.placed.corners).style}
+							class="flex h-full w-full flex-col items-center justify-center gap-1 border-2 border-dashed border-primary bg-primary/20 p-1.5 text-center shadow-inner"
+							style={capsuleCornerAttrs(ALL_CORNERS_ROUNDED).style}
 						>
 							<span class="line-clamp-2 px-1 text-xs font-semibold text-primary">
-								{dragState.course.name}
+								{dropPreview.course.name}
 							</span>
 							<span
-								class="rounded-full bg-surface-container-highest/90 px-2 py-0.5 text-[11px] font-medium text-on-surface shadow-xs"
+								class="max-w-full rounded-full bg-surface-container-highest/90 px-2 py-0.5 leading-none font-medium whitespace-nowrap text-on-surface tabular-nums shadow-xs"
+								{@attach createFitWidthFontAttachment(() => ({
+									lines: [periodLabel],
+									maxFontPx: 11,
+									minFontPx: 8,
+									fromParent: true
+								}))}
 							>
-								{dragState.targetStartPeriod}-{dragState.targetStartPeriod + span - 1} 节
+								{periodLabel}
 							</span>
 						</div>
 					</div>
