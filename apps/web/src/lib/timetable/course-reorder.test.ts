@@ -92,7 +92,7 @@ describe('rearrangeCourseSchedule', () => {
 		expect(moved.weeks).toEqual([2]);
 	});
 
-	it('swaps two courses in currentWeek without affecting other weeks', () => {
+	it('stacks courses in currentWeek without swapping when periods match', () => {
 		const courses = [courseA, courseB];
 		const result = rearrangeCourseSchedule({
 			currentCourses: courses,
@@ -111,23 +111,19 @@ describe('rearrangeCourseSchedule', () => {
 		expect(origA.startPeriod).toBe(1);
 		expect(origA.weeks).toEqual([1, 3, 4]);
 
-		// Original courseB for weeks 1, 3, 4 stays at Tue 3-4
+		// Target courseB is completely untouched and remains at Tue 3-4
 		const origB = result!.find((c) => c.id === 'course-b')!;
 		expect(origB.dayOfWeek).toBe(2);
 		expect(origB.startPeriod).toBe(3);
-		expect(origB.weeks).toEqual([1, 3, 4]);
+		expect(origB.endPeriod).toBe(4);
+		expect(origB.weeks).toEqual([1, 2, 3, 4]);
 
-		// New entry for courseA in week 2 moves to Tue 3-4
+		// New entry for courseA in week 2 moves to Tue 3-4 (stacks/overlaps with courseB)
 		const week2A = result!.find((c) => c.name === '高等数学' && c.id !== 'course-a')!;
 		expect(week2A.dayOfWeek).toBe(2);
 		expect(week2A.startPeriod).toBe(3);
+		expect(week2A.endPeriod).toBe(4);
 		expect(week2A.weeks).toEqual([2]);
-
-		// New entry for courseB in week 2 moves to Mon 1-2
-		const week2B = result!.find((c) => c.name === '大学物理' && c.id !== 'course-b')!;
-		expect(week2B.dayOfWeek).toBe(1);
-		expect(week2B.startPeriod).toBe(1);
-		expect(week2B.weeks).toEqual([2]);
 	});
 
 	it('does not swap if the target course has a different span', () => {
