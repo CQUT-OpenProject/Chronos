@@ -2186,7 +2186,7 @@ function di(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function fi() {
-	return "0.4.7";
+	return "0.4.8";
 }
 function pi(e) {
 	let t;
@@ -2247,21 +2247,26 @@ var vi = 6;
 function yi(e) {
 	return (t) => {
 		let n = () => {
-			let { lines: n, maxFontPx: r, minFontPx: i = vi, fromParent: a = !1 } = e(), o = n.filter((e) => e.length > 0), s = (a ? t.parentElement ?? t : t).clientWidth;
+			let { lines: n, maxFontPx: r, minFontPx: i = vi, fromParent: a = !1, availableWidthPx: o } = e(), s = n.filter((e) => e.length > 0), c = o ?? (a ? t.parentElement ?? t : t).clientWidth;
 			if (a) {
 				let e = getComputedStyle(t);
-				s -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0), s = Math.max(0, s);
+				c -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0), c = Math.max(0, c);
 			}
-			if (s <= 0 || o.length === 0) return;
-			let c = _i(t), l = gi(s, (e) => {
-				let t = c(e);
-				return Math.max(...o.map((e) => t(e)));
+			if (c <= 0 || s.length === 0) return;
+			let l = _i(t), u = gi(c, (e) => {
+				let t = l(e);
+				return Math.max(...s.map((e) => t(e)));
 			}, r, i);
-			t.style.fontSize = `${l}px`;
+			t.style.fontSize = `${u}px`;
 		}, r = null, i = new ResizeObserver(n);
 		return rn(() => {
-			let { fromParent: a = !1 } = e(), o = a ? t.parentElement ?? t : t;
-			r !== o && (i.disconnect(), i.observe(o), r = o), n();
+			let { fromParent: a = !1, availableWidthPx: o } = e();
+			if (o != null) {
+				r &&= (i.disconnect(), null), n();
+				return;
+			}
+			let s = a ? t.parentElement ?? t : t;
+			r !== s && (i.disconnect(), i.observe(s), r = s), n();
 		}), () => i.disconnect();
 	};
 }
