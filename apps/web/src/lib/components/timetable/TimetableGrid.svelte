@@ -282,6 +282,7 @@
 	}
 
 	function startDrag(placed: PlacedCourseCapsule, event: PointerEvent, fromLongPress: boolean) {
+		settling = null;
 		if (!placed.displayModel.isInDisplayedWeek) {
 			if (fromLongPress && !interaction.isEditing) {
 				haptic.heavy();
@@ -392,6 +393,7 @@
 
 		const targetCourse = updatedCourses.find(
 			(course) =>
+				(course.id === current.course.id || course.name === current.course.name) &&
 				course.dayOfWeek === current.targetDayOfWeek &&
 				course.startPeriod === clampedStart &&
 				(course.weeks.length === 0 || course.weeks.includes(displayedWeek))
@@ -454,15 +456,6 @@
 				haptic.light();
 				interaction.exitEdit();
 			}
-		}
-	});
-
-	$effect(() => {
-		if (!isEditing) {
-			if (interaction.isDragging) {
-				interaction.cancelDrag();
-			}
-			settling = null;
 		}
 	});
 
@@ -647,8 +640,11 @@
 					{@const periodEnd = dropPreview.targetStartPeriod + span - 1}
 					{@const periodLabel =
 						dropPreview.targetStartPeriod === periodEnd
-							? `${dropPreview.targetStartPeriod}节`
-							: `${dropPreview.targetStartPeriod}-${periodEnd}节`}
+							? hostT('course.detail.periodSingle', { n: dropPreview.targetStartPeriod })
+							: hostT('course.detail.periodRange', {
+									start: dropPreview.targetStartPeriod,
+									end: periodEnd
+								})}
 					<div
 						class="pointer-events-none absolute z-20 box-border transition-[top,left,transform] duration-100 ease-out"
 						style:top="calc(var(--row-height) * {dropPreview.targetStartPeriod - 1})"

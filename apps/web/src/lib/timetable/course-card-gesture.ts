@@ -24,6 +24,8 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 
 			interaction.resetClickFlags();
 
+			if (interaction.isDragging || interaction.isClickGuarded()) return;
+
 			if (interaction.isEditing) {
 				onDragStart?.(course, event);
 				return;
@@ -46,7 +48,12 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 			interaction.notePointerCancel(event);
 		},
 		onclick: (event: MouseEvent) => {
-			if (interaction.consumeClickSuppression() || interaction.isEditing) {
+			if (
+				interaction.consumeClickSuppression() ||
+				interaction.isEditing ||
+				interaction.isDragging ||
+				interaction.isClickGuarded()
+			) {
 				event.preventDefault();
 				return;
 			}

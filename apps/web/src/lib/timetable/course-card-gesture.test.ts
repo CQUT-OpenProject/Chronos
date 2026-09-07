@@ -165,4 +165,87 @@ describe('createCourseCardHandlers', () => {
 		handlers.onclick(mockMouseEvent());
 		expect(onCourseClick).not.toHaveBeenCalled();
 	});
+
+	it('suppresses click when interaction is click-guarded after drag end', () => {
+		const { interaction, handlers, onCourseClick } = createHarness();
+		const fakePlaced = {
+			kind: 'course' as const,
+			key: sampleCourse.id,
+			course: sampleCourse,
+			displayModel: { course: sampleCourse, isInDisplayedWeek: true },
+			geometry: { leftPercent: 0, widthPercent: 20, startPeriod: 1, endPeriod: 2 },
+			colors: { background: '#000', text: '#fff' },
+			scale: { titlePx: 12, detailPx: 10, badgePx: 8, placeholderPx: 10 },
+			locationLines: [],
+			locationMetrics: { fontPx: 10, heightPx: 12 },
+			teacher: '',
+			badgeLabel: null,
+			overlapCount: 1,
+			corners: { topLeft: true, topRight: true, bottomLeft: true, bottomRight: true }
+		};
+
+		interaction.beginDrag({
+			course: sampleCourse,
+			placed: fakePlaced,
+			pointerId: 1,
+			week: 1,
+			targetColIndex: 0,
+			targetDayOfWeek: 1,
+			targetStartPeriod: 1,
+			persistAfterDrop: false
+		});
+		interaction.endDrag();
+
+		expect(interaction.isClickGuarded()).toBe(true);
+
+		const clickEvt = mockMouseEvent();
+		const preventDefaultSpy = vi.spyOn(clickEvt, 'preventDefault');
+
+		handlers.onclick(clickEvt);
+
+		expect(preventDefaultSpy).toHaveBeenCalled();
+		expect(onCourseClick).not.toHaveBeenCalled();
+	});
+
+	it('ignores pointerdown while interaction is click-guarded', () => {
+		vi.useFakeTimers();
+		try {
+			const { interaction, handlers, onLongPress } = createHarness();
+			const fakePlaced = {
+				kind: 'course' as const,
+				key: sampleCourse.id,
+				course: sampleCourse,
+				displayModel: { course: sampleCourse, isInDisplayedWeek: true },
+				geometry: { leftPercent: 0, widthPercent: 20, startPeriod: 1, endPeriod: 2 },
+				colors: { background: '#000', text: '#fff' },
+				scale: { titlePx: 12, detailPx: 10, badgePx: 8, placeholderPx: 10 },
+				locationLines: [],
+				locationMetrics: { fontPx: 10, heightPx: 12 },
+				teacher: '',
+				badgeLabel: null,
+				overlapCount: 1,
+				corners: { topLeft: true, topRight: true, bottomLeft: true, bottomRight: true }
+			};
+
+			interaction.beginDrag({
+				course: sampleCourse,
+				placed: fakePlaced,
+				pointerId: 1,
+				week: 1,
+				targetColIndex: 0,
+				targetDayOfWeek: 1,
+				targetStartPeriod: 1,
+				persistAfterDrop: false
+			});
+			interaction.endDrag();
+			expect(interaction.isClickGuarded()).toBe(true);
+
+			handlers.onpointerdown(mockPointerEvent({ clientX: 30, clientY: 30 }));
+			vi.advanceTimersByTime(500);
+
+			expect(onLongPress).not.toHaveBeenCalled();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
 });
