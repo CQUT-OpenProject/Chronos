@@ -74,6 +74,73 @@ describe('createGridGestureHandlers', () => {
 		}
 	});
 
+	it('exits edit mode on the very first click after long press when no click was fired on pointerup (touch/mobile)', () => {
+		vi.useFakeTimers();
+		try {
+			const onLongPress = vi.fn();
+			const onClickEmpty = vi.fn();
+			let isEditing = false;
+			const handlers = createGridGestureHandlers({
+				onLongPress,
+				onClickEmpty,
+				isEditing: () => isEditing,
+				longPressDelayMs: 400
+			});
+
+			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
+			handlers.onpointerdown(downEvt);
+			vi.advanceTimersByTime(400);
+			expect(onLongPress).toHaveBeenCalledWith(downEvt);
+
+			// Edit mode entered
+			isEditing = true;
+
+			// Releasing pointer (no click fired by browser on touch devices)
+			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
+
+			// User clicks on empty space to exit edit mode (only 1 click!)
+			handlers.onpointerdown(mockPointerEvent({ clientX: 100, clientY: 100 }));
+			handlers.onpointerup(mockPointerEvent({ clientX: 100, clientY: 100 }));
+			handlers.onclick(mockMouseEvent());
+
+			expect(onClickEmpty).toHaveBeenCalledTimes(1);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('clears longPressFired after release timer even if next click has no pointerdown', () => {
+		vi.useFakeTimers();
+		try {
+			const onLongPress = vi.fn();
+			const onClickEmpty = vi.fn();
+			let isEditing = false;
+			const handlers = createGridGestureHandlers({
+				onLongPress,
+				onClickEmpty,
+				isEditing: () => isEditing,
+				longPressDelayMs: 400
+			});
+
+			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
+			handlers.onpointerdown(downEvt);
+			vi.advanceTimersByTime(400);
+			expect(onLongPress).toHaveBeenCalledWith(downEvt);
+
+			isEditing = true;
+			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
+
+			// Advance beyond 50ms release timer
+			vi.advanceTimersByTime(60);
+
+			// Direct click without pointerdown should still exit edit mode on 1st click
+			handlers.onclick(mockMouseEvent());
+			expect(onClickEmpty).toHaveBeenCalledTimes(1);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	it('cancels long press when pointer moves beyond drag threshold', () => {
 		vi.useFakeTimers();
 		try {

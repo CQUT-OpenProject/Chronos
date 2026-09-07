@@ -89,6 +89,7 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 			if (hasMoved || longPressFired || isEditing) {
 				event.preventDefault();
 				hasMoved = false;
+				longPressFired = false;
 				return;
 			}
 			onCourseClick?.(course);

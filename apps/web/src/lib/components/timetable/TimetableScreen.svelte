@@ -105,6 +105,12 @@
 			screen.setEditing(false);
 		}
 	}
+
+	$effect(() => {
+		if (!active && screenState.isEditing) {
+			screen.setEditing(false);
+		}
+	});
 </script>
 
 <svelte:window

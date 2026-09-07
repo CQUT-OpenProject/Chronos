@@ -40,6 +40,7 @@ export function createGridGestureHandlers(options: GridGestureOptions = {}) {
 	let startY = 0;
 	let activePointerId: number | null = null;
 	let timer: ReturnType<typeof setTimeout> | null = null;
+	let releaseTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function checkIsEditing(): boolean {
 		return typeof isEditing === 'function' ? isEditing() : Boolean(isEditing);
@@ -56,15 +57,23 @@ export function createGridGestureHandlers(options: GridGestureOptions = {}) {
 		}
 	}
 
+	function clearReleaseTimer() {
+		if (releaseTimer !== null) {
+			clearTimeout(releaseTimer);
+			releaseTimer = null;
+		}
+	}
+
 	return {
 		onpointerdown: (event: PointerEvent) => {
 			if (event.button !== 0) return;
+			clearReleaseTimer();
+			longPressFired = false;
 			if (checkIsEditing() || checkIsDragging()) return;
 			if (isExcludedTarget(event.target)) return;
 
 			activePointerId = event.pointerId;
 			hasMoved = false;
-			longPressFired = false;
 			startX = event.clientX;
 			startY = event.clientY;
 
@@ -93,6 +102,13 @@ export function createGridGestureHandlers(options: GridGestureOptions = {}) {
 			if (activePointerId !== null && event.pointerId !== activePointerId) return;
 			clearTimer();
 			activePointerId = null;
+			if (longPressFired) {
+				clearReleaseTimer();
+				releaseTimer = setTimeout(() => {
+					longPressFired = false;
+					releaseTimer = null;
+				}, 50);
+			}
 		},
 		onpointerleave: (event: PointerEvent) => {
 			if (activePointerId !== null && event.pointerId !== activePointerId) return;
@@ -102,11 +118,14 @@ export function createGridGestureHandlers(options: GridGestureOptions = {}) {
 		onpointercancel: (event: PointerEvent) => {
 			if (activePointerId !== null && event.pointerId !== activePointerId) return;
 			clearTimer();
+			clearReleaseTimer();
 			activePointerId = null;
 			hasMoved = false;
+			longPressFired = false;
 		},
 		onclick: (event: MouseEvent) => {
 			clearTimer();
+			clearReleaseTimer();
 			if (longPressFired) {
 				longPressFired = false;
 				event.preventDefault();
