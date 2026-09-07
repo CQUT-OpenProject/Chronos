@@ -137,5 +137,7 @@ describe('TimetableScreenController', () => {
 		expect(screen.state.isEditing).toBe(true);
 		screen.toggleEditing();
 		expect(screen.state.isEditing).toBe(false);
+		expect(screen.interaction.mode).toBe('view');
+		expect(screen.interaction.allowPagerTouch).toBe(true);
 	});
 });

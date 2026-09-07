@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
+import { createCourse } from '@chronos/core';
 import { createGridGestureHandlers, GRID_GESTURE_DRAG_THRESHOLD_PX } from './grid-gesture';
+import { createTimetableInteraction } from './timetable-interaction.svelte';
 
 function createMockElement(closestMatch: string | null = null) {
 	return {
@@ -33,40 +35,40 @@ function mockMouseEvent(init: Partial<MouseEvent> = {}): MouseEvent {
 	} as unknown as MouseEvent;
 }
 
+function createHarness() {
+	const interaction = createTimetableInteraction({ longPressDelayMs: 400 });
+	const onEmptyLongPress = vi.fn(() => {
+		interaction.enterEdit();
+	});
+	const onClickEmpty = vi.fn(() => {
+		interaction.exitEdit();
+	});
+	const handlers = createGridGestureHandlers({
+		interaction,
+		onEmptyLongPress,
+		onClickEmpty
+	});
+	return { interaction, handlers, onEmptyLongPress, onClickEmpty };
+}
+
 describe('createGridGestureHandlers', () => {
-	it('triggers onLongPress after delay and suppresses subsequent click', () => {
+	it('triggers onEmptyLongPress after delay and suppresses subsequent click', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const onClickEmpty = vi.fn();
-			let isEditing = false;
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				onClickEmpty,
-				isEditing: () => isEditing,
-				longPressDelayMs: 400
-			});
+			const { handlers, onEmptyLongPress, onClickEmpty } = createHarness();
 
 			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
 			handlers.onpointerdown(downEvt);
 
-			expect(onLongPress).not.toHaveBeenCalled();
+			expect(onEmptyLongPress).not.toHaveBeenCalled();
 
 			vi.advanceTimersByTime(400);
-			expect(onLongPress).toHaveBeenCalledWith(downEvt);
+			expect(onEmptyLongPress).toHaveBeenCalledWith(downEvt);
 
-			// Edit mode entered
-			isEditing = true;
-
-			// Releasing pointer triggers click
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
-			const clickEvt = mockMouseEvent();
-			handlers.onclick(clickEvt);
-
-			// Click must be suppressed right after long press
+			handlers.onclick(mockMouseEvent());
 			expect(onClickEmpty).not.toHaveBeenCalled();
 
-			// Subsequent click on empty space should exit edit mode
 			handlers.onclick(mockMouseEvent());
 			expect(onClickEmpty).toHaveBeenCalledTimes(1);
 		} finally {
@@ -77,28 +79,15 @@ describe('createGridGestureHandlers', () => {
 	it('exits edit mode on the very first click after long press when no click was fired on pointerup (touch/mobile)', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const onClickEmpty = vi.fn();
-			let isEditing = false;
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				onClickEmpty,
-				isEditing: () => isEditing,
-				longPressDelayMs: 400
-			});
+			const { handlers, onEmptyLongPress, onClickEmpty } = createHarness();
 
 			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
 			handlers.onpointerdown(downEvt);
 			vi.advanceTimersByTime(400);
-			expect(onLongPress).toHaveBeenCalledWith(downEvt);
+			expect(onEmptyLongPress).toHaveBeenCalledWith(downEvt);
 
-			// Edit mode entered
-			isEditing = true;
-
-			// Releasing pointer (no click fired by browser on touch devices)
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
 
-			// User clicks on empty space to exit edit mode (only 1 click!)
 			handlers.onpointerdown(mockPointerEvent({ clientX: 100, clientY: 100 }));
 			handlers.onpointerup(mockPointerEvent({ clientX: 100, clientY: 100 }));
 			handlers.onclick(mockMouseEvent());
@@ -112,28 +101,16 @@ describe('createGridGestureHandlers', () => {
 	it('clears longPressFired after release timer even if next click has no pointerdown', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const onClickEmpty = vi.fn();
-			let isEditing = false;
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				onClickEmpty,
-				isEditing: () => isEditing,
-				longPressDelayMs: 400
-			});
+			const { handlers, onEmptyLongPress, onClickEmpty } = createHarness();
 
 			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
 			handlers.onpointerdown(downEvt);
 			vi.advanceTimersByTime(400);
-			expect(onLongPress).toHaveBeenCalledWith(downEvt);
+			expect(onEmptyLongPress).toHaveBeenCalledWith(downEvt);
 
-			isEditing = true;
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
-
-			// Advance beyond 50ms release timer
 			vi.advanceTimersByTime(60);
 
-			// Direct click without pointerdown should still exit edit mode on 1st click
 			handlers.onclick(mockMouseEvent());
 			expect(onClickEmpty).toHaveBeenCalledTimes(1);
 		} finally {
@@ -144,11 +121,7 @@ describe('createGridGestureHandlers', () => {
 	it('cancels long press when pointer moves beyond drag threshold', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				longPressDelayMs: 400
-			});
+			const { handlers, onEmptyLongPress } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(200);
@@ -161,7 +134,7 @@ describe('createGridGestureHandlers', () => {
 			);
 			vi.advanceTimersByTime(300);
 
-			expect(onLongPress).not.toHaveBeenCalled();
+			expect(onEmptyLongPress).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
@@ -170,18 +143,14 @@ describe('createGridGestureHandlers', () => {
 	it('cancels long press on pointerup before delay', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				longPressDelayMs: 400
-			});
+			const { handlers, onEmptyLongPress } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(200);
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
 
 			vi.advanceTimersByTime(300);
-			expect(onLongPress).not.toHaveBeenCalled();
+			expect(onEmptyLongPress).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
@@ -190,18 +159,14 @@ describe('createGridGestureHandlers', () => {
 	it('cancels long press on pointercancel or pointerleave', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				longPressDelayMs: 400
-			});
+			const { handlers, onEmptyLongPress } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(200);
 			handlers.onpointercancel(mockPointerEvent({ clientX: 50, clientY: 50 }));
 
 			vi.advanceTimersByTime(300);
-			expect(onLongPress).not.toHaveBeenCalled();
+			expect(onEmptyLongPress).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
@@ -210,11 +175,7 @@ describe('createGridGestureHandlers', () => {
 	it('ignores target that is inside a course-capsule', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				longPressDelayMs: 400
-			});
+			const { handlers, onEmptyLongPress } = createHarness();
 
 			const capsuleTarget = createMockElement('.course-capsule');
 			handlers.onpointerdown(
@@ -226,7 +187,7 @@ describe('createGridGestureHandlers', () => {
 			);
 			vi.advanceTimersByTime(500);
 
-			expect(onLongPress).not.toHaveBeenCalled();
+			expect(onEmptyLongPress).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
@@ -235,28 +196,21 @@ describe('createGridGestureHandlers', () => {
 	it('does not start long press timer when already in editing mode', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				isEditing: true,
-				longPressDelayMs: 400
-			});
+			const { interaction, handlers, onEmptyLongPress } = createHarness();
+			interaction.enterEdit();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(500);
 
-			expect(onLongPress).not.toHaveBeenCalled();
+			expect(onEmptyLongPress).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
 	});
 
 	it('does not exit edit mode when clicking on a button or capsule in edit mode', () => {
-		const onClickEmpty = vi.fn();
-		const handlers = createGridGestureHandlers({
-			onClickEmpty,
-			isEditing: true
-		});
+		const { interaction, handlers, onClickEmpty } = createHarness();
+		interaction.enterEdit();
 
 		const buttonTarget = createMockElement('button');
 		handlers.onclick(mockMouseEvent({ target: buttonTarget as unknown as EventTarget }));
@@ -270,36 +224,57 @@ describe('createGridGestureHandlers', () => {
 	it('ignores non-primary pointer button', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const handlers = createGridGestureHandlers({
-				onLongPress,
-				longPressDelayMs: 400
-			});
+			const { handlers, onEmptyLongPress } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ button: 2, clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(500);
 
-			expect(onLongPress).not.toHaveBeenCalled();
+			expect(onEmptyLongPress).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
 	});
 
-	it('suppresses click and does not exit edit mode when isDragging is true', () => {
-		const onClickEmpty = vi.fn();
-		let isDragging = true;
+	it('suppresses click and does not exit edit mode while a drag click-guard is active', () => {
+		let now = 1_000;
+		const interaction = createTimetableInteraction({
+			now: () => now,
+			clickGuardMs: 120
+		});
+		const onClickEmpty = vi.fn(() => {
+			interaction.exitEdit();
+		});
 		const handlers = createGridGestureHandlers({
-			onClickEmpty,
-			isEditing: true,
-			isDragging: () => isDragging
+			interaction,
+			onClickEmpty
+		});
+		interaction.enterEdit();
+		interaction.beginDrag({
+			course: createCourse({
+				id: 'course-1',
+				name: '高等数学',
+				dayOfWeek: 1,
+				startPeriod: 1,
+				endPeriod: 2,
+				weeks: [1]
+			}),
+			placed: {} as never,
+			pointerId: 1,
+			week: 1,
+			targetColIndex: 0,
+			targetDayOfWeek: 1,
+			targetStartPeriod: 1,
+			persistAfterDrop: true
 		});
 
-		const clickEvt = mockMouseEvent();
-		handlers.onclick(clickEvt);
+		handlers.onclick(mockMouseEvent());
 		expect(onClickEmpty).not.toHaveBeenCalled();
 
-		// When drag finishes completely
-		isDragging = false;
+		interaction.endDrag();
+		handlers.onclick(mockMouseEvent());
+		expect(onClickEmpty).not.toHaveBeenCalled();
+
+		now = 1_120;
 		handlers.onclick(mockMouseEvent());
 		expect(onClickEmpty).toHaveBeenCalledTimes(1);
 	});

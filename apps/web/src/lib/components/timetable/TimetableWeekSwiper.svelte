@@ -6,6 +6,7 @@
 	import type { CoursePaletteEntry } from '@chronos/core';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { weekSlideWindow } from '$lib/timetable/week-navigation';
+	import { TIMETABLE_POINTER_THRESHOLD_PX } from '$lib/timetable/timetable-interaction.svelte';
 	import TimetableGrid from './TimetableGrid.svelte';
 
 	let {
@@ -52,6 +53,10 @@
 		};
 	});
 
+	function onSliderFirstMove() {
+		screen.interaction.notePagerFirstMove();
+	}
+
 	function onSlideSettled() {
 		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
 		const week = slideWindow.weeks[swiperEl.swiper.activeIndex];
@@ -85,7 +90,7 @@
 			speed: 300,
 			resistanceRatio: 0.85,
 			touchRatio: 1,
-			threshold: 5,
+			threshold: TIMETABLE_POINTER_THRESHOLD_PX,
 			longSwipesRatio: 0.3,
 			followFinger: true,
 			touchReleaseOnEdges: true,
@@ -96,11 +101,13 @@
 
 		const swiper = el.swiper;
 		swiper?.on('slideChangeTransitionEnd', onSlideSettled);
+		swiper?.on('sliderFirstMove', onSliderFirstMove);
 
 		suppressPagerWeekSync = false;
 
 		return () => {
 			swiper?.off('slideChangeTransitionEnd', onSlideSettled);
+			swiper?.off('sliderFirstMove', onSliderFirstMove);
 			el.swiper?.destroy(true, true);
 		};
 	});
@@ -124,7 +131,8 @@
 	$effect(() => {
 		const swiper = swiperEl?.swiper;
 		if (!swiper) return;
-		swiper.allowTouchMove = !screenState.isEditing;
+		void screenState.isEditing;
+		swiper.allowTouchMove = screen.interaction.allowPagerTouch;
 	});
 </script>
 
@@ -138,8 +146,7 @@
 			currentPeriodIndex={screenState.currentPeriodIndex}
 			expandedSlots={screenState.expandedSlots}
 			onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
-			isEditing={screenState.isEditing}
-			onEditModeChange={(editing) => screen.setEditing(editing)}
+			interaction={screen.interaction}
 			{gridModel}
 			courseDisplayModels={courseModels}
 			{hasDynamicBackground}

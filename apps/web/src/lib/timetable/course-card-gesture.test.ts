@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { createCourse } from '@chronos/core';
+import { createCourse, type Course } from '@chronos/core';
 import { COURSE_CARD_DRAG_THRESHOLD_PX, createCourseCardHandlers } from './course-card-gesture';
+import { createTimetableInteraction } from './timetable-interaction.svelte';
 
 const sampleCourse = createCourse({
 	id: 'course-1',
@@ -32,23 +33,34 @@ function mockMouseEvent(init: Partial<MouseEvent> = {}): MouseEvent {
 	} as unknown as MouseEvent;
 }
 
+function createHarness() {
+	const interaction = createTimetableInteraction({ longPressDelayMs: 400 });
+	const onCourseClick = vi.fn<(course: Course) => void>();
+	const onLongPress = vi.fn<(course: Course, event: PointerEvent) => void>();
+	const onDragStart = vi.fn<(course: Course, event: PointerEvent) => void>();
+	const handlers = createCourseCardHandlers(sampleCourse, {
+		interaction,
+		onCourseClick,
+		onLongPress,
+		onDragStart
+	});
+	return { interaction, handlers, onCourseClick, onLongPress, onDragStart };
+}
+
 describe('createCourseCardHandlers', () => {
 	it('triggers click callback on quick tap without movement', () => {
-		const onCourseClick = vi.fn();
-		const handlers = createCourseCardHandlers(sampleCourse, { onCourseClick });
+		const { handlers, onCourseClick } = createHarness();
 
 		handlers.onpointerdown(mockPointerEvent({ clientX: 10, clientY: 10 }));
 		handlers.onpointerup(mockPointerEvent({ clientX: 10, clientY: 10 }));
 
-		const clickEvent = mockMouseEvent();
-		handlers.onclick(clickEvent);
+		handlers.onclick(mockMouseEvent());
 
 		expect(onCourseClick).toHaveBeenCalledWith(sampleCourse);
 	});
 
 	it('suppresses click when pointer moves beyond drag threshold', () => {
-		const onCourseClick = vi.fn();
-		const handlers = createCourseCardHandlers(sampleCourse, { onCourseClick });
+		const { handlers, onCourseClick } = createHarness();
 
 		handlers.onpointerdown(mockPointerEvent({ clientX: 100, clientY: 100 }));
 		handlers.onpointermove(
@@ -64,15 +76,13 @@ describe('createCourseCardHandlers', () => {
 			})
 		);
 
-		const clickEvent = mockMouseEvent();
-		handlers.onclick(clickEvent);
+		handlers.onclick(mockMouseEvent());
 
 		expect(onCourseClick).not.toHaveBeenCalled();
 	});
 
 	it('suppresses click when pointer moves vertically while scrolling', () => {
-		const onCourseClick = vi.fn();
-		const handlers = createCourseCardHandlers(sampleCourse, { onCourseClick });
+		const { handlers, onCourseClick } = createHarness();
 
 		handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 		handlers.onpointermove(
@@ -83,21 +93,18 @@ describe('createCourseCardHandlers', () => {
 		);
 		handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 80 }));
 
-		const clickEvent = mockMouseEvent();
-		handlers.onclick(clickEvent);
+		handlers.onclick(mockMouseEvent());
 
 		expect(onCourseClick).not.toHaveBeenCalled();
 	});
 
 	it('ignores non-primary pointer button presses', () => {
-		const onCourseClick = vi.fn();
-		const handlers = createCourseCardHandlers(sampleCourse, { onCourseClick });
+		const { handlers, onCourseClick } = createHarness();
 
 		handlers.onpointerdown(mockPointerEvent({ button: 2, clientX: 50, clientY: 50 }));
 		handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
 
-		const clickEvent = mockMouseEvent();
-		handlers.onclick(clickEvent);
+		handlers.onclick(mockMouseEvent());
 
 		expect(onCourseClick).toHaveBeenCalledWith(sampleCourse);
 	});
@@ -105,13 +112,7 @@ describe('createCourseCardHandlers', () => {
 	it('triggers onLongPress after delay and suppresses subsequent click', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const onCourseClick = vi.fn();
-			const handlers = createCourseCardHandlers(sampleCourse, {
-				onLongPress,
-				onCourseClick,
-				longPressDelayMs: 400
-			});
+			const { handlers, onLongPress, onCourseClick } = createHarness();
 
 			const downEvt = mockPointerEvent({ clientX: 30, clientY: 30 });
 			handlers.onpointerdown(downEvt);
@@ -133,13 +134,7 @@ describe('createCourseCardHandlers', () => {
 	it('cancels long press if pointer moves beyond threshold before timeout', () => {
 		vi.useFakeTimers();
 		try {
-			const onLongPress = vi.fn();
-			const onCourseClick = vi.fn();
-			const handlers = createCourseCardHandlers(sampleCourse, {
-				onLongPress,
-				onCourseClick,
-				longPressDelayMs: 400
-			});
+			const { handlers, onLongPress } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 30, clientY: 30 }));
 			vi.advanceTimersByTime(200);
@@ -159,13 +154,8 @@ describe('createCourseCardHandlers', () => {
 	});
 
 	it('triggers onDragStart immediately if already in edit mode', () => {
-		const onDragStart = vi.fn();
-		const onCourseClick = vi.fn();
-		const handlers = createCourseCardHandlers(sampleCourse, {
-			isEditing: true,
-			onDragStart,
-			onCourseClick
-		});
+		const { interaction, handlers, onDragStart, onCourseClick } = createHarness();
+		interaction.enterEdit();
 
 		const downEvt = mockPointerEvent({ clientX: 30, clientY: 30 });
 		handlers.onpointerdown(downEvt);

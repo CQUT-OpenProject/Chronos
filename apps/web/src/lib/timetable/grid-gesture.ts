@@ -1,13 +1,16 @@
-export const GRID_GESTURE_DRAG_THRESHOLD_PX = 8;
-export const GRID_GESTURE_LONG_PRESS_DELAY_MS = 450;
+import {
+	TIMETABLE_POINTER_THRESHOLD_PX,
+	TIMETABLE_LONG_PRESS_DELAY_MS,
+	type TimetableInteraction
+} from './timetable-interaction.svelte';
+
+export const GRID_GESTURE_DRAG_THRESHOLD_PX = TIMETABLE_POINTER_THRESHOLD_PX;
+export const GRID_GESTURE_LONG_PRESS_DELAY_MS = TIMETABLE_LONG_PRESS_DELAY_MS;
 
 export interface GridGestureOptions {
-	onLongPress?: (event: PointerEvent) => void;
+	interaction: TimetableInteraction;
+	onEmptyLongPress?: (event: PointerEvent) => void;
 	onClickEmpty?: (event: MouseEvent) => void;
-	isEditing?: boolean | (() => boolean);
-	isDragging?: boolean | (() => boolean);
-	dragThresholdPx?: number;
-	longPressDelayMs?: number;
 }
 
 function hasClosest(target: unknown): target is { closest: (selector: string) => unknown } {
@@ -24,120 +27,44 @@ function isExcludedTarget(target: EventTarget | null): boolean {
 	return Boolean(target.closest('.course-capsule'));
 }
 
-export function createGridGestureHandlers(options: GridGestureOptions = {}) {
-	const {
-		onLongPress,
-		onClickEmpty,
-		isEditing = false,
-		isDragging = false,
-		dragThresholdPx = GRID_GESTURE_DRAG_THRESHOLD_PX,
-		longPressDelayMs = GRID_GESTURE_LONG_PRESS_DELAY_MS
-	} = options;
-
-	let hasMoved = false;
-	let longPressFired = false;
-	let startX = 0;
-	let startY = 0;
-	let activePointerId: number | null = null;
-	let timer: ReturnType<typeof setTimeout> | null = null;
-	let releaseTimer: ReturnType<typeof setTimeout> | null = null;
-
-	function checkIsEditing(): boolean {
-		return typeof isEditing === 'function' ? isEditing() : Boolean(isEditing);
-	}
-
-	function checkIsDragging(): boolean {
-		return typeof isDragging === 'function' ? isDragging() : Boolean(isDragging);
-	}
-
-	function clearTimer() {
-		if (timer !== null) {
-			clearTimeout(timer);
-			timer = null;
-		}
-	}
-
-	function clearReleaseTimer() {
-		if (releaseTimer !== null) {
-			clearTimeout(releaseTimer);
-			releaseTimer = null;
-		}
-	}
+export function createGridGestureHandlers(options: GridGestureOptions) {
+	const { interaction, onEmptyLongPress, onClickEmpty } = options;
 
 	return {
 		onpointerdown: (event: PointerEvent) => {
 			if (event.button !== 0) return;
-			clearReleaseTimer();
-			longPressFired = false;
-			if (checkIsEditing() || checkIsDragging()) return;
+			interaction.resetClickFlags();
+			if (interaction.isEditing || interaction.isDragging || interaction.isClickGuarded()) return;
 			if (isExcludedTarget(event.target)) return;
 
-			activePointerId = event.pointerId;
-			hasMoved = false;
-			startX = event.clientX;
-			startY = event.clientY;
-
-			clearTimer();
-
-			if (onLongPress) {
-				timer = setTimeout(() => {
-					longPressFired = true;
-					timer = null;
-					onLongPress(event);
-				}, longPressDelayMs);
-			}
+			interaction.watchLongPress(event, (pressEvent) => {
+				onEmptyLongPress?.(pressEvent);
+			});
 		},
 		onpointermove: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			if (hasMoved) return;
-
-			const dx = Math.abs(event.clientX - startX);
-			const dy = Math.abs(event.clientY - startY);
-			if (dx > dragThresholdPx || dy > dragThresholdPx) {
-				hasMoved = true;
-				clearTimer();
-			}
+			interaction.notePointerMove(event);
 		},
 		onpointerup: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			clearTimer();
-			activePointerId = null;
-			if (longPressFired) {
-				clearReleaseTimer();
-				releaseTimer = setTimeout(() => {
-					longPressFired = false;
-					releaseTimer = null;
-				}, 50);
-			}
+			interaction.notePointerUp(event);
 		},
 		onpointerleave: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			clearTimer();
-			activePointerId = null;
+			interaction.notePointerLost(event);
 		},
 		onpointercancel: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			clearTimer();
-			clearReleaseTimer();
-			activePointerId = null;
-			hasMoved = false;
-			longPressFired = false;
+			interaction.notePointerCancel(event);
 		},
 		onclick: (event: MouseEvent) => {
-			clearTimer();
-			clearReleaseTimer();
-			if (longPressFired) {
-				longPressFired = false;
+			if (interaction.consumeClickSuppression()) {
 				event.preventDefault();
 				event.stopPropagation();
 				return;
 			}
-			if (checkIsDragging()) {
+			if (interaction.isDragging || interaction.isClickGuarded()) {
 				event.preventDefault();
 				event.stopPropagation();
 				return;
 			}
-			if (checkIsEditing()) {
+			if (interaction.isEditing) {
 				if (hasClosest(event.target)) {
 					if (event.target.closest('.course-capsule') || event.target.closest('button')) {
 						return;

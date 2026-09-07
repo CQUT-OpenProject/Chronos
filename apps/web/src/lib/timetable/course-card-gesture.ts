@@ -1,95 +1,53 @@
 import type { Course } from '@chronos/core';
+import {
+	TIMETABLE_POINTER_THRESHOLD_PX,
+	TIMETABLE_LONG_PRESS_DELAY_MS,
+	type TimetableInteraction
+} from './timetable-interaction.svelte';
 
-export const COURSE_CARD_DRAG_THRESHOLD_PX = 8;
-export const COURSE_CARD_LONG_PRESS_DELAY_MS = 450;
+export const COURSE_CARD_DRAG_THRESHOLD_PX = TIMETABLE_POINTER_THRESHOLD_PX;
+export const COURSE_CARD_LONG_PRESS_DELAY_MS = TIMETABLE_LONG_PRESS_DELAY_MS;
 
 export interface CourseCardGestureOptions {
+	interaction: TimetableInteraction;
 	onCourseClick?: (course: Course) => void;
 	onLongPress?: (course: Course, event: PointerEvent) => void;
 	onDragStart?: (course: Course, event: PointerEvent) => void;
-	isEditing?: boolean;
-	dragThresholdPx?: number;
-	longPressDelayMs?: number;
 }
 
-export function createCourseCardHandlers(course: Course, options: CourseCardGestureOptions = {}) {
-	const {
-		onCourseClick,
-		onLongPress,
-		onDragStart,
-		isEditing = false,
-		dragThresholdPx = COURSE_CARD_DRAG_THRESHOLD_PX,
-		longPressDelayMs = COURSE_CARD_LONG_PRESS_DELAY_MS
-	} = options;
-
-	let hasMoved = false;
-	let longPressFired = false;
-	let startX = 0;
-	let startY = 0;
-	let activePointerId: number | null = null;
-	let timer: ReturnType<typeof setTimeout> | null = null;
-
-	function clearTimer() {
-		if (timer !== null) {
-			clearTimeout(timer);
-			timer = null;
-		}
-	}
+export function createCourseCardHandlers(course: Course, options: CourseCardGestureOptions) {
+	const { interaction, onCourseClick, onLongPress, onDragStart } = options;
 
 	return {
 		onpointerdown: (event: PointerEvent) => {
 			if (event.button !== 0) return;
 
-			activePointerId = event.pointerId;
-			hasMoved = false;
-			longPressFired = false;
-			startX = event.clientX;
-			startY = event.clientY;
+			interaction.resetClickFlags();
 
-			clearTimer();
-
-			if (isEditing) {
+			if (interaction.isEditing) {
 				onDragStart?.(course, event);
-			} else if (onLongPress) {
-				timer = setTimeout(() => {
-					longPressFired = true;
-					onLongPress(course, event);
-				}, longPressDelayMs);
+				return;
 			}
+
+			interaction.watchLongPress(event, (pressEvent) => {
+				onLongPress?.(course, pressEvent);
+			});
 		},
 		onpointermove: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			if (hasMoved) return;
-
-			const dx = Math.abs(event.clientX - startX);
-			const dy = Math.abs(event.clientY - startY);
-			if (dx > dragThresholdPx || dy > dragThresholdPx) {
-				hasMoved = true;
-				clearTimer();
-			}
+			interaction.notePointerMove(event);
 		},
 		onpointerup: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			clearTimer();
-			activePointerId = null;
+			interaction.notePointerUp(event);
 		},
 		onpointerleave: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			clearTimer();
-			activePointerId = null;
+			interaction.notePointerLost(event);
 		},
 		onpointercancel: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			clearTimer();
-			activePointerId = null;
-			hasMoved = false;
+			interaction.notePointerCancel(event);
 		},
 		onclick: (event: MouseEvent) => {
-			clearTimer();
-			if (hasMoved || longPressFired || isEditing) {
+			if (interaction.consumeClickSuppression() || interaction.isEditing) {
 				event.preventDefault();
-				hasMoved = false;
-				longPressFired = false;
 				return;
 			}
 			onCourseClick?.(course);
