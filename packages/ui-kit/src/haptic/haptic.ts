@@ -32,6 +32,18 @@ function hasNavigatorVibrate(): boolean {
 	return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 }
 
+function canNavigatorVibrate(): boolean {
+	if (!hasNavigatorVibrate()) return false;
+	if (
+		typeof navigator !== 'undefined' &&
+		'userActivation' in navigator &&
+		navigator.userActivation != null
+	) {
+		return navigator.userActivation.hasBeenActive;
+	}
+	return true;
+}
+
 /**
  * True when Vibration API is available, or a native haptic bridge is injected
  * (iOS WKWebView often has no navigator.vibrate but can still feel native).
@@ -55,7 +67,7 @@ export function isHapticFeedbackEnabled(): boolean {
 }
 
 function vibrateFallback(pattern: number | number[]): boolean {
-	if (!hasNavigatorVibrate()) return false;
+	if (!canNavigatorVibrate()) return false;
 	try {
 		return navigator.vibrate(pattern);
 	} catch {
@@ -168,7 +180,7 @@ export const haptic = {
 
 	/** 取消当前正在进行的振动（vibrate only; native hosts clear themselves） */
 	cancel(): boolean {
-		if (hasNavigatorVibrate()) {
+		if (canNavigatorVibrate()) {
 			try {
 				return navigator.vibrate(0);
 			} catch {

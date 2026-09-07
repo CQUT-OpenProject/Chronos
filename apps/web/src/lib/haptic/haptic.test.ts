@@ -18,9 +18,15 @@ function disableHaptic() {
 	mockLocalStorage.set('chronos_preferences:haptic_feedback_enabled', '0');
 }
 
-function stubNavigatorVibrate(vibrate?: ReturnType<typeof vi.fn>) {
+function stubNavigatorVibrate(
+	vibrate?: ReturnType<typeof vi.fn>,
+	userActivation?: { hasBeenActive: boolean }
+) {
 	Object.defineProperty(globalThis, 'navigator', {
-		value: vibrate ? { vibrate } : {},
+		value: {
+			...(vibrate ? { vibrate } : {}),
+			...(userActivation !== undefined ? { userActivation } : {})
+		},
 		writable: true,
 		configurable: true
 	});
@@ -215,5 +221,33 @@ describe('haptic feedback service', () => {
 		expect(callNative).toHaveBeenNthCalledWith(1, 'haptic', 'impact', { style: 'light' });
 		expect(callNative).toHaveBeenNthCalledWith(2, 'haptic', 'impact', { style: 'medium' });
 		expect(callNative).toHaveBeenNthCalledWith(3, 'haptic', 'impact', { style: 'heavy' });
+	});
+
+	it('suppresses vibrate when navigator.userActivation.hasBeenActive is false', () => {
+		const mockVibrate = stubNavigatorVibrate(
+			vi.fn(() => true),
+			{ hasBeenActive: false }
+		)!;
+		enableHaptic();
+
+		expect(haptic.heavy()).toBe(false);
+		expect(mockVibrate).not.toHaveBeenCalled();
+
+		expect(triggerVibrate(80)).toBe(false);
+		expect(mockVibrate).not.toHaveBeenCalled();
+
+		expect(haptic.cancel()).toBe(false);
+		expect(mockVibrate).not.toHaveBeenCalled();
+	});
+
+	it('allows vibrate when navigator.userActivation.hasBeenActive is true', () => {
+		const mockVibrate = stubNavigatorVibrate(
+			vi.fn(() => true),
+			{ hasBeenActive: true }
+		)!;
+		enableHaptic();
+
+		expect(haptic.heavy()).toBe(true);
+		expect(mockVibrate).toHaveBeenCalledWith(80);
 	});
 });
