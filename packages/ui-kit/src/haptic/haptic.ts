@@ -118,6 +118,7 @@ export function triggerVibrate(pattern: number | number[]): boolean {
 
 /** Vibration API fallbacks (restored pre-native durations, slightly strengthened). */
 const FALLBACK = {
+	selection: 15,
 	light: 25,
 	medium: 50,
 	heavy: 80,
@@ -126,6 +127,11 @@ const FALLBACK = {
 };
 
 export const haptic = {
+	/** 选择/步进反馈：吸附、拖拽槽位切换 (~15ms fallback) */
+	selection(): boolean {
+		return triggerNativeOrVibrate({ method: 'selection' }, FALLBACK.selection);
+	},
+
 	/** 轻微反馈：Tab 切换、按钮/开关点击、Radio 勾选 (~25ms fallback) */
 	light(): boolean {
 		return triggerNativeOrVibrate({ method: 'impact', params: { style: 'light' } }, FALLBACK.light);

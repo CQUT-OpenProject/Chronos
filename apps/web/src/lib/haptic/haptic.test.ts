@@ -132,6 +132,9 @@ describe('haptic feedback service', () => {
 		const mockVibrate = stubNavigatorVibrate(vi.fn(() => true))!;
 		enableHaptic();
 
+		haptic.selection();
+		expect(mockVibrate).toHaveBeenLastCalledWith(15);
+
 		haptic.light();
 		expect(mockVibrate).toHaveBeenLastCalledWith(25);
 
@@ -151,20 +154,22 @@ describe('haptic feedback service', () => {
 		expect(mockVibrate).toHaveBeenLastCalledWith(0);
 	});
 
-	it('prefers native bridge over vibrate for impact/notification', async () => {
+	it('prefers native bridge over vibrate for impact/notification/selection', async () => {
 		const mockVibrate = stubNavigatorVibrate(vi.fn(() => true))!;
 		const callNative = vi.fn(async () => undefined);
 		installNativeBridge(callNative);
 		enableHaptic();
 
+		expect(haptic.selection()).toBe(true);
 		expect(haptic.light()).toBe(true);
 		expect(haptic.medium()).toBe(true);
 		expect(haptic.heavy()).toBe(true);
 		expect(haptic.success()).toBe(true);
 		expect(haptic.warning()).toBe(true);
 
-		await vi.waitFor(() => expect(callNative).toHaveBeenCalledTimes(5));
+		await vi.waitFor(() => expect(callNative).toHaveBeenCalledTimes(6));
 
+		expect(callNative).toHaveBeenCalledWith('haptic', 'selection', {});
 		expect(callNative).toHaveBeenCalledWith('haptic', 'impact', { style: 'light' });
 		expect(callNative).toHaveBeenCalledWith('haptic', 'impact', { style: 'medium' });
 		expect(callNative).toHaveBeenCalledWith('haptic', 'impact', { style: 'heavy' });
