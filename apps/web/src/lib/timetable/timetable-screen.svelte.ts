@@ -42,6 +42,7 @@ interface TimetableScreenState {
 	isCurrentWeek: boolean;
 	currentPeriodIndex: number | null;
 	expandedSlots: ReadonlySet<string>;
+	isEditing: boolean;
 	weekGridModels: Map<number, TimetableGridModel>;
 	weekCourseDisplayModels: Map<number, TimetableCourseDisplayModel[]>;
 	weekLayouts: Map<number, TimetableWeekLayoutResult>;
@@ -55,6 +56,7 @@ export function getTimetableScreen(): TimetableScreenController {
 function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
 	let expandedSlots = $state(new SvelteSet<string>());
+	let isEditing = $state(false);
 	let displayedWeekMemory = $state(1);
 	let displayedWeekTimetableIdMemory = $state<string | null>(null);
 
@@ -156,6 +158,7 @@ function createTimetableScreen() {
 			isCurrentWeek,
 			currentPeriodIndex,
 			expandedSlots,
+			isEditing,
 			weekGridModels,
 			weekCourseDisplayModels,
 			weekLayouts
@@ -173,11 +176,13 @@ function createTimetableScreen() {
 
 	function destroy() {
 		shellRef = null;
+		isEditing = false;
 	}
 
 	function setDisplayedWeek(week: number) {
 		const timetable = currentTimetable();
 		if (!timetable) return;
+		isEditing = false;
 		const { startWeek, endWeek } = academicBounds(timetable);
 		displayedWeekMemory = clampDisplayedWeek(week, startWeek, endWeek);
 		displayedWeekTimetableIdMemory = timetable.id;
@@ -186,6 +191,7 @@ function createTimetableScreen() {
 	function jumpToCurrentWeek() {
 		const timetable = currentTimetable();
 		if (!timetable) return;
+		isEditing = false;
 		trackEvent('timetable_week_jump_current');
 		const today = shellRef?.controller.clockTodayIso ?? '';
 		const academicWeek = calendarService.calculateAcademicWeek(today, timetable.academicConfig);
@@ -217,6 +223,14 @@ function createTimetableScreen() {
 		return expandedSlots.has(slotKey);
 	}
 
+	function setEditing(editing: boolean) {
+		isEditing = editing;
+	}
+
+	function toggleEditing() {
+		isEditing = !isEditing;
+	}
+
 	return {
 		get state() {
 			return state;
@@ -229,7 +243,9 @@ function createTimetableScreen() {
 		settlePagerAtSlide,
 		expandSlot,
 		collapseSlot,
-		isSlotExpanded
+		isSlotExpanded,
+		setEditing,
+		toggleEditing
 	};
 }
 

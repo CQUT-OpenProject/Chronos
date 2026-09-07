@@ -121,6 +121,11 @@
 		});
 		return () => cancelAnimationFrame(frame);
 	});
+	$effect(() => {
+		const swiper = swiperEl?.swiper;
+		if (!swiper) return;
+		swiper.allowTouchMove = !screenState.isEditing;
+	});
 </script>
 
 {#snippet weekGrid(week: number)}
@@ -133,6 +138,8 @@
 			currentPeriodIndex={screenState.currentPeriodIndex}
 			expandedSlots={screenState.expandedSlots}
 			onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
+			isEditing={screenState.isEditing}
+			onEditModeChange={(editing) => screen.setEditing(editing)}
 			{gridModel}
 			courseDisplayModels={courseModels}
 			{hasDynamicBackground}

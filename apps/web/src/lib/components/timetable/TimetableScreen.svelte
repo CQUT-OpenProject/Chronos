@@ -98,15 +98,23 @@
 			weekGesture.onHeaderTap();
 		}
 	}
+
+	function onWindowKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape' && screenState.isEditing) {
+			haptic.light();
+			screen.setEditing(false);
+		}
+	}
 </script>
 
 <svelte:window
 	onpointermove={active ? weekGesture.onWindowPointerMove : undefined}
 	onpointerup={active ? weekGesture.onWindowPointerUp : undefined}
 	onpointercancel={active ? weekGesture.onWindowPointerCancel : undefined}
+	onkeydown={active ? onWindowKeydown : undefined}
 />
 
-<div class="flex h-[calc(100dvh-var(--bottom-bar-height))] flex-col">
+<div class="relative flex h-[calc(100dvh-var(--bottom-bar-height))] flex-col">
 	<TopAppBar class="shrink-0">
 		{#snippet titleSnippet()}
 			<div
@@ -152,17 +160,31 @@
 			</div>
 		{/snippet}
 		{#snippet actions()}
-			<IconButton
-				variant="tonal"
-				size="sm"
-				ariaLabel={hostT('timetable.edit.aria')}
-				onclick={() => {
-					haptic.light();
-					onEditTimetableDetails();
-				}}
-			>
-				<EditNote class="size-[22px]" />
-			</IconButton>
+			{#if screenState.isEditing}
+				<button
+					type="button"
+					class="text-label-medium rounded-full bg-primary px-3.5 py-1 font-semibold text-on-primary shadow-xs transition-transform active:scale-95"
+					aria-label={hostT('timetable.reorder.done')}
+					onclick={() => {
+						haptic.light();
+						screen.setEditing(false);
+					}}
+				>
+					{hostT('timetable.reorder.done')}
+				</button>
+			{:else}
+				<IconButton
+					variant="tonal"
+					size="sm"
+					ariaLabel={hostT('timetable.edit.aria')}
+					onclick={() => {
+						haptic.light();
+						onEditTimetableDetails();
+					}}
+				>
+					<EditNote class="size-[22px]" />
+				</IconButton>
+			{/if}
 		{/snippet}
 	</TopAppBar>
 

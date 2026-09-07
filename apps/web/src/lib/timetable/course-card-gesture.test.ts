@@ -101,4 +101,78 @@ describe('createCourseCardHandlers', () => {
 
 		expect(onCourseClick).toHaveBeenCalledWith(sampleCourse);
 	});
+
+	it('triggers onLongPress after delay and suppresses subsequent click', () => {
+		vi.useFakeTimers();
+		try {
+			const onLongPress = vi.fn();
+			const onCourseClick = vi.fn();
+			const handlers = createCourseCardHandlers(sampleCourse, {
+				onLongPress,
+				onCourseClick,
+				longPressDelayMs: 400
+			});
+
+			const downEvt = mockPointerEvent({ clientX: 30, clientY: 30 });
+			handlers.onpointerdown(downEvt);
+
+			expect(onLongPress).not.toHaveBeenCalled();
+
+			vi.advanceTimersByTime(400);
+			expect(onLongPress).toHaveBeenCalledWith(sampleCourse, downEvt);
+
+			handlers.onpointerup(mockPointerEvent({ clientX: 30, clientY: 30 }));
+			handlers.onclick(mockMouseEvent());
+
+			expect(onCourseClick).not.toHaveBeenCalled();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('cancels long press if pointer moves beyond threshold before timeout', () => {
+		vi.useFakeTimers();
+		try {
+			const onLongPress = vi.fn();
+			const onCourseClick = vi.fn();
+			const handlers = createCourseCardHandlers(sampleCourse, {
+				onLongPress,
+				onCourseClick,
+				longPressDelayMs: 400
+			});
+
+			handlers.onpointerdown(mockPointerEvent({ clientX: 30, clientY: 30 }));
+			vi.advanceTimersByTime(200);
+
+			handlers.onpointermove(
+				mockPointerEvent({
+					clientX: 30 + COURSE_CARD_DRAG_THRESHOLD_PX + 2,
+					clientY: 30
+				})
+			);
+			vi.advanceTimersByTime(300);
+
+			expect(onLongPress).not.toHaveBeenCalled();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('triggers onDragStart immediately if already in edit mode', () => {
+		const onDragStart = vi.fn();
+		const onCourseClick = vi.fn();
+		const handlers = createCourseCardHandlers(sampleCourse, {
+			isEditing: true,
+			onDragStart,
+			onCourseClick
+		});
+
+		const downEvt = mockPointerEvent({ clientX: 30, clientY: 30 });
+		handlers.onpointerdown(downEvt);
+
+		expect(onDragStart).toHaveBeenCalledWith(sampleCourse, downEvt);
+
+		handlers.onclick(mockMouseEvent());
+		expect(onCourseClick).not.toHaveBeenCalled();
+	});
 });

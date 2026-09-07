@@ -121,4 +121,21 @@ describe('TimetableScreenController', () => {
 		expect(courseModels?.length).toBe(1);
 		expect(courseModels?.[0]?.course.name).toBe('数据结构');
 	});
+
+	it('manages isEditing state and resets on week navigation', () => {
+		const screen = getTimetableScreen();
+		screen.init(mockShell);
+
+		expect(screen.state.isEditing).toBe(false);
+		screen.setEditing(true);
+		expect(screen.state.isEditing).toBe(true);
+
+		screen.setDisplayedWeek(3);
+		expect(screen.state.isEditing).toBe(false);
+
+		screen.toggleEditing();
+		expect(screen.state.isEditing).toBe(true);
+		screen.toggleEditing();
+		expect(screen.state.isEditing).toBe(false);
+	});
 });

@@ -103,11 +103,6 @@
 		void shell.controller.currentLocale;
 		return [
 			{
-				mode: 'rounded' as const,
-				label: hostT('display.capsule.rounded.label'),
-				description: hostT('display.capsule.rounded.desc')
-			},
-			{
 				mode: 'pill' as const,
 				label: hostT('display.capsule.pill.label'),
 				description: hostT('display.capsule.pill.desc')
