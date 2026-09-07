@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import {
@@ -379,21 +380,36 @@
 
 		if (!updatedCourses) return null;
 
-		const updated = updatedCourses.find((course) => course.id === current.course.id);
-		if (!updated) return null;
+		const span = Math.max(1, current.course.endPeriod - current.course.startPeriod + 1);
+		const clampedStart = Math.max(
+			1,
+			Math.min(current.targetStartPeriod, gridModel.displayedPeriodCount - span + 1)
+		);
 
 		const targetColIndex = gridModel.visibleDays.findIndex(
-			(day) => day.dayOfWeek === updated.dayOfWeek
+			(day) => day.dayOfWeek === current.targetDayOfWeek
 		);
+
+		const targetCourse = updatedCourses.find(
+			(course) =>
+				course.dayOfWeek === current.targetDayOfWeek &&
+				course.startPeriod === clampedStart &&
+				(course.weeks.length === 0 || course.weeks.includes(displayedWeek))
+		) ?? {
+			...current.course,
+			dayOfWeek: current.targetDayOfWeek,
+			startPeriod: clampedStart,
+			endPeriod: clampedStart + span - 1
+		};
 
 		return {
 			updatedCourses,
 			settling: {
-				courseId: updated.id,
+				courseId: current.course.id,
 				targetColIndex: targetColIndex >= 0 ? targetColIndex : current.targetColIndex,
-				targetDayOfWeek: updated.dayOfWeek,
-				targetStartPeriod: updated.startPeriod,
-				course: updated,
+				targetDayOfWeek: current.targetDayOfWeek,
+				targetStartPeriod: clampedStart,
+				course: targetCourse,
 				placed: current.placed
 			}
 		};
@@ -409,6 +425,9 @@
 			haptic.medium();
 			trackEvent('timetable_course_reorder');
 		} catch {
+			settling = null;
+		} finally {
+			await tick();
 			settling = null;
 		}
 	}
@@ -439,15 +458,34 @@
 	});
 
 	$effect(() => {
+		if (!isEditing) {
+			if (interaction.isDragging) {
+				interaction.cancelDrag();
+			}
+			settling = null;
+		}
+	});
+
+	$effect(() => {
 		if (!settling) return;
 
-		const matched = placements.some(
-			(item) =>
-				item.kind === 'course' &&
-				item.course.id === settling.courseId &&
-				item.course.dayOfWeek === settling.targetDayOfWeek &&
-				item.course.startPeriod === settling.targetStartPeriod
-		);
+		const matched = placements.some((item) => {
+			if (item.kind === 'course') {
+				return (
+					item.course.dayOfWeek === settling.targetDayOfWeek &&
+					item.course.startPeriod === settling.targetStartPeriod &&
+					item.course.name === settling.course.name
+				);
+			}
+			if (item.kind === 'overlap-placeholder') {
+				return (
+					item.key.startsWith(`${settling.targetDayOfWeek}:`) &&
+					item.geometry.startPeriod <= settling.targetStartPeriod &&
+					settling.targetStartPeriod <= item.geometry.endPeriod
+				);
+			}
+			return false;
+		});
 		if (matched) settling = null;
 	});
 
