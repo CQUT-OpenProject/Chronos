@@ -123,32 +123,44 @@
 	});
 </script>
 
+{#snippet weekGrid(week: number)}
+	{@const gridModel = screenState.weekGridModels.get(week)}
+	{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
+	{#if gridModel}
+		<TimetableGrid
+			displayedWeek={week}
+			isCurrentWeek={week === screenState.academicWeek}
+			currentPeriodIndex={screenState.currentPeriodIndex}
+			expandedSlots={screenState.expandedSlots}
+			onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
+			{gridModel}
+			courseDisplayModels={courseModels}
+			{hasDynamicBackground}
+			{coursePalette}
+			paletteCourses={screenState.currentTimetable?.courses}
+			{layoutMode}
+			{capsuleCornerStyle}
+			onCourseClick={(course) => onCourseClick(course.id)}
+		/>
+	{/if}
+{/snippet}
+
 {#if swiperReady}
 	<swiper-container bind:this={swiperEl} init={false} class="timetable-week-swiper">
 		{#each slideWindow.weeks as week (week)}
-			{@const gridModel = screenState.weekGridModels.get(week)}
-			{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
 			<swiper-slide class="timetable-week-slide">
-				{#if gridModel && (week === screenState.displayedWeek || paintAdjacent)}
-					<TimetableGrid
-						displayedWeek={week}
-						isCurrentWeek={week === screenState.academicWeek}
-						currentPeriodIndex={screenState.currentPeriodIndex}
-						expandedSlots={screenState.expandedSlots}
-						onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
-						{gridModel}
-						courseDisplayModels={courseModels}
-						{hasDynamicBackground}
-						{coursePalette}
-						paletteCourses={screenState.currentTimetable?.courses}
-						{layoutMode}
-						{capsuleCornerStyle}
-						onCourseClick={(course) => onCourseClick(course.id)}
-					/>
+				{#if week === screenState.displayedWeek || paintAdjacent}
+					{@render weekGrid(week)}
 				{/if}
 			</swiper-slide>
 		{/each}
 	</swiper-container>
+{:else}
+	<div class="timetable-week-swiper">
+		<div class="timetable-week-slide">
+			{@render weekGrid(screenState.displayedWeek)}
+		</div>
+	</div>
 {/if}
 
 <style>
