@@ -6,9 +6,15 @@ export type FitWidthFontParams = {
 	maxFontPx: number;
 	minFontPx?: number;
 	fromParent?: boolean;
+	availableWidthPx?: number;
 };
 
 const DEFAULT_MIN_FONT_PX = 6;
+export const COURSE_CAPSULE_PAD_X_PX = 8;
+
+export function courseCapsuleInnerWidthPx(columnWidthPx: number, widthPercent: number): number {
+	return Math.max(0, (columnWidthPx * widthPercent) / 100 - COURSE_CAPSULE_PAD_X_PX * 2);
+}
 
 /**
  * Pass a getter so `{@attach createFitWidthFontAttachment(() => …)}` does not
@@ -19,10 +25,18 @@ export function createFitWidthFontAttachment(
 ): Attachment<HTMLElement> {
 	return (node) => {
 		const apply = () => {
-			const { lines, maxFontPx, minFontPx = DEFAULT_MIN_FONT_PX, fromParent = false } = getParams();
+			const {
+				lines,
+				maxFontPx,
+				minFontPx = DEFAULT_MIN_FONT_PX,
+				fromParent = false,
+				availableWidthPx
+			} = getParams();
 			const contents = lines.filter((line) => line.length > 0);
-			const box = fromParent ? (node.parentElement ?? node) : node;
-			let available = box.clientWidth;
+			let available =
+				availableWidthPx != null
+					? availableWidthPx
+					: (fromParent ? (node.parentElement ?? node) : node).clientWidth;
 			if (fromParent) {
 				const style = getComputedStyle(node);
 				available -=
@@ -49,7 +63,15 @@ export function createFitWidthFontAttachment(
 		const observer = new ResizeObserver(apply);
 
 		$effect(() => {
-			const { fromParent = false } = getParams();
+			const { fromParent = false, availableWidthPx } = getParams();
+			if (availableWidthPx != null) {
+				if (observed) {
+					observer.disconnect();
+					observed = null;
+				}
+				apply();
+				return;
+			}
 			const target = fromParent ? (node.parentElement ?? node) : node;
 			if (observed !== target) {
 				observer.disconnect();

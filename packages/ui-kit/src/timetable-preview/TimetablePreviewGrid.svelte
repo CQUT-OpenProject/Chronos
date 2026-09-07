@@ -10,7 +10,10 @@
 	import { capsuleCornerAttrs } from '../timetable/capsule-corners';
 	import { timetableDayColumnHeaderLabel } from './day-labels';
 	import MiddleTruncateText from './MiddleTruncateText.svelte';
-	import { createFitWidthFontAttachment } from '../utils/fit-width-font.svelte';
+	import {
+		courseCapsuleInnerWidthPx,
+		createFitWidthFontAttachment
+	} from '../utils/fit-width-font.svelte';
 	import {
 		timetableBodyTintClass,
 		timetableSidebarTintClass,
@@ -292,6 +295,10 @@
 							{:else}
 								{@const courseBadgesForThis = courseBadges[item.course.id] ?? []}
 								{@const badgeText = item.badgeLabel || courseBadgesForThis[0]?.text}
+								{@const innerWidthPx = courseCapsuleInnerWidthPx(
+									columnWidthPx,
+									item.geometry.widthPercent
+								)}
 								{#if interactive}
 									<button
 										type="button"
@@ -315,7 +322,8 @@
 													{@attach createFitWidthFontAttachment(() => ({
 														lines: [badgeText],
 														maxFontPx: item.scale.badgePx,
-														fromParent: true
+														fromParent: true,
+														availableWidthPx: innerWidthPx
 													}))}
 												>
 													{badgeText}
@@ -334,7 +342,8 @@
 													.locationMetrics.fontPx}px; height: {item.locationMetrics.heightPx}px"
 												{@attach createFitWidthFontAttachment(() => ({
 													lines: item.locationLines,
-													maxFontPx: item.locationMetrics.fontPx
+													maxFontPx: item.locationMetrics.fontPx,
+													availableWidthPx: innerWidthPx
 												}))}
 											>
 												{#each item.locationLines as line, lineIndex (`${lineIndex}:${line}`)}
@@ -349,7 +358,8 @@
 													.scale.detailPx}px"
 												{@attach createFitWidthFontAttachment(() => ({
 													lines: [item.teacher],
-													maxFontPx: item.scale.detailPx
+													maxFontPx: item.scale.detailPx,
+													availableWidthPx: innerWidthPx
 												}))}
 											>
 												{item.teacher}
@@ -377,7 +387,8 @@
 													{@attach createFitWidthFontAttachment(() => ({
 														lines: [badgeText],
 														maxFontPx: item.scale.badgePx,
-														fromParent: true
+														fromParent: true,
+														availableWidthPx: innerWidthPx
 													}))}
 												>
 													{badgeText}
@@ -396,7 +407,8 @@
 													.locationMetrics.fontPx}px; height: {item.locationMetrics.heightPx}px"
 												{@attach createFitWidthFontAttachment(() => ({
 													lines: item.locationLines,
-													maxFontPx: item.locationMetrics.fontPx
+													maxFontPx: item.locationMetrics.fontPx,
+													availableWidthPx: innerWidthPx
 												}))}
 											>
 												{#each item.locationLines as line, lineIndex (`${lineIndex}:${line}`)}
@@ -411,7 +423,8 @@
 													.scale.detailPx}px"
 												{@attach createFitWidthFontAttachment(() => ({
 													lines: [item.teacher],
-													maxFontPx: item.scale.detailPx
+													maxFontPx: item.scale.detailPx,
+													availableWidthPx: innerWidthPx
 												}))}
 											>
 												{item.teacher}
