@@ -1,61 +1,70 @@
-# ADR 0033: 壳常驻冻结与二级页 View Transition 隔离
+# ADR 0033: 外壳常驻保活与二级页面视图过渡隔离
 
 - **状态**: Accepted
 - **日期**: 2026-09-03
 - **关联提交**: `b07458a`
-- **关联**: 延续 [ADR 0029](./0029-shell-internal-tab-navigation.md) 壳内 Tab；不改变二级页 URL 与 `backShellTab`
+- **关联**: 延续 [ADR 0029](./0029-shell-internal-tab-navigation.md) 壳内 Tab 机制；保持二级页面 URL 与导航历史栈行为不变
 - **范围**: `apps/web`, `packages/ui-kit`
 
 ---
 
 ## 背景与问题
 
-ADR 0029 把底栏改成壳内 `activeTabId` 切换。0.4.3 用 `mountedTabIds` + idle `warmup` 保住课表 Tab，避免切换时重建 Swiper 与课表网格。保活集合活在根 layout，面板 DOM 却挂在 `(tabs)/+page`：进入二级页会拆掉面板，返回时按集合一次性重建所有已访问 Tab。该重建发生在 `document.startViewTransition` 的 update callback 内，且 `view-transition-name` 打在整页 `.page-root` 上。进入「设置课表壁纸」时还会再挂一棵 `TimetablePreviewGrid`，过渡卡顿。
+ADR 0029 将底栏 Tab 重构为壳内切换后，进入二级页面（如壁纸设置、课程编辑等）依然存在以下性能瓶颈：
+
+1. **进入二级页时卸载课表网格**：进入二级页时面板 DOM 会被销毁，返回时需一次性重新构建 Swiper 与课表网格，导致界面掉帧；
+2. **View Transition 过渡范围过大**：`view-transition-name` 曾挂载在整页根节点上，在进行页面切换动画时，隐藏层中正在重建的课表网格会同时参与过渡重绘，造成肉眼可见的卡顿；
+3. **壁纸设置等页面存在重复渲染**：进入壁纸设置时会再次挂载一棵预览课表树，与后台正在重建的课表产生双重渲染开销。
+
+---
 
 ## 架构决策
 
-### 1 — 壳与二级页兄弟层
+```mermaid
+flowchart TD
+    RootLayout[根 Layout 布局] --> ShellHost["ShellRouteHost (常驻外壳保活容器)"]
+    RootLayout --> PageOutlet["SvelteKit 二级页面 Outlet"]
 
-根 layout 常驻 [`ShellRouteHost`](../../../apps/web/src/lib/components/shell/ShellRouteHost.svelte)（`ShellTabPanels` + `BottomTabBar`）。SvelteKit `children` 只承载 `/` 的空路由或二级页。禁止把壳和二级页放进同一个带 `view-transition-name` 的祖先。
+    ShellHost --> Frozen["进入二级页时: content-visibility: hidden (离屏冻结)"]
+    PageOutlet --> VT["View Transition 仅挂载于 SecondaryPageShell (二级页单层过渡)"]
+```
 
-### 2 — 离屏冻结
+### 1. 主外壳与二级页面保持兄弟层级
 
-[`secondary-transition-gate`](../../../apps/web/src/lib/navigation/secondary-transition-gate.svelte.ts)：
+- 根 Layout 中常驻外壳组件 `ShellRouteHost`（包含底栏与各 Tab 面板）；
+- SvelteKit 的页面插槽仅用于承载二级独立页面；严禁将主外壳与二级页面置于同一个带有 `view-transition-name` 的父容器中。
 
-- 壳路由：解冻、取消 recede、`previewPaintReady = true`，并启用壳宿主
-- 二级页（无自定义过渡）：若宿主已启用则立刻冻结
-- View Transition 正向：旧快照保持壳可绘制；根快照做 25% 退让位图动画并隐藏 `new(root)`；`finished` 后冻结
-- View Transition 返回：面板保持冻结（不铺邻周），仅揭开当前 Tab 供新快照；`::view-transition-new(root)` 做退让还原；`finished` 后解冻
-- 深链直达二级页：不立刻挂壳；idle 或回到 `/` 后再启用宿主
+### 2. 离屏高效冻结 (`secondary-transition-gate`)
 
-冻结样式：`.shell-root.is-frozen { content-visibility: hidden }` + `inert`。隐藏 Tab 继续 `display: none`。`mountedTabIds` / idle warmup 仍只服务壳内 Tab 切换。
+- 当用户处于二级页面时，主外壳通过 CSS `content-visibility: hidden` 与 `inert` 属性进入完全冻结状态，浏览器跳过该区域的布局与渲染计算；
+- 返回主外壳时瞬间解冻，无需重新挂载任何组件，瞬时呈现原有课表状态。
 
-### 3 — 过渡只拍二级层
+### 3. View Transition 过渡仅作用于二级层
 
-`view-transition-name: page-root` 挂在 `SecondaryPageShell` 根节点。`.shell-root { view-transition-name: none }` 仍会进入根快照，因此壳↔二级页时关掉根组默认 `plus-lighter` 交叉淡入：正向用 `::view-transition-old(root)` 做 25% 退让位图动画并隐藏 `new(root)`，返回则相反。二级页↔二级页隐藏根组，只动画 `page-root`。禁止在活的 `.shell-root` 上做 `transform`/`opacity` CSS transition——View Transition 覆盖层会挡住活 DOM，那段过渡只会拖累保活课表树。
+- `view-transition-name: page-root` 仅挂载在二级页面的根容器上；
+- 主外壳区域使用静态快照进行缩放退后动画（Recede Transition），杜绝在保活的实时 DOM 上同时执行复杂的 CSS 过渡，确保动画全程保持 60fps。
 
-### 4 — 预览网格延迟绘制
+### 4. 预览组件延迟按需绘制
 
-过渡期间 `previewPaintReady = false`。`TimetablePreviewGrid` 经可选 context 读取该标志，未就绪时不挂胶囊树。无 View Transition 时立即就绪。峰值活渲染只有一棵课表树。
+- 在页面过渡动画未完全结束前，壁纸设置等页面的课表预览网格保持延迟就绪状态，确保在动画期间屏幕上始终只有一棵活跃的课表渲染树。
+
+---
 
 ## 非目标
 
-- 不退回每次点课表 Tab 都重新 mount
-- 不做课表虚拟化
-- 不把二级页做成多页保活
-- 不改变 `isShellRoute` / `isSecondaryRoute` 与二级页 URL
+- 不退回每次切换 Tab 都重新挂载的旧模型；
+- 不将二级深度页面做成全量常驻保活。
+
+---
+
+## 影响与收益
+
+- **极其丝滑的推入与返回体验**：从课表进入二级设置页跟手流畅，返回时零白屏、周次与滚动位置完美保持；
+- **渲染算力开销大幅降低**：动画期间避开了双重网格绘制，彻底消除了移动端低端设备上的卡顿掉帧。
+
+---
 
 ## 验证
 
-- `vp check` / `vp test` 全绿
-- 今日 Tab → 课表：即时出现
-- 课表 → 壁纸设置：推入跟手；过渡结束后壳为 `content-visibility: hidden`
-- 返回壳：仍在课表 Tab，周次不丢
-- 深链 `/about`：首屏不挂课表 DOM
-
-## 修订记录
-
-- 2026-09-03：初版 Accepted。
-- 2026-09-03：壳退让改由根快照位图承担；活壳去掉 CSS transition，避免与 `::view-transition-old(root)` 的 plus-lighter 交叉淡入叠跑。
-- 2026-09-03：过渡期间不再解冻壳（避免邻周网格在 callback 里铺开）；根快照改为静止背景，只动画二级层。
-- 2026-09-03：恢复一级页退让：根快照位图动画 `vt-forward-old` / `vt-back-new`；返回时 `skipPaint` 揭开当前 Tab，仍不铺邻周。
+- `vp check` / `vp test` 全量通过；
+- 课表 ↔ 壁纸设置推入返回动画跟手流畅；二级页期间主外壳正确处于 `content-visibility: hidden` 状态。

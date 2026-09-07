@@ -12,7 +12,10 @@
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
 	import { capsuleCornerAttrs } from '@chronos/ui-kit/timetable/capsule-corners';
-	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
+	import {
+		courseCapsuleInnerWidthPx,
+		createFitWidthFontAttachment
+	} from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayColumnHeaderLabel } from '$lib/timetable/day-labels';
 	import {
 		buildCourseCapsuleAriaLabel,
@@ -339,6 +342,7 @@
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
+	{@const innerWidthPx = courseCapsuleInnerWidthPx(columnWidthPx, placed.geometry.widthPercent)}
 	<button
 		type="button"
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {placed
@@ -370,7 +374,8 @@
 					{@attach createFitWidthFontAttachment(() => ({
 						lines: [badgeText],
 						maxFontPx: scale.badgePx,
-						fromParent: true
+						fromParent: true,
+						availableWidthPx: innerWidthPx
 					}))}
 				>
 					{badgeText}
@@ -388,7 +393,8 @@
 				style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {locationMetrics.fontPx}px; height: {locationMetrics.heightPx}px"
 				{@attach createFitWidthFontAttachment(() => ({
 					lines: locationLines,
-					maxFontPx: locationMetrics.fontPx
+					maxFontPx: locationMetrics.fontPx,
+					availableWidthPx: innerWidthPx
 				}))}
 			>
 				{#each locationLines as line, lineIndex (`${lineIndex}:${line}`)}
@@ -402,7 +408,8 @@
 				style="color: color-mix(in srgb, currentColor 80%, transparent); font-size: {scale.detailPx}px"
 				{@attach createFitWidthFontAttachment(() => ({
 					lines: [teacher],
-					maxFontPx: scale.detailPx
+					maxFontPx: scale.detailPx,
+					availableWidthPx: innerWidthPx
 				}))}
 			>
 				{teacher}

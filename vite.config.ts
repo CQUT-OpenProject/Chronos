@@ -173,7 +173,8 @@ export default defineConfig({
 			'**/static/',
 			'**/.svelte-kit/',
 			'**/node_modules/',
-			'/drizzle/'
+			'/drizzle/',
+			'**/*.generated.ts'
 		]
 	},
 	plugins: [

@@ -1,3 +1,4 @@
+/// <reference types="svelte" />
 import type { IStorageService } from '@chronos/core';
 import {
 	deleteWallpaperBlob,

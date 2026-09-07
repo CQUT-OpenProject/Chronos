@@ -1,20 +1,20 @@
-# ADR 0009: 架构深化收敛、双轨清理与死代码彻底剥离
+# ADR 0009: 架构深化收敛、消除双轨实现与清理无用代码
 
 - **状态**: Accepted
 - **日期**: 2026-08-21
-- **关联提交**: `79eb777`, `7ce435a`, `793d062`, `1259cba`, `1d79706`, `94ad821`, `8051208`, `5d153b6`, `f4f1f8d`
-- **范围**: 课表导入管道、排版令牌、宿主影子模型与死引用清理 (`packages/core`, `packages/ui-kit`, `packages/plugins/*`, `apps/web`)
+- **关联提交**: `8ad8f88`, `ffba381`, `488a034`, `74ea6d5`, `ec843f5`, `46d1bb0`, `e49fa3e`
+- **范围**: 导入管线、排版模块、类型安全与全仓死代码清理 (`packages/core`, `packages/ui-kit`, `packages/plugins/*`, `apps/web`)
 
 ---
 
 ## 背景与问题
 
-在项目向微内核与插件化演进的多轮重构中，标准契约虽已建立，但宿主层与核心层仍残留多处历史问题与「双轨实现」（同一个功能同时存在两套做法）：
+ADR 0008 完成存储端口与导入解耦后，代码库中仍存在部分深层双轨与历史遗留问题：
 
-1. **导入管道没有走插槽**：`apps/web` 的导入状态与预览持久化仍保留 `TransferImportSource`（`ONLINE | SHARE_LINK | HTML`）枚举，UI 里写死了对应的 3 个分支，没有利用 `import.source.tab` 插槽的动态发现能力；
-2. **宿主里残留高校专属的中转文件**：`apps/web` 保留了 `cqut-campus.ts`、`online-schedule.ts` 等只做转发的文件（把调用原样传给 `@chronos/plugin-source-cqut`），通用草稿结构里混入了校区 ID 与作息换算函数；
-3. **控制器与排版引擎引用了已删除的东西**：`ReactiveChronosController` 与 `AppShell` 还在调用已删除的壁纸存储方法；排版引擎 `capsule-layout.ts` 里残留旧 Dexie 时代的字符串令牌分支（`FIT`, `MERGE`, `SQUARE`）；
-4. **不可达的死引用与编译隐患**：历史提交删除了 `SystemTimeProvider`，但 `timetable-details.svelte.ts` 和 `timetable-screen.svelte.ts` 里仍遗留对它的实例化与方法调用——重置设置或定时刷新时会触发运行时崩溃；此外还有错误的 export 引用与 Zod schema 契约参数缺失。
+1. **导入管道依然存在两套并存逻辑**：宿主 `TransferImportPipelineService` 中仍残留 `switch (source)` 硬编码分支，与 `HierarchicalSlotRegistry` 的声明式插槽机制形成双轨；
+2. **排版模块跨层概念泄漏**：课表布局算法中混入了 `dayColumnIndex`（Svelte 视图层私有变量）和特定高校的节次映射；
+3. **宿主中存在冗余模型与悬空胶水**：Web 宿主多处保留了与微内核重复的数据转换层（如冗余的 `academicYear` 包装与空壳工具函数）；
+4. **遗留未引用的死代码与类型缺失**：部分被重构取代的旧函数未清理，严格类型检查存在遗留盲区。
 
 ---
 
@@ -22,52 +22,43 @@
 
 ```mermaid
 flowchart TD
-    subgraph PureHost [纯净 Web 宿主]
-        SlotUI["TransferImportScreen (动态读取 import.source.tab 插槽)"]
-        GenericDrafts["models/drafts.ts (纯通用 TimetableSettingsDraft)"]
-        GenericMappers["timetable-mappers.ts (通用 Course <-> Draft 转换)"]
+    subgraph ImportPipeline [导入管道插槽化闭环]
+        Slot["import.source.tab (插槽贡献)"] --> Execute["executeImport (各插件自闭环)"]
+        Execute --> PreviewModal["统一预览确认对话框"]
+        PreviewModal --> SaveAction["engine.actions.importTimetable"]
     end
 
-    subgraph DeepEngine [微内核与插件深模块]
-        SlotRegistry["HierarchicalSlotRegistry.get('import.source.tab')"]
-        SourcePlugin["@chronos/plugin-source-cqut (自闭环高校领域知识与作息)"]
-        PureLayout["capsule-layout.ts (严格标准枚举令牌排版)"]
-        DeepClock["period-clock.ts (自包含时钟刷新延时计算)"]
+    subgraph PureLayout [排版算法纯粹化]
+        CoreLayout["computeTimetableWeekLayout (packages/core)"] --> Placement["placeCapsules (纯几何与逻辑分列)"]
+        Placement --> ViewAdapter["Svelte UI Adapter (映射到视图 DOM)"]
     end
-
-    SlotUI --> SlotRegistry
-    SlotRegistry --> SourcePlugin
-    PureHost -.零高校特化引用.-> DeepEngine
 ```
 
-### 1. 彻底收敛课表导入管道为纯插槽驱动深模块
+### 1. 导入管道全面插槽化
 
-- 删除 `TransferImportSource` 枚举；`PreviewSnapshot` 只保存 `{ preview: Timetable, slotId: string, importMode: ImportMode }`；
-- `TransferImportScreen` 改为通过 `controller.getSlots('import.source.tab')` 动态发现并渲染导入来源选项卡；
-- `TransferImportConfirmScreen` 保持通用展示，各导入源需要的学期日期与作息换算全部由对应源插件在自己内部完成。
+- 彻底移除 `TransferImportPipelineService` 中的硬编码 `switch (source)` 分支；
+- 导入执行逻辑完全委托给各插件注册的 `ImportTabSlotContribution.executeImport()` 回调函数；
+- 宿主仅提供统一的导入前后置生命周期管理（错误处理、载入状态、预览确认弹窗）。
 
-### 2. 剥离宿主特定高校影子模型与残留胶水
+### 2. 排版算法纯粹化与分层隔离
 
-- 删除宿主里只做转发的 `cqut-campus.ts` 与 `online-schedule.ts`；服务端预览代理直接引用 `@chronos/plugin-source-cqut`；
-- 通用化 `TimetableSettingsDraft`，移除 `CqutCampusId` 与 `campusPeriodTimes` 等专属字段；
-- 从 `timetable-mappers.ts` 移除已废弃的校区换算函数，只保留纯通用转换函数。
+- 从 `@chronos/core` 的 `computeTimetableWeekLayout` 中剥离所有与 Svelte DOM 渲染相关的私有坐标逻辑；
+- 核心排版算法专注于纯逻辑网格计算与冲突分列（`placeCapsules`），视图层通过 `@chronos/ui-kit` 进行纯视觉坐标适配。
 
-### 3. 消除排版跨层泄漏与纯粹化响应式控制器
+### 3. 清理冗余模型与胶水代码
 
-- 从 `ReactiveChronosController` 与 `AppShell` 移除 `loadWallpaper`、`setWallpaper` 及 `wallpaperUri`；壁纸逻辑只存在于通用插件与主题能力契约中；
-- 清理 `capsule-layout.ts` 中按历史 Dexie 字符串比较的分支，统一改为标准领域枚举；
-- 把时钟刷新延时计算下沉到 `@chronos/core/src/engine/period-clock.ts`，Web 宿主直接使用该核心模块。
+- 删除宿主中与微内核重叠的领域实体别名与转换函数；
+- 统一使用 `@chronos/core` 导出的 `Timetable`, `Course`, `AcademicConfig` 标准模型。
 
-### 4. 修复并清理死引用与断裂调用
+### 4. 全仓严格 TypeScript 编译闭环
 
-- 移除对已删除 `SystemTimeProvider` 的实例化与调用，统一采用核心 pure date 工具；
-- 修正 `timetable-layout.ts` 导入路径，移除 `shareLinkCodec` 占位死变量，修正 `z.record` 泛型参数；
-- 全仓严格通过 TypeScript 编译与 Oxlint/Oxfmt 校验。
+- 修复所有跨包导入引发的循环依赖与悬空类型引用；
+- 开启全仓严格类型检查门禁，消除历史遗留的 `any` 绕过与不安全类型断言。
 
 ---
 
 ## 影响与收益
 
-- **职责归位**：高校与特定数据源的业务逻辑只存在于源插件内，宿主不包含任何高校领域知识；
-- **模块自包含**：核心排版与时钟模块不依赖宿主中转；
-- **接口可靠**：消除了所有隐藏的运行时崩溃点，全仓测试与类型检查 100% 通过。
+- **扩展一致性**：新增导入源只需注册对应插槽，宿主导入流程完全无需感知具体实现；
+- **核心算法纯粹**：排课与布局计算成为无状态纯函数，具备完备的单元测试覆盖；
+- **代码库清爽可靠**：消除了隐藏的运行时空指针与类型不匹配隐患，测试与类型检查实现 100% 自动化保障。
