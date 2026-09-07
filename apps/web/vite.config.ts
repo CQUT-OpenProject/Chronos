@@ -189,12 +189,12 @@ export default defineConfig(({ mode }) => {
 					navigateFallback: null,
 					runtimeCaching: [
 						{
+							// ADR 0035: document must match the controlling SW.
 							urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
-							handler: 'NetworkFirst',
+							handler: 'CacheFirst',
 							options: {
 								cacheName: 'pages-cache',
-								networkTimeoutSeconds: 5,
-								expiration: { maxEntries: 16, maxAgeSeconds: 86_400 }
+								expiration: { maxEntries: 32, maxAgeSeconds: 2_592_000 }
 							}
 						},
 						{
