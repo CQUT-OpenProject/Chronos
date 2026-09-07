@@ -42,6 +42,12 @@ export function createFitWidthFontAttachment(
 				available -=
 					(Number.parseFloat(style.paddingLeft) || 0) +
 					(Number.parseFloat(style.paddingRight) || 0);
+				if (node.parentElement) {
+					const parentStyle = getComputedStyle(node.parentElement);
+					available -=
+						(Number.parseFloat(parentStyle.paddingLeft) || 0) +
+						(Number.parseFloat(parentStyle.paddingRight) || 0);
+				}
 				available = Math.max(0, available);
 			}
 			if (available <= 0 || contents.length === 0) return;

@@ -640,8 +640,8 @@
 					{@const periodEnd = dropPreview.targetStartPeriod + span - 1}
 					{@const periodLabel =
 						dropPreview.targetStartPeriod === periodEnd
-							? hostT('course.detail.periodSingle', { n: dropPreview.targetStartPeriod })
-							: hostT('course.detail.periodRange', {
+							? hostT('timetable.reorder.periodSingle', { n: dropPreview.targetStartPeriod })
+							: hostT('timetable.reorder.periodRange', {
 									start: dropPreview.targetStartPeriod,
 									end: periodEnd
 								})}
@@ -662,11 +662,11 @@
 								{dropPreview.course.name}
 							</span>
 							<span
-								class="max-w-full rounded-full bg-surface-container-highest/90 px-2 py-0.5 leading-none font-medium whitespace-nowrap text-on-surface tabular-nums shadow-xs"
+								class="inline-flex max-w-full items-center justify-center rounded-full bg-surface-container-highest/90 px-1.5 py-0.5 text-center leading-none font-medium whitespace-nowrap text-on-surface tabular-nums shadow-xs"
 								{@attach createFitWidthFontAttachment(() => ({
 									lines: [periodLabel],
 									maxFontPx: 11,
-									minFontPx: 8,
+									minFontPx: 7,
 									fromParent: true
 								}))}
 							>
