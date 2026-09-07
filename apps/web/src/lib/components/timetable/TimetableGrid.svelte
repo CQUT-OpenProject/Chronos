@@ -118,6 +118,7 @@
 
 	const solidBgClass = $derived(timetableSolidBgClass(hasDynamicBackground));
 	const isFitLayout = $derived(layoutMode === 'compact');
+	const capsuleLayoutReady = $derived(!isFitLayout || bodyViewportHeight > 0);
 	const rowHeightCss = $derived.by(() => {
 		if (!isFitLayout || bodyViewportHeight <= 0 || gridModel.displayedPeriodCount <= 0) {
 			return SCROLL_ROW_HEIGHT;
@@ -494,38 +495,40 @@
 						></div>
 					{/if}
 				{/each}
-				{#each placements as item (item.key)}
-					{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
-					{@const isBeingDragged =
-						dragState?.course.id === (item.kind === 'course' ? item.course.id : null)}
-					<div
-						class="absolute box-border overflow-hidden transition-all duration-200 ease-out {isBeingDragged
-							? 'opacity-25'
-							: ''}"
-						style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
-						style:left="{item.geometry.leftPercent}%"
-						style:width="{item.geometry.widthPercent}%"
-						style:height="calc(var(--row-height) * {span})"
-						style:transform={isEditing ? 'scale(0.92)' : 'scale(1)'}
-						style:transform-origin="center center"
-					>
-						{#if item.kind === 'overlap-placeholder'}
-							<button
-								type="button"
-								class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
-								style={capsuleCornerAttrs(item.corners).style}
-								aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
-								onclick={() => expandSlot(item.key)}
-							>
-								<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
-									{hostT('timetable.grid.overlap', { count: item.count })}
-								</span>
-							</button>
-						{:else}
-							{@render courseCard(item)}
-						{/if}
-					</div>
-				{/each}
+				{#if capsuleLayoutReady}
+					{#each placements as item (item.key)}
+						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
+						{@const isBeingDragged =
+							dragState?.course.id === (item.kind === 'course' ? item.course.id : null)}
+						<div
+							class="absolute box-border overflow-hidden transition-[transform,opacity] duration-200 ease-out {isBeingDragged
+								? 'opacity-25'
+								: ''}"
+							style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
+							style:left="{item.geometry.leftPercent}%"
+							style:width="{item.geometry.widthPercent}%"
+							style:height="calc(var(--row-height) * {span})"
+							style:transform={isEditing ? 'scale(0.92)' : 'scale(1)'}
+							style:transform-origin="center center"
+						>
+							{#if item.kind === 'overlap-placeholder'}
+								<button
+									type="button"
+									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
+									style={capsuleCornerAttrs(item.corners).style}
+									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
+									onclick={() => expandSlot(item.key)}
+								>
+									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
+										{hostT('timetable.grid.overlap', { count: item.count })}
+									</span>
+								</button>
+							{:else}
+								{@render courseCard(item)}
+							{/if}
+						</div>
+					{/each}
+				{/if}
 				{#if dragState}
 					{@const span = dragState.course.endPeriod - dragState.course.startPeriod + 1}
 					<div
