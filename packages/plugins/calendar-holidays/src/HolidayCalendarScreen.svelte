@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
 	import { appLocaleToBcp47, pluginText } from '@chronos/ui-kit';
-	import { filterHolidaysInTermRange, type CalendarHoliday } from '@chronos/core';
+	import {
+		filterHolidaysInTermRange,
+		formatCompactDate,
+		type CalendarHoliday
+	} from '@chronos/core';
 	import { HOLIDAY_MESSAGES } from './messages';
 	import { HOLIDAY_PLUGIN_ID } from './constants';
 	import { syncHolidayCalendarFromHolidayCn } from './holiday-sync';
@@ -45,10 +49,7 @@
 
 	function formatHolidayRow(holiday: CalendarHoliday, locale: string): string {
 		const date = new Date(`${holiday.date}T12:00:00`);
-		const dateLabel = date.toLocaleDateString(locale, {
-			month: 'long',
-			day: 'numeric'
-		});
+		const dateLabel = formatCompactDate(holiday.date);
 		const weekday = date.toLocaleDateString(locale, {
 			weekday: 'short'
 		});
@@ -61,15 +62,13 @@
 	function formatSyncedAt(syncedAt?: number): string {
 		if (!syncedAt) return pt('screen.sync.never');
 		const date = new Date(syncedAt);
-		return pt('screen.sync.last').replace(
-			'{time}',
-			date.toLocaleString(appLocaleToBcp47(controller.currentLocale), {
-				month: 'numeric',
-				day: 'numeric',
-				hour: '2-digit',
-				minute: '2-digit'
-			})
-		);
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		const hour = String(date.getHours()).padStart(2, '0');
+		const minute = String(date.getMinutes()).padStart(2, '0');
+		const compactDate = formatCompactDate(`${year}-${month}-${day}`);
+		return pt('screen.sync.last').replace('{time}', `${compactDate} ${hour}:${minute}`);
 	}
 
 	async function onSync() {

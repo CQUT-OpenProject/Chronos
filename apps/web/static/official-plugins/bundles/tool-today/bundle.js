@@ -2076,42 +2076,46 @@ function Kr(e) {
 	return `${e.getUTCFullYear()}-${String(e.getUTCMonth() + 1).padStart(2, "0")}-${String(e.getUTCDate()).padStart(2, "0")}`;
 }
 function qr(e) {
+	let [, t, n] = e.split("-");
+	return `${t.padStart(2, "0")}/${n.padStart(2, "0")}`;
+}
+function Jr(e) {
 	let t = new Date(e.getTime()), n = t.getUTCDay(), r = n === 0 ? -6 : 1 - n;
 	return t.setUTCDate(t.getUTCDate() + r), t;
 }
-function Jr(e, t) {
+function Yr(e, t) {
 	let n = new Date(e.getTime());
 	return n.setUTCDate(n.getUTCDate() + t), n;
 }
-function Yr(e, t) {
-	return Jr(e, t * 7);
-}
 function Xr(e, t) {
-	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+	return Yr(e, t * 7);
 }
 function Zr(e, t) {
+	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+}
+function Qr(e, t) {
 	return e.getTime() < t.getTime();
 }
-function Qr(e) {
-	return Kr(qr(Gr(e)));
+function $r(e) {
+	return Kr(Jr(Gr(e)));
 }
-function $r(e = /* @__PURE__ */ new Date()) {
+function ei(e = /* @__PURE__ */ new Date()) {
 	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
 }
-function ei(e) {
+function ti(e) {
 	let t = (/* @__PURE__ */ new Date(`${e}T12:00:00`)).getDay();
 	return t === 0 ? 7 : t;
 }
 //#endregion
 //#region packages/core/src/algorithms/calendar.ts
-var ti = class {
+var ni = class {
 	normalizeTermStartDate(e, t) {
-		let n = Gr(Qr(t));
-		if (!e || !e.trim()) return Kr(qr(n));
+		let n = Gr($r(t));
+		if (!e || !e.trim()) return Kr(Jr(n));
 		try {
-			return Kr(qr(Gr(e)));
+			return Kr(Jr(Gr(e)));
 		} catch {
-			return Kr(qr(this.inferTermStartDateFromTermName(e) || n));
+			return Kr(Jr(this.inferTermStartDateFromTermName(e) || n));
 		}
 	}
 	inferTermStartDateFromTermName(e) {
@@ -2127,34 +2131,34 @@ var ti = class {
 			endWeek: 20,
 			periodTimes: []
 		}, r = Gr(this.normalizeTermStartDate(n.termStartDate, e)), i = Gr(e);
-		if (Zr(i, r)) return n.startWeek;
-		let a = Xr(r, i);
+		if (Qr(i, r)) return n.startWeek;
+		let a = Zr(r, i);
 		return Math.min(Math.max(n.startWeek + a, n.startWeek), n.endWeek);
 	}
 	resolveWeekStart(e, t, n) {
-		return Kr(Yr(Gr(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
+		return Kr(Xr(Gr(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
 	}
 	resolveCourseDate(e, t, n, r) {
-		return Kr(Jr(Gr(this.resolveWeekStart(e, t, r)), n - 1));
+		return Kr(Yr(Gr(this.resolveWeekStart(e, t, r)), n - 1));
 	}
 };
 //#endregion
 //#region packages/core/src/algorithms/period-clock.ts
-function ni(e) {
+function ri(e) {
 	let t = /^(\d{1,2}):(\d{2})$/.exec(e.trim());
 	return t ? Number(t[1]) * 60 + Number(t[2]) : 0;
 }
-function ri(e) {
+function ii(e) {
 	return e.map((e) => ({
 		index: e.index,
-		startMinutes: ni(e.startTime),
-		endMinutes: ni(e.endTime)
+		startMinutes: ri(e.startTime),
+		endMinutes: ri(e.endTime)
 	})).sort((e, t) => e.index - t.index);
 }
-function ii(e) {
+function ai(e) {
 	return e.getHours() * 60 + e.getMinutes();
 }
-function ai(e, t, n = "upcomingOrLast") {
+function oi(e, t, n = "upcomingOrLast") {
 	let r = null;
 	for (let n of e) {
 		if (t >= n.startMinutes && t <= n.endMinutes) return n.index;
@@ -2164,13 +2168,13 @@ function ai(e, t, n = "upcomingOrLast") {
 }
 //#endregion
 //#region packages/core/src/types/services.ts
-function oi(e) {
+function si(e) {
 	return { key: e };
 }
-var si = oi("storage"), ci = oi("hostNavigation");
+var ci = si("storage"), li = si("hostNavigation");
 //#endregion
 //#region packages/core/src/i18n/i18n-catalog.ts
-function li(e, t) {
+function ui(e, t) {
 	return t ? e.replace(/\{(\w+)\}/g, (e, n) => {
 		let r = t[n];
 		return r == null ? `{${n}}` : typeof r == "string" || typeof r == "number" || typeof r == "boolean" ? String(r) : JSON.stringify(r);
@@ -2178,23 +2182,23 @@ function li(e, t) {
 }
 //#endregion
 //#region packages/core/src/types/mountable.ts
-var ui = Symbol.for("chronos.mountable");
+var di = Symbol.for("chronos.mountable");
 new Set(/* @__PURE__ */ "color.surface,color.on-surface,color.primary,color.on-primary,color.surface-variant,color.outline,color.secondary,color.primary-dim,color.primary-container,color.on-primary-container,color.inverse-primary,color.secondary-dim,color.on-secondary,color.secondary-container,color.on-secondary-container,color.primary-container-subtle,color.on-primary-container-subtle,color.secondary-container-subtle,color.on-secondary-container-subtle,color.outline-variant,color.surface-container-high,color.canvas,color.ink,color.border-subtle,color.success,color.warning,color.danger,shell.bottomTab.activeBackground,shell.bottomTab.activeForeground,shell.bottomBar.background,shell.topBar.background,leadingIcon.background,leadingIcon.color,leadingIcon.backgroundPrimary,leadingIcon.colorPrimary,leadingIcon.backgroundSecondary,leadingIcon.colorSecondary,leadingIcon.backgroundTertiary,leadingIcon.colorTertiary,leadingIcon.backgroundNeutral,leadingIcon.colorNeutral,timetable.period.activeBackground,timetable.period.activeBackgroundImage".split(","));
 //#endregion
 //#region packages/core/src/plugin/define-chronos-plugin.ts
-function di(e, t, n = "zh-cn") {
+function fi(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
-function fi() {
-	return "0.4.8";
+function pi() {
+	return "0.4.9";
 }
-function pi(e) {
+function mi(e) {
 	let t;
 	return {
 		id: e.id,
-		name: () => t?.(e.nameKey) ?? di(e.messages, e.nameKey),
-		version: e.version ?? fi(),
-		description: e.descriptionKey ? () => t?.(e.descriptionKey) ?? di(e.messages, e.descriptionKey) : void 0,
+		name: () => t?.(e.nameKey) ?? fi(e.messages, e.nameKey),
+		version: e.version ?? pi(),
+		description: e.descriptionKey ? () => t?.(e.descriptionKey) ?? fi(e.messages, e.descriptionKey) : void 0,
 		category: e.category,
 		order: e.order,
 		author: e.author,
@@ -2215,14 +2219,14 @@ function pi(e) {
 typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Yn(["input"]), Yn(["change"]), Yn(["change"]), Yn(["change"]);
 //#endregion
 //#region packages/ui-kit/src/utils/middle-truncate.ts
-var mi = null;
-function hi(e) {
+var hi = null;
+function gi(e) {
 	if (typeof document > "u") return () => Infinity;
-	mi ??= document.createElement("canvas");
-	let t = mi.getContext("2d");
+	hi ??= document.createElement("canvas");
+	let t = hi.getContext("2d");
 	return t ? (t.font = e, (e) => t.measureText(e).width) : () => Infinity;
 }
-function gi(e, t, n, r = 6) {
+function _i(e, t, n, r = 6) {
 	if (e <= 0) return r;
 	let i = Math.max(r, n), a = Math.min(r, i), o = t(i);
 	if (o <= e) return i;
@@ -2237,23 +2241,23 @@ function gi(e, t, n, r = 6) {
 	}
 	return c;
 }
-function _i(e) {
+function vi(e) {
 	let t = getComputedStyle(e), n = t.fontStyle || "normal", r = t.fontWeight || "normal", i = t.fontFamily || "sans-serif";
-	return (e) => hi(`${n} ${r} ${e}px ${i}`);
+	return (e) => gi(`${n} ${r} ${e}px ${i}`);
 }
 //#endregion
 //#region packages/ui-kit/src/utils/fit-width-font.svelte.ts
-var vi = 6;
-function yi(e) {
+var yi = 6;
+function bi(e) {
 	return (t) => {
 		let n = () => {
-			let { lines: n, maxFontPx: r, minFontPx: i = vi, fromParent: a = !1, availableWidthPx: o } = e(), s = n.filter((e) => e.length > 0), c = o ?? (a ? t.parentElement ?? t : t).clientWidth;
+			let { lines: n, maxFontPx: r, minFontPx: i = yi, fromParent: a = !1, availableWidthPx: o } = e(), s = n.filter((e) => e.length > 0), c = o ?? (a ? t.parentElement ?? t : t).clientWidth;
 			if (a) {
 				let e = getComputedStyle(t);
 				c -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0), c = Math.max(0, c);
 			}
 			if (c <= 0 || s.length === 0) return;
-			let l = _i(t), u = gi(c, (e) => {
+			let l = vi(t), u = _i(c, (e) => {
 				let t = l(e);
 				return Math.max(...s.map((e) => t(e)));
 			}, r, i);
@@ -2275,7 +2279,7 @@ function yi(e) {
 Yn(["click"]), Yn(["change"]);
 //#endregion
 //#region packages/ui-kit/src/form/date-field-utils.ts
-function bi(e) {
+function xi(e) {
 	return e?.toLowerCase() === "en" ? "en" : "zh-CN";
 }
 //#endregion
@@ -2283,9 +2287,9 @@ function bi(e) {
 Yn(["click"]), Yn(["click"]), Yn(["click"]);
 //#endregion
 //#region packages/ui-kit/src/plugin-screen/mountable-svelte.ts
-function xi(e) {
+function Si(e) {
 	return {
-		[ui]: !0,
+		[di]: !0,
 		mount(t, n) {
 			let r = lr(e, {
 				target: t,
@@ -2299,50 +2303,54 @@ function xi(e) {
 }
 //#endregion
 //#region packages/ui-kit/src/i18n/plugin-text.ts
-function Si(e, t, n, r, i) {
+function Ci(e, t, n, r, i) {
 	let a = n["zh-cn"][r] ?? n.en?.[r] ?? String(r);
-	if (!e) return li(a, i);
+	if (!e) return ui(a, i);
 	e.slotVersion;
 	let o = e.translatePlugin(t, r, i);
-	return o === r ? li(a, i) : o;
+	return o === r ? ui(a, i) : o;
 }
 //#endregion
 //#region packages/ui-kit/src/haptic/haptic.ts
-var Ci = "chronos_preferences:haptic_feedback_enabled", wi = "__CHRONOS_NATIVE__";
-function Ti() {
+var wi = "chronos_preferences:haptic_feedback_enabled", Ti = "__CHRONOS_NATIVE__";
+function Ei() {
 	if (typeof window > "u") return null;
-	let e = window[wi];
+	let e = window[Ti];
 	return typeof e == "object" && e && typeof e.callNative == "function" ? e : null;
 }
-function Ei() {
+function Di() {
 	return typeof navigator < "u" && typeof navigator.vibrate == "function";
 }
-function Di() {
+function Oi() {
+	return Di() ? typeof navigator < "u" && "userActivation" in navigator && navigator.userActivation != null ? navigator.userActivation.hasBeenActive : !0 : !1;
+}
+function ki() {
 	if (typeof window > "u") return !1;
 	try {
 		if (typeof localStorage > "u") return !0;
-		let e = localStorage.getItem(Ci);
+		let e = localStorage.getItem(wi);
 		return e !== "0" && e !== "false";
 	} catch {
 		return !0;
 	}
 }
-function Oi(e) {
-	if (!Ei()) return !1;
+function Ai(e) {
+	if (!Oi()) return !1;
 	try {
 		return navigator.vibrate(e);
 	} catch {
 		return !1;
 	}
 }
-function ki(e, t) {
-	if (!Di()) return !1;
-	let n = Ti();
+function ji(e, t) {
+	if (!ki()) return !1;
+	let n = Ei();
 	return n ? (n.callNative("haptic", e.method, e.params ?? {}).catch(() => {
-		Oi(t);
-	}), !0) : Oi(t);
+		Ai(t);
+	}), !0) : Ai(t);
 }
-var Ai = {
+var Mi = {
+	selection: 15,
 	light: 25,
 	medium: 50,
 	heavy: 80,
@@ -2356,46 +2364,49 @@ var Ai = {
 		60,
 		50
 	]
-}, ji = {
+}, Ni = {
+	selection() {
+		return ji({ method: "selection" }, Mi.selection);
+	},
 	light() {
-		return ki({
+		return ji({
 			method: "impact",
 			params: { style: "light" }
-		}, Ai.light);
+		}, Mi.light);
 	},
 	medium() {
-		return ki({
+		return ji({
 			method: "impact",
 			params: { style: "medium" }
-		}, Ai.medium);
+		}, Mi.medium);
 	},
 	heavy() {
-		return ki({
+		return ji({
 			method: "impact",
 			params: { style: "heavy" }
-		}, Ai.heavy);
+		}, Mi.heavy);
 	},
 	success() {
-		return ki({
+		return ji({
 			method: "notification",
 			params: { type: "success" }
-		}, Ai.success);
+		}, Mi.success);
 	},
 	warning() {
-		return ki({
+		return ji({
 			method: "notification",
 			params: { type: "warning" }
-		}, Ai.warning);
+		}, Mi.warning);
 	},
 	cancel() {
-		if (Ei()) try {
+		if (Oi()) try {
 			return navigator.vibrate(0);
 		} catch {
 			return !1;
 		}
 		return !1;
 	}
-}, Mi = {
+}, Pi = {
 	"zh-cn": {
 		"plugin.name": "今日",
 		"plugin.description": "快速查看当天课程",
@@ -2442,14 +2453,14 @@ var Ai = {
 		"screen.course.periodRange": "Periods {start}-{end}",
 		"config.scope.title": "Scope"
 	}
-}, Ni = "tool-today";
+}, Fi = "tool-today";
 //#endregion
 //#region packages/plugins/today/src/index.ts
-function Pi(e = {}) {
+function Ii(e = {}) {
 	let { screenComponent: t } = e;
-	return pi({
-		id: Ni,
-		messages: Mi,
+	return mi({
+		id: Fi,
+		messages: Pi,
 		nameKey: "plugin.name",
 		descriptionKey: "plugin.description",
 		category: "tool",
@@ -2465,7 +2476,7 @@ function Pi(e = {}) {
 				iconFill: "calendar-today",
 				defaultLaunch: !0
 			}), e.registerSlot("shell.route.screen", {
-				id: Ni,
+				id: Fi,
 				title: () => n("screen.title"),
 				...t ? { component: t } : {}
 			});
@@ -2474,15 +2485,15 @@ function Pi(e = {}) {
 }
 //#endregion
 //#region packages/plugins/today/src/today-courses.ts
-var Fi = new ti();
-function Ii(e, t, n) {
+var Li = new ni();
+function Ri(e, t, n) {
 	let r = e.find((e) => e.index === t), i = e.find((e) => e.index === n);
 	return !r || !i ? null : {
 		startTime: r.startTime,
 		endTime: i.endTime
 	};
 }
-function Li(e) {
+function zi(e) {
 	return [...e].sort((e, t) => {
 		let n = e.course.startPeriod - t.course.startPeriod;
 		if (n !== 0) return n;
@@ -2490,8 +2501,8 @@ function Li(e) {
 		return r === 0 ? e.course.name.localeCompare(t.course.name, "zh-CN") : r;
 	});
 }
-function Ri(e, t, n, r) {
-	let i = ri(t), a = i.find((t) => t.index === e.startPeriod), o = i.find((t) => t.index === e.endPeriod);
+function Bi(e, t, n, r) {
+	let i = ii(t), a = i.find((t) => t.index === e.startPeriod), o = i.find((t) => t.index === e.endPeriod);
 	if (a && o) {
 		if (n > o.endMinutes) return "past";
 		if (n >= a.startMinutes && n <= o.endMinutes) return "current";
@@ -2499,18 +2510,18 @@ function Ri(e, t, n, r) {
 	}
 	return r == null ? "upcoming" : e.endPeriod < r ? "past" : e.startPeriod <= r && e.endPeriod >= r ? "current" : "upcoming";
 }
-function zi(e, t, n, r) {
-	return Li(e).map((e) => ({
+function Vi(e, t, n, r) {
+	return zi(e).map((e) => ({
 		hit: e,
-		status: Ri(e.course, t, n, r)
+		status: Bi(e.course, t, n, r)
 	}));
 }
-async function Bi(e, t) {
+async function Hi(e, t) {
 	let { todayIso: n, scope: r, timetable: i } = t;
 	if (!i) return [];
-	let a = ei(n);
+	let a = ti(n);
 	if (r === "active") {
-		let t = Fi.calculateAcademicWeek(n, i.academicConfig);
+		let t = Li.calculateAcademicWeek(n, i.academicConfig);
 		return e.queryCourses({
 			dayOfWeek: a,
 			week: t,
@@ -2521,7 +2532,7 @@ async function Bi(e, t) {
 	if (o.length === 0) return [];
 	let s = (await Promise.all(o.map((t) => e.getTimetable(t.id)))).filter((e) => e != null), c = /* @__PURE__ */ new Map();
 	for (let e of s) {
-		let t = Fi.calculateAcademicWeek(n, e.academicConfig), r = c.get(t) ?? [];
+		let t = Li.calculateAcademicWeek(n, e.academicConfig), r = c.get(t) ?? [];
 		r.push(e.id), c.set(t, r);
 	}
 	return (await Promise.all([...c.entries()].map(([t, n]) => e.queryCourses({
@@ -2532,7 +2543,7 @@ async function Bi(e, t) {
 }
 //#endregion
 //#region packages/plugins/today/src/today-screen.svelte.ts
-function Vi() {
+function Ui() {
 	let e = /* @__PURE__ */ N(null), t = "", n = /* @__PURE__ */ N("active"), r = /* @__PURE__ */ N([]), i, a;
 	function o() {
 		return Y(e)?.currentTimetable ?? null;
@@ -2540,9 +2551,9 @@ function Vi() {
 	function s() {
 		return o()?.academicConfig.periodTimes ?? [];
 	}
-	let c = /* @__PURE__ */ A(() => Y(e)?.clockTodayIso || $r()), l = /* @__PURE__ */ A(() => Y(e)?.clockNow ?? /* @__PURE__ */ new Date()), u = /* @__PURE__ */ A(() => {
-		let t = Y(e), n = t?.clockNow ?? /* @__PURE__ */ new Date(), r = ri(s());
-		return r.length === 0 ? t?.currentPeriodIndex ?? null : ai(r, ii(n));
+	let c = /* @__PURE__ */ A(() => Y(e)?.clockTodayIso || ei()), l = /* @__PURE__ */ A(() => Y(e)?.clockNow ?? /* @__PURE__ */ new Date()), u = /* @__PURE__ */ A(() => {
+		let t = Y(e), n = t?.clockNow ?? /* @__PURE__ */ new Date(), r = ii(s());
+		return r.length === 0 ? t?.currentPeriodIndex ?? null : oi(r, ai(n));
 	});
 	async function d() {
 		let i = Y(e), a = o();
@@ -2551,12 +2562,12 @@ function Vi() {
 			return;
 		}
 		try {
-			let e = await Bi(i.getPluginContext(t).service(si), {
+			let e = await Hi(i.getPluginContext(t).service(ci), {
 				todayIso: Y(c),
 				scope: Y(n),
 				timetable: a
 			}), o = s(), d = e.filter((e) => Fr(e.course, o.length));
-			P(r, zi(d, o, ii(Y(l)), Y(u)));
+			P(r, Vi(d, o, ai(Y(l)), Y(u)));
 		} catch {
 			P(r, []);
 		}
@@ -2587,7 +2598,7 @@ function Vi() {
 		}
 	}
 	async function m(r) {
-		r !== Y(n) && ji.medium(), P(n, r, !0);
+		r !== Y(n) && Ni.medium(), P(n, r, !0);
 		let i = Y(e);
 		if (i) {
 			try {
@@ -2626,10 +2637,10 @@ function Vi() {
 }
 //#endregion
 //#region packages/plugins/today/src/TodayScreen.svelte
-var Hi = /* @__PURE__ */ X("<p class=\"text-label-large shrink-0 text-on-surface-variant\"> </p>"), Ui = /* @__PURE__ */ X("<div class=\"mt-1 flex items-center justify-between gap-3\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <!></div>"), Wi = /* @__PURE__ */ X("<div></div>"), Gi = /* @__PURE__ */ X("<button type=\"button\"> </button>"), Ki = /* @__PURE__ */ X("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p></section>"), qi = /* @__PURE__ */ X("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p></section>"), Ji = /* @__PURE__ */ X("<p class=\"text-label-medium text-on-surface tabular-nums\"> </p>"), Yi = /* @__PURE__ */ X("<span class=\"text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary\"> </span>"), Xi = /* @__PURE__ */ X("<p> </p>"), Zi = /* @__PURE__ */ X("<div class=\"text-body-small mt-1 flex flex-col gap-1 text-on-surface-variant\"><!> <!> <!></div>"), Qi = /* @__PURE__ */ X("<div class=\"flex w-11 shrink-0 flex-col items-center self-stretch\"><!> <div class=\"flex min-h-0 w-full flex-1 flex-col items-center justify-center\"><p class=\"text-headline-small w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant\"> </p></div> <!></div> <div class=\"w-1 shrink-0 self-stretch rounded-full\" aria-hidden=\"true\"></div> <div class=\"min-w-0 flex-1\"><div class=\"flex items-start justify-between gap-2\"><p class=\"text-title-medium truncate text-on-surface\"> </p> <!></div> <!></div>", 1), $i = /* @__PURE__ */ X("<button type=\"button\"><!></button>"), ea = /* @__PURE__ */ X("<div><!></div>"), ta = /* @__PURE__ */ X("<li><!></li>"), na = /* @__PURE__ */ X("<section class=\"overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs\"><ul class=\"divide-y divide-outline/10\"></ul></section>"), ra = /* @__PURE__ */ X("<div class=\"flex min-h-0 flex-1 flex-col overflow-y-auto\"><header class=\"border-b border-outline/10 bg-surface px-4 pt-6 pb-4\"><p class=\"text-headline-small text-on-surface\"> </p> <!> <div class=\"rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs\"><!> <!></div></header> <div class=\"flex flex-1 flex-col gap-4 p-4\"><!></div></div>");
-function ia(e, t) {
+var Wi = /* @__PURE__ */ X("<p class=\"text-label-large shrink-0 text-on-surface-variant\"> </p>"), Gi = /* @__PURE__ */ X("<div class=\"mt-1 flex items-center justify-between gap-3\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <!></div>"), Ki = /* @__PURE__ */ X("<div></div>"), qi = /* @__PURE__ */ X("<button type=\"button\"> </button>"), Ji = /* @__PURE__ */ X("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p></section>"), Yi = /* @__PURE__ */ X("<section class=\"flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs\"><div class=\"mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" class=\"size-8 fill-current\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\"></path></svg></div> <p class=\"text-title-medium text-on-surface\"> </p> <p class=\"text-body-medium mt-2 text-on-surface-variant\"> </p></section>"), Xi = /* @__PURE__ */ X("<p class=\"text-label-medium text-on-surface tabular-nums\"> </p>"), Zi = /* @__PURE__ */ X("<span class=\"text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary\"> </span>"), Qi = /* @__PURE__ */ X("<p> </p>"), $i = /* @__PURE__ */ X("<div class=\"text-body-small mt-1 flex flex-col gap-1 text-on-surface-variant\"><!> <!> <!></div>"), ea = /* @__PURE__ */ X("<div class=\"flex w-11 shrink-0 flex-col items-center self-stretch\"><!> <div class=\"flex min-h-0 w-full flex-1 flex-col items-center justify-center\"><p class=\"text-headline-small w-full min-w-0 text-center font-bold whitespace-nowrap text-on-surface-variant\"> </p></div> <!></div> <div class=\"w-1 shrink-0 self-stretch rounded-full\" aria-hidden=\"true\"></div> <div class=\"min-w-0 flex-1\"><div class=\"flex items-start justify-between gap-2\"><p class=\"text-title-medium truncate text-on-surface\"> </p> <!></div> <!></div>", 1), ta = /* @__PURE__ */ X("<button type=\"button\"><!></button>"), na = /* @__PURE__ */ X("<div><!></div>"), ra = /* @__PURE__ */ X("<li><!></li>"), ia = /* @__PURE__ */ X("<section class=\"overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs\"><ul class=\"divide-y divide-outline/10\"></ul></section>"), aa = /* @__PURE__ */ X("<div class=\"flex min-h-0 flex-1 flex-col overflow-y-auto\"><header class=\"border-b border-outline/10 bg-surface px-4 pt-6 pb-4\"><p class=\"text-headline-small text-on-surface\"> </p> <!> <div class=\"rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs\"><!> <!></div></header> <div class=\"flex flex-1 flex-col gap-4 p-4\"><!></div></div>");
+function oa(e, t) {
 	ze(t, !0);
-	let n = Pr(t, "active", 3, !0), r = new ti(), i = Vi(), a = /* @__PURE__ */ A(() => t.controller.currentTimetable), o = /* @__PURE__ */ A(() => Y(a)?.academicConfig.periodTimes ?? []), s = /* @__PURE__ */ A(() => t.controller.clockTodayIso || i.today), c = /* @__PURE__ */ A(() => Y(a) ? r.calculateAcademicWeek(Y(s), Y(a).academicConfig) : 1), l = /* @__PURE__ */ A(() => {
+	let n = Pr(t, "active", 3, !0), r = new ni(), i = Ui(), a = /* @__PURE__ */ A(() => t.controller.currentTimetable), o = /* @__PURE__ */ A(() => Y(a)?.academicConfig.periodTimes ?? []), s = /* @__PURE__ */ A(() => t.controller.clockTodayIso || i.today), c = /* @__PURE__ */ A(() => Y(a) ? r.calculateAcademicWeek(Y(s), Y(a).academicConfig) : 1), l = /* @__PURE__ */ A(() => {
 		let e = t.controller.coursePalette;
 		return Wr(i.courseEntries.map((e) => e.hit.course), e);
 	}), u = /* @__PURE__ */ A(() => [{
@@ -2640,14 +2651,11 @@ function ia(e, t) {
 		label: f("screen.scope.all")
 	}]), d = /* @__PURE__ */ A(() => Y(u).findIndex((e) => e.value === i.scope));
 	function f(e, n) {
-		return Si(t.controller, Ni, Mi, e, n);
+		return Ci(t.controller, Fi, Pi, e, n);
 	}
 	function p(e) {
-		return (/* @__PURE__ */ new Date(`${e}T12:00:00`)).toLocaleDateString(bi(t.controller.currentLocale), {
-			month: "long",
-			day: "numeric",
-			weekday: "long"
-		});
+		let n = (/* @__PURE__ */ new Date(`${e}T12:00:00`)).toLocaleDateString(xi(t.controller.currentLocale), { weekday: "short" });
+		return `${qr(e)} ${n}`;
 	}
 	function m(e) {
 		let n = t.controller.coursePalette;
@@ -2655,7 +2663,7 @@ function ia(e, t) {
 	}
 	let h = /* @__PURE__ */ A(() => {
 		try {
-			return t.controller.getPluginContext(t.pluginId).tryService(ci);
+			return t.controller.getPluginContext(t.pluginId).tryService(li);
 		} catch {
 			return;
 		}
@@ -2664,9 +2672,9 @@ function ia(e, t) {
 		Y(h)?.openCourseEditor(e);
 	}
 	hr(() => (i.init(t.controller, t.pluginId), () => i.dispose()));
-	var _ = ra(), v = I(_), y = I(v), b = L(y, !0), x = R(y, 2), S = (e) => {
-		var t = Ui(), n = I(t), r = L(n, !0), a = R(n, 2), o = (e) => {
-			var t = Hi(), n = L(t, !0);
+	var _ = aa(), v = I(_), y = I(v), b = L(y, !0), x = R(y, 2), S = (e) => {
+		var t = Gi(), n = I(t), r = L(n, !0), a = R(n, 2), o = (e) => {
+			var t = Wi(), n = L(t, !0);
 			z((e) => Q(n, e), [() => f("screen.summary.count", { count: i.courseEntries.length })]), Z(e, t);
 		};
 		$(a, (e) => {
@@ -2677,7 +2685,7 @@ function ia(e, t) {
 		Y(a) && e(S);
 	});
 	var ee = R(x, 2), C = I(ee), te = (e) => {
-		var t = Wi();
+		var t = Ki();
 		let r;
 		z(() => {
 			jr(t, 1, `rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs ${n() ? "transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]" : ""}`), r = Nr(t, "", r, {
@@ -2689,41 +2697,41 @@ function ia(e, t) {
 	$(C, (e) => {
 		Y(d) >= 0 && e(te);
 	}), yr(R(C, 2), 17, () => Y(u), (e) => e.value, (e, t) => {
-		var n = Gi(), r = L(n, !0);
+		var n = qi(), r = L(n, !0);
 		z(() => {
 			jr(n, 1, `text-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 ${i.scope === Y(t).value ? "text-on-secondary-container" : "text-on-surface-variant hover:text-on-surface"}`), Q(r, Y(t).label);
 		}), Jn("click", n, () => void i.persistScope(Y(t).value)), Z(e, n);
 	}), D(ee), D(v);
 	var ne = R(v, 2), re = I(ne), ie = (e) => {
-		var t = Ki(), n = L(R(I(t), 2), !0);
+		var t = Ji(), n = L(R(I(t), 2), !0);
 		D(t), z((e) => Q(n, e), [() => f("screen.empty.noTimetable")]), Z(e, t);
 	}, ae = (e) => {
-		var t = qi(), n = R(I(t), 2), r = L(n, !0), i = L(R(n, 2), !0);
+		var t = Yi(), n = R(I(t), 2), r = L(n, !0), i = L(R(n, 2), !0);
 		D(t), z((e, t) => {
 			Q(r, e), Q(i, t);
 		}, [() => f("screen.empty.noCourses"), () => f("screen.empty.noCoursesHint")]), Z(e, t);
 	}, oe = (e) => {
-		var t = na(), n = I(t);
+		var t = ia(), n = I(t);
 		yr(n, 21, () => i.courseEntries, (e) => `${e.hit.timetableId}-${e.hit.course.id}`, (e, t) => {
-			var n = ta();
+			var n = ra();
 			{
 				let e = (e) => {
-					var n = Qi(), r = Gt(n), a = I(r), o = (e) => {
-						var t = Ji(), n = L(t, !0);
+					var n = ea(), r = Gt(n), a = I(r), o = (e) => {
+						var t = Xi(), n = L(t, !0);
 						z(() => Q(n, Y(l).startTime)), Z(e, t);
 					};
 					$(a, (e) => {
 						Y(l) && e(o);
 					});
 					var s = R(a, 2), d = I(s), p = L(d, !0);
-					Tr(d, () => yi(() => ({
+					Tr(d, () => bi(() => ({
 						lines: [Y(u)],
 						maxFontPx: 24,
 						minFontPx: 6,
 						fromParent: !0
 					}))), D(s);
 					var m = R(s, 2), h = (e) => {
-						var t = Ji(), n = L(t, !0);
+						var t = Xi(), n = L(t, !0);
 						z(() => Q(n, Y(l).endTime)), Z(e, t);
 					};
 					$(m, (e) => {
@@ -2732,29 +2740,29 @@ function ia(e, t) {
 					var g = R(r, 2);
 					let _;
 					var v = R(g, 2), y = I(v), b = I(y), x = L(b, !0), S = R(b, 2), ee = (e) => {
-						var t = Yi(), n = L(t, !0);
+						var t = Zi(), n = L(t, !0);
 						z((e) => Q(n, e), [() => f("screen.status.current")]), Z(e, t);
 					};
 					$(S, (e) => {
 						Y(t).status === "current" && e(ee);
 					}), D(y);
 					var C = R(y, 2), te = (e) => {
-						var n = Zi(), r = I(n), a = (e) => {
-							var n = Xi(), r = L(n, !0);
+						var n = $i(), r = I(n), a = (e) => {
+							var n = Qi(), r = L(n, !0);
 							z((e) => Q(r, e), [() => f("screen.course.timetable", { name: Y(t).hit.timetableName })]), Z(e, n);
 						};
 						$(r, (e) => {
 							i.scope === "all" && Y(t).hit.timetableName && e(a);
 						});
 						var o = R(r, 2), s = (e) => {
-							var n = Xi(), r = L(n, !0);
+							var n = Qi(), r = L(n, !0);
 							z(() => Q(r, Y(t).hit.course.location)), Z(e, n);
 						};
 						$(o, (e) => {
 							Y(t).hit.course.location && e(s);
 						});
 						var c = R(o, 2), l = (e) => {
-							var n = Xi(), r = L(n, !0);
+							var n = Qi(), r = L(n, !0);
 							z(() => Q(r, Y(t).hit.course.teacher)), Z(e, n);
 						};
 						$(c, (e) => {
@@ -2766,15 +2774,15 @@ function ia(e, t) {
 					}), D(v), z(() => {
 						Q(p, Y(u)), _ = Nr(g, "", _, { "background-color": Y(c).background }), Q(x, Y(t).hit.course.name);
 					}), Z(e, n);
-				}, c = /* @__PURE__ */ A(() => m(Y(t).hit)), l = /* @__PURE__ */ A(() => Ii(Y(o), Y(t).hit.course.startPeriod, Y(t).hit.course.endPeriod)), u = /* @__PURE__ */ A(() => Y(t).hit.course.startPeriod === Y(t).hit.course.endPeriod ? f("screen.course.periodSingle", { n: Y(t).hit.course.startPeriod }) : f("screen.course.periodRange", {
+				}, c = /* @__PURE__ */ A(() => m(Y(t).hit)), l = /* @__PURE__ */ A(() => Ri(Y(o), Y(t).hit.course.startPeriod, Y(t).hit.course.endPeriod)), u = /* @__PURE__ */ A(() => Y(t).hit.course.startPeriod === Y(t).hit.course.endPeriod ? f("screen.course.periodSingle", { n: Y(t).hit.course.startPeriod }) : f("screen.course.periodRange", {
 					start: Y(t).hit.course.startPeriod,
 					end: Y(t).hit.course.endPeriod
 				}));
 				var r = I(n), a = (n) => {
-					var r = $i(), i = I(r);
+					var r = ta(), i = I(r);
 					e(i), D(r), z(() => jr(r, 1, `flex w-full gap-3 px-4 py-4 text-left transition-colors hover:bg-surface-container-low ${Y(t).status === "past" ? "opacity-60" : ""}`)), Jn("click", r, () => g(Y(t).hit.course.id)), Z(n, r);
 				}, s = (n) => {
-					var r = ea(), i = I(r);
+					var r = na(), i = I(r);
 					e(i), D(r), z(() => jr(r, 1, `flex gap-3 px-4 py-4 ${Y(t).status === "past" ? "opacity-60" : ""}`)), Z(n, r);
 				};
 				$(r, (e) => {
@@ -2791,6 +2799,6 @@ function ia(e, t) {
 Yn(["click"]);
 //#endregion
 //#region packages/plugins/today/bundle/entry.ts
-var aa = Pi({ screenComponent: xi(ia) });
+var sa = Ii({ screenComponent: Si(oa) });
 //#endregion
-export { aa as default };
+export { sa as default };
