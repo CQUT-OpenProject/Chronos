@@ -1,6 +1,6 @@
 import { argbFromRgb, QuantizerCelebi, Score } from '@ktibow/material-color-utilities-nightly';
 import type { CoursePaletteEntry, DynamicColorAdapter } from '@chronos/core';
-import { coursePaletteFromSources, schemeAccentCssVars } from '@chronos/ui-kit';
+import { coursePaletteFromSources, schemeAccentCssVars } from '@chronos/ui-kit/theme/m3-theme';
 
 const MAX_EDGE = 128;
 

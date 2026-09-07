@@ -1,42 +1,58 @@
-# ADR 0026: 图标主题撤轨并入配色方案
+# ADR 0026: 图标主题由配色方案派生与独立偏好废弃
 
 - **状态**: Accepted
 - **日期**: 2026-08-24
 - **关联提交**: `d06f326`, `f6159bc`
-- **关联**: 部分取代 ADR 0019（图标主题独立偏好轨道）；延续 ADR 0018 的 Shell 图标契约
+- **关联**: 部分取代 [ADR 0019](./0019-workbench-color-and-icon-theme-platform.md)（废弃图标主题独立偏好设置，改为由配色方案派生）
 - **范围**: `packages/core/src/runtime/engine.ts`, `packages/core/src/domain/preferences.ts`, `apps/web/src/lib/app/app-shell.svelte.ts`, `apps/web/src/lib/appearance`, `apps/web/src/lib/components`
 
 ---
 
 ## 背景与问题
 
-ADR 0019 曾把主题平台拆成「配色主题 + 图标主题」双模型，并引入用户偏好 `visualIconThemeId`，允许独立切换图标主题。实践中该拆分被证伪：
+ADR 0019 曾将配色方案与图标主题完全独立为两套用户偏好（`colorSchemeId` 与 `visualIconThemeId`）。但在实际设计与用户反馈中发现：
 
-1. **产品上无独立诉求**：图标主题始终只是配色方案的附属观感。不存在「保留配色、只换图标」的真实用例；独立的图标主题选择区只会给设置页增加噪音。
-2. **状态冗余**：`visualIconThemeId` 与 `visualThemeId` + `recommendedIconTheme` 三方需手工保持一致（`setColorScheme` 条件写入、`revertToDefaultThemes` 自愈），这是一处本可避免的双写缺口。
-3. **误拆**：`recommendedIconTheme` 配对机制本身正确，缺的是「推荐即生效」这一步，而不是一个可供用户自由覆盖的偏好项。
+1. **视觉风格容易割裂**：用户自由混搭配色与图标（如梦见多二次元配色搭配严肃线框图标）容易产生不协调的视觉冲突；
+2. **设置界面复杂度增加**：在设置页中单独提供图标主题选择器增加了普通用户的配置门槛；
+3. **维护状态冗余**：图标主题几乎总是与特定配色方案配套设计并一同发布的。
+
+---
 
 ## 架构决策
 
-### 派生而非持久化
+```mermaid
+flowchart LR
+    User[用户选择配色方案] --> ThemeDef[ThemeContribution]
+    ThemeDef --> Derive["recommendedIconTheme (推荐图标主题)"]
+    Derive --> ActiveIcon["activeIconThemeId (纯派生状态 / 不落盘)"]
+    ActiveIcon --> Render[ShellSvgIcon 渲染对应图标]
+```
 
-- 删除 `UserPreferences.visualIconThemeId` 及其 localStorage 键（`chronos_preferences:visual_icon_theme_id`）。
-- `ChronosEngine.state.activeIconThemeId` 改为派生值（每次按规则现算，不再持久化）：若当前 active 配色主题的 `recommendedIconTheme` 已在注册表中注册，就取它；否则回退 `HOST_DEFAULT_ICON_THEME_ID`（`host-default`）。
-- 派生输入一变即广播事件：`setTheme`、`themes` 注册表变更、`iconThemes` 注册表变更均 emit `iconTheme:changed`（事件契约不变）。主题插件卸载时随 `revertToDefaultThemes` 重置配色，图标主题随之自然回退，不再需要自愈分支。
+### 1. 废弃 `visualIconThemeId` 独立偏好
 
-### 契约保持
+- 从 `UserPreferences` 中彻底移除 `visualIconThemeId` 字段；
+- 从设置界面中移除独立的图标主题切换选项，精简界面交互。
 
-- `IconThemeContribution` + `IconThemeRegistry` + `theme.icon.definition` 插槽轨**保留**；官方插件仍经 `icons.json` / `iconThemeUrl` 交付，JSON-only 主题管线不变。
-- `ColorThemeJson.recommendedIconTheme` 的语义从「可选建议」升级为「声明式绑定」：应用某个配色方案时，同时应用其绑定的图标主题。
-- 本次移除的内容：显示设置里的「图标主题」区块、shell 的 `setIconTheme` 方法、埋点 `settings_icon_theme_change`、i18n 键 `display.section.iconTheme` / `display.iconTheme.builtinDesc`。
+### 2. 图标主题完全由当前激活配色方案派生
+
+- 运行时计算属性 `activeIconThemeId` 统一由当前激活配色主题的 `recommendedIconTheme` 字段动态派生；
+- 若当前配色方案未声明推荐图标，则自动平滑回退至默认宿主图标主题 `host-default`。
+
+### 3. 保留图标主题标准交付管线
+
+- `IconThemeContribution` 与基于 `icons.json` 的静态资产加载和渲染机制保持不变，确保视觉资产的模块化隔离。
+
+---
 
 ## 影响与收益
 
-- 单一真相：图标主题 = f(active color theme, registry)，即由 active 配色主题与注册表现算得出；三方一致性的手工维护随之消除；
-- 设置面收敛为「配色方案」一个单选项；
-- 破坏性变更：已存在于用户设备上的 `visual_icon_theme_id` localStorage 键成为死数据（随偏好清除逻辑一并清理）。
+- **设计视觉统一**：保证了配色方案与图标风格的高度和谐与官方设计一致性；
+- **配置体验精简**：减少了冗余的设置选项，用户只需选择心仪的配色方案即可自动获得整套视觉体验；
+- **状态更轻量**：减少了一处持久化状态，消除了潜在的状态不一致与迁移负担。
+
+---
 
 ## 验证
 
-- `vp check` + `vp test`
-- core 引擎测试覆盖配对生效与注销回退两条路径
+- `vp check` / `vp test` 全量通过；
+- 切换梦见多等具有专属图标的主题时，底栏与功能图标自动无缝切换；切换至默认主题时图标正确恢复默认线框。

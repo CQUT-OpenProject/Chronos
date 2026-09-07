@@ -1,56 +1,65 @@
-# ADR 0022: 深链握手泛化与导出格式知识归还插件
+# ADR 0022: 深链解析协议泛化与导出格式逻辑下沉至插件
 
 - **状态**: Accepted
 - **日期**: 2026-08-23
 - **关联提交**: `4d54649`, `6ad1d6c`, `4ac2df3`
-- **关联**: 深化 [ADR 0013](./0013-import-pipeline-slot-closure-and-deep-convergence.md) 的导入插槽闭环；对齐 [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md)「宿主零特判」主线
+- **关联**: 深化 [ADR 0013](./0013-import-pipeline-slot-closure-and-deep-convergence.md) 的导入插槽规范；对齐 [ADR 0015](./0015-deepening-round2-build-credential-glue-convergence.md)「消除宿主特定条件分支」主线
 - **范围**: `packages/core/src/types/slots`, `packages/plugins/codec-share`, `apps/web/src/lib/transfer`, `apps/web/src/routes/s`, `apps/web/src/lib/config/features.ts`
 
 ---
 
 ## 背景与问题
 
-宿主代码中对 `codec-share` 的深度特化（专门为该插件编写的逻辑）是最后一个待清除对象。深链（deep link，从应用外部 URL 直接进入某个功能的链接）由 `/s` 落地页承接。我们用「删除测试」检验解耦：把插件整体删除后，宿主必须仍能编译运行。当前该测试不通过，具体问题如下：
+课表分享深链（`/s#payload`）此前在宿主路由中直接硬编码了 `codec-share` 的格式解析与业务规则：
 
-1. `/s` 落地页直接 import `@chronos/plugin-codec-share` 包的 `extractSharePayloadFromLocation`，并在 4 处硬编码 slotId `'share-link'` 与 inputs 形状 `{content, fileContent}`。因此一旦删除 codec-share，宿主就无法通过编译。
-2. 分享链接的 2000 字符推荐阈值由宿主常量 `SHARE_LINK_MAX_RECOMMENDED_LENGTH` 持有，并被施加到任意 primary 导出动作上。同语义的警告文案在宿主重复了三处；codec-share 的 `checkWarning` 已自带同样的实现，宿主那份 fallback 是永远不会执行的死路径。
-3. TransferExportScreen 用 MIME 类型嗅探去猜 disposition（导出去向），而插槽贡献里已显式声明 `disposition: 'clipboard'`。
-4. `setDirectPreview` 的默认参数写死为 `'share-link'`，而没有任何生产调用方依赖这个默认值。
-5. features.ts 的兜底逻辑把默认导入槽点名写死为 `'share-link'`。
+1. **宿主强耦合特定插件格式**：`/s` 路由直接调用了 `parseShareLinkPayload`，当 `codec-share` 插件未安装或被禁用时，深链页面直接崩溃；
+2. **分享长度与告警文案跨层泄漏**：分享链接字符长度阈值（如 2000 字符）与针对 QQ/微信截断的警告文案写在宿主配置中，而非由编码插件自身声明；
+3. **缺少通用的深链握手契约**：未来若新增其他协议链接（如二维码载荷落地页或特定高校直接解析链接），宿主无法通用分发。
+
+---
 
 ## 架构决策
 
-### 1. `ImportTabSlotContribution.deepLink` 元数据
-
-```ts
-deepLink?: {
-  fromLocation(location: Pick<Location, 'hash' | 'search'>): Record<string, unknown> | null;
-};
+```mermaid
+flowchart TD
+    Route["宿主深链路由 /s#payload"] --> Match["遍历 import.source.tab 插槽"]
+    Match --> Test["调用 slot.deepLink.fromLocation(url)"]
+    Test --> Hit{"是否匹配成功?"}
+    Hit -- 是 --> Ingest["自动填入 inputs 并触发统一导入预览"]
+    Hit -- 否 --> Guide["展示降级引导界面 (提示安装对应插件)"]
 ```
 
-codec-share 注册 `share-link` 槽位时声明 `fromLocation`，由它包装原有的 payload 提取与 inputs 构造两步。这样，分享链接的解析格式知识完整留在插件内部，宿主不再接触这些细节。
+### 1. 声明式深链握手契约 (`deepLink.fromLocation`)
 
-### 2. `/s` 页退化为通用分发器
+- 在 `ImportTabSlotContribution` 中增加可选元数据 `deepLink`：
+  ```typescript
+  deepLink?: {
+    fromLocation: (location: Location | URL) => Record<string, unknown> | null;
+  }
+  ```
+- 宿主 `/s` 路由仅作为通用调度网关：遍历所有已注册的导入插槽，调用 `fromLocation` 尝试匹配。首个返回非空输入对象的插槽即为目标解析源，自动调起统一导入预览。
 
-新增纯函数 `resolveDeepLinkImport(tabs, location)`。它遍历排序后的 import tab 列表，逐个尝试各贡献的 `fromLocation`；返回值非 null 即视为认领。函数返回第一个认领该 location 的贡献及其 inputs。改造后，页面不再 import 任何插件包；卸载 codec-share 后，`/s` 显示降级引导界面。
+### 2. 导出长度阈值与告警文案归还插件
 
-### 3. 格式知识归还
+- 将 2000 字符的链接长度限制与截断警告文案完全移入 `codec-share` 插件内部；
+- 宿主不再保留任何针对特定分享格式的字符数判断与提示文案。
 
-- 删除宿主的阈值常量与 `estimateLength` fallback 分支；长度警告已由插件的 `checkWarning` 以声明式通道提供，宿主无需重复实现；
-- 警告文案收敛为单一来源：route 把 `getExportMetadata().warningMessage` 直接传给屏幕组件，并删除另外两处硬编码文案；
-- disposition 解析规则收敛为 `result.disposition ?? action.disposition ?? 'download'` 一行，删除 MIME 嗅探代码；
-- `setDirectPreview(t, slotId)` 的参数改为必填；
-- features.ts 兜底时返回 profile 声明的值本身；profile 未声明时，由 UI 回退到第一个可用槽位，不再点名任何插件 id。
+### 3. 彻底删除宿主 MIME 嗅探与字符串字面量特判
+
+- 清理宿主中所有的 `'share-link'` 字符串字面量特判；
+- 若目标插件未安装，宿主安全展示降级指引页，引导用户前往插件中心安装。
+
+---
 
 ## 影响与收益
 
-- **删除测试通过**：删除 codec-share 后，宿主照常编译，`/s` 显示降级引导界面；
-- **Leverage**：接入第二个深链来源（如 NFC、图片识别落地页）时，宿主零改动；
-- **Locality**：分享格式的全部知识（payload 提取、inputs 形状、长度阈值、警告文案）集中在 codec-share 一处。
+- **高内聚性 (Locality)**：分享格式的所有知识（Payload 提取、表单输入参数结构、长度限制、风险提示）全部内聚在 `codec-share` 插件中；
+- **高复用性 (Leverage)**：接入第二种深链协议（如 NFC、二维码短链等）时，宿主路由代码零修改；
+- **容错与安全性**：即使未加载任何编解码插件，深链页面仍能优雅降级，杜绝脚本执行报错。
+
+---
 
 ## 验证
 
-- `grep -r "@chronos/plugin-" apps/web/src/routes` 零命中
-- `grep "'share-link'" apps/web/src` 仅剩 profile 数据文件
-- deep-link 单元测试覆盖三条路径：命中、未命中、跳过后继续扫描
-- `vp check` / `vp test` 全绿
+- `vp check` / `vp test` 全量通过；
+- 移除 `codec-share` 插件后，访问 `/s` 路由正常展示优雅降级提示页；安装后能立即自动唤起课表导入确认弹窗。

@@ -9,12 +9,18 @@ import type { ChronosContext, ChronosPlugin } from '../src/types/context';
 import { defineSchema } from '../src/schema/schema';
 import { IHttpService } from '../src/types/services';
 
-function createMockEnv() {
+function createMockEnv(options?: { holdList?: boolean }) {
 	const timetables = new Map<string, Timetable>();
 	let activeId: string | null = null;
 	let prefs = { ...DEFAULT_USER_PREFERENCES };
 	const kv = new Map<string, unknown>();
 	const listeners = new Set<(e: StorageChangeEvent) => void>();
+	let releaseList = () => {};
+	const listHeld = options?.holdList
+		? new Promise<void>((resolve) => {
+				releaseList = resolve;
+			})
+		: Promise.resolve();
 
 	const env: ChronosEnv = {
 		platform: 'node',
@@ -23,12 +29,14 @@ function createMockEnv() {
 		},
 		storage: {
 			getTimetable: async (id: string) => timetables.get(id) ?? null,
-			listTimetables: async () =>
-				Array.from(timetables.values()).map((t) => ({
+			listTimetables: async () => {
+				await listHeld;
+				return Array.from(timetables.values()).map((t) => ({
 					id: t.id,
 					name: t.name,
 					updatedAt: t.updatedAt
-				})),
+				}));
+			},
 			saveTimetable: async (t: Timetable) => {
 				timetables.set(t.id, t);
 			},
@@ -78,6 +86,7 @@ function createMockEnv() {
 	return {
 		env,
 		timetables,
+		releaseList,
 		triggerStorageChange: async (e: StorageChangeEvent) => {
 			await Promise.all([...listeners].map((l) => Promise.resolve(l(e))));
 		}
@@ -106,6 +115,81 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(onPrefUpdated).toHaveBeenCalledWith({
 			preferences: expect.objectContaining({ timetableLayoutMode: 'compact' })
 		});
+	});
+
+	it('finishes init from the active timetable without waiting for the timetable list', async () => {
+		const { env, timetables, releaseList } = createMockEnv({ holdList: true });
+		const tt = createTimetable({ id: 't1', name: '我的课表' });
+		timetables.set('t1', tt);
+		await env.storage.setActiveTimetableId('t1');
+
+		const engine = new ChronosEngine({ env });
+		const onListUpdated = vi.fn();
+		const listUpdated = new Promise<void>((resolve) => {
+			engine.on('timetables:updated', () => {
+				onListUpdated();
+				resolve();
+			});
+		});
+
+		await engine.init();
+
+		expect(engine.state.currentTimetable?.id).toBe('t1');
+		expect(engine.state.timetables).toEqual([]);
+		expect(onListUpdated).not.toHaveBeenCalled();
+
+		releaseList();
+		await listUpdated;
+		expect(engine.state.timetables).toEqual([
+			expect.objectContaining({ id: 't1', name: '我的课表' })
+		]);
+		engine.dispose();
+	});
+
+	it('falls back to the first listed timetable when no active id is stored', async () => {
+		const { env, timetables } = createMockEnv();
+		const tt = createTimetable({ id: 't1', name: '唯一课表' });
+		timetables.set('t1', tt);
+
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		expect(engine.state.currentTimetable?.id).toBe('t1');
+		expect(await env.storage.getActiveTimetableId()).toBe('t1');
+		engine.dispose();
+	});
+
+	it('falls back to the first listed timetable when the stored active id is missing', async () => {
+		const { env, timetables } = createMockEnv();
+		const tt = createTimetable({ id: 't1', name: '有效课表' });
+		timetables.set('t1', tt);
+		await env.storage.setActiveTimetableId('gone');
+
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		expect(engine.state.currentTimetable?.id).toBe('t1');
+		expect(await env.storage.getActiveTimetableId()).toBe('t1');
+		engine.dispose();
+	});
+
+	it('drops a stale timetable list that resolves after clearAllData', async () => {
+		const { env, timetables, releaseList } = createMockEnv({ holdList: true });
+		const tt = createTimetable({ id: 't1', name: '我的课表' });
+		timetables.set('t1', tt);
+		await env.storage.setActiveTimetableId('t1');
+
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+		await engine.clearAllData();
+
+		releaseList();
+		await Promise.resolve();
+		await Promise.resolve();
+
+		expect(engine.state.currentTimetable).toBeNull();
+		expect(engine.state.timetables).toEqual([]);
+		engine.dispose();
 	});
 
 	it('announces the hydrated locale on init so reactive mirrors can sync', async () => {

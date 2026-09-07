@@ -190,6 +190,63 @@ describe('Web Providers', () => {
 		storage.dispose();
 	});
 
+	it('DexieStorageProvider listTimetables counts distinct course names across tables', async () => {
+		const storage = new DexieStorageProvider(db, localStorage);
+		const older = Date.now() - 1000;
+		const newer = Date.now();
+
+		await storage.saveTimetable(
+			createTimetable({
+				id: 'tt_a',
+				name: '课表 A',
+				updatedAt: newer,
+				courses: [
+					createCourse({
+						id: 'c-a1',
+						name: '高等数学',
+						dayOfWeek: 1,
+						startPeriod: 1,
+						endPeriod: 2,
+						weeks: [1]
+					}),
+					createCourse({
+						id: 'c-a2',
+						name: '高等数学',
+						dayOfWeek: 3,
+						startPeriod: 1,
+						endPeriod: 2,
+						weeks: [1]
+					})
+				]
+			})
+		);
+		await storage.saveTimetable(
+			createTimetable({
+				id: 'tt_b',
+				name: '课表 B',
+				updatedAt: older,
+				courses: [
+					createCourse({
+						id: 'c-b1',
+						name: '线性代数',
+						dayOfWeek: 2,
+						startPeriod: 1,
+						endPeriod: 2,
+						weeks: [1]
+					})
+				]
+			})
+		);
+
+		const list = await storage.listTimetables();
+		expect(list.map((entry) => ({ id: entry.id, courseCount: entry.courseCount }))).toEqual([
+			{ id: 'tt_a', courseCount: 1 },
+			{ id: 'tt_b', courseCount: 1 }
+		]);
+
+		storage.dispose();
+	});
+
 	it('DexieStorageProvider queryCourses returns cross-timetable hits in one call', async () => {
 		const storage = new DexieStorageProvider(db, localStorage);
 

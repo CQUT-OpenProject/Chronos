@@ -1,4 +1,4 @@
-import type { CourseQueryFilter, CourseQueryHit, Timetable } from '@chronos/core';
+import type { Course, CourseQueryFilter, CourseQueryHit, Timetable } from '@chronos/core';
 import { countDistinctCourseNames, matchesCourseQuery } from '@chronos/core';
 import type { ChronosDB } from '$lib/storage/db';
 import { courseFromRow, courseToRow, timetableFromRow, timetableToRow } from '$lib/storage/mappers';
@@ -22,18 +22,26 @@ export class TimetableRepository {
 		Array<{ id: string; name: string; courseCount: number; updatedAt: number }>
 	> {
 		try {
-			const rows = await this.database.timetables.orderBy('updatedAt').reverse().toArray();
-			const results = await Promise.all(
-				rows.map(async (r) => {
-					const courseRows = await this.database.courses
-						.where('timetableId')
-						.equals(r.id)
-						.toArray();
-					const count = countDistinctCourseNames(courseRows.map(courseFromRow));
-					return { id: r.id, name: r.name, courseCount: count, updatedAt: r.updatedAt };
-				})
-			);
-			return results;
+			const [rows, courseRows] = await Promise.all([
+				this.database.timetables.orderBy('updatedAt').reverse().toArray(),
+				this.database.courses.toArray()
+			]);
+			const coursesByTimetable = new Map<string, Course[]>();
+			for (const row of courseRows) {
+				const course = courseFromRow(row);
+				const bucket = coursesByTimetable.get(row.timetableId);
+				if (bucket) {
+					bucket.push(course);
+				} else {
+					coursesByTimetable.set(row.timetableId, [course]);
+				}
+			}
+			return rows.map((r) => ({
+				id: r.id,
+				name: r.name,
+				courseCount: countDistinctCourseNames(coursesByTimetable.get(r.id) ?? []),
+				updatedAt: r.updatedAt
+			}));
 		} catch {
 			return [];
 		}

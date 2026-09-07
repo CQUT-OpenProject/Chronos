@@ -141,6 +141,38 @@ export function truncateMiddleByFit(
 	return best;
 }
 
+export function wrappedLineCount(text: string, maxWidth: number, measure: MeasureFn): number {
+	if (!text) return 0;
+	if (maxWidth <= 0) return Number.POSITIVE_INFINITY;
+	const graphemes = toGraphemes(text);
+	let lines = 1;
+	let lineWidth = 0;
+	for (const grapheme of graphemes) {
+		const width = measure(grapheme);
+		if (lineWidth > 0 && lineWidth + width > maxWidth) {
+			lines += 1;
+			lineWidth = width;
+		} else {
+			lineWidth += width;
+		}
+	}
+	return lines;
+}
+
+export type FitsWrappedBlockOptions = {
+	maxWidth: number;
+	maxHeight: number;
+	lineHeight: number;
+	measure: MeasureFn;
+	epsilon?: number;
+};
+
+export function fitsWrappedBlock(text: string, options: FitsWrappedBlockOptions): boolean {
+	const { maxWidth, maxHeight, lineHeight, measure, epsilon = 0.5 } = options;
+	if (maxWidth <= 0 || maxHeight <= 0 || lineHeight <= 0) return false;
+	return wrappedLineCount(text, maxWidth, measure) * lineHeight <= maxHeight + epsilon;
+}
+
 let sharedCanvas: HTMLCanvasElement | null = null;
 
 export function createCanvasMeasurer(font: string): MeasureFn {

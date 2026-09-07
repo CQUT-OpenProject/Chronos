@@ -6,7 +6,8 @@ import {
 	clampDisplayedWeek,
 	resolveDisplayedWeek,
 	slideIndexFromWeek,
-	weekFromSlideIndex
+	weekFromSlideIndex,
+	weekSlideWindow
 } from './week-navigation';
 
 describe('week-navigation', () => {
@@ -51,6 +52,15 @@ describe('week-navigation', () => {
 		const week = weekFromSlideIndex(startWeek, 3);
 		expect(clampDisplayedWeek(week, startWeek, endWeek)).toBe(4);
 		expect(slideIndexFromWeek(startWeek, week, weeks.length)).toBe(3);
+	});
+
+	it('weekSlideWindow keeps displayed week and at most one neighbor on each side', () => {
+		expect(weekSlideWindow(5, 1, 20)).toEqual({ weeks: [4, 5, 6], centerIndex: 1 });
+		expect(weekSlideWindow(1, 1, 20)).toEqual({ weeks: [1, 2], centerIndex: 0 });
+		expect(weekSlideWindow(20, 1, 20)).toEqual({ weeks: [19, 20], centerIndex: 1 });
+		expect(weekSlideWindow(1, 1, 1)).toEqual({ weeks: [1], centerIndex: 0 });
+		expect(weekSlideWindow(8, 8, 12)).toEqual({ weeks: [8, 9], centerIndex: 0 });
+		expect(weekSlideWindow(12, 8, 12)).toEqual({ weeks: [11, 12], centerIndex: 1 });
 	});
 });
 

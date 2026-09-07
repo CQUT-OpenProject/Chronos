@@ -397,6 +397,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 
 	dispose(): void {
 		this.pluginLifecycle.disposeAll();
+		this.storageSync.dispose();
 		this.storageSubscription?.dispose();
 		this.storageSubscription = undefined;
 		this.timeKeeper.dispose();
