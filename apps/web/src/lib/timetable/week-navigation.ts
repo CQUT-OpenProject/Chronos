@@ -44,6 +44,21 @@ export function weekFromSlideIndex(startWeek: number, slideIndex: number): numbe
 	return startWeek + slideIndex;
 }
 
+export function weekSlideWindow(
+	displayedWeek: number,
+	startWeek: number,
+	endWeek: number
+): { weeks: number[]; centerIndex: number } {
+	const start = Math.min(startWeek, endWeek);
+	const end = Math.max(startWeek, endWeek);
+	const current = clampDisplayedWeek(displayedWeek, start, end);
+	const weeks: number[] = [];
+	if (current > start) weeks.push(current - 1);
+	weeks.push(current);
+	if (current < end) weeks.push(current + 1);
+	return { weeks, centerIndex: weeks.indexOf(current) };
+}
+
 export function academicBounds(timetable: Timetable | null): {
 	startWeek: number;
 	endWeek: number;

@@ -5,6 +5,7 @@
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { CoursePaletteEntry } from '@chronos/core';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
+	import { weekSlideWindow } from '$lib/timetable/week-navigation';
 	import TimetableGrid from './TimetableGrid.svelte';
 
 	let {
@@ -26,10 +27,13 @@
 	} = $props();
 
 	const screenState = $derived(screen.state);
+	const slideWindow = $derived(
+		weekSlideWindow(screenState.displayedWeek, screenState.startWeek, screenState.endWeek)
+	);
 
 	let swiperReady = $state(false);
 	let swiperEl = $state<SwiperContainer | undefined>();
-	let suppressPagerWeekSync = $state(true);
+	let suppressPagerWeekSync = true;
 	let paintAdjacent = $state(false);
 
 	onMount(() => {
@@ -50,20 +54,20 @@
 
 	function onSlideSettled() {
 		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
-		const slideIndex = swiperEl.swiper.activeIndex;
-		if (slideIndex !== screen.state.slideIndex) {
+		const week = slideWindow.weeks[swiperEl.swiper.activeIndex];
+		if (week != null && week !== screen.state.displayedWeek) {
 			trackEvent('timetable_week_swipe');
-			screen.settlePagerAtSlide(slideIndex);
+			screen.setDisplayedWeek(week);
 		}
 	}
 
-	function syncSwiperToSlideIndex(slideIndex: number) {
+	function syncSwiperToWindow(centerIndex: number) {
 		const swiper = swiperEl?.swiper;
 		if (!swiper || suppressPagerWeekSync) return;
-		if (swiper.activeIndex === slideIndex) return;
 
 		suppressPagerWeekSync = true;
-		swiper.slideTo(slideIndex, 0);
+		swiper.update();
+		swiper.slideTo(centerIndex, 0);
 		suppressPagerWeekSync = false;
 	}
 
@@ -72,7 +76,7 @@
 		const el = swiperEl;
 		if (!el) return;
 
-		const initialSlideIndex = untrack(() => screenState.slideIndex);
+		const initialSlideIndex = untrack(() => slideWindow.centerIndex);
 
 		suppressPagerWeekSync = true;
 
@@ -102,7 +106,9 @@
 	});
 
 	$effect(() => {
-		syncSwiperToSlideIndex(screenState.slideIndex);
+		const { centerIndex } = slideWindow;
+		void screenState.displayedWeek;
+		syncSwiperToWindow(centerIndex);
 	});
 
 	$effect(() => {
@@ -119,7 +125,7 @@
 
 {#if swiperReady}
 	<swiper-container bind:this={swiperEl} init={false} class="timetable-week-swiper">
-		{#each screenState.weeks as week (week)}
+		{#each slideWindow.weeks as week (week)}
 			{@const gridModel = screenState.weekGridModels.get(week)}
 			{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
 			<swiper-slide class="timetable-week-slide">
