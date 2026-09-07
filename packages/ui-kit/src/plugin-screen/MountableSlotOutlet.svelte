@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { isChronosMountable } from '@chronos/core';
 
 	interface Props {
@@ -17,9 +18,11 @@
 
 	$effect(() => {
 		if (!containerEl || !mountable) return;
+		const targetComponent = component;
+		const initialProps = untrack(() => props);
 		let instance: { unmount?(): void } | (() => void) | undefined;
 		try {
-			instance = component.mount(containerEl, props);
+			instance = targetComponent.mount(containerEl, initialProps);
 		} catch (error) {
 			console.error('[MountableSlotOutlet] mount failed:', error);
 			return;

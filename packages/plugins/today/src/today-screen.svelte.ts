@@ -29,6 +29,7 @@ export function createTodayScreenController(): TodayScreenController {
 	let pluginId = '';
 	let scope = $state<TodayScope>('active');
 	let courseEntries = $state.raw<TodayCourseEntry[]>([]);
+	let isDisposed = false;
 
 	let unsubscribeTimeTick: (() => void) | undefined;
 	let unsubscribeTimetableSwitch: (() => void) | undefined;
@@ -41,22 +42,27 @@ export function createTodayScreenController(): TodayScreenController {
 		return getTimetable()?.academicConfig.periodTimes ?? [];
 	}
 
-	const today = $derived(chronosController?.clockTodayIso || todayIsoDate());
-	const now = $derived(chronosController?.clockNow ?? new Date());
+	function getTodayIso(): string {
+		return chronosController?.clockTodayIso || todayIsoDate();
+	}
 
-	const currentPeriodIndex = $derived.by(() => {
+	function getNow(): Date {
+		return chronosController?.clockNow ?? new Date();
+	}
+
+	function getCurrentPeriodIndex(): number | null {
 		const controller = chronosController;
-		const tickNow = controller?.clockNow ?? new Date();
-		void tickNow;
+		if (!controller) return null;
 		const periodTimes = getPeriodTimes();
 		const parsed = parsePeriodRanges(periodTimes);
 		if (parsed.length === 0) {
-			return controller?.currentPeriodIndex ?? null;
+			return controller.currentPeriodIndex ?? null;
 		}
-		return findCurrentPeriodIndex(parsed, currentTimeMinutes(tickNow));
-	});
+		return findCurrentPeriodIndex(parsed, currentTimeMinutes(controller.clockNow));
+	}
 
 	async function refreshCourses() {
+		if (isDisposed) return;
 		const controller = chronosController;
 		const timetable = getTimetable();
 		if (!controller || !timetable) {
@@ -66,11 +72,15 @@ export function createTodayScreenController(): TodayScreenController {
 
 		try {
 			const ctx = controller.getPluginContext(pluginId);
+			const currentToday = getTodayIso();
+			const currentNow = getNow();
 			const hits = await queryTodayCourses(ctx.service(IStorageService), {
-				todayIso: today,
+				todayIso: currentToday,
 				scope,
 				timetable
 			});
+			if (isDisposed || chronosController !== controller) return;
+
 			const periodTimes = getPeriodTimes();
 			const visibleHits = hits.filter((hit) =>
 				isCoursePeriodVisible(hit.course, periodTimes.length)
@@ -78,11 +88,13 @@ export function createTodayScreenController(): TodayScreenController {
 			courseEntries = attachCourseStatuses(
 				visibleHits,
 				periodTimes,
-				currentTimeMinutes(now),
-				currentPeriodIndex
+				currentTimeMinutes(currentNow),
+				getCurrentPeriodIndex()
 			);
 		} catch {
-			courseEntries = [];
+			if (!isDisposed) {
+				courseEntries = [];
+			}
 		}
 	}
 
@@ -98,20 +110,24 @@ export function createTodayScreenController(): TodayScreenController {
 	}
 
 	async function init(controller: ReactiveChronosController, nextPluginId: string) {
+		if (isDisposed) return;
 		if (chronosController) return;
 		chronosController = controller;
 		pluginId = nextPluginId;
 
 		await loadScopeFromConfig();
+		if (isDisposed || chronosController !== controller) return;
 
 		try {
 			const ctx = controller.getPluginContext(pluginId);
 			const timeTickDisposable = ctx.on('time:tick', () => {
+				if (isDisposed) return;
 				void refreshCourses();
 			});
 			unsubscribeTimeTick = () => timeTickDisposable.dispose();
 
 			const timetableSwitchDisposable = ctx.on('timetable:switched', () => {
+				if (isDisposed) return;
 				void refreshCourses();
 			});
 			unsubscribeTimetableSwitch = () => timetableSwitchDisposable.dispose();
@@ -119,10 +135,12 @@ export function createTodayScreenController(): TodayScreenController {
 			// Plugin context unavailable during teardown.
 		}
 
+		if (isDisposed || chronosController !== controller) return;
 		await refreshCourses();
 	}
 
 	async function persistScope(nextScope: TodayScope) {
+		if (isDisposed) return;
 		if (nextScope !== scope) {
 			haptic.medium();
 		}
@@ -135,10 +153,12 @@ export function createTodayScreenController(): TodayScreenController {
 		} catch {
 			// Keep local state if persistence fails.
 		}
+		if (isDisposed) return;
 		await refreshCourses();
 	}
 
 	function dispose() {
+		isDisposed = true;
 		unsubscribeTimeTick?.();
 		unsubscribeTimeTick = undefined;
 		unsubscribeTimetableSwitch?.();
@@ -149,6 +169,7 @@ export function createTodayScreenController(): TodayScreenController {
 	}
 
 	$effect(() => {
+		if (isDisposed) return;
 		const controller = chronosController;
 		if (!controller) return;
 		void controller.clockNow;
@@ -161,10 +182,10 @@ export function createTodayScreenController(): TodayScreenController {
 
 	return {
 		get today() {
-			return today;
+			return getTodayIso();
 		},
 		get now() {
-			return now;
+			return getNow();
 		},
 		get scope() {
 			return scope;
@@ -173,7 +194,7 @@ export function createTodayScreenController(): TodayScreenController {
 			return courseEntries;
 		},
 		get currentPeriodIndex() {
-			return currentPeriodIndex;
+			return getCurrentPeriodIndex();
 		},
 		init,
 		dispose,

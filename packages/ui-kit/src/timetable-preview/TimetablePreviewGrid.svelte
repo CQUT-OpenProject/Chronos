@@ -235,7 +235,8 @@
 							>
 								<span class="text-body-medium font-bold">{period.index}</span>
 								<span
-									class="text-caption mt-1 leading-tight {period.index === currentPeriodIndex
+									class="text-caption mt-1 font-mono leading-tight {period.index ===
+									currentPeriodIndex
 										? ''
 										: 'text-on-surface-variant'}"
 								>

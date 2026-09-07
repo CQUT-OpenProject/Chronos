@@ -147,4 +147,20 @@ describe('createShellTabController', () => {
 		expect(shellTab.activeTabId).toBe('mine');
 		todayHandle.dispose();
 	});
+
+	it('restores defaultLaunch after a plugin tab reload drops the active tab', async () => {
+		const todayHandle = await engine.loadPlugin(createTodayTabPlugin());
+		const shellTab = createShellTabController(() => controller);
+		shellTab.init();
+		expect(shellTab.activeTabId).toBe('today');
+
+		todayHandle.dispose();
+		shellTab.reconcileActiveTab();
+		expect(shellTab.activeTabId).toBe('timetable');
+
+		const reloadedHandle = await engine.loadPlugin(createTodayTabPlugin());
+		shellTab.reconcileActiveTab();
+		expect(shellTab.activeTabId).toBe('today');
+		reloadedHandle.dispose();
+	});
 });

@@ -36,6 +36,9 @@
 
 	function handleTabClick(event: MouseEvent, tab: BottomTabSlotContribution) {
 		haptic.light();
+		if (timetableScreen?.state.isEditing && tab.hostPanel !== 'timetable') {
+			timetableScreen.setEditing(false);
+		}
 		if (tab.onClick) {
 			const ctx = controller.getPluginContextForSlot('shell.bottom-bar.tab', tab.id);
 			void tab.onClick(event, ctx);

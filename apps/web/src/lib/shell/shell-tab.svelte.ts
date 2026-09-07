@@ -27,9 +27,9 @@ export function createShellTabController(getController: () => ReactiveChronosCon
 		if (!initialized) return;
 		const controller = getController();
 		const tabs = controller.getSlots('shell.bottom-bar.tab');
+		const defaultTab = resolveDefaultLaunchTab(tabs);
 
 		if (defaultLaunchPending) {
-			const defaultTab = resolveDefaultLaunchTab(tabs);
 			if (defaultTab) {
 				activateTab(defaultTab.id);
 				defaultLaunchPending = false;
@@ -38,7 +38,15 @@ export function createShellTabController(getController: () => ReactiveChronosCon
 		}
 
 		if (tabs.some((tab) => tab.id === activeTabId)) return;
+
+		if (defaultTab) {
+			activateTab(defaultTab.id);
+			defaultLaunchPending = false;
+			return;
+		}
+
 		activateTab(pickFallbackTabId(controller));
+		defaultLaunchPending = true;
 	}
 
 	function init(): void {

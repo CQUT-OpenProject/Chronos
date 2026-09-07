@@ -22,6 +22,7 @@ import {
 	weekFromSlideIndex
 } from './week-navigation';
 import { buildWeekViewport, createWeekLayoutCache } from './week-viewport';
+import { createTimetableInteraction } from './timetable-interaction.svelte';
 
 const calendarService = new AcademicCalendarService();
 
@@ -42,6 +43,7 @@ interface TimetableScreenState {
 	isCurrentWeek: boolean;
 	currentPeriodIndex: number | null;
 	expandedSlots: ReadonlySet<string>;
+	isEditing: boolean;
 	weekGridModels: Map<number, TimetableGridModel>;
 	weekCourseDisplayModels: Map<number, TimetableCourseDisplayModel[]>;
 	weekLayouts: Map<number, TimetableWeekLayoutResult>;
@@ -55,6 +57,7 @@ export function getTimetableScreen(): TimetableScreenController {
 function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
 	let expandedSlots = $state(new SvelteSet<string>());
+	const interaction = createTimetableInteraction();
 	let displayedWeekMemory = $state(1);
 	let displayedWeekTimetableIdMemory = $state<string | null>(null);
 
@@ -156,6 +159,7 @@ function createTimetableScreen() {
 			isCurrentWeek,
 			currentPeriodIndex,
 			expandedSlots,
+			isEditing: interaction.isEditing,
 			weekGridModels,
 			weekCourseDisplayModels,
 			weekLayouts
@@ -173,11 +177,13 @@ function createTimetableScreen() {
 
 	function destroy() {
 		shellRef = null;
+		interaction.destroy();
 	}
 
 	function setDisplayedWeek(week: number) {
 		const timetable = currentTimetable();
 		if (!timetable) return;
+		interaction.exitEdit();
 		const { startWeek, endWeek } = academicBounds(timetable);
 		displayedWeekMemory = clampDisplayedWeek(week, startWeek, endWeek);
 		displayedWeekTimetableIdMemory = timetable.id;
@@ -186,6 +192,7 @@ function createTimetableScreen() {
 	function jumpToCurrentWeek() {
 		const timetable = currentTimetable();
 		if (!timetable) return;
+		interaction.exitEdit();
 		trackEvent('timetable_week_jump_current');
 		const today = shellRef?.controller.clockTodayIso ?? '';
 		const academicWeek = calendarService.calculateAcademicWeek(today, timetable.academicConfig);
@@ -217,9 +224,21 @@ function createTimetableScreen() {
 		return expandedSlots.has(slotKey);
 	}
 
+	function setEditing(editing: boolean) {
+		if (editing) interaction.enterEdit();
+		else interaction.exitEdit();
+	}
+
+	function toggleEditing() {
+		interaction.toggleEditing();
+	}
+
 	return {
 		get state() {
 			return state;
+		},
+		get interaction() {
+			return interaction;
 		},
 		init,
 		refresh,
@@ -229,7 +248,9 @@ function createTimetableScreen() {
 		settlePagerAtSlide,
 		expandSlot,
 		collapseSlot,
-		isSlotExpanded
+		isSlotExpanded,
+		setEditing,
+		toggleEditing
 	};
 }
 

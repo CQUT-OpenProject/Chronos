@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vite-plus/test';
 import {
 	parseIsoDate,
 	formatIsoDate,
+	formatFullDate,
+	formatCompactDate,
 	formatSlashDate,
 	previousOrSameMonday,
 	addDays,
@@ -17,7 +19,9 @@ describe('Date & AcademicCalendar in @chronos/core', () => {
 	it('parses and formats ISO dates', () => {
 		const parsed = parseIsoDate('2026-03-02');
 		expect(formatIsoDate(parsed)).toBe('2026-03-02');
-		expect(formatSlashDate('2026-03-02')).toBe('2026/3/2');
+		expect(formatFullDate('2026-03-02')).toBe('2026/03/02');
+		expect(formatCompactDate('2026-03-02')).toBe('03/02');
+		expect(formatSlashDate('2026-03-02')).toBe('2026/03/02');
 	});
 
 	it('computes previous or same Monday correctly', () => {

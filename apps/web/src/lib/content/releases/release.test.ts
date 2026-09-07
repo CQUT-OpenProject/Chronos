@@ -5,6 +5,7 @@ import {
 	parseFrontmatter,
 	parseReleaseVersion
 } from './release';
+import { formatPublishedDate } from './release-display';
 
 describe('normalizeReleaseTag', () => {
 	it('prefixes bare versions with v', () => {
@@ -59,5 +60,17 @@ publishedAt: 2026-08-18
 		const result = parseFrontmatter('纯正文文本');
 		expect(result.name).toBeUndefined();
 		expect(result.body).toBe('纯正文文本');
+	});
+});
+
+describe('formatPublishedDate', () => {
+	it('formats date string using full date YYYY/MM/DD', () => {
+		expect(formatPublishedDate('2026-03-02')).toBe('2026/03/02');
+		expect(formatPublishedDate('2026-11-09')).toBe('2026/11/09');
+	});
+
+	it('handles invalid or empty values gracefully', () => {
+		expect(formatPublishedDate('')).toBe('-');
+		expect(formatPublishedDate('invalid')).toBe('invalid');
 	});
 });
