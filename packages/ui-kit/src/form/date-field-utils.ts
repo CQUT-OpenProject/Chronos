@@ -1,5 +1,7 @@
 import { parseDate, type DateValue } from '@internationalized/date';
-import { formatSlashDate } from '@chronos/core';
+import { formatFullDate, formatCompactDate } from '@chronos/core';
+
+export { formatFullDate, formatCompactDate };
 
 export interface DateFieldLabels {
 	placeholder: string;
@@ -42,7 +44,7 @@ export function calendarDateToIso(value: DateValue | undefined): string {
 
 export function formatDateDisplay(iso: unknown): string {
 	if (!isValidIsoDateString(iso)) return '';
-	return formatSlashDate((iso as string).trim());
+	return formatFullDate((iso as string).trim());
 }
 
 export function appLocaleToBcp47(locale: string | undefined | null): string {

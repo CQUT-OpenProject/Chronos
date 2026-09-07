@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import {
+		ALL_CORNERS_ROUNDED,
 		placeCapsules,
 		type Course,
 		type CoursePaletteEntry,
@@ -9,7 +11,7 @@
 		type TimetableCourseDisplayModel,
 		type TimetableGridModel
 	} from '@chronos/core';
-	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
+	import type { CapsuleCornerStyle, CapsuleCorners, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
 	import { capsuleCornerAttrs } from '@chronos/ui-kit/timetable/capsule-corners';
 	import {
@@ -34,6 +36,13 @@
 		timetableSolidBgClass
 	} from '@chronos/ui-kit';
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
+	import { createGridGestureHandlers } from '$lib/timetable/grid-gesture';
+	import { rearrangeCourseSchedule } from '$lib/timetable/course-reorder';
+	import type {
+		TimetableDragSession,
+		TimetableInteraction
+	} from '$lib/timetable/timetable-interaction.svelte';
+	import { haptic } from '$lib/haptic/haptic';
 
 	const SCROLL_ROW_HEIGHT = '5.5rem';
 	const SIDEBAR_WIDTH_REM = 3.25;
@@ -58,6 +67,7 @@
 		layoutMode?: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick?: (course: Course) => void;
+		interaction: TimetableInteraction;
 	}
 
 	let {
@@ -73,16 +83,52 @@
 		paletteCourses,
 		layoutMode = 'fixed',
 		capsuleCornerStyle = 'sharp',
-		onCourseClick
+		onCourseClick,
+		interaction
 	}: Props = $props();
+
+	const isEditing = $derived(interaction.isEditing);
+	const dragState = $derived(interaction.drag?.week === displayedWeek ? interaction.drag : null);
 
 	const controller = getAppController();
 
 	let scrollContainer = $state<HTMLDivElement | undefined>();
+	let gridBodyEl = $state<HTMLDivElement | undefined>();
 	let bodyViewportHeight = $state(0);
 	let gridBodyWidth = $state(estimateGridBodyWidth());
 	let centeredFor = $state<string | null>(null);
 	let internalExpandedSlots = $state(new Set<string>());
+
+	interface DragSettlePreview {
+		courseId: string;
+		targetColIndex: number;
+		targetDayOfWeek: number;
+		targetStartPeriod: number;
+		course: Course;
+		placed: PlacedCourseCapsule;
+	}
+
+	let settling = $state<DragSettlePreview | null>(null);
+
+	const concealedCourseId = $derived(dragState?.course.id ?? settling?.courseId ?? null);
+
+	const dropPreview = $derived(
+		dragState
+			? {
+					targetColIndex: dragState.targetColIndex,
+					targetStartPeriod: dragState.targetStartPeriod,
+					course: dragState.course,
+					placed: dragState.placed
+				}
+			: settling
+				? {
+						targetColIndex: settling.targetColIndex,
+						targetStartPeriod: settling.targetStartPeriod,
+						course: settling.course,
+						placed: settling.placed
+					}
+				: null
+	);
 
 	const effectiveExpandedSlots = $derived(propExpandedSlots ?? internalExpandedSlots);
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
@@ -103,11 +149,20 @@
 
 	const solidBgClass = $derived(timetableSolidBgClass(hasDynamicBackground));
 	const isFitLayout = $derived(layoutMode === 'compact');
+	const capsuleLayoutReady = $derived(!isFitLayout || bodyViewportHeight > 0);
 	const rowHeightCss = $derived.by(() => {
 		if (!isFitLayout || bodyViewportHeight <= 0 || gridModel.displayedPeriodCount <= 0) {
 			return SCROLL_ROW_HEIGHT;
 		}
 		return `${bodyViewportHeight / gridModel.displayedPeriodCount}px`;
+	});
+	const rowHeightInPx = $derived.by(() => {
+		if (isFitLayout && bodyViewportHeight > 0 && gridModel.displayedPeriodCount > 0) {
+			return bodyViewportHeight / gridModel.displayedPeriodCount;
+		}
+		if (typeof window === 'undefined') return 88;
+		const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+		return 5.5 * rem;
 	});
 
 	function scrollToCurrentPeriod(smooth = false): boolean {
@@ -212,11 +267,256 @@
 		observer.observe(node);
 		return () => observer.disconnect();
 	};
+
+	function capturePointer(event: PointerEvent) {
+		const targetEl =
+			(event.currentTarget as HTMLElement | null) ??
+			(event.target as HTMLElement | null)?.closest<HTMLElement>('.course-capsule');
+		if (targetEl && typeof targetEl.setPointerCapture === 'function') {
+			try {
+				targetEl.setPointerCapture(event.pointerId);
+			} catch {
+				// ignore if pointer is not capturable
+			}
+		}
+	}
+
+	function startDrag(placed: PlacedCourseCapsule, event: PointerEvent, fromLongPress: boolean) {
+		settling = null;
+		if (!placed.displayModel.isInDisplayedWeek) {
+			if (fromLongPress && !interaction.isEditing) {
+				haptic.heavy();
+				interaction.enterEdit();
+			}
+			return;
+		}
+
+		const persistAfterDrop = interaction.mode === 'edit';
+		if (fromLongPress) {
+			haptic.heavy();
+		} else {
+			haptic.light();
+		}
+
+		capturePointer(event);
+
+		const initialColIndex = gridModel.visibleDays.findIndex(
+			(d) => d.dayOfWeek === placed.course.dayOfWeek
+		);
+
+		interaction.beginDrag({
+			course: placed.course,
+			placed,
+			pointerId: event.pointerId,
+			week: displayedWeek,
+			targetColIndex: initialColIndex >= 0 ? initialColIndex : 0,
+			targetDayOfWeek: placed.course.dayOfWeek,
+			targetStartPeriod: placed.course.startPeriod,
+			persistAfterDrop
+		});
+	}
+
+	function handleWindowPointerMove(event: PointerEvent) {
+		if (!dragState || event.pointerId !== dragState.pointerId) return;
+
+		if (gridBodyEl && visibleDayCount > 0 && gridModel.displayedPeriodCount > 0) {
+			const gridRect = gridBodyEl.getBoundingClientRect();
+			const relX = event.clientX - gridRect.left;
+			const relY = event.clientY - gridRect.top;
+
+			const colWidth = gridRect.width / visibleDayCount;
+			let colIdx = Math.floor(relX / colWidth);
+			colIdx = Math.max(0, Math.min(colIdx, visibleDayCount - 1));
+			const targetDay = gridModel.visibleDays[colIdx]?.dayOfWeek ?? dragState.targetDayOfWeek;
+
+			const rowHeight = gridRect.height / gridModel.displayedPeriodCount;
+			const span = dragState.course.endPeriod - dragState.course.startPeriod + 1;
+			let periodIdx = Math.floor(relY / rowHeight) + 1;
+			periodIdx = Math.max(1, Math.min(periodIdx, gridModel.displayedPeriodCount - span + 1));
+
+			if (
+				interaction.updateDragTarget({
+					targetColIndex: colIdx,
+					targetDayOfWeek: targetDay,
+					targetStartPeriod: periodIdx
+				})
+			) {
+				haptic.selection();
+			}
+		}
+
+		if (scrollContainer && !isFitLayout) {
+			const containerRect = scrollContainer.getBoundingClientRect();
+			const topThreshold = containerRect.top + 48;
+			const bottomThreshold = containerRect.bottom - 48;
+
+			if (event.clientY < topThreshold) {
+				const intensity = Math.min(1, (topThreshold - event.clientY) / 48);
+				scrollContainer.scrollTop -= Math.round(intensity * 12);
+			} else if (event.clientY > bottomThreshold) {
+				const intensity = Math.min(1, (event.clientY - bottomThreshold) / 48);
+				scrollContainer.scrollTop += Math.round(intensity * 12);
+			}
+		}
+	}
+
+	function buildDragUpdate(current: TimetableDragSession): {
+		updatedCourses: Course[];
+		settling: DragSettlePreview;
+	} | null {
+		const academicConfig = controller.currentTimetable?.academicConfig;
+		const totalWeeks = academicConfig
+			? { startWeek: academicConfig.startWeek ?? 1, endWeek: academicConfig.endWeek ?? 20 }
+			: undefined;
+
+		const updatedCourses = rearrangeCourseSchedule({
+			currentCourses: controller.currentTimetable?.courses ?? [],
+			draggedCourseId: current.course.id,
+			targetDayOfWeek: current.targetDayOfWeek,
+			targetStartPeriod: current.targetStartPeriod,
+			currentWeek: displayedWeek,
+			totalWeeks,
+			displayedPeriodCount: gridModel.displayedPeriodCount
+		});
+
+		if (!updatedCourses) return null;
+
+		const span = Math.max(1, current.course.endPeriod - current.course.startPeriod + 1);
+		const clampedStart = Math.max(
+			1,
+			Math.min(current.targetStartPeriod, gridModel.displayedPeriodCount - span + 1)
+		);
+
+		const targetColIndex = gridModel.visibleDays.findIndex(
+			(day) => day.dayOfWeek === current.targetDayOfWeek
+		);
+
+		const targetCourse = updatedCourses.find(
+			(course) =>
+				(course.id === current.course.id || course.name === current.course.name) &&
+				course.dayOfWeek === current.targetDayOfWeek &&
+				course.startPeriod === clampedStart &&
+				(course.weeks.length === 0 || course.weeks.includes(displayedWeek))
+		) ?? {
+			...current.course,
+			dayOfWeek: current.targetDayOfWeek,
+			startPeriod: clampedStart,
+			endPeriod: clampedStart + span - 1
+		};
+
+		return {
+			updatedCourses,
+			settling: {
+				courseId: current.course.id,
+				targetColIndex: targetColIndex >= 0 ? targetColIndex : current.targetColIndex,
+				targetDayOfWeek: current.targetDayOfWeek,
+				targetStartPeriod: clampedStart,
+				course: targetCourse,
+				placed: current.placed
+			}
+		};
+	}
+
+	async function commitDragSession(current: TimetableDragSession) {
+		const update = buildDragUpdate(current);
+		if (!update) return;
+
+		settling = update.settling;
+		try {
+			await controller.saveCurrentTimetableDetails({ courses: update.updatedCourses });
+			haptic.medium();
+			trackEvent('timetable_course_reorder');
+		} catch {
+			settling = null;
+		} finally {
+			await tick();
+			settling = null;
+		}
+	}
+
+	function handleWindowPointerUp(event: PointerEvent) {
+		if (!dragState || event.pointerId !== dragState.pointerId) return;
+		const current = interaction.endDrag();
+		if (current) void commitDragSession(current);
+	}
+
+	function handleWindowPointerCancel(event: PointerEvent) {
+		if (!dragState || event.pointerId !== dragState.pointerId) return;
+		interaction.cancelDrag();
+	}
+
+	const gridGestureHandlers = createGridGestureHandlers({
+		interaction,
+		onEmptyLongPress: () => {
+			haptic.heavy();
+			interaction.enterEdit();
+		},
+		onClickEmpty: () => {
+			if (!interaction.isDragging && !interaction.isClickGuarded()) {
+				haptic.light();
+				interaction.exitEdit();
+			}
+		}
+	});
+
+	$effect(() => {
+		if (!settling) return;
+
+		const matched = placements.some((item) => {
+			if (item.kind === 'course') {
+				return (
+					item.course.dayOfWeek === settling.targetDayOfWeek &&
+					item.course.startPeriod === settling.targetStartPeriod &&
+					item.course.name === settling.course.name
+				);
+			}
+			if (item.kind === 'overlap-placeholder') {
+				return (
+					item.key.startsWith(`${settling.targetDayOfWeek}:`) &&
+					item.geometry.startPeriod <= settling.targetStartPeriod &&
+					settling.targetStartPeriod <= item.geometry.endPeriod
+				);
+			}
+			return false;
+		});
+		if (matched) settling = null;
+	});
+
+	$effect(() => {
+		if (!dragState) return;
+
+		const preventTouchScroll = (e: TouchEvent) => {
+			if (e.cancelable) {
+				e.preventDefault();
+			}
+		};
+
+		window.addEventListener('touchmove', preventTouchScroll, { passive: false });
+		return () => {
+			window.removeEventListener('touchmove', preventTouchScroll);
+		};
+	});
 </script>
 
+<svelte:window
+	onpointermove={dragState ? handleWindowPointerMove : undefined}
+	onpointerup={dragState ? handleWindowPointerUp : undefined}
+	onpointercancel={dragState ? handleWindowPointerCancel : undefined}
+	oncontextmenu={dragState || isEditing ? (e) => e.preventDefault() : undefined}
+	ondragstart={(e) => e.preventDefault()}
+	ondrop={(e) => e.preventDefault()}
+/>
+
 <div
-	class="relative flex h-full w-full flex-col {solidBgClass}"
+	class="relative flex h-full w-full flex-col select-none {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"
+	onpointerdown={gridGestureHandlers.onpointerdown}
+	onpointermove={gridGestureHandlers.onpointermove}
+	onpointerup={gridGestureHandlers.onpointerup}
+	onpointerleave={gridGestureHandlers.onpointerleave}
+	onpointercancel={gridGestureHandlers.onpointercancel}
+	onclick={gridGestureHandlers.onclick}
+	ondragstart={(e) => e.preventDefault()}
 >
 	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
 		<div
@@ -274,7 +574,8 @@
 								{period.index}
 							</span>
 							<span
-								class="text-caption mt-1 leading-tight {period.index === currentPeriodIndex
+								class="text-caption mt-1 font-mono leading-tight {period.index ===
+								currentPeriodIndex
 									? ''
 									: 'text-on-surface-variant'}"
 							>
@@ -286,6 +587,7 @@
 			</aside>
 
 			<div
+				bind:this={gridBodyEl}
 				{@attach gridBodyWidthAttach}
 				class="relative min-w-0 flex-1"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
@@ -300,59 +602,113 @@
 						></div>
 					{/if}
 				{/each}
-				{#each placements as item (item.key)}
-					{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
+				{#if capsuleLayoutReady}
+					{#each placements as item (item.key)}
+						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
+						{@const isConcealed = item.kind === 'course' && item.course.id === concealedCourseId}
+						<div
+							class="absolute box-border overflow-hidden transition-[transform,opacity] duration-200 ease-out {isConcealed
+								? 'opacity-0'
+								: ''}"
+							style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
+							style:left="{item.geometry.leftPercent}%"
+							style:width="{item.geometry.widthPercent}%"
+							style:height="calc(var(--row-height) * {span})"
+							style:transform={isEditing ? 'scale(0.92)' : 'scale(1)'}
+							style:transform-origin="center center"
+						>
+							{#if item.kind === 'overlap-placeholder'}
+								<button
+									type="button"
+									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
+									style={capsuleCornerAttrs(isEditing ? ALL_CORNERS_ROUNDED : item.corners).style}
+									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
+									onclick={() => expandSlot(item.key)}
+								>
+									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
+										{hostT('timetable.grid.overlap', { count: item.count })}
+									</span>
+								</button>
+							{:else}
+								{@render courseCard(item, isEditing ? ALL_CORNERS_ROUNDED : item.corners)}
+							{/if}
+						</div>
+					{/each}
+				{/if}
+				{#if dropPreview}
+					{@const span = dropPreview.course.endPeriod - dropPreview.course.startPeriod + 1}
+					{@const periodEnd = dropPreview.targetStartPeriod + span - 1}
+					{@const periodLabel =
+						dropPreview.targetStartPeriod === periodEnd
+							? hostT('timetable.reorder.periodSingle', { n: dropPreview.targetStartPeriod })
+							: hostT('timetable.reorder.periodRange', {
+									start: dropPreview.targetStartPeriod,
+									end: periodEnd
+								})}
 					<div
-						class="absolute box-border overflow-hidden"
-						style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
-						style:left="{item.geometry.leftPercent}%"
-						style:width="{item.geometry.widthPercent}%"
+						class="pointer-events-none absolute z-20 box-border transition-[top,left,transform] duration-100 ease-out"
+						style:top="calc(var(--row-height) * {dropPreview.targetStartPeriod - 1})"
+						style:left="{(dropPreview.targetColIndex / visibleDayCount) * 100}%"
+						style:width="{100 / visibleDayCount}%"
 						style:height="calc(var(--row-height) * {span})"
+						style:transform="scale(0.92)"
+						style:transform-origin="center center"
 					>
-						{#if item.kind === 'overlap-placeholder'}
-							<button
-								type="button"
-								class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
-								style={capsuleCornerAttrs(item.corners).style}
-								aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
-								onclick={() => expandSlot(item.key)}
+						<div
+							class="flex h-full w-full flex-col items-center justify-center gap-1 border-2 border-dashed border-primary bg-primary/20 p-1.5 text-center shadow-inner"
+							style={capsuleCornerAttrs(ALL_CORNERS_ROUNDED).style}
+						>
+							<span class="line-clamp-2 px-1 text-xs font-semibold text-primary">
+								{dropPreview.course.name}
+							</span>
+							<span
+								class="inline-flex max-w-full items-center justify-center rounded-full bg-surface-container-highest/90 px-1.5 py-0.5 text-center leading-none font-medium whitespace-nowrap text-on-surface tabular-nums shadow-xs"
+								{@attach createFitWidthFontAttachment(() => ({
+									lines: [periodLabel],
+									maxFontPx: 11,
+									minFontPx: 7,
+									fromParent: true
+								}))}
 							>
-								<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
-									{hostT('timetable.grid.overlap', { count: item.count })}
-								</span>
-							</button>
-						{:else}
-							{@render courseCard(item)}
-						{/if}
+								{periodLabel}
+							</span>
+						</div>
 					</div>
-				{/each}
+				{/if}
 			</div>
 		</div>
 	</div>
 </div>
 
-{#snippet courseCard(placed: PlacedCourseCapsule)}
+{#snippet courseCard(placed: PlacedCourseCapsule, displayCorners: CapsuleCorners)}
 	{@const colors = placed.colors}
 	{@const scale = placed.scale}
 	{@const locationLines = placed.locationLines}
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
 	{@const handlers = createCourseCardHandlers(placed.course, {
-		onCourseClick
+		interaction,
+		onCourseClick: isEditing ? undefined : onCourseClick,
+		onLongPress: (_c, event) => startDrag(placed, event, true),
+		onDragStart: (_c, event) => startDrag(placed, event, false)
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
 	{@const innerWidthPx = courseCapsuleInnerWidthPx(columnWidthPx, placed.geometry.widthPercent)}
 	<button
 		type="button"
-		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {placed
-			.displayModel.isHolidayMuted
+		draggable="false"
+		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left select-none {isEditing
+			? 'cursor-grab active:cursor-grabbing'
+			: ''} {placed.displayModel.isHolidayMuted
 			? 'opacity-40'
 			: placed.displayModel.isInDisplayedWeek
 				? ''
 				: 'opacity-45'}"
-		style="{capsuleCornerAttrs(placed.corners)
-			.style}; --capsule: {colors.background}; --capsule-fg: {colors.text}"
+		style="{capsuleCornerAttrs(displayCorners)
+			.style}; --capsule: {colors.background}; --capsule-fg: {colors.text}; touch-action: {isEditing
+			? 'none'
+			: 'pan-y'}; -webkit-user-drag: none; user-select: none;"
 		aria-label={buildCourseCapsuleAriaLabel(placed.course, {
 			teacher,
 			isHolidayMuted: placed.displayModel.isHolidayMuted
@@ -363,6 +719,8 @@
 		onpointerleave={handlers.onpointerleave}
 		onpointercancel={handlers.onpointercancel}
 		onclick={handlers.onclick}
+		ondragstart={(event) => event.preventDefault()}
+		oncontextmenu={(event) => event.preventDefault()}
 	>
 		{#if badgeText}
 			<span class="mb-0.5 flex w-full shrink-0 justify-center">

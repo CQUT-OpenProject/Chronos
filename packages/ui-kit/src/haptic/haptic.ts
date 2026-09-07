@@ -32,6 +32,18 @@ function hasNavigatorVibrate(): boolean {
 	return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 }
 
+function canNavigatorVibrate(): boolean {
+	if (!hasNavigatorVibrate()) return false;
+	if (
+		typeof navigator !== 'undefined' &&
+		'userActivation' in navigator &&
+		navigator.userActivation != null
+	) {
+		return navigator.userActivation.hasBeenActive;
+	}
+	return true;
+}
+
 /**
  * True when Vibration API is available, or a native haptic bridge is injected
  * (iOS WKWebView often has no navigator.vibrate but can still feel native).
@@ -55,7 +67,7 @@ export function isHapticFeedbackEnabled(): boolean {
 }
 
 function vibrateFallback(pattern: number | number[]): boolean {
-	if (!hasNavigatorVibrate()) return false;
+	if (!canNavigatorVibrate()) return false;
 	try {
 		return navigator.vibrate(pattern);
 	} catch {
@@ -118,6 +130,7 @@ export function triggerVibrate(pattern: number | number[]): boolean {
 
 /** Vibration API fallbacks (restored pre-native durations, slightly strengthened). */
 const FALLBACK = {
+	selection: 15,
 	light: 25,
 	medium: 50,
 	heavy: 80,
@@ -126,6 +139,11 @@ const FALLBACK = {
 };
 
 export const haptic = {
+	/** 选择/步进反馈：吸附、拖拽槽位切换 (~15ms fallback) */
+	selection(): boolean {
+		return triggerNativeOrVibrate({ method: 'selection' }, FALLBACK.selection);
+	},
+
 	/** 轻微反馈：Tab 切换、按钮/开关点击、Radio 勾选 (~25ms fallback) */
 	light(): boolean {
 		return triggerNativeOrVibrate({ method: 'impact', params: { style: 'light' } }, FALLBACK.light);
@@ -162,7 +180,7 @@ export const haptic = {
 
 	/** 取消当前正在进行的振动（vibrate only; native hosts clear themselves） */
 	cancel(): boolean {
-		if (hasNavigatorVibrate()) {
+		if (canNavigatorVibrate()) {
 			try {
 				return navigator.vibrate(0);
 			} catch {

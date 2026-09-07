@@ -1826,38 +1826,42 @@ function dr(e) {
 	return `${e.getUTCFullYear()}-${String(e.getUTCMonth() + 1).padStart(2, "0")}-${String(e.getUTCDate()).padStart(2, "0")}`;
 }
 function fr(e) {
+	let [, t, n] = e.split("-");
+	return `${t.padStart(2, "0")}/${n.padStart(2, "0")}`;
+}
+function pr(e) {
 	let t = new Date(e.getTime()), n = t.getUTCDay(), r = n === 0 ? -6 : 1 - n;
 	return t.setUTCDate(t.getUTCDate() + r), t;
 }
-function pr(e, t) {
+function mr(e, t) {
 	let n = new Date(e.getTime());
 	return n.setUTCDate(n.getUTCDate() + t), n;
 }
-function mr(e, t) {
-	return pr(e, t * 7);
-}
 function hr(e, t) {
-	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+	return mr(e, t * 7);
 }
 function gr(e, t) {
+	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+}
+function _r(e, t) {
 	return e.getTime() < t.getTime();
 }
-function _r(e) {
-	return dr(fr($(e)));
+function vr(e) {
+	return dr(pr($(e)));
 }
-function vr(e = /* @__PURE__ */ new Date()) {
+function yr(e = /* @__PURE__ */ new Date()) {
 	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
 }
 //#endregion
 //#region packages/core/src/algorithms/calendar.ts
-var yr = class {
+var br = class {
 	normalizeTermStartDate(e, t) {
-		let n = $(_r(t));
-		if (!e || !e.trim()) return dr(fr(n));
+		let n = $(vr(t));
+		if (!e || !e.trim()) return dr(pr(n));
 		try {
-			return dr(fr($(e)));
+			return dr(pr($(e)));
 		} catch {
-			return dr(fr(this.inferTermStartDateFromTermName(e) || n));
+			return dr(pr(this.inferTermStartDateFromTermName(e) || n));
 		}
 	}
 	inferTermStartDateFromTermName(e) {
@@ -1873,62 +1877,62 @@ var yr = class {
 			endWeek: 20,
 			periodTimes: []
 		}, r = $(this.normalizeTermStartDate(n.termStartDate, e)), i = $(e);
-		if (gr(i, r)) return n.startWeek;
-		let a = hr(r, i);
+		if (_r(i, r)) return n.startWeek;
+		let a = gr(r, i);
 		return Math.min(Math.max(n.startWeek + a, n.startWeek), n.endWeek);
 	}
 	resolveWeekStart(e, t, n) {
-		return dr(mr($(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
+		return dr(hr($(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
 	}
 	resolveCourseDate(e, t, n, r) {
-		return dr(pr($(this.resolveWeekStart(e, t, r)), n - 1));
+		return dr(mr($(this.resolveWeekStart(e, t, r)), n - 1));
 	}
 };
 //#endregion
 //#region packages/core/src/algorithms/holiday-calendar.ts
-function br(e) {
+function xr(e) {
 	let { holidayCalendar: t, ...n } = e;
 	return n;
 }
-async function xr(e) {
+async function Sr(e) {
 	let t = await e.listTimetables(), n = 0;
 	for (let r of t) {
 		let t = await e.getTimetable(r.id);
 		if (!t?.academicConfig.holidayCalendar) continue;
 		let i = {
 			...t,
-			academicConfig: br(t.academicConfig),
+			academicConfig: xr(t.academicConfig),
 			updatedAt: Date.now()
 		};
 		await e.saveTimetable(i), n += 1;
 	}
 	return n;
 }
-function Sr(e, t = vr()) {
-	let n = new yr(), r = $(n.resolveWeekStart(e, e.startWeek, t)), i = pr($(n.resolveWeekStart(e, e.endWeek, t)), 6);
+function Cr(e, t = yr()) {
+	let n = new br(), r = $(n.resolveWeekStart(e, e.startWeek, t)), i = mr($(n.resolveWeekStart(e, e.endWeek, t)), 6);
 	return {
 		startDate: dr(r),
 		endDate: dr(i)
 	};
 }
-function Cr(e, t, n = vr()) {
-	let { startDate: r, endDate: i } = Sr(t, n);
+function wr(e, t, n = yr()) {
+	let { startDate: r, endDate: i } = Cr(t, n);
 	return e.filter((e) => e.date >= r && e.date <= i);
 }
-function wr(e, t = vr()) {
-	let { startDate: n, endDate: r } = Sr(e, t), i = Number.parseInt(n.slice(0, 4), 10), a = Number.parseInt(r.slice(0, 4), 10), o = /* @__PURE__ */ new Set();
+function Tr(e, t = yr()) {
+	let { startDate: n, endDate: r } = Cr(e, t), i = Number.parseInt(n.slice(0, 4), 10), a = Number.parseInt(r.slice(0, 4), 10), o = /* @__PURE__ */ new Set();
 	for (let e = i; e <= a; e += 1) o.add(e);
 	return o.size === 0 && o.add(Number.parseInt(t.slice(0, 4), 10)), [...o].sort((e, t) => e - t);
 }
 //#endregion
 //#region packages/core/src/types/services.ts
-function Tr(e) {
+function Er(e) {
 	return { key: e };
 }
-var Er = Tr("http"), Dr = Tr("storage");
+var Dr = Er("http"), Or = Er("storage");
 //#endregion
 //#region packages/core/src/i18n/i18n-catalog.ts
-function Or(e, t) {
+function kr(e, t) {
 	return t ? e.replace(/\{(\w+)\}/g, (e, n) => {
 		let r = t[n];
 		return r == null ? `{${n}}` : typeof r == "string" || typeof r == "number" || typeof r == "boolean" ? String(r) : JSON.stringify(r);
@@ -1936,23 +1940,23 @@ function Or(e, t) {
 }
 //#endregion
 //#region packages/core/src/types/mountable.ts
-var kr = Symbol.for("chronos.mountable");
+var Ar = Symbol.for("chronos.mountable");
 new Set(/* @__PURE__ */ "color.surface,color.on-surface,color.primary,color.on-primary,color.surface-variant,color.outline,color.secondary,color.primary-dim,color.primary-container,color.on-primary-container,color.inverse-primary,color.secondary-dim,color.on-secondary,color.secondary-container,color.on-secondary-container,color.primary-container-subtle,color.on-primary-container-subtle,color.secondary-container-subtle,color.on-secondary-container-subtle,color.outline-variant,color.surface-container-high,color.canvas,color.ink,color.border-subtle,color.success,color.warning,color.danger,shell.bottomTab.activeBackground,shell.bottomTab.activeForeground,shell.bottomBar.background,shell.topBar.background,leadingIcon.background,leadingIcon.color,leadingIcon.backgroundPrimary,leadingIcon.colorPrimary,leadingIcon.backgroundSecondary,leadingIcon.colorSecondary,leadingIcon.backgroundTertiary,leadingIcon.colorTertiary,leadingIcon.backgroundNeutral,leadingIcon.colorNeutral,timetable.period.activeBackground,timetable.period.activeBackgroundImage".split(","));
 //#endregion
 //#region packages/core/src/plugin/define-chronos-plugin.ts
-function Ar(e, t, n = "zh-cn") {
+function jr(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
-function jr() {
-	return "0.4.8";
+function Mr() {
+	return "0.5.0";
 }
-function Mr(e) {
+function Nr(e) {
 	let t;
 	return {
 		id: e.id,
-		name: () => t?.(e.nameKey) ?? Ar(e.messages, e.nameKey),
-		version: e.version ?? jr(),
-		description: e.descriptionKey ? () => t?.(e.descriptionKey) ?? Ar(e.messages, e.descriptionKey) : void 0,
+		name: () => t?.(e.nameKey) ?? jr(e.messages, e.nameKey),
+		version: e.version ?? Mr(),
+		description: e.descriptionKey ? () => t?.(e.descriptionKey) ?? jr(e.messages, e.descriptionKey) : void 0,
 		category: e.category,
 		order: e.order,
 		author: e.author,
@@ -1969,21 +1973,13 @@ function Mr(e) {
 	};
 }
 //#endregion
-//#region packages/ui-kit/src/schema-form/inputs/WallpaperPreviewField.svelte
-typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Q(["input"]), Q(["change"]), Q(["change"]), Q(["change"]), Q(["click"]), Q(["change"]);
-//#endregion
-//#region packages/ui-kit/src/form/date-field-utils.ts
-function Nr(e) {
-	return e?.toLowerCase() === "en" ? "en" : "zh-CN";
-}
-//#endregion
 //#region packages/ui-kit/src/plugin-screen/PluginScreenContainer.svelte
-Q(["click"]), Q(["click"]), Q(["click"]);
+typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Q(["input"]), Q(["change"]), Q(["change"]), Q(["change"]), Q(["click"]), Q(["change"]), Q(["click"]), Q(["click"]), Q(["click"]);
 //#endregion
 //#region packages/ui-kit/src/plugin-screen/mountable-svelte.ts
 function Pr(e) {
 	return {
-		[kr]: !0,
+		[Ar]: !0,
 		mount(t, n) {
 			let r = Yn(e, {
 				target: t,
@@ -1999,10 +1995,10 @@ function Pr(e) {
 //#region packages/ui-kit/src/i18n/plugin-text.ts
 function Fr(e, t, n, r, i) {
 	let a = n["zh-cn"][r] ?? n.en?.[r] ?? String(r);
-	if (!e) return Or(a, i);
+	if (!e) return kr(a, i);
 	e.slotVersion;
 	let o = e.translatePlugin(t, r, i);
-	return o === r ? Or(a, i) : o;
+	return o === r ? kr(a, i) : o;
 }
 //#endregion
 //#region packages/plugins/calendar-holidays/src/messages.ts
@@ -2464,7 +2460,7 @@ async function Hr(e, t) {
 //#region packages/plugins/calendar-holidays/src/holiday-sync.ts
 var Ur = /* @__PURE__ */ new Map();
 async function Wr(e) {
-	return xr(e.service(Dr));
+	return Sr(e.service(Or));
 }
 function Gr(e, t) {
 	if (!e?.syncedAt || !e.syncedYears?.length) return !0;
@@ -2485,10 +2481,10 @@ async function qr(e, t = {}) {
 	return e.state.currentTimetable ? Kr(e, t) : !1;
 }
 async function Jr(e, t, n, r) {
-	let i = wr(n), a = e.service(Dr), o = await a.getTimetable(t);
+	let i = Tr(n), a = e.service(Or), o = await a.getTimetable(t);
 	if (!o) throw Error(`Timetable not found: ${t}`);
 	if (!r.force && !Gr(o.academicConfig.holidayCalendar, i)) return !1;
-	let { holidays: s } = await Hr(e.service(Er), i), c = {
+	let { holidays: s } = await Hr(e.service(Dr), i), c = {
 		holidays: s,
 		syncedAt: Date.now(),
 		syncedYears: [...i]
@@ -2508,7 +2504,7 @@ async function Jr(e, t, n, r) {
 //#region packages/plugins/calendar-holidays/src/index.ts
 function Yr(e = {}) {
 	let { screenComponent: t } = e, n;
-	return Mr({
+	return Nr({
 		id: Lr,
 		messages: Ir,
 		nameKey: "plugin.name",
@@ -2557,7 +2553,7 @@ function Yr(e = {}) {
 var Xr = /* @__PURE__ */ Bn("<p class=\"text-body-medium py-6 text-center text-on-surface-variant\"> </p>"), Zr = /* @__PURE__ */ Bn("<li class=\"py-3\"><span class=\"text-body-medium text-on-surface\"> </span></li>"), Qr = /* @__PURE__ */ Bn("<ul class=\"divide-y divide-outline/10\"></ul>"), $r = /* @__PURE__ */ Bn("<div class=\"mt-3 flex flex-col gap-4\"></div>"), ei = /* @__PURE__ */ Bn("<p class=\"text-body-small text-error\"> </p>"), ti = /* @__PURE__ */ Bn("<div class=\"flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4\"><section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <button type=\"button\" class=\"text-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50\"> </button> <div class=\"mt-3 flex items-center justify-between gap-3\"><a class=\"text-body-small shrink-0 text-primary\" href=\"https://github.com/NateScarlet/holiday-cn\" target=\"_blank\" rel=\"noreferrer\"> </a> <p class=\"text-body-small text-right text-on-surface-variant\"> </p></div></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"text-title-small text-on-surface\"> </h3> <!></section> <!></div>");
 function ni(e, t) {
 	je(t, !0);
-	let n = /* @__PURE__ */ F(!1), r = /* @__PURE__ */ F(null), i = /* @__PURE__ */ Xe(() => t.controller.currentTimetable), a = /* @__PURE__ */ Xe(() => Z(i)?.academicConfig.holidayCalendar), o = /* @__PURE__ */ Xe(() => Z(i) && Z(a) ? Cr(Z(a).holidays, Z(i).academicConfig) : []), s = /* @__PURE__ */ Xe(() => u(Z(o))), c = /* @__PURE__ */ Xe(() => !!Z(a)?.syncedAt);
+	let n = /* @__PURE__ */ F(!1), r = /* @__PURE__ */ F(null), i = /* @__PURE__ */ Xe(() => t.controller.currentTimetable), a = /* @__PURE__ */ Xe(() => Z(i)?.academicConfig.holidayCalendar), o = /* @__PURE__ */ Xe(() => Z(i) && Z(a) ? wr(Z(a).holidays, Z(i).academicConfig) : []), s = /* @__PURE__ */ Xe(() => u(Z(o))), c = /* @__PURE__ */ Xe(() => !!Z(a)?.syncedAt);
 	function l(e) {
 		return Fr(t.controller, Lr, Ir, e);
 	}
@@ -2573,21 +2569,13 @@ function ni(e, t) {
 		}));
 	}
 	function d(e, t) {
-		let n = /* @__PURE__ */ new Date(`${e.date}T12:00:00`), r = n.toLocaleDateString(t, {
-			month: "long",
-			day: "numeric"
-		}), i = n.toLocaleDateString(t, { weekday: "short" });
+		let n = /* @__PURE__ */ new Date(`${e.date}T12:00:00`), r = fr(e.date), i = n.toLocaleDateString(t, { weekday: "short" });
 		return l("screen.list.row").replace("{date}", r).replace("{label}", e.label).replace("{weekday}", i);
 	}
 	function f(e) {
 		if (!e) return l("screen.sync.never");
-		let n = new Date(e);
-		return l("screen.sync.last").replace("{time}", n.toLocaleString(Nr(t.controller.currentLocale), {
-			month: "numeric",
-			day: "numeric",
-			hour: "2-digit",
-			minute: "2-digit"
-		}));
+		let t = new Date(e), n = t.getFullYear(), r = String(t.getMonth() + 1).padStart(2, "0"), i = String(t.getDate()).padStart(2, "0"), a = String(t.getHours()).padStart(2, "0"), o = String(t.getMinutes()).padStart(2, "0"), s = fr(`${n}-${r}-${i}`);
+		return l("screen.sync.last").replace("{time}", `${s} ${a}:${o}`);
 	}
 	async function p() {
 		if (!Z(i)) {

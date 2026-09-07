@@ -1,56 +1,60 @@
 import type { Course } from '@chronos/core';
+import {
+	TIMETABLE_POINTER_THRESHOLD_PX,
+	TIMETABLE_LONG_PRESS_DELAY_MS,
+	type TimetableInteraction
+} from './timetable-interaction.svelte';
 
-export const COURSE_CARD_DRAG_THRESHOLD_PX = 8;
+export const COURSE_CARD_DRAG_THRESHOLD_PX = TIMETABLE_POINTER_THRESHOLD_PX;
+export const COURSE_CARD_LONG_PRESS_DELAY_MS = TIMETABLE_LONG_PRESS_DELAY_MS;
 
 export interface CourseCardGestureOptions {
+	interaction: TimetableInteraction;
 	onCourseClick?: (course: Course) => void;
-	dragThresholdPx?: number;
+	onLongPress?: (course: Course, event: PointerEvent) => void;
+	onDragStart?: (course: Course, event: PointerEvent) => void;
 }
 
-export function createCourseCardHandlers(course: Course, options: CourseCardGestureOptions = {}) {
-	const { onCourseClick, dragThresholdPx = COURSE_CARD_DRAG_THRESHOLD_PX } = options;
-
-	let hasMoved = false;
-	let startX = 0;
-	let startY = 0;
-	let activePointerId: number | null = null;
+export function createCourseCardHandlers(course: Course, options: CourseCardGestureOptions) {
+	const { interaction, onCourseClick, onLongPress, onDragStart } = options;
 
 	return {
 		onpointerdown: (event: PointerEvent) => {
 			if (event.button !== 0) return;
 
-			activePointerId = event.pointerId;
-			hasMoved = false;
-			startX = event.clientX;
-			startY = event.clientY;
+			interaction.resetClickFlags();
+
+			if (interaction.isDragging || interaction.isClickGuarded()) return;
+
+			if (interaction.isEditing) {
+				onDragStart?.(course, event);
+				return;
+			}
+
+			interaction.watchLongPress(event, (pressEvent) => {
+				onLongPress?.(course, pressEvent);
+			});
 		},
 		onpointermove: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			if (hasMoved) return;
-
-			const dx = Math.abs(event.clientX - startX);
-			const dy = Math.abs(event.clientY - startY);
-			if (dx > dragThresholdPx || dy > dragThresholdPx) {
-				hasMoved = true;
-			}
+			interaction.notePointerMove(event);
 		},
 		onpointerup: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			activePointerId = null;
+			interaction.notePointerUp(event);
 		},
 		onpointerleave: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			activePointerId = null;
+			interaction.notePointerLost(event);
 		},
 		onpointercancel: (event: PointerEvent) => {
-			if (activePointerId !== null && event.pointerId !== activePointerId) return;
-			activePointerId = null;
-			hasMoved = false;
+			interaction.notePointerCancel(event);
 		},
 		onclick: (event: MouseEvent) => {
-			if (hasMoved) {
+			if (
+				interaction.consumeClickSuppression() ||
+				interaction.isEditing ||
+				interaction.isDragging ||
+				interaction.isClickGuarded()
+			) {
 				event.preventDefault();
-				hasMoved = false;
 				return;
 			}
 			onCourseClick?.(course);

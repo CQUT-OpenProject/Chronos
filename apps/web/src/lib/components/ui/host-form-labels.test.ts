@@ -21,8 +21,8 @@ describe('host-form-labels', () => {
 		expect(labels.placeholder).toBe('ui.date.placeholder');
 		expect(labels.today).toBe('ui.date.today');
 		expect(labels.triggerEmpty('学期起始日')).toBe('ui.date.trigger.empty:{"label":"学期起始日"}');
-		expect(labels.triggerLabeled('学期起始日', '2026/2/23')).toBe(
-			'ui.date.trigger.labeled:{"label":"学期起始日","display":"2026/2/23"}'
+		expect(labels.triggerLabeled('学期起始日', '2026/02/23')).toBe(
+			'ui.date.trigger.labeled:{"label":"学期起始日","display":"2026/02/23"}'
 		);
 	});
 

@@ -6,6 +6,7 @@
 	import {
 		AcademicCalendarService,
 		assignCourseDisplayColors,
+		formatCompactDate,
 		IHostNavigation,
 		normalizedCourseName,
 		resolveCoursePaint
@@ -54,11 +55,10 @@
 
 	function formatHeaderDate(iso: string): string {
 		const date = new Date(`${iso}T12:00:00`);
-		return date.toLocaleDateString(appLocaleToBcp47(controller.currentLocale), {
-			month: 'long',
-			day: 'numeric',
-			weekday: 'long'
+		const weekday = date.toLocaleDateString(appLocaleToBcp47(controller.currentLocale), {
+			weekday: 'short'
 		});
+		return `${formatCompactDate(iso)} ${weekday}`;
 	}
 
 	function resolvePaint(hit: (typeof screen.courseEntries)[number]['hit']) {

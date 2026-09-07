@@ -3,6 +3,7 @@ import {
 	addDays,
 	addWeeks,
 	currentWeekMonday,
+	formatCompactDate,
 	formatIsoDate,
 	isBefore,
 	parseIsoDate,
@@ -92,8 +93,7 @@ const fallbackAcademicConfig: AcademicConfig = {
 };
 
 export function formatShortDate(iso: string): string {
-	const [, month, day] = iso.split('-');
-	return `${Number(month)}/${Number(day)}`;
+	return formatCompactDate(iso);
 }
 
 export function formatWeekDateRange(
@@ -110,5 +110,5 @@ export function formatWeekDateRange(
 	else if (viewPrefs?.showSaturday) days = 6;
 	const startDate = parseIsoDate(startIso);
 	const endDate = addDays(startDate, days - 1);
-	return `${formatShortDate(startIso)} - ${formatShortDate(formatIsoDate(endDate))}`;
+	return `${formatCompactDate(startIso)} - ${formatCompactDate(formatIsoDate(endDate))}`;
 }

@@ -16,6 +16,7 @@ import {
 	resolvePeriodTimeRange,
 	sortCourseHits
 } from '../src/today-courses';
+import type { ReactiveChronosController } from '@chronos/ui-kit';
 import { dayOfWeekFromIso } from '@chronos/core';
 
 describe('today plugin', () => {
@@ -42,6 +43,43 @@ describe('today plugin', () => {
 	it('exposes a valid today ISO date before init', () => {
 		const screen = createTodayScreenController();
 		expect(screen.today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+	});
+
+	it('does not leak event listeners when disposed during async initialization', async () => {
+		const { env } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+		await engine.loadPlugin(createTodayPlugin());
+
+		const mockController = {
+			currentTimetable: null,
+			coursePalette: null,
+			clockNow: new Date(),
+			clockTodayIso: '2026-03-02',
+			currentPeriodIndex: null,
+			getPluginContext: (id: string) => engine.getPluginContext(id)
+		} as unknown as ReactiveChronosController;
+
+		const screen = createTodayScreenController();
+		const initPromise = screen.init(mockController, 'tool-today');
+		screen.dispose();
+		await initPromise;
+
+		// At this point, no listener should remain subscribed
+		const listeners = (
+			engine as unknown as { events: { broadcast: { listeners: Map<string, Set<unknown>> } } }
+		).events.broadcast.listeners;
+		expect(listeners.get('time:tick')?.size ?? 0).toBe(0);
+
+		engine.events.emit('time:tick', {
+			todayIso: '2026-03-02',
+			now: new Date('2026-03-02T10:00:00'),
+			currentWeek: 1,
+			currentPeriod: 1
+		});
+
+		expect(screen.courseEntries).toEqual([]);
+		engine.dispose();
 	});
 });
 
