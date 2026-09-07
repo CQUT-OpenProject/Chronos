@@ -6,7 +6,7 @@
 	import type { ShellTabController } from '$lib/shell/shell-tab.svelte';
 	import ShellTabPanels from '$lib/components/shell/ShellTabPanels.svelte';
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
-	import { ensureEngineReady } from '$lib/services/app-engine';
+	import { ensureEngineFullyReady } from '$lib/services/app-engine';
 	import { isShellRoute } from '$lib/navigation/routes';
 	import { secondaryTransitionGate } from '$lib/navigation/secondary-transition-gate.svelte';
 
@@ -17,7 +17,7 @@
 	let markedVisible = false;
 
 	onMount(async () => {
-		await ensureEngineReady();
+		await ensureEngineFullyReady();
 		ready = true;
 	});
 
