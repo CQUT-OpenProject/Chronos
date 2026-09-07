@@ -2,6 +2,7 @@
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import {
+		ALL_CORNERS_ROUNDED,
 		placeCapsules,
 		type Course,
 		type CoursePaletteEntry,
@@ -9,7 +10,7 @@
 		type TimetableCourseDisplayModel,
 		type TimetableGridModel
 	} from '@chronos/core';
-	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
+	import type { CapsuleCornerStyle, CapsuleCorners, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
 	import { capsuleCornerAttrs } from '@chronos/ui-kit/timetable/capsule-corners';
 	import {
@@ -101,8 +102,6 @@
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
 
-	const effectiveCapsuleCornerStyle = $derived(isEditing ? 'rounded' : capsuleCornerStyle);
-
 	const placements = $derived(
 		placeCapsules({
 			courseDisplayModels,
@@ -112,7 +111,7 @@
 			coursePalette,
 			paletteCourses,
 			layoutMode,
-			capsuleCornerStyle: effectiveCapsuleCornerStyle
+			capsuleCornerStyle
 		})
 	);
 
@@ -515,7 +514,7 @@
 								<button
 									type="button"
 									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
-									style={capsuleCornerAttrs(item.corners).style}
+									style={capsuleCornerAttrs(isEditing ? ALL_CORNERS_ROUNDED : item.corners).style}
 									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
 									onclick={() => expandSlot(item.key)}
 								>
@@ -524,7 +523,7 @@
 									</span>
 								</button>
 							{:else}
-								{@render courseCard(item)}
+								{@render courseCard(item, isEditing ? ALL_CORNERS_ROUNDED : item.corners)}
 							{/if}
 						</div>
 					{/each}
@@ -560,7 +559,7 @@
 	</div>
 </div>
 
-{#snippet courseCard(placed: PlacedCourseCapsule)}
+{#snippet courseCard(placed: PlacedCourseCapsule, displayCorners: CapsuleCorners)}
 	{@const colors = placed.colors}
 	{@const scale = placed.scale}
 	{@const locationLines = placed.locationLines}
@@ -585,7 +584,7 @@
 			: placed.displayModel.isInDisplayedWeek
 				? ''
 				: 'opacity-45'}"
-		style="{capsuleCornerAttrs(placed.corners)
+		style="{capsuleCornerAttrs(displayCorners)
 			.style}; --capsule: {colors.background}; --capsule-fg: {colors.text}; touch-action: {isEditing
 			? 'none'
 			: 'pan-y'}; -webkit-user-drag: none; user-select: none;"
