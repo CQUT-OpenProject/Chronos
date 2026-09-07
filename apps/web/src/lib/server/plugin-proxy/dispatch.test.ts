@@ -1,7 +1,11 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { pluginServerSuccess } from '@chronos/core';
+import { pluginServerSuccess, type PluginServerManifest } from '@chronos/core';
 import { PLUGIN_RATE_LIMIT_MAX } from './config';
-import { dispatchPluginRequest, resetDispatchManifestCacheForTests } from './dispatch';
+import {
+	dispatchPluginRequest,
+	resetDispatchManifestCacheForTests,
+	type PluginProxyRequestEvent
+} from './dispatch';
 import { resetPluginRateLimitForTests } from './rate-limit';
 
 vi.mock('$lib/server/plugin-server-loader.generated', () => ({
@@ -31,7 +35,7 @@ function createEvent(
 			body: JSON.stringify({ account: 'a', password: 'b' })
 		}),
 		getClientAddress: () => overrides.ip ?? '127.0.0.1'
-	} as Parameters<typeof dispatchPluginRequest>[0];
+	} satisfies PluginProxyRequestEvent;
 }
 
 describe('dispatchPluginRequest', () => {
@@ -59,7 +63,7 @@ describe('dispatchPluginRequest', () => {
 	it('returns NotFound for missing action handler', async () => {
 		vi.mocked(loadServerManifest).mockResolvedValue({
 			handlers: { preview: {} }
-		});
+		} satisfies PluginServerManifest);
 
 		const response = await dispatchPluginRequest(createEvent({ action: 'missing' }), 'POST');
 		const body = await response.json();
@@ -75,7 +79,7 @@ describe('dispatchPluginRequest', () => {
 						new Response(JSON.stringify(pluginServerSuccess({ ok: true })), { status: 200 })
 				}
 			}
-		});
+		} satisfies PluginServerManifest);
 
 		for (let i = 0; i < PLUGIN_RATE_LIMIT_MAX; i++) {
 			await dispatchPluginRequest(createEvent(), 'POST');
@@ -94,7 +98,7 @@ describe('dispatchPluginRequest', () => {
 		const handler = vi.fn(async () => Response.json(pluginServerSuccess({ studentName: 'Alice' })));
 		vi.mocked(loadServerManifest).mockResolvedValue({
 			handlers: { preview: { POST: handler } }
-		});
+		} satisfies PluginServerManifest);
 
 		const response = await dispatchPluginRequest(createEvent(), 'POST');
 		const body = await response.json();

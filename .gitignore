@@ -61,6 +61,7 @@ apps/web/analyze-data.json
 # Generated
 **/static/version.json
 static/version.json
+**/static/licenses/third-party.json
 apps/web/src/lib/boot/plugin-proxy-meta.generated.ts
 apps/web/src/lib/boot/available-plugins.generated.ts
 apps/web/src/lib/server/plugin-server-loader.generated.ts

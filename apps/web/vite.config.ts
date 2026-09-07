@@ -12,6 +12,7 @@ import { materialSymbolsWeightPlugin } from './src/lib/icons/material-symbols-we
 import { createChronosAlias } from '../../scripts/resolve-chronos-aliases.ts';
 import { writeGeneratedThemeCss } from './src/lib/theme/theme';
 import { writeGeneratedVersionJson } from './src/lib/content/releases/version-generator';
+import { chronosLicensePlugin } from './src/lib/legal/chronos-license-plugin';
 import { chronosProfilePlugin } from './src/lib/profile-codegen/chronos-profile-plugin';
 import { resolveProfileId } from './src/lib/profile-codegen/profile-definitions';
 
@@ -105,6 +106,7 @@ export default defineConfig(({ mode }) => {
 		},
 		plugins: lazyPlugins(() => [
 			chronosBundleAnalyzer(shouldAnalyze),
+			chronosLicensePlugin(webRoot),
 			materialSymbolsWeightPlugin(),
 			chronosProfilePlugin(webRoot),
 			chronosThemeTokensPlugin(),
