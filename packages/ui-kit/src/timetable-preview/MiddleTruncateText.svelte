@@ -1,10 +1,6 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
-	import {
-		createCanvasMeasurer,
-		fitsWrappedBlock,
-		truncateMiddleByFit
-	} from '../utils/middle-truncate';
+	import { truncateMiddleByFit } from '../utils/middle-truncate';
 
 	interface Props {
 		text: string;
@@ -18,20 +14,6 @@
 	let boxWidth = 0;
 	let boxHeight = 0;
 	let lastKey = '';
-
-	function measureFromElement(el: HTMLElement) {
-		const computed = getComputedStyle(el);
-		const fontStyle = computed.fontStyle || 'normal';
-		const fontWeight = computed.fontWeight || 'normal';
-		const fontSize = computed.fontSize || '16px';
-		const fontFamily = computed.fontFamily || 'sans-serif';
-		const parsedLine = Number.parseFloat(computed.lineHeight);
-		const parsedFont = Number.parseFloat(fontSize) || 16;
-		return {
-			measure: createCanvasMeasurer(`${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`),
-			lineHeight: Number.isFinite(parsedLine) ? parsedLine : parsedFont * 1.25
-		};
-	}
 
 	function boxSize(el: HTMLElement, entry?: ResizeObserverEntry) {
 		const box = entry?.contentBoxSize?.[0];
@@ -59,17 +41,12 @@
 			return;
 		}
 
-		const { measure, lineHeight } = measureFromElement(el);
-		const display = truncateMiddleByFit(content, (candidate) =>
-			fitsWrappedBlock(candidate, {
-				maxWidth: width,
-				maxHeight: height,
-				lineHeight,
-				measure
-			})
-		);
-		el.textContent = display || content;
-		if (display && display !== content) {
+		const display = truncateMiddleByFit(content, (candidate) => {
+			el.textContent = candidate;
+			return el.scrollHeight <= el.clientHeight + 0.5;
+		});
+		el.textContent = display;
+		if (display !== content) {
 			el.title = content;
 		} else {
 			el.removeAttribute('title');
@@ -79,9 +56,13 @@
 	const truncateAttach: Attachment<HTMLElement> = (el) => {
 		node = el;
 		lastKey = '';
+		let rafId = 0;
 		const observer = new ResizeObserver((entries) => {
-			const size = boxSize(el, entries[0]);
-			apply(el, size.width, size.height);
+			cancelAnimationFrame(rafId);
+			rafId = requestAnimationFrame(() => {
+				const size = boxSize(el, entries[0]);
+				apply(el, size.width, size.height);
+			});
 		});
 		observer.observe(el);
 		const size = boxSize(el);
@@ -89,6 +70,7 @@
 			apply(el, size.width, size.height);
 		}
 		return () => {
+			cancelAnimationFrame(rafId);
 			observer.disconnect();
 			if (node === el) node = null;
 			lastKey = '';
