@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vite-plus/test';
 import {
 	cutBoundaryIndices,
 	fitFontSizePx,
+	fitsWrappedBlock,
 	toGraphemes,
-	truncateMiddleByFit
+	truncateMiddleByFit,
+	wrappedLineCount
 } from '../src/utils/middle-truncate';
 /** Every grapheme is width 10; ellipsis is also one unit. */
 const unitMeasure = (text: string) => toGraphemes(text).length * 10;
@@ -34,5 +36,35 @@ describe('middle-truncate', () => {
 		// Capacity: 7 grapheme-units including ellipsis → retain 6 → ABC…JKL
 		const result = truncateMiddleByFit(text, (candidate) => unitMeasure(candidate) <= 70);
 		expect(result).toBe('ABC…JKL');
+	});
+
+	it('wrappedLineCount packs graphemes with break-all wrapping', () => {
+		expect(wrappedLineCount('', 50, unitMeasure)).toBe(0);
+		expect(wrappedLineCount('ABCDE', 50, unitMeasure)).toBe(1);
+		expect(wrappedLineCount('ABCDEF', 50, unitMeasure)).toBe(2);
+		expect(wrappedLineCount('ABCDEFGHIJ', 50, unitMeasure)).toBe(2);
+		expect(wrappedLineCount('ABCDEFGHIJK', 50, unitMeasure)).toBe(3);
+	});
+
+	it('fitsWrappedBlock compares wrapped height against the box', () => {
+		const box = { maxWidth: 50, lineHeight: 12, measure: unitMeasure };
+		expect(fitsWrappedBlock('ABCDE', { ...box, maxHeight: 12 })).toBe(true);
+		expect(fitsWrappedBlock('ABCDEF', { ...box, maxHeight: 12 })).toBe(false);
+		expect(fitsWrappedBlock('ABCDEF', { ...box, maxHeight: 24 })).toBe(true);
+		expect(fitsWrappedBlock('A', { ...box, maxWidth: 0, maxHeight: 12 })).toBe(false);
+	});
+
+	it('truncateMiddleByFit keeps prefix and suffix when wrapping two lines', () => {
+		const text = 'ABCDEFGHIJKL';
+		const result = truncateMiddleByFit(text, (candidate) =>
+			fitsWrappedBlock(candidate, {
+				maxWidth: 50,
+				maxHeight: 24,
+				lineHeight: 12,
+				measure: unitMeasure
+			})
+		);
+		expect(result).toBe('ABCDE…IJKL');
+		expect(wrappedLineCount(result, 50, unitMeasure)).toBe(2);
 	});
 });
