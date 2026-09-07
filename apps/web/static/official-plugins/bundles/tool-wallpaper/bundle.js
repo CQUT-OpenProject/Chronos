@@ -2642,7 +2642,7 @@ function ka(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Aa() {
-	return "0.4.9";
+	return "0.5.0";
 }
 function ja(e) {
 	let t;
@@ -2889,7 +2889,11 @@ function io(e) {
 			let { lines: n, maxFontPx: r, minFontPx: i = no, fromParent: a = !1, availableWidthPx: o } = e(), s = n.filter((e) => e.length > 0), c = o ?? (a ? t.parentElement ?? t : t).clientWidth;
 			if (a) {
 				let e = getComputedStyle(t);
-				c -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0), c = Math.max(0, c);
+				if (c -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0), t.parentElement) {
+					let e = getComputedStyle(t.parentElement);
+					c -= (Number.parseFloat(e.paddingLeft) || 0) + (Number.parseFloat(e.paddingRight) || 0);
+				}
+				c = Math.max(0, c);
 			}
 			if (c <= 0 || s.length === 0) return;
 			let l = $a(t), u = Qa(c, (e) => {
