@@ -2215,7 +2215,7 @@ function gi(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function _i() {
-	return "0.5.0";
+	return "0.5.1";
 }
 function vi(e) {
 	let t;

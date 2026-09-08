@@ -2693,7 +2693,7 @@ function La(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Ra() {
-	return "0.5.0";
+	return "0.5.1";
 }
 function za(e) {
 	let t;
@@ -3237,7 +3237,7 @@ fr(["click"]);
 //#region packages/ui-kit/src/timetable-preview/timetable-wallpaper-layer.ts
 var No = "absolute inset-[-24px] transition-[filter] will-change-[filter] motion-reduce:transition-none";
 function Po(e) {
-	let t = e ? "duration-200" : "duration-300";
+	let t = e ? "duration-150" : "duration-300";
 	return e ? `${No} ${t} blur-lg` : `${No} ${t} blur-none`;
 }
 //#endregion

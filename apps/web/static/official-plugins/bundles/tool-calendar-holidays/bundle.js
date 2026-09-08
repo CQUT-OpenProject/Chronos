@@ -1960,7 +1960,7 @@ function Mr(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function Nr() {
-	return "0.5.0";
+	return "0.5.1";
 }
 function Pr(e) {
 	let t;
