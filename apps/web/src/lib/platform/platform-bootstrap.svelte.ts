@@ -56,14 +56,12 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 				});
 
 				$effect(() => {
-					if (!onboardingController.open) return;
-					pwaInstallController.cancelScheduledDialog();
-					pwaInstallController.dismiss({ track: false });
-				});
-
-				$effect(() => {
-					if (onboardingController.open) return;
-					pwaInstallController.tryScheduleInstallDialog();
+					if (onboardingController.open) {
+						pwaInstallController.cancelScheduledDialog();
+						pwaInstallController.dismiss({ track: false });
+					} else {
+						pwaInstallController.tryScheduleInstallDialog();
+					}
 				});
 			});
 		});

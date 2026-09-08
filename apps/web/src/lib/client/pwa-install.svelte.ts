@@ -1,20 +1,137 @@
 import { trackEvent } from '$lib/client/analytics';
 import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
-import {
-	isInstallPromptSnoozed,
-	parseSnoozedUntil,
-	SNOOZE_DURATION_MS,
-	SNOOZE_KEY
-} from './pwa-install-snooze';
-import { PWA_DISPLAY_MODE_MEDIA_QUERIES } from './pwa-standalone';
-import { readPwaEnvironmentFromWindow } from './pwa-environment';
-import {
-	APPINSTALLED_DEDUP_MS,
-	attachInstallPromptLifecycle,
-	restoreStoredInstallPrompt,
-	scheduleEnvironmentRecheck,
-	storeInstallPrompt
-} from './pwa-prompt-lifecycle';
+const INSTALLED_DISPLAY_MODES = ['standalone', 'fullscreen', 'minimal-ui'] as const;
+
+export function isPwaStandalone(): boolean {
+	if (typeof window === 'undefined') return false;
+	// @ts-expect-error iOS Safari
+	if (window.navigator.standalone === true) return true;
+	return INSTALLED_DISPLAY_MODES.some(
+		(mode) => window.matchMedia(`(display-mode: ${mode})`).matches
+	);
+}
+
+export const PWA_DISPLAY_MODE_MEDIA_QUERIES = [...INSTALLED_DISPLAY_MODES, 'browser'] as const;
+
+export interface PwaEnvironmentFlags {
+	isStandalone: boolean;
+	isIOS: boolean;
+	isMacSafari: boolean;
+}
+
+export interface PwaEnvironmentInput {
+	userAgent: string;
+	platform?: string;
+	brands?: { brand: string }[];
+	maxTouchPoints: number;
+	hasTouchStart: boolean;
+}
+
+export function detectPwaEnvironment(
+	input: PwaEnvironmentInput,
+	standalone = isPwaStandalone()
+): PwaEnvironmentFlags {
+	const { userAgent: ua, platform = '', brands, maxTouchPoints, hasTouchStart } = input;
+
+	const hasChromiumBrands = brands?.some((b) =>
+		/Chrome|Chromium|Microsoft Edge|Brave/.test(b.brand)
+	);
+	const isChromium =
+		Boolean(hasChromiumBrands) ||
+		(/Chrome|Chromium|Edg|OPR|Brave/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua));
+
+	const isAndroid = platform === 'Android' || /Android/.test(ua);
+	const isWindows = platform === 'Windows' || /Windows/.test(ua);
+
+	const isRealIOS = platform === 'iOS' || /iPhone|iPod|iPad/.test(ua);
+	const isMacUA = platform === 'macOS' || /Macintosh/.test(ua);
+	const hasTouch = maxTouchPoints > 0 || hasTouchStart;
+	const isIPadOS = isMacUA && hasTouch && !isChromium && !isAndroid && !isWindows;
+
+	const isIOS = (isRealIOS || isIPadOS) && !isChromium && !isAndroid && !isWindows;
+
+	const isMac = isMacUA && !isIOS && !isWindows && !isAndroid;
+	const isSafari = /Safari/.test(ua) && !isChromium;
+	const isMacSafari = isMac && isSafari;
+
+	return { isStandalone: standalone, isIOS, isMacSafari };
+}
+
+export function readPwaEnvironmentFromWindow(win: Window): PwaEnvironmentFlags {
+	const navData = win.navigator as Navigator & {
+		userAgentData?: { platform?: string; brands?: { brand: string }[] };
+	};
+
+	return detectPwaEnvironment({
+		userAgent: win.navigator.userAgent,
+		platform: navData.userAgentData?.platform,
+		brands: navData.userAgentData?.brands,
+		maxTouchPoints: win.navigator.maxTouchPoints,
+		hasTouchStart: 'ontouchstart' in win
+	});
+}
+
+export const SNOOZE_KEY = 'chronos:pwa-install-snoozed-until';
+export const SNOOZE_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
+
+export function parseSnoozedUntil(raw: string | null): number | null {
+	if (!raw) return null;
+	const parsed = Number(raw);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function isInstallPromptSnoozed(snoozedUntil: number | null, now = Date.now()): boolean {
+	return snoozedUntil !== null && now < snoozedUntil;
+}
+
+export const APPINSTALLED_DEDUP_MS = 2000;
+
+export interface InstallPromptLifecycleCallbacks {
+	onBeforeInstall: (prompt: BeforeInstallPromptEvent) => void;
+	onAppInstalled: () => void;
+}
+
+export function attachInstallPromptLifecycle(
+	window: Window,
+	callbacks: InstallPromptLifecycleCallbacks
+): () => void {
+	const onBeforeInstall = (event: Event) => {
+		event.preventDefault();
+		callbacks.onBeforeInstall(event as BeforeInstallPromptEvent);
+	};
+
+	const onAppInstalled = () => {
+		callbacks.onAppInstalled();
+	};
+
+	window.addEventListener('beforeinstallprompt', onBeforeInstall);
+	window.addEventListener('appinstalled', onAppInstalled);
+
+	return () => {
+		window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+		window.removeEventListener('appinstalled', onAppInstalled);
+	};
+}
+
+export function scheduleEnvironmentRecheck(
+	onRecheck: () => void,
+	delays: number[] = [100, 500, 1000]
+): () => void {
+	const timers = delays.map((delay) => setTimeout(onRecheck, delay));
+	return () => {
+		for (const timer of timers) {
+			clearTimeout(timer);
+		}
+	};
+}
+
+export function restoreStoredInstallPrompt(window: Window): BeforeInstallPromptEvent | null {
+	return window.__chronosInstallPrompt ?? null;
+}
+
+export function storeInstallPrompt(window: Window, prompt: BeforeInstallPromptEvent | null): void {
+	window.__chronosInstallPrompt = prompt;
+}
 
 const INSTALLED_KEY = 'chronos:pwa-installed';
 

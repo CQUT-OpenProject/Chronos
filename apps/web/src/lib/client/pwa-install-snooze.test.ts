@@ -3,7 +3,7 @@ import {
 	isInstallPromptSnoozed,
 	parseSnoozedUntil,
 	SNOOZE_DURATION_MS
-} from './pwa-install-snooze';
+} from './pwa-install.svelte';
 
 describe('parseSnoozedUntil', () => {
 	it('returns null for missing or invalid values', () => {
