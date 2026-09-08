@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, afterNavigate, goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { Component } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
@@ -16,7 +16,14 @@
 	import {
 		updateTransitionDirection,
 		setupSecondaryPageViewTransition,
-		secondaryTransitionGate
+		secondaryTransitionGate,
+		recordNavigation,
+		configureNavigateBack,
+		restoreShellTabFromHistory,
+		stampShellTabOnHistory,
+		syncDeepLinkEntryState,
+		isShellRoute,
+		isSecondaryRoute
 	} from '$lib/navigation';
 	import ShellRouteHost from '$lib/components/shell/ShellRouteHost.svelte';
 	import { PREVIEW_PAINT_READY_CONTEXT, TIMETABLE_PRESENTATION_CONTEXT } from '@chronos/ui-kit';
@@ -30,19 +37,38 @@
 	const webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
 	const gate = secondaryTransitionGate;
 
-	beforeNavigate(({ from, to, type, delta }) => {
-		const fromPath = from?.url.pathname;
-		const toPath = to?.url.pathname;
-		if (!toPath) return;
-		updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
-	});
-
 	let { children } = $props();
 
 	const shell = createAppShell();
 	const timetableScreen = getTimetableScreen();
 	const platform = createPlatformBootstrap({ shell, timetableScreen });
 	const shellTab = createShellTabController(() => getAppController());
+
+	configureNavigateBack({
+		goto: (href) => goto(href),
+		setActiveTab: (tabId) => shellTab.setActiveTab(tabId)
+	});
+
+	beforeNavigate(({ from, to, type, delta }) => {
+		const fromPath = from?.url.pathname;
+		const toPath = to?.url.pathname;
+		if (!toPath) return;
+
+		if (fromPath && isShellRoute(fromPath) && isSecondaryRoute(toPath)) {
+			stampShellTabOnHistory(shellTab.activeTabId);
+		}
+
+		updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
+		recordNavigation(fromPath, toPath, type, delta ?? undefined);
+
+		if (isShellRoute(toPath)) {
+			restoreShellTabFromHistory((tabId) => shellTab.setActiveTab(tabId));
+		}
+	});
+
+	afterNavigate(() => {
+		syncDeepLinkEntryState();
+	});
 
 	const blockShell = $derived(onboardingController.isActive(page.url.pathname));
 	const shouldLoadOnboarding = $derived(onboardingController.shouldRender(page.url.pathname));

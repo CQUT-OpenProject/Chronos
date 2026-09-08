@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const mocks = vi.hoisted(() => ({
-	initNavigationStack: vi.fn(),
+	initNavJournal: vi.fn(),
+	getNavJournalDepth: vi.fn(() => 1),
+	markDeepLinkEntry: vi.fn(),
 	connectivityInit: vi.fn(),
 	connectivityDestroy: vi.fn(),
 	pwaInstallInit: vi.fn().mockResolvedValue(undefined),
@@ -12,7 +14,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('$lib/navigation', () => ({
-	initNavigationStack: mocks.initNavigationStack
+	initNavJournal: mocks.initNavJournal,
+	getNavJournalDepth: mocks.getNavJournalDepth,
+	isSecondaryRoute: (pathname: string) => pathname !== '/' && pathname !== '',
+	markDeepLinkEntry: mocks.markDeepLinkEntry
 }));
 
 vi.mock('$lib/platform/connectivity.svelte', () => ({
@@ -102,7 +107,7 @@ describe('createPlatformBootstrap', () => {
 			expect(shell.init).toHaveBeenCalled();
 		});
 
-		expect(mocks.initNavigationStack).toHaveBeenCalledWith('/');
+		expect(mocks.initNavJournal).toHaveBeenCalledWith('/');
 		expect(mocks.connectivityInit).toHaveBeenCalled();
 		expect(timetableScreen.init).toHaveBeenCalledWith(shell);
 		expect(mocks.pwaInstallInit).toHaveBeenCalled();
@@ -121,6 +126,6 @@ describe('createPlatformBootstrap', () => {
 		platform.init('/');
 		platform.init('/mine');
 
-		expect(mocks.initNavigationStack).toHaveBeenCalledTimes(1);
+		expect(mocks.initNavJournal).toHaveBeenCalledTimes(1);
 	});
 });
