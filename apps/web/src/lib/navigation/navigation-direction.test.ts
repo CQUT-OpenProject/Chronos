@@ -1,10 +1,8 @@
-import { describe, expect, it, beforeEach } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 import {
 	getNavigationDirection,
-	getNavigationStack,
 	getTransitionDirection,
 	initNavigationStack,
-	resetNavigationStack,
 	resolveNavigationDirection,
 	updateTransitionDirection
 } from './navigation-direction';
@@ -42,10 +40,6 @@ describe('getNavigationDirection', () => {
 });
 
 describe('resolveNavigationDirection', () => {
-	beforeEach(() => {
-		resetNavigationStack();
-	});
-
 	it('returns back when returning to a parent page at the same path depth', () => {
 		initNavigationStack('/');
 		expect(resolveNavigationDirection('/', '/about', 'link')).toBe('forward');
@@ -71,7 +65,8 @@ describe('resolveNavigationDirection', () => {
 		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'popstate', 1)).toBe(
 			'forward'
 		);
-		expect(getNavigationStack()).toEqual(['/', '/about', '/open-source-licenses']);
+		// Stack must include /about below the current page for a stack-back transition.
+		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'link')).toBe('back');
 	});
 
 	it('returns back on popstate when browser goes back', () => {
@@ -82,22 +77,20 @@ describe('resolveNavigationDirection', () => {
 		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'popstate', -1)).toBe(
 			'back'
 		);
-		expect(getNavigationStack()).toEqual(['/', '/about']);
+		// Trimmed stack must not treat /open-source-licenses as an in-history back target.
+		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'link')).toBe('forward');
 	});
 
 	it('repairs stack when backing to a page not in history from a deep link', () => {
 		initNavigationStack('/legal/privacy');
 
 		expect(resolveNavigationDirection('/legal/privacy', '/about', 'link')).toBe('back');
-		expect(getNavigationStack()).toEqual(['/about']);
+		// Repaired stack must not retain /legal/privacy as a back target from /about.
+		expect(resolveNavigationDirection('/about', '/legal/privacy', 'link')).toBe('forward');
 	});
 });
 
 describe('updateTransitionDirection', () => {
-	beforeEach(() => {
-		resetNavigationStack();
-	});
-
 	it('stores direction for transition to read at invocation time', () => {
 		initNavigationStack('/');
 		updateTransitionDirection('/', '/about', 'link');

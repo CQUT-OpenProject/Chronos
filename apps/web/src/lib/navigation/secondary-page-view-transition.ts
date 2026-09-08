@@ -67,8 +67,3 @@ export function endNavDirectionTransition(generation: number): void {
 		clearNavDirectionClass();
 	}
 }
-
-/** @internal Test helper */
-export function resetNavDirectionTransitionGeneration(): void {
-	activeTransitionGeneration = 0;
-}

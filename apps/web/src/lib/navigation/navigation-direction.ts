@@ -10,10 +10,6 @@ export function getTransitionDirection(): NavigationDirection {
 	return currentTransitionDirection;
 }
 
-export function getNavigationStack(): readonly string[] {
-	return navigationStack;
-}
-
 export function updateTransitionDirection(
 	from: string | undefined,
 	to: string,
@@ -42,10 +38,6 @@ function pathDepth(pathname: string): number {
 
 export function initNavigationStack(pathname: string): void {
 	navigationStack = [toAppPathname(pathname)];
-}
-
-export function resetNavigationStack(): void {
-	navigationStack = [];
 }
 
 function trimStackTo(pathname: string): void {

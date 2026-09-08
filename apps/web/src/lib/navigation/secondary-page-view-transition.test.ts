@@ -1,9 +1,8 @@
-import { describe, expect, it, beforeEach } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 import {
 	hasUAVisualTransition,
 	isActiveNavDirectionTransition,
 	nextNavDirectionTransitionGeneration,
-	resetNavDirectionTransitionGeneration,
 	shouldUseViewTransitionWhenSupported,
 	type ViewTransitionNavigation
 } from './secondary-page-view-transition';
@@ -71,10 +70,6 @@ describe('shouldUseViewTransitionWhenSupported', () => {
 });
 
 describe('nav direction transition lifecycle', () => {
-	beforeEach(() => {
-		resetNavDirectionTransitionGeneration();
-	});
-
 	it('only treats the latest transition generation as active', () => {
 		const first = nextNavDirectionTransitionGeneration();
 		const second = nextNavDirectionTransitionGeneration();
