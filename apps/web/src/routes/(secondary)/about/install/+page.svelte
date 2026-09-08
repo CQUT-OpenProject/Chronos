@@ -7,6 +7,6 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.install')} backShellTab="mine">
+<SecondaryPageShell title={hostT('route.install')} backFallback={{ kind: 'shell', tab: 'mine' }}>
 	<InstallScreen />
 </SecondaryPageShell>

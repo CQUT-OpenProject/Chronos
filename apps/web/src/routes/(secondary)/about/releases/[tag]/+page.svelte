@@ -11,6 +11,9 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.releaseDetail')} backHref="/about/releases">
+<SecondaryPageShell
+	title={hostT('route.releaseDetail')}
+	backFallback={{ kind: 'route', href: '/about/releases' }}
+>
 	<VersionReleaseScreen tag={params.tag} />
 </SecondaryPageShell>

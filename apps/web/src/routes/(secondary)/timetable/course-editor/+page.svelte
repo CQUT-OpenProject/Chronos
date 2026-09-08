@@ -26,6 +26,6 @@
 	});
 </script>
 
-<SecondaryPageShell title={hostT('route.courseEdit')} backHref="/" flush>
+<SecondaryPageShell title={hostT('route.courseEdit')} backFallback={{ kind: 'shell' }} flush>
 	<CourseEditorScreen {editor} />
 </SecondaryPageShell>

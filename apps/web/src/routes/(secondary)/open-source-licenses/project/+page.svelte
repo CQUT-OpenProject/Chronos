@@ -48,7 +48,10 @@
 	});
 </script>
 
-<SecondaryPageShell title={hostT('route.licenseProject')} backHref="/open-source-licenses">
+<SecondaryPageShell
+	title={hostT('route.licenseProject')}
+	backFallback={{ kind: 'route', href: '/open-source-licenses' }}
+>
 	{#if loadState === 'loading'}
 		<div class="flex items-center justify-center py-12">
 			<LoadingIndicator />
