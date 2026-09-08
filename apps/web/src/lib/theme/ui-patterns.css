@@ -182,7 +182,7 @@ button.ui-date-field-input {
 	font-size: 1rem;
 	line-height: 1.5;
 	font-weight: 500;
-	color: var(--color-on-surface);
+	color: var(--color-on-surface-variant);
 }
 
 /* Grouped section surface matching MineSettingsSection */
