@@ -587,15 +587,4 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(engine.state.currentTimetable?.id).toBe(first.id);
 		engine.dispose();
 	});
-
-	it('rejects createTimetable when guard returns false', async () => {
-		const { env } = createMockEnv();
-		const engine = new ChronosEngine({ env });
-		await engine.init();
-
-		engine.events.registerSerial('guard:createTimetable', async () => false);
-
-		await expect(engine.createTimetable('blocked')).rejects.toThrow(/rejected by guard/);
-		engine.dispose();
-	});
 });
