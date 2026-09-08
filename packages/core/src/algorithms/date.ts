@@ -27,9 +27,6 @@ export function formatCompactDate(iso: string): string {
 	return `${month.padStart(2, '0')}/${day.padStart(2, '0')}`;
 }
 
-/** Alias of formatFullDate for backwards compatibility. */
-export const formatSlashDate = formatFullDate;
-
 export function previousOrSameMonday(date: Date): Date {
 	const result = new Date(date.getTime());
 	const day = result.getUTCDay();

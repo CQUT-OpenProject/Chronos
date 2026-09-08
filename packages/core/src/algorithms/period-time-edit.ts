@@ -16,9 +16,6 @@ export function parseTimeMinutesStrict(value: unknown): number | undefined {
 	return hour * 60 + minute;
 }
 
-/** @deprecated Prefer parseTimeMinutesStrict; kept for call-site clarity during migration. */
-export const timeToMinutes = parseTimeMinutesStrict;
-
 export function minutesToTimeString(total: number): string {
 	const wrapped = ((Math.trunc(total) % 1440) + 1440) % 1440;
 	return `${String(Math.floor(wrapped / 60)).padStart(2, '0')}:${String(wrapped % 60).padStart(2, '0')}`;
