@@ -1,5 +1,4 @@
-import { AppError } from './result/app-error';
-import { failure, success, type AppResult } from './result/app-result';
+import { AppError, failure, success, type AppResult } from '@chronos/core';
 import {
 	createCasClient,
 	isCasErrorOfKind,

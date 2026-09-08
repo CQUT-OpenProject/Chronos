@@ -1,7 +1,7 @@
 import { SvelteDate } from 'svelte/reactivity';
 import { APP_VERSION } from '$lib/config/app-meta';
 import { trackEvent } from '$lib/client/analytics';
-import type { AppResult } from '$lib/domain/result/app-result';
+import type { AppResult } from '@chronos/core';
 import type { ReleaseCatalog } from './catalog';
 import { compareReleaseVersions, type Release } from './release';
 import { createReleaseFeedAdapter, type ReleaseFeedAdapter } from './release-feed-adapter';

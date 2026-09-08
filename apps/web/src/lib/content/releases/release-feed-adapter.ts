@@ -1,6 +1,5 @@
 import { base } from '$app/paths';
-import { failure, success, type AppResult } from '$lib/domain/result/app-result';
-import { AppError } from '$lib/domain/result/app-error';
+import { AppError, failure, success, type AppResult } from '@chronos/core';
 import { createLocalReleaseCatalog } from './local-catalog';
 import type { ReleaseCatalog } from './catalog';
 import type { Release } from './release';

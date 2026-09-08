@@ -1,6 +1,4 @@
-import { AppError } from './result/app-error';
-import { failure, success, type AppResult } from './result/app-result';
-import type { PeriodTime } from '@chronos/core';
+import { AppError, failure, success, type AppResult, type PeriodTime } from '@chronos/core';
 import {
 	mergeWeekPayloads,
 	resolveWeeksToFetch,
