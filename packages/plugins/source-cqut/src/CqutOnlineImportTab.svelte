@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pluginText, type ImportTabComponentProps } from '@chronos/ui-kit';
+	import { pluginText, previewAndNotify, type ImportTabComponentProps } from '@chronos/ui-kit';
 	import { SOURCE_CQUT_MESSAGES } from './messages';
 
 	const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
@@ -37,22 +37,19 @@
 
 	const onlineImportDisabled = $derived(loading || !isOnline);
 
-	function notifyTransferMessages() {
-		const { errorMessage } = transfer.state;
-		if (errorMessage) {
-			controller?.notify(errorMessage, 'error');
-		}
-	}
-
 	async function handleOnlinePreview() {
 		loading = true;
 		try {
-			const ok = await transfer.previewWithSlot('cqut-online', {
-				username: account,
-				password
-			});
+			const ok = await previewAndNotify(
+				transfer,
+				'cqut-online',
+				{
+					username: account,
+					password
+				},
+				controller
+			);
 			if (ok) onContinue();
-			else notifyTransferMessages();
 		} finally {
 			loading = false;
 		}
