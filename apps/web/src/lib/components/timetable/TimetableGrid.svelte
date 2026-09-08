@@ -284,12 +284,12 @@
 	function startDrag(
 		placed: PlacedCourseCapsule,
 		event: PointerEvent,
-		options: { hapticOnStart?: boolean; persistAfterDrop?: boolean } = {}
+		options: { hapticOnStart?: boolean; persistAfterDrop?: boolean; waitForMove?: boolean } = {}
 	) {
 		settling = null;
 		if (!placed.displayModel.isInDisplayedWeek) return;
 
-		const { hapticOnStart = true, persistAfterDrop = true } = options;
+		const { hapticOnStart = true, persistAfterDrop = true, waitForMove = false } = options;
 		if (hapticOnStart) {
 			haptic.light();
 		}
@@ -308,12 +308,16 @@
 			targetColIndex: initialColIndex >= 0 ? initialColIndex : 0,
 			targetDayOfWeek: placed.course.dayOfWeek,
 			targetStartPeriod: placed.course.startPeriod,
-			persistAfterDrop
+			persistAfterDrop,
+			waitForMove,
+			originX: event.clientX,
+			originY: event.clientY
 		});
 	}
 
 	function handleWindowPointerMove(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
+		interaction.notePointerMove(event);
 
 		if (gridBodyEl && visibleDayCount > 0 && gridModel.displayedPeriodCount > 0) {
 			const gridRect = gridBodyEl.getBoundingClientRect();
@@ -683,9 +687,11 @@
 		onLongPress: (_c, event) => {
 			interaction.enterEditFromLongPress(event);
 			if (placed.displayModel.isInDisplayedWeek) {
-				interaction.armPendingDrag(event, (moveEvent) =>
-					startDrag(placed, moveEvent, { hapticOnStart: false, persistAfterDrop: false })
-				);
+				startDrag(placed, event, {
+					hapticOnStart: false,
+					persistAfterDrop: false,
+					waitForMove: true
+				});
 			}
 		},
 		onDragStart: (_c, event) => startDrag(placed, event)

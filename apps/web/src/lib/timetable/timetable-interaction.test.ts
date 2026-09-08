@@ -254,53 +254,124 @@ describe('createTimetableInteraction', () => {
 		expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
 	});
 
-	it('armPendingDrag starts only after movement exceeds threshold', () => {
+	it('waitForMove drag shows a session immediately but does not track until the threshold', () => {
 		const interaction = createTimetableInteraction();
-		const onStart = vi.fn();
 		const downEvt = mockPointerEvent({ clientX: 10, clientY: 10 });
 		interaction.enterEditFromLongPress(downEvt);
-		interaction.armPendingDrag(downEvt, onStart);
-		expect(interaction.hasPendingDrag).toBe(true);
+		expect(
+			interaction.beginDrag(
+				dragInput({
+					persistAfterDrop: false,
+					waitForMove: true,
+					originX: downEvt.clientX,
+					originY: downEvt.clientY
+				})
+			)
+		).toBe(true);
+		expect(interaction.isDragging).toBe(true);
+		expect(interaction.drag?.targetColIndex).toBe(0);
+
+		expect(
+			interaction.updateDragTarget({
+				targetColIndex: 2,
+				targetDayOfWeek: 3,
+				targetStartPeriod: 4
+			})
+		).toBe(false);
+		expect(interaction.drag?.targetColIndex).toBe(0);
 
 		interaction.notePointerMove(
 			mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX, clientY: 10 })
 		);
-		expect(onStart).not.toHaveBeenCalled();
-		expect(interaction.hasPendingDrag).toBe(true);
+		expect(
+			interaction.updateDragTarget({
+				targetColIndex: 2,
+				targetDayOfWeek: 3,
+				targetStartPeriod: 4
+			})
+		).toBe(false);
 
 		interaction.notePointerMove(
 			mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1, clientY: 10 })
 		);
-		expect(onStart).toHaveBeenCalledTimes(1);
-		expect(interaction.hasPendingDrag).toBe(false);
+		expect(
+			interaction.updateDragTarget({
+				targetColIndex: 2,
+				targetDayOfWeek: 3,
+				targetStartPeriod: 4
+			})
+		).toBe(true);
+		expect(interaction.drag?.targetColIndex).toBe(2);
 	});
 
-	it('clears pending drag on pointer up without starting', () => {
+	it('endDrag before the waitForMove threshold stays in edit without a commit session', () => {
 		const interaction = createTimetableInteraction();
-		const onStart = vi.fn();
-		const downEvt = mockPointerEvent({ clientX: 10, clientY: 10 });
-		interaction.armPendingDrag(downEvt, onStart);
-		interaction.notePointerUp(mockPointerEvent({ clientX: 10, clientY: 10 }));
-		expect(interaction.hasPendingDrag).toBe(false);
-		expect(onStart).not.toHaveBeenCalled();
+		interaction.enterEditFromLongPress(mockPointerEvent({ clientX: 10, clientY: 10 }));
+		interaction.beginDrag(
+			dragInput({
+				persistAfterDrop: false,
+				waitForMove: true,
+				originX: 10,
+				originY: 10
+			})
+		);
+		interaction.notePointerMove(
+			mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX, clientY: 10 })
+		);
+
+		expect(interaction.endDrag()).toBeNull();
+		expect(interaction.mode).toBe('edit');
+		expect(interaction.drag).toBeNull();
+		expect(interaction.isClickGuarded()).toBe(false);
 	});
 
-	it('does not cancel an armed long press when pending drag moves after long press fired', () => {
+	it('endDrag after the waitForMove threshold commits and follows persistAfterDrop', () => {
+		const interaction = createTimetableInteraction();
+		interaction.enterEditFromLongPress(mockPointerEvent({ clientX: 10, clientY: 10 }));
+		interaction.beginDrag(
+			dragInput({
+				persistAfterDrop: false,
+				waitForMove: true,
+				originX: 10,
+				originY: 10
+			})
+		);
+		interaction.notePointerMove(
+			mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1, clientY: 10 })
+		);
+
+		expect(interaction.endDrag()?.persistAfterDrop).toBe(false);
+		expect(interaction.mode).toBe('view');
+	});
+
+	it('does not cancel an armed long press when a waitForMove drag tracks after long press fired', () => {
 		vi.useFakeTimers();
 		try {
 			const interaction = createTimetableInteraction();
 			const onLongPress = vi.fn();
-			const onDragStart = vi.fn();
 			const downEvt = mockPointerEvent({ clientX: 10, clientY: 10 });
 			interaction.watchLongPress(downEvt, onLongPress);
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS);
 			expect(onLongPress).toHaveBeenCalledTimes(1);
 
-			interaction.armPendingDrag(downEvt, onDragStart);
+			interaction.beginDrag(
+				dragInput({
+					persistAfterDrop: false,
+					waitForMove: true,
+					originX: 10,
+					originY: 10
+				})
+			);
 			interaction.notePointerMove(
 				mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 2, clientY: 10 })
 			);
-			expect(onDragStart).toHaveBeenCalledTimes(1);
+			expect(
+				interaction.updateDragTarget({
+					targetColIndex: 1,
+					targetDayOfWeek: 2,
+					targetStartPeriod: 3
+				})
+			).toBe(true);
 		} finally {
 			vi.useRealTimers();
 		}
