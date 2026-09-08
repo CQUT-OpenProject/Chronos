@@ -3,10 +3,10 @@ import type { Course } from '@chronos/core';
 
 import { timetableDayLabel } from '$lib/timetable/day-labels';
 
-function formatPeriodRange(startPeriod: number, endPeriod: number): string {
+export function formatPeriodRange(startPeriod: number, endPeriod: number): string {
 	return startPeriod === endPeriod
-		? hostT('courseA11y.periodSingle', { n: startPeriod })
-		: hostT('courseA11y.periodRange', { start: startPeriod, end: endPeriod });
+		? hostT('course.detail.periodSingle', { n: startPeriod })
+		: hostT('course.detail.periodRange', { start: startPeriod, end: endPeriod });
 }
 
 export function buildCourseCapsuleAriaLabel(
