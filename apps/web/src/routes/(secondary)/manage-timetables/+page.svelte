@@ -10,6 +10,10 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.manageTimetables')} backShellTab="mine" flush>
+<SecondaryPageShell
+	title={hostT('route.manageTimetables')}
+	backFallback={{ kind: 'shell', tab: 'mine' }}
+	flush
+>
 	<ManageTimetablesScreen {shell} />
 </SecondaryPageShell>

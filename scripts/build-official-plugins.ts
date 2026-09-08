@@ -135,19 +135,6 @@ for (const plugin of plugins) {
 	console.log(`${plugin.id}: manifest updated`);
 }
 
-// Remove legacy flat bundle layout
-const legacyFlatFiles = [
-	'theme-yumemita.bundle.js',
-	'theme-yumemita.colors.json',
-	'theme-yumemita.icons.json',
-	'tool-wallpaper.bundle.js',
-	'tool-wallpaper.bundle.css'
-];
-for (const file of legacyFlatFiles) {
-	const path = resolve(staticBundleDir, file);
-	if (existsSync(path)) rmSync(path, { force: true });
-}
-
 const catalog = {
 	version: 2,
 	updatedAt: Number(process.env.SOURCE_DATE_EPOCH ?? Date.now()),

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, afterNavigate, goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { Component } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
@@ -13,11 +13,20 @@
 	import { createShellTabController } from '$lib/shell/shell-tab.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
-	import { updateTransitionDirection } from '$lib/navigation/navigation-direction';
-	import { setupSecondaryPageViewTransition } from '$lib/navigation/setup-secondary-page-view-transition';
-	import { secondaryTransitionGate } from '$lib/navigation/secondary-transition-gate.svelte';
+	import {
+		updateTransitionDirection,
+		setupSecondaryPageViewTransition,
+		secondaryTransitionGate,
+		recordNavigation,
+		configureNavigateBack,
+		restoreShellTabFromHistory,
+		stampShellTabOnHistory,
+		syncDeepLinkEntryState,
+		isShellRoute,
+		isSecondaryRoute
+	} from '$lib/navigation';
 	import ShellRouteHost from '$lib/components/shell/ShellRouteHost.svelte';
-	import { PREVIEW_PAINT_READY_CONTEXT } from '@chronos/ui-kit';
+	import { PREVIEW_PAINT_READY_CONTEXT, TIMETABLE_PRESENTATION_CONTEXT } from '@chronos/ui-kit';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
@@ -28,19 +37,38 @@
 	const webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
 	const gate = secondaryTransitionGate;
 
-	beforeNavigate(({ from, to, type, delta }) => {
-		const fromPath = from?.url.pathname;
-		const toPath = to?.url.pathname;
-		if (!toPath) return;
-		updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
-	});
-
 	let { children } = $props();
 
 	const shell = createAppShell();
 	const timetableScreen = getTimetableScreen();
 	const platform = createPlatformBootstrap({ shell, timetableScreen });
 	const shellTab = createShellTabController(() => getAppController());
+
+	configureNavigateBack({
+		goto: (href) => goto(href),
+		setActiveTab: (tabId) => shellTab.setActiveTab(tabId)
+	});
+
+	beforeNavigate(({ from, to, type, delta }) => {
+		const fromPath = from?.url.pathname;
+		const toPath = to?.url.pathname;
+		if (!toPath) return;
+
+		if (fromPath && isShellRoute(fromPath) && isSecondaryRoute(toPath)) {
+			stampShellTabOnHistory(shellTab.activeTabId);
+		}
+
+		updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
+		recordNavigation(fromPath, toPath, type, delta ?? undefined);
+
+		if (isShellRoute(toPath)) {
+			restoreShellTabFromHistory((tabId) => shellTab.setActiveTab(tabId));
+		}
+	});
+
+	afterNavigate(() => {
+		syncDeepLinkEntryState();
+	});
 
 	const blockShell = $derived(onboardingController.isActive(page.url.pathname));
 	const shouldLoadOnboarding = $derived(onboardingController.shouldRender(page.url.pathname));
@@ -52,6 +80,10 @@
 	setContext('timetableScreen', timetableScreen);
 	setContext('shellTab', shellTab);
 	setContext(PREVIEW_PAINT_READY_CONTEXT, () => gate.previewPaintReady);
+	setContext(TIMETABLE_PRESENTATION_CONTEXT, () => ({
+		displayedWeek: timetableScreen.state.displayedWeek,
+		coursePalette: shell.appearance.coursePalette
+	}));
 
 	$effect(() => {
 		void getAppController().slotVersion;

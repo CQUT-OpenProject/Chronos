@@ -1,7 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import type { ReactiveChronosController } from '@chronos/ui-kit';
-	import { appLocaleToBcp47, pluginText } from '@chronos/ui-kit';
+	import {
+		appLocaleToBcp47,
+		pluginText,
+		TIMETABLE_PRESENTATION_CONTEXT,
+		resolveCoursePalette,
+		type TimetablePresentationAccessor
+	} from '@chronos/ui-kit';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import {
 		AcademicCalendarService,
@@ -24,6 +30,12 @@
 
 	let { controller, pluginId, active = true }: Props = $props();
 
+	const getPresentation = getContext<TimetablePresentationAccessor | undefined>(
+		TIMETABLE_PRESENTATION_CONTEXT
+	);
+	const presentation = $derived(getPresentation?.() ?? {});
+	const coursePalette = $derived(resolveCoursePalette(presentation));
+
 	const HEADLINE_SMALL_FONT_PX = 24;
 	const PERIOD_LABEL_MIN_FONT_PX = 6;
 
@@ -37,9 +49,8 @@
 		timetable ? calendarService.calculateAcademicWeek(todayIso, timetable.academicConfig) : 1
 	);
 	const coursePaintByName = $derived.by(() => {
-		const palette = controller.coursePalette;
 		const courses = screen.courseEntries.map((entry) => entry.hit.course);
-		return assignCourseDisplayColors(courses, palette);
+		return assignCourseDisplayColors(courses, coursePalette);
 	});
 	const scopeSegments = $derived([
 		{ value: 'active' as const, label: pt('screen.scope.active') },
@@ -62,10 +73,9 @@
 	}
 
 	function resolvePaint(hit: (typeof screen.courseEntries)[number]['hit']) {
-		const palette = controller.coursePalette;
 		const assigned =
 			coursePaintByName.get(normalizedCourseName(hit.course.name)) ??
-			resolveCoursePaint(hit.course, palette);
+			resolveCoursePaint(hit.course, coursePalette);
 		return assigned;
 	}
 

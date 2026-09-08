@@ -60,6 +60,16 @@ function fakePrompt(outcome: 'accepted' | 'dismissed', promptImpl?: () => Promis
 	return { event, promptMock };
 }
 
+function dispatchBeforeInstall(
+	listeners: Map<string, Set<(...args: never[]) => void>>,
+	prompt: unknown
+) {
+	const handlers = listeners.get('beforeinstallprompt');
+	for (const handler of handlers ?? []) {
+		(handler as (e: unknown) => void)(prompt);
+	}
+}
+
 describe('PWAInstallController', () => {
 	beforeEach(() => {
 		vi.resetModules();
@@ -68,43 +78,46 @@ describe('PWAInstallController', () => {
 	});
 
 	it('clears the deferred prompt after accept (single-use event)', async () => {
-		stubBrowser();
+		const { listeners } = stubBrowser();
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
-		controller.resetForTesting();
-		controller.deferredPrompt = fakePrompt('accepted').event;
+		dispatchBeforeInstall(listeners, fakePrompt('accepted').event);
 
+		expect(controller.canPrompt).toBe(true);
 		await expect(controller.install()).resolves.toBe(true);
-		expect(controller.deferredPrompt).toBeNull();
 		expect(controller.canPrompt).toBe(false);
 		// Second call must not reuse the consumed event.
 		await expect(controller.install()).resolves.toBe(false);
+		controller.dispose();
 	});
 
 	it('clears the deferred prompt after dismiss so it cannot be reused', async () => {
-		stubBrowser();
+		const { listeners } = stubBrowser();
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
-		controller.resetForTesting();
 		const { event, promptMock } = fakePrompt('dismissed');
-		controller.deferredPrompt = event;
+		dispatchBeforeInstall(listeners, event);
 
+		expect(controller.canPrompt).toBe(true);
 		await expect(controller.install()).resolves.toBe(false);
-		expect(controller.deferredPrompt).toBeNull();
+		expect(controller.canPrompt).toBe(false);
 		expect(promptMock).toHaveBeenCalledOnce();
+		controller.dispose();
 	});
 
 	it('survives prompt() rejection without unhandled errors', async () => {
-		stubBrowser();
+		const { listeners } = stubBrowser();
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
-		controller.resetForTesting();
-		controller.deferredPrompt = fakePrompt('accepted', () =>
-			Promise.reject(new DOMException('NotAllowedError'))
-		).event;
+		dispatchBeforeInstall(
+			listeners,
+			fakePrompt('accepted', () => Promise.reject(new DOMException('NotAllowedError'))).event
+		);
 
+		expect(controller.canPrompt).toBe(true);
 		await expect(controller.install()).resolves.toBe(false);
-		expect(controller.deferredPrompt).toBeNull();
+		expect(controller.canPrompt).toBe(false);
+		controller.dispose();
 	});
 
 	it('openInApp never opens a new browser tab', async () => {
@@ -112,7 +125,6 @@ describe('PWAInstallController', () => {
 		storage.set('chronos:pwa-installed', '1');
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
-		controller.resetForTesting();
 		controller.openInAppDialogOpen = true;
 
 		controller.openInApp();
@@ -120,6 +132,7 @@ describe('PWAInstallController', () => {
 		expect(window.open).not.toHaveBeenCalled();
 		expect(controller.openInAppDialogOpen).toBe(false);
 		expect(snackbarKey).toHaveBeenCalledWith('pwa.openInApp.hint');
+		controller.dispose();
 	});
 
 	it('ignores getInstalledRelatedApps without manifest related_applications', async () => {
@@ -129,11 +142,11 @@ describe('PWAInstallController', () => {
 		});
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
-		controller.resetForTesting();
 
 		await controller.init();
 
 		expect(controller.isInstalledLocally).toBe(false);
+		controller.dispose();
 	});
 
 	it('skips auto-popup on unsupported browsers', async () => {
@@ -144,7 +157,6 @@ describe('PWAInstallController', () => {
 			});
 			const { PWAInstallController } = await import('./pwa-install.svelte');
 			const controller = new PWAInstallController();
-			controller.resetForTesting();
 			controller.checkEnvironment();
 
 			expect(controller.canShowInstallEntry()).toBe(false);
@@ -154,6 +166,7 @@ describe('PWAInstallController', () => {
 			expect(controller.installDialogOpen).toBe(false);
 			expect(controller.iosGuideOpen).toBe(false);
 			expect(controller.openInAppDialogOpen).toBe(false);
+			controller.dispose();
 		} finally {
 			vi.useRealTimers();
 		}
@@ -165,8 +178,7 @@ describe('PWAInstallController', () => {
 		});
 		const { PWAInstallController } = await import('./pwa-install.svelte');
 		const controller = new PWAInstallController();
-		controller.resetForTesting();
-		controller.deferredPrompt = fakePrompt('accepted').event;
+		dispatchBeforeInstall(listeners, fakePrompt('accepted').event);
 
 		const handlers = listeners.get('appinstalled') ?? new Set();
 		expect(handlers.size).toBeGreaterThanOrEqual(1);
@@ -176,6 +188,7 @@ describe('PWAInstallController', () => {
 		handler();
 
 		expect(controller.isInstalledLocally).toBe(true);
-		expect(controller.deferredPrompt).toBeNull();
+		expect(controller.canPrompt).toBe(false);
+		controller.dispose();
 	});
 });

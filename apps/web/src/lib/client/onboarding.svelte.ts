@@ -16,15 +16,8 @@ export function hasSeenOnboarding(): boolean {
 	return localStorage.getItem(SEEN_KEY) === '1';
 }
 
-/** @internal Resets controller state between unit tests. */
-export function resetOnboardingControllerForTests(): void {
-	onboardingController.open = false;
-	onboardingController.step = 0;
-	(onboardingController as unknown as { hasChecked: boolean }).hasChecked = false;
-}
-
 /** First-launch onboarding: welcome → legal → highlights → display style → install → CTA. */
-class OnboardingController {
+export class OnboardingController {
 	open = $state(false);
 	step = $state(0);
 

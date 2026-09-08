@@ -1,26 +1,7 @@
+import { crc32, deflate } from '@chronos/codec-kit';
 import { generateQrMatrix, type QrMatrix } from './qr-encode';
 
 const PNG_SIGNATURE = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-
-const CRC_TABLE = (() => {
-	const table = new Uint32Array(256);
-	for (let i = 0; i < 256; i++) {
-		let c = i;
-		for (let k = 0; k < 8; k++) {
-			c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-		}
-		table[i] = c;
-	}
-	return table;
-})();
-
-function crc32(bytes: Uint8Array): number {
-	let crc = 0xffffffff;
-	for (let i = 0; i < bytes.length; i++) {
-		crc = CRC_TABLE[(crc ^ bytes[i]!) & 0xff]! ^ (crc >>> 8);
-	}
-	return (crc ^ 0xffffffff) >>> 0;
-}
 
 function writeU32BE(view: DataView, offset: number, value: number): void {
 	view.setUint32(offset, value, false);
@@ -48,26 +29,6 @@ function pngTextChunk(keyword: string, text: string): Uint8Array {
 	data[keywordBytes.length] = 0;
 	data.set(textBytes, keywordBytes.length + 1);
 	return pngChunk('tEXt', data);
-}
-
-async function zlibDeflate(bytes: Uint8Array): Promise<Uint8Array> {
-	if (typeof CompressionStream === 'undefined') {
-		const specifier = ['node', 'zlib'].join(':');
-		const zlib = (await import(/* @vite-ignore */ specifier)) as {
-			deflateSync: (data: Uint8Array) => Uint8Array;
-		};
-		return new Uint8Array(zlib.deflateSync(bytes));
-	}
-	const input = new ReadableStream<Uint8Array>({
-		start(controller) {
-			controller.enqueue(bytes);
-			controller.close();
-		}
-	});
-	const output = input.pipeThrough(
-		new CompressionStream('deflate') as unknown as ReadableWritablePair<Uint8Array, Uint8Array>
-	);
-	return new Uint8Array(await new Response(output).arrayBuffer());
 }
 
 export interface RasterizeQrOptions {
@@ -122,7 +83,7 @@ export async function encodeRgbaAsPng(
 		raw.set(rgba.subarray(y * width * 4, (y + 1) * width * 4), rowStart + 1);
 	}
 
-	const compressed = await zlibDeflate(raw);
+	const compressed = await deflate(raw);
 
 	const ihdr = new Uint8Array(13);
 	const ihdrView = new DataView(ihdr.buffer);

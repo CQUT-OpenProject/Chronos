@@ -227,8 +227,7 @@
 		color: var(--shell-bottom-tab-active-fg, var(--color-on-primary-container));
 	}
 
-	.ui-shell-top-bar,
-	.m3-top-app-bar {
+	.ui-shell-top-bar {
 		@apply flex min-h-[var(--top-bar-height)] shrink-0 items-center px-3 pb-0 sm:px-4;
 		padding-top: var(--topbar-safe);
 		z-index: 10;
@@ -240,15 +239,13 @@
 		backdrop-filter: blur(8px);
 	}
 
-	.ui-shell-top-bar-leading,
-	.m3-top-app-bar-leading {
+	.ui-shell-top-bar-leading {
 		display: flex;
 		align-items: center;
 		flex-shrink: 0;
 	}
 
-	.ui-shell-top-bar-title,
-	.m3-top-app-bar-title {
+	.ui-shell-top-bar-title {
 		flex: 1;
 		min-width: 0;
 		display: flex;
@@ -256,15 +253,13 @@
 		justify-content: center;
 	}
 
-	.ui-shell-top-bar-title h1,
-	.m3-top-app-bar-title h1 {
+	.ui-shell-top-bar-title h1 {
 		flex: 1;
 		margin: 0;
 		min-width: 0;
 	}
 
-	.ui-shell-top-bar-actions,
-	.m3-top-app-bar-actions {
+	.ui-shell-top-bar-actions {
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;

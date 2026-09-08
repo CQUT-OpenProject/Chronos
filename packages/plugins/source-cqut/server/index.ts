@@ -1,12 +1,12 @@
 import type {
 	PluginServerHandler,
 	PluginServerManifest,
-	PluginServerErrorKind
+	PluginServerErrorKind,
+	AppError
 } from '@chronos/core';
 import { pluginServerError, pluginServerSuccess } from '@chronos/core';
 import { SERVER_PROXY_ACTION, SERVER_PROXY_DOMAINS } from './config';
 import { fetchCqutSchedule } from './fetch-schedule';
-import type { AppError } from './result/app-error';
 
 function toWireErrorKind(kind: AppError['kind']): PluginServerErrorKind {
 	switch (kind) {

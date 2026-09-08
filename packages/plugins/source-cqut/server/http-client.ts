@@ -1,5 +1,4 @@
-import { AppError } from './result/app-error';
-import { failure, success, type AppResult } from './result/app-result';
+import { AppError, failure, success, type AppResult } from '@chronos/core';
 import { fetch as undiciFetch, type RequestInit as UndiciRequestInit } from 'undici';
 import { HTTP_RETRY_DELAY_MS, NETWORK_RETRY_COUNT, REQUEST_TIMEOUT_MS } from './config';
 import type { CookieJar } from './cookie-jar';

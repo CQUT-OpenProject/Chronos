@@ -41,13 +41,16 @@ describe('initPwaUpdateUx', () => {
 	});
 
 	it('shows the update snackbar only once per session', async () => {
-		const { resetPwaSwStateForTesting, emitSwUpdateAvailableForTesting } = await import('./pwa-sw');
 		const { initPwaUpdateUx } = await import('./pwa-update-ux.svelte');
+		let notifyUpdate: () => void = () => {};
 
-		resetPwaSwStateForTesting();
-		initPwaUpdateUx();
-		emitSwUpdateAvailableForTesting();
-		emitSwUpdateAvailableForTesting();
+		initPwaUpdateUx((listener) => {
+			notifyUpdate = listener;
+			return () => {};
+		});
+
+		notifyUpdate();
+		notifyUpdate();
 
 		expect(snackbarKey).toHaveBeenCalledOnce();
 	});

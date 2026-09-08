@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { detectPwaEnvironment } from './pwa-environment';
+import { detectPwaEnvironment } from './pwa-install.svelte';
 
 describe('detectPwaEnvironment', () => {
 	it('detects iOS Safari', () => {

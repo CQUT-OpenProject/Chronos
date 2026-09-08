@@ -3,8 +3,7 @@ import {
 	createIconThemeFromJson,
 	createThemeFromColorJson,
 	parseColorThemeJson,
-	parseIconThemeJson,
-	ScopedContext
+	parseIconThemeJson
 } from '@chronos/core';
 import { loadEsmPluginFromCode } from './plugin-bundle';
 import type { InstalledOfficialPluginRecord } from './official-plugin-types';
@@ -45,24 +44,22 @@ export class OfficialPluginRuntimeActivator {
 		if (!record.colorsJson && !record.iconThemeJson) return [];
 
 		const disposables: Disposable[] = [];
-		const ctx = new ScopedContext(manifest.id, this.engine);
 		if (record.colorsJson) {
 			disposables.push(
-				ctx.registerSlot(
-					'theme.definition',
-					createThemeFromColorJson(parseColorThemeJson(JSON.parse(record.colorsJson)))
+				this.engine.themes.registerTheme(
+					createThemeFromColorJson(parseColorThemeJson(JSON.parse(record.colorsJson))),
+					manifest.id
 				)
 			);
 		}
 		if (record.iconThemeJson) {
 			disposables.push(
-				ctx.registerSlot(
-					'theme.icon.definition',
-					createIconThemeFromJson(parseIconThemeJson(JSON.parse(record.iconThemeJson)))
+				this.engine.iconThemes.registerIconTheme(
+					createIconThemeFromJson(parseIconThemeJson(JSON.parse(record.iconThemeJson))),
+					manifest.id
 				)
 			);
 		}
-		disposables.push({ dispose: () => ctx.dispose() });
 		return disposables;
 	}
 

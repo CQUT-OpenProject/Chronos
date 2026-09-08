@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { isPwaStandalone } from './pwa-standalone';
+import { isPwaStandalone } from './pwa-install.svelte';
 
 function mockDisplayMode(mode: string) {
 	const listeners = new Map<string, Set<() => void>>();

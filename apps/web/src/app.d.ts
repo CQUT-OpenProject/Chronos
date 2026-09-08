@@ -3,6 +3,8 @@
 declare namespace App {
 	interface PageState {
 		chronosOverlay?: 1;
+		chronosEntry?: 'deeplink';
+		chronosShellTab?: string;
 	}
 }
 

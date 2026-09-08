@@ -4,7 +4,7 @@ Canonical vocabulary for runtime modules. Prefer these names over file names.
 
 ## Ports (`I*Service`)
 
-Registered on `ServiceContainer`. Hosts bootstrap them once; runtime code reads the container (or `engine.storage` / `ctx.service(...)`), not ad-hoc `env` fallbacks.
+Registered on `ChronosEnv` at engine construction. Runtime code reads `engine.storage` / `engine.http` / `ctx.service(...)`, not ad-hoc platform globals.
 
 | Port                | Role                                                                                                                                            |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -15,7 +15,7 @@ Registered on `ServiceContainer`. Hosts bootstrap them once; runtime code reads 
 | `IAnalyticsService` | Optional product analytics (registered via `ChronosEnv.analytics` → container; screens may still call `$lib/client/analytics` during migration) |
 | `IHostNavigation`   | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                            |
 
-`ChronosEnv` is only a host bootstrap adapter (web + native). After construction, `registerEnvProviders` copies ports into the container. All hosts must pass `env` at construction (no container-only facade).
+`ChronosEnv` is the host bootstrap adapter (web + native). All hosts must pass a complete `env` at `ChronosEngine` construction; `ScopedContext.service()` resolves standard ports from `env` directly.
 
 ## Timetable and UserPreferences
 
@@ -41,11 +41,9 @@ CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live onl
 
 ## EventPipeline
 
-Single event + hook runtime on `ChronosEngine.events` (`emit` / `on`, `serial` guards, `waterfall`).
+Typed broadcast runtime on `ChronosEngine.events` (`emit` / `on` only).
 
-**Removed:** `EventBus`, `DataPipeline`, `engine.pipeline` aliases, the plugin-facing `ctx.registerWaterfallHook` / `ctx.registerSerialHook` registration face, and the never-emitted `import:before/after` / `export:before/after` events plus `ExportTransformHook` types. Do not reintroduce them.
-
-**FROZEN BASELINE:** engine-internal serial/waterfall machinery (and the guard/waterfall wrappers inside every engine action) has zero hook registrants. Like `hosts/native-protocol.ts`: no new public API; if no real consumer appears within two release cycles, remove the machinery and the action wrappers wholesale.
+**Removed:** `EventBus`, `DataPipeline`, `engine.pipeline` aliases, plugin-facing `ctx.registerWaterfallHook` / `ctx.registerSerialHook`, never-emitted `import:before/after` / `export:before/after` events, `ExportTransformHook` types, and the internal `serial` / `waterfall` machinery plus engine-action guard wrappers (zero production registrants; removed 0.5.x). Do not reintroduce them.
 
 ## Reserved port: queryCourses
 

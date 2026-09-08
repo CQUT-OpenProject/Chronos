@@ -11,6 +11,8 @@
 
 	interface Props {
 		controller: ReactiveChronosController;
+		displayedWeek?: number;
+		coursePalette?: readonly CoursePaletteEntry[];
 		hasDynamicBackground?: boolean;
 		dynamicColorUri?: string | null;
 		interactive?: boolean;
@@ -18,6 +20,8 @@
 
 	let {
 		controller,
+		displayedWeek: propDisplayedWeek,
+		coursePalette: propCoursePalette,
 		hasDynamicBackground = false,
 		dynamicColorUri = null,
 		interactive = false
@@ -31,15 +35,13 @@
 	const academicWeek = $derived(
 		timetable ? calendarService.calculateAcademicWeek(today, timetable.academicConfig) : null
 	);
-	const displayedWeek = $derived(
-		controller.displayedWeek ?? controller.activeWeek ?? academicWeek ?? 1
-	);
+	const displayedWeek = $derived(propDisplayedWeek ?? controller.activeWeek ?? academicWeek ?? 1);
 	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller.activeWeek ?? 1));
 	const currentPeriodIndex = $derived(controller.currentPeriodIndex);
 	const layoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const resolvedPalette = $derived(
-		controller.coursePalette.length > 0 ? controller.coursePalette : COURSE_PALETTE_ENTRIES
+		propCoursePalette && propCoursePalette.length > 0 ? propCoursePalette : COURSE_PALETTE_ENTRIES
 	);
 	const paletteCourses = $derived(timetable?.courses ?? []);
 	const courseBadges = $derived(controller.courseBadges ?? {});

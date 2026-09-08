@@ -39,7 +39,7 @@ See `WORKBENCH_COLOR_KEYS` in `packages/core/src/theme/workbench-colors.ts`. Hos
 | `m3-section-surface` | `ui-section-surface`   |
 | `m3-top-app-bar`     | `ui-shell-top-bar`     |
 
-Legacy `m3-*` aliases remain in `typography.css` and `ui-patterns.css` for one release cycle.
+Legacy `m3-*` aliases have been completely removed.
 
 ## Radius tokens
 

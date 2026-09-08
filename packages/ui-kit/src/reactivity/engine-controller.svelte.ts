@@ -10,7 +10,7 @@ import type {
 	AcademicConfig,
 	ChronosContext
 } from '@chronos/core';
-import { COURSE_PALETTE_ENTRIES, todayIsoDate, type CoursePaletteEntry } from '@chronos/core';
+import { todayIsoDate } from '@chronos/core';
 
 /**
  * ReactiveChronosController serves as the Svelte 5 Runes reactive bridge
@@ -37,10 +37,6 @@ export class ReactiveChronosController implements Disposable {
 	// Slot reactivity version signal (increments on slot changes or locale switches)
 	slotVersion = $state<number>(0);
 	courseBadges = $state<Record<string, CourseBadge[]>>({});
-
-	// Timetable display state (synced from host TimetableScreenController / appearance)
-	displayedWeek = $state<number>(1);
-	coursePalette = $state.raw<readonly CoursePaletteEntry[]>(COURSE_PALETTE_ENTRIES);
 
 	constructor(engine: ChronosEngine) {
 		this.engine = engine;
@@ -199,14 +195,6 @@ export class ReactiveChronosController implements Disposable {
 
 	setTheme(themeId: string): void {
 		this.engine.setTheme(themeId);
-	}
-
-	setDisplayedWeek(week: number): void {
-		this.displayedWeek = week;
-	}
-
-	setCoursePalette(palette: readonly CoursePaletteEntry[]): void {
-		this.coursePalette = palette;
 	}
 
 	async updatePreferences(patch: Partial<UserPreferences>): Promise<void> {

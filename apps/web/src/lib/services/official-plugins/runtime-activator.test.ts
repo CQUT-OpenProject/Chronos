@@ -78,7 +78,7 @@ describe('OfficialPluginRuntimeActivator', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('registers JSON-only theme via ScopedContext', async () => {
+	it('registers JSON-only theme', async () => {
 		installed.add('theme-json');
 		await activator.activate({
 			manifest: {

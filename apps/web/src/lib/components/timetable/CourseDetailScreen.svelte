@@ -11,6 +11,7 @@
 	} from '@chronos/core';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
+	import { formatPeriodRange } from '$lib/timetable/course-a11y';
 	import { getAppController } from '$lib/services/app-engine';
 	import Button from '$lib/components/ui/Button.svelte';
 
@@ -49,15 +50,6 @@
 		return weeks.join(', ');
 	}
 
-	function formatPeriodRange(entry: Course) {
-		return entry.startPeriod === entry.endPeriod
-			? hostT('course.detail.periodSingle', { n: entry.startPeriod })
-			: hostT('course.detail.periodRange', {
-					start: entry.startPeriod,
-					end: entry.endPeriod
-				});
-	}
-
 	const detailRows = $derived(
 		course
 			? [
@@ -75,7 +67,7 @@
 					},
 					{
 						label: hostT('course.detail.periods'),
-						value: formatPeriodRange(course)
+						value: formatPeriodRange(course.startPeriod, course.endPeriod)
 					},
 					{
 						label: hostT('course.detail.weeks'),

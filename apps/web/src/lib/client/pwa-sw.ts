@@ -13,16 +13,6 @@ export function isSwUpdatePending(): boolean {
 	return needRefresh;
 }
 
-/** @internal Resets module state between unit tests. */
-export function resetPwaSwStateForTesting(): void {
-	needRefresh = false;
-}
-
-/** @internal Emits the SW update-available event for unit tests. */
-export function emitSwUpdateAvailableForTesting(): void {
-	notifyUpdateAvailable();
-}
-
 export function onSwUpdateAvailable(listener: () => void): () => void {
 	updateAvailableListeners.add(listener);
 	return () => {

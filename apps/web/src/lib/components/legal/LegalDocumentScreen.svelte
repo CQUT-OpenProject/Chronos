@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { onMount } from 'svelte';
-	import type { Pathname } from '$app/types';
+	import type { BackFallback } from '$lib/navigation';
 	import { staticPath } from '$lib/config/static-path';
 	import { parseMarkdown } from '$lib/content/markdown';
 	import { connectivity } from '$lib/platform/connectivity.svelte';
@@ -13,11 +13,11 @@
 
 	let {
 		title,
-		backHref,
+		backFallback,
 		documentPath
 	}: {
 		title: string;
-		backHref: Pathname;
+		backFallback: BackFallback;
 		documentPath: string;
 	} = $props();
 
@@ -53,7 +53,7 @@
 	});
 </script>
 
-<SecondaryPageShell {title} {backHref}>
+<SecondaryPageShell {title} {backFallback}>
 	{#if loadState === 'loading'}
 		<div class="flex items-center justify-center py-12">
 			<LoadingIndicator />

@@ -9,7 +9,10 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.licenses')} backHref="/about">
+<SecondaryPageShell
+	title={hostT('route.licenses')}
+	backFallback={{ kind: 'route', href: '/about' }}
+>
 	<MineSection title={hostT('about.licenses.index.heading')}>
 		<MineRow
 			title={hostT('about.licenses.index.project')}

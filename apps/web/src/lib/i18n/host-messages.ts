@@ -291,8 +291,6 @@ const zhCn = {
 	'course.form.endPeriod': '结束节次',
 
 	// courseA11y
-	'courseA11y.periodSingle': '第 {n} 节',
-	'courseA11y.periodRange': '第 {start}-{end} 节',
 	'courseA11y.overlap': '此时段有 {count} 门课程重叠，点击展开',
 
 	// mine
@@ -846,8 +844,6 @@ const en = {
 	'course.form.endPeriod': 'End period',
 
 	// courseA11y
-	'courseA11y.periodSingle': 'Period {n}',
-	'courseA11y.periodRange': 'Periods {start}–{end}',
 	'courseA11y.overlap': '{count} overlapping courses in this slot. Tap to expand',
 
 	// mine

@@ -11,20 +11,12 @@ import {
 	CURRENT_PREFERENCES_SCHEMA_VERSION,
 	DEFAULT_USER_PREFERENCES,
 	DEFAULT_VISUAL_THEME_ID,
-	LEGACY_PALETTE_MODE_DYNAMIC,
-	PALETTE_MODE_VIBRANT
+	PALETTE_MODE_VIBRANT,
+	PALETTE_MODE_WALLPAPER,
+	PREFERENCE_STORAGE_KEYS
 } from '@chronos/core';
 
-export const SETTINGS_KEYS = {
-	currentTimetableId: 'chronos_preferences:current_timetable_id',
-	themeMode: 'chronos_preferences:theme_mode',
-	timetableLayoutMode: 'chronos_preferences:timetable_layout_mode',
-	paletteMode: 'chronos_preferences:palette_mode',
-	capsuleCornerStyle: 'chronos_preferences:capsule_corner_style',
-	hapticFeedbackEnabled: 'chronos_preferences:haptic_feedback_enabled',
-	visualThemeId: 'chronos_preferences:visual_theme_id',
-	locale: 'chronos_preferences:locale'
-} as const;
+export const SETTINGS_KEYS = PREFERENCE_STORAGE_KEYS;
 
 function normalizeThemeMode(raw: string | null): ThemeMode {
 	const value = raw?.trim().toLowerCase();
@@ -40,7 +32,7 @@ function normalizeLayoutMode(raw: string | null): TimetableLayoutMode {
 
 function normalizePaletteMode(raw: string | null): PaletteMode {
 	const value = raw?.trim().toLowerCase();
-	if (value === LEGACY_PALETTE_MODE_DYNAMIC) return LEGACY_PALETTE_MODE_DYNAMIC;
+	if (value === PALETTE_MODE_WALLPAPER) return PALETTE_MODE_WALLPAPER;
 	return PALETTE_MODE_VIBRANT;
 }
 

@@ -1,12 +1,8 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vite-plus/test';
+import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 import { pluginServerSuccess, type PluginServerManifest } from '@chronos/core';
 import { PLUGIN_RATE_LIMIT_MAX } from './config';
-import {
-	dispatchPluginRequest,
-	resetDispatchManifestCacheForTests,
-	type PluginProxyRequestEvent
-} from './dispatch';
-import { resetPluginRateLimitForTests } from './rate-limit';
+import { PluginDispatcher, type PluginProxyRequestEvent } from './dispatch';
+import { PluginRateLimiter } from './rate-limit';
 
 vi.mock('$lib/server/plugin-server-loader.generated', () => ({
 	loadServerManifest: vi.fn()
@@ -38,23 +34,18 @@ function createEvent(
 	} satisfies PluginProxyRequestEvent;
 }
 
-describe('dispatchPluginRequest', () => {
-	beforeEach(() => {
-		resetPluginRateLimitForTests();
-		resetDispatchManifestCacheForTests();
-		vi.mocked(loadServerManifest).mockReset();
-	});
+describe('PluginDispatcher', () => {
+	let dispatcher: PluginDispatcher;
+	let rateLimiter: PluginRateLimiter;
 
-	afterEach(() => {
-		resetPluginRateLimitForTests();
-		resetDispatchManifestCacheForTests();
+	beforeEach(() => {
+		vi.mocked(loadServerManifest).mockReset();
+		rateLimiter = new PluginRateLimiter();
+		dispatcher = new PluginDispatcher({ rateLimiter });
 	});
 
 	it('returns NotFound for unknown plugin', async () => {
-		const response = await dispatchPluginRequest(
-			createEvent({ pluginId: 'unknown-plugin' }),
-			'POST'
-		);
+		const response = await dispatcher.dispatch(createEvent({ pluginId: 'unknown-plugin' }), 'POST');
 		const body = await response.json();
 		expect(response.status).toBe(404);
 		expect(body).toEqual({ ok: false, error: { kind: 'NotFound', message: 'Not found' } });
@@ -65,7 +56,7 @@ describe('dispatchPluginRequest', () => {
 			handlers: { preview: {} }
 		} satisfies PluginServerManifest);
 
-		const response = await dispatchPluginRequest(createEvent({ action: 'missing' }), 'POST');
+		const response = await dispatcher.dispatch(createEvent({ action: 'missing' }), 'POST');
 		const body = await response.json();
 		expect(response.status).toBe(404);
 		expect(body.ok).toBe(false);
@@ -82,10 +73,10 @@ describe('dispatchPluginRequest', () => {
 		} satisfies PluginServerManifest);
 
 		for (let i = 0; i < PLUGIN_RATE_LIMIT_MAX; i++) {
-			await dispatchPluginRequest(createEvent(), 'POST');
+			await dispatcher.dispatch(createEvent(), 'POST');
 		}
 
-		const response = await dispatchPluginRequest(createEvent(), 'POST');
+		const response = await dispatcher.dispatch(createEvent(), 'POST');
 		const body = await response.json();
 		expect(response.status).toBe(429);
 		expect(body).toEqual({
@@ -100,7 +91,7 @@ describe('dispatchPluginRequest', () => {
 			handlers: { preview: { POST: handler } }
 		} satisfies PluginServerManifest);
 
-		const response = await dispatchPluginRequest(createEvent(), 'POST');
+		const response = await dispatcher.dispatch(createEvent(), 'POST');
 		const body = await response.json();
 
 		expect(handler).toHaveBeenCalled();

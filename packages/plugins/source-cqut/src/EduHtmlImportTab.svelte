@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pluginText, type ImportTabComponentProps } from '@chronos/ui-kit';
+	import { pluginText, previewAndNotify, type ImportTabComponentProps } from '@chronos/ui-kit';
 	import { SOURCE_CQUT_MESSAGES } from './messages';
 
 	const SOURCE_CQUT_PLUGIN_ID = 'source-cqut';
@@ -17,13 +17,6 @@
 	const intro = $derived(pt('import.html.intro'));
 	const submitLabel = $derived(pt(loading ? 'import.html.submit.loading' : 'import.html.submit'));
 
-	function notifyTransferMessages() {
-		const { errorMessage } = transfer.state;
-		if (errorMessage) {
-			controller?.notify(errorMessage, 'error');
-		}
-	}
-
 	async function handleFileChange(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
@@ -31,11 +24,15 @@
 		loading = true;
 		try {
 			const html = await file.text();
-			const ok = await transfer.previewWithSlot('edu-html', {
-				file: html
-			});
+			const ok = await previewAndNotify(
+				transfer,
+				'edu-html',
+				{
+					file: html
+				},
+				controller
+			);
 			if (ok) onContinue();
-			else notifyTransferMessages();
 		} finally {
 			loading = false;
 			input.value = '';

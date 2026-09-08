@@ -1,5 +1,4 @@
 import type { PluginManifest } from '@chronos/core';
-import { IHttpService, IRuntimeService } from '@chronos/core';
 import type { ChronosEngine } from '@chronos/core';
 import type { OfficialPluginAssets } from './official-plugin-types';
 import { resolveManifestForDownload } from './manifest-url';
@@ -68,7 +67,7 @@ export class OfficialPluginAssetPipeline {
 		expectedSha256: string | undefined,
 		label: string
 	): Promise<string> {
-		const response = await this.engine.services.get(IHttpService).request(requestUrl, {
+		const response = await this.engine.http.request(requestUrl, {
 			method: 'GET'
 		});
 		if (!response.ok) {
@@ -76,7 +75,7 @@ export class OfficialPluginAssetPipeline {
 		}
 		const text = await response.text();
 		if (expectedSha256) {
-			const hash = await this.engine.services.get(IRuntimeService).sha256(text);
+			const hash = await this.engine.runtime.sha256(text);
 			if (hash.toLowerCase() !== expectedSha256.toLowerCase()) {
 				throw new Error(
 					`Plugin ${label} integrity check failed. Expected ${expectedSha256}, got ${hash}`

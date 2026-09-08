@@ -7,7 +7,6 @@ import {
 	parseTimeMinutesStrict,
 	periodDurationMinutes,
 	suggestNextPeriodTime,
-	timeToMinutes,
 	validatePeriodTimes
 } from '../src/algorithms/period-time-edit';
 
@@ -16,7 +15,7 @@ const P = (index: number, startTime: string, endTime: string) => ({ index, start
 describe('period-time-edit', () => {
 	it('parses and formats clock times defensively', () => {
 		expect(parseTimeMinutesStrict('08:45')).toBe(525);
-		expect(timeToMinutes(' 8:05 ')).toBe(485);
+		expect(parseTimeMinutesStrict(' 8:05 ')).toBe(485);
 		expect(parseTimeMinutesStrict('24:00')).toBeUndefined();
 		expect(parseTimeMinutesStrict('nope')).toBeUndefined();
 		expect(parseTimeMinutesStrict(undefined)).toBeUndefined();

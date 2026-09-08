@@ -1,8 +1,8 @@
-import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createWorkbenchColorsFromTokens } from '@chronos/core/theme/workbench-colors';
 import { buildGeneratedThemeCss, buildM3Tokens } from '@chronos/ui-kit/theme/m3-theme';
+import { writeIfChanged } from '../build-utils/write-if-changed';
 
 const themeDir = dirname(fileURLToPath(import.meta.url));
 const generatedThemePath = resolve(themeDir, 'generated-colors.css');
@@ -12,15 +12,6 @@ const generatedWorkbenchPath = fileURLToPath(
 		import.meta.url
 	)
 );
-
-function writeIfChanged(path: string, contents: string): void {
-	try {
-		if (readFileSync(path, 'utf8') === contents) return;
-	} catch {
-		// File does not exist yet
-	}
-	writeFileSync(path, contents, 'utf8');
-}
 
 function writeGeneratedM3DefaultWorkbench(): void {
 	const workbench = createWorkbenchColorsFromTokens(buildM3Tokens('light'), buildM3Tokens('dark'));

@@ -1,12 +1,10 @@
-import { AppError } from './result/app-error';
-import { failure, success, type AppResult } from './result/app-result';
+import { AppError, failure, success, type AppResult, type PeriodTime } from '@chronos/core';
 import {
 	CQUT_CAMPUS_IDS,
 	getCampusApiName,
 	resolveCampusIdFromApiName,
 	type CqutCampusId
 } from '../src/campus-period-times';
-import type { PeriodTime } from '@chronos/core';
 import { GET_CAMPUS_TIME_INFO_URL, GET_USER_INFO_URL, JSON_MEDIA_TYPE } from './config';
 import type { CookieJar } from './cookie-jar';
 import { requestStep } from './http-client';

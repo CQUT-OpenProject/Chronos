@@ -2,6 +2,7 @@
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { navigateBack } from '$lib/navigation';
 	import { resolve } from '$app/paths';
 	import { ensureEngineFullyReady, getAppController, getAppEngine } from '$lib/services/app-engine';
 	import { ImportMode } from '$lib/domain/import-mode';
@@ -20,7 +21,7 @@
 		await ensureEngineFullyReady();
 		const loaded = transfer.loadPersistedPreview();
 		if (!loaded) {
-			goto(resolve('/transfer/import'));
+			navigateBack({ kind: 'route', href: '/transfer/import' });
 			return;
 		}
 		currentTimetableName = controller.currentTimetable?.name ?? null;
@@ -36,7 +37,11 @@
 </script>
 
 {#if ready}
-	<SecondaryPageShell title={hostT('route.importConfirm')} backHref="/transfer/import" flush>
+	<SecondaryPageShell
+		title={hostT('route.importConfirm')}
+		backFallback={{ kind: 'route', href: '/transfer/import' }}
+		flush
+	>
 		<TransferImportConfirmScreen {transfer} {currentTimetableName} onConfirm={handleConfirmed} />
 	</SecondaryPageShell>
 {:else}

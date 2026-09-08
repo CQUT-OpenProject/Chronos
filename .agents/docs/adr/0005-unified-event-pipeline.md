@@ -51,3 +51,16 @@ flowchart LR
 ## 修订记录
 
 - 2026-08-21 · 接口冻结说明：`registerPipelineHook` / `registerWaterfallHook` / `registerSerialHook` / `inject` 当前无生产插件消费方，API 保持定义并处于冻结状态；测试覆盖保留在 `packages/core/tests/ioc-topology.test.ts`。
+- 2026-09-08 · **现行状态**：`serial` / `waterfall` 及 engine action 守卫包装层已移除；`EventPipeline` 仅保留强类型 `emit` / `on` 广播（实现见 `event-pipeline-broadcast.ts`）。下文「串行守卫 / 瀑布变换」描述为历史决策，不再适用。
+
+---
+
+## 现行架构（2026-09 起）
+
+```mermaid
+flowchart LR
+    Publisher[调用方 / 引擎] --> Pipeline[EventPipeline]
+    Pipeline --> Emit["emit / on (状态广播与响应式监听)"]
+```
+
+`ChronosEngine.events` 暴露单一 `EventPipeline` 实例；插件与宿主通过 `on` 订阅、`emit` 发布，无拦截链或变换管道。

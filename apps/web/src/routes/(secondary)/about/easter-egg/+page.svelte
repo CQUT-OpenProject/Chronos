@@ -7,6 +7,9 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.developer')} backHref="/about">
+<SecondaryPageShell
+	title={hostT('route.developer')}
+	backFallback={{ kind: 'route', href: '/about' }}
+>
 	<DeveloperScreen />
 </SecondaryPageShell>

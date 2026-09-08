@@ -133,9 +133,9 @@ scripts                   官方插件构建与校验、主题令牌生成、别
 
 `@chronos/core` 的核心中枢对象，负责管理领域状态、分发业务动作（如 `createTimetable` / `importTimetable` / `saveCourse` 等）、维护 `EventPipeline` 事件总线与插槽注册表。所有状态变更均通过引擎动作触发，视图层通过 `ReactiveChronosController` 订阅状态快照。
 
-#### 服务容器与端口
+#### 端口与 ChronosEnv
 
-`ServiceContainer` 注册五个标准端口：`IHttpService`、`IStorageService`、`IVaultService`（可选）、`IRuntimeService`、`IAnalyticsService`（可选）。宿主在启动阶段将底层平台适配器（如 Dexie、Fetch、WebAuthn 等）注入容器中，运行期代码一律通过容器或 `ctx.service(...)` 消费平台能力，禁止直接调用平台专属全局 API。详细契约见[参考：端口契约](#参考端口契约)。
+标准端口（`IHttpService`、`IStorageService`、`IVaultService`（可选）、`IRuntimeService`、`IAnalyticsService`（可选））由宿主在 `ChronosEnv` 中提供。运行期代码通过 `engine.storage` / `engine.http` 或 `ctx.service(...)` 消费平台能力，禁止直接调用平台专属全局 API。详细契约见[参考：端口契约](#参考端口契约)。
 
 #### 分层插槽树
 
@@ -169,7 +169,7 @@ import.source.tab 插槽（每个数据源提供一个扩展贡献）
 
 ### 事件与动态配色
 
-引擎内部事件通过统一的 `EventPipeline` 分发（`emit` / `on`）。主题相关的 `dynamicColor:set / changed / hydrate` 是内核的通用取色契约：由壁纸等插件触发事件，宿主 `AppShell` 桥接并更新 `dynamicColorUri`，最终调用当前主题的 `dynamicColorAdapter` 进行取色与界面渲染。注意：引擎底层的串行与瀑布流拦截钩子（serial / waterfall）已处于冻结基线（Frozen Baseline），暂无生产消费方，请勿新增对此类机制的依赖。
+引擎内部事件通过统一的 `EventPipeline` 分发（`emit` / `on` 广播模型）。主题相关的 `dynamicColor:set / changed / hydrate` 是内核的通用取色契约：由壁纸等插件触发事件，宿主 `AppShell` 桥接并更新 `dynamicColorUri`，最终调用当前主题的 `dynamicColorAdapter` 进行取色与界面渲染。历史上的串行守卫（serial）与瀑布变换（waterfall）拦截机制已在 0.5.x 移除，请勿重新引入。
 
 ### 主题系统与设计 Token
 
@@ -393,7 +393,7 @@ export interface StandardSlotMap {
 
 ## 参考：端口契约
 
-宿主平台底层能力通过 `ServiceContainer` 以五个标准端口的形式注入。运行时代码（包括引擎与插件）一律通过容器或 `ctx.service(...)` 消费能力，禁止直接调用平台全局 API。类型定义见 `packages/core/src/types/services.ts`。
+宿主平台底层能力通过 `ChronosEnv` 以五个标准端口的形式提供。运行时代码（包括引擎与插件）一律通过 `engine.*` 访问器或 `ctx.service(...)` 消费能力，禁止直接调用平台全局 API。类型定义见 `packages/core/src/types/services.ts`。
 
 | 端口                | 必需 | 职责                                                                    |
 | ------------------- | ---- | ----------------------------------------------------------------------- |
@@ -432,11 +432,11 @@ proxy?(pluginId, action, payload, options?): Promise<HttpResponse>
 
 ### IAnalyticsService
 
-包含单一 `track(event, properties?)` 方法。通过宿主 `ChronosEnv.analytics` 注入容器；未配置统计 Key 的构建版本不会启用埋点服务，运行时代码应容忍该服务未注入的情况。
+包含单一 `track(event, properties?)` 方法。通过宿主 `ChronosEnv.analytics` 提供；未配置统计 Key 的构建版本不会启用埋点服务，运行时代码应容忍该服务未注入的情况。
 
 ### 宿主装配规则
 
-`ChronosEnv` 作为宿主启动阶段的环境适配器（针对 Web 与未来原生平台）。应用初始化时由 `registerEnvProviders` 将各环境端口注入至 `ServiceContainer` 容器中；所有宿主在创建引擎时必须传入完整的 `env` 实例，保证端口来源单一明确。
+`ChronosEnv` 作为宿主启动阶段的环境适配器（针对 Web 与未来原生平台）。所有宿主在创建 `ChronosEngine` 时必须传入完整的 `env` 实例；`ScopedContext.service()` 从 `env` 解析标准端口，保证来源单一明确。
 
 ## 参考：槽位目录
 

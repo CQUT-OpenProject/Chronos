@@ -30,13 +30,13 @@ export default defineConfig({
 			{
 				find: '$app/paths',
 				replacement: fileURLToPath(
-					new URL('./apps/web/src/lib/test-mocks/app-paths.ts', import.meta.url)
+					new URL('./apps/web/src/test-mocks/app-paths.ts', import.meta.url)
 				)
 			},
 			{
 				find: 'virtual:pwa-register',
 				replacement: fileURLToPath(
-					new URL('./apps/web/src/lib/test-mocks/pwa-register.ts', import.meta.url)
+					new URL('./apps/web/src/test-mocks/pwa-register.ts', import.meta.url)
 				)
 			},
 			{

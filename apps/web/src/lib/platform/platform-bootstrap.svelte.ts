@@ -3,7 +3,12 @@ import { connectivity } from '$lib/platform/connectivity.svelte';
 import { onboardingController } from '$lib/client/onboarding.svelte';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 import { initAnalytics } from '$lib/client/analytics';
-import { initNavigationStack } from '$lib/navigation/navigation-direction';
+import {
+	getNavJournalDepth,
+	initNavJournal,
+	isSecondaryRoute,
+	markDeepLinkEntry
+} from '$lib/navigation';
 import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
 import { ensureEngineReady } from '$lib/services/app-engine';
 import { configureHostI18n } from '$lib/i18n/host-i18n.svelte';
@@ -28,7 +33,10 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		if (started) return () => {};
 		started = true;
 
-		initNavigationStack(pathname);
+		initNavJournal(pathname);
+		if (isSecondaryRoute(pathname) && getNavJournalDepth() === 1) {
+			markDeepLinkEntry();
+		}
 		registerHyperellipse();
 		connectivity.init();
 		void import('swiper/css');
@@ -50,25 +58,18 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 
 			disposeEffects = $effect.root(() => {
 				$effect(() => {
-					const week = deps.timetableScreen.state.displayedWeek;
-					deps.shell.controller.setDisplayedWeek(week);
-				});
-
-				$effect(() => {
 					if (deps.timetableScreen.state.hasLoadedAppState) {
 						onboardingController.maybeShow(Boolean(deps.timetableScreen.state.currentTimetable));
 					}
 				});
 
 				$effect(() => {
-					if (!onboardingController.open) return;
-					pwaInstallController.cancelScheduledDialog();
-					pwaInstallController.dismiss({ track: false });
-				});
-
-				$effect(() => {
-					if (onboardingController.open) return;
-					pwaInstallController.tryScheduleInstallDialog();
+					if (onboardingController.open) {
+						pwaInstallController.cancelScheduledDialog();
+						pwaInstallController.dismiss({ track: false });
+					} else {
+						pwaInstallController.tryScheduleInstallDialog();
+					}
 				});
 			});
 		});

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pluginText, type ImportTabComponentProps } from '@chronos/ui-kit';
+	import { pluginText, previewAndNotify, type ImportTabComponentProps } from '@chronos/ui-kit';
 	import { decodeQrFromBlob } from './qr/qr-decode';
 	import { QR_CODEC_MESSAGES } from './messages';
 
@@ -23,22 +23,12 @@
 	const scanningLabel = $derived(pt('import.ui.scanning'));
 	const dropAria = $derived(pt('import.ui.dropAria'));
 
-	function notifyTransferMessages() {
-		const { errorMessage } = transfer.state;
-		if (errorMessage) {
-			controller?.notify(errorMessage, 'error');
-		}
-	}
-
 	async function processImageBlob(blob: Blob) {
 		loading = true;
 		try {
 			const text = await decodeQrFromBlob(blob, (key) => pt(key));
-			const ok = await transfer.previewWithSlot('qrcode', {
-				content: text
-			});
+			const ok = await previewAndNotify(transfer, 'qrcode', { content: text }, controller);
 			if (ok) onContinue();
-			else notifyTransferMessages();
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : pt('import.error.decodeFailed');
 			controller?.notify(msg, 'error');

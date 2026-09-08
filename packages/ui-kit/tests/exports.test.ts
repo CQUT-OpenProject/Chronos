@@ -5,7 +5,8 @@ import {
 	MountableSlotOutlet,
 	ReactiveChronosController,
 	m3DefaultTheme,
-	PREVIEW_PAINT_READY_CONTEXT
+	PREVIEW_PAINT_READY_CONTEXT,
+	TIMETABLE_PRESENTATION_CONTEXT
 } from '../src/index';
 
 describe('ui-kit exports', () => {
@@ -16,5 +17,6 @@ describe('ui-kit exports', () => {
 		expect(ReactiveChronosController).toBeDefined();
 		expect(m3DefaultTheme).toBeDefined();
 		expect(PREVIEW_PAINT_READY_CONTEXT).toBe('chronos.previewPaintReady');
+		expect(TIMETABLE_PRESENTATION_CONTEXT).toBe('chronos.timetablePresentation');
 	});
 });

@@ -13,7 +13,9 @@ import {
 	writeVarint,
 	MAX_TIMETABLE_WEEK,
 	weeksToBitmask,
+	deflate,
 	deflateRaw,
+	inflate,
 	inflateRaw
 } from '@chronos/codec-kit';
 
@@ -119,6 +121,22 @@ describe('deflateRaw / inflateRaw', () => {
 		const corrupted = compressed.slice();
 		corrupted[0]! ^= 0xff;
 		await expect(inflateRaw(corrupted)).rejects.toThrow();
+	});
+});
+
+describe('deflate / inflate', () => {
+	it('round-trips bytes with standard zlib header', async () => {
+		const input = new TextEncoder().encode('Standard zlib round trip test payload '.repeat(20));
+		const compressed = await deflate(input);
+		expect(compressed.length).toBeLessThan(input.length);
+		expect(await inflate(compressed)).toEqual(input);
+	});
+
+	it('rejects corrupted payloads on inflate', async () => {
+		const compressed = await deflate(new TextEncoder().encode('payload'));
+		const corrupted = compressed.slice();
+		corrupted[0]! ^= 0xff;
+		await expect(inflate(corrupted)).rejects.toThrow();
 	});
 });
 

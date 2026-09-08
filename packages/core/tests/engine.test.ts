@@ -287,7 +287,7 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(onThemeChanged).toHaveBeenCalledWith({ themeId: 'catppuccin' });
 	});
 
-	it('loads and unloads plugins with ServiceContainer and HierarchicalSlotRegistry', async () => {
+	it('loads and unloads plugins with ChronosEnv ports and HierarchicalSlotRegistry', async () => {
 		const { env } = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();
@@ -585,17 +585,6 @@ describe('ChronosEngine in @chronos/core', () => {
 
 		expect(timetables.has(second.id)).toBe(false);
 		expect(engine.state.currentTimetable?.id).toBe(first.id);
-		engine.dispose();
-	});
-
-	it('rejects createTimetable when guard returns false', async () => {
-		const { env } = createMockEnv();
-		const engine = new ChronosEngine({ env });
-		await engine.init();
-
-		engine.events.registerSerial('guard:createTimetable', async () => false);
-
-		await expect(engine.createTimetable('blocked')).rejects.toThrow(/rejected by guard/);
 		engine.dispose();
 	});
 });

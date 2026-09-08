@@ -2,7 +2,7 @@ import type { Course } from '../../domain/course';
 import type { EngineActionHost } from './engine-action-host';
 import type { TimetableActions } from './timetable-actions';
 
-/** Course mutations guarded by the event pipeline. */
+/** Course mutations for ChronosEngine. */
 export class CourseActions {
 	constructor(
 		private readonly host: EngineActionHost,
@@ -10,30 +10,20 @@ export class CourseActions {
 	) {}
 
 	async saveCourse(course: Course): Promise<void> {
-		if (!this.host.getCurrentTimetable()) {
+		const current = this.host.getCurrentTimetable();
+		if (!current) {
 			throw new Error('No active timetable to save course');
 		}
-		const allowed = await this.host.events.serial('guard:saveCourse', { course });
-		if (!allowed) {
-			throw new Error('[ChronosEngine] saveCourse action was rejected by guard');
+
+		const courses = [...current.courses];
+		const index = courses.findIndex((c) => c.id === course.id);
+		if (index >= 0) {
+			courses[index] = course;
+		} else {
+			courses.push(course);
 		}
 
-		return this.host.events.waterfall(
-			'action:saveCourse',
-			{ course },
-			async ({ course: targetCourse }) => {
-				const current = this.host.getCurrentTimetable()!;
-				const courses = [...current.courses];
-				const index = courses.findIndex((c) => c.id === targetCourse.id);
-				if (index >= 0) {
-					courses[index] = targetCourse;
-				} else {
-					courses.push(targetCourse);
-				}
-
-				await this.timetables.saveCurrentTimetableDetails({ courses });
-			}
-		);
+		await this.timetables.saveCurrentTimetableDetails({ courses });
 	}
 
 	async updateCourse(courseId: string, patch: Partial<Course>): Promise<void> {
@@ -47,21 +37,12 @@ export class CourseActions {
 	}
 
 	async deleteCourse(courseId: string): Promise<void> {
-		if (!this.host.getCurrentTimetable()) {
+		const current = this.host.getCurrentTimetable();
+		if (!current) {
 			throw new Error('No active timetable to delete course');
 		}
-		const allowed = await this.host.events.serial('guard:deleteCourse', { courseId });
-		if (!allowed) {
-			throw new Error('[ChronosEngine] deleteCourse action was rejected by guard');
-		}
 
-		return this.host.events.waterfall(
-			'action:deleteCourse',
-			{ courseId },
-			async ({ courseId: targetId }) => {
-				const courses = this.host.getCurrentTimetable()!.courses.filter((c) => c.id !== targetId);
-				await this.timetables.saveCurrentTimetableDetails({ courses });
-			}
-		);
+		const courses = current.courses.filter((c) => c.id !== courseId);
+		await this.timetables.saveCurrentTimetableDetails({ courses });
 	}
 }
