@@ -35,7 +35,7 @@ function safeGetItem(key: string): string | null {
 }
 
 export class PWAInstallController {
-	deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
+	private deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
 	installDialogOpen = $state(false);
 	openInAppDialogOpen = $state(false);
 	iosGuideOpen = $state(false);
@@ -106,30 +106,6 @@ export class PWAInstallController {
 		this.cancelScheduledDialog();
 		this.environmentRecheckCleanup?.();
 		this.environmentRecheckCleanup = null;
-	}
-
-	/** @internal Resets mutable state between unit tests. */
-	resetForTesting() {
-		this.deferredPrompt = null;
-		this.installDialogOpen = false;
-		this.openInAppDialogOpen = false;
-		this.iosGuideOpen = false;
-		this.isStandalone = false;
-		this.isInstalledLocally = false;
-		this.isIOS = false;
-		this.isMacSafari = false;
-		this.installPromptGate = null;
-		this.dialogScheduled = false;
-		this.lastAppInstalledAt = 0;
-		if (this.dialogTimer) {
-			clearTimeout(this.dialogTimer);
-			this.dialogTimer = null;
-		}
-		this.environmentRecheckCleanup?.();
-		this.environmentRecheckCleanup = null;
-		if (typeof window !== 'undefined') {
-			storeInstallPrompt(window, null);
-		}
 	}
 
 	private attachInstallListener() {

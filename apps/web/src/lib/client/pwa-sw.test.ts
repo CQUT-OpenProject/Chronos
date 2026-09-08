@@ -1,16 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import {
-	applyUpdateAndReload,
-	probeSwUpdate,
-	resetPwaSwStateForTesting,
-	waitForSwActivationAndReload
-} from './pwa-sw';
+
+let probeSwUpdate: (typeof import('./pwa-sw'))['probeSwUpdate'];
+let applyUpdateAndReload: (typeof import('./pwa-sw'))['applyUpdateAndReload'];
+let waitForSwActivationAndReload: (typeof import('./pwa-sw'))['waitForSwActivationAndReload'];
+
+beforeEach(async () => {
+	vi.resetModules();
+	const mod = await import('./pwa-sw');
+	probeSwUpdate = mod.probeSwUpdate;
+	applyUpdateAndReload = mod.applyUpdateAndReload;
+	waitForSwActivationAndReload = mod.waitForSwActivationAndReload;
+});
 
 describe('probeSwUpdate', () => {
-	beforeEach(() => {
-		resetPwaSwStateForTesting();
-	});
-
 	afterEach(() => {
 		vi.unstubAllGlobals();
 		vi.useRealTimers();
@@ -171,10 +173,6 @@ describe('waitForSwActivationAndReload', () => {
 });
 
 describe('applyUpdateAndReload', () => {
-	beforeEach(() => {
-		resetPwaSwStateForTesting();
-	});
-
 	afterEach(() => {
 		vi.unstubAllGlobals();
 		vi.useRealTimers();
