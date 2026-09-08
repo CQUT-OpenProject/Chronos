@@ -1,30 +1,12 @@
 import { PLUGIN_CONFIG_STORAGE_KEY } from '../constants/plugin-storage';
 import type { Disposable, ServiceIdentifier } from '../types/services';
-import { IStorageService } from '../types/services';
 import type { ChronosContext, ChronosEvents } from '../types/context';
 import type { ChronosSlotMap } from '../types/slots';
-import type { ThemeContribution } from '../types/contributions';
-import type { IconThemeContribution } from '../theme/icon-theme';
 import type { CourseBadgeSlotContribution } from '../types/slots';
 import type { EngineContextHost } from './engine-context-host';
 import { createPluginI18n, createPluginStorage } from './plugin-context-factories';
 
 export type { EngineContextHost } from './engine-context-host';
-
-type SlotRegistrar = (
-	host: EngineContextHost,
-	contribution: ChronosSlotMap[keyof ChronosSlotMap],
-	ctx: ScopedContext<Record<string, unknown>>
-) => Disposable;
-
-const SLOT_REGISTRARS: Partial<Record<keyof ChronosSlotMap, SlotRegistrar>> = {
-	'theme.definition': (host, contribution) =>
-		host.themes!.registerTheme(contribution as unknown as ThemeContribution),
-	'theme.icon.definition': (host, contribution) =>
-		host.iconThemes!.registerIconTheme(contribution as unknown as IconThemeContribution),
-	'timetable.cell.badge': (host, contribution, ctx) =>
-		host.badges!.registerCourseBadge(contribution as unknown as CourseBadgeSlotContribution, ctx)
-};
 
 export class ScopedContext<Config extends object = Record<string, unknown>>
 	implements ChronosContext<Config>, Disposable
@@ -42,9 +24,7 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 	) {
 		this._config = (initialConfig ?? {}) as Config;
 
-		this.storage = createPluginStorage(this.pluginId, () =>
-			this.host.services.get(IStorageService)
-		);
+		this.storage = createPluginStorage(this.pluginId, () => this.host.env.storage);
 		this.i18n = createPluginI18n(this.pluginId, this.host, (disposable) => {
 			this.subscriptions.push(disposable);
 		});
@@ -67,11 +47,28 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 	}
 
 	service<T>(identifier: ServiceIdentifier<T>): T {
-		return this.host.services.get(identifier);
+		const svc = this.tryService(identifier);
+		if (svc === undefined) {
+			throw new Error(`[ScopedContext] Service not found: "${identifier.key}"`);
+		}
+		return svc;
 	}
 
 	tryService<T>(identifier: ServiceIdentifier<T>): T | undefined {
-		return this.host.services.tryGet(identifier);
+		const key = identifier.key;
+		const env = this.host.env;
+		if (key === 'storage') return env.storage as T;
+		if (key === 'http') return env.http as T;
+		if (key === 'vault') return env.vault as T | undefined;
+		if (key === 'runtime') {
+			return {
+				platform: env.platform,
+				sha256: env.runtime.sha256.bind(env.runtime)
+			} as T;
+		}
+		if (key === 'analytics') return env.analytics as T | undefined;
+		if (key === 'navigation') return env.navigation as T | undefined;
+		return undefined;
 	}
 
 	get state() {
@@ -104,17 +101,15 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		contribution: ChronosSlotMap[K] & { id: string }
 	): Disposable {
 		const slotDisp = this.host.slots.register(slotName, contribution, this.pluginId);
-		const extraRegistrar = SLOT_REGISTRARS[slotName];
 
-		if (extraRegistrar) {
-			const extraDisp = extraRegistrar(
-				this.host,
-				contribution,
-				this as ScopedContext<Record<string, unknown>>
+		if (slotName === 'timetable.cell.badge' && this.host.badges) {
+			const badgeDisp = this.host.badges.registerCourseBadge(
+				contribution as unknown as CourseBadgeSlotContribution,
+				this
 			);
 			return this.track({
 				dispose: () => {
-					extraDisp.dispose();
+					badgeDisp.dispose();
 					slotDisp.dispose();
 				}
 			});

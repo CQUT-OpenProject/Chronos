@@ -4,7 +4,7 @@ Canonical vocabulary for runtime modules. Prefer these names over file names.
 
 ## Ports (`I*Service`)
 
-Registered on `ServiceContainer`. Hosts bootstrap them once; runtime code reads the container (or `engine.storage` / `ctx.service(...)`), not ad-hoc `env` fallbacks.
+Registered on `ChronosEnv` at engine construction. Runtime code reads `engine.storage` / `engine.http` / `ctx.service(...)`, not ad-hoc platform globals.
 
 | Port                | Role                                                                                                                                            |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -15,7 +15,7 @@ Registered on `ServiceContainer`. Hosts bootstrap them once; runtime code reads 
 | `IAnalyticsService` | Optional product analytics (registered via `ChronosEnv.analytics` → container; screens may still call `$lib/client/analytics` during migration) |
 | `IHostNavigation`   | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                            |
 
-`ChronosEnv` is only a host bootstrap adapter (web + native). After construction, `registerEnvProviders` copies ports into the container. All hosts must pass `env` at construction (no container-only facade).
+`ChronosEnv` is the host bootstrap adapter (web + native). All hosts must pass a complete `env` at `ChronosEngine` construction; `ScopedContext.service()` resolves standard ports from `env` directly.
 
 ## Timetable and UserPreferences
 

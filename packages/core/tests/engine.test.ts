@@ -287,7 +287,7 @@ describe('ChronosEngine in @chronos/core', () => {
 		expect(onThemeChanged).toHaveBeenCalledWith({ themeId: 'catppuccin' });
 	});
 
-	it('loads and unloads plugins with ServiceContainer and HierarchicalSlotRegistry', async () => {
+	it('loads and unloads plugins with ChronosEnv ports and HierarchicalSlotRegistry', async () => {
 		const { env } = createMockEnv();
 		const engine = new ChronosEngine({ env });
 		await engine.init();

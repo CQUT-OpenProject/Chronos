@@ -2,11 +2,10 @@ import { describe, it, expect, vi } from 'vite-plus/test';
 import { ScopedContext } from '../src/runtime/scoped-context';
 import { EventPipeline } from '../src/runtime/event-pipeline';
 import { HierarchicalSlotRegistry } from '../src/runtime/hierarchical-slot-registry';
-import { ServiceContainer } from '../src/runtime/service-container';
 import { ThemeRegistry } from '../src/runtime/theme-registry';
 import { BadgeManager } from '../src/runtime/badge-manager';
 import { I18nCatalog } from '../src/i18n/i18n-catalog';
-import { IStorageService, IHttpService, createServiceIdentifier } from '../src/types/services';
+import { IHttpService, createServiceIdentifier } from '../src/types/services';
 import type { ChronosEnv } from '../src/types/env';
 import { DEFAULT_USER_PREFERENCES } from '../src/domain/preferences';
 
@@ -37,13 +36,9 @@ function createMockHost() {
 		request: vi.fn()
 	};
 
-	const services = new ServiceContainer();
-	services.register(IStorageService, storageService);
-	services.register(IHttpService, httpService);
-
 	const eventPipeline = new EventPipeline();
 	const slots = new HierarchicalSlotRegistry();
-	const themes = new ThemeRegistry();
+	const themes = new ThemeRegistry(slots);
 	const badges = new BadgeManager();
 	const i18nCatalog = new I18nCatalog();
 
@@ -64,7 +59,6 @@ function createMockHost() {
 
 	return {
 		env,
-		services,
 		events: eventPipeline,
 		slots,
 		themes,
@@ -116,7 +110,7 @@ describe('ScopedContext in @chronos/core', () => {
 		expect(await ctxB.storage.get('config')).toEqual({ enabled: false });
 	});
 
-	it('resolves capability services from ServiceContainer', () => {
+	it('resolves capability services from ChronosEnv', () => {
 		const host = createMockHost();
 		const ctx = new ScopedContext('plugin-a', host);
 

@@ -54,7 +54,6 @@ export * from './types/official-plugins';
 export * from './types/result';
 
 // Runtime
-export * from './runtime/service-container';
 export * from './runtime/hierarchical-slot-registry';
 export * from './runtime/event-pipeline';
 export * from './runtime/theme-registry';

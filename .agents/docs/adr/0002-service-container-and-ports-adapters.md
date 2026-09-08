@@ -3,7 +3,7 @@
 - **状态**: Accepted
 - **日期**: 2026-08-19
 - **关联提交**: `cb4f3e6`, `924fca5`, `7466181`, `4d73e0a`, `1ec01ad`
-- **范围**: 依赖注入与平台抽象 (`packages/core/src/runtime/service-container.ts`, `packages/core/src/types/services.ts`)
+- **范围**: 依赖注入与平台抽象 (`packages/core/src/types/services.ts`, `packages/core/src/runtime/scoped-context.ts`)
 
 ---
 
@@ -19,7 +19,7 @@
 
 ## 架构决策
 
-在 `@chronos/core` 中引入六边形架构（Hexagonal Architecture / Ports & Adapters），实现轻量级依赖注入容器 `ServiceContainer` 与标准端口契约：
+在 `@chronos/core` 中引入六边形架构（Hexagonal Architecture / Ports & Adapters），以 `ChronosEnv` 承载标准端口契约，由 `ScopedContext.service()` 解析：
 
 ```mermaid
 flowchart LR
@@ -29,10 +29,8 @@ flowchart LR
         WebAuthn[WebAuthnVaultService]
     end
 
-    subgraph Core [微内核 ServiceContainer]
-        StoragePort["IStorageService (端口)"]
-        HttpPort["IHttpService (端口)"]
-        VaultPort["IVaultService (端口)"]
+    subgraph Core [微内核 ChronosEngine]
+        Env["ChronosEnv (端口)"]
     end
 
     subgraph Plugins [插件使用服务]
@@ -40,14 +38,12 @@ flowchart LR
         SharePlugin[codec-share]
     end
 
-    DexieAdapt -.-> StoragePort
-    WebFetch -.-> HttpPort
-    WebAuthn -.-> VaultPort
+    DexieAdapt -.-> Env
+    WebFetch -.-> Env
+    WebAuthn -.-> Env
 
-    CQUTPlugin --> StoragePort
-    CQUTPlugin --> HttpPort
-    CQUTPlugin --> VaultPort
-    SharePlugin --> StoragePort
+    CQUTPlugin --> Env
+    SharePlugin --> Env
 ```
 
 ### 1. 标准端口契约定义
@@ -56,11 +52,11 @@ flowchart LR
 - **`IHttpService`**：定义统一的网络请求与服务端代理契约；
 - **`IVaultService`**：定义硬件安全与敏感凭据加密存储契约。
 
-### 2. 运行时容器与生命周期管理
+### 2. 运行时解析与生命周期管理
 
-- `ChronosEngine` 初始化时接收宿主环境提供的 `ChronosEnv`，并自动注册到 `ServiceContainer`；
-- 插件在 `apply(ctx)` 阶段通过 `ctx.getService('serviceName')` 获取所需服务；
-- 容器支持按名称（String Token）注册和解析单例服务。
+- `ChronosEngine` 初始化时接收宿主提供的 `ChronosEnv`；
+- 插件在 `apply(ctx)` 阶段通过 `ctx.service(IHttpService)` 等 typed identifier 获取所需服务；
+- `createServiceIdentifier` 保留用于自定义服务标识；标准端口由 `ScopedContext.tryService()` 从 `env` 映射解析。
 
 ---
 

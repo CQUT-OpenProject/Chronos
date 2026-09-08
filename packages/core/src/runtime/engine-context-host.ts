@@ -2,7 +2,6 @@ import type { Course } from '../domain/course';
 import type { AcademicConfig, Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
 import type { ChronosEnv } from '../types/env';
-import type { ServiceContainer } from './service-container';
 import type { EventPipeline } from './event-pipeline';
 import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 import type { ThemeRegistry } from './theme-registry';
@@ -12,7 +11,6 @@ import type { I18nCatalog } from '../i18n/i18n-catalog';
 
 /** Host surface exposed to plugin ScopedContext instances. */
 export interface EngineContextHost {
-	readonly services: ServiceContainer;
 	readonly events: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes?: ThemeRegistry;

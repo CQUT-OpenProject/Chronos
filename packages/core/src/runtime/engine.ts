@@ -9,20 +9,11 @@ import {
 import { DEFAULT_VISUAL_THEME_ID, HOST_DEFAULT_ICON_THEME_ID } from '../theme/theme-defaults';
 import type { ChronosEnv } from '../types/env';
 import type { Disposable } from '../types/services';
-import {
-	IHttpService,
-	IStorageService,
-	IVaultService,
-	IRuntimeService,
-	IAnalyticsService,
-	IHostNavigation
-} from '../types/services';
 import type { ChronosPlugin } from '../types/context';
 import type { ChronosEvents } from '../types/context';
 import type { ChronosSlotMap } from '../types/slots';
 import { EventPipeline } from './event-pipeline';
 import { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
-import { ServiceContainer } from './service-container';
 import { ThemeRegistry } from './theme-registry';
 import { IconThemeRegistry } from './icon-theme-registry';
 import { BadgeManager } from './badge-manager';
@@ -39,7 +30,6 @@ import { PluginLifecycleManager } from './engine/plugin-lifecycle-manager';
 
 export interface ChronosEngineOptions {
 	env: ChronosEnv;
-	services?: ServiceContainer;
 	initialLocale?: string;
 	presetThemes?: ThemeContribution[];
 	presetI18nCatalogs?: Array<{
@@ -51,7 +41,6 @@ export interface ChronosEngineOptions {
 
 export class ChronosEngine implements EngineContextHost, Disposable {
 	readonly env: ChronosEnv;
-	readonly services: ServiceContainer;
 	readonly events: EventPipeline;
 	readonly slots: HierarchicalSlotRegistry;
 	readonly themes: ThemeRegistry;
@@ -82,7 +71,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		if (!options.env) {
 			throw new Error('[ChronosEngine] env is required at construction');
 		}
-		this.services = options.services ?? new ServiceContainer();
 		this._locale = options.initialLocale ?? 'zh-cn';
 		this._onNotification = options.onNotification;
 		this.i18nCatalog = new I18nCatalog();
@@ -91,11 +79,11 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.slots = new HierarchicalSlotRegistry(() => {
 			this.events.emit('slots:updated', undefined);
 		});
-		this.themes = new ThemeRegistry(() => {
+		this.themes = new ThemeRegistry(this.slots, () => {
 			this.events.emit('theme:changed', { themeId: this._activeThemeId });
 			this.emitIconThemeChanged();
 		});
-		this.iconThemes = new IconThemeRegistry(() => {
+		this.iconThemes = new IconThemeRegistry(this.slots, () => {
 			this.emitIconThemeChanged();
 		});
 		this.badges = new BadgeManager((badges) => {
@@ -103,7 +91,6 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		});
 
 		this.env = options.env;
-		this.registerEnvProviders(this.env);
 
 		for (const theme of options.presetThemes ?? []) {
 			this.themes.registerTheme(theme);
@@ -176,32 +163,31 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		};
 	}
 
-	private registerEnvProviders(env: ChronosEnv): void {
-		if (!this.services.has(IStorageService) && env.storage) {
-			this.services.register(IStorageService, env.storage);
-		}
-		if (!this.services.has(IHttpService) && env.http) {
-			this.services.register(IHttpService, env.http);
-		}
-		if (!this.services.has(IVaultService) && env.vault) {
-			this.services.register(IVaultService, env.vault);
-		}
-		if (!this.services.has(IRuntimeService) && env.runtime) {
-			this.services.register(IRuntimeService, {
-				platform: env.platform,
-				sha256: env.runtime.sha256.bind(env.runtime)
-			});
-		}
-		if (!this.services.has(IAnalyticsService) && env.analytics) {
-			this.services.register(IAnalyticsService, env.analytics);
-		}
-		if (!this.services.has(IHostNavigation) && env.navigation) {
-			this.services.register(IHostNavigation, env.navigation);
-		}
+	get storage(): import('../types/services').IStorageService {
+		return this.env.storage;
 	}
 
-	get storage(): import('../types/services').IStorageService {
-		return this.services.get(IStorageService);
+	get http(): import('../types/services').IHttpService {
+		return this.env.http;
+	}
+
+	get runtime(): import('../types/services').IRuntimeService {
+		return {
+			platform: this.env.platform,
+			sha256: this.env.runtime.sha256.bind(this.env.runtime)
+		};
+	}
+
+	get vault(): import('../types/services').IVaultService | undefined {
+		return this.env.vault;
+	}
+
+	get analytics(): import('../types/services').IAnalyticsService | undefined {
+		return this.env.analytics;
+	}
+
+	get navigation(): import('../types/services').IHostNavigation | undefined {
+		return this.env.navigation;
 	}
 
 	get locale(): string {
@@ -407,6 +393,5 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.themes.dispose();
 		this.iconThemes.dispose();
 		this.badges.dispose();
-		this.services.dispose();
 	}
 }
