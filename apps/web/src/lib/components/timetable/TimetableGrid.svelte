@@ -424,7 +424,6 @@
 		settling = update.settling;
 		try {
 			await controller.saveCurrentTimetableDetails({ courses: update.updatedCourses });
-			haptic.medium();
 			trackEvent('timetable_course_reorder');
 		} catch {
 			settling = null;

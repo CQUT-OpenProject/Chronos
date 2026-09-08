@@ -4,10 +4,8 @@ import { CONNECT_TIMEOUT_MS } from './config';
 
 let cachedDispatcher: Dispatcher | null = null;
 
-export function getCqutDispatcher(): Dispatcher {
-	if (cachedDispatcher) return cachedDispatcher;
-
-	cachedDispatcher = new Agent({
+export function createCqutDispatcher(): Dispatcher {
+	return new Agent({
 		connect: {
 			timeout: CONNECT_TIMEOUT_MS,
 			autoSelectFamily: false,
@@ -19,10 +17,11 @@ export function getCqutDispatcher(): Dispatcher {
 		keepAliveTimeout: 10_000,
 		keepAliveMaxTimeout: 30_000
 	});
-
-	return cachedDispatcher;
 }
 
-export function resetCqutDispatcher(): void {
-	cachedDispatcher = null;
+export function getCqutDispatcher(): Dispatcher {
+	if (!cachedDispatcher) {
+		cachedDispatcher = createCqutDispatcher();
+	}
+	return cachedDispatcher;
 }

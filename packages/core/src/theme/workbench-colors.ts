@@ -50,7 +50,6 @@ export type WorkbenchColorKey = (typeof WORKBENCH_COLOR_KEYS)[number];
 export interface WorkbenchColorDefinition {
 	cssVar: string;
 	description?: string;
-	deprecated?: boolean;
 }
 
 export const WORKBENCH_COLOR_REGISTRY: Record<WorkbenchColorKey, WorkbenchColorDefinition> = {
@@ -99,54 +98,10 @@ export const WORKBENCH_COLOR_REGISTRY: Record<WorkbenchColorKey, WorkbenchColorD
 	'timetable.period.activeBackgroundImage': { cssVar: '--period-active-bg-image' }
 };
 
-/** Legacy camelCase registry keys accepted at read time and mapped to hyphenated keys. */
-const LEGACY_WORKBENCH_COLOR_ALIASES: Record<string, WorkbenchColorKey> = {
-	'color.onSurface': 'color.on-surface',
-	'color.onPrimary': 'color.on-primary',
-	'color.surfaceVariant': 'color.surface-variant',
-	'color.onSecondary': 'color.on-secondary',
-	'color.primaryContainer': 'color.primary-container',
-	'color.onPrimaryContainer': 'color.on-primary-container',
-	'color.secondaryContainer': 'color.secondary-container',
-	'color.onSecondaryContainer': 'color.on-secondary-container'
-};
-
 const REGISTRY_KEY_SET = new Set<string>(WORKBENCH_COLOR_KEYS);
 
 export function isWorkbenchColorKey(key: string): key is WorkbenchColorKey {
 	return REGISTRY_KEY_SET.has(key);
-}
-
-export function normalizeWorkbenchColorKey(key: string): {
-	key: string;
-	legacy: boolean;
-} {
-	const normalized = LEGACY_WORKBENCH_COLOR_ALIASES[key] ?? key;
-	return { key: normalized, legacy: normalized !== key };
-}
-
-export function normalizeWorkbenchColorKeys(input: Record<string, string>): {
-	colors: Record<string, string>;
-	warnings: string[];
-} {
-	const colors: Record<string, string> = {};
-	const warnings: string[] = [];
-	const seen = new Map<string, string>();
-
-	for (const [rawKey, value] of Object.entries(input)) {
-		const { key, legacy } = normalizeWorkbenchColorKey(rawKey);
-		if (legacy) {
-			warnings.push(`legacy key "${rawKey}" normalized to "${key}"`);
-		}
-		const previous = seen.get(key);
-		if (previous !== undefined && previous !== rawKey) {
-			warnings.push(`duplicate workbench color key "${key}" (last value wins)`);
-		}
-		seen.set(key, rawKey);
-		colors[key] = value;
-	}
-
-	return { colors, warnings };
 }
 
 export interface WorkbenchColorValidationResult {
@@ -173,10 +128,7 @@ export function validateWorkbenchColors(
 
 	if (!input) return { colors, warnings, errors };
 
-	const normalized = normalizeWorkbenchColorKeys(input);
-	warnings.push(...normalized.warnings);
-
-	for (const [key, value] of Object.entries(normalized.colors)) {
+	for (const [key, value] of Object.entries(input)) {
 		if (typeof value !== 'string') {
 			errors.push(`${label}: invalid value for "${key}"`);
 			continue;

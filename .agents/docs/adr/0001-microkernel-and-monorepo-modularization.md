@@ -38,7 +38,7 @@ flowchart TD
 - **`packages/core`（微内核引擎）**：
   - 拥有核心领域实体（`Timetable`, `Course`, `AcademicConfig`, `UserPreferences`）；
   - 拥有纯排课与时钟算法（`computeTimetableWeekLayout`, `placeCapsules`, `PeriodClockService`）；
-  - 拥有运行时控制调度中心（`ChronosEngine`, `ServiceContainer`, `HierarchicalSlotRegistry`, `EventPipeline`）；
+  - 拥有运行时控制调度中心（`ChronosEngine`, `ChronosEnv` 端口, `HierarchicalSlotRegistry`, `EventPipeline`）；
   - **零 DOM 依赖、零特定高校依赖、纯 TypeScript 运行环境**。
 - **`packages/ui-kit`（UI 契约与外壳套件）**：
   - 提供响应式控制器桥接（`ReactiveChronosController`）；

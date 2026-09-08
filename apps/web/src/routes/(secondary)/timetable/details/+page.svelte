@@ -20,6 +20,6 @@
 	});
 </script>
 
-<SecondaryPageShell title={hostT('route.timetableEdit')} backHref="/" flush>
+<SecondaryPageShell title={hostT('route.timetableEdit')} backFallback={{ kind: 'shell' }} flush>
 	<TimetableDetailsScreen {editor} />
 </SecondaryPageShell>

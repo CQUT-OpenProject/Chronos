@@ -1,7 +1,6 @@
 /* Chronos UI component patterns — customized surfaces, not MD3 spec */
 
-.ui-step-badge,
-.m3-step-badge {
+.ui-step-badge {
 	display: flex;
 	height: 1.25rem;
 	width: 1.25rem;
@@ -18,8 +17,7 @@
 	color: var(--color-brand);
 }
 
-.ui-field-label,
-.m3-field-label {
+.ui-field-label {
 	font-size: 0.75rem;
 	line-height: 1.33;
 	font-weight: 500;
@@ -27,16 +25,14 @@
 }
 
 /* Card-grouped form fields */
-.ui-form-field,
-.m3-form-field {
+.ui-form-field {
 	display: flex;
 	flex-direction: column;
 	gap: 0.25rem;
 	padding: 0.75rem 1rem;
 }
 
-.ui-form-field-input,
-.m3-form-field-input {
+.ui-form-field-input {
 	width: 100%;
 	border: none;
 	background-color: transparent;
@@ -53,50 +49,37 @@
 }
 
 .ui-form-field-input:focus,
-.m3-form-field-input:focus,
-.ui-form-field-input:focus-visible,
-.m3-form-field-input:focus-visible {
+.ui-form-field-input:focus-visible {
 	outline: none;
 	box-shadow: none;
 	--tw-ring-shadow: 0 0 #0000;
 	--tw-ring-offset-shadow: 0 0 #0000;
 }
 
-.ui-form-field-input::placeholder,
-.m3-form-field-input::placeholder {
+.ui-form-field-input::placeholder {
 	color: color-mix(in srgb, var(--color-on-surface-variant) 60%, transparent);
 }
 
 .ui-form-field > .ui-form-field-input,
-.m3-form-field > .m3-form-field-input,
-.ui-form-field .ui-date-field-input,
-.m3-form-field .m3-date-field-input,
-.ui-form-field .ui-time-field-input,
-.m3-form-field .m3-time-field-input {
+.ui-form-field .ui-date-field-input {
 	border-bottom: 1px solid color-mix(in srgb, var(--color-on-surface-variant) 35%, transparent);
 	padding-bottom: 0.25rem;
 	transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ui-form-field:focus-within > .ui-form-field-input,
-.m3-form-field:focus-within > .m3-form-field-input,
-.ui-form-field:focus-within .ui-date-field-input,
-.m3-form-field:focus-within .m3-date-field-input,
-.ui-form-field:focus-within .ui-time-field-input,
-.m3-form-field:focus-within .m3-time-field-input {
+.ui-form-field:focus-within .ui-date-field-input {
 	border-bottom-color: var(--color-brand);
 }
 
-.ui-form-field-input-row,
-.m3-form-field-input-row {
+.ui-form-field-input-row {
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
 	min-width: 0;
 }
 
-.ui-form-field-input-row .ui-form-field-input,
-.m3-form-field-input-row .m3-form-field-input {
+.ui-form-field-input-row .ui-form-field-input {
 	min-width: 0;
 	flex: 1;
 	border: none;
@@ -106,19 +89,16 @@
 	transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.ui-form-field:focus-within .ui-form-field-input-row .ui-form-field-input,
-.m3-form-field:focus-within .m3-form-field-input-row .m3-form-field-input {
+.ui-form-field:focus-within .ui-form-field-input-row .ui-form-field-input {
 	border-bottom-color: var(--color-brand);
 }
 
-.ui-form-field--multiline .ui-form-field-input,
-.m3-form-field--multiline .m3-form-field-input {
+.ui-form-field--multiline .ui-form-field-input {
 	min-height: 4.5rem;
 	resize: none;
 }
 
-.ui-form-field-counter,
-.m3-form-field-counter {
+.ui-form-field-counter {
 	align-self: flex-end;
 	font-size: 0.75rem;
 	line-height: 1.33;
@@ -126,34 +106,29 @@
 	color: var(--color-on-surface-variant);
 }
 
-.ui-form-field-counter--limit,
-.m3-form-field-counter--limit {
+.ui-form-field-counter--limit {
 	color: var(--color-error);
 	font-weight: 500;
 }
 
-.ui-form-field--embedded,
-.m3-form-field--embedded {
+.ui-form-field--embedded {
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
 }
 
-.ui-form-field--embedded .ui-field-label,
-.m3-form-field--embedded .m3-field-label {
+.ui-form-field--embedded .ui-field-label {
 	flex-shrink: 0;
 }
 
-.ui-date-field-input,
-.m3-date-field-input {
+.ui-date-field-input {
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
 }
 
-button.ui-date-field-input,
-button.m3-date-field-input {
+button.ui-date-field-input {
 	width: 100%;
 	cursor: pointer;
 	background: transparent;
@@ -163,14 +138,12 @@ button.m3-date-field-input {
 	text-align: left;
 }
 
-.ui-date-field-value,
-.m3-date-field-value {
+.ui-date-field-value {
 	flex: 1;
 	min-width: 0;
 }
 
-.ui-date-field-trigger,
-.m3-date-field-trigger {
+.ui-date-field-trigger {
 	display: inline-flex;
 	width: 2.5rem;
 	height: 2.5rem;
@@ -184,89 +157,36 @@ button.m3-date-field-input {
 	transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.ui-date-field-trigger:hover:not(:disabled),
-.m3-date-field-trigger:hover:not(:disabled) {
+.ui-date-field-trigger:hover:not(:disabled) {
 	background-color: color-mix(in srgb, var(--color-on-surface) 5%, transparent);
 }
 
-.ui-date-field-trigger:active:not(:disabled),
-.m3-date-field-trigger:active:not(:disabled) {
+.ui-date-field-trigger:active:not(:disabled) {
 	background-color: color-mix(in srgb, var(--color-on-surface) 10%, transparent);
 }
 
-.ui-time-field-input,
-.m3-time-field-input {
-	display: flex;
-	align-items: center;
-	gap: 0.25rem;
-	min-width: 0;
-}
-
-.ui-time-field-segments,
-.m3-time-field-segments {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.125rem;
-}
-
-.ui-time-field-segment,
-.m3-time-field-segment {
-	border-radius: calc(var(--radius-time-field-segment) * var(--squircle-compensation-ui));
-	corner-shape: squircle;
-	--corner-shape: squircle;
-	padding: 0.125rem 0.25rem;
-	color: var(--color-on-surface);
-	transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ui-time-field-segment--literal,
-.m3-time-field-segment--literal {
-	padding-inline: 0.125rem;
-	color: var(--color-on-surface-variant);
-}
-
-.ui-time-field-segment:not(.ui-time-field-segment--literal):hover,
-.m3-time-field-segment:not(.m3-time-field-segment--literal):hover {
-	background-color: color-mix(in srgb, var(--color-on-surface) 5%, transparent);
-}
-
-.ui-time-field-segment:not(.ui-time-field-segment--literal):focus,
-.m3-time-field-segment:not(.m3-time-field-segment--literal):focus {
-	background-color: color-mix(in srgb, var(--color-on-surface) 8%, transparent);
-	outline: none;
-}
-
-.ui-time-field-segment[aria-valuetext='Empty'],
-.m3-time-field-segment[aria-valuetext='Empty'] {
-	color: color-mix(in srgb, var(--color-on-surface-variant) 60%, transparent);
-}
-
-.ui-date-field-trigger:disabled,
-.m3-date-field-trigger:disabled {
+.ui-date-field-trigger:disabled {
 	opacity: 0.4;
 	pointer-events: none;
 }
 
-.ui-section,
-.m3-section {
+.ui-section {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 }
 
-.ui-section-title,
-.m3-section-title {
+.ui-section-title {
 	margin: 0;
 	padding: 0.25rem 0.5rem;
 	font-size: 1rem;
 	line-height: 1.5;
 	font-weight: 500;
-	color: var(--color-on-surface);
+	color: var(--color-on-surface-variant);
 }
 
-/* MD3 grouped section surface matching Android MineSettingsSection */
-.ui-section-surface,
-.m3-section-surface {
+/* Grouped section surface matching MineSettingsSection */
+.ui-section-surface {
 	display: flex;
 	flex-direction: column;
 	gap: 0;
@@ -283,19 +203,15 @@ button.m3-date-field-input {
 		0 1px 2px -1px rgb(15 23 42 / 0.04);
 }
 
-.dark .ui-section-surface,
-.dark .m3-section-surface {
+.dark .ui-section-surface {
 	border-color: var(--color-border-subtle);
 	box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.22);
 }
 
 /* Ensure list item active/pressed state overlays have smooth rounded corners matching card section */
 .ui-section-surface a,
-.m3-section-surface a,
 .ui-section-surface label,
-.m3-section-surface label,
-.ui-section-surface button:not([role='switch']),
-.m3-section-surface button:not([role='switch']) {
+.ui-section-surface button:not([role='switch']) {
 	position: relative;
 	border-radius: calc(var(--radius-section-item) * var(--squircle-compensation-ui)) !important;
 	corner-shape: squircle;
@@ -304,27 +220,18 @@ button.m3-date-field-input {
 }
 
 .ui-section-surface a::before,
-.m3-section-surface a::before,
 .ui-section-surface a::after,
-.m3-section-surface a::after,
 .ui-section-surface label::before,
-.m3-section-surface label::before,
 .ui-section-surface label::after,
-.m3-section-surface label::after,
 .ui-section-surface button:not([role='switch'])::before,
-.m3-section-surface button:not([role='switch'])::before,
-.ui-section-surface button:not([role='switch'])::after,
-.m3-section-surface button:not([role='switch'])::after {
+.ui-section-surface button:not([role='switch'])::after {
 	border-radius: inherit !important;
 }
 
 /* Centered subtle divider between adjacent menu list items */
 .ui-section-surface > * + a::before,
-.m3-section-surface > * + a::before,
 .ui-section-surface > * + label::before,
-.m3-section-surface > * + label::before,
-.ui-section-surface > * + button:not([role='switch'])::before,
-.m3-section-surface > * + button:not([role='switch'])::before {
+.ui-section-surface > * + button:not([role='switch'])::before {
 	content: '';
 	position: absolute;
 	top: 0;
@@ -337,17 +244,13 @@ button.m3-date-field-input {
 }
 
 .dark .ui-section-surface > * + a::before,
-.dark .m3-section-surface > * + a::before,
 .dark .ui-section-surface > * + label::before,
-.dark .m3-section-surface > * + label::before,
-.dark .ui-section-surface > * + button:not([role='switch'])::before,
-.dark .m3-section-surface > * + button:not([role='switch'])::before {
+.dark .ui-section-surface > * + button:not([role='switch'])::before {
 	background-color: color-mix(in srgb, var(--color-on-surface-variant) 18%, transparent);
 }
 
-/* MD3 36px icon container chip */
-.ui-leading-icon,
-.m3-leading-icon {
+/* 36px icon container chip */
+.ui-leading-icon {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -359,14 +262,12 @@ button.m3-date-field-input {
 	flex-shrink: 0;
 }
 
-.ui-leading-icon svg,
-.m3-leading-icon svg {
+.ui-leading-icon svg {
 	width: 1.125rem;
 	height: 1.125rem;
 }
 
-.ui-leading-icon.tone-primary,
-.m3-leading-icon.tone-primary {
+.ui-leading-icon.tone-primary {
 	background-color: var(
 		--leading-icon-bg-primary,
 		var(--leading-icon-bg, color-mix(in srgb, var(--color-primary-container) 75%, transparent))
@@ -374,8 +275,7 @@ button.m3-date-field-input {
 	color: var(--leading-icon-color-primary, var(--leading-icon-color, var(--color-brand)));
 }
 
-.ui-leading-icon.tone-secondary,
-.m3-leading-icon.tone-secondary {
+.ui-leading-icon.tone-secondary {
 	background-color: var(
 		--leading-icon-bg-secondary,
 		var(--leading-icon-bg, color-mix(in srgb, var(--color-secondary-container) 75%, transparent))
@@ -386,8 +286,7 @@ button.m3-date-field-input {
 	);
 }
 
-.ui-leading-icon.tone-tertiary,
-.m3-leading-icon.tone-tertiary {
+.ui-leading-icon.tone-tertiary {
 	background-color: var(
 		--leading-icon-bg-tertiary,
 		var(--leading-icon-bg, color-mix(in srgb, var(--color-tertiary-container) 75%, transparent))
@@ -398,8 +297,7 @@ button.m3-date-field-input {
 	);
 }
 
-.ui-leading-icon.tone-neutral,
-.m3-leading-icon.tone-neutral {
+.ui-leading-icon.tone-neutral {
 	background-color: var(
 		--leading-icon-bg-neutral,
 		var(--leading-icon-bg, color-mix(in srgb, var(--color-surface-variant) 75%, transparent))
@@ -415,8 +313,7 @@ button.m3-date-field-input {
 	color: var(--color-on-surface);
 }
 
-.ui-stack,
-.m3-stack {
+.ui-stack {
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;

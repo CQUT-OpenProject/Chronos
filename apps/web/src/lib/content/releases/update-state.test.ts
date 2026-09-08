@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { createUpdateState } from './update-state.svelte';
 import { fetchLatestProjectRelease } from './release-feed-adapter';
-import { failure, success } from '$lib/domain/result/app-result';
-import { AppError } from '$lib/domain/result/app-error';
+import { AppError, failure, success } from '@chronos/core';
 
 const mockTrackEvent = vi.fn();
 vi.mock('$lib/client/analytics', () => ({

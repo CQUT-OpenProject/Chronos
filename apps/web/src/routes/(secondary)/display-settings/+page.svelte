@@ -10,6 +10,9 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.displaySettings')} backShellTab="mine">
+<SecondaryPageShell
+	title={hostT('route.displaySettings')}
+	backFallback={{ kind: 'shell', tab: 'mine' }}
+>
 	<DisplaySettingsScreen {shell} />
 </SecondaryPageShell>

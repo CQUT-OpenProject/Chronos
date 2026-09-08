@@ -1,4 +1,4 @@
-import { AppError } from './result/app-error';
+import { AppError } from '@chronos/core';
 
 function getCause(error: unknown): unknown {
 	if (error && typeof error === 'object' && 'cause' in error) {

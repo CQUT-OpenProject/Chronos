@@ -23,6 +23,6 @@
 	const isRich = $derived(Boolean(screenSlot?.component));
 </script>
 
-<SecondaryPageShell title={pageTitle} backShellTab="mine" flush={isRich}>
+<SecondaryPageShell title={pageTitle} backFallback={{ kind: 'shell', tab: 'mine' }} flush={isRich}>
 	<PluginScreenContainer {controller} {pluginId} {viewId} />
 </SecondaryPageShell>

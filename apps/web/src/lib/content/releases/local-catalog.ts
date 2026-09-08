@@ -1,5 +1,4 @@
-import { failure, success } from '$lib/domain/result/app-result';
-import { AppError } from '$lib/domain/result/app-error';
+import { AppError, failure, success } from '@chronos/core';
 import type { ReleaseCatalog } from './catalog';
 import { compareReleaseVersions, parseFrontmatter, type Release } from './release';
 

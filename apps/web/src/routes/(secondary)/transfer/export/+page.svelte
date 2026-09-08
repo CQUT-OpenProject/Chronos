@@ -20,7 +20,7 @@
 </script>
 
 {#if ready}
-	<SecondaryPageShell title={hostT('route.export')} backShellTab="mine">
+	<SecondaryPageShell title={hostT('route.export')} backFallback={{ kind: 'shell', tab: 'mine' }}>
 		<TransferExportScreen warningMessage={exportWarning} />
 	</SecondaryPageShell>
 {:else}

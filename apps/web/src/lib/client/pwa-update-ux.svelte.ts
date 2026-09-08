@@ -23,11 +23,11 @@ function markUpdatePromptShownThisSession(): void {
 	}
 }
 
-export function initPwaUpdateUx() {
+export function initPwaUpdateUx(listenUpdate = onSwUpdateAvailable) {
 	if (initialized || typeof window === 'undefined') return;
 	initialized = true;
 
-	onSwUpdateAvailable(() => {
+	listenUpdate(() => {
 		if (hasShownUpdatePromptThisSession()) return;
 		markUpdatePromptShownThisSession();
 

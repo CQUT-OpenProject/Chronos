@@ -1,7 +1,7 @@
 import type { Disposable } from '../types/services';
 import type { ChronosSlotMap } from '../types/slots';
 
-export class HierarchicalSlotRegistry implements Disposable {
+export class SlotRegistry implements Disposable {
 	private slots = new Map<string, Map<string, unknown>>();
 	private owners = new Map<string, Map<string, string>>();
 
@@ -71,3 +71,5 @@ export class HierarchicalSlotRegistry implements Disposable {
 		this.owners.clear();
 	}
 }
+
+export { SlotRegistry as HierarchicalSlotRegistry };

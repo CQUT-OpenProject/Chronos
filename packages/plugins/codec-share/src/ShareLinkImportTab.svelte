@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pluginText, type ImportTabComponentProps } from '@chronos/ui-kit';
+	import { pluginText, previewAndNotify, type ImportTabComponentProps } from '@chronos/ui-kit';
 	import { SHARE_CODEC_MESSAGES } from './messages';
 
 	const SHARE_CODEC_PLUGIN_ID = 'codec-share';
@@ -21,22 +21,17 @@
 		pluginText(controller, SHARE_CODEC_PLUGIN_ID, SHARE_CODEC_MESSAGES, 'import.ui.clipboard')
 	);
 
-	function notifyTransferMessages() {
-		const { errorMessage } = transfer.state;
-		if (errorMessage) {
-			controller?.notify(errorMessage, 'error');
-		}
-	}
-
 	async function handleClipboardPreview() {
 		loading = true;
 		try {
 			const content = await navigator.clipboard.readText();
-			const ok = await transfer.previewWithSlot('share-link', {
-				content: content.trim()
-			});
+			const ok = await previewAndNotify(
+				transfer,
+				'share-link',
+				{ content: content.trim() },
+				controller
+			);
 			if (ok) onContinue();
-			else notifyTransferMessages();
 		} catch (err) {
 			const msg =
 				err instanceof Error

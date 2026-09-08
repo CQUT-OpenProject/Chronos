@@ -36,14 +36,23 @@ export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-s
 export { mountableSvelteComponent } from './plugin-screen/mountable-svelte';
 export { pluginText } from './i18n/plugin-text';
 export { CHRONOS_MOUNTABLE } from '@chronos/core';
-export type {
-	ImportTabComponentProps,
-	ImportTabTransferController
+export {
+	previewAndNotify,
+	type ImportTabComponentProps,
+	type ImportTabTransferController
 } from './plugin-screen/import-tab-props';
 export { default as TimetableWallpaperLayer } from './timetable-preview/TimetableWallpaperLayer.svelte';
 export { default as TimetablePreviewGrid } from './timetable-preview/TimetablePreviewGrid.svelte';
 export { default as TimetableLivePreview } from './timetable-preview/TimetableLivePreview.svelte';
 export { default as ImportCourseList } from './import-preview/ImportCourseList.svelte';
 export { PREVIEW_PAINT_READY_CONTEXT } from './timetable-preview/preview-paint-ready';
+export {
+	TIMETABLE_PRESENTATION_CONTEXT,
+	resolveCoursePalette,
+	resolveDisplayedWeek,
+	type TimetablePresentationAccessor,
+	type TimetablePresentationSnapshot
+} from './timetable-preview/timetable-presentation';
 export * from './timetable-preview/timetable-grid-chrome';
+export * from './timetable-preview/day-labels';
 export * from './haptic/haptic';

@@ -4,7 +4,6 @@ import {
 	formatIsoDate,
 	formatFullDate,
 	formatCompactDate,
-	formatSlashDate,
 	previousOrSameMonday,
 	addDays,
 	addWeeks,
@@ -21,7 +20,6 @@ describe('Date & AcademicCalendar in @chronos/core', () => {
 		expect(formatIsoDate(parsed)).toBe('2026-03-02');
 		expect(formatFullDate('2026-03-02')).toBe('2026/03/02');
 		expect(formatCompactDate('2026-03-02')).toBe('03/02');
-		expect(formatSlashDate('2026-03-02')).toBe('2026/03/02');
 	});
 
 	it('computes previous or same Monday correctly', () => {

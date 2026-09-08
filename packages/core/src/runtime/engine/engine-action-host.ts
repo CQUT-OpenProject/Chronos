@@ -1,5 +1,4 @@
-import type { Course } from '../../domain/course';
-import type { AcademicConfig, Timetable } from '../../domain/timetable';
+import type { Timetable } from '../../domain/timetable';
 import type { UserPreferences } from '../../domain/preferences';
 import type { ChronosEvents } from '../../types/context';
 import type { IStorageService } from '../../types/services';
@@ -42,11 +41,3 @@ export interface EngineActionHost {
 
 	emit<E extends keyof ChronosEvents>(event: E, payload: ChronosEvents[E]): void;
 }
-
-export type CreateTimetableInput = { name: string; config?: Partial<AcademicConfig> };
-export type ImportTimetableInput = {
-	timetable: Timetable;
-	options: { overwriteActive?: boolean };
-};
-export type CourseMutationInput = { course: Course };
-export type DeleteCourseInput = { courseId: string };

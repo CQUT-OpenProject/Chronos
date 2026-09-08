@@ -10,6 +10,9 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.feedbackSettings')} backShellTab="mine">
+<SecondaryPageShell
+	title={hostT('route.feedbackSettings')}
+	backFallback={{ kind: 'shell', tab: 'mine' }}
+>
 	<FeedbackSettingsScreen {shell} />
 </SecondaryPageShell>

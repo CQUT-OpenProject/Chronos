@@ -7,6 +7,6 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.update')} backHref="/about">
+<SecondaryPageShell title={hostT('route.update')} backFallback={{ kind: 'route', href: '/about' }}>
 	<SoftwareUpdateScreen />
 </SecondaryPageShell>

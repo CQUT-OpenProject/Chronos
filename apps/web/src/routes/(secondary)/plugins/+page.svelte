@@ -7,6 +7,10 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.plugins')} backShellTab="mine" flush>
+<SecondaryPageShell
+	title={hostT('route.plugins')}
+	backFallback={{ kind: 'shell', tab: 'mine' }}
+	flush
+>
 	<PluginsScreen />
 </SecondaryPageShell>

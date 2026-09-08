@@ -7,6 +7,9 @@
 	const controller = getAppController();
 </script>
 
-<SecondaryPageShell title={hostT('route.licenseThirdParty')} backHref="/open-source-licenses">
+<SecondaryPageShell
+	title={hostT('route.licenseThirdParty')}
+	backFallback={{ kind: 'route', href: '/open-source-licenses' }}
+>
 	<ThirdPartyLicensesScreen />
 </SecondaryPageShell>

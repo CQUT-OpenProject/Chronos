@@ -31,8 +31,7 @@
 				}
 
 				trackEvent('share_link_decode_success');
-				window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
-				goto(resolve('/transfer/import/confirm'));
+				goto(resolve('/transfer/import/confirm'), { replaceState: true });
 			} catch {
 				trackEvent('share_link_decode_fail');
 				status = 'error';

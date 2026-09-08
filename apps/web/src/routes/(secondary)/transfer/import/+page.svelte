@@ -27,7 +27,7 @@
 </script>
 
 {#if ready}
-	<SecondaryPageShell title={hostT('route.import')} backShellTab="mine">
+	<SecondaryPageShell title={hostT('route.import')} backFallback={{ kind: 'shell', tab: 'mine' }}>
 		<TransferImportScreen {transfer} onContinue={continueToConfirm} />
 	</SecondaryPageShell>
 {:else}

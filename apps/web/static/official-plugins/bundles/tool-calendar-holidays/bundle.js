@@ -1815,6 +1815,18 @@ function ur(e, t, n) {
 	foreground: t
 }));
 //#endregion
+//#region packages/core/src/domain/preferences.ts
+var dr = {
+	currentTimetableId: "chronos_preferences:current_timetable_id",
+	themeMode: "chronos_preferences:theme_mode",
+	timetableLayoutMode: "chronos_preferences:timetable_layout_mode",
+	paletteMode: "chronos_preferences:palette_mode",
+	capsuleCornerStyle: "chronos_preferences:capsule_corner_style",
+	hapticFeedbackEnabled: "chronos_preferences:haptic_feedback_enabled",
+	visualThemeId: "chronos_preferences:visual_theme_id",
+	locale: "chronos_preferences:locale"
+};
+//#endregion
 //#region packages/core/src/algorithms/date.ts
 function $(e) {
 	let t = e.trim(), n = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
@@ -1822,46 +1834,46 @@ function $(e) {
 	let [, r, i, a] = n;
 	return new Date(Date.UTC(Number(r), Number(i) - 1, Number(a), 12));
 }
-function dr(e) {
+function fr(e) {
 	return `${e.getUTCFullYear()}-${String(e.getUTCMonth() + 1).padStart(2, "0")}-${String(e.getUTCDate()).padStart(2, "0")}`;
 }
-function fr(e) {
+function pr(e) {
 	let [, t, n] = e.split("-");
 	return `${t.padStart(2, "0")}/${n.padStart(2, "0")}`;
 }
-function pr(e) {
+function mr(e) {
 	let t = new Date(e.getTime()), n = t.getUTCDay(), r = n === 0 ? -6 : 1 - n;
 	return t.setUTCDate(t.getUTCDate() + r), t;
 }
-function mr(e, t) {
+function hr(e, t) {
 	let n = new Date(e.getTime());
 	return n.setUTCDate(n.getUTCDate() + t), n;
 }
-function hr(e, t) {
-	return mr(e, t * 7);
-}
 function gr(e, t) {
-	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+	return hr(e, t * 7);
 }
 function _r(e, t) {
+	return Math.floor((t.getTime() - e.getTime()) / 6048e5);
+}
+function vr(e, t) {
 	return e.getTime() < t.getTime();
 }
-function vr(e) {
-	return dr(pr($(e)));
+function yr(e) {
+	return fr(mr($(e)));
 }
-function yr(e = /* @__PURE__ */ new Date()) {
+function br(e = /* @__PURE__ */ new Date()) {
 	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
 }
 //#endregion
 //#region packages/core/src/algorithms/calendar.ts
-var br = class {
+var xr = class {
 	normalizeTermStartDate(e, t) {
-		let n = $(vr(t));
-		if (!e || !e.trim()) return dr(pr(n));
+		let n = $(yr(t));
+		if (!e || !e.trim()) return fr(mr(n));
 		try {
-			return dr(pr($(e)));
+			return fr(mr($(e)));
 		} catch {
-			return dr(pr(this.inferTermStartDateFromTermName(e) || n));
+			return fr(mr(this.inferTermStartDateFromTermName(e) || n));
 		}
 	}
 	inferTermStartDateFromTermName(e) {
@@ -1877,62 +1889,62 @@ var br = class {
 			endWeek: 20,
 			periodTimes: []
 		}, r = $(this.normalizeTermStartDate(n.termStartDate, e)), i = $(e);
-		if (_r(i, r)) return n.startWeek;
-		let a = gr(r, i);
+		if (vr(i, r)) return n.startWeek;
+		let a = _r(r, i);
 		return Math.min(Math.max(n.startWeek + a, n.startWeek), n.endWeek);
 	}
 	resolveWeekStart(e, t, n) {
-		return dr(hr($(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
+		return fr(gr($(this.normalizeTermStartDate(e.termStartDate, n)), t - e.startWeek));
 	}
 	resolveCourseDate(e, t, n, r) {
-		return dr(mr($(this.resolveWeekStart(e, t, r)), n - 1));
+		return fr(hr($(this.resolveWeekStart(e, t, r)), n - 1));
 	}
 };
 //#endregion
 //#region packages/core/src/algorithms/holiday-calendar.ts
-function xr(e) {
+function Sr(e) {
 	let { holidayCalendar: t, ...n } = e;
 	return n;
 }
-async function Sr(e) {
+async function Cr(e) {
 	let t = await e.listTimetables(), n = 0;
 	for (let r of t) {
 		let t = await e.getTimetable(r.id);
 		if (!t?.academicConfig.holidayCalendar) continue;
 		let i = {
 			...t,
-			academicConfig: xr(t.academicConfig),
+			academicConfig: Sr(t.academicConfig),
 			updatedAt: Date.now()
 		};
 		await e.saveTimetable(i), n += 1;
 	}
 	return n;
 }
-function Cr(e, t = yr()) {
-	let n = new br(), r = $(n.resolveWeekStart(e, e.startWeek, t)), i = mr($(n.resolveWeekStart(e, e.endWeek, t)), 6);
+function wr(e, t = br()) {
+	let n = new xr(), r = $(n.resolveWeekStart(e, e.startWeek, t)), i = hr($(n.resolveWeekStart(e, e.endWeek, t)), 6);
 	return {
-		startDate: dr(r),
-		endDate: dr(i)
+		startDate: fr(r),
+		endDate: fr(i)
 	};
 }
-function wr(e, t, n = yr()) {
-	let { startDate: r, endDate: i } = Cr(t, n);
+function Tr(e, t, n = br()) {
+	let { startDate: r, endDate: i } = wr(t, n);
 	return e.filter((e) => e.date >= r && e.date <= i);
 }
-function Tr(e, t = yr()) {
-	let { startDate: n, endDate: r } = Cr(e, t), i = Number.parseInt(n.slice(0, 4), 10), a = Number.parseInt(r.slice(0, 4), 10), o = /* @__PURE__ */ new Set();
+function Er(e, t = br()) {
+	let { startDate: n, endDate: r } = wr(e, t), i = Number.parseInt(n.slice(0, 4), 10), a = Number.parseInt(r.slice(0, 4), 10), o = /* @__PURE__ */ new Set();
 	for (let e = i; e <= a; e += 1) o.add(e);
 	return o.size === 0 && o.add(Number.parseInt(t.slice(0, 4), 10)), [...o].sort((e, t) => e - t);
 }
 //#endregion
 //#region packages/core/src/types/services.ts
-function Er(e) {
+function Dr(e) {
 	return { key: e };
 }
-var Dr = Er("http"), Or = Er("storage");
+var Or = Dr("http"), kr = Dr("storage");
 //#endregion
 //#region packages/core/src/i18n/i18n-catalog.ts
-function kr(e, t) {
+function Ar(e, t) {
 	return t ? e.replace(/\{(\w+)\}/g, (e, n) => {
 		let r = t[n];
 		return r == null ? `{${n}}` : typeof r == "string" || typeof r == "number" || typeof r == "boolean" ? String(r) : JSON.stringify(r);
@@ -1940,23 +1952,23 @@ function kr(e, t) {
 }
 //#endregion
 //#region packages/core/src/types/mountable.ts
-var Ar = Symbol.for("chronos.mountable");
+var jr = Symbol.for("chronos.mountable");
 new Set(/* @__PURE__ */ "color.surface,color.on-surface,color.primary,color.on-primary,color.surface-variant,color.outline,color.secondary,color.primary-dim,color.primary-container,color.on-primary-container,color.inverse-primary,color.secondary-dim,color.on-secondary,color.secondary-container,color.on-secondary-container,color.primary-container-subtle,color.on-primary-container-subtle,color.secondary-container-subtle,color.on-secondary-container-subtle,color.outline-variant,color.surface-container-high,color.canvas,color.ink,color.border-subtle,color.success,color.warning,color.danger,shell.bottomTab.activeBackground,shell.bottomTab.activeForeground,shell.bottomBar.background,shell.topBar.background,leadingIcon.background,leadingIcon.color,leadingIcon.backgroundPrimary,leadingIcon.colorPrimary,leadingIcon.backgroundSecondary,leadingIcon.colorSecondary,leadingIcon.backgroundTertiary,leadingIcon.colorTertiary,leadingIcon.backgroundNeutral,leadingIcon.colorNeutral,timetable.period.activeBackground,timetable.period.activeBackgroundImage".split(","));
 //#endregion
 //#region packages/core/src/plugin/define-chronos-plugin.ts
-function jr(e, t, n = "zh-cn") {
+function Mr(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
-function Mr() {
-	return "0.5.0";
+function Nr() {
+	return "0.5.1";
 }
-function Nr(e) {
+function Pr(e) {
 	let t;
 	return {
 		id: e.id,
-		name: () => t?.(e.nameKey) ?? jr(e.messages, e.nameKey),
-		version: e.version ?? Mr(),
-		description: e.descriptionKey ? () => t?.(e.descriptionKey) ?? jr(e.messages, e.descriptionKey) : void 0,
+		name: () => t?.(e.nameKey) ?? Mr(e.messages, e.nameKey),
+		version: e.version ?? Nr(),
+		description: e.descriptionKey ? () => t?.(e.descriptionKey) ?? Mr(e.messages, e.descriptionKey) : void 0,
 		category: e.category,
 		order: e.order,
 		author: e.author,
@@ -1977,9 +1989,9 @@ function Nr(e) {
 typeof window < "u" && ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5"), Q(["input"]), Q(["change"]), Q(["change"]), Q(["change"]), Q(["click"]), Q(["change"]), Q(["click"]), Q(["click"]), Q(["click"]);
 //#endregion
 //#region packages/ui-kit/src/plugin-screen/mountable-svelte.ts
-function Pr(e) {
+function Fr(e) {
 	return {
-		[Ar]: !0,
+		[jr]: !0,
 		mount(t, n) {
 			let r = Yn(e, {
 				target: t,
@@ -1993,16 +2005,17 @@ function Pr(e) {
 }
 //#endregion
 //#region packages/ui-kit/src/i18n/plugin-text.ts
-function Fr(e, t, n, r, i) {
+function Ir(e, t, n, r, i) {
 	let a = n["zh-cn"][r] ?? n.en?.[r] ?? String(r);
-	if (!e) return kr(a, i);
+	if (!e) return Ar(a, i);
 	e.slotVersion;
 	let o = e.translatePlugin(t, r, i);
-	return o === r ? kr(a, i) : o;
+	return o === r ? Ar(a, i) : o;
 }
+dr.hapticFeedbackEnabled;
 //#endregion
 //#region packages/plugins/calendar-holidays/src/messages.ts
-var Ir = {
+var Lr = {
 	"zh-cn": {
 		"plugin.name": "法定节假日",
 		"plugin.description": "在课表中展示法定节假日",
@@ -2045,7 +2058,7 @@ var Ir = {
 		"screen.error.syncFailed": "Sync failed. Check your network and try again.",
 		"screen.notify.synced": "Public holidays synced"
 	}
-}, Lr = "tool-calendar-holidays", Rr = "https://fastly.jsdelivr.net/gh/NateScarlet/holiday-cn@master", zr = {
+}, Rr = "tool-calendar-holidays", zr = "https://fastly.jsdelivr.net/gh/NateScarlet/holiday-cn@master", Br = {
 	2025: {
 		$schema: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/schema.json",
 		$id: "https://raw.githubusercontent.com/NateScarlet/holiday-cn/master/2025.json",
@@ -2430,14 +2443,14 @@ var Ir = {
 		days: []
 	}
 };
-function Br(e) {
+function Vr(e) {
 	return e.days.filter((e) => e.isOffDay).map((e) => ({
 		date: e.date,
 		label: e.name
 	}));
 }
-async function Vr(e, t) {
-	let n = `${Rr}/${t}.json`;
+async function Hr(e, t) {
+	let n = `${zr}/${t}.json`;
 	try {
 		let t = await e.request(n, {
 			method: "GET",
@@ -2446,45 +2459,45 @@ async function Vr(e, t) {
 		if (!t.ok) throw Error(`HTTP ${t.status}`);
 		return await t.json();
 	} catch (e) {
-		return zr[t] || (console.warn(`[calendar-holidays] No holiday-cn data for ${t}`, e), null);
+		return Br[t] || (console.warn(`[calendar-holidays] No holiday-cn data for ${t}`, e), null);
 	}
 }
-async function Hr(e, t) {
-	let n = (await Promise.all(t.map((t) => Vr(e, t)))).filter((e) => e !== null);
+async function Ur(e, t) {
+	let n = (await Promise.all(t.map((t) => Hr(e, t)))).filter((e) => e !== null);
 	if (n.length === 0) throw Error(`No holiday-cn data for years: ${t.join(", ")}`);
-	let r = n.flatMap((e) => Br(e)), i = /* @__PURE__ */ new Map();
+	let r = n.flatMap((e) => Vr(e)), i = /* @__PURE__ */ new Map();
 	for (let e of r) i.has(e.date) || i.set(e.date, e);
 	return { holidays: [...i.values()].sort((e, t) => e.date.localeCompare(t.date)) };
 }
 //#endregion
 //#region packages/plugins/calendar-holidays/src/holiday-sync.ts
-var Ur = /* @__PURE__ */ new Map();
-async function Wr(e) {
-	return Sr(e.service(Or));
+var Wr = /* @__PURE__ */ new Map();
+async function Gr(e) {
+	return Cr(e.service(kr));
 }
-function Gr(e, t) {
+function Kr(e, t) {
 	if (!e?.syncedAt || !e.syncedYears?.length) return !0;
 	let n = new Set(e.syncedYears);
 	return t.some((e) => !n.has(e));
 }
-async function Kr(e, t = {}) {
+async function qr(e, t = {}) {
 	let n = e.state.currentTimetable;
 	if (!n) throw Error("No active timetable");
-	let r = n.id, i = Ur.get(r);
+	let r = n.id, i = Wr.get(r);
 	if (i) return i;
-	let a = Jr(e, r, n.academicConfig, t).finally(() => {
-		Ur.delete(r);
+	let a = Yr(e, r, n.academicConfig, t).finally(() => {
+		Wr.delete(r);
 	});
-	return Ur.set(r, a), a;
+	return Wr.set(r, a), a;
 }
-async function qr(e, t = {}) {
-	return e.state.currentTimetable ? Kr(e, t) : !1;
+async function Jr(e, t = {}) {
+	return e.state.currentTimetable ? qr(e, t) : !1;
 }
-async function Jr(e, t, n, r) {
-	let i = Tr(n), a = e.service(Or), o = await a.getTimetable(t);
+async function Yr(e, t, n, r) {
+	let i = Er(n), a = e.service(kr), o = await a.getTimetable(t);
 	if (!o) throw Error(`Timetable not found: ${t}`);
-	if (!r.force && !Gr(o.academicConfig.holidayCalendar, i)) return !1;
-	let { holidays: s } = await Hr(e.service(Dr), i), c = {
+	if (!r.force && !Kr(o.academicConfig.holidayCalendar, i)) return !1;
+	let { holidays: s } = await Ur(e.service(Or), i), c = {
 		holidays: s,
 		syncedAt: Date.now(),
 		syncedYears: [...i]
@@ -2502,11 +2515,11 @@ async function Jr(e, t, n, r) {
 }
 //#endregion
 //#region packages/plugins/calendar-holidays/src/index.ts
-function Yr(e = {}) {
+function Xr(e = {}) {
 	let { screenComponent: t } = e, n;
-	return Nr({
-		id: Lr,
-		messages: Ir,
+	return Pr({
+		id: Rr,
+		messages: Lr,
 		nameKey: "plugin.name",
 		descriptionKey: "plugin.description",
 		category: "tool",
@@ -2521,41 +2534,41 @@ function Yr(e = {}) {
 				id: "holiday-calendar",
 				sectionId: "data-sync",
 				title: () => r("mine.title"),
-				href: `/plugins/${Lr}`,
+				href: `/plugins/${Rr}`,
 				icon: "event",
 				iconTone: "secondary",
 				keywords: i,
 				order: 25
 			}), e.registerSlot("shell.route.screen", {
-				id: Lr,
+				id: Rr,
 				title: () => r("screen.title"),
 				...t ? { component: t } : {}
 			});
 			try {
-				await qr(e);
+				await Jr(e);
 			} catch {
 				e.actions.notify(r("screen.error.syncFailed"), "warn");
 			}
 			e.on("timetable:switched", async () => {
 				try {
-					await qr(e);
+					await Jr(e);
 				} catch {}
 			});
 		},
 		async dispose() {
 			let e = n;
-			n = void 0, e && await Wr(e);
+			n = void 0, e && await Gr(e);
 		}
 	});
 }
 //#endregion
 //#region packages/plugins/calendar-holidays/src/HolidayCalendarScreen.svelte
-var Xr = /* @__PURE__ */ Bn("<p class=\"text-body-medium py-6 text-center text-on-surface-variant\"> </p>"), Zr = /* @__PURE__ */ Bn("<li class=\"py-3\"><span class=\"text-body-medium text-on-surface\"> </span></li>"), Qr = /* @__PURE__ */ Bn("<ul class=\"divide-y divide-outline/10\"></ul>"), $r = /* @__PURE__ */ Bn("<div class=\"mt-3 flex flex-col gap-4\"></div>"), ei = /* @__PURE__ */ Bn("<p class=\"text-body-small text-error\"> </p>"), ti = /* @__PURE__ */ Bn("<div class=\"flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4\"><section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <button type=\"button\" class=\"text-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50\"> </button> <div class=\"mt-3 flex items-center justify-between gap-3\"><a class=\"text-body-small shrink-0 text-primary\" href=\"https://github.com/NateScarlet/holiday-cn\" target=\"_blank\" rel=\"noreferrer\"> </a> <p class=\"text-body-small text-right text-on-surface-variant\"> </p></div></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"text-title-small text-on-surface\"> </h3> <!></section> <!></div>");
-function ni(e, t) {
+var Zr = /* @__PURE__ */ Bn("<p class=\"text-body-medium py-6 text-center text-on-surface-variant\"> </p>"), Qr = /* @__PURE__ */ Bn("<li class=\"py-3\"><span class=\"text-body-medium text-on-surface\"> </span></li>"), $r = /* @__PURE__ */ Bn("<ul class=\"divide-y divide-outline/10\"></ul>"), ei = /* @__PURE__ */ Bn("<div class=\"mt-3 flex flex-col gap-4\"></div>"), ti = /* @__PURE__ */ Bn("<p class=\"text-body-small text-error\"> </p>"), ni = /* @__PURE__ */ Bn("<div class=\"flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4\"><section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><p class=\"text-body-medium text-on-surface-variant\"> </p> <button type=\"button\" class=\"text-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50\"> </button> <div class=\"mt-3 flex items-center justify-between gap-3\"><a class=\"text-body-small shrink-0 text-primary\" href=\"https://github.com/NateScarlet/holiday-cn\" target=\"_blank\" rel=\"noreferrer\"> </a> <p class=\"text-body-small text-right text-on-surface-variant\"> </p></div></section> <section class=\"rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs\"><h3 class=\"text-title-small text-on-surface\"> </h3> <!></section> <!></div>");
+function ri(e, t) {
 	je(t, !0);
-	let n = /* @__PURE__ */ F(!1), r = /* @__PURE__ */ F(null), i = /* @__PURE__ */ Xe(() => t.controller.currentTimetable), a = /* @__PURE__ */ Xe(() => Z(i)?.academicConfig.holidayCalendar), o = /* @__PURE__ */ Xe(() => Z(i) && Z(a) ? wr(Z(a).holidays, Z(i).academicConfig) : []), s = /* @__PURE__ */ Xe(() => u(Z(o))), c = /* @__PURE__ */ Xe(() => !!Z(a)?.syncedAt);
+	let n = /* @__PURE__ */ F(!1), r = /* @__PURE__ */ F(null), i = /* @__PURE__ */ Xe(() => t.controller.currentTimetable), a = /* @__PURE__ */ Xe(() => Z(i)?.academicConfig.holidayCalendar), o = /* @__PURE__ */ Xe(() => Z(i) && Z(a) ? Tr(Z(a).holidays, Z(i).academicConfig) : []), s = /* @__PURE__ */ Xe(() => u(Z(o))), c = /* @__PURE__ */ Xe(() => !!Z(a)?.syncedAt);
 	function l(e) {
-		return Fr(t.controller, Lr, Ir, e);
+		return Ir(t.controller, Rr, Lr, e);
 	}
 	function u(e) {
 		let t = /* @__PURE__ */ new Map();
@@ -2569,12 +2582,12 @@ function ni(e, t) {
 		}));
 	}
 	function d(e, t) {
-		let n = /* @__PURE__ */ new Date(`${e.date}T12:00:00`), r = fr(e.date), i = n.toLocaleDateString(t, { weekday: "short" });
+		let n = /* @__PURE__ */ new Date(`${e.date}T12:00:00`), r = pr(e.date), i = n.toLocaleDateString(t, { weekday: "short" });
 		return l("screen.list.row").replace("{date}", r).replace("{label}", e.label).replace("{weekday}", i);
 	}
 	function f(e) {
 		if (!e) return l("screen.sync.never");
-		let t = new Date(e), n = t.getFullYear(), r = String(t.getMonth() + 1).padStart(2, "0"), i = String(t.getDate()).padStart(2, "0"), a = String(t.getHours()).padStart(2, "0"), o = String(t.getMinutes()).padStart(2, "0"), s = fr(`${n}-${r}-${i}`);
+		let t = new Date(e), n = t.getFullYear(), r = String(t.getMonth() + 1).padStart(2, "0"), i = String(t.getDate()).padStart(2, "0"), a = String(t.getHours()).padStart(2, "0"), o = String(t.getMinutes()).padStart(2, "0"), s = pr(`${n}-${r}-${i}`);
 		return l("screen.sync.last").replace("{time}", `${s} ${a}:${o}`);
 	}
 	async function p() {
@@ -2585,24 +2598,24 @@ function ni(e, t) {
 		I(n, !0), I(r, null);
 		try {
 			let e = t.controller.getPluginContext(t.pluginId);
-			await Kr(e, { force: !0 }), e.actions.notify(l("screen.notify.synced"), "info");
+			await qr(e, { force: !0 }), e.actions.notify(l("screen.notify.synced"), "info");
 		} catch (e) {
 			I(r, e instanceof Error ? e.message : l("screen.error.syncFailed"), !0);
 		} finally {
 			I(n, !1);
 		}
 	}
-	var m = ti(), h = Pt(m), g = Pt(h), _ = Ft(g, !0), v = It(g, 2), y = Ft(v, !0), b = It(v, 2), x = Pt(b), S = Ft(x, !0), C = Ft(It(x, 2), !0);
+	var m = ni(), h = Pt(m), g = Pt(h), _ = Ft(g, !0), v = It(g, 2), y = Ft(v, !0), b = It(v, 2), x = Pt(b), S = Ft(x, !0), C = Ft(It(x, 2), !0);
 	ge(b), ge(h);
 	var w = It(h, 2), ee = Pt(w), T = Ft(ee, !0), te = It(ee, 2), ne = (e) => {
-		var t = Xr(), n = Ft(t, !0);
+		var t = Zr(), n = Ft(t, !0);
 		Yt((e) => Jn(n, e), [() => Z(a)?.holidays.length ? l("screen.list.empty") : l("screen.list.emptyHint")]), Vn(e, t);
 	}, re = (e) => {
-		var n = $r();
+		var n = ei();
 		ar(n, 21, () => Z(s), (e) => e.key, (e, n) => {
-			var r = Qr();
+			var r = $r();
 			ar(r, 21, () => Z(n).items, (e) => e.date, (e, n) => {
-				var r = Zr(), i = Ft(Pt(r), !0);
+				var r = Qr(), i = Ft(Pt(r), !0);
 				ge(r), Yt((e) => Jn(i, e), [() => d(Z(n), t.controller.currentLocale)]), Vn(e, r);
 			}), ge(r), Vn(e, r);
 		}), ge(n), Vn(e, n);
@@ -2611,7 +2624,7 @@ function ni(e, t) {
 		Z(o).length === 0 ? e(ne) : e(re, -1);
 	}), ge(w);
 	var ie = It(w, 2), ae = (e) => {
-		var t = ei(), n = Ft(t, !0);
+		var t = ti(), n = Ft(t, !0);
 		Yt(() => Jn(n, Z(r))), Vn(e, t);
 	};
 	tr(ie, (e) => {
@@ -2629,6 +2642,6 @@ function ni(e, t) {
 Q(["click"]);
 //#endregion
 //#region packages/plugins/calendar-holidays/bundle/entry.ts
-var ri = Yr({ screenComponent: Pr(ni) });
+var ii = Xr({ screenComponent: Fr(ri) });
 //#endregion
-export { ri as default };
+export { ii as default };

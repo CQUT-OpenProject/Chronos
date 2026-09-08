@@ -1,5 +1,4 @@
 import type { OfficialPluginCatalog, PluginManifest } from '@chronos/core';
-import { IHttpService } from '@chronos/core';
 import type { ChronosEngine } from '@chronos/core';
 import { validatePluginManifest } from './plugin-bundle';
 
@@ -9,7 +8,7 @@ export class OfficialPluginCatalogClient {
 	async fetchCatalog(
 		catalogUrl = '/official-plugins/catalog.json'
 	): Promise<OfficialPluginCatalog> {
-		const response = await this.engine.services.get(IHttpService).request(catalogUrl, {
+		const response = await this.engine.http.request(catalogUrl, {
 			method: 'GET'
 		});
 
@@ -28,7 +27,7 @@ export class OfficialPluginCatalogClient {
 	}
 
 	async fetchManifest(manifestUrl: string): Promise<PluginManifest> {
-		const response = await this.engine.services.get(IHttpService).request(manifestUrl, {
+		const response = await this.engine.http.request(manifestUrl, {
 			method: 'GET'
 		});
 

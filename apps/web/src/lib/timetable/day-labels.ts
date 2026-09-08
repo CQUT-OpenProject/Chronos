@@ -1,31 +1,24 @@
 import type { HostMessageKey } from '$lib/i18n/host-messages';
 import { hostT } from '$lib/i18n/host-i18n.svelte';
-import { truncateHolidayLabel } from '@chronos/core';
+import {
+	timetableDayColumnHeaderLabel as uiDayColumnHeaderLabel,
+	timetableDayLabel as uiDayLabel,
+	timetableDayShortLabel as uiDayShortLabel
+} from '@chronos/ui-kit';
 
-const DAY_SUFFIXES = ['', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
-
-function resolveDayKey(dayOfWeek: number, variant: 'full' | 'short'): HostMessageKey | null {
-	const suffix = DAY_SUFFIXES[dayOfWeek];
-	if (!suffix) return null;
-	return `${variant === 'full' ? 'timetable.day.' : 'timetable.dayShort.'}${suffix}` as HostMessageKey;
-}
+const translate = (key: string) => hostT(key as HostMessageKey);
 
 export function timetableDayLabel(dayOfWeek: number): string {
-	const key = resolveDayKey(dayOfWeek, 'full');
-	if (!key) return dayOfWeek === 0 ? '' : hostT('timetable.day.unknown');
-	return hostT(key);
+	return uiDayLabel(dayOfWeek, translate);
 }
 
-function timetableDayShortLabel(dayOfWeek: number): string {
-	const key = resolveDayKey(dayOfWeek, 'short');
-	if (!key) return dayOfWeek === 0 ? '' : '?';
-	return hostT(key);
+export function timetableDayShortLabel(dayOfWeek: number): string {
+	return uiDayShortLabel(dayOfWeek, translate);
 }
 
 export function timetableDayColumnHeaderLabel(day: {
 	dayOfWeek: number;
 	holiday?: { label: string };
 }): string {
-	if (day.holiday) return truncateHolidayLabel(day.holiday.label);
-	return timetableDayShortLabel(day.dayOfWeek);
+	return uiDayColumnHeaderLabel(day, translate);
 }
