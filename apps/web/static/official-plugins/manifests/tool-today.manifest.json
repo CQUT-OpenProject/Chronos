@@ -13,7 +13,7 @@
 	"type": "tool",
 	"bundleFormat": "esm",
 	"bundleUrl": "/official-plugins/bundles/tool-today/bundle.js",
-	"sha256": "a6d16b08b9838476c24aa4448622d3242eed9569e6cd42030b9542816e4c557d",
+	"sha256": "4e73c00a36f43c04cc247794e941788d48608018c7ea9ec3f3a7c6ebc9fd4454",
 	"cssUrl": "/official-plugins/bundles/tool-today/bundle.css",
 	"cssSha256": "408764fa24a835af499eef245b0d2bdb3c410f2e2a1775a934de9ef0e9301a5f"
 }
