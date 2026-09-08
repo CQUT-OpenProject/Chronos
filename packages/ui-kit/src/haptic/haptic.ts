@@ -1,4 +1,6 @@
-const HAPTIC_STORAGE_KEY = 'chronos_preferences:haptic_feedback_enabled';
+import { PREFERENCE_STORAGE_KEYS } from '@chronos/core';
+
+const HAPTIC_STORAGE_KEY = PREFERENCE_STORAGE_KEYS.hapticFeedbackEnabled;
 
 /** Narrow injection point used by Chronos native shells (WKWebView / Android WebView). */
 export const CHRONOS_NATIVE_BRIDGE_KEY = '__CHRONOS_NATIVE__' as const;

@@ -8,7 +8,8 @@ import {
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	DEFAULT_TIMETABLE_NAME,
 	CURRENT_PREFERENCES_SCHEMA_VERSION,
-	DEFAULT_USER_PREFERENCES
+	DEFAULT_USER_PREFERENCES,
+	PREFERENCE_STORAGE_KEYS
 } from '../src/index';
 
 describe('Domain Models in @chronos/core', () => {
@@ -93,5 +94,14 @@ describe('Domain Models in @chronos/core', () => {
 		expect(DEFAULT_USER_PREFERENCES.timetableLayoutMode).toBe('fixed');
 		expect(DEFAULT_USER_PREFERENCES.capsuleCornerStyle).toBe('sharp');
 		expect(DEFAULT_USER_PREFERENCES.hapticFeedbackEnabled).toBe(true);
+	});
+
+	it('provides standard PREFERENCE_STORAGE_KEYS', () => {
+		expect(PREFERENCE_STORAGE_KEYS.hapticFeedbackEnabled).toBe(
+			'chronos_preferences:haptic_feedback_enabled'
+		);
+		expect(PREFERENCE_STORAGE_KEYS.currentTimetableId).toBe(
+			'chronos_preferences:current_timetable_id'
+		);
 	});
 });

@@ -1,13 +1,13 @@
 import type { PaletteMode } from '@chronos/core';
 import {
 	DEFAULT_VISUAL_THEME_ID,
-	LEGACY_PALETTE_MODE_DYNAMIC,
-	PALETTE_MODE_VIBRANT
+	PALETTE_MODE_VIBRANT,
+	PALETTE_MODE_WALLPAPER
 } from '@chronos/core';
 
 export const BUILTIN_COLOR_SCHEME_VIBRANT = 'vibrant';
-/** Dynamic color scheme id (aligned with legacy palette mode and wallpaper theme id). */
-export const DYNAMIC_COLOR_SCHEME_ID = LEGACY_PALETTE_MODE_DYNAMIC;
+/** Dynamic color scheme id (aligned with wallpaper theme id). */
+export const DYNAMIC_COLOR_SCHEME_ID = PALETTE_MODE_WALLPAPER;
 export const M3_DEFAULT_THEME_ID = DEFAULT_VISUAL_THEME_ID;
 
 export interface ColorSchemePatch {
@@ -35,7 +35,7 @@ export function resolveColorSchemeId(
 export function buildColorSchemePatch(schemeId: string): ColorSchemePatch {
 	if (schemeId === DYNAMIC_COLOR_SCHEME_ID) {
 		return {
-			paletteMode: LEGACY_PALETTE_MODE_DYNAMIC,
+			paletteMode: DYNAMIC_COLOR_SCHEME_ID,
 			visualThemeId: M3_DEFAULT_THEME_ID,
 			themeId: M3_DEFAULT_THEME_ID
 		};
