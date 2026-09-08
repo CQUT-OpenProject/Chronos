@@ -64,10 +64,6 @@ export function createAppShell() {
 		disposeAppearanceEffects?.();
 		disposeAppearanceEffects = $effect.root(() => {
 			$effect(() => {
-				controller.setCoursePalette(appearance.coursePalette);
-			});
-
-			$effect(() => {
 				const dark = isDark;
 				const paletteMode = controller.userPreferences?.paletteMode ?? 'vibrant';
 				const activeThemeId = controller.activeThemeId;

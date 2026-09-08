@@ -1,12 +1,14 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import type { ReactiveChronosController } from '../../reactivity/engine-controller.svelte';
-	import {
-		AcademicCalendarService,
-		computeTimetableWeekLayout,
-		COURSE_PALETTE_ENTRIES,
-		todayIsoDate
-	} from '@chronos/core';
+	import { AcademicCalendarService, computeTimetableWeekLayout, todayIsoDate } from '@chronos/core';
 	import TimetablePreviewGrid from '../../timetable-preview/TimetablePreviewGrid.svelte';
+	import {
+		TIMETABLE_PRESENTATION_CONTEXT,
+		resolveCoursePalette,
+		resolveDisplayedWeek,
+		type TimetablePresentationAccessor
+	} from '../../timetable-preview/timetable-presentation';
 
 	interface Props {
 		controller?: ReactiveChronosController;
@@ -16,6 +18,9 @@
 
 	let { controller, label, description = '' }: Props = $props();
 
+	const getPresentation = getContext<TimetablePresentationAccessor | undefined>(
+		TIMETABLE_PRESENTATION_CONTEXT
+	);
 	const calendarService = new AcademicCalendarService();
 
 	const timetable = $derived(controller?.currentTimetable ?? null);
@@ -23,16 +28,11 @@
 	const academicWeek = $derived(
 		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
 	);
-	const displayedWeek = $derived(
-		controller?.displayedWeek ?? controller?.activeWeek ?? academicWeek ?? 1
-	);
+	const presentation = $derived(getPresentation?.() ?? {});
+	const displayedWeek = $derived(resolveDisplayedWeek(controller, presentation, academicWeek));
 	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller?.activeWeek ?? 1));
 	const currentPeriodIndex = $derived(controller?.currentPeriodIndex ?? null);
-	const coursePalette = $derived(
-		controller?.coursePalette && controller.coursePalette.length > 0
-			? controller.coursePalette
-			: COURSE_PALETTE_ENTRIES
-	);
+	const coursePalette = $derived(resolveCoursePalette(presentation));
 	const paletteCourses = $derived(timetable?.courses ?? []);
 	const layoutMode = $derived(controller?.userPreferences?.timetableLayoutMode ?? 'fixed');
 	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'sharp');

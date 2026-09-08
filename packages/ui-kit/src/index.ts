@@ -46,6 +46,13 @@ export { default as TimetablePreviewGrid } from './timetable-preview/TimetablePr
 export { default as TimetableLivePreview } from './timetable-preview/TimetableLivePreview.svelte';
 export { default as ImportCourseList } from './import-preview/ImportCourseList.svelte';
 export { PREVIEW_PAINT_READY_CONTEXT } from './timetable-preview/preview-paint-ready';
+export {
+	TIMETABLE_PRESENTATION_CONTEXT,
+	resolveCoursePalette,
+	resolveDisplayedWeek,
+	type TimetablePresentationAccessor,
+	type TimetablePresentationSnapshot
+} from './timetable-preview/timetable-presentation';
 export * from './timetable-preview/timetable-grid-chrome';
 export * from './timetable-preview/day-labels';
 export * from './haptic/haptic';

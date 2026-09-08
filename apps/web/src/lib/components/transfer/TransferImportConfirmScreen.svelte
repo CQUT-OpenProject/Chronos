@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import { ImportMode } from '$lib/domain/import-mode';
@@ -20,7 +21,10 @@
 		ImportCourseList,
 		MountableSlotOutlet,
 		SchemaForm,
-		findInvalidSchemaFields
+		findInvalidSchemaFields,
+		TIMETABLE_PRESENTATION_CONTEXT,
+		resolveCoursePalette,
+		type TimetablePresentationAccessor
 	} from '@chronos/ui-kit';
 
 	let {
@@ -34,6 +38,10 @@
 	} = $props();
 
 	const controller = getAppController();
+	const getPresentation = getContext<TimetablePresentationAccessor | undefined>(
+		TIMETABLE_PRESENTATION_CONTEXT
+	);
+	const coursePalette = $derived(resolveCoursePalette(getPresentation?.() ?? {}));
 	const transferState = $derived(transfer.state);
 	const preview = $derived(transferState.preview);
 	const activeSlot = $derived(
@@ -168,7 +176,7 @@
 					</div>
 
 					{#if preview.courses.length > 0}
-						<ImportCourseList courses={preview.courses} coursePalette={controller.coursePalette} />
+						<ImportCourseList courses={preview.courses} {coursePalette} />
 					{/if}
 				</div>
 			</Card>

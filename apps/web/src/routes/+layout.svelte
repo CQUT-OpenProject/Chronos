@@ -19,7 +19,7 @@
 		secondaryTransitionGate
 	} from '$lib/navigation';
 	import ShellRouteHost from '$lib/components/shell/ShellRouteHost.svelte';
-	import { PREVIEW_PAINT_READY_CONTEXT } from '@chronos/ui-kit';
+	import { PREVIEW_PAINT_READY_CONTEXT, TIMETABLE_PRESENTATION_CONTEXT } from '@chronos/ui-kit';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
@@ -54,6 +54,10 @@
 	setContext('timetableScreen', timetableScreen);
 	setContext('shellTab', shellTab);
 	setContext(PREVIEW_PAINT_READY_CONTEXT, () => gate.previewPaintReady);
+	setContext(TIMETABLE_PRESENTATION_CONTEXT, () => ({
+		displayedWeek: timetableScreen.state.displayedWeek,
+		coursePalette: shell.appearance.coursePalette
+	}));
 
 	$effect(() => {
 		void getAppController().slotVersion;
