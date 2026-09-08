@@ -1,33 +1,33 @@
 import type { Disposable } from '../types/env';
 import type { IconThemeContribution } from '../theme/icon-theme';
+import type { HierarchicalSlotRegistry } from './hierarchical-slot-registry';
 
 export class IconThemeRegistry implements Disposable {
-	private themes = new Map<string, IconThemeContribution>();
+	constructor(
+		private slots: HierarchicalSlotRegistry,
+		private onIconThemesChanged?: () => void
+	) {}
 
-	constructor(private onIconThemesChanged?: () => void) {}
-
-	registerIconTheme(theme: IconThemeContribution): Disposable {
-		this.themes.set(theme.id, theme);
+	registerIconTheme(theme: IconThemeContribution, ownerPluginId?: string): Disposable {
+		const handle = this.slots.register('theme.icon.definition', theme, ownerPluginId);
 		this.onIconThemesChanged?.();
 		return {
 			dispose: () => {
-				if (this.themes.get(theme.id) === theme) {
-					this.themes.delete(theme.id);
-					this.onIconThemesChanged?.();
-				}
+				handle.dispose();
+				this.onIconThemesChanged?.();
 			}
 		};
 	}
 
 	getIconTheme(id: string): IconThemeContribution | undefined {
-		return this.themes.get(id);
+		return this.slots.getSlotItem('theme.icon.definition', id) as IconThemeContribution | undefined;
 	}
 
 	getIconThemes(): ReadonlyArray<IconThemeContribution> {
-		return Array.from(this.themes.values());
+		return this.slots.get('theme.icon.definition') as ReadonlyArray<IconThemeContribution>;
 	}
 
 	dispose(): void {
-		this.themes.clear();
+		// slots lifecycle is managed by the host
 	}
 }

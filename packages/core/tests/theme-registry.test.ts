@@ -1,11 +1,13 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { ThemeRegistry } from '../src/runtime/theme-registry';
+import { HierarchicalSlotRegistry } from '../src/runtime/hierarchical-slot-registry';
 import type { ThemeContribution } from '../src/types/contributions';
 
 describe('ThemeRegistry in @chronos/core', () => {
 	it('registers, retrieves, lists and disposes theme contributions', () => {
 		const onThemesChanged = vi.fn();
-		const registry = new ThemeRegistry(onThemesChanged);
+		const slots = new HierarchicalSlotRegistry();
+		const registry = new ThemeRegistry(slots, onThemesChanged);
 
 		const theme: ThemeContribution = {
 			id: 'nord',

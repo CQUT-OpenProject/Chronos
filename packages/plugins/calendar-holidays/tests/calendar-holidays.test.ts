@@ -4,8 +4,9 @@ import { needsHolidaySync, syncHolidayCalendarFromHolidayCn } from '../src/holid
 import {
 	ChronosEngine,
 	createTimetable,
-	type ChronosContext,
-	type IHttpService
+	IHttpService,
+	IStorageService,
+	type ChronosContext
 } from '@chronos/core';
 import { createMockEnv } from '@chronos/core/test-utils';
 import { createHolidayPlugin } from '../src/index';
@@ -197,7 +198,11 @@ describe('calendar-holidays plugin', () => {
 				return engine.state;
 			},
 			actions: engine.actions,
-			service: engine['services'].get.bind(engine['services'])
+			service: ((id: unknown) => {
+				if (id === IHttpService) return engine.http;
+				if (id === IStorageService) return engine.storage;
+				return undefined;
+			}) as ChronosContext['service']
 		} as unknown as ChronosContext;
 
 		await syncHolidayCalendarFromHolidayCn(ctx, { force: true });
@@ -257,7 +262,11 @@ describe('calendar-holidays plugin', () => {
 				return engine.state;
 			},
 			actions: engine.actions,
-			service: engine['services'].get.bind(engine['services'])
+			service: ((id: unknown) => {
+				if (id === IHttpService) return engine.http;
+				if (id === IStorageService) return engine.storage;
+				return undefined;
+			}) as ChronosContext['service']
 		} as unknown as ChronosContext;
 
 		const syncPromise = syncHolidayCalendarFromHolidayCn(ctx);
