@@ -1,11 +1,19 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
+	createSecondaryTransitionGate,
 	getNavigationDirection,
-	getTransitionDirection,
+	hasUAVisualTransition,
 	initNavigationStack,
+	isActiveNavDirectionTransition,
+	nextNavDirectionTransitionGeneration,
 	resolveNavigationDirection,
-	updateTransitionDirection
-} from './navigation-direction';
+	shouldUseViewTransitionWhenSupported,
+	type ViewTransitionNavigation
+} from './page-view-transition.svelte';
+
+function nav(overrides: Partial<ViewTransitionNavigation> = {}): ViewTransitionNavigation {
+	return { type: 'link', ...overrides };
+}
 
 describe('getNavigationDirection', () => {
 	it('returns forward when entering secondary routes from the shell', () => {
@@ -90,27 +98,84 @@ describe('resolveNavigationDirection', () => {
 	});
 });
 
-describe('updateTransitionDirection', () => {
-	it('stores direction for transition to read at invocation time', () => {
-		initNavigationStack('/');
-		updateTransitionDirection('/', '/about', 'link');
-		expect(getTransitionDirection()).toBe('forward');
+describe('view transition support and classification', () => {
+	it('returns true for popstate with hasUAVisualTransition', () => {
+		expect(
+			hasUAVisualTransition({
+				type: 'popstate',
+				event: { hasUAVisualTransition: true } as PopStateEvent
+			})
+		).toBe(true);
 	});
 
-	it('stores back when leaving secondary routes', () => {
-		initNavigationStack('/');
-		updateTransitionDirection('/', '/about', 'link');
-		updateTransitionDirection('/about', '/', 'link');
-		expect(getTransitionDirection()).toBe('back');
+	it('returns false for popstate without UA transition', () => {
+		expect(
+			hasUAVisualTransition({
+				type: 'popstate',
+				event: { hasUAVisualTransition: false } as PopStateEvent
+			})
+		).toBe(false);
 	});
 
-	it('stores forward on popstate when delta is positive', () => {
-		initNavigationStack('/');
-		updateTransitionDirection('/', '/about', 'link');
-		updateTransitionDirection('/about', '/open-source-licenses', 'link');
-		updateTransitionDirection('/open-source-licenses', '/about', 'popstate', -1);
+	it('returns false for link navigation', () => {
+		expect(hasUAVisualTransition(nav({ type: 'link' }))).toBe(false);
+	});
 
-		updateTransitionDirection('/about', '/open-source-licenses', 'popstate', 1);
-		expect(getTransitionDirection()).toBe('forward');
+	it('returns true for forward link navigation', () => {
+		expect(shouldUseViewTransitionWhenSupported('forward', nav({ type: 'link' }))).toBe(true);
+	});
+
+	it('returns false when direction is none', () => {
+		expect(shouldUseViewTransitionWhenSupported('none', nav({ type: 'link' }))).toBe(false);
+	});
+
+	it('returns false when browser already performed UA transition', () => {
+		expect(
+			shouldUseViewTransitionWhenSupported(
+				'back',
+				nav({
+					type: 'popstate',
+					event: { hasUAVisualTransition: true } as PopStateEvent
+				})
+			)
+		).toBe(false);
+	});
+
+	it('tracks transition generations', () => {
+		const gen1 = nextNavDirectionTransitionGeneration();
+		const gen2 = nextNavDirectionTransitionGeneration();
+		expect(gen2).toBeGreaterThan(gen1);
+		expect(isActiveNavDirectionTransition(gen2)).toBe(true);
+		expect(isActiveNavDirectionTransition(gen1)).toBe(false);
+	});
+});
+
+describe('createSecondaryTransitionGate', () => {
+	it('enables the shell host and stays live on the shell route', () => {
+		const gate = createSecondaryTransitionGate();
+		gate.syncRoute('/');
+
+		expect(gate.shellHostEnabled).toBe(true);
+		expect(gate.frozen).toBe(false);
+		expect(gate.receded).toBe(false);
+		expect(gate.previewPaintReady).toBe(true);
+	});
+
+	it('keeps the shell live during a forward view transition then freezes after it finishes', () => {
+		const gate = createSecondaryTransitionGate();
+		gate.syncRoute('/');
+		gate.beginTransition('forward', true);
+
+		expect(gate.transitioning).toBe(true);
+		expect(gate.frozen).toBe(false);
+		expect(gate.receded).toBe(false);
+		expect(gate.previewPaintReady).toBe(false);
+
+		gate.finishTransition(true);
+
+		expect(gate.transitioning).toBe(false);
+		expect(gate.frozen).toBe(true);
+		expect(gate.receded).toBe(true);
+		expect(gate.previewPaintReady).toBe(true);
 	});
 });

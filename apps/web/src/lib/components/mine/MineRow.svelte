@@ -2,7 +2,7 @@
 	import type { Component, Snippet } from 'svelte';
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes, HTMLAttributes } from 'svelte/elements';
 	import { ChevronRight } from '$lib/icons';
-	import { appRouteHref } from '$lib/navigation/app-route-href';
+	import { appRouteHref } from '$lib/navigation/routes';
 
 	export type MineIconTone = 'primary' | 'secondary' | 'tertiary' | 'neutral';
 

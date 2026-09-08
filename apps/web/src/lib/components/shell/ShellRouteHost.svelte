@@ -8,7 +8,7 @@
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import { ensureEngineFullyReady } from '$lib/services/app-engine';
 	import { isShellRoute } from '$lib/navigation/routes';
-	import { secondaryTransitionGate } from '$lib/navigation/secondary-transition-gate.svelte';
+	import { secondaryTransitionGate } from '$lib/navigation';
 
 	const shellTab = getContext<ShellTabController>('shellTab');
 	const gate = secondaryTransitionGate;

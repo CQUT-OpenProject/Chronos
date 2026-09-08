@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { secondaryRouteRoots } from '../../routes/(secondary)/navigation';
-import { isSecondaryRoute, isShellRoute } from './routes';
+import { appRouteHref, isSecondaryRoute, isShellRoute, toAppPathname } from './routes';
 
 vi.mock('$app/paths', () => ({
-	base: '/Chronos'
+	base: '/Chronos',
+	resolve: (path: string) => `/Chronos${path}`
 }));
 
 describe('navigation routes', () => {
@@ -44,5 +45,22 @@ describe('navigation routes', () => {
 		expect(isSecondaryRoute('/Chronos/about')).toBe(true);
 		expect(isSecondaryRoute('/Chronos/about/install')).toBe(true);
 		expect(isSecondaryRoute('/Chronos/mine')).toBe(true);
+	});
+
+	it('toAppPathname strips the deploy base from tab and secondary routes', () => {
+		expect(toAppPathname('/Chronos')).toBe('/');
+		expect(toAppPathname('/Chronos/')).toBe('/');
+		expect(toAppPathname('/Chronos/mine')).toBe('/mine');
+		expect(toAppPathname('/Chronos/about/install')).toBe('/about/install');
+		expect(toAppPathname('/mine')).toBe('/mine');
+	});
+
+	it('appRouteHref prefixes app-relative paths with the deploy base', () => {
+		expect(appRouteHref('/transfer/import')).toBe('/Chronos/transfer/import');
+		expect(appRouteHref('/mine')).toBe('/Chronos/mine');
+		expect(appRouteHref('/Chronos/transfer/import')).toBe('/Chronos/transfer/import');
+		expect(appRouteHref('https://github.com/CQUT-OpenProject/Chronos')).toBe(
+			'https://github.com/CQUT-OpenProject/Chronos'
+		);
 	});
 });

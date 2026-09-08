@@ -13,9 +13,11 @@
 	import { createShellTabController } from '$lib/shell/shell-tab.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
-	import { updateTransitionDirection } from '$lib/navigation/navigation-direction';
-	import { setupSecondaryPageViewTransition } from '$lib/navigation/setup-secondary-page-view-transition';
-	import { secondaryTransitionGate } from '$lib/navigation/secondary-transition-gate.svelte';
+	import {
+		updateTransitionDirection,
+		setupSecondaryPageViewTransition,
+		secondaryTransitionGate
+	} from '$lib/navigation';
 	import ShellRouteHost from '$lib/components/shell/ShellRouteHost.svelte';
 	import { PREVIEW_PAINT_READY_CONTEXT } from '@chronos/ui-kit';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';

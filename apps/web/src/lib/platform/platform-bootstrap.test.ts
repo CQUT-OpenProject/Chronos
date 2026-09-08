@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
 	attachOfflineUx: vi.fn(() => vi.fn())
 }));
 
-vi.mock('$lib/navigation/navigation-direction', () => ({
+vi.mock('$lib/navigation', () => ({
 	initNavigationStack: mocks.initNavigationStack
 }));
 
