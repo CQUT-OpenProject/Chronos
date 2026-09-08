@@ -54,92 +54,79 @@
 	--font-weight-field-label: 500;
 }
 
-.text-headline-medium,
-.m3-headline-medium {
+.text-headline-medium {
 	font-size: var(--text-headline-medium-size);
 	line-height: var(--text-headline-medium-line-height);
 	font-weight: var(--font-weight-headline-medium);
 }
 
-.text-headline-small,
-.m3-headline-small {
+.text-headline-small {
 	font-size: var(--text-headline-small-size);
 	line-height: var(--text-headline-small-line-height);
 	font-weight: var(--font-weight-headline-small);
 }
 
-.text-title-large,
-.m3-title-large {
+.text-title-large {
 	font-size: var(--text-title-large-size);
 	line-height: var(--text-title-large-line-height);
 	font-weight: var(--font-weight-title-large);
 }
 
-.text-title-medium,
-.m3-title-medium {
+.text-title-medium {
 	font-size: var(--text-title-medium-size);
 	line-height: var(--text-title-medium-line-height);
 	font-weight: var(--font-weight-title-medium);
 }
 
-.text-title-small,
-.m3-title-small {
+.text-title-small {
 	font-size: var(--text-title-small-size);
 	line-height: var(--text-title-small-line-height);
 	font-weight: var(--font-weight-title-small);
 }
 
-.text-label-large,
-.m3-label-large {
+.text-label-large {
 	font-size: var(--text-label-large-size);
 	line-height: var(--text-label-large-line-height);
 	font-weight: var(--font-weight-label-large);
 }
 
-.text-label-medium,
-.m3-label-medium {
+.text-label-medium {
 	font-size: var(--text-label-medium-size);
 	line-height: var(--text-label-medium-line-height);
 	font-weight: var(--font-weight-label-medium);
 }
 
-.text-label-small,
-.m3-label-small {
+.text-label-small {
 	font-size: var(--text-label-small-size);
 	line-height: var(--text-label-small-line-height);
 	font-weight: var(--font-weight-label-small);
 }
 
-.text-body-large,
-.m3-body-large {
+.text-body-large {
 	font-size: var(--text-body-large-size);
 	line-height: var(--text-body-large-line-height);
 	font-weight: var(--font-weight-body-large);
 }
 
-.text-body-medium,
-.m3-body-medium {
+.text-body-medium {
 	font-size: var(--text-body-medium-size);
 	line-height: var(--text-body-medium-line-height);
 	font-weight: var(--font-weight-body-medium);
 }
 
-.text-body-small,
-.m3-body-small {
+.text-body-small {
 	font-size: var(--text-body-small-size);
 	line-height: var(--text-body-small-line-height);
 	font-weight: var(--font-weight-body-small);
 }
 
-.text-caption,
-.m3-caption {
+.text-caption {
 	font-size: var(--text-caption-size);
 	line-height: var(--text-caption-line-height);
 	font-weight: var(--font-weight-caption);
 }
 
-.text-page-title,
-.m3-page-title {
+.text-page-title {
 	margin: 0;
 	padding: 0 0.5rem;
 	color: var(--color-on-surface);
