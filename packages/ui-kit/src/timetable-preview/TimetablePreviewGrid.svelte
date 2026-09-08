@@ -21,7 +21,12 @@
 	} from './timetable-grid-chrome';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { Course, CourseBadge } from '@chronos/core';
-	import { currentTimeMinutes, findCurrentPeriodIndex, parsePeriodRanges } from '@chronos/core';
+	import {
+		computeDelayUntilNextCurrentTimeRefreshMillis,
+		currentTimeMinutes,
+		findCurrentPeriodIndex,
+		parsePeriodRanges
+	} from '@chronos/core';
 	import { getContext } from 'svelte';
 	import { PREVIEW_PAINT_READY_CONTEXT } from './preview-paint-ready';
 
@@ -113,25 +118,7 @@
 		if (propCurrentPeriodIndex !== undefined) return;
 		let timeoutId: ReturnType<typeof setTimeout>;
 		const schedule = () => {
-			const delay = (() => {
-				// recompute delay until next period change
-				const periods = parsedPeriods;
-				if (periods.length === 0) return 60_000;
-				const nowMinutes = currentTimeMinutes(new Date());
-				let nextChange: number | null = null;
-				for (const p of periods) {
-					if (nowMinutes < p.startMinutes) {
-						nextChange = p.startMinutes;
-						break;
-					}
-					if (nowMinutes < p.endMinutes) {
-						nextChange = p.endMinutes;
-						break;
-					}
-				}
-				if (nextChange == null) return 60_000;
-				return Math.max((nextChange - nowMinutes) * 60_000, 1_000);
-			})();
+			const delay = computeDelayUntilNextCurrentTimeRefreshMillis(new Date(), parsedPeriods);
 			timeoutId = setTimeout(() => {
 				now = new Date();
 				schedule();
