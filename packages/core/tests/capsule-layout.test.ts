@@ -3,19 +3,21 @@ import {
 	applyCapsuleCornerRounding,
 	applyCapsuleSquareCorners,
 	buildSlotGroups,
-	coursePalette,
-	COURSE_PALETTE_ENTRIES,
 	locationDisplayLines,
 	parseLocationParts,
-	periodSlotKey,
 	placeCapsules,
 	resolveCapsuleTypeScale,
 	resolveLocationBlockMetrics,
 	shouldShowLocationCampus,
 	type CapsuleCorners,
-	type CoursePaletteEntry,
 	type PlacedCourseCapsule,
 	type PlacedItem
+} from '../src/algorithms/capsule-layout';
+import {
+	coursePalette,
+	COURSE_PALETTE_ENTRIES,
+	periodSlotKey,
+	type CoursePaletteEntry
 } from '../src/index';
 
 const TEST_PALETTE_ENTRIES: CoursePaletteEntry[] = [

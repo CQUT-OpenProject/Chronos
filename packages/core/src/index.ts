@@ -11,7 +11,21 @@ export * from './algorithms/holiday-calendar';
 export * from './algorithms/slot-key';
 export * from './algorithms/grid';
 export * from './algorithms/display-models';
-export * from './algorithms/capsule-layout';
+export {
+	placeCapsules,
+	applyCapsuleCornerRounding,
+	applyCapsuleSquareCorners,
+	ALL_CORNERS_ROUNDED,
+	ALL_CORNERS_SQUARE,
+	type CapsuleTypeScale,
+	type CapsuleGeometry,
+	type CapsuleCorners,
+	type PlacedCourseCapsule,
+	type PlacedOverlapPlaceholder,
+	type PlacedItem,
+	type PlaceCapsulesInput,
+	type CorneredItem
+} from './algorithms/capsule-layout';
 export * from './algorithms/palette';
 export * from './algorithms/timetable-layout';
 export * from './algorithms/period-clock';
