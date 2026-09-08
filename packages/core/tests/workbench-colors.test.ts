@@ -1,41 +1,18 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
 	designTokensToWorkbenchColors,
-	normalizeWorkbenchColorKey,
-	normalizeWorkbenchColorKeys,
 	validateWorkbenchColors
 } from '../src/theme/workbench-colors';
 
 describe('workbench-colors', () => {
-	it('normalizeWorkbenchColorKey maps legacy camelCase keys', () => {
-		expect(normalizeWorkbenchColorKey('color.onSurface')).toEqual({
-			key: 'color.on-surface',
-			legacy: true
-		});
-		expect(normalizeWorkbenchColorKey('color.on-surface')).toEqual({
-			key: 'color.on-surface',
-			legacy: false
-		});
-	});
-
-	it('normalizeWorkbenchColorKeys warns on legacy keys and duplicate targets', () => {
-		const { colors, warnings } = normalizeWorkbenchColorKeys({
-			'color.onSurface': '#111',
-			'color.on-surface': '#222'
-		});
-		expect(colors['color.on-surface']).toBe('#222');
-		expect(warnings.some((w) => w.includes('legacy key'))).toBe(true);
-		expect(warnings.some((w) => w.includes('duplicate'))).toBe(true);
-	});
-
-	it('validateWorkbenchColors accepts legacy keys and outputs hyphenated registry keys', () => {
+	it('validateWorkbenchColors warns on unknown keys and accepts standard keys', () => {
 		const result = validateWorkbenchColors({
-			'color.onSurface': '#2e333a',
-			'color.primary': '#2288dd'
+			'color.on-surface': '#2e333a',
+			'color.unknown-custom': '#2288dd'
 		});
 		expect(result.errors).toEqual([]);
 		expect(result.colors['color.on-surface']).toBe('#2e333a');
-		expect(result.warnings.some((w) => w.includes('legacy key'))).toBe(true);
+		expect(result.warnings.some((w) => w.includes('unknown key'))).toBe(true);
 	});
 
 	it('validateWorkbenchColors rejects unsafe values', () => {
