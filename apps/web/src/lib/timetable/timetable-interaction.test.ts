@@ -192,7 +192,7 @@ describe('createTimetableInteraction', () => {
 			);
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS + 50);
 			expect(onFire).not.toHaveBeenCalled();
-			expect(interaction.hasMoved).toBe(true);
+			expect(interaction.consumeClickSuppression()).toBe(true);
 		} finally {
 			vi.useRealTimers();
 		}
@@ -207,7 +207,7 @@ describe('createTimetableInteraction', () => {
 			interaction.notePagerFirstMove();
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS + 50);
 			expect(onFire).not.toHaveBeenCalled();
-			expect(interaction.hasMoved).toBe(true);
+			expect(interaction.consumeClickSuppression()).toBe(true);
 		} finally {
 			vi.useRealTimers();
 		}

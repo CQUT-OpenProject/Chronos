@@ -273,12 +273,6 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		get allowPagerTouch() {
 			return mode === 'view';
 		},
-		get hasMoved() {
-			return hasMoved;
-		},
-		get longPressFired() {
-			return longPressFired;
-		},
 		enterEdit,
 		exitEdit,
 		toggleEditing,
