@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeIfChanged } from '../build-utils/write-if-changed';
 
 export interface ThirdPartyLicense {
 	name: string;
@@ -10,15 +10,6 @@ export interface BundledLicenseInfo {
 	version: string;
 	license: string;
 	licenseText?: string;
-}
-
-function writeIfChanged(path: string, contents: string): void {
-	try {
-		if (readFileSync(path, 'utf8') === contents) return;
-	} catch {
-		// File does not exist yet
-	}
-	writeFileSync(path, contents, 'utf8');
 }
 
 export function formatThirdPartyLicenses(deps: BundledLicenseInfo[]): ThirdPartyLicense[] {
