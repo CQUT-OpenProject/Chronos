@@ -169,7 +169,7 @@ import.source.tab 插槽（每个数据源提供一个扩展贡献）
 
 ### 事件与动态配色
 
-引擎内部事件通过统一的 `EventPipeline` 分发（`emit` / `on`）。主题相关的 `dynamicColor:set / changed / hydrate` 是内核的通用取色契约：由壁纸等插件触发事件，宿主 `AppShell` 桥接并更新 `dynamicColorUri`，最终调用当前主题的 `dynamicColorAdapter` 进行取色与界面渲染。注意：引擎底层的串行与瀑布流拦截钩子（serial / waterfall）已处于冻结基线（Frozen Baseline），暂无生产消费方，请勿新增对此类机制的依赖。
+引擎内部事件通过统一的 `EventPipeline` 分发（`emit` / `on` 广播模型）。主题相关的 `dynamicColor:set / changed / hydrate` 是内核的通用取色契约：由壁纸等插件触发事件，宿主 `AppShell` 桥接并更新 `dynamicColorUri`，最终调用当前主题的 `dynamicColorAdapter` 进行取色与界面渲染。历史上的串行守卫（serial）与瀑布变换（waterfall）拦截机制已在 0.5.x 移除，请勿重新引入。
 
 ### 主题系统与设计 Token
 

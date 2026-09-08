@@ -41,11 +41,9 @@ CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live onl
 
 ## EventPipeline
 
-Single event + hook runtime on `ChronosEngine.events` (`emit` / `on`, `serial` guards, `waterfall`).
+Typed broadcast runtime on `ChronosEngine.events` (`emit` / `on` only).
 
-**Removed:** `EventBus`, `DataPipeline`, `engine.pipeline` aliases, the plugin-facing `ctx.registerWaterfallHook` / `ctx.registerSerialHook` registration face, and the never-emitted `import:before/after` / `export:before/after` events plus `ExportTransformHook` types. Do not reintroduce them.
-
-**FROZEN BASELINE:** engine-internal serial/waterfall machinery (and the guard/waterfall wrappers inside every engine action) has zero hook registrants. Like `hosts/native-protocol.ts`: no new public API; if no real consumer appears within two release cycles, remove the machinery and the action wrappers wholesale.
+**Removed:** `EventBus`, `DataPipeline`, `engine.pipeline` aliases, plugin-facing `ctx.registerWaterfallHook` / `ctx.registerSerialHook`, never-emitted `import:before/after` / `export:before/after` events, `ExportTransformHook` types, and the internal `serial` / `waterfall` machinery plus engine-action guard wrappers (zero production registrants; removed 0.5.x). Do not reintroduce them.
 
 ## Reserved port: queryCourses
 
