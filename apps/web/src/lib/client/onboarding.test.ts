@@ -1,12 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import {
-	hasSeenOnboarding,
-	onboardingController,
-	resetOnboardingControllerForTests
-} from './onboarding.svelte';
+import { hasSeenOnboarding, OnboardingController } from './onboarding.svelte';
 
 describe('onboardingController', () => {
 	let storage = new Map<string, string>();
+	let onboardingController: OnboardingController;
 
 	beforeEach(() => {
 		storage = new Map<string, string>();
@@ -23,7 +20,7 @@ describe('onboardingController', () => {
 				storage.clear();
 			}
 		});
-		resetOnboardingControllerForTests();
+		onboardingController = new OnboardingController();
 	});
 
 	afterEach(() => {
