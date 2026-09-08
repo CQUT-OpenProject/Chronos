@@ -189,7 +189,8 @@ export async function resetAppToInitialState(): Promise<void> {
 	engine.events.emit('dynamicColor:hydrate', undefined);
 }
 
-export function resetAppEngine(): void {
+/** Disposes the shared host engine and teardown state. */
+export function disposeAppEngine(): void {
 	resolvedProfilePlugins = [];
 	profileManager?.dispose();
 	profileManager = null;

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import {
 	getAppController,
-	resetAppEngine,
+	disposeAppEngine,
 	ensureEngineReady,
 	ensureEngineFullyReady,
 	getProfileBuiltinPlugins
@@ -63,7 +63,7 @@ function createMockDb(): ChronosDB {
 
 describe('app-engine bootstrap', () => {
 	beforeEach(() => {
-		resetAppEngine();
+		disposeAppEngine();
 	});
 
 	it('registers shell slots after profile bootstrap completes', async () => {
