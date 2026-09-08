@@ -40,6 +40,14 @@ export interface TimetableInteractionOptions {
 	longPressDelayMs?: number;
 	thresholdPx?: number;
 	clickGuardMs?: number;
+	onLongPressFeedback?: () => void;
+}
+
+interface PendingDragArm {
+	pointerId: number;
+	startX: number;
+	startY: number;
+	onStart: (event: PointerEvent) => void;
 }
 
 export function createTimetableInteraction(options: TimetableInteractionOptions = {}) {
@@ -47,6 +55,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	const longPressDelayMs = options.longPressDelayMs ?? TIMETABLE_LONG_PRESS_DELAY_MS;
 	const thresholdPx = options.thresholdPx ?? TIMETABLE_POINTER_THRESHOLD_PX;
 	const clickGuardMs = options.clickGuardMs ?? TIMETABLE_CLICK_GUARD_MS;
+	const onLongPressFeedback = options.onLongPressFeedback;
 
 	let mode = $state<TimetableInteractionMode>('view');
 	let drag = $state<TimetableDragSession | null>(null);
@@ -61,6 +70,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	let releaseTimer: ReturnType<typeof setTimeout> | null = null;
 	let longPressCallback: ((event: PointerEvent) => void) | null = null;
 	let longPressEvent: PointerEvent | null = null;
+	let pendingDragArm: PendingDragArm | null = null;
 
 	function clearTimer() {
 		if (timer !== null) {
@@ -80,6 +90,35 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		clickGuardUntil = now() + clickGuardMs;
 	}
 
+	function clearPendingDrag() {
+		pendingDragArm = null;
+	}
+
+	function enterEditFromLongPress(_event: PointerEvent) {
+		enterEdit();
+		onLongPressFeedback?.();
+	}
+
+	function armPendingDrag(event: PointerEvent, onStart: (event: PointerEvent) => void) {
+		pendingDragArm = {
+			pointerId: event.pointerId,
+			startX: event.clientX,
+			startY: event.clientY,
+			onStart
+		};
+	}
+
+	function tryStartPendingDrag(event: PointerEvent): boolean {
+		if (!pendingDragArm || event.pointerId !== pendingDragArm.pointerId) return false;
+		const dx = Math.abs(event.clientX - pendingDragArm.startX);
+		const dy = Math.abs(event.clientY - pendingDragArm.startY);
+		if (dx <= thresholdPx && dy <= thresholdPx) return false;
+		const onStart = pendingDragArm.onStart;
+		clearPendingDrag();
+		onStart(event);
+		return true;
+	}
+
 	function enterEdit() {
 		if (mode === 'dragging') return;
 		mode = 'edit';
@@ -88,6 +127,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	function exitEdit() {
 		clearTimer();
 		clearReleaseTimer();
+		clearPendingDrag();
 		pendingPointerId = null;
 		longPressCallback = null;
 		longPressEvent = null;
@@ -176,6 +216,8 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function notePointerMove(event: PointerEvent) {
+		if (tryStartPendingDrag(event)) return;
+
 		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
 		if (pendingPointerId === null || hasMoved) return;
 
@@ -195,6 +237,9 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function notePointerUp(event: PointerEvent) {
+		if (pendingDragArm !== null && event.pointerId === pendingDragArm.pointerId) {
+			clearPendingDrag();
+		}
 		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
 		clearTimer();
 		pendingPointerId = null;
@@ -210,6 +255,9 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function notePointerLost(event: PointerEvent) {
+		if (pendingDragArm !== null && event.pointerId === pendingDragArm.pointerId) {
+			clearPendingDrag();
+		}
 		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
 		clearTimer();
 		pendingPointerId = null;
@@ -218,6 +266,9 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function notePointerCancel(event: PointerEvent) {
+		if (pendingDragArm !== null && event.pointerId === pendingDragArm.pointerId) {
+			clearPendingDrag();
+		}
 		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
 		clearTimer();
 		clearReleaseTimer();
@@ -249,6 +300,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	function destroy() {
 		clearTimer();
 		clearReleaseTimer();
+		clearPendingDrag();
 		pendingPointerId = null;
 		longPressCallback = null;
 		longPressEvent = null;
@@ -273,7 +325,13 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		get allowPagerTouch() {
 			return mode === 'view';
 		},
+		get hasPendingDrag() {
+			return pendingDragArm !== null;
+		},
 		enterEdit,
+		enterEditFromLongPress,
+		armPendingDrag,
+		clearPendingDrag,
 		exitEdit,
 		toggleEditing,
 		beginDrag,

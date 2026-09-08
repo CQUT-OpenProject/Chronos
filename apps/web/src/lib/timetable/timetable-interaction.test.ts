@@ -245,4 +245,64 @@ describe('createTimetableInteraction', () => {
 		now = 1_120;
 		expect(interaction.isClickGuarded()).toBe(false);
 	});
+
+	it('enterEditFromLongPress enters edit and fires feedback once', () => {
+		const onLongPressFeedback = vi.fn();
+		const interaction = createTimetableInteraction({ onLongPressFeedback });
+		interaction.enterEditFromLongPress(mockPointerEvent());
+		expect(interaction.mode).toBe('edit');
+		expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
+	});
+
+	it('armPendingDrag starts only after movement exceeds threshold', () => {
+		const interaction = createTimetableInteraction();
+		const onStart = vi.fn();
+		const downEvt = mockPointerEvent({ clientX: 10, clientY: 10 });
+		interaction.enterEditFromLongPress(downEvt);
+		interaction.armPendingDrag(downEvt, onStart);
+		expect(interaction.hasPendingDrag).toBe(true);
+
+		interaction.notePointerMove(
+			mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX, clientY: 10 })
+		);
+		expect(onStart).not.toHaveBeenCalled();
+		expect(interaction.hasPendingDrag).toBe(true);
+
+		interaction.notePointerMove(
+			mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1, clientY: 10 })
+		);
+		expect(onStart).toHaveBeenCalledTimes(1);
+		expect(interaction.hasPendingDrag).toBe(false);
+	});
+
+	it('clears pending drag on pointer up without starting', () => {
+		const interaction = createTimetableInteraction();
+		const onStart = vi.fn();
+		const downEvt = mockPointerEvent({ clientX: 10, clientY: 10 });
+		interaction.armPendingDrag(downEvt, onStart);
+		interaction.notePointerUp(mockPointerEvent({ clientX: 10, clientY: 10 }));
+		expect(interaction.hasPendingDrag).toBe(false);
+		expect(onStart).not.toHaveBeenCalled();
+	});
+
+	it('does not cancel an armed long press when pending drag moves after long press fired', () => {
+		vi.useFakeTimers();
+		try {
+			const interaction = createTimetableInteraction();
+			const onLongPress = vi.fn();
+			const onDragStart = vi.fn();
+			const downEvt = mockPointerEvent({ clientX: 10, clientY: 10 });
+			interaction.watchLongPress(downEvt, onLongPress);
+			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS);
+			expect(onLongPress).toHaveBeenCalledTimes(1);
+
+			interaction.armPendingDrag(downEvt, onDragStart);
+			interaction.notePointerMove(
+				mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 2, clientY: 10 })
+			);
+			expect(onDragStart).toHaveBeenCalledTimes(1);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
 });

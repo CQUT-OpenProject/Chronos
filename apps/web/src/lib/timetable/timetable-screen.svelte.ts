@@ -23,6 +23,7 @@ import {
 } from './week-navigation';
 import { buildWeekViewport, createWeekLayoutCache } from './week-viewport';
 import { createTimetableInteraction } from './timetable-interaction.svelte';
+import { haptic } from '$lib/haptic/haptic';
 
 const calendarService = new AcademicCalendarService();
 
@@ -57,7 +58,9 @@ export function getTimetableScreen(): TimetableScreenController {
 function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
 	let expandedSlots = $state(new SvelteSet<string>());
-	const interaction = createTimetableInteraction();
+	const interaction = createTimetableInteraction({
+		onLongPressFeedback: () => haptic.heavy()
+	});
 	let displayedWeekMemory = $state(1);
 	let displayedWeekTimetableIdMemory = $state<string | null>(null);
 

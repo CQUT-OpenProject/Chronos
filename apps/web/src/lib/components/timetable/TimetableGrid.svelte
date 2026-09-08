@@ -38,9 +38,9 @@
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 	import { createGridGestureHandlers } from '$lib/timetable/grid-gesture';
 	import { rearrangeCourseSchedule } from '$lib/timetable/course-reorder';
-	import type {
-		TimetableDragSession,
-		TimetableInteraction
+	import {
+		type TimetableDragSession,
+		type TimetableInteraction
 	} from '$lib/timetable/timetable-interaction.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 
@@ -281,20 +281,16 @@
 		}
 	}
 
-	function startDrag(placed: PlacedCourseCapsule, event: PointerEvent, fromLongPress: boolean) {
+	function startDrag(
+		placed: PlacedCourseCapsule,
+		event: PointerEvent,
+		options: { hapticOnStart?: boolean; persistAfterDrop?: boolean } = {}
+	) {
 		settling = null;
-		if (!placed.displayModel.isInDisplayedWeek) {
-			if (fromLongPress && !interaction.isEditing) {
-				haptic.heavy();
-				interaction.enterEdit();
-			}
-			return;
-		}
+		if (!placed.displayModel.isInDisplayedWeek) return;
 
-		const persistAfterDrop = interaction.mode === 'edit';
-		if (fromLongPress) {
-			haptic.heavy();
-		} else {
+		const { hapticOnStart = true, persistAfterDrop = true } = options;
+		if (hapticOnStart) {
 			haptic.light();
 		}
 
@@ -446,10 +442,6 @@
 
 	const gridGestureHandlers = createGridGestureHandlers({
 		interaction,
-		onEmptyLongPress: () => {
-			haptic.heavy();
-			interaction.enterEdit();
-		},
 		onClickEmpty: () => {
 			if (!interaction.isDragging && !interaction.isClickGuarded()) {
 				haptic.light();
@@ -688,8 +680,15 @@
 	{@const handlers = createCourseCardHandlers(placed.course, {
 		interaction,
 		onCourseClick: isEditing ? undefined : onCourseClick,
-		onLongPress: (_c, event) => startDrag(placed, event, true),
-		onDragStart: (_c, event) => startDrag(placed, event, false)
+		onLongPress: (_c, event) => {
+			interaction.enterEditFromLongPress(event);
+			if (placed.displayModel.isInDisplayedWeek) {
+				interaction.armPendingDrag(event, (moveEvent) =>
+					startDrag(placed, moveEvent, { hapticOnStart: false, persistAfterDrop: false })
+				);
+			}
+		},
+		onDragStart: (_c, event) => startDrag(placed, event)
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
