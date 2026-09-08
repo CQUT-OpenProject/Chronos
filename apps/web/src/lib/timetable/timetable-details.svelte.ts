@@ -42,7 +42,6 @@ export class TimetableDetailsEditor {
 		await controller.saveCurrentTimetableDetails({
 			name: this.draft.name,
 			academicConfig: this.draft.academicConfig,
-			viewPrefs: this.draft.viewPrefs,
 			importMetadata: this.draft.importMetadata?.source
 				? {
 						source: this.draft.importMetadata.source,
@@ -66,14 +65,7 @@ export class TimetableDetailsEditor {
 	resetToDefaultSettings = () => {
 		if (!this.draft) return;
 		trackEvent('timetable_details_reset');
-		const today = todayIsoDate();
-		this.draft.viewPrefs = {
-			showSaturday: true,
-			showSunday: true,
-			showNonCurrentWeekCourses: true
-		};
-
-		this.resetAcademicConfigToDefaults(today);
+		this.resetAcademicConfigToDefaults(todayIsoDate());
 	};
 }
 

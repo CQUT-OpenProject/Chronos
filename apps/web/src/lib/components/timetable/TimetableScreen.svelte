@@ -6,9 +6,7 @@
 	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
 	import { formatWeekDateRange, dayOfWeekFromIso } from '@chronos/core';
 	import { getContext } from 'svelte';
-	import { EditNote } from '$lib/icons';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
-	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
@@ -17,12 +15,10 @@
 	let {
 		screen,
 		active = true,
-		onEditTimetableDetails,
 		onCourseClick
 	}: {
 		screen: TimetableScreenController;
 		active?: boolean;
-		onEditTimetableDetails: () => void;
 		onCourseClick: (courseId: string) => void;
 	} = $props();
 
@@ -100,10 +96,17 @@
 	}
 
 	function onWindowKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape' && screenState.isEditing) {
-			haptic.light();
-			screen.setEditing(false);
+		if (event.key !== 'Escape' || !screenState.isEditing) return;
+		if (event.defaultPrevented) return;
+		const target = event.target;
+		if (
+			target instanceof Element &&
+			target.closest('[data-dialog-content], [data-dialog-overlay]')
+		) {
+			return;
 		}
+		haptic.light();
+		screen.setEditing(false);
 	}
 
 	$effect(() => {
@@ -164,33 +167,6 @@
 					</p>
 				</div>
 			</div>
-		{/snippet}
-		{#snippet actions()}
-			{#if screenState.isEditing}
-				<button
-					type="button"
-					class="text-label-medium rounded-full bg-primary px-3.5 py-1 font-semibold text-on-primary shadow-xs transition-transform active:scale-95"
-					aria-label={hostT('timetable.reorder.done')}
-					onclick={() => {
-						haptic.light();
-						screen.setEditing(false);
-					}}
-				>
-					{hostT('timetable.reorder.done')}
-				</button>
-			{:else}
-				<IconButton
-					variant="tonal"
-					size="sm"
-					ariaLabel={hostT('timetable.edit.aria')}
-					onclick={() => {
-						haptic.light();
-						onEditTimetableDetails();
-					}}
-				>
-					<EditNote class="size-[22px]" />
-				</IconButton>
-			{/if}
 		{/snippet}
 	</TopAppBar>
 

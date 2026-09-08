@@ -198,7 +198,6 @@ const zhCn = {
 	'timetable.week.sliderAria': '选择教学周次',
 	'timetable.week.label': '第 {week} 周{today}',
 	'timetable.edit.aria': '编辑课表',
-	'timetable.reorder.done': '完成',
 	'timetable.reorder.periodSingle': '{n}节',
 	'timetable.reorder.periodRange': '{start}-{end}节',
 	'timetable.grid.monthSuffix': '月',
@@ -258,7 +257,7 @@ const zhCn = {
 	'timetable.details.periods.saveBlocked': '节次时间有误，修正后才能保存',
 	'timetable.details.period.start': '开始',
 	'timetable.details.period.end': '结束',
-	'timetable.details.section.display': '显示选项',
+	'timetable.details.section.display': '布局选项',
 
 	// course
 	'course.detail.allWeeks': '全部周次',
@@ -749,7 +748,6 @@ const en = {
 	'timetable.week.sliderAria': 'Select teaching week',
 	'timetable.week.label': 'Week {week}{today}',
 	'timetable.edit.aria': 'Edit timetable',
-	'timetable.reorder.done': 'Done',
 	'timetable.reorder.periodSingle': 'P{n}',
 	'timetable.reorder.periodRange': 'P{start}-{end}',
 	'timetable.grid.monthSuffix': '',
@@ -811,7 +809,7 @@ const en = {
 	'timetable.details.periods.saveBlocked': 'Fix invalid period times before saving',
 	'timetable.details.period.start': 'Start',
 	'timetable.details.period.end': 'End',
-	'timetable.details.section.display': 'Display options',
+	'timetable.details.section.display': 'Layout options',
 
 	// course
 	'course.detail.allWeeks': 'All weeks',

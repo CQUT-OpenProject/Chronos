@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
 	import type { BottomTabSlotContribution } from '@chronos/core';
 	import { HOST_DEFAULT_ICON_THEME_ID, resolveLocalizedText } from '@chronos/core';
@@ -10,6 +12,8 @@
 	import { resolveShellIcon, shellIconSizeClass } from '$lib/shell/resolve-shell-icon';
 	import ShellSvgIcon from '$lib/shell/ShellSvgIcon.svelte';
 	import { haptic } from '$lib/haptic/haptic';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DisplayOptionsSheet from '$lib/components/timetable/DisplayOptionsSheet.svelte';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
 	const shellTab = getContext<ShellTabController>('shellTab');
@@ -17,6 +21,15 @@
 
 	const sortedTabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
 	const activeTabId = $derived(shellTab.activeTabId);
+	const isEditing = $derived(Boolean(timetableScreen?.state.isEditing));
+
+	let displayOptionsOpen = $state(false);
+
+	$effect(() => {
+		if (!isEditing) {
+			displayOptionsOpen = false;
+		}
+	});
 
 	function resolveTabIcon(tab: BottomTabSlotContribution, active: boolean) {
 		const engine = getAppEngine();
@@ -53,48 +66,75 @@
 </script>
 
 <div class="bottom-bar w-full flex-col justify-center">
-	<nav
-		aria-label={hostT('ui.nav.main')}
-		class="flex h-full w-full max-w-md items-center justify-around"
-	>
-		{#each sortedTabs as tab (tab.id)}
-			{@const active = activeTabId === tab.id}
-			{@const icon = resolveTabIcon(tab, active)}
-			<button
-				type="button"
-				role="tab"
-				aria-selected={active}
-				class="flex h-full min-h-0 flex-1 cursor-pointer flex-col items-center justify-center gap-0.5 border-0 bg-transparent py-0.5 text-on-surface-variant transition-colors hover:text-on-surface sm:gap-1 sm:py-1"
-				onclick={(e) => handleTabClick(e, tab)}
+	{#if isEditing}
+		<div class="flex h-full w-full max-w-md items-center gap-2">
+			<Button
+				variant="outlined"
+				class="min-w-0 flex-1"
+				onclick={() => {
+					haptic.light();
+					goto(resolve('/timetable/details'));
+				}}
 			>
-				<span
-					aria-hidden="true"
-					class="rounded-circular flex h-7 w-12 items-center justify-center transition-colors sm:h-8 sm:w-14 {active
-						? 'shell-bottom-tab-active'
-						: ''}"
+				{hostT('timetable.edit.aria')}
+			</Button>
+			<Button
+				variant="outlined"
+				class="min-w-0 flex-1"
+				onclick={() => {
+					haptic.light();
+					displayOptionsOpen = true;
+				}}
+			>
+				{hostT('timetable.details.section.display')}
+			</Button>
+		</div>
+	{:else}
+		<nav
+			aria-label={hostT('ui.nav.main')}
+			class="flex h-full w-full max-w-md items-center justify-around"
+		>
+			{#each sortedTabs as tab (tab.id)}
+				{@const active = activeTabId === tab.id}
+				{@const icon = resolveTabIcon(tab, active)}
+				<button
+					type="button"
+					role="tab"
+					aria-selected={active}
+					class="flex h-full min-h-0 flex-1 cursor-pointer flex-col items-center justify-center gap-0.5 border-0 bg-transparent py-0.5 text-on-surface-variant transition-colors hover:text-on-surface sm:gap-1 sm:py-1"
+					onclick={(e) => handleTabClick(e, tab)}
 				>
-					{#if icon?.kind === 'component'}
-						{@const Icon = icon.component}
-						<Icon class={shellIconSizeClass()} />
-					{:else if icon?.kind === 'svg'}
-						<ShellSvgIcon
-							markup={icon.markup}
-							rotation={icon.rotation}
-							opacity={icon.opacity}
-							class={shellIconSizeClass(icon.size)}
-						/>
-					{:else if icon?.kind === 'url'}
-						<img src={icon.url} alt="" class="object-contain {shellIconSizeClass(icon.size)}" />
-					{/if}
-				</span>
-				<span
-					class="text-label-small text-[11px] leading-tight sm:text-xs {active
-						? 'text-on-surface'
-						: 'text-on-surface-variant'}"
-				>
-					{resolveLocalizedText(tab.label)}
-				</span>
-			</button>
-		{/each}
-	</nav>
+					<span
+						aria-hidden="true"
+						class="rounded-circular flex h-7 w-12 items-center justify-center transition-colors sm:h-8 sm:w-14 {active
+							? 'shell-bottom-tab-active'
+							: ''}"
+					>
+						{#if icon?.kind === 'component'}
+							{@const Icon = icon.component}
+							<Icon class={shellIconSizeClass()} />
+						{:else if icon?.kind === 'svg'}
+							<ShellSvgIcon
+								markup={icon.markup}
+								rotation={icon.rotation}
+								opacity={icon.opacity}
+								class={shellIconSizeClass(icon.size)}
+							/>
+						{:else if icon?.kind === 'url'}
+							<img src={icon.url} alt="" class="object-contain {shellIconSizeClass(icon.size)}" />
+						{/if}
+					</span>
+					<span
+						class="text-label-small text-[11px] leading-tight sm:text-xs {active
+							? 'text-on-surface'
+							: 'text-on-surface-variant'}"
+					>
+						{resolveLocalizedText(tab.label)}
+					</span>
+				</button>
+			{/each}
+		</nav>
+	{/if}
 </div>
+
+<DisplayOptionsSheet bind:open={displayOptionsOpen} />
