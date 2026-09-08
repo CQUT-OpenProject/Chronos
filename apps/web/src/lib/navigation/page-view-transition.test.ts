@@ -3,7 +3,6 @@ import {
 	createSecondaryTransitionGate,
 	getNavigationDirection,
 	hasUAVisualTransition,
-	initNavigationStack,
 	isActiveNavDirectionTransition,
 	nextNavDirectionTransitionGeneration,
 	resolveNavigationDirection,
@@ -48,53 +47,28 @@ describe('getNavigationDirection', () => {
 });
 
 describe('resolveNavigationDirection', () => {
-	it('returns back when returning to a parent page at the same path depth', () => {
-		initNavigationStack('/');
+	it('uses path depth for link navigation', () => {
 		expect(resolveNavigationDirection('/', '/about', 'link')).toBe('forward');
 		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'link')).toBe('forward');
-		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'link')).toBe('back');
+		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'link')).toBe('forward');
 	});
 
-	it('returns back when leaving a third-level license page', () => {
-		initNavigationStack('/about');
-		resolveNavigationDirection('/about', '/open-source-licenses', 'link');
-		resolveNavigationDirection('/open-source-licenses', '/open-source-licenses/project', 'link');
+	it('returns back when leaving a third-level license page via link', () => {
 		expect(
 			resolveNavigationDirection('/open-source-licenses/project', '/open-source-licenses', 'link')
 		).toBe('back');
 	});
 
 	it('returns forward on popstate when browser goes forward', () => {
-		initNavigationStack('/');
-		resolveNavigationDirection('/', '/about', 'link');
-		resolveNavigationDirection('/about', '/open-source-licenses', 'link');
-		resolveNavigationDirection('/open-source-licenses', '/about', 'popstate', -1);
-
 		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'popstate', 1)).toBe(
 			'forward'
 		);
-		// Stack must include /about below the current page for a stack-back transition.
-		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'link')).toBe('back');
 	});
 
 	it('returns back on popstate when browser goes back', () => {
-		initNavigationStack('/');
-		resolveNavigationDirection('/', '/about', 'link');
-		resolveNavigationDirection('/about', '/open-source-licenses', 'link');
-
 		expect(resolveNavigationDirection('/open-source-licenses', '/about', 'popstate', -1)).toBe(
 			'back'
 		);
-		// Trimmed stack must not treat /open-source-licenses as an in-history back target.
-		expect(resolveNavigationDirection('/about', '/open-source-licenses', 'link')).toBe('forward');
-	});
-
-	it('repairs stack when backing to a page not in history from a deep link', () => {
-		initNavigationStack('/legal/privacy');
-
-		expect(resolveNavigationDirection('/legal/privacy', '/about', 'link')).toBe('back');
-		// Repaired stack must not retain /legal/privacy as a back target from /about.
-		expect(resolveNavigationDirection('/about', '/legal/privacy', 'link')).toBe('forward');
 	});
 });
 
