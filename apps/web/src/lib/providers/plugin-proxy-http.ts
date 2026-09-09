@@ -1,4 +1,5 @@
 import type { HttpResponse, IHttpService } from '@chronos/core';
+import { mergeAbortSignals } from '$lib/utils/abort-signal';
 import {
 	parsePluginServerResponse,
 	pluginServerErrorMessage,
@@ -59,7 +60,10 @@ export class PluginProxyHttpAdapter implements IHttpService {
 			options?.timeoutMs && controller
 				? setTimeout(() => controller.abort(), options.timeoutMs)
 				: undefined;
-		const signal = options?.signal ?? controller?.signal;
+		const abortSignals = [options?.signal, controller?.signal].filter(
+			(signal): signal is AbortSignal => signal !== undefined
+		);
+		const signal = abortSignals.length > 0 ? mergeAbortSignals(abortSignals) : undefined;
 
 		try {
 			const proxyRes = await fetch(`/api/plugins/${pluginId}/${action}`, {
