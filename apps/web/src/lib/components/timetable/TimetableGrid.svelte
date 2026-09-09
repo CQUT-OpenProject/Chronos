@@ -407,7 +407,7 @@
 		return {
 			updatedCourses,
 			settling: {
-				courseId: current.course.id,
+				courseId: targetCourse.id,
 				targetColIndex: targetColIndex >= 0 ? targetColIndex : current.targetColIndex,
 				targetDayOfWeek: current.targetDayOfWeek,
 				targetStartPeriod: clampedStart,

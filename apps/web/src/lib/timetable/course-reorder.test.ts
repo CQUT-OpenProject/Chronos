@@ -247,4 +247,175 @@ describe('rearrangeCourseSchedule', () => {
 
 		expect(result).toBeNull();
 	});
+
+	it('restores original id and weeks when a peeled week is dragged back', () => {
+		const movedAway = rearrangeCourseSchedule({
+			currentCourses: [courseA, courseB],
+			draggedCourseId: 'course-a',
+			targetDayOfWeek: 4,
+			targetStartPeriod: 5,
+			currentWeek: 2,
+			displayedPeriodCount: 10
+		});
+		expect(movedAway).not.toBeNull();
+		const clone = movedAway!.find(
+			(course) => course.name === '高等数学' && course.id !== 'course-a'
+		);
+		expect(clone).toBeDefined();
+
+		const restored = rearrangeCourseSchedule({
+			currentCourses: movedAway!,
+			draggedCourseId: clone!.id,
+			targetDayOfWeek: 1,
+			targetStartPeriod: 1,
+			currentWeek: 2,
+			displayedPeriodCount: 10
+		});
+
+		expect(restored).not.toBeNull();
+		expect(restored).toHaveLength(2);
+		const original = restored!.find((course) => course.id === 'course-a');
+		expect(original).toMatchObject({
+			dayOfWeek: 1,
+			startPeriod: 1,
+			endPeriod: 2,
+			weeks: [1, 2, 3, 4]
+		});
+		expect(restored!.some((course) => course.id === clone!.id)).toBe(false);
+	});
+
+	it('restores empty weeks after dragging an all-weeks course away and back', () => {
+		const allWeeksCourse = createCourse({
+			id: 'course-all',
+			name: '形势与政策5',
+			teacher: '董璇',
+			location: '两江校区 弘远楼B0315',
+			dayOfWeek: 3,
+			startPeriod: 1,
+			endPeriod: 2,
+			weeks: []
+		});
+		const totalWeeks = { startWeek: 1, endWeek: 4 };
+		const movedAway = rearrangeCourseSchedule({
+			currentCourses: [allWeeksCourse],
+			draggedCourseId: 'course-all',
+			targetDayOfWeek: 5,
+			targetStartPeriod: 3,
+			currentWeek: 2,
+			totalWeeks,
+			displayedPeriodCount: 10
+		});
+		expect(movedAway).not.toBeNull();
+		const clone = movedAway!.find((course) => course.id !== 'course-all');
+		expect(clone).toBeDefined();
+
+		const restored = rearrangeCourseSchedule({
+			currentCourses: movedAway!,
+			draggedCourseId: clone!.id,
+			targetDayOfWeek: 3,
+			targetStartPeriod: 1,
+			currentWeek: 2,
+			totalWeeks,
+			displayedPeriodCount: 10
+		});
+
+		expect(restored).toHaveLength(1);
+		expect(restored![0]).toMatchObject({
+			id: 'course-all',
+			dayOfWeek: 3,
+			startPeriod: 1,
+			endPeriod: 2,
+			weeks: []
+		});
+	});
+
+	it('merges a later peeled week into an existing same-slot clone', () => {
+		const afterWeek2 = rearrangeCourseSchedule({
+			currentCourses: [courseA],
+			draggedCourseId: 'course-a',
+			targetDayOfWeek: 4,
+			targetStartPeriod: 5,
+			currentWeek: 2,
+			displayedPeriodCount: 10
+		});
+		expect(afterWeek2).not.toBeNull();
+
+		const afterWeek3 = rearrangeCourseSchedule({
+			currentCourses: afterWeek2!,
+			draggedCourseId: 'course-a',
+			targetDayOfWeek: 4,
+			targetStartPeriod: 5,
+			currentWeek: 3,
+			displayedPeriodCount: 10
+		});
+
+		expect(afterWeek3).not.toBeNull();
+		expect(afterWeek3).toHaveLength(2);
+		const remnant = afterWeek3!.find((course) => course.id === 'course-a')!;
+		expect(remnant.weeks).toEqual([1, 4]);
+		const moved = afterWeek3!.find((course) => course.id !== 'course-a')!;
+		expect(moved).toMatchObject({
+			name: '高等数学',
+			dayOfWeek: 4,
+			startPeriod: 5,
+			endPeriod: 6,
+			weeks: [2, 3]
+		});
+	});
+
+	it('does not merge same-name courses at different locations', () => {
+		const lab = createCourse({
+			id: 'db-lab',
+			name: '数据库原理及应用',
+			teacher: '朱烨华',
+			location: '两江校区 弘远楼D0429',
+			dayOfWeek: 1,
+			startPeriod: 1,
+			endPeriod: 2,
+			weeks: [1, 2, 3, 4]
+		});
+		const theory = createCourse({
+			id: 'db-theory',
+			name: '数据库原理及应用',
+			teacher: '朱烨华',
+			location: '两江校区 弘远楼B0415',
+			dayOfWeek: 4,
+			startPeriod: 5,
+			endPeriod: 6,
+			weeks: [1, 2, 3, 4]
+		});
+
+		const result = rearrangeCourseSchedule({
+			currentCourses: [lab, theory],
+			draggedCourseId: 'db-lab',
+			targetDayOfWeek: 4,
+			targetStartPeriod: 5,
+			currentWeek: 2,
+			displayedPeriodCount: 10
+		});
+
+		expect(result).not.toBeNull();
+		expect(result).toHaveLength(3);
+		const occupant = result!.filter((course) => course.dayOfWeek === 4 && course.startPeriod === 5);
+		expect(occupant).toHaveLength(2);
+		expect(occupant.some((course) => course.id === 'db-theory')).toBe(true);
+		expect(occupant.some((course) => course.location === '两江校区 弘远楼D0429')).toBe(true);
+		expect(occupant.some((course) => course.location === '两江校区 弘远楼B0415')).toBe(true);
+	});
+
+	it('does not merge different course names occupying the same slot', () => {
+		const result = rearrangeCourseSchedule({
+			currentCourses: [courseA, courseB],
+			draggedCourseId: 'course-a',
+			targetDayOfWeek: 2,
+			targetStartPeriod: 3,
+			currentWeek: 2,
+			displayedPeriodCount: 10
+		});
+
+		expect(result).not.toBeNull();
+		const tuesday = result!.filter((course) => course.dayOfWeek === 2 && course.startPeriod === 3);
+		expect(tuesday).toHaveLength(2);
+		expect(tuesday.map((course) => course.name).sort()).toEqual(['大学物理', '高等数学']);
+	});
 });
