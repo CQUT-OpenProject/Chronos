@@ -13,6 +13,7 @@ import {
 	type TimetableGridModel,
 	type TimetableWeekLayoutResult
 } from '@chronos/core';
+import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 import { deleteCourseForWeek } from './course-delete-week';
 import type { AppShellController } from '$lib/app/app-shell.svelte';
 import {
@@ -269,15 +270,18 @@ function createTimetableScreen() {
 			totalWeeks
 		});
 
-		pendingWeekDelete = null;
-		if (!updatedCourses) return;
+		if (!updatedCourses) {
+			pendingWeekDelete = null;
+			return;
+		}
 
 		try {
 			await shellRef?.controller.saveCurrentTimetableDetails({ courses: updatedCourses });
+			pendingWeekDelete = null;
 			trackEvent('timetable_course_delete_week');
 			haptic.warning();
 		} catch {
-			// save failed; course list unchanged on screen until next refresh
+			snackbarKey('transfer.error.saveFailed');
 		}
 	}
 
