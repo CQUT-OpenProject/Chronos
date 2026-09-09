@@ -14,6 +14,7 @@
 	import { haptic } from '$lib/haptic/haptic';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DisplayOptionsSheet from '$lib/components/timetable/DisplayOptionsSheet.svelte';
+	import { DeleteFill } from '$lib/icons';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
 	const shellTab = getContext<ShellTabController>('shellTab');
@@ -22,6 +23,7 @@
 	const sortedTabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
 	const activeTabId = $derived(shellTab.activeTabId);
 	const isEditing = $derived(Boolean(timetableScreen?.state.isEditing));
+	const isDragOverDeleteZone = $derived(Boolean(timetableScreen?.interaction.drag?.overDeleteZone));
 
 	let displayOptionsOpen = $state(false);
 
@@ -68,6 +70,18 @@
 <div class="bottom-bar w-full flex-col justify-center">
 	{#if isEditing}
 		<div class="flex h-full w-full max-w-md items-center gap-2">
+			<div
+				class="timetable-delete-zone pointer-events-auto flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full transition-[transform,background-color] duration-150 {isDragOverDeleteZone
+					? 'scale-110 bg-error/15'
+					: ''}"
+				role="img"
+				aria-label={hostT('timetable.deleteWeek.zoneAria')}
+			>
+				<DeleteFill
+					class="size-6 {isDragOverDeleteZone ? 'text-error' : 'text-error/70'}"
+					aria-hidden="true"
+				/>
+			</div>
 			<Button
 				variant="outlined"
 				class="min-w-0 flex-1"

@@ -155,6 +155,7 @@
 			{layoutMode}
 			{capsuleCornerStyle}
 			onCourseClick={(course) => onCourseClick(course.id)}
+			onRequestWeekDelete={(course, week) => screen.requestWeekDelete(course, week)}
 		/>
 	{/if}
 {/snippet}

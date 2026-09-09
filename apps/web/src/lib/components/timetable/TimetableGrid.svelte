@@ -67,6 +67,7 @@
 		layoutMode?: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick?: (course: Course) => void;
+		onRequestWeekDelete?: (course: Course, week: number) => void;
 		interaction: TimetableInteraction;
 	}
 
@@ -84,6 +85,7 @@
 		layoutMode = 'fixed',
 		capsuleCornerStyle = 'sharp',
 		onCourseClick,
+		onRequestWeekDelete,
 		interaction
 	}: Props = $props();
 
@@ -113,7 +115,7 @@
 	const concealedCourseId = $derived(dragState?.course.id ?? settling?.courseId ?? null);
 
 	const dropPreview = $derived(
-		dragState
+		dragState && !dragState.overDeleteZone
 			? {
 					targetColIndex: dragState.targetColIndex,
 					targetStartPeriod: dragState.targetStartPeriod,
@@ -315,9 +317,31 @@
 		});
 	}
 
+	function isPointerOverDeleteZone(clientX: number, clientY: number): boolean {
+		const target = document.elementFromPoint(clientX, clientY);
+		return target?.closest('.timetable-delete-zone') != null;
+	}
+
 	function handleWindowPointerMove(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
 		interaction.notePointerMove(event);
+
+		const overDeleteZone = isPointerOverDeleteZone(event.clientX, event.clientY);
+		if (interaction.setDragOverDeleteZone(overDeleteZone)) {
+			haptic.selection();
+		}
+
+		if (overDeleteZone) {
+			if (scrollContainer && !isFitLayout) {
+				const containerRect = scrollContainer.getBoundingClientRect();
+				const bottomThreshold = containerRect.bottom - 48;
+				if (event.clientY > bottomThreshold) {
+					const intensity = Math.min(1, (event.clientY - bottomThreshold) / 48);
+					scrollContainer.scrollTop += Math.round(intensity * 12);
+				}
+			}
+			return;
+		}
 
 		if (gridBodyEl && visibleDayCount > 0 && gridModel.displayedPeriodCount > 0) {
 			const gridRect = gridBodyEl.getBoundingClientRect();
@@ -436,7 +460,12 @@
 	function handleWindowPointerUp(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
 		const current = interaction.endDrag();
-		if (current) void commitDragSession(current);
+		if (!current) return;
+		if (current.overDeleteZone) {
+			onRequestWeekDelete?.(current.course, displayedWeek);
+			return;
+		}
+		void commitDragSession(current);
 	}
 
 	function handleWindowPointerCancel(event: PointerEvent) {

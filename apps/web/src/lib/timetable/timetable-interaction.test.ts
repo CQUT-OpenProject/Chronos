@@ -155,6 +155,17 @@ describe('createTimetableInteraction', () => {
 		).toBe(false);
 	});
 
+	it('tracks delete-zone hover state during drag', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(dragInput());
+		expect(interaction.drag?.overDeleteZone).toBe(false);
+		expect(interaction.setDragOverDeleteZone(true)).toBe(true);
+		expect(interaction.drag?.overDeleteZone).toBe(true);
+		expect(interaction.setDragOverDeleteZone(true)).toBe(false);
+		expect(interaction.setDragOverDeleteZone(false)).toBe(true);
+		expect(interaction.endDrag()?.overDeleteZone).toBe(false);
+	});
+
 	it('exitEdit clears an in-flight drag', () => {
 		const interaction = createTimetableInteraction();
 		interaction.beginDrag(dragInput({ persistAfterDrop: true }));

@@ -11,6 +11,8 @@
 	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Dialog from '$lib/components/ui/Dialog.svelte';
 
 	let {
 		screen,
@@ -71,6 +73,8 @@
 			today: headerTodayLabel ? ` ${headerTodayLabel}` : ''
 		})
 	);
+	const pendingWeekDelete = $derived(screen.pendingWeekDelete);
+	const deleteWeekDialogOpen = $derived(pendingWeekDelete !== null);
 
 	function focusWeekSliderThumb() {
 		requestAnimationFrame(() => {
@@ -187,3 +191,26 @@
 		{/key}
 	</TimetableWallpaperLayer>
 </div>
+
+{#if pendingWeekDelete}
+	<Dialog
+		open={deleteWeekDialogOpen}
+		onOpenChange={(open) => {
+			if (!open) screen.cancelWeekDelete();
+		}}
+		title={hostT('timetable.deleteWeek.title')}
+		description={hostT('timetable.deleteWeek.desc', {
+			name: pendingWeekDelete.course.name,
+			week: pendingWeekDelete.week
+		})}
+	>
+		{#snippet footer()}
+			<Button variant="text" onclick={() => screen.cancelWeekDelete()}>
+				{hostT('common.cancel')}
+			</Button>
+			<Button variant="filled" onclick={() => void screen.confirmWeekDelete()}>
+				{hostT('common.delete')}
+			</Button>
+		{/snippet}
+	</Dialog>
+{/if}

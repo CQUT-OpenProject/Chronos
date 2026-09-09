@@ -16,6 +16,7 @@ export interface TimetableDragSession {
 	targetDayOfWeek: number;
 	targetStartPeriod: number;
 	persistAfterDrop: boolean;
+	overDeleteZone: boolean;
 }
 
 export interface BeginDragInput {
@@ -145,7 +146,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	function beginDrag(input: BeginDragInput): boolean {
 		if (mode === 'dragging') return false;
 		const { waitForMove = false, originX = 0, originY = 0, ...session } = input;
-		drag = session;
+		drag = { ...session, overDeleteZone: false };
 		dragMoveLock = waitForMove
 			? { pointerId: session.pointerId, startX: originX, startY: originY }
 			: null;
@@ -165,6 +166,13 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		drag.targetColIndex = patch.targetColIndex;
 		drag.targetDayOfWeek = patch.targetDayOfWeek;
 		drag.targetStartPeriod = patch.targetStartPeriod;
+		return true;
+	}
+
+	function setDragOverDeleteZone(over: boolean): boolean {
+		if (!drag || dragMoveLock) return false;
+		if (drag.overDeleteZone === over) return false;
+		drag.overDeleteZone = over;
 		return true;
 	}
 
@@ -327,6 +335,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		toggleEditing,
 		beginDrag,
 		updateDragTarget,
+		setDragOverDeleteZone,
 		endDrag,
 		cancelDrag,
 		resetClickFlags,
