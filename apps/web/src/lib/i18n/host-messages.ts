@@ -285,9 +285,6 @@ const zhCn = {
 	'course.form.location': '地点',
 	'course.form.remark': '备注',
 	'course.form.optional': '选填',
-	'course.form.dayOfWeek': '星期',
-	'course.form.startPeriod': '开始节次',
-	'course.form.endPeriod': '结束节次',
 
 	// courseA11y
 	'courseA11y.overlap': '此时段有 {count} 门课程重叠，点击展开',
@@ -837,9 +834,6 @@ const en = {
 	'course.form.location': 'Location',
 	'course.form.remark': 'Notes',
 	'course.form.optional': 'Optional',
-	'course.form.dayOfWeek': 'Day of week',
-	'course.form.startPeriod': 'Start period',
-	'course.form.endPeriod': 'End period',
 
 	// courseA11y
 	'courseA11y.overlap': '{count} overlapping courses in this slot. Tap to expand',

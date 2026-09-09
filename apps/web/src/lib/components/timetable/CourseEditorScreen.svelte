@@ -5,11 +5,8 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import CourseEditorForm from '$lib/components/timetable/CourseEditorForm.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
-	import { getAppController } from '$lib/services/app-engine';
 
 	let { editor }: { editor: CourseEditorController } = $props();
-
-	const controller = getAppController();
 
 	const draft = $derived(editor.draft);
 
@@ -41,10 +38,7 @@
 	{/snippet}
 
 	<FormScreenLayout {footer}>
-		<CourseEditorForm
-			{editor}
-			maxPeriods={editor.timetable?.academicConfig.periodTimes.length ?? 10}
-		/>
+		<CourseEditorForm {editor} />
 	</FormScreenLayout>
 
 	{#if draft.id}
