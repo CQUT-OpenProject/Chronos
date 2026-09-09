@@ -16,15 +16,23 @@
 	let {
 		open = $bindable(false),
 		title = '',
+		description = '',
+		showHandle = true,
 		actions,
 		children,
+		footer,
+		onOpenChange,
 		onOpenChangeComplete,
 		manageHistory = true
 	}: {
 		open?: boolean;
 		title?: string;
+		description?: string;
+		showHandle?: boolean;
 		actions?: Snippet;
 		children?: Snippet;
+		footer?: Snippet;
+		onOpenChange?: (open: boolean) => void;
 		onOpenChangeComplete?: (open: boolean) => void;
 		manageHistory?: boolean;
 	} = $props();
@@ -41,11 +49,10 @@
 	let isSnappingBack = $state(false);
 	let activePointerId: number | null = null;
 	let startY = 0;
+	let sheetOpen = $state(false);
 
 	const contentTransformStyle = $derived(
-		dragOffsetPx > 0 || isClosing || isSnappingBack
-			? `transform: translateY(${dragOffsetPx}px)`
-			: undefined
+		dragOffsetPx > 0 || isSnappingBack ? `transform: translateY(${dragOffsetPx}px)` : undefined
 	);
 
 	function prefersReducedMotion(): boolean {
@@ -78,7 +85,8 @@
 
 	function finishDismiss() {
 		resetDragState();
-		open = false;
+		sheetOpen = false;
+		if (open) open = false;
 	}
 
 	function releasePointerCapture(pointerId: number) {
@@ -93,7 +101,7 @@
 
 	function startDismissAnimation() {
 		const sheetHeight = getSheetHeight();
-		if (prefersReducedMotion()) {
+		if (prefersReducedMotion() || sheetHeight <= 0) {
 			finishDismiss();
 			return;
 		}
@@ -122,7 +130,7 @@
 	}
 
 	function onHandlePointerDown(event: PointerEvent) {
-		if (event.button !== 0 || isClosing || isSnappingBack) return;
+		if (!showHandle || event.button !== 0 || isClosing || isSnappingBack) return;
 
 		activePointerId = event.pointerId;
 		startY = event.clientY;
@@ -206,9 +214,10 @@
 		}
 
 		const sync = createHistoryOverlaySync({
-			isOpen: () => open,
+			isOpen: () => sheetOpen,
 			setOpen: (nextOpen) => {
 				open = nextOpen;
+				sheetOpen = nextOpen;
 			}
 		});
 		historySync = sync;
@@ -220,31 +229,57 @@
 
 	$effect(() => {
 		if (!manageHistory || !historySync) return;
-		void open;
-		historySync.syncOpenState(open);
+		void sheetOpen;
+		historySync.syncOpenState(sheetOpen);
 	});
+
+	function handleDialogOpenChange(next: boolean) {
+		if (next) {
+			open = true;
+			onOpenChange?.(true);
+			return;
+		}
+		onOpenChange?.(false);
+		open = false;
+	}
+
+	function handleOpenChangeComplete(isOpen: boolean) {
+		if (!isOpen) {
+			resetDragState();
+			sheetOpen = false;
+		}
+		onOpenChangeComplete?.(isOpen);
+	}
 
 	$effect(() => {
 		if (open) {
+			resetDragState();
 			dragOffsetPx = 0;
+			sheetOpen = true;
 			return;
 		}
 
-		resetDragState();
+		if (sheetOpen) {
+			sheetOpen = false;
+		}
 	});
 </script>
 
 <svelte:window
-	onpointermove={onWindowPointerMove}
-	onpointerup={onWindowPointerUp}
-	onpointercancel={onWindowPointerCancel}
+	onpointermove={showHandle ? onWindowPointerMove : undefined}
+	onpointerup={showHandle ? onWindowPointerUp : undefined}
+	onpointercancel={showHandle ? onWindowPointerCancel : undefined}
 />
 
-<Dialog.Root bind:open {onOpenChangeComplete}>
+<Dialog.Root
+	bind:open={sheetOpen}
+	onOpenChange={handleDialogOpenChange}
+	onOpenChangeComplete={handleOpenChangeComplete}
+>
 	<Dialog.Portal>
 		<Dialog.Overlay
 			bind:ref={overlayRef}
-			class="bottom-sheet-overlay fixed inset-0 z-[70] bg-black/50 backdrop-blur-xs"
+			class="bottom-sheet-overlay fixed inset-0 z-[70] bg-black/50"
 		/>
 		<Dialog.Content
 			bind:ref={contentRef}
@@ -253,25 +288,32 @@
 			data-dragging={isDragging ? '' : undefined}
 			data-snapping-back={isSnappingBack ? '' : undefined}
 			data-closing={isClosing ? '' : undefined}
-			ontransitionend={onContentTransitionEnd}
 			onOpenAutoFocus={handleOpenAutoFocus}
+			ontransitionend={onContentTransitionEnd}
 		>
-			<div
-				bind:this={dragHandleRef}
-				class="relative flex shrink-0 touch-none justify-center py-3 before:absolute before:inset-x-0 before:-top-4 before:-bottom-4 before:content-['']"
-				aria-label={hostT('ui.bottomSheet.dragDismissAria')}
-				onpointerdown={onHandlePointerDown}
-			>
-				<div class="h-1 w-10 rounded-full bg-on-surface-variant/40"></div>
-			</div>
+			{#if showHandle}
+				<div
+					bind:this={dragHandleRef}
+					class="relative flex shrink-0 touch-none justify-center py-3 before:absolute before:inset-x-0 before:-top-4 before:-bottom-4 before:content-['']"
+					aria-label={hostT('ui.bottomSheet.dragDismissAria')}
+					onpointerdown={onHandlePointerDown}
+				>
+					<div class="h-1 w-10 rounded-full bg-on-surface-variant/40"></div>
+				</div>
+			{/if}
 
 			{#if title || actions}
-				<div class="flex shrink-0 items-center gap-3 px-4 pb-3">
+				<div
+					class={['flex shrink-0 items-center gap-3', showHandle ? 'px-4 pb-3' : 'px-6 pt-6 pb-2']}
+				>
 					{#if title}
 						<Dialog.Title
 							bind:ref={titleRef}
 							tabindex={-1}
-							class="text-title-large min-w-0 flex-1 truncate font-medium text-on-surface outline-none"
+							class={[
+								'text-title-large min-w-0 flex-1 font-medium text-on-surface outline-none',
+								showHandle ? 'truncate' : 'text-center'
+							]}
 						>
 							{title}
 						</Dialog.Title>
@@ -284,9 +326,40 @@
 				</div>
 			{/if}
 
-			{#if children}
-				<div class="min-h-0 flex-1 overflow-y-auto pb-[var(--tabbar-safe)]">
-					{@render children()}
+			{#if description || children}
+				<div
+					class={[
+						showHandle
+							? ['min-h-0 flex-1 overflow-y-auto', !footer && 'pb-[var(--tabbar-safe)]']
+							: 'shrink-0 px-6 pb-5'
+					]}
+				>
+					{#if description}
+						<Dialog.Description
+							class={[
+								'text-body-medium leading-relaxed text-on-surface-variant',
+								!showHandle && 'text-center'
+							]}
+						>
+							{description}
+						</Dialog.Description>
+					{/if}
+					{#if children}
+						{@render children()}
+					{/if}
+				</div>
+			{/if}
+
+			{#if footer}
+				<div
+					class={[
+						'flex shrink-0 items-center gap-2',
+						showHandle
+							? 'mt-2 justify-end px-4 pb-[var(--tabbar-safe)]'
+							: 'w-full justify-stretch gap-3 border-t border-outline-variant/40 px-6 pt-4 pb-[calc(var(--tabbar-safe)+0.75rem)] [&>button]:flex-1'
+					]}
+				>
+					{@render footer()}
 				</div>
 			{/if}
 		</Dialog.Content>
@@ -307,11 +380,17 @@
 	:global(.bottom-sheet-content[data-dialog-content]) {
 		transition: transform 300ms cubic-bezier(0.05, 0.7, 0.1, 1);
 		transform: translateY(0);
+
+		/* Compact sheets can lay out at 0 height on the first frame, so 100%
+		   would be a no-op. Floor the travel so enter still slides. */
+		@starting-style {
+			transform: translateY(max(100%, 16rem));
+		}
 	}
 
 	:global(.bottom-sheet-content[data-dialog-content][data-starting-style]),
 	:global(.bottom-sheet-content[data-dialog-content][data-ending-style]) {
-		transform: translateY(100%);
+		transform: translateY(max(100%, 16rem));
 	}
 
 	:global(.bottom-sheet-content[data-dragging]) {

@@ -7,7 +7,7 @@
 	import { trackEvent } from '$lib/client/analytics';
 	import { dismissSnackbar, snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import { estimateAppDataBytes, formatAppDataSize } from '$lib/storage/clear-app-data';
 	import { isSwUpdatePending, onSwUpdateAvailable } from '$lib/client/pwa-sw';
 	import {
@@ -140,8 +140,9 @@
 	</footer>
 </div>
 
-<Dialog
+<BottomSheet
 	bind:open={clearDialogOpen}
+	showHandle={false}
 	title={hostT('about.clear.title')}
 	description={hostT('about.clear.desc')}
 >
@@ -153,7 +154,7 @@
 			{hostT('common.clear')}
 		</Button>
 	{/snippet}
-</Dialog>
+</BottomSheet>
 
 <style>
 	.copyright {

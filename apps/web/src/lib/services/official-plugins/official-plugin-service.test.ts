@@ -616,4 +616,92 @@ describe('OfficialPluginService', () => {
 			enabled: true
 		});
 	});
+
+	it('installs plugin through installQueue with progress and state transitions', async () => {
+		const queuedBundle = SAMPLE_BUNDLE.replace(/test-plugin/g, 'queued-plugin');
+		const hash = await engine.env.runtime.sha256(queuedBundle);
+		const manifest: PluginManifest = {
+			id: 'queued-plugin',
+			name: { 'zh-cn': 'Queued Plugin', en: 'Queued Plugin' },
+			version: '1.0.0',
+			bundleUrl: '/queued.bundle.js',
+			bundleFormat: 'esm',
+			description: { 'zh-cn': 'Queued description', en: 'Queued description' },
+			author: 'Test Author',
+			sha256: hash,
+			type: 'tool'
+		};
+
+		httpRequest.mockImplementation(async () => {
+			return httpResponse({ text: async () => queuedBundle });
+		});
+
+		expect(service.installQueue.getTask('queued-plugin')).toBeUndefined();
+
+		service.installQueue.enqueue(manifest);
+
+		expect(service.installQueue.isBusy('queued-plugin')).toBe(true);
+
+		await vi.waitFor(() => {
+			expect(service.getInstalled('queued-plugin')).toBeDefined();
+		});
+
+		expect(service.installQueue.getTask('queued-plugin')).toBeUndefined();
+		expect(service.isPluginActive('queued-plugin')).toBe(true);
+	});
+
+	it('rolls back runtime when an upgrade install is aborted after deactivation', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifestV1: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		const installedStore = new OfficialPluginInstalledStore(engine);
+		const runtimeActivator = new OfficialPluginRuntimeActivator(engine, (pluginId) =>
+			installedStore.has(pluginId)
+		);
+		const rollbackService = new OfficialPluginService(engine, {
+			catalogClient: new OfficialPluginCatalogClient(engine),
+			assetPipeline: new OfficialPluginAssetPipeline(engine),
+			installedStore,
+			runtimeActivator,
+			hostVersion: '0.4.1'
+		});
+
+		httpRequest.mockResolvedValue(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		await rollbackService.install(manifestV1);
+		expect(rollbackService.getInstalled('test-plugin')?.manifest.version).toBe('1.0.0');
+		expect(rollbackService.isPluginActive('test-plugin')).toBe(true);
+
+		const controller = new AbortController();
+		const originalDeactivate = runtimeActivator.deactivate.bind(runtimeActivator);
+		const deactivateSpy = vi
+			.spyOn(runtimeActivator, 'deactivate')
+			.mockImplementation(async (pluginId, options) => {
+				await originalDeactivate(pluginId, options);
+				controller.abort();
+			});
+
+		const manifestV2: PluginManifest = {
+			...manifestV1,
+			version: '2.0.0'
+		};
+
+		await expect(
+			rollbackService.install(manifestV2, undefined, { signal: controller.signal })
+		).rejects.toMatchObject({ name: 'AbortError' });
+
+		expect(rollbackService.getInstalled('test-plugin')?.manifest.version).toBe('1.0.0');
+		expect(rollbackService.isPluginActive('test-plugin')).toBe(true);
+
+		deactivateSpy.mockRestore();
+	});
 });

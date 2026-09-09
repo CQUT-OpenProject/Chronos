@@ -74,9 +74,6 @@ export function createCourseEditor(
 		get draft() {
 			return draft;
 		},
-		get timetable() {
-			return timetable;
-		},
 		get canSave() {
 			return canSave;
 		},

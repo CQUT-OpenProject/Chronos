@@ -4,11 +4,8 @@
 	import FormCard from '$lib/components/ui/FormCard.svelte';
 	import DateField from '$lib/components/ui/DateField.svelte';
 	import StepperField from '$lib/components/ui/StepperField.svelte';
-	import Switch from '$lib/components/ui/Switch.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import PeriodTimesEditor from '$lib/components/timetable/PeriodTimesEditor.svelte';
-	import MineRow from '$lib/components/mine/MineRow.svelte';
-	import MineSection from '$lib/components/mine/MineSection.svelte';
 
 	let {
 		editor
@@ -50,24 +47,6 @@
 				}}
 			/>
 		</FormCard>
-
-		<MineSection title={hostT('timetable.details.section.display')}>
-			<MineRow label title={hostT('timetable.details.showSaturday')}>
-				{#snippet trailing()}
-					<Switch bind:checked={draft.viewPrefs.showSaturday} />
-				{/snippet}
-			</MineRow>
-			<MineRow label title={hostT('timetable.details.showSunday')}>
-				{#snippet trailing()}
-					<Switch bind:checked={draft.viewPrefs.showSunday} />
-				{/snippet}
-			</MineRow>
-			<MineRow label title={hostT('timetable.details.showNonCurrentWeek')}>
-				{#snippet trailing()}
-					<Switch bind:checked={draft.viewPrefs.showNonCurrentWeekCourses} />
-				{/snippet}
-			</MineRow>
-		</MineSection>
 
 		<PeriodTimesEditor bind:value={draft.academicConfig.periodTimes} />
 	</div>

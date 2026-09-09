@@ -1,4 +1,5 @@
 import type { HttpRequestOptions, HttpResponse, IHttpService } from '@chronos/core';
+import { mergeAbortSignals } from '$lib/utils/abort-signal';
 import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
 
 /**
@@ -107,11 +108,16 @@ export class WebHttpProxyProvider implements IHttpService {
 				}
 			}
 
+			const abortSignals = [options?.signal, controller?.signal].filter(
+				(signal): signal is AbortSignal => signal !== undefined
+			);
+			const requestSignal = abortSignals.length > 0 ? mergeAbortSignals(abortSignals) : undefined;
+
 			const response = await fetch(url, {
 				method: options?.method ?? 'GET',
 				headers,
 				body,
-				signal: controller?.signal
+				signal: requestSignal
 			});
 
 			const responseHeaders: Record<string, string> = {};

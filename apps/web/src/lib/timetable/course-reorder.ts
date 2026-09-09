@@ -1,4 +1,4 @@
-import type { Course } from '@chronos/core';
+import { mergeCompatibleOfferings, type Course } from '@chronos/core';
 
 export interface RearrangeCourseOptions {
 	currentCourses: Course[];
@@ -59,17 +59,20 @@ export function rearrangeCourseSchedule(options: RearrangeCourseOptions): Course
 
 	// If currentWeek is not specified, fall back to simple in-place mutation
 	if (currentWeek == null) {
-		return currentCourses.map((course) => {
-			if (course.id === draggedCourseId) {
-				return {
-					...course,
-					dayOfWeek: targetDayOfWeek,
-					startPeriod: clampedStart,
-					endPeriod: clampedEnd
-				};
-			}
-			return course;
-		});
+		return mergeCompatibleOfferings(
+			currentCourses.map((course) => {
+				if (course.id === draggedCourseId) {
+					return {
+						...course,
+						dayOfWeek: targetDayOfWeek,
+						startPeriod: clampedStart,
+						endPeriod: clampedEnd
+					};
+				}
+				return course;
+			}),
+			totalWeeks
+		);
 	}
 
 	// === Week-isolated rescheduling for currentWeek ===
@@ -96,7 +99,7 @@ export function rearrangeCourseSchedule(options: RearrangeCourseOptions): Course
 				result.push(course);
 			}
 		}
-		return result;
+		return mergeCompatibleOfferings(result, totalWeeks);
 	}
 
 	// Multi-week: retain other weeks in original course
@@ -121,5 +124,5 @@ export function rearrangeCourseSchedule(options: RearrangeCourseOptions): Course
 		weeks: [currentWeek]
 	});
 
-	return result;
+	return mergeCompatibleOfferings(result, totalWeeks);
 }

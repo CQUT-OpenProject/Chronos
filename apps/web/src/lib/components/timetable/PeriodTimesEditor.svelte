@@ -42,6 +42,7 @@
 	let wheelStart: TimeWheel | null = $state(null);
 	let wheelEnd: TimeWheel | null = $state(null);
 	let pendingDeletePos = $state<number | null>(null);
+	let pendingDeleteAfterEdit = $state<number | null>(null);
 	let deleteConfirmOpen = $state(false);
 	let resetConfirmOpen = $state(false);
 
@@ -135,10 +136,16 @@
 
 	function deleteFromSheet() {
 		if (editPos === null) return;
-		const pos = editPos;
+		pendingDeleteAfterEdit = editPos;
 		editOpen = false;
 		editPos = null;
-		requestDelete(pos);
+	}
+
+	function handleEditOpenChangeComplete(isOpen: boolean) {
+		if (isOpen) return;
+		const pos = pendingDeleteAfterEdit;
+		pendingDeleteAfterEdit = null;
+		if (pos !== null) requestDelete(pos);
 	}
 
 	function requestDelete(pos: number) {
@@ -256,7 +263,11 @@
 	{/if}
 </div>
 
-<BottomSheet bind:open={editOpen} title={editTitle}>
+<BottomSheet
+	bind:open={editOpen}
+	title={editTitle}
+	onOpenChangeComplete={handleEditOpenChangeComplete}
+>
 	<div class="flex flex-col gap-3 px-4 pt-1 pb-2">
 		<div class="flex flex-col gap-1">
 			<span class="text-label-small px-1 text-on-surface-variant">
@@ -333,10 +344,11 @@
 </Dialog>
 
 {#if pendingDeletePeriod}
-	<Dialog
+	<BottomSheet
 		bind:open={deleteConfirmOpen}
-		onOpenChange={(next) => {
-			if (!next) pendingDeletePos = null;
+		showHandle={false}
+		onOpenChangeComplete={(isOpen) => {
+			if (!isOpen) pendingDeletePos = null;
 		}}
 		title={hostT('timetable.details.periods.deleteTitle', {
 			index: pendingDeletePeriod.index
@@ -348,7 +360,6 @@
 				variant="text"
 				onclick={() => {
 					deleteConfirmOpen = false;
-					pendingDeletePos = null;
 				}}
 			>
 				{hostT('common.cancel')}
@@ -360,5 +371,5 @@
 				{hostT('timetable.details.periods.deleteConfirm')}
 			</Button>
 		{/snippet}
-	</Dialog>
+	</BottomSheet>
 {/if}

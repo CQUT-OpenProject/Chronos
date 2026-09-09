@@ -40,11 +40,6 @@ export function toSettingsDraft(timetable: Timetable): TimetableSettingsDraft {
 		importMetadata: {
 			source: timetable.importMetadata?.source ?? 'UNKNOWN',
 			campusId: timetable.importMetadata?.campusId
-		},
-		viewPrefs: {
-			showSaturday: timetable.viewPrefs?.showSaturday ?? true,
-			showSunday: timetable.viewPrefs?.showSunday ?? true,
-			showNonCurrentWeekCourses: timetable.viewPrefs?.showNonCurrentWeekCourses ?? false
 		}
 	};
 }

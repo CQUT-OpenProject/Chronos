@@ -35,6 +35,8 @@ export type AnalyticsEvent =
 	| 'timetable_switch'
 	| 'timetable_delete'
 	| 'timetable_overlap_expand'
+	| 'timetable_course_reorder'
+	| 'timetable_course_delete_week'
 	| 'timetable_details_save'
 	| 'timetable_details_reset'
 	| 'pwa_install_prompt_show'

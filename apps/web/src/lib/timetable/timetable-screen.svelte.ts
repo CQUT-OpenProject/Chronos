@@ -7,11 +7,14 @@ import {
 	formatWeekDateRange,
 	parsePeriodRanges,
 	todayIsoDate,
+	type Course,
 	type Timetable,
 	type TimetableCourseDisplayModel,
 	type TimetableGridModel,
 	type TimetableWeekLayoutResult
 } from '@chronos/core';
+import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
+import { deleteCourseForWeek } from './course-delete-week';
 import type { AppShellController } from '$lib/app/app-shell.svelte';
 import {
 	academicBounds,
@@ -23,6 +26,7 @@ import {
 } from './week-navigation';
 import { buildWeekViewport, createWeekLayoutCache } from './week-viewport';
 import { createTimetableInteraction } from './timetable-interaction.svelte';
+import { haptic } from '$lib/haptic/haptic';
 
 const calendarService = new AcademicCalendarService();
 
@@ -57,9 +61,12 @@ export function getTimetableScreen(): TimetableScreenController {
 function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
 	let expandedSlots = $state(new SvelteSet<string>());
-	const interaction = createTimetableInteraction();
+	const interaction = createTimetableInteraction({
+		onLongPressFeedback: () => haptic.heavy()
+	});
 	let displayedWeekMemory = $state(1);
 	let displayedWeekTimetableIdMemory = $state<string | null>(null);
+	let pendingWeekDelete = $state<{ course: Course; week: number } | null>(null);
 
 	const layoutCache = createWeekLayoutCache();
 
@@ -233,12 +240,60 @@ function createTimetableScreen() {
 		interaction.toggleEditing();
 	}
 
+	function requestWeekDelete(course: Course, week: number) {
+		pendingWeekDelete = { course, week };
+	}
+
+	function cancelWeekDelete() {
+		pendingWeekDelete = null;
+	}
+
+	async function confirmWeekDelete() {
+		const pending = pendingWeekDelete;
+		if (!pending) return;
+
+		const timetable = currentTimetable();
+		if (!timetable) {
+			pendingWeekDelete = null;
+			return;
+		}
+
+		const academicConfig = timetable.academicConfig;
+		const totalWeeks = academicConfig
+			? { startWeek: academicConfig.startWeek ?? 1, endWeek: academicConfig.endWeek ?? 20 }
+			: undefined;
+
+		const updatedCourses = deleteCourseForWeek({
+			currentCourses: timetable.courses,
+			courseId: pending.course.id,
+			currentWeek: pending.week,
+			totalWeeks
+		});
+
+		if (!updatedCourses) {
+			pendingWeekDelete = null;
+			return;
+		}
+
+		try {
+			await shellRef?.controller.saveCurrentTimetableDetails({ courses: updatedCourses });
+			pendingWeekDelete = null;
+			trackEvent('timetable_course_delete_week');
+			haptic.warning();
+		} catch {
+			snackbarKey('transfer.error.saveFailed');
+		}
+	}
+
 	return {
 		get state() {
 			return state;
 		},
 		get interaction() {
 			return interaction;
+		},
+		get pendingWeekDelete() {
+			return pendingWeekDelete;
 		},
 		init,
 		refresh,
@@ -250,7 +305,10 @@ function createTimetableScreen() {
 		collapseSlot,
 		isSlotExpanded,
 		setEditing,
-		toggleEditing
+		toggleEditing,
+		requestWeekDelete,
+		cancelWeekDelete,
+		confirmWeekDelete
 	};
 }
 

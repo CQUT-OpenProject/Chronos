@@ -1617,7 +1617,7 @@ function ur(e, t, n = "zh-cn") {
 	return e[n]?.[t] ?? e.en?.[t] ?? t;
 }
 function dr() {
-	return "0.5.1";
+	return "0.5.2";
 }
 function fr(e) {
 	let t;

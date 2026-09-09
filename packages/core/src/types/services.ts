@@ -23,6 +23,7 @@ export interface HttpRequestOptions {
 	body?: string | Uint8Array;
 	bypassCors?: boolean;
 	timeoutMs?: number;
+	signal?: AbortSignal;
 }
 
 export interface HttpResponse {
