@@ -2,7 +2,7 @@
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { CourseEditorController } from '$lib/timetable/course-editor.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import CourseEditorForm from '$lib/components/timetable/CourseEditorForm.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 
@@ -42,8 +42,9 @@
 	</FormScreenLayout>
 
 	{#if draft.id}
-		<Dialog
+		<BottomSheet
 			bind:open={deleteDialogOpen}
+			showHandle={false}
 			title={hostT('course.editor.delete.title')}
 			description={hostT('course.editor.delete.desc')}
 		>
@@ -55,7 +56,7 @@
 					{hostT('common.delete')}
 				</Button>
 			{/snippet}
-		</Dialog>
+		</BottomSheet>
 	{/if}
 {:else}
 	<p class="text-body-medium p-4 text-on-surface-variant">

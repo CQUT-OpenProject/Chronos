@@ -12,7 +12,7 @@
 	import { haptic } from '$lib/haptic/haptic';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 
 	let {
 		screen,
@@ -74,7 +74,11 @@
 		})
 	);
 	const pendingWeekDelete = $derived(screen.pendingWeekDelete);
-	const deleteWeekDialogOpen = $derived(pendingWeekDelete !== null);
+	let weekDeleteSheetOpen = $state(false);
+
+	$effect(() => {
+		if (pendingWeekDelete) weekDeleteSheetOpen = true;
+	});
 
 	function focusWeekSliderThumb() {
 		requestAnimationFrame(() => {
@@ -193,10 +197,11 @@
 </div>
 
 {#if pendingWeekDelete}
-	<Dialog
-		open={deleteWeekDialogOpen}
-		onOpenChange={(open) => {
-			if (!open) screen.cancelWeekDelete();
+	<BottomSheet
+		bind:open={weekDeleteSheetOpen}
+		showHandle={false}
+		onOpenChangeComplete={(isOpen) => {
+			if (!isOpen) screen.cancelWeekDelete();
 		}}
 		title={hostT('timetable.deleteWeek.title')}
 		description={hostT('timetable.deleteWeek.desc', {
@@ -205,12 +210,12 @@
 		})}
 	>
 		{#snippet footer()}
-			<Button variant="text" onclick={() => screen.cancelWeekDelete()}>
+			<Button variant="text" onclick={() => (weekDeleteSheetOpen = false)}>
 				{hostT('common.cancel')}
 			</Button>
 			<Button variant="filled" onclick={() => void screen.confirmWeekDelete()}>
 				{hostT('common.delete')}
 			</Button>
 		{/snippet}
-	</Dialog>
+	</BottomSheet>
 {/if}

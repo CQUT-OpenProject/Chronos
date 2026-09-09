@@ -14,6 +14,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Switch from '$lib/components/ui/Switch.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
 	import PluginConfigModal from './PluginConfigModal.svelte';
@@ -632,8 +633,9 @@
 	schema={configModalData.schema}
 />
 
-<Dialog
+<BottomSheet
 	bind:open={uninstallDialogOpen}
+	showHandle={false}
 	title={hostT('plugins.uninstall.title')}
 	description={hostT('plugins.uninstall.desc', {
 		name: uninstallTarget.name || uninstallTarget.id
@@ -647,7 +649,7 @@
 			{hostT('common.uninstall')}
 		</Button>
 	{/snippet}
-</Dialog>
+</BottomSheet>
 
 <Dialog bind:open={linkInstallDialogOpen} title={hostT('plugins.link.title')}>
 	<div class="flex flex-col gap-3 py-2">

@@ -4,7 +4,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
 
@@ -94,8 +94,9 @@
 	</div>
 </FormScreenLayout>
 
-<Dialog
+<BottomSheet
 	bind:open={deleteDialogOpen}
+	showHandle={false}
 	title={hostT('timetable.manage.delete.title')}
 	description={selectedTimetable
 		? hostT('timetable.manage.delete.descNamed', {
@@ -111,4 +112,4 @@
 			{hostT('common.delete')}
 		</Button>
 	{/snippet}
-</Dialog>
+</BottomSheet>
