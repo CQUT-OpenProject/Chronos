@@ -56,6 +56,10 @@
 		return map;
 	});
 
+	const activeInstallTasks = $derived.by(() =>
+		queueTasks.filter((task) => task.status !== 'completed' && task.status !== 'canceled')
+	);
+
 	let configModalOpen = $state(false);
 	let configModalData = $state<{
 		id: string;
@@ -349,6 +353,48 @@
 					{/each}
 				</div>
 			</section>
+
+			{#if activeInstallTasks.length > 0}
+				<section class="ui-section">
+					<div class="flex items-center justify-between px-1">
+						<h3 class="text-label-large font-medium text-on-surface">
+							{hostT('plugins.installing.heading')}
+						</h3>
+						<span class="text-label-small text-on-surface-variant">
+							{hostT('plugins.builtin.count', { count: activeInstallTasks.length })}
+						</span>
+					</div>
+					<div class="ui-section-surface divide-y divide-border/40">
+						{#each activeInstallTasks as task (task.pluginId)}
+							{@const manifest = task.manifest}
+							{@const name = resolveManifestText(manifest.name)}
+							{@const desc = resolveManifestText(manifest.description)}
+							<div
+								class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
+							>
+								<div class="flex min-w-0 flex-1 flex-col justify-center">
+									<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
+										{name}
+									</span>
+									{#if desc}
+										<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
+											{desc}
+										</p>
+									{/if}
+								</div>
+								<PluginInstallAction
+									{manifest}
+									installed={isInstalled(manifest.id)}
+									{task}
+									onInstall={() => handleInstall(manifest, task.manifestUrl)}
+									onCancel={() => handleCancel(manifest.id)}
+									onRetry={() => handleRetry(manifest.id)}
+								/>
+							</div>
+						{/each}
+					</div>
+				</section>
+			{/if}
 
 			<section class="ui-section">
 				<div class="flex items-center justify-between px-1">
