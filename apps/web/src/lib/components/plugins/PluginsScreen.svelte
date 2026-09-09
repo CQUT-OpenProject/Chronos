@@ -26,6 +26,8 @@
 		assertValidManifestInstallUrl,
 		describeInstallSource
 	} from '$lib/services/official-plugins/manifest-url';
+	import type { PluginInstallTask } from '$lib/services/official-plugins/install-queue';
+	import PluginInstallAction from './PluginInstallAction.svelte';
 	import { CheckCircleFill, TuneFill } from '$lib/icons';
 
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
@@ -41,9 +43,18 @@
 
 	let installedRecords = $state.raw<InstalledOfficialPluginRecord[]>([]);
 	let catalogManifests = $state.raw<Array<{ url: string; manifest: PluginManifest }>>([]);
+	let queueTasks = $state.raw<ReadonlyArray<PluginInstallTask>>([]);
 	let loadingCatalog = $state(false);
 	let catalogError = $state<string | null>(null);
 	let operatingPluginId = $state<string | null>(null);
+
+	const taskMap = $derived.by(() => {
+		const map = new Map<string, PluginInstallTask>();
+		for (const task of queueTasks) {
+			map.set(task.pluginId, task);
+		}
+		return map;
+	});
 
 	let configModalOpen = $state(false);
 	let configModalData = $state<{
@@ -68,19 +79,32 @@
 		installedRecords = [...officialPlugins.listInstalled()];
 	}
 
+	function refreshQueue() {
+		queueTasks = officialPlugins.installQueue.getTasks();
+	}
+
 	onMount(() => {
 		void ensureEngineFullyReady().then(async () => {
 			profileBuiltinPlugins = [...getProfileBuiltinPlugins()];
 			refreshInstalled();
+			refreshQueue();
 			await loadOfficialCatalog();
 		});
 
-		const sub = officialPlugins.onChanged(() => {
+		const subInstalled = officialPlugins.onChanged(() => {
 			refreshInstalled();
 		});
 
+		const subQueue = officialPlugins.installQueue.onChanged(({ kind }) => {
+			refreshQueue();
+			if (kind === 'state') {
+				refreshInstalled();
+			}
+		});
+
 		return () => {
-			sub.dispose();
+			subInstalled.dispose();
+			subQueue.dispose();
 		};
 	});
 
@@ -151,16 +175,16 @@
 		return Boolean(enabled && manifest.themeId && activeColorSchemeId === manifest.themeId);
 	}
 
-	async function handleInstall(manifest: PluginManifest, manifestUrl?: string) {
-		operatingPluginId = manifest.id;
-		try {
-			await officialPlugins.install(manifest, manifestUrl);
-		} catch (err: unknown) {
-			const msg = err instanceof Error ? err.message : String(err);
-			snackbarKey('snackbar.install.failed', { message: msg });
-		} finally {
-			operatingPluginId = null;
-		}
+	function handleInstall(manifest: PluginManifest, manifestUrl?: string) {
+		officialPlugins.installQueue.enqueue(manifest, manifestUrl);
+	}
+
+	function handleCancel(pluginId: string) {
+		officialPlugins.installQueue.cancel(pluginId);
+	}
+
+	function handleRetry(pluginId: string) {
+		officialPlugins.installQueue.retry(pluginId);
 	}
 
 	function promptLinkInstall() {
@@ -183,9 +207,9 @@
 		}
 
 		linkInstallInProgress = true;
-		operatingPluginId = 'url-install';
 		try {
-			await officialPlugins.installFromManifestUrl(url);
+			const manifest = await officialPlugins.fetchManifest(url);
+			officialPlugins.installQueue.enqueue(manifest, url);
 			activeTab = 'installed';
 			linkInstallDialogOpen = false;
 			manifestUrlInput = '';
@@ -194,7 +218,6 @@
 			snackbarKey('snackbar.install.failed', { message: msg });
 		} finally {
 			linkInstallInProgress = false;
-			operatingPluginId = null;
 		}
 	}
 
@@ -500,7 +523,6 @@
 											{@const name = resolveManifestText(manifest.name)}
 											{@const desc = resolveManifestText(manifest.description)}
 											{@const installed = isInstalled(manifest.id)}
-											{@const isBusy = operatingPluginId === manifest.id}
 											<div
 												class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
 											>
@@ -532,25 +554,14 @@
 												</div>
 
 												<div class="flex shrink-0 flex-col items-end gap-1">
-													{#if installed}
-														<span
-															class="inline-flex items-center gap-1 rounded-full bg-primary-container/50 px-2.5 py-1 text-xs font-medium text-primary"
-														>
-															<CheckCircleFill class="size-3.5" />
-															{hostT('plugins.badge.installed')}
-														</span>
-													{:else}
-														<Button
-															variant="filled"
-															class="h-8 shrink-0 px-3.5 text-xs font-medium"
-															disabled={isBusy}
-															onclick={() => handleInstall(manifest, entry.url)}
-														>
-															{isBusy
-																? hostT('plugins.action.installing')
-																: hostT('plugins.action.install')}
-														</Button>
-													{/if}
+													<PluginInstallAction
+														{manifest}
+														{installed}
+														task={taskMap.get(manifest.id)}
+														onInstall={() => handleInstall(manifest, entry.url)}
+														onCancel={() => handleCancel(manifest.id)}
+														onRetry={() => handleRetry(manifest.id)}
+													/>
 												</div>
 											</div>
 										{/each}
