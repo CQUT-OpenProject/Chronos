@@ -23,6 +23,7 @@
 	const sortedTabs = $derived(controller.getSlots('shell.bottom-bar.tab'));
 	const activeTabId = $derived(shellTab.activeTabId);
 	const isEditing = $derived(Boolean(timetableScreen?.state.isEditing));
+	const isDragging = $derived(Boolean(timetableScreen?.interaction.isDragging));
 	const isDragOverDeleteZone = $derived(Boolean(timetableScreen?.interaction.drag?.overDeleteZone));
 
 	let displayOptionsOpen = $state(false);
@@ -67,41 +68,66 @@
 	}
 </script>
 
-<div class="bottom-bar w-full flex-col justify-center">
+<div
+	class="bottom-bar w-full flex-col justify-center"
+	class:timetable-delete-zone={isEditing && isDragging}
+	aria-label={isEditing && isDragging ? hostT('timetable.deleteWeek.zoneAria') : undefined}
+>
 	{#if isEditing}
-		<div class="flex h-full w-full max-w-md items-center gap-2">
+		<div class="edit-bottom-bar relative h-full w-full max-w-md">
 			<div
-				class="timetable-delete-zone pointer-events-auto flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full transition-[transform,background-color] duration-150 {isDragOverDeleteZone
-					? 'scale-110 bg-error/15'
+				class="edit-bottom-bar-layer edit-bottom-bar-controls h-full w-full {isDragging
+					? 'edit-bottom-bar-controls--dragging'
+					: ''} {isDragOverDeleteZone ? 'edit-bottom-bar-layer--hidden' : ''}"
+				aria-hidden={isDragOverDeleteZone}
+			>
+				<Button
+					variant="outlined"
+					class="edit-bottom-bar-action min-w-0"
+					onclick={() => {
+						haptic.light();
+						goto(resolve('/timetable/details'));
+					}}
+				>
+					{hostT('timetable.edit.aria')}
+				</Button>
+				<div class="edit-bottom-bar-trash-slot" aria-hidden={!isDragging}>
+					<div
+						class="edit-bottom-bar-trash flex items-center justify-center rounded-full"
+						role="img"
+						aria-hidden="true"
+					>
+						<DeleteFill class="size-6 text-error/70" aria-hidden="true" />
+					</div>
+				</div>
+				<Button
+					variant="outlined"
+					class="edit-bottom-bar-action min-w-0"
+					onclick={() => {
+						haptic.light();
+						displayOptionsOpen = true;
+					}}
+				>
+					{hostT('timetable.details.section.display')}
+				</Button>
+			</div>
+			<div
+				class="edit-bottom-bar-layer edit-bottom-bar-delete-hint flex h-full w-full items-center justify-center gap-2 rounded-full px-4 {isDragOverDeleteZone
+					? 'edit-bottom-bar-delete-hint--active'
 					: ''}"
-				role="img"
-				aria-label={hostT('timetable.deleteWeek.zoneAria')}
+				role="status"
+				aria-live="polite"
+				aria-hidden={!isDragOverDeleteZone}
+				aria-label={hostT('timetable.deleteWeek.dropHint')}
 			>
 				<DeleteFill
-					class="size-6 {isDragOverDeleteZone ? 'text-error' : 'text-error/70'}"
+					class="edit-bottom-bar-delete-icon size-6 shrink-0 text-error"
 					aria-hidden="true"
 				/>
+				<span class="edit-bottom-bar-delete-text text-label-large truncate font-medium text-error">
+					{hostT('timetable.deleteWeek.dropHint')}
+				</span>
 			</div>
-			<Button
-				variant="outlined"
-				class="min-w-0 flex-1"
-				onclick={() => {
-					haptic.light();
-					goto(resolve('/timetable/details'));
-				}}
-			>
-				{hostT('timetable.edit.aria')}
-			</Button>
-			<Button
-				variant="outlined"
-				class="min-w-0 flex-1"
-				onclick={() => {
-					haptic.light();
-					displayOptionsOpen = true;
-				}}
-			>
-				{hostT('timetable.details.section.display')}
-			</Button>
 		</div>
 	{:else}
 		<nav
@@ -152,3 +178,162 @@
 </div>
 
 <DisplayOptionsSheet bind:open={displayOptionsOpen} />
+
+<style>
+	@property --edit-trash-track {
+		syntax: '<length>';
+		inherits: false;
+		initial-value: 0rem;
+	}
+
+	.edit-bottom-bar {
+		display: grid;
+	}
+
+	.edit-bottom-bar-layer {
+		grid-area: 1 / 1;
+		transition:
+			opacity 240ms cubic-bezier(0.2, 0, 0, 1),
+			transform 240ms cubic-bezier(0.2, 0, 0, 1),
+			filter 240ms cubic-bezier(0.2, 0, 0, 1);
+		will-change: opacity, transform, filter;
+	}
+
+	.edit-bottom-bar-layer--hidden {
+		opacity: 0;
+		transform: scale(0.96);
+		filter: blur(3px);
+		pointer-events: none;
+	}
+
+	.edit-bottom-bar-controls {
+		--edit-trash-track: 0rem;
+		display: grid;
+		align-items: center;
+		column-gap: 0.5rem;
+		grid-template-columns: minmax(0, 1fr) var(--edit-trash-track) minmax(0, 1fr);
+		transition: --edit-trash-track 520ms cubic-bezier(0.34, 1.16, 0.64, 1) 100ms;
+	}
+
+	.edit-bottom-bar-controls--dragging {
+		--edit-trash-track: 3rem;
+		transition: --edit-trash-track 620ms cubic-bezier(0.34, 1.22, 0.64, 1) 0ms;
+	}
+
+	.edit-bottom-bar-action {
+		min-width: 0;
+		transform: scale(1);
+		transform-origin: center;
+		transition: transform 620ms cubic-bezier(0.34, 1.22, 0.64, 1) 0ms;
+	}
+
+	.edit-bottom-bar-controls--dragging .edit-bottom-bar-action {
+		transform: scale(0.96);
+		transition: transform 520ms cubic-bezier(0.34, 1.18, 0.64, 1) 60ms;
+	}
+
+	.edit-bottom-bar-trash-slot {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.edit-bottom-bar-trash {
+		width: 3rem;
+		height: 3rem;
+		flex-shrink: 0;
+		opacity: 0;
+		transform: scale(0.5);
+		transform-origin: center;
+		transition:
+			opacity 200ms cubic-bezier(0.4, 0, 1, 1),
+			transform 260ms cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.edit-bottom-bar-controls--dragging .edit-bottom-bar-trash {
+		opacity: 1;
+		transform: scale(1);
+		transition:
+			opacity 320ms cubic-bezier(0.2, 0, 0, 1) 140ms,
+			transform 480ms cubic-bezier(0.34, 1.28, 0.64, 1) 100ms;
+	}
+
+	.edit-bottom-bar-delete-hint {
+		opacity: 0;
+		transform: scale(0.94);
+		pointer-events: none;
+		background-color: color-mix(in srgb, var(--color-error) 12%, transparent);
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-error) 0%, transparent);
+	}
+
+	.edit-bottom-bar-delete-hint--active {
+		opacity: 1;
+		transform: scale(1);
+		pointer-events: auto;
+		background-color: color-mix(in srgb, var(--color-error) 16%, transparent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-error) 28%, transparent);
+		animation: edit-bottom-bar-delete-enter 360ms cubic-bezier(0.2, 0, 0, 1);
+	}
+
+	.edit-bottom-bar-delete-text {
+		transform: translateY(6px);
+		opacity: 0;
+		transition:
+			transform 280ms cubic-bezier(0.2, 0, 0, 1),
+			opacity 220ms cubic-bezier(0.2, 0, 0, 1);
+	}
+
+	.edit-bottom-bar-delete-hint--active .edit-bottom-bar-delete-text {
+		transform: translateY(0);
+		opacity: 1;
+		transition-delay: 60ms;
+	}
+
+	.edit-bottom-bar-delete-icon {
+		transform: scale(0.88);
+		opacity: 0;
+		transition:
+			transform 300ms cubic-bezier(0.34, 1.3, 0.64, 1),
+			opacity 200ms cubic-bezier(0.2, 0, 0, 1);
+	}
+
+	.edit-bottom-bar-delete-hint--active .edit-bottom-bar-delete-icon {
+		transform: scale(1);
+		opacity: 1;
+		transition-delay: 30ms;
+	}
+
+	@keyframes edit-bottom-bar-delete-enter {
+		0% {
+			box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-error) 0%, transparent);
+		}
+		55% {
+			box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error) 22%, transparent);
+		}
+		100% {
+			box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-error) 28%, transparent);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.edit-bottom-bar-layer,
+		.edit-bottom-bar-controls,
+		.edit-bottom-bar-action,
+		.edit-bottom-bar-trash,
+		.edit-bottom-bar-delete-text,
+		.edit-bottom-bar-delete-icon {
+			transition-duration: 1ms;
+		}
+
+		.edit-bottom-bar-delete-hint--active {
+			animation: none;
+		}
+
+		.edit-bottom-bar-layer--hidden {
+			filter: none;
+		}
+	}
+</style>
