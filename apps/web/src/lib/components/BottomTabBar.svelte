@@ -71,6 +71,7 @@
 <div
 	class="bottom-bar w-full flex-col justify-center"
 	class:timetable-delete-zone={isEditing && isDragging}
+	class:timetable-delete-zone--active={isEditing && isDragging && isDragOverDeleteZone}
 	aria-label={isEditing && isDragging ? hostT('timetable.deleteWeek.zoneAria') : undefined}
 >
 	{#if isEditing}
@@ -112,7 +113,7 @@
 				</Button>
 			</div>
 			<div
-				class="edit-bottom-bar-layer edit-bottom-bar-delete-hint flex h-full w-full items-center justify-center gap-2 rounded-full px-4 {isDragOverDeleteZone
+				class="edit-bottom-bar-layer edit-bottom-bar-delete-hint flex h-full w-full items-center justify-center gap-2 px-4 {isDragOverDeleteZone
 					? 'edit-bottom-bar-delete-hint--active'
 					: ''}"
 				role="status"
@@ -180,6 +181,18 @@
 <DisplayOptionsSheet bind:open={displayOptionsOpen} />
 
 <style>
+	.bottom-bar {
+		transition: background-color 240ms cubic-bezier(0.2, 0, 0, 1);
+	}
+
+	.bottom-bar.timetable-delete-zone--active {
+		background-color: color-mix(
+			in srgb,
+			var(--color-error) 14%,
+			var(--shell-bottom-bar-bg, var(--color-surface-container))
+		);
+	}
+
 	.edit-bottom-bar {
 		display: grid;
 	}
@@ -253,19 +266,14 @@
 
 	.edit-bottom-bar-delete-hint {
 		opacity: 0;
-		transform: scale(0.94);
+		transform: scale(0.96);
 		pointer-events: none;
-		background-color: color-mix(in srgb, var(--color-error) 12%, transparent);
-		box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-error) 0%, transparent);
 	}
 
 	.edit-bottom-bar-delete-hint--active {
 		opacity: 1;
 		transform: scale(1);
 		pointer-events: auto;
-		background-color: color-mix(in srgb, var(--color-error) 16%, transparent);
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-error) 28%, transparent);
-		animation: edit-bottom-bar-delete-enter 360ms cubic-bezier(0.2, 0, 0, 1);
 	}
 
 	.edit-bottom-bar-delete-text {
@@ -279,46 +287,31 @@
 	.edit-bottom-bar-delete-hint--active .edit-bottom-bar-delete-text {
 		transform: translateY(0);
 		opacity: 1;
-		transition-delay: 60ms;
+		transition-delay: 50ms;
 	}
 
 	.edit-bottom-bar-delete-icon {
-		transform: scale(0.88);
+		transform: scale(0.85);
 		opacity: 0;
 		transition:
-			transform 300ms cubic-bezier(0.34, 1.3, 0.64, 1),
+			transform 320ms cubic-bezier(0.34, 1.35, 0.64, 1),
 			opacity 200ms cubic-bezier(0.2, 0, 0, 1);
 	}
 
 	.edit-bottom-bar-delete-hint--active .edit-bottom-bar-delete-icon {
-		transform: scale(1);
+		transform: scale(1.1);
 		opacity: 1;
-		transition-delay: 30ms;
-	}
-
-	@keyframes edit-bottom-bar-delete-enter {
-		0% {
-			box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-error) 0%, transparent);
-		}
-		55% {
-			box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error) 22%, transparent);
-		}
-		100% {
-			box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-error) 28%, transparent);
-		}
+		transition-delay: 20ms;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.bottom-bar,
 		.edit-bottom-bar-layer,
 		.edit-bottom-bar-trash-slot,
 		.edit-bottom-bar-trash,
 		.edit-bottom-bar-delete-text,
 		.edit-bottom-bar-delete-icon {
-			transition-duration: 1ms;
-		}
-
-		.edit-bottom-bar-delete-hint--active {
-			animation: none;
+			transition-duration: 1ms !important;
 		}
 
 		.edit-bottom-bar-layer--hidden {
