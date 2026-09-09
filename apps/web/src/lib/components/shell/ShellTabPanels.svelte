@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
 	import type { Component, Snippet } from 'svelte';
 	import { trackEvent } from '$lib/client/analytics';
@@ -155,12 +153,7 @@
 	{#if screen.state.hasLoadedAppState && !screen.state.currentTimetable}
 		<EmptyTimetableState />
 	{:else if screen.state.hasLoadedAppState}
-		<TimetableScreen
-			{screen}
-			active={timetableActive}
-			onEditTimetableDetails={() => goto(resolve('/timetable/details'))}
-			onCourseClick={openCourseDetail}
-		/>
+		<TimetableScreen {screen} active={timetableActive} onCourseClick={openCourseDetail} />
 		{#if CourseDetailSheet}
 			<CourseDetailSheet bind:open={detailOpen} bind:courseId={detailCourseId} />
 		{/if}

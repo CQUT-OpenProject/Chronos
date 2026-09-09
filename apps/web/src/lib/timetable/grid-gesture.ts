@@ -38,7 +38,11 @@ export function createGridGestureHandlers(options: GridGestureOptions) {
 			if (isExcludedTarget(event.target)) return;
 
 			interaction.watchLongPress(event, (pressEvent) => {
-				onEmptyLongPress?.(pressEvent);
+				if (onEmptyLongPress) {
+					onEmptyLongPress(pressEvent);
+				} else {
+					interaction.enterEditFromLongPress(pressEvent);
+				}
 			});
 		},
 		onpointermove: (event: PointerEvent) => {

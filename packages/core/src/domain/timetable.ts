@@ -36,7 +36,7 @@ export interface TimetableViewPrefs {
 /**
  * Derive initial weekend-column visibility from actual course occupancy.
  * Single source for import-constructing plugins (source/codec); users may
- * still override both flags afterwards via timetable details editing.
+ * still override both flags afterwards via display options.
  */
 export function deriveWeekendViewPrefs(
 	courses: ReadonlyArray<Pick<Course, 'dayOfWeek'>>

@@ -314,6 +314,30 @@ describe('Web Providers', () => {
 		).rejects.toThrow(/not in the allowed proxy whitelist/);
 	});
 
+	it('WebHttpProxyProvider aborts fetch when timeout elapses alongside an external signal', async () => {
+		const http = new WebHttpProxyProvider();
+		const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
+			return new Promise<Response>((_resolve, reject) => {
+				init?.signal?.addEventListener('abort', () => {
+					reject(new DOMException('Aborted', 'AbortError'));
+				});
+			});
+		});
+		vi.stubGlobal('fetch', fetchMock);
+
+		await expect(
+			http.request('https://example.com/slow', {
+				timeoutMs: 30,
+				signal: new AbortController().signal
+			})
+		).rejects.toMatchObject({ name: 'AbortError' });
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(fetchMock.mock.calls[0]?.[1]?.signal).toBeDefined();
+
+		vi.unstubAllGlobals();
+	});
+
 	it('WebHttpProxyProvider rejects bypassCors when server plugins are disabled', async () => {
 		vi.mocked(profileHasServerPlugins).mockReturnValue(false);
 		const http = new WebHttpProxyProvider();

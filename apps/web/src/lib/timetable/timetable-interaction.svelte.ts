@@ -16,6 +16,7 @@ export interface TimetableDragSession {
 	targetDayOfWeek: number;
 	targetStartPeriod: number;
 	persistAfterDrop: boolean;
+	overDeleteZone: boolean;
 }
 
 export interface BeginDragInput {
@@ -27,6 +28,9 @@ export interface BeginDragInput {
 	targetDayOfWeek: number;
 	targetStartPeriod: number;
 	persistAfterDrop: boolean;
+	waitForMove?: boolean;
+	originX?: number;
+	originY?: number;
 }
 
 export interface DragTargetPatch {
@@ -40,6 +44,13 @@ export interface TimetableInteractionOptions {
 	longPressDelayMs?: number;
 	thresholdPx?: number;
 	clickGuardMs?: number;
+	onLongPressFeedback?: () => void;
+}
+
+interface DragMoveLock {
+	pointerId: number;
+	startX: number;
+	startY: number;
 }
 
 export function createTimetableInteraction(options: TimetableInteractionOptions = {}) {
@@ -47,6 +58,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	const longPressDelayMs = options.longPressDelayMs ?? TIMETABLE_LONG_PRESS_DELAY_MS;
 	const thresholdPx = options.thresholdPx ?? TIMETABLE_POINTER_THRESHOLD_PX;
 	const clickGuardMs = options.clickGuardMs ?? TIMETABLE_CLICK_GUARD_MS;
+	const onLongPressFeedback = options.onLongPressFeedback;
 
 	let mode = $state<TimetableInteractionMode>('view');
 	let drag = $state<TimetableDragSession | null>(null);
@@ -61,6 +73,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	let releaseTimer: ReturnType<typeof setTimeout> | null = null;
 	let longPressCallback: ((event: PointerEvent) => void) | null = null;
 	let longPressEvent: PointerEvent | null = null;
+	let dragMoveLock: DragMoveLock | null = null;
 
 	function clearTimer() {
 		if (timer !== null) {
@@ -80,6 +93,32 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		clickGuardUntil = now() + clickGuardMs;
 	}
 
+	function clearDragMoveLock() {
+		dragMoveLock = null;
+	}
+
+	function enterEditFromLongPress(_event: PointerEvent) {
+		enterEdit();
+		onLongPressFeedback?.();
+	}
+
+	function tryReleaseDragMoveLock(event: PointerEvent): boolean {
+		if (!dragMoveLock || event.pointerId !== dragMoveLock.pointerId) return false;
+		const dx = Math.abs(event.clientX - dragMoveLock.startX);
+		const dy = Math.abs(event.clientY - dragMoveLock.startY);
+		if (dx <= thresholdPx && dy <= thresholdPx) return false;
+		clearDragMoveLock();
+		return true;
+	}
+
+	function discardLockedDrag(): boolean {
+		if (!drag || !dragMoveLock) return false;
+		clearDragMoveLock();
+		drag = null;
+		mode = 'edit';
+		return true;
+	}
+
 	function enterEdit() {
 		if (mode === 'dragging') return;
 		mode = 'edit';
@@ -88,6 +127,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	function exitEdit() {
 		clearTimer();
 		clearReleaseTimer();
+		clearDragMoveLock();
 		pendingPointerId = null;
 		longPressCallback = null;
 		longPressEvent = null;
@@ -105,13 +145,17 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 
 	function beginDrag(input: BeginDragInput): boolean {
 		if (mode === 'dragging') return false;
-		drag = { ...input };
+		const { waitForMove = false, originX = 0, originY = 0, ...session } = input;
+		drag = { ...session, overDeleteZone: false };
+		dragMoveLock = waitForMove
+			? { pointerId: session.pointerId, startX: originX, startY: originY }
+			: null;
 		mode = 'dragging';
 		return true;
 	}
 
 	function updateDragTarget(patch: DragTargetPatch): boolean {
-		if (!drag) return false;
+		if (!drag || dragMoveLock) return false;
 		if (
 			drag.targetColIndex === patch.targetColIndex &&
 			drag.targetDayOfWeek === patch.targetDayOfWeek &&
@@ -125,7 +169,15 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		return true;
 	}
 
+	function setDragOverDeleteZone(over: boolean): boolean {
+		if (!drag || dragMoveLock) return false;
+		if (drag.overDeleteZone === over) return false;
+		drag.overDeleteZone = over;
+		return true;
+	}
+
 	function endDrag(): TimetableDragSession | null {
+		if (discardLockedDrag()) return null;
 		if (mode !== 'dragging' || !drag) return null;
 		const current = drag;
 		drag = null;
@@ -135,6 +187,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function cancelDrag(): TimetableDragSession | null {
+		if (discardLockedDrag()) return null;
 		if (mode !== 'dragging' || !drag) return null;
 		const current = drag;
 		drag = null;
@@ -176,6 +229,8 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function notePointerMove(event: PointerEvent) {
+		tryReleaseDragMoveLock(event);
+
 		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
 		if (pendingPointerId === null || hasMoved) return;
 
@@ -249,6 +304,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	function destroy() {
 		clearTimer();
 		clearReleaseTimer();
+		clearDragMoveLock();
 		pendingPointerId = null;
 		longPressCallback = null;
 		longPressEvent = null;
@@ -274,10 +330,12 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 			return mode === 'view';
 		},
 		enterEdit,
+		enterEditFromLongPress,
 		exitEdit,
 		toggleEditing,
 		beginDrag,
 		updateDragTarget,
+		setDragOverDeleteZone,
 		endDrag,
 		cancelDrag,
 		resetClickFlags,

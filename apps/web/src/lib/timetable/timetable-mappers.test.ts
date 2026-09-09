@@ -38,6 +38,11 @@ describe('timetable-mappers', () => {
 		expect(draft.academicConfig.termStartDate).toBe('2026-03-02');
 	});
 
+	it('toSettingsDraft omits viewPrefs', () => {
+		const draft = toSettingsDraft(sampleTimetable({ courses: [] }));
+		expect(draft).not.toHaveProperty('viewPrefs');
+	});
+
 	it('converts course to draft and manages period items', () => {
 		const course = createCourse({
 			id: 'c1',

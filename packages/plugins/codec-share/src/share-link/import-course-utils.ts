@@ -1,32 +1,13 @@
-import type { Course } from '@chronos/core';
+import { mergeCompatibleOfferings, type Course } from '@chronos/core';
 
 export function consolidateCourses(courses: Course[]): Course[] {
-	const map = new Map<string, Course>();
-
-	for (const course of courses) {
-		const key = `${course.name}|${course.teacher}|${course.location}|${course.dayOfWeek}|${course.startPeriod}|${course.endPeriod}|${course.remark}`;
-		const existing = map.get(key);
-
-		if (existing) {
-			const combinedWeeks = Array.from(new Set([...existing.weeks, ...course.weeks])).sort(
-				(a, b) => a - b
-			);
-			existing.weeks = combinedWeeks;
-		} else {
-			map.set(key, {
-				...course,
-				weeks: [...course.weeks].sort((a, b) => a - b)
-			});
+	return mergeCompatibleOfferings(courses).sort((left, right) => {
+		if (left.dayOfWeek !== right.dayOfWeek) {
+			return left.dayOfWeek - right.dayOfWeek;
 		}
-	}
-
-	return Array.from(map.values()).sort((a, b) => {
-		if (a.dayOfWeek !== b.dayOfWeek) {
-			return a.dayOfWeek - b.dayOfWeek;
+		if (left.startPeriod !== right.startPeriod) {
+			return left.startPeriod - right.startPeriod;
 		}
-		if (a.startPeriod !== b.startPeriod) {
-			return a.startPeriod - b.startPeriod;
-		}
-		return a.endPeriod - b.endPeriod;
+		return left.endPeriod - right.endPeriod;
 	});
 }

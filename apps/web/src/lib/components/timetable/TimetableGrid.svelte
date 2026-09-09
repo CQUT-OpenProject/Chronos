@@ -38,9 +38,9 @@
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 	import { createGridGestureHandlers } from '$lib/timetable/grid-gesture';
 	import { rearrangeCourseSchedule } from '$lib/timetable/course-reorder';
-	import type {
-		TimetableDragSession,
-		TimetableInteraction
+	import {
+		type TimetableDragSession,
+		type TimetableInteraction
 	} from '$lib/timetable/timetable-interaction.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 
@@ -67,6 +67,7 @@
 		layoutMode?: TimetableLayoutMode;
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		onCourseClick?: (course: Course) => void;
+		onRequestWeekDelete?: (course: Course, week: number) => void;
 		interaction: TimetableInteraction;
 	}
 
@@ -84,6 +85,7 @@
 		layoutMode = 'fixed',
 		capsuleCornerStyle = 'sharp',
 		onCourseClick,
+		onRequestWeekDelete,
 		interaction
 	}: Props = $props();
 
@@ -113,7 +115,7 @@
 	const concealedCourseId = $derived(dragState?.course.id ?? settling?.courseId ?? null);
 
 	const dropPreview = $derived(
-		dragState
+		dragState && !dragState.overDeleteZone
 			? {
 					targetColIndex: dragState.targetColIndex,
 					targetStartPeriod: dragState.targetStartPeriod,
@@ -281,20 +283,16 @@
 		}
 	}
 
-	function startDrag(placed: PlacedCourseCapsule, event: PointerEvent, fromLongPress: boolean) {
+	function startDrag(
+		placed: PlacedCourseCapsule,
+		event: PointerEvent,
+		options: { hapticOnStart?: boolean; persistAfterDrop?: boolean; waitForMove?: boolean } = {}
+	) {
 		settling = null;
-		if (!placed.displayModel.isInDisplayedWeek) {
-			if (fromLongPress && !interaction.isEditing) {
-				haptic.heavy();
-				interaction.enterEdit();
-			}
-			return;
-		}
+		if (!placed.displayModel.isInDisplayedWeek) return;
 
-		const persistAfterDrop = interaction.mode === 'edit';
-		if (fromLongPress) {
-			haptic.heavy();
-		} else {
+		const { hapticOnStart = true, persistAfterDrop = true, waitForMove = false } = options;
+		if (hapticOnStart) {
 			haptic.light();
 		}
 
@@ -312,12 +310,38 @@
 			targetColIndex: initialColIndex >= 0 ? initialColIndex : 0,
 			targetDayOfWeek: placed.course.dayOfWeek,
 			targetStartPeriod: placed.course.startPeriod,
-			persistAfterDrop
+			persistAfterDrop,
+			waitForMove,
+			originX: event.clientX,
+			originY: event.clientY
 		});
+	}
+
+	function isPointerOverDeleteZone(clientX: number, clientY: number): boolean {
+		const target = document.elementFromPoint(clientX, clientY);
+		return target?.closest('.timetable-delete-zone') != null;
 	}
 
 	function handleWindowPointerMove(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
+		interaction.notePointerMove(event);
+
+		const overDeleteZone = isPointerOverDeleteZone(event.clientX, event.clientY);
+		if (interaction.setDragOverDeleteZone(overDeleteZone)) {
+			haptic.selection();
+		}
+
+		if (overDeleteZone) {
+			if (scrollContainer && !isFitLayout) {
+				const containerRect = scrollContainer.getBoundingClientRect();
+				const bottomThreshold = containerRect.bottom - 48;
+				if (event.clientY > bottomThreshold) {
+					const intensity = Math.min(1, (event.clientY - bottomThreshold) / 48);
+					scrollContainer.scrollTop += Math.round(intensity * 12);
+				}
+			}
+			return;
+		}
 
 		if (gridBodyEl && visibleDayCount > 0 && gridModel.displayedPeriodCount > 0) {
 			const gridRect = gridBodyEl.getBoundingClientRect();
@@ -407,7 +431,7 @@
 		return {
 			updatedCourses,
 			settling: {
-				courseId: current.course.id,
+				courseId: targetCourse.id,
 				targetColIndex: targetColIndex >= 0 ? targetColIndex : current.targetColIndex,
 				targetDayOfWeek: current.targetDayOfWeek,
 				targetStartPeriod: clampedStart,
@@ -436,7 +460,12 @@
 	function handleWindowPointerUp(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
 		const current = interaction.endDrag();
-		if (current) void commitDragSession(current);
+		if (!current) return;
+		if (current.overDeleteZone) {
+			onRequestWeekDelete?.(current.course, displayedWeek);
+			return;
+		}
+		void commitDragSession(current);
 	}
 
 	function handleWindowPointerCancel(event: PointerEvent) {
@@ -446,10 +475,6 @@
 
 	const gridGestureHandlers = createGridGestureHandlers({
 		interaction,
-		onEmptyLongPress: () => {
-			haptic.heavy();
-			interaction.enterEdit();
-		},
 		onClickEmpty: () => {
 			if (!interaction.isDragging && !interaction.isClickGuarded()) {
 				haptic.light();
@@ -688,8 +713,17 @@
 	{@const handlers = createCourseCardHandlers(placed.course, {
 		interaction,
 		onCourseClick: isEditing ? undefined : onCourseClick,
-		onLongPress: (_c, event) => startDrag(placed, event, true),
-		onDragStart: (_c, event) => startDrag(placed, event, false)
+		onLongPress: (_c, event) => {
+			interaction.enterEditFromLongPress(event);
+			if (placed.displayModel.isInDisplayedWeek) {
+				startDrag(placed, event, {
+					hapticOnStart: false,
+					persistAfterDrop: false,
+					waitForMove: true
+				});
+			}
+		},
+		onDragStart: (_c, event) => startDrag(placed, event)
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
