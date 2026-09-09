@@ -180,12 +180,6 @@
 <DisplayOptionsSheet bind:open={displayOptionsOpen} />
 
 <style>
-	@property --edit-trash-track {
-		syntax: '<length>';
-		inherits: false;
-		initial-value: 0rem;
-	}
-
 	.edit-bottom-bar {
 		display: grid;
 	}
@@ -207,38 +201,34 @@
 	}
 
 	.edit-bottom-bar-controls {
-		--edit-trash-track: 0rem;
 		display: grid;
 		align-items: center;
 		column-gap: 0.5rem;
-		grid-template-columns: minmax(0, 1fr) var(--edit-trash-track) minmax(0, 1fr);
-		transition: --edit-trash-track 520ms cubic-bezier(0.34, 1.16, 0.64, 1) 100ms;
-	}
-
-	.edit-bottom-bar-controls--dragging {
-		--edit-trash-track: 3rem;
-		transition: --edit-trash-track 620ms cubic-bezier(0.34, 1.22, 0.64, 1) 0ms;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 	}
 
 	.edit-bottom-bar-action {
 		min-width: 0;
-		transform: scale(1);
-		transform-origin: center;
-		transition: transform 620ms cubic-bezier(0.34, 1.22, 0.64, 1) 0ms;
-	}
-
-	.edit-bottom-bar-controls--dragging .edit-bottom-bar-action {
-		transform: scale(0.96);
-		transition: transform 520ms cubic-bezier(0.34, 1.18, 0.64, 1) 60ms;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease,
+			opacity 150ms ease;
 	}
 
 	.edit-bottom-bar-trash-slot {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		width: 0;
 		min-width: 0;
 		overflow: hidden;
 		pointer-events: none;
+		transition: width 200ms cubic-bezier(0.2, 0, 0, 1) 40ms;
+	}
+
+	.edit-bottom-bar-controls--dragging .edit-bottom-bar-trash-slot {
+		width: 3rem;
+		transition: width 240ms cubic-bezier(0.2, 0, 0, 1);
 	}
 
 	.edit-bottom-bar-trash {
@@ -246,19 +236,19 @@
 		height: 3rem;
 		flex-shrink: 0;
 		opacity: 0;
-		transform: scale(0.5);
+		transform: scale(0.72);
 		transform-origin: center;
 		transition:
-			opacity 200ms cubic-bezier(0.4, 0, 1, 1),
-			transform 260ms cubic-bezier(0.4, 0, 0.2, 1);
+			opacity 100ms cubic-bezier(0.4, 0, 1, 1),
+			transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	.edit-bottom-bar-controls--dragging .edit-bottom-bar-trash {
 		opacity: 1;
 		transform: scale(1);
 		transition:
-			opacity 320ms cubic-bezier(0.2, 0, 0, 1) 140ms,
-			transform 480ms cubic-bezier(0.34, 1.28, 0.64, 1) 100ms;
+			opacity 120ms cubic-bezier(0.2, 0, 0, 1) 20ms,
+			transform 180ms cubic-bezier(0.22, 1.12, 0.36, 1);
 	}
 
 	.edit-bottom-bar-delete-hint {
@@ -320,8 +310,7 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.edit-bottom-bar-layer,
-		.edit-bottom-bar-controls,
-		.edit-bottom-bar-action,
+		.edit-bottom-bar-trash-slot,
 		.edit-bottom-bar-trash,
 		.edit-bottom-bar-delete-text,
 		.edit-bottom-bar-delete-icon {
