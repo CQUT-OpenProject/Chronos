@@ -8,6 +8,7 @@ export function parseIsoDate(value: string): Date {
 	return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 12));
 }
 
+/** Formats a UTC calendar date produced by {@link parseIsoDate} and UTC date arithmetic. */
 export function formatIsoDate(date: Date): string {
 	const year = date.getUTCFullYear();
 	const month = String(date.getUTCMonth() + 1).padStart(2, '0');
@@ -66,6 +67,7 @@ export function currentWeekMonday(referenceDate: string): string {
 	return formatIsoDate(previousOrSameMonday(parseIsoDate(referenceDate)));
 }
 
+/** Local calendar day for a wall-clock instant (runtime "today", midnight rollover). */
 export function todayIsoDate(date: Date = new Date()): string {
 	const year = date.getFullYear();
 	const month = String(date.getMonth() + 1).padStart(2, '0');

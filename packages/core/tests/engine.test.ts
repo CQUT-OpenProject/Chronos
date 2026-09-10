@@ -508,13 +508,22 @@ describe('ChronosEngine in @chronos/core', () => {
 			todayIso: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)
 		});
 
-		const forcedNow = new Date('2026-03-02T09:15:00');
+		const forcedNow = new Date(2026, 2, 2, 9, 15, 0);
 		engine.updateTime(forcedNow);
 		expect(onTick).toHaveBeenLastCalledWith(
 			expect.objectContaining({
 				currentPeriod: 2,
 				now: forcedNow,
 				todayIso: '2026-03-02'
+			})
+		);
+
+		const localMidnight = new Date(2026, 8, 11, 0, 30, 0);
+		engine.updateTime(localMidnight);
+		expect(onTick).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				now: localMidnight,
+				todayIso: '2026-09-11'
 			})
 		);
 
