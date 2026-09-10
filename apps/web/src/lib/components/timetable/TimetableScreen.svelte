@@ -3,14 +3,13 @@
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import { createWeekSliderGesture } from '$lib/timetable/week-slider-gesture.svelte';
 	import { formatWeekDateRange, dayOfWeekFromIso } from '@chronos/core';
 	import { getContext } from 'svelte';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
-	import Slider from '$lib/components/ui/Slider.svelte';
 	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
+	import TimetableCapsuleIndicator from './TimetableCapsuleIndicator.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 
@@ -37,17 +36,12 @@
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
 	);
 
-	const weekGesture = createWeekSliderGesture({
-		getStartWeek: () => startWeek,
-		getEndWeek: () => endWeek,
-		getDisplayedWeek: () => screenState.displayedWeek,
-		onWeekChange: (week) => screen.setDisplayedWeek(week),
-		onJumpToCurrentWeek: () => screen.jumpToCurrentWeek()
-	});
+	const pendingWeekDelete = $derived(screen.pendingWeekDelete);
+	const hasMultipleWeeks = $derived(startWeek < endWeek);
+	let weekDeleteSheetOpen = $state(false);
+	let pagerPreviewWeek = $state<number | null>(null);
 
-	const displayedWeekNumber = $derived(
-		weekGesture.weekSliderVisible ? weekGesture.dragWeek : screenState.displayedWeek
-	);
+	const displayedWeekNumber = $derived(screenState.displayedWeek);
 	const weekRangeText = $derived(
 		formatWeekDateRange(
 			screenState.currentTimetable?.academicConfig,
@@ -73,33 +67,33 @@
 			today: headerTodayLabel ? ` ${headerTodayLabel}` : ''
 		})
 	);
-	const pendingWeekDelete = $derived(screen.pendingWeekDelete);
-	let weekDeleteSheetOpen = $state(false);
 
 	$effect(() => {
 		if (pendingWeekDelete) weekDeleteSheetOpen = true;
 	});
 
-	function focusWeekSliderThumb() {
+	function onHeaderClick() {
+		haptic.light();
+		screen.jumpToCurrentWeek();
+	}
+
+	function focusWeekIndicator() {
+		if (!hasMultipleWeeks) return;
 		requestAnimationFrame(() => {
-			const slider = document.getElementById('week-slider');
-			const thumb = slider?.querySelector<HTMLElement>('[role="slider"]');
-			thumb?.focus();
+			document.getElementById('week-indicator')?.focus();
 		});
 	}
 
 	function onWeekHeaderKeydown(event: KeyboardEvent) {
 		if (event.key === 'ArrowDown' || (event.key === 'Enter' && event.shiftKey)) {
 			event.preventDefault();
-			if (weekGesture.openWeekSlider()) {
-				focusWeekSliderThumb();
-			}
+			focusWeekIndicator();
 			return;
 		}
 
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
-			weekGesture.onHeaderTap();
+			onHeaderClick();
 		}
 	}
 
@@ -122,50 +116,35 @@
 			screen.setEditing(false);
 		}
 	});
+
+	let prevTimetableId = $state<string | undefined>(undefined);
+	$effect(() => {
+		const id = screenState.currentTimetable?.id;
+		if (id === prevTimetableId) return;
+		prevTimetableId = id;
+		pagerPreviewWeek = null;
+	});
 </script>
 
-<svelte:window
-	onpointermove={active ? weekGesture.onWindowPointerMove : undefined}
-	onpointerup={active ? weekGesture.onWindowPointerUp : undefined}
-	onpointercancel={active ? weekGesture.onWindowPointerCancel : undefined}
-	onkeydown={active ? onWindowKeydown : undefined}
-/>
+<svelte:window onkeydown={active ? onWindowKeydown : undefined} />
 
 <div class="relative flex h-[calc(100dvh-var(--bottom-bar-height))] flex-col">
 	<TopAppBar class="shrink-0">
 		{#snippet titleSnippet()}
-			<div
-				bind:this={weekGesture.headerContainerEl}
-				class="flex min-h-0 flex-1 cursor-pointer touch-none flex-col justify-center py-0.5 select-none sm:py-1"
-				role="button"
-				tabindex="0"
+			<button
+				type="button"
+				class="flex min-h-0 flex-1 cursor-pointer flex-col justify-center py-0.5 text-left select-none focus-visible:outline-none sm:py-1"
 				aria-label={weekHeaderAriaLabel}
-				aria-expanded={weekGesture.weekSliderVisible}
-				aria-controls={weekGesture.weekSliderVisible ? 'week-slider' : undefined}
-				onpointerdown={weekGesture.onPointerDown}
+				aria-controls={hasMultipleWeeks ? 'week-indicator' : undefined}
+				onclick={onHeaderClick}
 				onkeydown={onWeekHeaderKeydown}
-				oncontextmenu={(event) => event.preventDefault()}
 			>
 				<div class="flex h-6 items-center sm:h-7">
-					{#if weekGesture.weekSliderVisible && startWeek < endWeek}
-						<Slider
-							id="week-slider"
-							ariaLabel={hostT('timetable.week.sliderAria')}
-							bind:value={weekGesture.dragWeek}
-							min={startWeek}
-							max={endWeek}
-							step={1}
-							stops
-							onValueChange={weekGesture.onSliderValueChange}
-							onValueCommit={weekGesture.onSliderCommit}
-						/>
-					{:else}
-						<p
-							class="text-title-large truncate text-base leading-tight font-bold sm:text-lg md:text-xl"
-						>
-							{weekRangeText}
-						</p>
-					{/if}
+					<p
+						class="text-title-large truncate text-base leading-tight font-bold sm:text-lg md:text-xl"
+					>
+						{weekRangeText}
+					</p>
 				</div>
 				<div class="flex h-4.5 items-center sm:h-5">
 					<p
@@ -174,7 +153,7 @@
 						{weekLabel}
 					</p>
 				</div>
-			</div>
+			</button>
 		{/snippet}
 	</TopAppBar>
 
@@ -191,9 +170,14 @@
 				{layoutMode}
 				{capsuleCornerStyle}
 				{onCourseClick}
+				onPagerPreview={(week) => (pagerPreviewWeek = week)}
 			/>
 		{/key}
 	</TimetableWallpaperLayer>
+
+	{#if !screenState.isEditing && screenState.currentTimetable}
+		<TimetableCapsuleIndicator {screen} {pagerPreviewWeek} />
+	{/if}
 </div>
 
 {#if pendingWeekDelete}
