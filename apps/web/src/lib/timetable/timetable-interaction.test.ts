@@ -203,7 +203,11 @@ describe('createTimetableInteraction', () => {
 			);
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS + 50);
 			expect(onFire).not.toHaveBeenCalled();
-			expect(interaction.consumeClickSuppression()).toBe(true);
+			expect(
+				interaction.notePointerUp(
+					mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1, clientY: 10 })
+				)
+			).toEqual({ startedMode: 'view', gesture: 'moved' });
 		} finally {
 			vi.useRealTimers();
 		}
@@ -218,7 +222,10 @@ describe('createTimetableInteraction', () => {
 			interaction.notePagerFirstMove();
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS + 50);
 			expect(onFire).not.toHaveBeenCalled();
-			expect(interaction.consumeClickSuppression()).toBe(true);
+			expect(interaction.notePointerUp(mockPointerEvent())).toEqual({
+				startedMode: 'view',
+				gesture: 'moved'
+			});
 		} finally {
 			vi.useRealTimers();
 		}
@@ -263,6 +270,31 @@ describe('createTimetableInteraction', () => {
 		interaction.enterEditFromLongPress(mockPointerEvent());
 		expect(interaction.mode).toBe('edit');
 		expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
+	});
+
+	it('distinguishes a long-press release from a later edit-mode tap without a timeout', () => {
+		vi.useFakeTimers();
+		try {
+			const interaction = createTimetableInteraction();
+			const down = mockPointerEvent({ clientX: 10, clientY: 10 });
+			interaction.watchLongPress(down, () => interaction.enterEditFromLongPress(down));
+			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS);
+
+			expect(interaction.notePointerUp(down)).toEqual({
+				startedMode: 'view',
+				gesture: 'long-press'
+			});
+			expect(interaction.mode).toBe('edit');
+
+			const nextDown = mockPointerEvent({ clientX: 20, clientY: 20 });
+			expect(interaction.watchEditTap(nextDown)).toBe(true);
+			expect(interaction.notePointerUp(nextDown)).toEqual({
+				startedMode: 'edit',
+				gesture: 'tap'
+			});
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	it('waitForMove drag shows a session immediately but does not track until the threshold', () => {

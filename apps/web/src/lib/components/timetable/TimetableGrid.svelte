@@ -246,6 +246,24 @@
 		}
 	}
 
+	function handleOverlapPointerUp(key: string, event: PointerEvent) {
+		const result = interaction.notePointerUp(event);
+		if (
+			(result?.startedMode === 'view' && result.gesture === 'tap') ||
+			(result === null && interaction.isEditing)
+		) {
+			expandSlot(key);
+		}
+	}
+
+	function handleOverlapClick(key: string, event: MouseEvent) {
+		if (event.detail !== 0) {
+			event.preventDefault();
+			return;
+		}
+		expandSlot(key);
+	}
+
 	const bodyScrollAttach: Attachment = (node) => {
 		const element = node as HTMLDivElement;
 		scrollContainer = element;
@@ -539,7 +557,6 @@
 	onpointerup={gridGestureHandlers.onpointerup}
 	onpointerleave={gridGestureHandlers.onpointerleave}
 	onpointercancel={gridGestureHandlers.onpointercancel}
-	onclick={gridGestureHandlers.onclick}
 	ondragstart={(e) => e.preventDefault()}
 >
 	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
@@ -647,7 +664,8 @@
 									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
 									style={capsuleCornerAttrs(isEditing ? ALL_CORNERS_ROUNDED : item.corners).style}
 									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
-									onclick={() => expandSlot(item.key)}
+									onpointerup={(event) => handleOverlapPointerUp(item.key, event)}
+									onclick={(event) => handleOverlapClick(item.key, event)}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
 										{hostT('timetable.grid.overlap', { count: item.count })}
