@@ -53,6 +53,7 @@
 	let pagerSnap: ReturnType<typeof createWeekPagerSnap> | undefined;
 	let paintWeek = $state(0);
 
+	// 同步写入 preview，勿改 RAF 合并：与 displayedWeek 须在同一事件内到达父组件，否则指示器会先落到整数周。
 	function setPagerPreview(week: number) {
 		onPagerPreview?.(week);
 	}
@@ -85,10 +86,12 @@
 		const wasGesture = pagerGesture;
 		const gestureStart = gestureStartWeek;
 		const node = pagerEl;
-		// Keep preview/interpolation alive until scrollend so indicator dots crossfade smoothly.
+		// timeout 路径勿清空 preview、勿重置 pagerGesture：滑动未结束时需要保留小数 preview 做点阵交叉淡变。
+		// scrollend 后再统一收尾。
 		if (source === 'scrollend') {
 			pagerGesture = false;
 		}
+		// 勿在 !wasGesture 时 clearPagerPreview：多余的 scrollend 会在滑动中误清 preview。
 		if (!wasGesture) {
 			return;
 		}
@@ -145,6 +148,7 @@
 
 		setPagerPreview(preview);
 		paintWeek = Math.round(preview);
+		// 滑动中同步提交整数周以更新标题/课表；点阵靠 preview 插值。勿删此行来“修跳变”，根因在 TimetableScreen 的 preview 生命周期。
 		setDisplayedWeekDuringGesture(paintWeek);
 		scheduleSettle();
 	}

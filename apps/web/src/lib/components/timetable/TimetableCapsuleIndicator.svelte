@@ -53,6 +53,7 @@
 
 	const isExpanded = $derived(gesture.isScrubbing);
 	const hasGlass = $derived(isExpanded || pagerPreviewWeek !== null || glassLingerActive);
+	// 滑动时优先用小数 preview；displayedWeek 可能已取整，勿在 preview 存在时改回只用 displayedWeek。
 	const indicatorWeek = $derived(
 		gesture.isScrubbing ? gesture.scrubWeek : (pagerPreviewWeek ?? displayedWeek)
 	);
@@ -443,6 +444,7 @@
 		transition: opacity 160ms cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
+	/* 滑动中禁用 opacity 过渡，由 JS 按小数周插值；勿恢复 active 双色背景，会在取整边界突变。 */
 	.indicator-dot--interpolating {
 		transition: none;
 	}

@@ -117,6 +117,8 @@
 		}
 	});
 
+	// 仅在课表 id 变化时清空 preview。勿改为监听整个 screenState 或 displayedWeek：
+	// 滑动中 setDisplayedWeek 会触发 effect，提前清空 preview 会导致指示器点阵跳变。
 	let prevTimetableId = $state<string | undefined>(undefined);
 	$effect(() => {
 		const id = screenState.currentTimetable?.id;
