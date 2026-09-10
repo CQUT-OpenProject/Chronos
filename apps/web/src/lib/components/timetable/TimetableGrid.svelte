@@ -759,7 +759,7 @@
 		style="{capsuleCornerAttrs(displayCorners)
 			.style}; --capsule: {colors.background}; --capsule-fg: {colors.text}; touch-action: {isEditing
 			? 'none'
-			: 'pan-y'}; -webkit-user-drag: none; user-select: none;"
+			: 'pan-x pan-y'}; -webkit-user-drag: none; user-select: none;"
 		aria-label={buildCourseCapsuleAriaLabel(placed.course, {
 			teacher,
 			isHolidayMuted: placed.displayModel.isHolidayMuted

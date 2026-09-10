@@ -41,7 +41,6 @@ const basePath = isPagesBuild ? pagesBase : '';
 function resolveManualChunk(id: string): string | undefined {
 	if (!id.includes('node_modules')) return undefined;
 	if (id.includes('dexie')) return 'vendor-dexie';
-	if (id.includes('swiper')) return 'vendor-swiper';
 	if (id.includes('marked')) return 'vendor-marked';
 	if (id.includes('posthog-js')) return 'vendor-posthog';
 	if (id.includes('brotli-wasm')) return 'vendor-brotli';

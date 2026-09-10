@@ -7,7 +7,10 @@ import {
 	resolveDisplayedWeek,
 	slideIndexFromWeek,
 	weekFromSlideIndex,
-	weekSlideWindow
+	scrollOffsetFromWeek,
+	pagerPreviewWeekFromScroll,
+	committedWeekFromScroll,
+	shouldPaintPagerWeek
 } from './week-navigation';
 
 describe('week-navigation', () => {
@@ -54,13 +57,36 @@ describe('week-navigation', () => {
 		expect(slideIndexFromWeek(startWeek, week, weeks.length)).toBe(3);
 	});
 
-	it('weekSlideWindow keeps displayed week and at most one neighbor on each side', () => {
-		expect(weekSlideWindow(5, 1, 20)).toEqual({ weeks: [4, 5, 6], centerIndex: 1 });
-		expect(weekSlideWindow(1, 1, 20)).toEqual({ weeks: [1, 2], centerIndex: 0 });
-		expect(weekSlideWindow(20, 1, 20)).toEqual({ weeks: [19, 20], centerIndex: 1 });
-		expect(weekSlideWindow(1, 1, 1)).toEqual({ weeks: [1], centerIndex: 0 });
-		expect(weekSlideWindow(8, 8, 12)).toEqual({ weeks: [8, 9], centerIndex: 0 });
-		expect(weekSlideWindow(12, 8, 12)).toEqual({ weeks: [11, 12], centerIndex: 1 });
+	it('maps consecutive weeks onto a full-width scroll track', () => {
+		const pageWidth = 320;
+		expect(scrollOffsetFromWeek(1, pageWidth, 1)).toBe(0);
+		expect(scrollOffsetFromWeek(5, pageWidth, 1)).toBe(pageWidth * 4);
+		expect(scrollOffsetFromWeek(8, 0, 1)).toBe(0);
+
+		expect(pagerPreviewWeekFromScroll(0, pageWidth, 1, 20)).toBe(1);
+		expect(pagerPreviewWeekFromScroll(pageWidth * 4, pageWidth, 1, 20)).toBe(5);
+		expect(pagerPreviewWeekFromScroll(pageWidth * 4.5, pageWidth, 1, 20)).toBeCloseTo(5.5);
+		expect(pagerPreviewWeekFromScroll(-50, pageWidth, 1, 20)).toBe(1);
+		expect(pagerPreviewWeekFromScroll(pageWidth * 99, pageWidth, 1, 20)).toBe(20);
+		expect(pagerPreviewWeekFromScroll(pageWidth, 0, 1, 20)).toBeNull();
+
+		expect(committedWeekFromScroll(pageWidth * 4.49, pageWidth, 1, 20)).toBe(5);
+		expect(committedWeekFromScroll(pageWidth * 4.5, pageWidth, 1, 20)).toBe(6);
+		expect(committedWeekFromScroll(pageWidth * 19, pageWidth, 1, 20)).toBe(20);
+	});
+
+	it('paints the settled week immediately and neighbors after first frame', () => {
+		expect(shouldPaintPagerWeek(5, 5, false)).toBe(true);
+		expect(shouldPaintPagerWeek(4, 5, false)).toBe(false);
+		expect(shouldPaintPagerWeek(4, 5, true)).toBe(true);
+		expect(shouldPaintPagerWeek(6, 5, true)).toBe(true);
+		expect(shouldPaintPagerWeek(3, 5, true)).toBe(false);
+		expect(shouldPaintPagerWeek(3, 5, true, 2)).toBe(true);
+		expect(shouldPaintPagerWeek(7, 5, true, 2)).toBe(true);
+		expect(shouldPaintPagerWeek(2, 5, true, 2)).toBe(false);
+		expect(shouldPaintPagerWeek(2, 5, true, 3)).toBe(true);
+		expect(shouldPaintPagerWeek(8, 5, true, 3)).toBe(true);
+		expect(shouldPaintPagerWeek(1, 5, true, 3)).toBe(false);
 	});
 });
 

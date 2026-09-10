@@ -22,7 +22,8 @@ import {
 	clampDisplayedWeek,
 	resolveDisplayedWeek,
 	slideIndexFromWeek,
-	weekFromSlideIndex
+	weekFromSlideIndex,
+	WEEK_PAGER_NEIGHBOR_RADIUS
 } from './week-navigation';
 import { buildWeekViewport, createWeekLayoutCache } from './week-viewport';
 import { createTimetableInteraction } from './timetable-interaction.svelte';
@@ -107,6 +108,7 @@ function createTimetableScreen() {
 				todayIso: today,
 				displayedWeek,
 				expandedSlotKeys: expandedSlots,
+				viewportRadius: WEEK_PAGER_NEIGHBOR_RADIUS,
 				academicCalendarService: calendarService
 			},
 			layoutCache

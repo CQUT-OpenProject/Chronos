@@ -1,13 +1,22 @@
 <script lang="ts">
-	import { onMount, untrack } from 'svelte';
-	import type { SwiperContainer } from 'swiper/element';
+	import { untrack } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { CoursePaletteEntry } from '@chronos/core';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
-	import { weekSlideWindow } from '$lib/timetable/week-navigation';
-	import { TIMETABLE_POINTER_THRESHOLD_PX } from '$lib/timetable/timetable-interaction.svelte';
+	import {
+		committedWeekFromScroll,
+		pagerPreviewWeekFromScroll,
+		scrollOffsetFromWeek,
+		shouldPaintPagerWeek,
+		WEEK_PAGER_NEIGHBOR_RADIUS
+	} from '$lib/timetable/week-navigation';
+	import { createWeekPagerSnap } from '$lib/timetable/week-pager-snap';
 	import TimetableGrid from './TimetableGrid.svelte';
+
+	const PAGER_SETTLE_MS = 90;
+	const PAGER_SUPPRESS_MS = 150;
 
 	let {
 		screen,
@@ -16,7 +25,8 @@
 		layoutMode,
 		capsuleCornerStyle = 'sharp',
 		active = true,
-		onCourseClick
+		onCourseClick,
+		onPagerPreview
 	}: {
 		screen: TimetableScreenController;
 		hasDynamicBackground: boolean;
@@ -25,101 +35,164 @@
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		active?: boolean;
 		onCourseClick: (courseId: string) => void;
+		onPagerPreview?: (week: number | null) => void;
 	} = $props();
 
 	const screenState = $derived(screen.state);
-	const slideWindow = $derived(
-		weekSlideWindow(screenState.displayedWeek, screenState.startWeek, screenState.endWeek)
-	);
+	const weeks = $derived(screenState.weeks);
+	const allowPagerTouch = $derived(!screenState.isEditing);
 
-	let swiperReady = $state(false);
-	let swiperEl = $state<SwiperContainer | undefined>();
-	let suppressPagerWeekSync = true;
+	let pagerEl = $state<HTMLDivElement | undefined>();
+	let pagerReady = $state(false);
 	let paintAdjacent = $state(false);
 
-	onMount(() => {
-		let cancelled = false;
+	let pagerGesture = false;
+	let gestureStartWeek: number | null = null;
+	let suppressScrollUntil = 0;
+	let settleTimer = 0;
+	let pagerSnap: ReturnType<typeof createWeekPagerSnap> | undefined;
+	let paintWeek = $state(0);
 
-		void (async () => {
-			await import('swiper/css');
-			const { register } = await import('swiper/element');
-			if (cancelled) return;
-			register();
-			swiperReady = true;
-		})();
-
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	function onSliderFirstMove() {
-		screen.interaction.notePagerFirstMove();
+	function setPagerPreview(week: number) {
+		onPagerPreview?.(week);
 	}
 
-	function onSlideSettled() {
-		if (suppressPagerWeekSync || !swiperEl?.swiper) return;
-		const week = slideWindow.weeks[swiperEl.swiper.activeIndex];
-		if (week != null && week !== screen.state.displayedWeek) {
-			trackEvent('timetable_week_swipe');
-			screen.setDisplayedWeek(week);
+	function clearPagerPreview() {
+		onPagerPreview?.(null);
+	}
+
+	function syncPagerScroll(node: HTMLDivElement): boolean {
+		if (pagerGesture) return true;
+		const width = node.clientWidth;
+		if (width <= 0) return false;
+		const target = scrollOffsetFromWeek(screen.state.displayedWeek, width, screen.state.startWeek);
+		if (Math.abs(node.scrollLeft - target) >= 2) {
+			suppressScrollUntil = Date.now() + PAGER_SUPPRESS_MS;
+			node.scrollTo({ left: target, behavior: 'instant' });
+		}
+		return true;
+	}
+
+	function setDisplayedWeekDuringGesture(week: number) {
+		if (week === screen.state.displayedWeek) return;
+		screen.setDisplayedWeek(week);
+	}
+
+	function settlePager(source: 'timeout' | 'scrollend') {
+		if (source === 'timeout') {
+			settleTimer = 0;
+		}
+		const wasGesture = pagerGesture;
+		const gestureStart = gestureStartWeek;
+		const node = pagerEl;
+		// Keep preview/interpolation alive until scrollend so indicator dots crossfade smoothly.
+		if (source === 'scrollend') {
+			pagerGesture = false;
+		}
+		if (!wasGesture) {
+			return;
+		}
+		if (node) {
+			const week = committedWeekFromScroll(
+				node.scrollLeft,
+				node.clientWidth,
+				screen.state.startWeek,
+				screen.state.endWeek
+			);
+			if (week != null) {
+				setDisplayedWeekDuringGesture(week);
+				if (source === 'scrollend' && gestureStart != null && week !== gestureStart) {
+					trackEvent('timetable_week_swipe');
+				}
+			}
+		}
+		if (source === 'scrollend') {
+			gestureStartWeek = null;
+			clearPagerPreview();
 		}
 	}
 
-	function syncSwiperToWindow(centerIndex: number) {
-		const swiper = swiperEl?.swiper;
-		if (!swiper || suppressPagerWeekSync) return;
-
-		suppressPagerWeekSync = true;
-		swiper.update();
-		swiper.slideTo(centerIndex, 0);
-		suppressPagerWeekSync = false;
+	function scheduleSettle() {
+		window.clearTimeout(settleTimer);
+		settleTimer = window.setTimeout(() => settlePager('timeout'), PAGER_SETTLE_MS);
 	}
 
-	$effect(() => {
-		if (!swiperReady) return;
-		const el = swiperEl;
-		if (!el) return;
+	function onPagerScrollEnd() {
+		if (pagerSnap?.isAnimating) return;
+		window.clearTimeout(settleTimer);
+		settleTimer = 0;
+		settlePager('scrollend');
+	}
 
-		const initialSlideIndex = untrack(() => slideWindow.centerIndex);
+	function onPagerScroll(event: Event) {
+		const node = event.currentTarget as HTMLDivElement;
+		if (Date.now() < suppressScrollUntil) return;
 
-		suppressPagerWeekSync = true;
+		const { startWeek, endWeek } = screen.state;
+		const preview = pagerPreviewWeekFromScroll(
+			node.scrollLeft,
+			node.clientWidth,
+			startWeek,
+			endWeek
+		);
+		if (preview == null) return;
 
-		Object.assign(el, {
-			slidesPerView: 1,
-			speed: 300,
-			resistanceRatio: 0.85,
-			touchRatio: 1,
-			threshold: TIMETABLE_POINTER_THRESHOLD_PX,
-			longSwipesRatio: 0.3,
-			followFinger: true,
-			touchReleaseOnEdges: true,
-			initialSlide: initialSlideIndex
+		if (!pagerGesture) {
+			pagerGesture = true;
+			gestureStartWeek = screen.state.displayedWeek;
+			screen.interaction.notePagerFirstMove();
+		}
+
+		setPagerPreview(preview);
+		paintWeek = Math.round(preview);
+		setDisplayedWeekDuringGesture(paintWeek);
+		scheduleSettle();
+	}
+
+	const pagerAttach: Attachment<HTMLDivElement> = (node) => {
+		pagerEl = node;
+		untrack(() => {
+			paintWeek = screen.state.displayedWeek;
+			if (syncPagerScroll(node)) pagerReady = true;
 		});
-
-		el.initialize();
-
-		const swiper = el.swiper;
-		swiper?.on('slideChangeTransitionEnd', onSlideSettled);
-		swiper?.on('sliderFirstMove', onSliderFirstMove);
-
-		suppressPagerWeekSync = false;
-
+		const snap = createWeekPagerSnap(node, onPagerScrollEnd);
+		pagerSnap = snap;
+		const resizeObserver = new ResizeObserver(() => {
+			snap.cancel();
+			if (pagerGesture) return;
+			untrack(() => syncPagerScroll(node));
+			if (node.clientWidth > 0) pagerReady = true;
+		});
+		resizeObserver.observe(node);
 		return () => {
-			swiper?.off('slideChangeTransitionEnd', onSlideSettled);
-			swiper?.off('sliderFirstMove', onSliderFirstMove);
-			el.swiper?.destroy(true, true);
+			resizeObserver.disconnect();
+			snap.destroy();
+			if (pagerSnap === snap) pagerSnap = undefined;
+			window.clearTimeout(settleTimer);
+			settleTimer = 0;
+			gestureStartWeek = null;
+			pagerGesture = false;
+			clearPagerPreview();
+			if (pagerEl === node) pagerEl = undefined;
 		};
-	});
+	};
 
 	$effect(() => {
-		const { centerIndex } = slideWindow;
-		void screenState.displayedWeek;
-		syncSwiperToWindow(centerIndex);
+		const week = screenState.displayedWeek;
+		const startWeek = screenState.startWeek;
+		void screenState.endWeek;
+		void week;
+		void startWeek;
+		const node = pagerEl;
+		// Writing scrollLeft during a fling aborts iOS momentum scrolling.
+		if (!node || pagerGesture) return;
+		paintWeek = week;
+		syncPagerScroll(node);
 	});
 
 	$effect(() => {
 		if (!active) {
+			pagerSnap?.cancel();
 			paintAdjacent = false;
 			return;
 		}
@@ -128,66 +201,75 @@
 		});
 		return () => cancelAnimationFrame(frame);
 	});
-	$effect(() => {
-		const swiper = swiperEl?.swiper;
-		if (!swiper) return;
-		void screenState.isEditing;
-		swiper.allowTouchMove = screen.interaction.allowPagerTouch;
-	});
 </script>
 
-{#snippet weekGrid(week: number)}
-	{@const gridModel = screenState.weekGridModels.get(week)}
-	{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
-	{#if gridModel}
-		<TimetableGrid
-			displayedWeek={week}
-			isCurrentWeek={week === screenState.academicWeek}
-			currentPeriodIndex={screenState.currentPeriodIndex}
-			expandedSlots={screenState.expandedSlots}
-			onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
-			interaction={screen.interaction}
-			{gridModel}
-			courseDisplayModels={courseModels}
-			{hasDynamicBackground}
-			{coursePalette}
-			paletteCourses={screenState.currentTimetable?.courses}
-			{layoutMode}
-			{capsuleCornerStyle}
-			onCourseClick={(course) => onCourseClick(course.id)}
-			onRequestWeekDelete={(course, week) => screen.requestWeekDelete(course, week)}
-		/>
-	{/if}
-{/snippet}
-
-{#if swiperReady}
-	<swiper-container bind:this={swiperEl} init={false} class="timetable-week-swiper">
-		{#each slideWindow.weeks as week (week)}
-			<swiper-slide class="timetable-week-slide">
-				{#if week === screenState.displayedWeek || paintAdjacent}
-					{@render weekGrid(week)}
+<div
+	class="timetable-week-pager"
+	class:timetable-week-pager-locked={!allowPagerTouch}
+	class:timetable-week-pager-pending={!pagerReady}
+	{@attach pagerAttach}
+	onscroll={onPagerScroll}
+	onscrollend={onPagerScrollEnd}
+>
+	{#each weeks as week (week)}
+		<div class="timetable-week-page">
+			{#if shouldPaintPagerWeek(week, paintWeek || screenState.displayedWeek, paintAdjacent, WEEK_PAGER_NEIGHBOR_RADIUS)}
+				{@const gridModel = screenState.weekGridModels.get(week)}
+				{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
+				{#if gridModel}
+					<TimetableGrid
+						displayedWeek={week}
+						isCurrentWeek={week === screenState.academicWeek}
+						currentPeriodIndex={screenState.currentPeriodIndex}
+						expandedSlots={screenState.expandedSlots}
+						onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
+						interaction={screen.interaction}
+						{gridModel}
+						courseDisplayModels={courseModels}
+						{hasDynamicBackground}
+						{coursePalette}
+						paletteCourses={screenState.currentTimetable?.courses}
+						{layoutMode}
+						{capsuleCornerStyle}
+						onCourseClick={(course) => onCourseClick(course.id)}
+						onRequestWeekDelete={(course, week) => screen.requestWeekDelete(course, week)}
+					/>
 				{/if}
-			</swiper-slide>
-		{/each}
-	</swiper-container>
-{:else}
-	<div class="timetable-week-swiper">
-		<div class="timetable-week-slide">
-			{@render weekGrid(screenState.displayedWeek)}
+			{/if}
 		</div>
-	</div>
-{/if}
+	{/each}
+</div>
 
 <style>
-	.timetable-week-swiper {
-		display: block;
+	.timetable-week-pager {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: 100%;
+		flex: 1;
+		min-height: 0;
 		height: 100%;
 		width: 100%;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x mandatory;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+		touch-action: pan-x pan-y;
 	}
 
-	.timetable-week-slide {
-		display: block;
+	.timetable-week-pager-locked {
+		overflow-x: hidden;
+		touch-action: pan-y;
+	}
+
+	.timetable-week-pager-pending {
+		visibility: hidden;
+	}
+
+	.timetable-week-page {
 		height: 100%;
 		overflow: hidden;
+		scroll-snap-align: start;
+		scroll-snap-stop: normal;
 	}
 </style>
