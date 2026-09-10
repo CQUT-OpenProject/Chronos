@@ -13,6 +13,7 @@
 		WEEK_PAGER_NEIGHBOR_RADIUS
 	} from '$lib/timetable/week-navigation';
 	import { createWeekPagerSnap } from '$lib/timetable/week-pager-snap';
+	import type { CapsulePagerPreview } from '$lib/timetable/capsule-pager-preview';
 	import TimetableGrid from './TimetableGrid.svelte';
 
 	const PAGER_SETTLE_MS = 90;
@@ -26,7 +27,7 @@
 		capsuleCornerStyle = 'sharp',
 		active = true,
 		onCourseClick,
-		onPagerPreview
+		pagerPreview
 	}: {
 		screen: TimetableScreenController;
 		hasDynamicBackground: boolean;
@@ -35,7 +36,7 @@
 		capsuleCornerStyle?: CapsuleCornerStyle;
 		active?: boolean;
 		onCourseClick: (courseId: string) => void;
-		onPagerPreview?: (week: number | null) => void;
+		pagerPreview?: CapsulePagerPreview;
 	} = $props();
 
 	const screenState = $derived(screen.state);
@@ -53,13 +54,13 @@
 	let pagerSnap: ReturnType<typeof createWeekPagerSnap> | undefined;
 	let paintWeek = $state(0);
 
-	// 同步写入 preview，勿改 RAF 合并：与 displayedWeek 须在同一事件内到达父组件，否则指示器会先落到整数周。
+	// 同步写入 preview，勿改 RAF 合并：与 displayedWeek 须在同一事件内到达指示器，否则点阵会先落到整数周。
 	function setPagerPreview(week: number) {
-		onPagerPreview?.(week);
+		pagerPreview?.setPreview(week);
 	}
 
 	function clearPagerPreview() {
-		onPagerPreview?.(null);
+		pagerPreview?.clearPreview();
 	}
 
 	function syncPagerScroll(node: HTMLDivElement): boolean {

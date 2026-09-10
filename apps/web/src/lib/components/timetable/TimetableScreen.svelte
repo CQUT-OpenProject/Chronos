@@ -8,6 +8,7 @@
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
+	import { createCapsulePagerPreview } from '$lib/timetable/capsule-pager-preview';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 	import TimetableCapsuleIndicator from './TimetableCapsuleIndicator.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -39,7 +40,7 @@
 	const pendingWeekDelete = $derived(screen.pendingWeekDelete);
 	const hasMultipleWeeks = $derived(startWeek < endWeek);
 	let weekDeleteSheetOpen = $state(false);
-	let pagerPreviewWeek = $state<number | null>(null);
+	const pagerPreview = createCapsulePagerPreview();
 
 	const displayedWeekNumber = $derived(screenState.displayedWeek);
 	const weekRangeText = $derived(
@@ -116,16 +117,6 @@
 			screen.setEditing(false);
 		}
 	});
-
-	// 仅在课表 id 变化时清空 preview。勿改为监听整个 screenState 或 displayedWeek：
-	// 滑动中 setDisplayedWeek 会触发 effect，提前清空 preview 会导致指示器点阵跳变。
-	let prevTimetableId = $state<string | undefined>(undefined);
-	$effect(() => {
-		const id = screenState.currentTimetable?.id;
-		if (id === prevTimetableId) return;
-		prevTimetableId = id;
-		pagerPreviewWeek = null;
-	});
 </script>
 
 <svelte:window onkeydown={active ? onWindowKeydown : undefined} />
@@ -172,13 +163,13 @@
 				{layoutMode}
 				{capsuleCornerStyle}
 				{onCourseClick}
-				onPagerPreview={(week) => (pagerPreviewWeek = week)}
+				{pagerPreview}
 			/>
 		{/key}
 	</TimetableWallpaperLayer>
 
 	{#if !screenState.isEditing && screenState.currentTimetable}
-		<TimetableCapsuleIndicator {screen} {pagerPreviewWeek} />
+		<TimetableCapsuleIndicator {screen} {pagerPreview} />
 	{/if}
 </div>
 

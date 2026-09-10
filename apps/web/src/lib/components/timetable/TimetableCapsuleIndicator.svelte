@@ -3,10 +3,13 @@
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import {
+		applyScrollingDotTrackVisual,
 		calculateExpandedDots,
-		calculateScrollingDotTrack
+		calculateScrollingDotTrack,
+		scrollingDotTrackNeedsStructureUpdate
 	} from '$lib/timetable/capsule-indicator';
 	import { createCapsuleIndicatorGesture } from '$lib/timetable/capsule-indicator-gesture.svelte';
+	import type { CapsulePagerPreview } from '$lib/timetable/capsule-pager-preview';
 	import { createTransitionStateScheduler } from '$lib/timetable/capsule-indicator-transition';
 	import { haptic } from '$lib/haptic/haptic';
 
@@ -16,11 +19,11 @@
 
 	interface Props {
 		screen: TimetableScreenController;
-		pagerPreviewWeek?: number | null;
+		pagerPreview?: CapsulePagerPreview;
 		class?: string;
 	}
 
-	let { screen, pagerPreviewWeek = null, class: className = '' }: Props = $props();
+	let { screen, pagerPreview, class: className = '' }: Props = $props();
 
 	const screenState = $derived(screen.state);
 	const startWeek = $derived(screenState.startWeek);
@@ -54,52 +57,90 @@
 	}
 
 	const isExpanded = $derived(gesture.isScrubbing);
-	const hasGlass = $derived(isExpanded || pagerPreviewWeek !== null || glassLingerActive);
-	// 滑动时优先用小数 preview；displayedWeek 可能已取整，勿在 preview 存在时改回只用 displayedWeek。
-	const indicatorWeek = $derived(
-		gesture.isScrubbing ? gesture.scrubWeek : (pagerPreviewWeek ?? displayedWeek)
-	);
-	const ariaWeek = $derived(Math.round(indicatorWeek));
-	const isInterpolating = $derived(pagerPreviewWeek !== null);
+	let pagerPreviewActive = $state(false);
+	const hasGlass = $derived(isExpanded || pagerPreviewActive || glassLingerActive);
+	const indicatorWeek = $derived(gesture.isScrubbing ? gesture.scrubWeek : displayedWeek);
+	const ariaWeek = $derived(gesture.isScrubbing ? Math.round(gesture.scrubWeek) : displayedWeek);
+	const isInterpolating = $derived(pagerPreviewActive);
+
+	let compactViewportEl = $state<HTMLDivElement | null>(null);
+
+	function onPagerPreviewWeek(week: number | null) {
+		if (week === null) {
+			if (!pagerPreviewActive) return;
+			pagerPreviewActive = false;
+			return;
+		}
+
+		const becameActive = !pagerPreviewActive;
+		pagerPreviewActive = true;
+
+		const track = calculateScrollingDotTrack({
+			startWeek,
+			endWeek,
+			scrollWeek: week,
+			previousWindowStart: compactTrack.windowStart,
+			currentAcademicWeek: academicWeek
+		});
+
+		if (becameActive || scrollingDotTrackNeedsStructureUpdate(compactTrack, track)) {
+			compactTrack = track;
+			return;
+		}
+
+		if (compactViewportEl) {
+			applyScrollingDotTrackVisual(track, compactViewportEl);
+		}
+	}
 
 	let isInitialized = false;
 	let prevDisplayedWeek = displayedWeek;
 	let prevIsExpanded = false;
-	let prevPagerPreviewWeek: number | null = null;
+	let prevPagerPreviewActive = false;
 
 	$effect(() => {
 		const currExpanded = isExpanded;
-		const currPreview = pagerPreviewWeek;
+		const currPreviewActive = pagerPreviewActive;
 		const currDisplayed = displayedWeek;
 
 		if (!isInitialized) {
 			isInitialized = true;
 			prevDisplayedWeek = currDisplayed;
 			prevIsExpanded = currExpanded;
-			prevPagerPreviewWeek = currPreview;
+			prevPagerPreviewActive = currPreviewActive;
 			return;
 		}
 
 		const wasExpanded = prevIsExpanded;
-		const wasPreview = prevPagerPreviewWeek !== null;
+		const wasPreview = prevPagerPreviewActive;
 		const displayedChanged = currDisplayed !== prevDisplayedWeek;
 
 		prevIsExpanded = currExpanded;
-		prevPagerPreviewWeek = currPreview;
+		prevPagerPreviewActive = currPreviewActive;
 		prevDisplayedWeek = currDisplayed;
 
-		if (currExpanded || currPreview !== null) {
+		if (currExpanded || currPreviewActive) {
 			cancelGlassLinger();
 			return;
 		}
 
-		if (
-			(wasExpanded && !currExpanded) ||
-			(wasPreview && currPreview === null) ||
-			displayedChanged
-		) {
+		if ((wasExpanded && !currExpanded) || (wasPreview && !currPreviewActive) || displayedChanged) {
 			triggerGlassLinger();
 		}
+	});
+
+	$effect(() => {
+		if (!pagerPreview) return;
+		pagerPreview.attach({ onPagerPreviewWeek });
+		return () => pagerPreview.detach();
+	});
+
+	let prevTimetableId = $state<string | undefined>(undefined);
+	$effect(() => {
+		const id = screenState.currentTimetable?.id;
+		if (id === prevTimetableId) return;
+		prevTimetableId = id;
+		pagerPreview?.clearPreview();
 	});
 
 	let showExpandedTrack = $state(false);
@@ -122,18 +163,24 @@
 		gesture.destroy();
 	});
 
-	const compactTrackOptions = $derived({
-		startWeek,
-		endWeek,
-		scrollWeek: indicatorWeek,
-		currentAcademicWeek: academicWeek,
-		maxVisible: 4
-	});
-	let compactTrack = $state.raw(untrack(() => calculateScrollingDotTrack(compactTrackOptions)));
+	let compactTrack = $state.raw(
+		untrack(() =>
+			calculateScrollingDotTrack({
+				startWeek,
+				endWeek,
+				scrollWeek: displayedWeek,
+				currentAcademicWeek: academicWeek
+			})
+		)
+	);
 
 	$effect.pre(() => {
+		if (pagerPreviewActive || isExpanded) return;
 		compactTrack = calculateScrollingDotTrack({
-			...compactTrackOptions,
+			startWeek,
+			endWeek,
+			scrollWeek: displayedWeek,
+			currentAcademicWeek: academicWeek,
 			// The previous viewport is history, not a dependency of its own update.
 			previousWindowStart: untrack(() => compactTrack.windowStart)
 		});
@@ -198,13 +245,14 @@
 </script>
 
 {#snippet compactIndicator()}
-	<div class="dots-track-viewport" aria-hidden="true">
+	<div class="dots-track-viewport" bind:this={compactViewportEl} aria-hidden="true">
 		<div
 			class="dots-track dots-track--compact flex items-center justify-center gap-1.5"
 			style:--track-offset={compactTrack.trackOffset}
 		>
 			{#each compactTrack.dots as dot (dot.week)}
 				<span
+					data-week={dot.week}
 					class={[
 						'indicator-dot aspect-square rounded-full bg-on-surface',
 						isInterpolating && 'indicator-dot--interpolating'

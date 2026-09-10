@@ -76,6 +76,27 @@ export function calculateScrollingDotTrack({
 	return { dots, windowStart, trackOffset: firstWeek - windowStart };
 }
 
+export function scrollingDotTrackNeedsStructureUpdate(
+	prev: ScrollingDotTrack,
+	next: ScrollingDotTrack
+): boolean {
+	if (prev.dots.length !== next.dots.length) return true;
+	return prev.dots.some((dot, index) => dot.week !== next.dots[index]?.week);
+}
+
+export function applyScrollingDotTrackVisual(
+	track: ScrollingDotTrack,
+	container: HTMLElement
+): void {
+	const trackEl = container.querySelector<HTMLElement>('.dots-track--compact');
+	if (!trackEl) return;
+	trackEl.style.setProperty('--track-offset', String(track.trackOffset));
+	for (const dot of track.dots) {
+		const el = trackEl.querySelector<HTMLElement>(`[data-week="${dot.week}"]`);
+		if (el) el.style.opacity = String(dot.opacity);
+	}
+}
+
 export function calculateExpandedDots({
 	startWeek,
 	endWeek,

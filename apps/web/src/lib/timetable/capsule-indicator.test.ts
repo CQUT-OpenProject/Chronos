@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vite-plus/test';
 import {
 	calculateExpandedDots,
 	calculateScrollingDotTrack,
+	scrollingDotTrackNeedsStructureUpdate,
 	type ScrollingDotTrack
 } from './capsule-indicator';
 
@@ -198,6 +199,34 @@ describe('calculateScrollingDotTrack', () => {
 		});
 		expect(track.dots.map((dot) => dot.week)).toEqual([104, 105, 106, 107]);
 		expect(track.dots.findIndex((dot) => dot.active)).toBe(2);
+	});
+});
+
+describe('scrollingDotTrackNeedsStructureUpdate', () => {
+	it('returns false when only opacity and offset change', () => {
+		const previous = calculateScrollingDotTrack({
+			...base,
+			scrollWeek: 10.2,
+			previousWindowStart: 8
+		});
+		const next = calculateScrollingDotTrack({
+			...base,
+			scrollWeek: 10.5,
+			previousWindowStart: previous.windowStart
+		});
+
+		expect(scrollingDotTrackNeedsStructureUpdate(previous, next)).toBe(false);
+	});
+
+	it('returns true when the visible week numbers change', () => {
+		const previous = calculateScrollingDotTrack({ ...base, scrollWeek: 10 });
+		const next = calculateScrollingDotTrack({
+			...base,
+			scrollWeek: 12,
+			previousWindowStart: previous.windowStart
+		});
+
+		expect(scrollingDotTrackNeedsStructureUpdate(previous, next)).toBe(true);
 	});
 });
 
