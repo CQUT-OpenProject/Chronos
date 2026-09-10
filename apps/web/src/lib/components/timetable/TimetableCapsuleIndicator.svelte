@@ -7,6 +7,7 @@
 		calculateScrollingDotTrack
 	} from '$lib/timetable/capsule-indicator';
 	import { createCapsuleIndicatorGesture } from '$lib/timetable/capsule-indicator-gesture.svelte';
+	import { createTransitionStateScheduler } from '$lib/timetable/capsule-indicator-transition';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const STATE_TRANSITION_MS = 200;
@@ -36,19 +37,20 @@
 		onWeekChange: (week) => screen.setDisplayedWeek(week)
 	});
 
+	const transitionState = createTransitionStateScheduler();
+
 	let glassLingerActive = $state(false);
-	let glassLingerTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function triggerGlassLinger() {
-		if (glassLingerTimer) {
-			clearTimeout(glassLingerTimer);
-			glassLingerTimer = null;
-		}
 		glassLingerActive = true;
-		glassLingerTimer = setTimeout(() => {
+		transitionState.scheduleTransitionState('glassLinger', GLASS_LINGER_MS, () => {
 			glassLingerActive = false;
-			glassLingerTimer = null;
-		}, GLASS_LINGER_MS);
+		});
+	}
+
+	function cancelGlassLinger() {
+		transitionState.cancel('glassLinger');
+		glassLingerActive = false;
 	}
 
 	const isExpanded = $derived(gesture.isScrubbing);
@@ -87,11 +89,7 @@
 		prevDisplayedWeek = currDisplayed;
 
 		if (currExpanded || currPreview !== null) {
-			if (glassLingerTimer) {
-				clearTimeout(glassLingerTimer);
-				glassLingerTimer = null;
-			}
-			glassLingerActive = false;
+			cancelGlassLinger();
 			return;
 		}
 
@@ -105,28 +103,22 @@
 	});
 
 	let showExpandedTrack = $state(false);
-	let expandedTrackTimer: ReturnType<typeof setTimeout> | null = null;
 
 	$effect(() => {
 		if (isExpanded) {
-			if (expandedTrackTimer) {
-				clearTimeout(expandedTrackTimer);
-				expandedTrackTimer = null;
-			}
+			transitionState.cancel('expandedTrack');
 			showExpandedTrack = true;
-		} else if (showExpandedTrack && !expandedTrackTimer) {
-			expandedTrackTimer = setTimeout(() => {
+		} else if (showExpandedTrack && !transitionState.hasPending('expandedTrack')) {
+			transitionState.scheduleTransitionState('expandedTrack', STATE_TRANSITION_MS, () => {
 				showExpandedTrack = false;
-				expandedTrackTimer = null;
-			}, STATE_TRANSITION_MS);
+			});
 		}
 	});
 
 	const isCollapsing = $derived(!isExpanded && showExpandedTrack);
 
 	onDestroy(() => {
-		if (expandedTrackTimer) clearTimeout(expandedTrackTimer);
-		if (glassLingerTimer) clearTimeout(glassLingerTimer);
+		transitionState.cancelAll();
 		gesture.destroy();
 	});
 
