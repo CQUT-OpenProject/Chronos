@@ -20,6 +20,7 @@ export const PREFERENCE_STORAGE_KEYS = {
 	paletteMode: 'chronos_preferences:palette_mode',
 	capsuleCornerStyle: 'chronos_preferences:capsule_corner_style',
 	hapticFeedbackEnabled: 'chronos_preferences:haptic_feedback_enabled',
+	currentPeriodHighlightEnabled: 'chronos_preferences:current_period_highlight_enabled',
 	visualThemeId: 'chronos_preferences:visual_theme_id',
 	locale: 'chronos_preferences:locale'
 } as const;
@@ -31,6 +32,7 @@ export interface UserPreferences {
 	timetableLayoutMode: TimetableLayoutMode;
 	capsuleCornerStyle: CapsuleCornerStyle;
 	hapticFeedbackEnabled: boolean;
+	currentPeriodHighlightEnabled: boolean;
 	/** Active visual theme id (e.g. m3-default, yumemita). */
 	visualThemeId?: string;
 	/** UI locale (zh-cn | en). */
@@ -45,5 +47,6 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
 	timetableLayoutMode: 'fixed',
 	capsuleCornerStyle: 'sharp',
 	hapticFeedbackEnabled: true,
+	currentPeriodHighlightEnabled: false,
 	visualThemeId: DEFAULT_VISUAL_THEME_ID
 };

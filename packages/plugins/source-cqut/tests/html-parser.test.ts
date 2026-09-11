@@ -36,7 +36,8 @@ function createMockEnv(): ChronosEnv {
 				paletteMode: 'vibrant',
 				timetableLayoutMode: 'fixed',
 				capsuleCornerStyle: 'rounded',
-				hapticFeedbackEnabled: true
+				hapticFeedbackEnabled: true,
+				currentPeriodHighlightEnabled: true
 			})),
 			savePreferences: vi.fn(async () => {}),
 			getPluginData: vi.fn(async () => null),

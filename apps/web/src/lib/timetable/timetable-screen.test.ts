@@ -49,7 +49,8 @@ describe('TimetableScreenController', () => {
 				timetableLayoutMode: 'fixed',
 				paletteMode: 'vibrant',
 				capsuleCornerStyle: 'rounded',
-				hapticFeedbackEnabled: true
+				hapticFeedbackEnabled: true,
+				currentPeriodHighlightEnabled: true
 			}
 		} as any,
 		init: () => {},

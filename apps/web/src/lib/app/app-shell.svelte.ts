@@ -140,6 +140,10 @@ export function createAppShell() {
 		await updatePreferences({ hapticFeedbackEnabled: enabled });
 	}
 
+	async function setCurrentPeriodHighlightEnabled(enabled: boolean) {
+		await updatePreferences({ currentPeriodHighlightEnabled: enabled });
+	}
+
 	async function switchTimetable(id: string) {
 		await controller.switchTimetable(id);
 	}
@@ -181,6 +185,7 @@ export function createAppShell() {
 		setPaletteMode,
 		setCapsuleCornerStyle,
 		setHapticFeedbackEnabled,
+		setCurrentPeriodHighlightEnabled,
 		switchTimetable,
 		deleteTimetable,
 		clearAllData

@@ -15,6 +15,7 @@
 
 	import { BUILTIN_COLOR_SCHEME_VIBRANT, resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import Radio from '$lib/components/ui/Radio.svelte';
+	import Switch from '$lib/components/ui/Switch.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import { haptic } from '$lib/haptic/haptic';
@@ -25,6 +26,9 @@
 	const paletteMode = $derived(shell.controller.userPreferences?.paletteMode ?? 'vibrant');
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
+	);
+	const currentPeriodHighlightEnabled = $derived(
+		shell.controller.userPreferences?.currentPeriodHighlightEnabled ?? false
 	);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const visualThemeId = $derived(shell.controller.activeThemeId);
@@ -150,6 +154,12 @@
 		trackEvent('settings_locale_change', { locale });
 		await applyAppLocale(getAppEngine(), locale);
 	}
+
+	async function toggleCurrentPeriodHighlight(checked: boolean) {
+		haptic.light();
+		trackEvent('settings_period_highlight_change', { enabled: checked });
+		await shell.setCurrentPeriodHighlightEnabled(checked);
+	}
 </script>
 
 <div class="flex flex-col gap-5">
@@ -218,6 +228,21 @@
 				{/snippet}
 			</MineRow>
 		{/each}
+	</MineSection>
+
+	<MineSection>
+		<MineRow
+			label
+			title={hostT('display.periodHighlight.label')}
+			supporting={hostT('display.periodHighlight.desc')}
+		>
+			{#snippet trailing()}
+				<Switch
+					checked={currentPeriodHighlightEnabled}
+					onCheckedChange={toggleCurrentPeriodHighlight}
+				/>
+			{/snippet}
+		</MineRow>
 	</MineSection>
 
 	<MineSection title={hostT('display.section.capsule')}>

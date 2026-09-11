@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { getContext, untrack } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
+	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { CoursePaletteEntry } from '@chronos/core';
@@ -39,8 +40,12 @@
 		pagerPreview?: CapsulePagerPreview;
 	} = $props();
 
+	const shell = getContext<AppShellController>('appShell');
 	const screenState = $derived(screen.state);
 	const weeks = $derived(screenState.weeks);
+	const periodHighlightEnabled = $derived(
+		shell.controller.userPreferences?.currentPeriodHighlightEnabled ?? false
+	);
 	const allowPagerTouch = $derived(!screenState.isEditing);
 
 	let pagerEl = $state<HTMLDivElement | undefined>();
@@ -226,6 +231,7 @@
 						displayedWeek={week}
 						isCurrentWeek={week === screenState.academicWeek}
 						currentPeriodIndex={screenState.currentPeriodIndex}
+						{periodHighlightEnabled}
 						expandedSlots={screenState.expandedSlots}
 						onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
 						interaction={screen.interaction}

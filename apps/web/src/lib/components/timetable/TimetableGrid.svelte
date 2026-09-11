@@ -57,6 +57,7 @@
 		displayedWeek: number;
 		isCurrentWeek: boolean;
 		currentPeriodIndex: number | null;
+		periodHighlightEnabled?: boolean;
 		expandedSlots?: ReadonlySet<string>;
 		onExpandSlot?: (slotKey: string) => void;
 		gridModel: TimetableGridModel;
@@ -75,6 +76,7 @@
 		displayedWeek,
 		isCurrentWeek,
 		currentPeriodIndex,
+		periodHighlightEnabled = false,
 		expandedSlots: propExpandedSlots,
 		onExpandSlot,
 		gridModel,
@@ -89,6 +91,7 @@
 		interaction
 	}: Props = $props();
 
+	const effectivePeriodIndex = $derived(periodHighlightEnabled ? currentPeriodIndex : null);
 	const isEditing = $derived(interaction.isEditing);
 	const dragState = $derived(interaction.drag?.week === displayedWeek ? interaction.drag : null);
 
@@ -171,7 +174,7 @@
 		if (isFitLayout || !isCurrentWeek || !scrollContainer || bodyViewportHeight <= 0) {
 			return false;
 		}
-		const target = currentPeriodIndex;
+		const target = effectivePeriodIndex;
 		if (target == null) return false;
 
 		const periodElements = scrollContainer.querySelectorAll<HTMLElement>('aside > div');
@@ -607,7 +610,7 @@
 					>
 						<div
 							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {period.index ===
-							currentPeriodIndex
+							effectivePeriodIndex
 								? 'period-active'
 								: ''}"
 						>
@@ -616,7 +619,7 @@
 							</span>
 							<span
 								class="text-caption mt-1 font-mono leading-tight {period.index ===
-								currentPeriodIndex
+								effectivePeriodIndex
 									? ''
 									: 'text-on-surface-variant'}"
 							>
