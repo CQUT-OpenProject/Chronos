@@ -1,3 +1,4 @@
+import './styles.css';
 import { mountableSvelteComponent } from '@chronos/ui-kit';
 import { createQrCodecPlugin } from '../src/index';
 import QrCodeImportTab from '../src/QrCodeImportTab.svelte';

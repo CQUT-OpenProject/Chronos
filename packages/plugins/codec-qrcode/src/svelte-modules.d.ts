@@ -4,3 +4,5 @@ declare module '*.svelte' {
 	const component: Component<Record<string, unknown>>;
 	export default component;
 }
+
+declare module '*.css';
