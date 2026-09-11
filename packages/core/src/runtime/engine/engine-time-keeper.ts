@@ -1,5 +1,5 @@
 import { AcademicCalendarService } from '../../algorithms/calendar';
-import { formatIsoDate } from '../../algorithms/date';
+import { todayIsoDate } from '../../algorithms/date';
 import {
 	createDayClock,
 	currentTimeMinutes,
@@ -40,7 +40,7 @@ export class EngineTimeKeeper {
 	}
 
 	updateTime(now = new Date()): void {
-		const todayIso = formatIsoDate(now);
+		const todayIso = todayIsoDate(now);
 		const academicConfig = this.getCurrentTimetable()?.academicConfig;
 
 		const currentWeek = academicConfig

@@ -92,15 +92,6 @@
 				>
 					{hostT('timetable.edit.aria')}
 				</Button>
-				<div class="edit-bottom-bar-trash-slot" aria-hidden={!isDragging}>
-					<div
-						class="edit-bottom-bar-trash flex items-center justify-center rounded-full"
-						role="img"
-						aria-hidden="true"
-					>
-						<DeleteFill class="size-6 text-error/70" aria-hidden="true" />
-					</div>
-				</div>
 				<Button
 					variant="outlined"
 					class="edit-bottom-bar-action min-w-0"
@@ -111,6 +102,15 @@
 				>
 					{hostT('timetable.details.section.display')}
 				</Button>
+				<div class="edit-bottom-bar-trash-slot" aria-hidden={!isDragging}>
+					<div
+						class="edit-bottom-bar-trash flex items-center justify-center rounded-full"
+						role="img"
+						aria-hidden="true"
+					>
+						<DeleteFill class="size-6 text-error/70" aria-hidden="true" />
+					</div>
+				</div>
 			</div>
 			<div
 				class="edit-bottom-bar-layer edit-bottom-bar-delete-hint flex h-full w-full items-center justify-center gap-2 px-4 {isDragOverDeleteZone
@@ -217,7 +217,7 @@
 		display: grid;
 		align-items: center;
 		column-gap: 0.5rem;
-		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
 	}
 
 	.edit-bottom-bar-action {
@@ -231,7 +231,7 @@
 	.edit-bottom-bar-trash-slot {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-end;
 		width: 0;
 		min-width: 0;
 		overflow: hidden;
@@ -250,7 +250,7 @@
 		flex-shrink: 0;
 		opacity: 0;
 		transform: scale(0.72);
-		transform-origin: center;
+		transform-origin: right center;
 		transition:
 			opacity 100ms cubic-bezier(0.4, 0, 1, 1),
 			transform 120ms cubic-bezier(0.4, 0, 0.2, 1);

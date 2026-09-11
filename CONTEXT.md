@@ -60,7 +60,7 @@ Import UI executes `import.source.tab` slots directly. Host `transfer-state` is 
 - **Profile builtin plugins**: `ProfileManager.loadPlugins` / `applyProfile` is the only assembly surface. Host supplies `resolveBuiltinPlugin`; phase 1/2 filters run through `loadPlugins`. Plugin-center listing prefers a display cache from `resolveProfileBuiltinPlugins` (metadata import, no `loadPlugin`), else `listLoadedPlugins()`.
 - **Official online plugins**: `OfficialPluginService` facade orchestrates four deep modules (`OfficialPluginCatalogClient`, `OfficialPluginAssetPipeline`, `OfficialPluginInstalledStore`, `OfficialPluginRuntimeActivator`) → fetch manifest + assets (SHA-256) → `loadEsmPluginFromCode` (when bundle present) → `engine.loadPlugin`. `init()` order: `load → dedupeBuiltinOverlap → activate cache → syncInstalledWithHost`.
 
-Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. No `plugin.inject` dependency topology — optional services use `ctx.service(...)` inside `apply`. Catalog: `apps/web/static/official-plugins/catalog.json`.
+Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. No `plugin.inject` dependency topology — optional services use `ctx.service(...)` inside `apply`. Official plugin catalog is generated at build/dev time to `apps/web/static/official-plugins/catalog.json` (not tracked in Git).
 
 ## Plugin server proxy
 

@@ -219,6 +219,9 @@ export function createSecondaryTransitionGate() {
 		get revealForSnapshot(): boolean {
 			return revealForSnapshot;
 		},
+		get skipPaint(): boolean {
+			return frozen && !revealForSnapshot;
+		},
 		enableShellHost,
 		settleOnRoute,
 		syncRoute,

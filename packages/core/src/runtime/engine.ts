@@ -112,9 +112,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		);
 		this.timetableActions = new TimetableActions(this.actionHost);
 		this.courseActions = new CourseActions(this.actionHost, this.timetableActions);
-		this.storageSync = new StorageSyncHandler(this.actionHost, this.timeKeeper, (locale) =>
-			this.setLocale(locale)
-		);
+		this.storageSync = new StorageSyncHandler(this.actionHost, this.timeKeeper);
 		this.pluginLifecycle = new PluginLifecycleManager(
 			this,
 			this.storage,

@@ -50,7 +50,8 @@ describe('Profile System and Layered Config', () => {
 						paletteMode: 'vibrant',
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
-						hapticFeedbackEnabled: true
+						hapticFeedbackEnabled: true,
+						currentPeriodHighlightEnabled: true
 					}),
 					savePreferences: vi.fn().mockResolvedValue(undefined),
 					getPluginData: vi.fn().mockResolvedValue(null),
@@ -154,7 +155,8 @@ describe('Profile System and Layered Config', () => {
 						paletteMode: 'vibrant',
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
-						hapticFeedbackEnabled: true
+						hapticFeedbackEnabled: true,
+						currentPeriodHighlightEnabled: true
 					}),
 					savePreferences: vi.fn().mockResolvedValue(undefined),
 					getPluginData: vi.fn().mockResolvedValue(null),

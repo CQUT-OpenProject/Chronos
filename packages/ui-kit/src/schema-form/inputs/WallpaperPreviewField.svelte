@@ -44,7 +44,7 @@
 	const calendarService = new AcademicCalendarService();
 
 	const timetable = $derived(controller?.currentTimetable ?? null);
-	const today = $derived(todayIsoDate());
+	const today = $derived(controller?.clockTodayIso ?? todayIsoDate());
 	const academicWeek = $derived(
 		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
 	);

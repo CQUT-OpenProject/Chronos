@@ -25,11 +25,10 @@
 <div class="flex flex-col gap-5">
 	<MineSection title={hostT('mine.feedback.section.haptic')}>
 		<MineRow
-			label={true}
+			label
 			title={hostT('mine.feedback.haptic.label')}
 			icon={MobileVibrateFill}
 			iconTone="primary"
-			onclick={() => toggleHapticFeedback(!hapticFeedbackEnabled)}
 		>
 			{#snippet trailing()}
 				<Switch checked={hapticFeedbackEnabled} onCheckedChange={toggleHapticFeedback} />

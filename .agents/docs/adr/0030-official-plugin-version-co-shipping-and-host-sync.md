@@ -66,3 +66,9 @@ flowchart TD
 
 - `vp check` / `vp test` 全量通过；
 - 模拟低版本壁纸插件环境，应用启动后成功静默升级至最新代码，原壁纸背景图片完好保留。
+
+---
+
+## 修订记录
+
+- 2026-09-11：官方插件 Bundle / Manifest / Catalog 改为构建期生成，不再纳入版本库；`apps/web build` 与 dev 启动时自动产出。

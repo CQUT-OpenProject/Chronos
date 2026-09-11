@@ -63,6 +63,7 @@ describe('applyActiveTheme', () => {
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
 						hapticFeedbackEnabled: true,
+						currentPeriodHighlightEnabled: true,
 						visualThemeId: 'm3-default'
 					}),
 					savePreferences: async () => {},
@@ -123,6 +124,7 @@ describe('applyActiveTheme', () => {
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
 						hapticFeedbackEnabled: true,
+						currentPeriodHighlightEnabled: true,
 						visualThemeId: 'm3-default'
 					}),
 					savePreferences: async () => {},

@@ -22,8 +22,6 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 		onpointerdown: (event: PointerEvent) => {
 			if (event.button !== 0) return;
 
-			interaction.resetClickFlags();
-
 			if (interaction.isDragging || interaction.isClickGuarded()) return;
 
 			if (interaction.isEditing) {
@@ -39,7 +37,10 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 			interaction.notePointerMove(event);
 		},
 		onpointerup: (event: PointerEvent) => {
-			interaction.notePointerUp(event);
+			const result = interaction.notePointerUp(event);
+			if (result?.startedMode === 'view' && result.gesture === 'tap') {
+				onCourseClick?.(course);
+			}
 		},
 		onpointerleave: (event: PointerEvent) => {
 			interaction.notePointerLost(event);
@@ -49,7 +50,7 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 		},
 		onclick: (event: MouseEvent) => {
 			if (
-				interaction.consumeClickSuppression() ||
+				event.detail !== 0 ||
 				interaction.isEditing ||
 				interaction.isDragging ||
 				interaction.isClickGuarded()

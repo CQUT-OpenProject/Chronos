@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
-	import type { AppLocale } from '@chronos/core';
 	import {
 		DEFAULT_VISUAL_THEME_ID,
 		resolveLocalizedText,
@@ -11,10 +10,11 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import { getAppEngine } from '$lib/services/app-engine';
-	import { APP_LOCALES, applyAppLocale, normalizeAppLocale } from '$lib/i18n/locale-sync';
+	import { normalizeAppLocale } from '$lib/i18n/locale-sync';
 
 	import { BUILTIN_COLOR_SCHEME_VIBRANT, resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import Radio from '$lib/components/ui/Radio.svelte';
+	import Switch from '$lib/components/ui/Switch.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import { haptic } from '$lib/haptic/haptic';
@@ -26,11 +26,17 @@
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
 	);
+	const currentPeriodHighlightEnabled = $derived(
+		shell.controller.userPreferences?.currentPeriodHighlightEnabled ?? false
+	);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const visualThemeId = $derived(shell.controller.activeThemeId);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
-	const activeLocale = $derived(
-		normalizeAppLocale(shell.controller.userPreferences?.locale ?? shell.controller.currentLocale)
+	const activeLocale = $derived(normalizeAppLocale(shell.controller.currentLocale));
+	const periodHighlightDesc = $derived(
+		layoutMode === 'compact'
+			? hostT('display.periodHighlight.desc.compact')
+			: hostT('display.periodHighlight.desc')
 	);
 
 	const colorSchemeOptions = $derived.by(() => {
@@ -115,10 +121,6 @@
 		] as const;
 	});
 
-	function localeLabel(locale: AppLocale): string {
-		return hostT(locale === 'en' ? 'display.locale.en' : 'display.locale.zh-cn');
-	}
-
 	async function selectColorScheme(schemeId: string) {
 		const option = colorSchemeOptions.find((entry) => entry.id === schemeId);
 		if (!option || option.disabled) return;
@@ -145,25 +147,14 @@
 		await shell.setCapsuleCornerStyle(style);
 	}
 
-	async function selectLocale(locale: AppLocale) {
+	async function toggleCurrentPeriodHighlight(checked: boolean) {
 		haptic.light();
-		trackEvent('settings_locale_change', { locale });
-		await applyAppLocale(getAppEngine(), locale);
+		trackEvent('settings_period_highlight_change', { enabled: checked });
+		await shell.setCurrentPeriodHighlightEnabled(checked);
 	}
 </script>
 
 <div class="flex flex-col gap-5">
-	<MineSection title={hostT('display.section.locale')}>
-		{#each APP_LOCALES as option (option.id)}
-			{@const selected = activeLocale === option.id}
-			<MineRow label={true} title={localeLabel(option.id)} onclick={() => selectLocale(option.id)}>
-				{#snippet trailing()}
-					<Radio name="app-locale" checked={selected} onchange={() => selectLocale(option.id)} />
-				{/snippet}
-			</MineRow>
-		{/each}
-	</MineSection>
-
 	<MineSection title={hostT('display.section.themeMode')}>
 		{#each themeOptions as option (option.mode)}
 			{@const selected = themeMode === option.mode}
@@ -218,6 +209,17 @@
 				{/snippet}
 			</MineRow>
 		{/each}
+	</MineSection>
+
+	<MineSection>
+		<MineRow label title={hostT('display.periodHighlight.label')} supporting={periodHighlightDesc}>
+			{#snippet trailing()}
+				<Switch
+					checked={currentPeriodHighlightEnabled}
+					onCheckedChange={toggleCurrentPeriodHighlight}
+				/>
+			{/snippet}
+		</MineRow>
 	</MineSection>
 
 	<MineSection title={hostT('display.section.capsule')}>

@@ -1,3 +1,6 @@
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
@@ -33,6 +36,28 @@ function chronosThemeTokensPlugin() {
 	};
 }
 
+const officialPluginsCatalogPath = resolve(webRoot, 'static/official-plugins/catalog.json');
+const buildOfficialPluginsScript = resolve(monorepoRoot, 'scripts/build-official-plugins.ts');
+
+function chronosOfficialPluginsPlugin() {
+	return {
+		name: 'chronos-official-plugins',
+		configureServer() {
+			if (existsSync(officialPluginsCatalogPath)) return;
+
+			console.log('[chronos-official-plugins] catalog.json missing, building official plugins...');
+			const result = spawnSync(
+				process.execPath,
+				['--experimental-strip-types', buildOfficialPluginsScript],
+				{ cwd: monorepoRoot, stdio: 'inherit' }
+			);
+			if (result.status !== 0) {
+				throw new Error('Failed to build official plugins for dev server');
+			}
+		}
+	};
+}
+
 const isPagesBuild = process.env.CHRONOS_DEPLOY_TARGET === 'pages';
 const shouldAnalyze = process.env.ANALYZE === 'true';
 const pagesBase = '/Chronos';
@@ -41,7 +66,6 @@ const basePath = isPagesBuild ? pagesBase : '';
 function resolveManualChunk(id: string): string | undefined {
 	if (!id.includes('node_modules')) return undefined;
 	if (id.includes('dexie')) return 'vendor-dexie';
-	if (id.includes('swiper')) return 'vendor-swiper';
 	if (id.includes('marked')) return 'vendor-marked';
 	if (id.includes('posthog-js')) return 'vendor-posthog';
 	if (id.includes('brotli-wasm')) return 'vendor-brotli';
@@ -110,6 +134,7 @@ export default defineConfig(({ mode }) => {
 			materialSymbolsWeightPlugin(),
 			chronosProfilePlugin(webRoot),
 			chronosThemeTokensPlugin(),
+			chronosOfficialPluginsPlugin(),
 			functionsMixins(),
 			tailwindcss(),
 			sveltekit({
@@ -245,6 +270,7 @@ export default defineConfig(({ mode }) => {
 		test: {
 			expect: { requireAssertions: true },
 			environment: 'node',
+			setupFiles: ['src/test-setup.ts'],
 			include: ['src/**/*.{test,spec}.{js,ts}', '../../packages/**/*.{test,spec}.{js,ts}'],
 			exclude: [
 				'src/**/*.svelte.{test,spec}.{js,ts}',

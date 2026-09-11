@@ -28,6 +28,7 @@ function mockPointerEvent(init: Partial<PointerEvent> = {}): PointerEvent {
 function mockMouseEvent(init: Partial<MouseEvent> = {}): MouseEvent {
 	return {
 		button: 0,
+		detail: 1,
 		preventDefault: () => {},
 		...init
 	} as unknown as MouseEvent;
@@ -98,13 +99,10 @@ describe('createCourseCardHandlers', () => {
 		expect(onCourseClick).not.toHaveBeenCalled();
 	});
 
-	it('ignores non-primary pointer button presses', () => {
+	it('keeps keyboard activation available through click', () => {
 		const { handlers, onCourseClick } = createHarness();
 
-		handlers.onpointerdown(mockPointerEvent({ button: 2, clientX: 50, clientY: 50 }));
-		handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
-
-		handlers.onclick(mockMouseEvent());
+		handlers.onclick(mockMouseEvent({ detail: 0 }));
 
 		expect(onCourseClick).toHaveBeenCalledWith(sampleCourse);
 	});

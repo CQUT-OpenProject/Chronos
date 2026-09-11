@@ -1,4 +1,3 @@
-import type { Pathname } from '$app/types';
 import { base, resolve } from '$app/paths';
 
 /** Strip deploy base (e.g. `/Chronos`) so route helpers compare app-relative paths. */
@@ -13,7 +12,7 @@ export function toAppPathname(pathname: string): string {
 export function appRouteHref(href: string): string {
 	if (!href || /^https?:\/\//.test(href) || href.startsWith('//')) return href;
 	if (base && (href === base || href.startsWith(`${base}/`))) return href;
-	return resolve(href as Pathname);
+	return (resolve as (path: string) => string)(href);
 }
 
 export function isShellRoute(pathname: string): boolean {

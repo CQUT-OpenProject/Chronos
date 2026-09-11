@@ -81,9 +81,6 @@ importers:
       posthog-js:
         specifier: ^1.427.2
         version: 1.427.2
-      swiper:
-        specifier: ^14.2.0
-        version: 14.2.0
       vite-plugin-functions-mixins:
         specifier: ^0.4.1
         version: 0.4.1(@voidzero-dev/vite-plus-core@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.13)(typescript@7.0.2))
@@ -3875,10 +3872,6 @@ packages:
     resolution: {integrity: sha512-NdbDn7fl4be1ViUG0oq/lvG6OZy3oENolV2ONjiqqsfVoeAfzaQAKUcEX3MrQod/Bebv1PgwET9rfXhgn9s4Kg==}
     engines: {node: '>=18'}
 
-  swiper@14.2.0:
-    resolution: {integrity: sha512-GsL4M9Fq7Sg22OyL3SjdNj/0bxTfIxPJJHHW394Li0u5vYtExi0a09iBUc8CuLafJi5pAlH2AHUe1PocxHl45g==}
-    engines: {node: '>= 4.7.0'}
-
   tabbable@6.5.0:
     resolution: {integrity: sha512-wieBHXygIm7OyQOu5hQlkk62/WyCFYGlWg7L6/ZCUZwx0o398Zkn4pVmMyfYhfMG8kGrj/Krt8eIk6UKC6VzwA==}
 
@@ -7614,8 +7607,6 @@ snapshots:
       zimmerframe: 1.1.4
     transitivePeerDependencies:
       - '@typescript-eslint/types'
-
-  swiper@14.2.0: {}
 
   tabbable@6.5.0: {}
 

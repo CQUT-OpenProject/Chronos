@@ -25,7 +25,7 @@ function applyFallback(fallback: BackFallback): void {
 		return;
 	}
 
-	void deps.goto(resolve(fallback.href));
+	void deps.goto((resolve as (path: string) => string)(fallback.href));
 }
 
 export function navigateBack(fallback: BackFallback): void {

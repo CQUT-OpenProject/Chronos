@@ -149,7 +149,7 @@ describe('Web Providers', () => {
 		expect((await storage.getPreferences()).capsuleCornerStyle).toBe('sharp');
 	});
 
-	it('DexieStorageProvider persists locale preference', async () => {
+	it('DexieStorageProvider still reads and writes legacy locale preference keys', async () => {
 		const storage = new DexieStorageProvider(db, localStorage);
 		await storage.savePreferences({ locale: 'en' });
 		expect((await storage.getPreferences()).locale).toBe('en');

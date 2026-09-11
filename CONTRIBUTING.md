@@ -108,7 +108,7 @@ scripts                   官方插件构建与校验、主题令牌生成、别
 
 1. 提交前确保 `vp run check` 与 `vp run test` 全部通过；
 2. 修改内核契约时，同步更新[参考：端口契约](#参考端口契约)与对应 ADR 的修订记录；
-3. 涉及官方插件产物变更时，必须通过 `vp run verify:official-plugins` 校验；
+3. 涉及官方插件源码变更时，本地 `vp run build:official-plugins` 或 `vp build` 须通过（构建脚本内置产物哈希自校验）；
 4. 避免引入双轨实现：当同一功能存在新旧两种实现方式时，应先收敛或废弃旧实现，再进行扩展，保持单一事实来源。
 
 ## 架构地图
@@ -312,12 +312,14 @@ export default defineChronosPlugin({
 
 ### 4. 构建与校验
 
-```sh
-vp run build:official-plugins   # 产出 Bundle / Manifest / catalog.json 并更新校验哈希
-vp run verify:official-plugins  # 执行产物自校验：检查哈希、Manifest 字段与 Catalog 一致性
-```
+官方插件产物**不纳入版本库**，由宿主构建或开发服务器自动生成：
 
-构建产物将输出至 `apps/web/static/official-plugins/` 目录（包含 `catalog.json`）。上述两项命令必须全部通过后方可提交。
+- `vp build` / `vp run build:*`：构建宿主前自动产出 Bundle / Manifest / `catalog.json`（含哈希自校验）
+- `vp run dev`：首次启动时若缺少 `catalog.json` 会自动构建
+- `vp run build:official-plugins`：仅改插件源码时的快速迭代命令
+- `vp run verify:official-plugins`：对已有产物执行独立校验（可选）
+
+构建产物输出至 `apps/web/static/official-plugins/`（本地工作区，已 gitignore），随 `static/` 进入部署包。
 
 ### 5. ESM 插件附加要求
 
@@ -336,7 +338,7 @@ vp run verify:official-plugins  # 执行产物自校验：检查哈希、Manifes
 
 ### 验证清单
 
-- [ ] `vp run verify:official-plugins` 校验通过
+- [ ] `vp run build:official-plugins` 或 `vp build` 通过（含内置哈希校验）
 - [ ] 安装 → 启用 → 禁用 → 卸载 全生命周期流程正常，卸载后主题正确回退为默认项
 - [ ] 切换应用语言后插件文案正常跟随切换（具备多语言支持时）
 - [ ] 宿主代码无插件特判：在宿主源码中 `grep` 不应出现该插件的 ID（Catalog 配置文件除外）

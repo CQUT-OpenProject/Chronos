@@ -57,6 +57,7 @@
 		displayedWeek: number;
 		isCurrentWeek: boolean;
 		currentPeriodIndex: number | null;
+		periodHighlightEnabled?: boolean;
 		expandedSlots?: ReadonlySet<string>;
 		onExpandSlot?: (slotKey: string) => void;
 		gridModel: TimetableGridModel;
@@ -75,6 +76,7 @@
 		displayedWeek,
 		isCurrentWeek,
 		currentPeriodIndex,
+		periodHighlightEnabled = false,
 		expandedSlots: propExpandedSlots,
 		onExpandSlot,
 		gridModel,
@@ -89,6 +91,7 @@
 		interaction
 	}: Props = $props();
 
+	const effectivePeriodIndex = $derived(periodHighlightEnabled ? currentPeriodIndex : null);
 	const isEditing = $derived(interaction.isEditing);
 	const dragState = $derived(interaction.drag?.week === displayedWeek ? interaction.drag : null);
 
@@ -171,7 +174,7 @@
 		if (isFitLayout || !isCurrentWeek || !scrollContainer || bodyViewportHeight <= 0) {
 			return false;
 		}
-		const target = currentPeriodIndex;
+		const target = effectivePeriodIndex;
 		if (target == null) return false;
 
 		const periodElements = scrollContainer.querySelectorAll<HTMLElement>('aside > div');
@@ -244,6 +247,24 @@
 		} else {
 			internalExpandedSlots = new Set([...internalExpandedSlots, key]);
 		}
+	}
+
+	function handleOverlapPointerUp(key: string, event: PointerEvent) {
+		const result = interaction.notePointerUp(event);
+		if (
+			(result?.startedMode === 'view' && result.gesture === 'tap') ||
+			(result === null && interaction.isEditing)
+		) {
+			expandSlot(key);
+		}
+	}
+
+	function handleOverlapClick(key: string, event: MouseEvent) {
+		if (event.detail !== 0) {
+			event.preventDefault();
+			return;
+		}
+		expandSlot(key);
 	}
 
 	const bodyScrollAttach: Attachment = (node) => {
@@ -539,7 +560,6 @@
 	onpointerup={gridGestureHandlers.onpointerup}
 	onpointerleave={gridGestureHandlers.onpointerleave}
 	onpointercancel={gridGestureHandlers.onpointercancel}
-	onclick={gridGestureHandlers.onclick}
 	ondragstart={(e) => e.preventDefault()}
 >
 	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
@@ -590,7 +610,7 @@
 					>
 						<div
 							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {period.index ===
-							currentPeriodIndex
+							effectivePeriodIndex
 								? 'period-active'
 								: ''}"
 						>
@@ -599,7 +619,7 @@
 							</span>
 							<span
 								class="text-caption mt-1 font-mono leading-tight {period.index ===
-								currentPeriodIndex
+								effectivePeriodIndex
 									? ''
 									: 'text-on-surface-variant'}"
 							>
@@ -647,7 +667,8 @@
 									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
 									style={capsuleCornerAttrs(isEditing ? ALL_CORNERS_ROUNDED : item.corners).style}
 									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
-									onclick={() => expandSlot(item.key)}
+									onpointerup={(event) => handleOverlapPointerUp(item.key, event)}
+									onclick={(event) => handleOverlapClick(item.key, event)}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
 										{hostT('timetable.grid.overlap', { count: item.count })}
@@ -741,7 +762,7 @@
 		style="{capsuleCornerAttrs(displayCorners)
 			.style}; --capsule: {colors.background}; --capsule-fg: {colors.text}; touch-action: {isEditing
 			? 'none'
-			: 'pan-y'}; -webkit-user-drag: none; user-select: none;"
+			: 'pan-x pan-y'}; -webkit-user-drag: none; user-select: none;"
 		aria-label={buildCourseCapsuleAriaLabel(placed.course, {
 			teacher,
 			isHolidayMuted: placed.displayModel.isHolidayMuted

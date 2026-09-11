@@ -4,6 +4,7 @@ import {
 	formatIsoDate,
 	formatFullDate,
 	formatCompactDate,
+	todayIsoDate,
 	previousOrSameMonday,
 	addDays,
 	addWeeks,
@@ -20,6 +21,19 @@ describe('Date & AcademicCalendar in @chronos/core', () => {
 		expect(formatIsoDate(parsed)).toBe('2026-03-02');
 		expect(formatFullDate('2026-03-02')).toBe('2026/03/02');
 		expect(formatCompactDate('2026-03-02')).toBe('03/02');
+	});
+
+	it('todayIsoDate uses local calendar day for wall-clock instants', () => {
+		const localMidnight = new Date(2026, 8, 11, 0, 30, 0);
+		expect(todayIsoDate(localMidnight)).toBe('2026-09-11');
+	});
+
+	it('formatIsoDate is not interchangeable with todayIsoDate after local midnight in UTC+ offsets', () => {
+		const localMidnight = new Date(2026, 8, 11, 0, 30, 0);
+		expect(todayIsoDate(localMidnight)).toBe('2026-09-11');
+		if (localMidnight.getDate() !== localMidnight.getUTCDate()) {
+			expect(formatIsoDate(localMidnight)).not.toBe(todayIsoDate(localMidnight));
+		}
 	});
 
 	it('computes previous or same Monday correctly', () => {

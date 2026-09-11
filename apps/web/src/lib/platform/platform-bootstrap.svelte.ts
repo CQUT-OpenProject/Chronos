@@ -39,8 +39,6 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 		}
 		registerHyperellipse();
 		connectivity.init();
-		void import('swiper/css');
-		void import('swiper/element');
 
 		void ensureEngineReady().then((engine) => {
 			configureHostI18n({

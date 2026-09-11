@@ -3,8 +3,7 @@
 	import {
 		AcademicCalendarService,
 		computeTimetableWeekLayout,
-		COURSE_PALETTE_ENTRIES,
-		todayIsoDate
+		COURSE_PALETTE_ENTRIES
 	} from '@chronos/core';
 	import TimetablePreviewGrid from './TimetablePreviewGrid.svelte';
 	import TimetableWallpaperLayer from './TimetableWallpaperLayer.svelte';
@@ -31,7 +30,7 @@
 	const hostTranslate = (key: string) => controller.translatePlugin('host-ui', key);
 
 	const timetable = $derived(controller.currentTimetable);
-	const today = $derived(todayIsoDate());
+	const today = $derived(controller.clockTodayIso);
 	const academicWeek = $derived(
 		timetable ? calendarService.calculateAcademicWeek(today, timetable.academicConfig) : null
 	);

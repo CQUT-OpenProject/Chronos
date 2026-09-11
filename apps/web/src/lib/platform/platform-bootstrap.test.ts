@@ -64,9 +64,6 @@ vi.mock('$lib/client/onboarding.svelte', () => ({
 	}
 }));
 
-vi.mock('swiper/css', () => ({}));
-vi.mock('swiper/element', () => ({ register: vi.fn() }));
-
 import { createPlatformBootstrap, type PlatformBootstrapDeps } from './platform-bootstrap.svelte';
 
 describe('createPlatformBootstrap', () => {
