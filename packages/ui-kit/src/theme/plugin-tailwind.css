@@ -1,0 +1,6 @@
+@import 'tailwindcss/theme' layer(theme) source(none);
+@import 'tailwindcss/utilities' layer(utilities) source(none);
+@import './theme-inline.generated.css';
+@import './radius.css';
+
+@custom-variant dark (&:where(.dark, .dark *));

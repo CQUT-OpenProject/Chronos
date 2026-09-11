@@ -5,6 +5,7 @@ import { m3DefaultWorkbenchColors } from '../src/theme/m3-default-workbench.gene
 import {
 	buildM3Tokens,
 	buildGeneratedThemeCss,
+	buildGeneratedThemeInlineCss,
 	CHRONOS_HOST_COLORS,
 	CHRONOS_HOST_COLOR_KEYS
 } from '../src/theme/m3-theme';
@@ -38,6 +39,14 @@ describe('M3DefaultTheme', () => {
 			const value = CHRONOS_HOST_COLORS.light[key];
 			expect(css).toContain(`--color-${key}: ${value}`);
 		}
+	});
+
+	it('theme inline CSS maps tokens without hex :root values', () => {
+		const css = buildGeneratedThemeInlineCss();
+		expect(css).toContain('--color-border: var(--color-border-subtle)');
+		expect(css).toContain('--color-secondary-container: var(--color-secondary-container)');
+		expect(css).not.toMatch(/--color-surface:\s*#/);
+		expect(css).not.toContain('@layer tokens');
 	});
 
 	it('m3-default workbench colors match host surface overrides', () => {

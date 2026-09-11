@@ -20,6 +20,9 @@
 			"import": "./src/theme/m3-theme.ts",
 			"default": "./src/theme/m3-theme.ts"
 		},
+		"./theme/plugin-tailwind.css": "./src/theme/plugin-tailwind.css",
+		"./theme/radius.css": "./src/theme/radius.css",
+		"./theme/theme-inline.generated.css": "./src/theme/theme-inline.generated.css",
 		"./timetable-preview/day-labels": {
 			"types": "./src/timetable-preview/day-labels.ts",
 			"import": "./src/timetable-preview/day-labels.ts",
