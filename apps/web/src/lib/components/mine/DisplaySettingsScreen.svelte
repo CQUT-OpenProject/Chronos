@@ -33,6 +33,11 @@
 	const visualThemeId = $derived(shell.controller.activeThemeId);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
 	const activeLocale = $derived(normalizeAppLocale(shell.controller.currentLocale));
+	const periodHighlightDesc = $derived(
+		layoutMode === 'compact'
+			? hostT('display.periodHighlight.desc.compact')
+			: hostT('display.periodHighlight.desc')
+	);
 
 	const colorSchemeOptions = $derived.by(() => {
 		void shell.controller.slotVersion;
@@ -207,11 +212,7 @@
 	</MineSection>
 
 	<MineSection>
-		<MineRow
-			label
-			title={hostT('display.periodHighlight.label')}
-			supporting={hostT('display.periodHighlight.desc')}
-		>
+		<MineRow label title={hostT('display.periodHighlight.label')} supporting={periodHighlightDesc}>
 			{#snippet trailing()}
 				<Switch
 					checked={currentPeriodHighlightEnabled}
