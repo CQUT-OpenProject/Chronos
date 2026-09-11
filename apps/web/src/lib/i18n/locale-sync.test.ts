@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { ChronosEngine } from '@chronos/core';
 import type { ChronosEnv } from '@chronos/core';
 
@@ -12,7 +12,12 @@ vi.mock('$lib/paraglide/runtime', () => ({
 	getTextDirection
 }));
 
-import { applyAppLocale, syncParaglideLocale } from '$lib/i18n/locale-sync';
+import {
+	applySessionAppLocale,
+	detectSystemAppLocale,
+	syncAppLocaleOnStartup,
+	syncParaglideLocale
+} from '$lib/i18n/locale-sync';
 
 function createTestEnv(): ChronosEnv {
 	return {
@@ -46,19 +51,57 @@ function createTestEnv(): ChronosEnv {
 
 describe('locale-sync', () => {
 	let engine: ChronosEngine;
+	const originalNavigator = globalThis.navigator;
 
 	beforeEach(() => {
 		setParaglideLocale.mockClear();
 		engine = new ChronosEngine({ env: createTestEnv(), initialLocale: 'zh-cn' });
 	});
 
+	afterEach(() => {
+		Object.defineProperty(globalThis, 'navigator', {
+			configurable: true,
+			value: originalNavigator
+		});
+	});
+
+	function mockNavigatorLanguages(languages: string[]) {
+		Object.defineProperty(globalThis, 'navigator', {
+			configurable: true,
+			value: { languages, language: languages[0] }
+		});
+	}
+
 	it('syncParaglideLocale updates cookie without reload', () => {
 		syncParaglideLocale('en');
 		expect(setParaglideLocale).toHaveBeenCalledWith('en', { reload: false });
 	});
 
-	it('applyAppLocale does not reload the page', async () => {
-		await applyAppLocale(engine, 'en');
+	it('detectSystemAppLocale maps Chinese system tags to zh-cn', () => {
+		mockNavigatorLanguages(['zh-CN', 'en-US']);
+		expect(detectSystemAppLocale()).toBe('zh-cn');
+	});
+
+	it('detectSystemAppLocale maps English system tags to en', () => {
+		mockNavigatorLanguages(['en-US', 'zh-CN']);
+		expect(detectSystemAppLocale()).toBe('en');
+	});
+
+	it('detectSystemAppLocale falls back to zh-cn for unsupported tags', () => {
+		mockNavigatorLanguages(['fr-FR']);
+		expect(detectSystemAppLocale()).toBe('zh-cn');
+	});
+
+	it('applySessionAppLocale updates engine without persisting preferences', async () => {
+		applySessionAppLocale(engine, 'en');
+		expect(engine.locale).toBe('en');
+		expect(setParaglideLocale).toHaveBeenCalledWith('en', { reload: false });
+		expect(engine.env.storage.savePreferences).not.toHaveBeenCalled();
+	});
+
+	it('syncAppLocaleOnStartup follows the system language', () => {
+		mockNavigatorLanguages(['en-GB']);
+		syncAppLocaleOnStartup(engine);
 		expect(engine.locale).toBe('en');
 		expect(setParaglideLocale).toHaveBeenCalledWith('en', { reload: false });
 	});

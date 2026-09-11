@@ -13,8 +13,7 @@ export class StorageSyncHandler {
 
 	constructor(
 		private readonly host: EngineActionHost,
-		private readonly timeKeeper: EngineTimeKeeper,
-		private readonly onLocaleHydrated: (locale: string) => void
+		private readonly timeKeeper: EngineTimeKeeper
 	) {}
 
 	dispose(): void {
@@ -62,11 +61,6 @@ export class StorageSyncHandler {
 
 		this.timeKeeper.updateTime();
 		this.timeKeeper.start();
-
-		const savedLocale = this.host.getUserPreferences().locale;
-		if (savedLocale && savedLocale !== this.host.getLocale()) {
-			this.onLocaleHydrated(savedLocale);
-		}
 
 		if (current) {
 			await this.host.badges.recalculate(current.courses);

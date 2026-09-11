@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
-	import type { AppLocale } from '@chronos/core';
 	import {
 		DEFAULT_VISUAL_THEME_ID,
 		resolveLocalizedText,
@@ -11,7 +10,7 @@
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import { trackEvent } from '$lib/client/analytics';
 	import { getAppEngine } from '$lib/services/app-engine';
-	import { APP_LOCALES, applyAppLocale, normalizeAppLocale } from '$lib/i18n/locale-sync';
+	import { normalizeAppLocale } from '$lib/i18n/locale-sync';
 
 	import { BUILTIN_COLOR_SCHEME_VIBRANT, resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import Radio from '$lib/components/ui/Radio.svelte';
@@ -33,9 +32,7 @@
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const visualThemeId = $derived(shell.controller.activeThemeId);
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
-	const activeLocale = $derived(
-		normalizeAppLocale(shell.controller.userPreferences?.locale ?? shell.controller.currentLocale)
-	);
+	const activeLocale = $derived(normalizeAppLocale(shell.controller.currentLocale));
 
 	const colorSchemeOptions = $derived.by(() => {
 		void shell.controller.slotVersion;
@@ -119,10 +116,6 @@
 		] as const;
 	});
 
-	function localeLabel(locale: AppLocale): string {
-		return hostT(locale === 'en' ? 'display.locale.en' : 'display.locale.zh-cn');
-	}
-
 	async function selectColorScheme(schemeId: string) {
 		const option = colorSchemeOptions.find((entry) => entry.id === schemeId);
 		if (!option || option.disabled) return;
@@ -149,12 +142,6 @@
 		await shell.setCapsuleCornerStyle(style);
 	}
 
-	async function selectLocale(locale: AppLocale) {
-		haptic.light();
-		trackEvent('settings_locale_change', { locale });
-		await applyAppLocale(getAppEngine(), locale);
-	}
-
 	async function toggleCurrentPeriodHighlight(checked: boolean) {
 		haptic.light();
 		trackEvent('settings_period_highlight_change', { enabled: checked });
@@ -163,17 +150,6 @@
 </script>
 
 <div class="flex flex-col gap-5">
-	<MineSection title={hostT('display.section.locale')}>
-		{#each APP_LOCALES as option (option.id)}
-			{@const selected = activeLocale === option.id}
-			<MineRow label={true} title={localeLabel(option.id)} onclick={() => selectLocale(option.id)}>
-				{#snippet trailing()}
-					<Radio name="app-locale" checked={selected} onchange={() => selectLocale(option.id)} />
-				{/snippet}
-			</MineRow>
-		{/each}
-	</MineSection>
-
 	<MineSection title={hostT('display.section.themeMode')}>
 		{#each themeOptions as option (option.mode)}
 			{@const selected = themeMode === option.mode}

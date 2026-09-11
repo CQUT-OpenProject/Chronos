@@ -192,20 +192,6 @@ describe('ChronosEngine in @chronos/core', () => {
 		engine.dispose();
 	});
 
-	it('announces the hydrated locale on init so reactive mirrors can sync', async () => {
-		const { env } = createMockEnv();
-		await env.storage.savePreferences({ locale: 'en' });
-
-		const engine = new ChronosEngine({ env });
-		const onLocaleChanged = vi.fn();
-		engine.on('i18n:localeChanged', onLocaleChanged);
-
-		await engine.init();
-
-		expect(engine.locale).toBe('en');
-		expect(onLocaleChanged).toHaveBeenCalledWith({ locale: 'en' });
-	});
-
 	it('skips the locale announcement when the hydrated locale already matches', async () => {
 		const { env } = createMockEnv();
 

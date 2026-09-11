@@ -7,7 +7,6 @@ import { resolveBuiltinPlugin, resolveProfileBuiltinPlugins } from '$lib/boot/pr
 import { EAGER_BUILTIN_PLUGIN_IDS } from '$lib/profile-codegen/profile-definitions';
 
 import { OfficialPluginService } from '$lib/services/official-plugins/official-plugin-service';
-import { baseLocale } from '$lib/paraglide/runtime.js';
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
 
 let sharedEngine: ChronosEngine | null = null;
@@ -20,7 +19,7 @@ let resolvedProfilePlugins: ChronosPlugin[] = [];
 
 import { bindAnalyticsPort } from '$lib/client/analytics';
 import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
-import { syncEngineLocaleFromPreferences } from '$lib/i18n/locale-sync';
+import { detectSystemAppLocale, syncAppLocaleOnStartup } from '$lib/i18n/locale-sync';
 import { HOST_MESSAGES, HOST_UI_PLUGIN_ID } from '$lib/i18n/host-messages';
 
 function createEngine(options?: WebProviderOptions): ChronosEngine {
@@ -38,7 +37,7 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 	bindAnalyticsPort(env.analytics);
 	return new ChronosEngine({
 		env,
-		initialLocale: baseLocale ?? 'zh-cn',
+		initialLocale: typeof navigator !== 'undefined' ? detectSystemAppLocale() : 'zh-cn',
 		presetThemes: [m3DefaultTheme],
 		presetI18nCatalogs: [{ pluginId: HOST_UI_PLUGIN_ID, messages: HOST_MESSAGES }],
 		onNotification: (message) => {
@@ -51,7 +50,7 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 
 async function applyThemeFromPreferences(engine: ChronosEngine): Promise<void> {
 	const prefs = await engine.storage.getPreferences();
-	syncEngineLocaleFromPreferences(engine);
+	syncAppLocaleOnStartup(engine);
 	const visualThemeId = prefs?.visualThemeId ?? DEFAULT_VISUAL_THEME_ID;
 	if (engine.themes.getTheme(visualThemeId)) {
 		engine.setTheme(visualThemeId);
