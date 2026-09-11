@@ -14,8 +14,8 @@
 	import { haptic } from '$lib/haptic/haptic';
 
 	const STATE_TRANSITION_MS = 200;
-	const GLASS_LINGER_MS = 1000;
-	const GLASS_FADE_MS = 600;
+	const GLASS_LINGER_MS = 400;
+	const GLASS_FADE_MS = 250;
 
 	interface Props {
 		screen: TimetableScreenController;
@@ -374,12 +374,12 @@
 	.capsule-indicator--glass {
 		background-color: color-mix(
 			in srgb,
-			var(--color-surface-container-high, #e5e8f0) 45%,
+			var(--color-surface-container-high, #e5e8f0) 20%,
 			transparent
 		);
 		backdrop-filter: blur(16px) saturate(1.3);
 		-webkit-backdrop-filter: blur(16px) saturate(1.3);
-		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 25%, transparent);
+		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 20%, transparent);
 		box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.1);
 		transition:
 			width var(--indicator-transition-duration) var(--indicator-easing),
