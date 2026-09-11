@@ -1,13 +1,18 @@
-import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
-import { build, type Logger, type Plugin } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
-import tailwindcss from '@tailwindcss/vite';
+import type { Logger, Plugin } from 'vite';
 import type { OfficialPluginDef } from '../../../../../scripts/official-plugins.config.ts';
+import {
+	buildOfficialPluginAssets,
+	type OfficialPluginBuildResult
+} from '../../../../../scripts/official-plugin-build/build-plugin.ts';
+import { createDevOfficialPluginBundleMiddleware } from '../../../../../scripts/official-plugin-build/dev-bundle-middleware.ts';
 
-function pluginAssetUrl(pluginId: string, fileName: string): string {
-	return `/official-plugins/bundles/${pluginId}/${fileName}`;
+export type PluginHmrPayload = OfficialPluginBuildResult;
+
+export interface ChronosPluginHmrOptions {
+	monorepoRoot: string;
+	plugins: OfficialPluginDef[];
+	createAliasRecord: (root?: string) => Record<string, string>;
 }
 
 function formatPluginHmrPath(rootDir: string, filePath: string): string {
@@ -18,95 +23,8 @@ function logPluginHmrInfo(logger: Logger, message: string): void {
 	logger.info(`(plugin) ${message}`, { timestamp: true });
 }
 
-function logPluginHmrWarn(logger: Logger, message: string): void {
-	logger.warn(`(plugin) ${message}`, { timestamp: true });
-}
-
 function logPluginHmrError(logger: Logger, message: string): void {
 	logger.error(`(plugin) ${message}`, { timestamp: true });
-}
-
-function stripCssImportsFromBundle(): Plugin {
-	return {
-		name: 'chronos-strip-plugin-css-imports',
-		generateBundle(_options, bundle) {
-			for (const output of Object.values(bundle)) {
-				if (output.type !== 'chunk') continue;
-				output.code = output.code.replace(/import\s*['"][^'"]+\.css['"];?/g, '');
-			}
-		}
-	};
-}
-
-export async function compileOfficialPluginEntry(
-	plugin: OfficialPluginDef,
-	root: string,
-	createAliasRecord: (root?: string) => Record<string, string>,
-	outDir: string,
-	releaseVersion: string
-): Promise<{ code: string | null; cssCode: string | null }> {
-	if (!plugin.entry || !existsSync(plugin.entry)) {
-		return { code: null, cssCode: null };
-	}
-
-	mkdirSync(outDir, { recursive: true });
-
-	await build({
-		configFile: false,
-		logLevel: 'warn',
-		root: resolve(root, 'apps/web'),
-		plugins: [
-			tailwindcss(),
-			svelte({ compilerOptions: { runes: true } }),
-			stripCssImportsFromBundle()
-		],
-		define: {
-			__CHRONOS_PLUGIN_VERSION__: JSON.stringify(releaseVersion)
-		},
-		resolve: { alias: createAliasRecord(root) },
-		build: {
-			emptyOutDir: true,
-			cssCodeSplit: false,
-			lib: {
-				entry: plugin.entry,
-				formats: ['es'],
-				fileName: () => `${plugin.id}.bundle.js`
-			},
-			outDir,
-			rollupOptions: { output: { codeSplitting: false } }
-		}
-	});
-
-	let code: string | null = null;
-	const builtPath = resolve(outDir, `${plugin.id}.bundle.js`);
-	if (existsSync(builtPath)) {
-		code = readFileSync(builtPath, 'utf8');
-	}
-
-	let cssCode: string | null = null;
-	const distFiles = existsSync(outDir) ? readdirSync(outDir) : [];
-	const emittedCss = distFiles.find((f) => f.endsWith('.css'));
-	if (emittedCss && existsSync(resolve(outDir, emittedCss))) {
-		const raw = readFileSync(resolve(outDir, emittedCss), 'utf8');
-		if (raw.trim().length > 0) cssCode = raw;
-	}
-
-	return { code, cssCode };
-}
-
-export interface PluginHmrPayload {
-	id: string;
-	type: 'theme' | 'tool';
-	code: string | null;
-	cssCode: string | null;
-	colorsJson: string | null;
-	iconThemeJson: string | null;
-}
-
-export interface ChronosPluginHmrOptions {
-	monorepoRoot: string;
-	plugins: OfficialPluginDef[];
-	createAliasRecord: (root?: string) => Record<string, string>;
 }
 
 export async function buildSingleOfficialPlugin(
@@ -114,91 +32,19 @@ export async function buildSingleOfficialPlugin(
 	root: string,
 	createAliasRecord: (root?: string) => Record<string, string>,
 	releaseVersion = '0.0.0-dev',
-	logger?: Logger
+	_logger?: Logger
 ): Promise<PluginHmrPayload> {
-	let code: string | null = null;
-	let cssCode: string | null = null;
-	let colorsJson: string | null = null;
-	let iconThemeJson: string | null = null;
-
-	const staticBundleDir = resolve(root, 'apps/web/static/official-plugins/bundles', plugin.id);
-	mkdirSync(staticBundleDir, { recursive: true });
-
-	if (plugin.colorsJson && existsSync(plugin.colorsJson)) {
-		colorsJson = readFileSync(plugin.colorsJson, 'utf8');
-		writeFileSync(resolve(staticBundleDir, 'colors.json'), colorsJson, 'utf8');
-	}
-
-	if (plugin.iconsJson && existsSync(plugin.iconsJson)) {
-		iconThemeJson = readFileSync(plugin.iconsJson, 'utf8');
-		writeFileSync(resolve(staticBundleDir, 'icons.json'), iconThemeJson, 'utf8');
-	}
-
-	if (plugin.entry && existsSync(plugin.entry)) {
-		const compiled = await compileOfficialPluginEntry(
-			plugin,
-			root,
-			createAliasRecord,
-			resolve(root, 'dist/dev-plugins', plugin.id),
-			releaseVersion
-		);
-		code = compiled.code;
-		cssCode = compiled.cssCode;
-		if (code) {
-			writeFileSync(resolve(staticBundleDir, 'bundle.js'), code, 'utf8');
-		}
-		if (cssCode) {
-			writeFileSync(resolve(staticBundleDir, 'bundle.css'), cssCode, 'utf8');
-		}
-	}
-
-	// Synchronize sha256 in manifest.json so full reloads also validate
-	const manifestPath = resolve(
+	return buildOfficialPluginAssets(plugin, {
 		root,
-		'apps/web/static/official-plugins/manifests',
-		`${plugin.id}.manifest.json`
-	);
-	if (existsSync(manifestPath)) {
-		try {
-			const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Record<string, unknown>;
-			if (code) {
-				manifest.sha256 = createHash('sha256').update(code).digest('hex');
-			}
-			if (cssCode) {
-				manifest.cssUrl = pluginAssetUrl(plugin.id, 'bundle.css');
-				manifest.cssSha256 = createHash('sha256').update(cssCode).digest('hex');
-			} else {
-				delete manifest.cssSha256;
-				delete manifest.cssUrl;
-			}
-			if (colorsJson) {
-				manifest.colorsSha256 = createHash('sha256').update(colorsJson).digest('hex');
-			}
-			if (iconThemeJson) {
-				manifest.iconThemeSha256 = createHash('sha256').update(iconThemeJson).digest('hex');
-			}
-			writeFileSync(manifestPath, `${JSON.stringify(manifest, null, '\t')}\n`, 'utf8');
-		} catch (err) {
-			if (logger) {
-				logPluginHmrWarn(logger, `failed to update manifest for ${plugin.id}`);
-			} else {
-				console.warn(`Failed to update manifest for ${plugin.id}:`, err);
-			}
-		}
-	}
-
-	return {
-		id: plugin.id,
-		type: plugin.type,
-		code,
-		cssCode,
-		colorsJson,
-		iconThemeJson
-	};
+		releaseVersion,
+		createAliasRecord,
+		mode: 'dev'
+	});
 }
 
 export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin {
 	const { monorepoRoot, plugins, createAliasRecord } = options;
+	const pluginBySourceDir = new Map(plugins.map((plugin) => [plugin.sourceDir, plugin]));
 
 	return {
 		name: 'chronos-plugin-hmr',
@@ -207,6 +53,7 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 			const logger = server.config.logger;
 			const pluginsDir = resolve(monorepoRoot, 'packages/plugins');
 			server.watcher.add(pluginsDir);
+			server.middlewares.use(createDevOfficialPluginBundleMiddleware(monorepoRoot));
 
 			const pendingTimers = new Map<string, NodeJS.Timeout>();
 			const inFlightBuilds = new Set<string>();
@@ -291,7 +138,7 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 				const sourceDir = rel.split('/')[0];
 				if (!sourceDir) return;
 
-				const pluginDef = plugins.find((p) => p.sourceDir === sourceDir);
+				const pluginDef = pluginBySourceDir.get(sourceDir);
 				if (!pluginDef) return;
 
 				triggerFiles.set(pluginDef.id, filePath);
