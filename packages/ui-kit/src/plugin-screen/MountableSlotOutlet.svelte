@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { getAllContexts, untrack } from 'svelte';
 	import { isChronosMountable } from '@chronos/core';
 
 	interface Props {
@@ -13,6 +13,7 @@
 	let { component, props = {}, class: className = undefined }: Props = $props();
 
 	let containerEl = $state<HTMLDivElement>();
+	const parentContext = getAllContexts();
 
 	const mountable = $derived(isChronosMountable(component));
 
@@ -22,7 +23,7 @@
 		const initialProps = untrack(() => props);
 		let instance: { unmount?(): void } | (() => void) | undefined;
 		try {
-			instance = targetComponent.mount(containerEl, initialProps);
+			instance = targetComponent.mount(containerEl, initialProps, parentContext);
 		} catch (error) {
 			console.error('[MountableSlotOutlet] mount failed:', error);
 			return;

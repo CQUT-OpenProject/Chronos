@@ -12,8 +12,8 @@ export function mountableSvelteComponent<P extends Record<string, unknown>>(
 ): ChronosMountable<P> {
 	return {
 		[CHRONOS_MOUNTABLE]: true,
-		mount(target: HTMLElement, props: P) {
-			const instance = mount(component, { target, props });
+		mount(target: HTMLElement, props: P, context?: Map<any, any>) {
+			const instance = mount(component, { target, props, context });
 			return {
 				unmount: () => {
 					void unmount(instance);

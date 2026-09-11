@@ -5,7 +5,7 @@ export type ChronosMountHandle = { unmount?(): void } | (() => void);
 
 export interface ChronosMountable<Props extends Record<string, unknown> = Record<string, unknown>> {
 	readonly [CHRONOS_MOUNTABLE]: true;
-	mount(target: HTMLElement, props: Props): ChronosMountHandle;
+	mount(target: HTMLElement, props: Props, context?: Map<any, any>): ChronosMountHandle;
 }
 
 export function isChronosMountable(value: unknown): value is ChronosMountable {
