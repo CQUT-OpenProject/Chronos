@@ -62,6 +62,9 @@ apps/web/analyze-data.json
 **/static/version.json
 static/version.json
 **/static/licenses/third-party.json
+apps/web/static/official-plugins/bundles/
+apps/web/static/official-plugins/manifests/
+apps/web/static/official-plugins/catalog.json
 apps/web/src/lib/boot/plugin-proxy-meta.generated.ts
 apps/web/src/lib/boot/available-plugins.generated.ts
 apps/web/src/lib/server/plugin-server-loader.generated.ts

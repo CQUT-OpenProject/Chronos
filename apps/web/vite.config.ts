@@ -1,3 +1,6 @@
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
@@ -29,6 +32,28 @@ function chronosThemeTokensPlugin() {
 		buildStart() {
 			writeGeneratedThemeCss();
 			writeGeneratedVersionJson();
+		}
+	};
+}
+
+const officialPluginsCatalogPath = resolve(webRoot, 'static/official-plugins/catalog.json');
+const buildOfficialPluginsScript = resolve(monorepoRoot, 'scripts/build-official-plugins.ts');
+
+function chronosOfficialPluginsPlugin() {
+	return {
+		name: 'chronos-official-plugins',
+		configureServer() {
+			if (existsSync(officialPluginsCatalogPath)) return;
+
+			console.log('[chronos-official-plugins] catalog.json missing, building official plugins...');
+			const result = spawnSync(
+				process.execPath,
+				['--experimental-strip-types', buildOfficialPluginsScript],
+				{ cwd: monorepoRoot, stdio: 'inherit' }
+			);
+			if (result.status !== 0) {
+				throw new Error('Failed to build official plugins for dev server');
+			}
 		}
 	};
 }
@@ -109,6 +134,7 @@ export default defineConfig(({ mode }) => {
 			materialSymbolsWeightPlugin(),
 			chronosProfilePlugin(webRoot),
 			chronosThemeTokensPlugin(),
+			chronosOfficialPluginsPlugin(),
 			functionsMixins(),
 			tailwindcss(),
 			sveltekit({
