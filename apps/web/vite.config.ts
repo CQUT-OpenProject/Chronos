@@ -270,7 +270,11 @@ export default defineConfig(({ command, mode }) => {
 			expect: { requireAssertions: true },
 			environment: 'node',
 			setupFiles: ['src/test-setup.ts'],
-			include: ['src/**/*.{test,spec}.{js,ts}', '../../packages/**/*.{test,spec}.{js,ts}'],
+			include: [
+				'src/**/*.{test,spec}.{js,ts}',
+				'../../packages/**/*.{test,spec}.{js,ts}',
+				'../../scripts/**/*.{test,spec}.{js,ts}'
+			],
 			exclude: [
 				'src/**/*.svelte.{test,spec}.{js,ts}',
 				'**/node_modules/**',
