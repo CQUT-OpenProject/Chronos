@@ -1,5 +1,3 @@
-import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
@@ -18,6 +16,10 @@ import { writeGeneratedVersionJson } from './src/lib/content/releases/version-ge
 import { chronosLicensePlugin } from './src/lib/legal/chronos-license-plugin';
 import { chronosProfilePlugin } from './src/lib/profile-codegen/chronos-profile-plugin';
 import { resolveProfileId } from './src/lib/profile-codegen/profile-definitions';
+import {
+	createOfficialPluginsPlugin,
+	defaultBuildOfficialPlugins
+} from './src/lib/services/official-plugins/chronos-official-plugins-plugin';
 
 const webRoot = fileURLToPath(new URL('.', import.meta.url));
 const monorepoRoot = fileURLToPath(new URL('../..', import.meta.url));
@@ -39,25 +41,6 @@ function chronosThemeTokensPlugin() {
 const officialPluginsCatalogPath = resolve(webRoot, 'static/official-plugins/catalog.json');
 const buildOfficialPluginsScript = resolve(monorepoRoot, 'scripts/build-official-plugins.ts');
 
-function chronosOfficialPluginsPlugin() {
-	return {
-		name: 'chronos-official-plugins',
-		configureServer() {
-			if (existsSync(officialPluginsCatalogPath)) return;
-
-			console.log('[chronos-official-plugins] catalog.json missing, building official plugins...');
-			const result = spawnSync(
-				process.execPath,
-				['--experimental-strip-types', buildOfficialPluginsScript],
-				{ cwd: monorepoRoot, stdio: 'inherit' }
-			);
-			if (result.status !== 0) {
-				throw new Error('Failed to build official plugins for dev server');
-			}
-		}
-	};
-}
-
 const isPagesBuild = process.env.CHRONOS_DEPLOY_TARGET === 'pages';
 const shouldAnalyze = process.env.ANALYZE === 'true';
 const pagesBase = '/Chronos';
@@ -72,8 +55,9 @@ function resolveManualChunk(id: string): string | undefined {
 	return undefined;
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
 	const env = loadEnv(mode, process.cwd(), 'PUBLIC_');
+	const isBuild = command === 'build';
 
 	return {
 		resolve: {
@@ -134,7 +118,12 @@ export default defineConfig(({ mode }) => {
 			materialSymbolsWeightPlugin(),
 			chronosProfilePlugin(webRoot),
 			chronosThemeTokensPlugin(),
-			chronosOfficialPluginsPlugin(),
+			createOfficialPluginsPlugin({
+				catalogPath: officialPluginsCatalogPath,
+				buildCommand: (reason) =>
+					defaultBuildOfficialPlugins(monorepoRoot, buildOfficialPluginsScript, reason),
+				isBuild
+			}),
 			functionsMixins(),
 			tailwindcss(),
 			sveltekit({

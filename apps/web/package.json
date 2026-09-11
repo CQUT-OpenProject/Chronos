@@ -5,10 +5,10 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vp dev .",
-		"build": "vp -C ../.. run build:official-plugins && vp build .",
-		"build:pages": "CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-default vp run build && cp build/404.html build/index.html",
+		"build": "vp build .",
+		"build:pages": "CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-default vp build . && cp build/404.html build/index.html",
 		"preview": "vp preview .",
-		"analyze": "node --experimental-strip-types scripts/emit-profile-artifacts.ts && ANALYZE=true vp run build",
+		"analyze": "node --experimental-strip-types scripts/emit-profile-artifacts.ts && ANALYZE=true vp build .",
 		"prepare": "vp config && node --experimental-strip-types scripts/emit-profile-artifacts.ts || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
