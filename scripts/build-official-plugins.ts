@@ -1,12 +1,11 @@
 import { createHash } from 'node:crypto';
-import { build } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createChronosAliasRecord } from './resolve-chronos-aliases.ts';
 import { verifyOfficialPlugins } from './verify-official-plugins.ts';
 import { OFFICIAL_PLUGINS } from './official-plugins.config.ts';
+import { compileOfficialPluginEntry } from '../apps/web/src/lib/dev/chronos-plugin-hmr-vite.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const releaseVersion = JSON.parse(readFileSync(resolve(root, 'apps/web/package.json'), 'utf8'))
@@ -76,54 +75,27 @@ for (const plugin of plugins) {
 
 	if (plugin.entry && existsSync(plugin.entry)) {
 		const fileName = 'bundle.js';
-		const perPluginDist = resolve(distDir, plugin.id);
-		mkdirSync(perPluginDist, { recursive: true });
-		const builtPath = resolve(perPluginDist, `${plugin.id}.bundle.js`);
-		await build({
-			configFile: false,
-			plugins: [svelte({ compilerOptions: { runes: true } })],
-			define: {
-				__CHRONOS_PLUGIN_VERSION__: JSON.stringify(releaseVersion)
-			},
-			resolve: { alias: createChronosAliasRecord(root) },
-			build: {
-				emptyOutDir: true,
-				cssCodeSplit: false,
-				lib: {
-					entry: plugin.entry,
-					formats: ['es'],
-					fileName: () => `${plugin.id}.bundle.js`
-				},
-				outDir: perPluginDist,
-				rollupOptions: { output: { codeSplitting: false } }
-			}
-		});
-
-		const code = readFileSync(builtPath, 'utf8');
-		writeFileSync(resolve(outDir, fileName), code, 'utf8');
-		manifest.bundleUrl = pluginAssetUrl(plugin.id, fileName);
-		manifest.sha256 = createHash('sha256').update(code).digest('hex');
-
-		let cssFileName: string | null = null;
-		let cssSha256: string | null = null;
-		const staticCssPath = resolve(outDir, 'bundle.css');
-		const distFiles = readdirSync(perPluginDist);
-		const emittedCss = distFiles.find((f) => f.endsWith('.css'));
-		let cssContent: string | null = null;
-		if (emittedCss && existsSync(resolve(perPluginDist, emittedCss))) {
-			const raw = readFileSync(resolve(perPluginDist, emittedCss), 'utf8');
-			if (raw.trim().length > 0) cssContent = raw;
+		const compiled = await compileOfficialPluginEntry(
+			plugin,
+			root,
+			createChronosAliasRecord,
+			resolve(distDir, plugin.id),
+			releaseVersion
+		);
+		if (!compiled.code) {
+			throw new Error(`${plugin.id}: official plugin entry produced no bundle.js`);
 		}
-		if (cssContent) {
-			cssFileName = 'bundle.css';
-			writeFileSync(staticCssPath, cssContent, 'utf8');
-			cssSha256 = createHash('sha256').update(cssContent).digest('hex');
+		writeFileSync(resolve(outDir, fileName), compiled.code, 'utf8');
+		manifest.bundleUrl = pluginAssetUrl(plugin.id, fileName);
+		manifest.sha256 = createHash('sha256').update(compiled.code).digest('hex');
+
+		const staticCssPath = resolve(outDir, 'bundle.css');
+		if (compiled.cssCode) {
+			writeFileSync(staticCssPath, compiled.cssCode, 'utf8');
+			manifest.cssUrl = pluginAssetUrl(plugin.id, 'bundle.css');
+			manifest.cssSha256 = createHash('sha256').update(compiled.cssCode).digest('hex');
 		} else if (existsSync(staticCssPath)) {
 			rmSync(staticCssPath, { force: true });
-		}
-		if (cssFileName && cssSha256) {
-			manifest.cssUrl = pluginAssetUrl(plugin.id, cssFileName);
-			manifest.cssSha256 = cssSha256;
 		}
 	}
 
