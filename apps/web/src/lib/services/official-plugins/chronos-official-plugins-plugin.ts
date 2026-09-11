@@ -9,6 +9,13 @@ export interface OfficialPluginsPluginOptions {
 	isTest?: boolean;
 }
 
+/** Shared across plugin instances so SvelteKit's multi-pass build only runs once. */
+let productionBuildCompleted = false;
+
+export function resetOfficialPluginsBuildStateForTesting(): void {
+	productionBuildCompleted = false;
+}
+
 export function defaultBuildOfficialPlugins(
 	monorepoRoot: string,
 	scriptPath: string,
@@ -24,40 +31,36 @@ export function defaultBuildOfficialPlugins(
 	}
 }
 
-declare global {
-	var __CHRONOS_OFFICIAL_PLUGINS_BUILT__: boolean | undefined;
+function ensureCatalogBuilt(
+	catalogPath: string | undefined,
+	buildCommand: ((reason: string) => void) | undefined,
+	reason: string
+): void {
+	if (catalogPath && !existsSync(catalogPath)) {
+		buildCommand?.(reason);
+	}
 }
 
 export function createOfficialPluginsPlugin(options: OfficialPluginsPluginOptions): Plugin {
 	const { catalogPath, buildCommand, isBuild, isTest = Boolean(process.env.VITEST) } = options;
 
-	const ensureBuilt = (reason: string) => {
-		buildCommand?.(reason);
-	};
-
 	return {
 		name: 'chronos-official-plugins',
 		configureServer() {
-			if (catalogPath && !existsSync(catalogPath)) {
-				ensureBuilt('catalog.json missing');
-			}
+			ensureCatalogBuilt(catalogPath, buildCommand, 'catalog.json missing');
 		},
 		buildStart() {
 			if (isTest) {
-				if (catalogPath && !existsSync(catalogPath)) {
-					ensureBuilt('catalog.json missing');
-				}
+				ensureCatalogBuilt(catalogPath, buildCommand, 'catalog.json missing');
 				return;
 			}
 			if (!isBuild) {
-				if (catalogPath && !existsSync(catalogPath)) {
-					ensureBuilt('catalog.json missing');
-				}
+				ensureCatalogBuilt(catalogPath, buildCommand, 'catalog.json missing');
 				return;
 			}
-			if (globalThis.__CHRONOS_OFFICIAL_PLUGINS_BUILT__) return;
-			globalThis.__CHRONOS_OFFICIAL_PLUGINS_BUILT__ = true;
-			ensureBuilt('production build');
+			if (productionBuildCompleted) return;
+			productionBuildCompleted = true;
+			buildCommand?.('production build');
 		}
 	};
 }

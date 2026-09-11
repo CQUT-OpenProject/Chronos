@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { createOfficialPluginsPlugin } from './chronos-official-plugins-plugin';
+import {
+	createOfficialPluginsPlugin,
+	resetOfficialPluginsBuildStateForTesting
+} from './chronos-official-plugins-plugin';
 
 describe('createOfficialPluginsPlugin', () => {
 	beforeEach(() => {
-		delete (globalThis as Record<string, unknown>).__CHRONOS_OFFICIAL_PLUGINS_BUILT__;
+		resetOfficialPluginsBuildStateForTesting();
 	});
 
 	it('configures dev server to build plugins only if catalog.json is missing', () => {
