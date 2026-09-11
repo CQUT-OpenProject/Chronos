@@ -10,7 +10,11 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { chronosBundleAnalyzer } from './src/lib/profile-codegen/chronos-bundle-analyzer.ts';
 import { materialSymbolsWeightPlugin } from './src/lib/icons/material-symbols-weight-plugin.ts';
-import { createChronosAlias } from '../../scripts/resolve-chronos-aliases.ts';
+import {
+	createChronosAlias,
+	createChronosAliasRecord
+} from '../../scripts/resolve-chronos-aliases.ts';
+import { OFFICIAL_PLUGINS } from '../../scripts/official-plugins.config.ts';
 import { writeGeneratedThemeCss } from './src/lib/theme/theme';
 import { writeGeneratedVersionJson } from './src/lib/content/releases/version-generator';
 import { chronosLicensePlugin } from './src/lib/legal/chronos-license-plugin';
@@ -20,6 +24,7 @@ import {
 	createOfficialPluginsPlugin,
 	defaultBuildOfficialPlugins
 } from './src/lib/services/official-plugins/chronos-official-plugins-plugin';
+import { chronosPluginHmrPlugin } from './src/lib/dev/chronos-plugin-hmr-vite.ts';
 
 const webRoot = fileURLToPath(new URL('.', import.meta.url));
 const monorepoRoot = fileURLToPath(new URL('../..', import.meta.url));
@@ -123,6 +128,11 @@ export default defineConfig(({ command, mode }) => {
 				buildCommand: (reason) =>
 					defaultBuildOfficialPlugins(monorepoRoot, buildOfficialPluginsScript, reason),
 				isBuild
+			}),
+			chronosPluginHmrPlugin({
+				monorepoRoot,
+				plugins: OFFICIAL_PLUGINS,
+				createAliasRecord: createChronosAliasRecord
 			}),
 			functionsMixins(),
 			tailwindcss(),

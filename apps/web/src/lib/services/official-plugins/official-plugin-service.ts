@@ -72,6 +72,7 @@ export class OfficialPluginService implements Disposable {
 	private readonly installedStore: OfficialPluginInstalledStore;
 	private readonly runtimeActivator: OfficialPluginRuntimeActivator;
 	private readonly hostVersion: string;
+	private hmrDisposable?: Disposable;
 	readonly installQueue: OfficialPluginInstallQueue;
 
 	constructor(
@@ -106,6 +107,12 @@ export class OfficialPluginService implements Disposable {
 		this.installedStore.notify();
 		await this.syncInstalledWithHost();
 		this.installedStore.notify();
+		if (import.meta.env.DEV) {
+			void import('./official-plugin-hmr').then(({ setupPluginHmr }) => {
+				this.hmrDisposable?.dispose();
+				this.hmrDisposable = setupPluginHmr(this, this.engine);
+			});
+		}
 	}
 
 	private async activateInstalledFromCache(): Promise<void> {
@@ -306,6 +313,15 @@ export class OfficialPluginService implements Disposable {
 		return this.runtimeActivator.isActive(pluginId);
 	}
 
+	getRuntimeActivator(): OfficialPluginRuntimeActivator {
+		return this.runtimeActivator;
+	}
+
+	async updateRecord(record: InstalledOfficialPluginRecord): Promise<void> {
+		await this.installedStore.upsert(record);
+		this.installedStore.notify();
+	}
+
 	private async syncInstalledWithHost(catalogUrl = DEFAULT_OFFICIAL_CATALOG_URL): Promise<void> {
 		const stale = this.installedStore
 			.getCache()
@@ -343,6 +359,7 @@ export class OfficialPluginService implements Disposable {
 	}
 
 	dispose(): void {
+		this.hmrDisposable?.dispose();
 		this.installQueue.dispose();
 		this.runtimeActivator.disposeAll();
 	}

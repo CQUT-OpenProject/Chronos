@@ -180,6 +180,73 @@ describe('OfficialPluginRuntimeActivator', () => {
 		expect(styles.filter((el) => !el.removed)).toHaveLength(0);
 	});
 
+	it('injects CSS before loading the bundle', async () => {
+		type FakeStyle = {
+			attrs: Map<string, string>;
+			textContent: string | null;
+			removed: boolean;
+			setAttribute: (key: string, value: string) => void;
+			remove: () => void;
+		};
+		const styles: FakeStyle[] = [];
+		vi.stubGlobal('document', {
+			createElement: () => {
+				const el: FakeStyle = {
+					attrs: new Map(),
+					textContent: null,
+					removed: false,
+					setAttribute(key: string, value: string) {
+						el.attrs.set(key, value);
+					},
+					remove() {
+						el.removed = true;
+					}
+				};
+				styles.push(el);
+				return el;
+			},
+			head: { appendChild: vi.fn() },
+			querySelector: (selector: string) => {
+				const match = /data-plugin-id="([^"]+)"/.exec(selector);
+				return (
+					styles.find((el) => !el.removed && el.attrs.get('data-plugin-id') === match?.[1]) ?? null
+				);
+			}
+		});
+
+		const originalLoad = engine.loadPlugin.bind(engine);
+		const loadSpy = vi.spyOn(engine, 'loadPlugin').mockImplementation(async (...args) => {
+			const live = styles.find(
+				(el) => !el.removed && el.attrs.get('data-plugin-id') === 'test-plugin'
+			);
+			expect(live).toBeDefined();
+			expect(live?.textContent).toBe('.x{color:red}');
+			return originalLoad(...args);
+		});
+
+		installed.add('test-plugin');
+		await activator.activate({
+			manifest: {
+				id: 'test-plugin',
+				name: { 'zh-CN': 'T' },
+				version: '1',
+				description: { 'zh-CN': 'T' },
+				author: 'Chronos',
+				type: 'tool',
+				bundleFormat: 'esm',
+				bundleUrl: '/b.js',
+				sha256: 'x'
+			},
+			code: SAMPLE_BUNDLE,
+			cssCode: '.x{color:red}',
+			enabled: true,
+			installedAt: 1
+		});
+
+		expect(loadSpy).toHaveBeenCalled();
+		expect(styles.filter((el) => !el.removed)).toHaveLength(1);
+	});
+
 	it('unload disposes engine plugin handle', async () => {
 		installed.add('test-plugin');
 		await activator.activate({
