@@ -1,13 +1,29 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
-import { build, type Plugin } from 'vite';
+import { build, type Logger, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import type { OfficialPluginDef } from '../../../../../scripts/official-plugins.config.ts';
 
 function pluginAssetUrl(pluginId: string, fileName: string): string {
 	return `/official-plugins/bundles/${pluginId}/${fileName}`;
+}
+
+function formatPluginHmrPath(rootDir: string, filePath: string): string {
+	return relative(rootDir, filePath).replace(/\\/g, '/');
+}
+
+function logPluginHmrInfo(logger: Logger, message: string): void {
+	logger.info(`(plugin) ${message}`, { timestamp: true });
+}
+
+function logPluginHmrWarn(logger: Logger, message: string): void {
+	logger.warn(`(plugin) ${message}`, { timestamp: true });
+}
+
+function logPluginHmrError(logger: Logger, message: string): void {
+	logger.error(`(plugin) ${message}`, { timestamp: true });
 }
 
 function stripCssImportsFromBundle(): Plugin {
@@ -97,7 +113,8 @@ export async function buildSingleOfficialPlugin(
 	plugin: OfficialPluginDef,
 	root: string,
 	createAliasRecord: (root?: string) => Record<string, string>,
-	releaseVersion = '0.0.0-dev'
+	releaseVersion = '0.0.0-dev',
+	logger?: Logger
 ): Promise<PluginHmrPayload> {
 	let code: string | null = null;
 	let cssCode: string | null = null;
@@ -162,7 +179,11 @@ export async function buildSingleOfficialPlugin(
 			}
 			writeFileSync(manifestPath, `${JSON.stringify(manifest, null, '\t')}\n`, 'utf8');
 		} catch (err) {
-			console.warn(`[Plugin HMR] Failed to update manifest for ${plugin.id}:`, err);
+			if (logger) {
+				logPluginHmrWarn(logger, `failed to update manifest for ${plugin.id}`);
+			} else {
+				console.warn(`Failed to update manifest for ${plugin.id}:`, err);
+			}
 		}
 	}
 
@@ -183,12 +204,14 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 		name: 'chronos-plugin-hmr',
 		apply: 'serve',
 		configureServer(server) {
+			const logger = server.config.logger;
 			const pluginsDir = resolve(monorepoRoot, 'packages/plugins');
 			server.watcher.add(pluginsDir);
 
 			const pendingTimers = new Map<string, NodeJS.Timeout>();
 			const inFlightBuilds = new Set<string>();
 			const queuedRebuilds = new Set<string>();
+			const triggerFiles = new Map<string, string>();
 
 			const executeBuild = async (pluginDef: OfficialPluginDef) => {
 				if (inFlightBuilds.has(pluginDef.id)) {
@@ -201,14 +224,20 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 					do {
 						queuedRebuilds.delete(pluginDef.id);
 						const startTime = performance.now();
+						const triggerFile = triggerFiles.get(pluginDef.id);
 						try {
 							const payload = await buildSingleOfficialPlugin(
 								pluginDef,
 								monorepoRoot,
-								createAliasRecord
+								createAliasRecord,
+								'0.0.0-dev',
+								logger
 							);
 							const costMs = (performance.now() - startTime).toFixed(1);
 							const rev = Date.now().toString(36);
+							const hmrMessage = triggerFile
+								? `hmr update ${formatPluginHmrPath(server.config.root, triggerFile)} → ${pluginDef.id} in ${costMs}ms`
+								: `hmr update ${pluginDef.id} in ${costMs}ms`;
 
 							server.ws.send({
 								type: 'custom',
@@ -219,10 +248,16 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 									costMs
 								}
 							});
-							console.log(`[Plugin HMR] ✓ ${pluginDef.id} rebuilt & pushed in ${costMs}ms`);
+							logPluginHmrInfo(logger, hmrMessage);
 						} catch (err: unknown) {
 							const error = err instanceof Error ? err : new Error(String(err));
-							console.error(`[Plugin HMR] ✗ Build error in ${pluginDef.id}:`, error.message);
+							const triggerSuffix = triggerFile
+								? ` (${formatPluginHmrPath(server.config.root, triggerFile)})`
+								: '';
+							logPluginHmrError(
+								logger,
+								`hmr error ${pluginDef.id}${triggerSuffix}: ${error.message}`
+							);
 							server.ws.send({
 								type: 'custom',
 								event: 'chronos:plugin-hmr-error',
@@ -236,6 +271,7 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 					} while (queuedRebuilds.has(pluginDef.id));
 				} finally {
 					inFlightBuilds.delete(pluginDef.id);
+					triggerFiles.delete(pluginDef.id);
 				}
 			};
 
@@ -257,6 +293,8 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 
 				const pluginDef = plugins.find((p) => p.sourceDir === sourceDir);
 				if (!pluginDef) return;
+
+				triggerFiles.set(pluginDef.id, filePath);
 
 				const existingTimer = pendingTimers.get(pluginDef.id);
 				if (existingTimer) clearTimeout(existingTimer);
