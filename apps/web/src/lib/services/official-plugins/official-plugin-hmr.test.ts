@@ -1,5 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
-import { handlePluginHmr, resetPluginHmrForTesting, setupPluginHmr } from './official-plugin-hmr';
+import {
+	enqueuePluginHmr,
+	handlePluginHmr,
+	resetPluginHmrForTesting,
+	setupPluginHmr
+} from './official-plugin-hmr';
 import type { OfficialPluginService } from './official-plugin-service';
 import type { ChronosEngine } from '@chronos/core';
 import type { InstalledOfficialPluginRecord } from './official-plugin-types';
@@ -213,6 +218,57 @@ describe('official-plugin-hmr', () => {
 			expect.stringContaining('[HMR] 热重载 tool-test 失败: Syntax error in plugin'),
 			'error'
 		);
+	});
+
+	it('serializes hot-reload handling per plugin id', async () => {
+		let releaseFirstActivate: (() => void) | undefined;
+		const firstActivateGate = new Promise<void>((resolve) => {
+			releaseFirstActivate = resolve;
+		});
+		const callOrder: string[] = [];
+
+		mockActivator.deactivate.mockImplementation(async () => {
+			callOrder.push('deactivate');
+		});
+		mockActivator.activate.mockImplementation(async () => {
+			callOrder.push('activate-start');
+			await firstActivateGate;
+			callOrder.push('activate-end');
+			return { dispose: vi.fn() };
+		});
+
+		enqueuePluginHmr(mockService as OfficialPluginService, mockEngine as ChronosEngine, {
+			id: 'tool-test',
+			type: 'tool',
+			rev: 'rev-a',
+			costMs: '1.0',
+			code: 'code-a',
+			cssCode: null,
+			colorsJson: null,
+			iconThemeJson: null
+		});
+		enqueuePluginHmr(mockService as OfficialPluginService, mockEngine as ChronosEngine, {
+			id: 'tool-test',
+			type: 'tool',
+			rev: 'rev-b',
+			costMs: '2.0',
+			code: 'code-b',
+			cssCode: null,
+			colorsJson: null,
+			iconThemeJson: null
+		});
+
+		await vi.waitFor(() => {
+			expect(callOrder).toContain('activate-start');
+		});
+		expect(callOrder.filter((entry) => entry === 'activate-start')).toHaveLength(1);
+
+		releaseFirstActivate?.();
+		await vi.waitFor(() => {
+			expect(callOrder.filter((entry) => entry === 'activate-end')).toHaveLength(2);
+		});
+		expect(mockActivator.deactivate).toHaveBeenCalledTimes(2);
+		expect(mockActivator.activate).toHaveBeenCalledTimes(2);
 	});
 
 	it('setupPluginHmr returns a disposable and manages service reference', () => {

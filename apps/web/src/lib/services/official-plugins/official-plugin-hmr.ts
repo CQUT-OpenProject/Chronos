@@ -19,60 +19,93 @@ export interface PluginHmrErrorData {
 	stack?: string;
 }
 
-let activeService: OfficialPluginService | null = null;
-let activeEngine: ChronosEngine | null = null;
-let isListening = false;
+class PluginHmrCoordinator {
+	private activeService: OfficialPluginService | null = null;
+	private activeEngine: ChronosEngine | null = null;
+	private isListening = false;
+	private readonly hmrChains = new Map<string, Promise<void>>();
 
-export function resetPluginHmrForTesting(): void {
-	activeService = null;
-	activeEngine = null;
-	isListening = false;
-}
+	resetForTesting(): void {
+		this.activeService = null;
+		this.activeEngine = null;
+		this.isListening = false;
+		this.hmrChains.clear();
+	}
 
-export function setupPluginHmr(service: OfficialPluginService, engine: ChronosEngine): Disposable {
-	activeService = service;
-	activeEngine = engine;
+	enqueue(service: OfficialPluginService, engine: ChronosEngine, data: PluginHmrData): void {
+		const { id } = data;
+		const prev = this.hmrChains.get(id) ?? Promise.resolve();
+		const next = prev
+			.then(() => handlePluginHmr(service, engine, data))
+			.catch(() => {})
+			.finally(() => {
+				if (this.hmrChains.get(id) === next) {
+					this.hmrChains.delete(id);
+				}
+			});
+		this.hmrChains.set(id, next);
+	}
 
-	if (!import.meta.hot) {
+	setup(service: OfficialPluginService, engine: ChronosEngine): Disposable {
+		this.activeService = service;
+		this.activeEngine = engine;
+
+		if (!import.meta.hot) {
+			return this.createServiceDisposable(service);
+		}
+
+		if (!this.isListening) {
+			this.isListening = true;
+
+			import.meta.hot.on('chronos:plugin-hmr', (data: PluginHmrData) => {
+				if (this.activeService && this.activeEngine) {
+					this.enqueue(this.activeService, this.activeEngine, data);
+				}
+			});
+
+			import.meta.hot.on('chronos:plugin-hmr-error', (data: PluginHmrErrorData) => {
+				console.error(`[Plugin HMR] Build error in [${data.id}]:`, data.message);
+				this.activeEngine?.notify(`[HMR] 插件 ${data.id} 编译失败: ${data.message}`, 'error');
+			});
+
+			import.meta.hot.dispose(() => {
+				this.isListening = false;
+				this.activeService = null;
+				this.activeEngine = null;
+			});
+		}
+
+		return this.createServiceDisposable(service);
+	}
+
+	private createServiceDisposable(service: OfficialPluginService): Disposable {
 		return {
 			dispose: () => {
-				if (activeService === service) {
-					activeService = null;
-					activeEngine = null;
+				if (this.activeService === service) {
+					this.activeService = null;
+					this.activeEngine = null;
 				}
 			}
 		};
 	}
+}
 
-	if (!isListening) {
-		isListening = true;
+const pluginHmrCoordinator = new PluginHmrCoordinator();
 
-		import.meta.hot.on('chronos:plugin-hmr', (data: PluginHmrData) => {
-			if (activeService && activeEngine) {
-				void handlePluginHmr(activeService, activeEngine, data);
-			}
-		});
+export function resetPluginHmrForTesting(): void {
+	pluginHmrCoordinator.resetForTesting();
+}
 
-		import.meta.hot.on('chronos:plugin-hmr-error', (data: PluginHmrErrorData) => {
-			console.error(`[Plugin HMR] Build error in [${data.id}]:`, data.message);
-			activeEngine?.notify(`[HMR] 插件 ${data.id} 编译失败: ${data.message}`, 'error');
-		});
+export function enqueuePluginHmr(
+	service: OfficialPluginService,
+	engine: ChronosEngine,
+	data: PluginHmrData
+): void {
+	pluginHmrCoordinator.enqueue(service, engine, data);
+}
 
-		import.meta.hot.dispose(() => {
-			isListening = false;
-			activeService = null;
-			activeEngine = null;
-		});
-	}
-
-	return {
-		dispose: () => {
-			if (activeService === service) {
-				activeService = null;
-				activeEngine = null;
-			}
-		}
-	};
+export function setupPluginHmr(service: OfficialPluginService, engine: ChronosEngine): Disposable {
+	return pluginHmrCoordinator.setup(service, engine);
 }
 
 export async function handlePluginHmr(
