@@ -18,14 +18,22 @@ export function isExternalManifestUrl(url?: string): boolean {
 	return typeof url === 'string' && /^https?:\/\//i.test(url);
 }
 
+/** tool 插件有 JS bundle 但 Dexie 无 cssCode（自包含 CSS 迁移后的缺口） */
+export function recordNeedsCssBackfill(record: InstalledOfficialPluginRecord): boolean {
+	if (record.cssCode) return false;
+	if (record.manifest.type === 'theme') return false;
+	return Boolean(record.code ?? record.manifest.bundleUrl);
+}
+
 /** Returns true when a cached install should be refreshed from the official catalog. */
 export function shouldSyncInstalledPlugin(
 	record: InstalledOfficialPluginRecord,
 	hostVersion: string
 ): boolean {
-	if (record.manifest.version === hostVersion) return false;
 	if (isExternalManifestUrl(record.manifestUrl)) return false;
-	return true;
+	if (record.manifest.version !== hostVersion) return true;
+	if (recordNeedsCssBackfill(record)) return true;
+	return false;
 }
 
 export async function buildCatalogManifestMap(

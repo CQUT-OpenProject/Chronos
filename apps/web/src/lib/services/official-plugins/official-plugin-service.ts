@@ -102,7 +102,15 @@ export class OfficialPluginService implements Disposable {
 		if (this.initialized) return;
 		await this.installedStore.load();
 		await this.installedStore.dedupeBuiltinOverlap();
-		await this.activateInstalledFromCache();
+
+		const pendingSyncIds = new Set(
+			this.installedStore
+				.getCache()
+				.filter((record) => shouldSyncInstalledPlugin(record, this.hostVersion))
+				.map((record) => record.manifest.id)
+		);
+
+		await this.activateInstalledFromCache({ skipIds: pendingSyncIds });
 		this.initialized = true;
 		this.installedStore.notify();
 		await this.syncInstalledWithHost();
@@ -115,8 +123,9 @@ export class OfficialPluginService implements Disposable {
 		}
 	}
 
-	private async activateInstalledFromCache(): Promise<void> {
+	private async activateInstalledFromCache(options?: { skipIds?: Set<string> }): Promise<void> {
 		for (const record of this.installedStore.getCache()) {
+			if (options?.skipIds?.has(record.manifest.id)) continue;
 			if (record.enabled) {
 				try {
 					await this.runtimeActivator.activate(record);
