@@ -7,7 +7,33 @@ let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
 const updateAvailableListeners = new Set<() => void>();
 
 const CONTROLLER_CHANGE_TIMEOUT_MS = 3000;
-const SW_PROBE_TIMEOUT_MS = 5000;
+const SW_PROBE_TIMEOUT_MS = 15_000;
+const SW_DOWNLOAD_TIMEOUT_MS = 120_000;
+
+export type SwUpdatePhase = 'downloading' | 'installing' | 'restarting';
+
+export interface SwUpdateProgress {
+	phase: SwUpdatePhase;
+	percent: number;
+}
+
+export type SwUpdateErrorCode = 'download_timeout' | 'download_failed' | 'no_registration';
+
+export type WaitForWaitingWorkerResult = 'ready' | 'update_failed' | 'timeout' | 'redundant';
+
+export class SwUpdateError extends Error {
+	readonly code: SwUpdateErrorCode;
+
+	constructor(code: SwUpdateErrorCode) {
+		super(code);
+		this.name = 'SwUpdateError';
+		this.code = code;
+	}
+}
+
+export interface ApplyUpdateOptions {
+	onProgress?: (progress: SwUpdateProgress) => void;
+}
 
 export function isSwUpdatePending(): boolean {
 	return needRefresh;
@@ -50,6 +76,13 @@ function markUpdatePending(): boolean {
 	return true;
 }
 
+function reportProgress(
+	onProgress: ApplyUpdateOptions['onProgress'],
+	progress: SwUpdateProgress
+): void {
+	onProgress?.(progress);
+}
+
 function waitForInstallingWorker(
 	registration: ServiceWorkerRegistration,
 	timeoutMs = SW_PROBE_TIMEOUT_MS
@@ -83,6 +116,99 @@ function waitForInstallingWorker(
 
 		const timeoutId = setTimeout(() => finish(false), timeoutMs);
 	});
+}
+
+export async function waitForWaitingWorker(
+	registration: ServiceWorkerRegistration,
+	options?: { onProgress?: (progress: SwUpdateProgress) => void; timeoutMs?: number }
+): Promise<WaitForWaitingWorkerResult> {
+	const onProgress = options?.onProgress;
+	const timeoutMs = options?.timeoutMs ?? SW_DOWNLOAD_TIMEOUT_MS;
+
+	if (registration.waiting) {
+		reportProgress(onProgress, { phase: 'installing', percent: 80 });
+		markUpdatePending();
+		return 'ready';
+	}
+
+	reportProgress(onProgress, { phase: 'downloading', percent: 5 });
+
+	try {
+		await registration.update();
+	} catch {
+		return 'update_failed';
+	}
+
+	if (registration.waiting) {
+		reportProgress(onProgress, { phase: 'installing', percent: 80 });
+		markUpdatePending();
+		return 'ready';
+	}
+
+	return new Promise((resolve) => {
+		let settled = false;
+		let stateChangeListener: (() => void) | undefined;
+		let timeoutId: ReturnType<typeof setTimeout>;
+
+		const cleanup = () => {
+			if (stateChangeListener && registration.installing) {
+				registration.installing.removeEventListener('statechange', stateChangeListener);
+			}
+			registration.removeEventListener('updatefound', onUpdateFound);
+		};
+
+		const finish = (result: WaitForWaitingWorkerResult) => {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timeoutId);
+			cleanup();
+			resolve(result);
+		};
+
+		const attachInstallingWorker = (worker: ServiceWorker) => {
+			reportProgress(onProgress, { phase: 'downloading', percent: 25 });
+
+			stateChangeListener = () => {
+				if (worker.state === 'installed' && registration.waiting) {
+					reportProgress(onProgress, { phase: 'installing', percent: 80 });
+					markUpdatePending();
+					finish('ready');
+				}
+				if (worker.state === 'redundant') {
+					finish('redundant');
+				}
+			};
+
+			worker.addEventListener('statechange', stateChangeListener);
+			stateChangeListener();
+		};
+
+		const onUpdateFound = () => {
+			if (registration.installing) {
+				attachInstallingWorker(registration.installing);
+			}
+		};
+
+		registration.addEventListener('updatefound', onUpdateFound);
+
+		if (registration.installing) {
+			attachInstallingWorker(registration.installing);
+		}
+
+		timeoutId = setTimeout(() => finish('timeout'), timeoutMs);
+	});
+}
+
+function mapWaitingWorkerResultToError(result: WaitForWaitingWorkerResult): SwUpdateError {
+	switch (result) {
+		case 'update_failed':
+		case 'redundant':
+			return new SwUpdateError('download_failed');
+		case 'timeout':
+			return new SwUpdateError('download_timeout');
+		default:
+			return new SwUpdateError('download_failed');
+	}
 }
 
 export async function probeSwUpdate(): Promise<boolean> {
@@ -151,28 +277,52 @@ export async function waitForSwActivationAndReload(
 	});
 }
 
-export async function applyUpdateAndReload(): Promise<void> {
+export async function applyUpdateAndReload(options?: ApplyUpdateOptions): Promise<void> {
 	if (typeof window === 'undefined') return;
 
+	const onProgress = options?.onProgress;
+
 	if (!('serviceWorker' in navigator)) {
-		reloadPage();
-		return;
+		throw new SwUpdateError('download_failed');
 	}
 
-	try {
-		const registration = await navigator.serviceWorker.getRegistration();
-		// Only drop the pages runtime cache when a waiting worker will actually
-		// take over; a semver-only update has nothing to activate and a bare
-		// reload would needlessly force every page back to network.
-		if (registration?.waiting && 'caches' in window) {
-			try {
-				await caches.delete('pages-cache');
-			} catch {
-				// ignore cache deletion errors
-			}
-		}
-		await waitForSwActivationAndReload(() => Promise.resolve(registration ?? undefined));
-	} catch {
-		reloadPage();
+	const registration = await navigator.serviceWorker.getRegistration();
+	if (!registration) {
+		throw new SwUpdateError('no_registration');
 	}
+
+	if (!registration.waiting) {
+		const result = await waitForWaitingWorker(registration, { onProgress });
+		if (result !== 'ready') {
+			throw mapWaitingWorkerResultToError(result);
+		}
+	} else {
+		reportProgress(onProgress, { phase: 'installing', percent: 80 });
+		markUpdatePending();
+	}
+
+	if (!registration.waiting) {
+		throw new SwUpdateError('download_failed');
+	}
+
+	// Only drop the pages runtime cache when a waiting worker will actually
+	// take over; a semver-only update has nothing to activate and a bare
+	// reload would needlessly force every page back to network.
+	if ('caches' in window) {
+		try {
+			await caches.delete('pages-cache');
+		} catch {
+			// ignore cache deletion errors
+		}
+	}
+
+	reportProgress(onProgress, { phase: 'restarting', percent: 92 });
+
+	await waitForSwActivationAndReload(
+		() => Promise.resolve(registration),
+		() => {
+			reportProgress(onProgress, { phase: 'restarting', percent: 100 });
+			reloadPage();
+		}
+	);
 }
