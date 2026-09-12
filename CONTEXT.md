@@ -62,6 +62,17 @@ Import UI executes `import.source.tab` slots directly. Host `transfer-state` is 
 
 Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. No `plugin.inject` dependency topology — optional services use `ctx.service(...)` inside `apply`. Official plugin catalog is generated at build/dev time to `apps/web/static/official-plugins/catalog.json` (not tracked in Git).
 
+## Plugin KV binary (`setPluginData`)
+
+`IStorageService.setPluginData` / `getPluginData` accept JSON or binary for the same namespaced key space:
+
+- **Write**: `Blob` (carries `mimeType`) or `Uint8Array` (stored as `application/octet-stream`).
+- **Read**: binary keys always return `Blob`; JSON keys return parsed JSON. A key holds one kind only.
+- **Web host**: Dexie `pluginBinary` table (schema v2) stores raw `ArrayBuffer`; `PluginKvRepository` routes binary vs JSON.
+- **Native bridge**: binary crosses the wire as `{ __binary, mimeType, base64 }` until a native host stores bytes directly.
+
+First production consumer: `tool-wallpaper` (`wallpaper_image` key).
+
 ## Plugin server proxy
 
 Server-side plugin handlers expose HTTP actions via `/api/plugins/{pluginId}/{action}`. Wire envelope is `PluginServerResponse<T>` in `@chronos/core` (`pluginServerSuccess` / `pluginServerError` / `parsePluginServerResponse`). `IHttpService.proxy` posts to this route from the browser; handler implementation errors use plugin-local `AppResult`, mapped at the handler boundary.

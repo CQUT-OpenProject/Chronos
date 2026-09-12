@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ChronosUiController } from '@chronos/ui-kit';
 	import { TimetableLivePreview, pluginText } from '@chronos/ui-kit';
+	import WallpaperCropEditor from './WallpaperCropEditor.svelte';
 	import { getWallpaperRuntime } from './runtime.svelte';
 	import { WALLPAPER_MESSAGES } from './messages';
 	import { WALLPAPER_PLUGIN_ID } from './storage';
@@ -26,25 +27,34 @@
 	const pickLabel = $derived(pt(hasWallpaper ? 'screen.action.repick' : 'screen.action.pick'));
 
 	let fileInput: HTMLInputElement | undefined = $state();
+	let cropSource = $state<File | null>(null);
 
 	function onPickWallpaper() {
 		fileInput?.click();
 	}
 
-	async function onFileChange(event: Event) {
+	function onFileChange(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
+		input.value = '';
 		if (!file) return;
+		cropSource = file;
+	}
+
+	function onCropCancel() {
+		cropSource = null;
+	}
+
+	async function onCropConfirm(blob: Blob) {
 		try {
-			await runtime.setWallpaper(file);
+			await runtime.setWallpaper(blob);
+			cropSource = null;
 		} catch (error) {
 			const msg =
 				error instanceof DOMException && error.name === 'QuotaExceededError'
 					? pt('screen.error.tooLarge')
 					: pt('screen.error.importFailed');
 			controller.getPluginContext(pluginId).actions.notify(msg, 'error');
-		} finally {
-			input.value = '';
 		}
 	}
 
@@ -62,7 +72,14 @@
 		onchange={onFileChange}
 	/>
 
-	{#if hasWallpaper && timetable}
+	{#if cropSource}
+		<WallpaperCropEditor
+			{controller}
+			source={cropSource}
+			onConfirm={onCropConfirm}
+			onCancel={onCropCancel}
+		/>
+	{:else if hasWallpaper && timetable}
 		<div class="relative flex min-h-0 flex-1 flex-col overflow-hidden">
 			<TimetableLivePreview
 				{controller}
@@ -77,24 +94,26 @@
 		</div>
 	{/if}
 
-	<div class="bottom-bar">
-		<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
-			{#if hasWallpaper}
+	{#if !cropSource}
+		<div class="bottom-bar">
+			<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
+				{#if hasWallpaper}
+					<button
+						type="button"
+						class="flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface"
+						onclick={clearWallpaper}
+					>
+						{clearLabel}
+					</button>
+				{/if}
 				<button
 					type="button"
-					class="flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface"
-					onclick={clearWallpaper}
+					class="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary"
+					onclick={onPickWallpaper}
 				>
-					{clearLabel}
+					{pickLabel}
 				</button>
-			{/if}
-			<button
-				type="button"
-				class="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary"
-				onclick={onPickWallpaper}
-			>
-				{pickLabel}
-			</button>
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>

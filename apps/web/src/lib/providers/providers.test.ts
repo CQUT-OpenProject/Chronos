@@ -8,7 +8,13 @@ import {
 	createWebProviders
 } from './index';
 import { createCourse, createTimetable } from '@chronos/core';
-import type { ChronosDB, CourseRow, PluginDataRow, TimetableRow } from '$lib/storage/db';
+import type {
+	ChronosDB,
+	CourseRow,
+	PluginBinaryRow,
+	PluginDataRow,
+	TimetableRow
+} from '$lib/storage/db';
 
 vi.mock('$lib/boot/plugin-proxy-meta.generated', () => ({
 	profileHasServerPlugins: vi.fn(() => true)
@@ -42,6 +48,7 @@ function createMockDb(): ChronosDB {
 	const timetablesMap = new Map<string, TimetableRow>();
 	const coursesMap = new Map<string, CourseRow>();
 	const pluginDataMap = new Map<string, PluginDataRow>();
+	const pluginBinaryMap = new Map<string, PluginBinaryRow>();
 
 	return {
 		timetables: {
@@ -107,7 +114,40 @@ function createMockDb(): ChronosDB {
 			}),
 			delete: vi.fn(async (id: string) => {
 				pluginDataMap.delete(id);
-			})
+			}),
+			where: vi.fn(() => ({
+				equals: (pluginId: string) => ({
+					delete: async () => {
+						for (const [id, row] of pluginDataMap.entries()) {
+							if (row.pluginId === pluginId) pluginDataMap.delete(id);
+						}
+					}
+				})
+			})),
+			toArray: async () => Array.from(pluginDataMap.values())
+		},
+		pluginBinary: {
+			clear: vi.fn(async () => {
+				pluginBinaryMap.clear();
+			}),
+			get: vi.fn(async (id: string) => pluginBinaryMap.get(id) ?? undefined),
+			put: vi.fn(async (row: PluginBinaryRow) => {
+				pluginBinaryMap.set(row.id, row);
+				return row.id;
+			}),
+			delete: vi.fn(async (id: string) => {
+				pluginBinaryMap.delete(id);
+			}),
+			where: vi.fn(() => ({
+				equals: (pluginId: string) => ({
+					delete: async () => {
+						for (const [id, row] of pluginBinaryMap.entries()) {
+							if (row.pluginId === pluginId) pluginBinaryMap.delete(id);
+						}
+					}
+				})
+			})),
+			toArray: async () => Array.from(pluginBinaryMap.values())
 		},
 		transaction: vi.fn(async (_mode: string, ...args: unknown[]) => {
 			const fn = args[args.length - 1] as () => Promise<void>;
@@ -183,6 +223,14 @@ describe('Web Providers', () => {
 		await storage.setPluginData('my-plugin', 'key1', { count: 42 });
 		const pluginData = await storage.getPluginData<{ count: number }>('my-plugin', 'key1');
 		expect(pluginData).toEqual({ count: 42 });
+
+		const blob = new Blob([new Uint8Array([4, 5, 6])], { type: 'image/png' });
+		await storage.setPluginData('my-plugin', 'binary', blob);
+		const loadedBlob = await storage.getPluginData<Blob>('my-plugin', 'binary');
+		expect(loadedBlob).toBeInstanceOf(Blob);
+		expect(new Uint8Array(await (loadedBlob as Blob).arrayBuffer())).toEqual(
+			new Uint8Array([4, 5, 6])
+		);
 
 		await storage.deletePluginData('my-plugin', 'key1');
 		expect(await storage.getPluginData('my-plugin', 'key1')).toBeNull();

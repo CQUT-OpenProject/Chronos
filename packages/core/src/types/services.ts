@@ -71,7 +71,16 @@ export interface IStorageService {
 	clearAllData?(): Promise<void>;
 	estimateStorageBytes?(): Promise<number>;
 
-	// Key-value store (namespaced automatically by pluginId)
+	/**
+	 * Plugin key-value store (namespaced by `pluginId`).
+	 *
+	 * - JSON-serializable values: stored and returned as parsed JSON.
+	 * - Binary values (`Blob` | `Uint8Array` on write): stored as raw bytes by the host.
+	 *   On read, hosts return a `Blob` (never `Uint8Array`). `Uint8Array` writes without an
+	 *   explicit MIME type use `application/octet-stream`.
+	 *
+	 * The same `pluginId:key` holds either JSON or binary, never both.
+	 */
 	getPluginData<T>(pluginId: string, key: string): Promise<T | null>;
 	setPluginData<T>(pluginId: string, key: string, value: T): Promise<void>;
 	deletePluginData(pluginId: string, key: string): Promise<void>;

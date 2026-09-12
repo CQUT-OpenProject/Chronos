@@ -2,7 +2,7 @@
 import type { IStorageService } from '@chronos/core';
 import {
 	deleteWallpaperBlob,
-	loadWallpaperDataUrl,
+	loadWallpaperObjectUrl,
 	saveWallpaperBlob,
 	WALLPAPER_PLUGIN_ID
 } from './storage';
@@ -28,6 +28,12 @@ export function getWallpaperRuntime(pluginId: string = WALLPAPER_PLUGIN_ID): Wal
 	return runtime;
 }
 
+function revokeObjectUrl(uri: string | null) {
+	if (uri?.startsWith('blob:')) {
+		URL.revokeObjectURL(uri);
+	}
+}
+
 export function createWallpaperRuntime(
 	storage: IStorageService,
 	pluginId: string = WALLPAPER_PLUGIN_ID
@@ -36,6 +42,9 @@ export function createWallpaperRuntime(
 	let changeHandler: WallpaperChangeListener | null = null;
 
 	function notify(uri: string | null) {
+		if (uri !== wallpaperUri) {
+			revokeObjectUrl(wallpaperUri);
+		}
 		wallpaperUri = uri;
 		try {
 			changeHandler?.(uri);
@@ -56,7 +65,7 @@ export function createWallpaperRuntime(
 				notify(null);
 				return;
 			}
-			const uri = await loadWallpaperDataUrl(storage, pluginId);
+			const uri = await loadWallpaperObjectUrl(storage, pluginId);
 			notify(uri);
 		},
 		async setWallpaper(wallpaper: Blob | null): Promise<void> {

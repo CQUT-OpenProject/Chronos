@@ -5,11 +5,9 @@ import { wallpaperPlugin } from '../src/index';
 import { createWallpaperRuntime } from '../src/runtime.svelte';
 import { WALLPAPER_IMAGE_KEY, WALLPAPER_PLUGIN_ID } from '../src/storage';
 
-const STORED_WALLPAPER = {
-	mimeType: 'image/png',
-	base64: 'iVBORw0KGgo='
-};
-const EXPECTED_DATA_URI = 'data:image/png;base64,iVBORw0KGgo=';
+const STORED_WALLPAPER_BLOB = new Blob([new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])], {
+	type: 'image/png'
+});
 
 function createWallpaperMockEnv(
 	getPluginData: (pluginId: string, key: string) => Promise<unknown> = async () => null
@@ -70,7 +68,7 @@ describe('@chronos/plugin-wallpaper', () => {
 	});
 
 	it('emits dynamicColor:changed with null uri when unloaded', async () => {
-		const getPluginData = vi.fn(async () => STORED_WALLPAPER);
+		const getPluginData = vi.fn(async () => STORED_WALLPAPER_BLOB);
 		const env = createWallpaperMockEnv(getPluginData);
 		const engine = new ChronosEngine({ env });
 		await engine.init();
@@ -93,7 +91,7 @@ describe('@chronos/plugin-wallpaper', () => {
 	it('replays dynamicColor:changed on dynamicColor:hydrate after late subscription', async () => {
 		const getPluginData = vi.fn(async (pluginId: string, key: string) => {
 			if (pluginId === WALLPAPER_PLUGIN_ID && key === WALLPAPER_IMAGE_KEY) {
-				return STORED_WALLPAPER;
+				return STORED_WALLPAPER_BLOB;
 			}
 			return null;
 		});
@@ -110,7 +108,8 @@ describe('@chronos/plugin-wallpaper', () => {
 
 		engine.events.emit('dynamicColor:hydrate', undefined);
 
-		expect(received).toEqual([EXPECTED_DATA_URI]);
+		expect(received).toHaveLength(1);
+		expect(received[0]).toMatch(/^blob:/);
 
 		handle.dispose();
 		engine.dispose();
@@ -118,7 +117,7 @@ describe('@chronos/plugin-wallpaper', () => {
 
 	it('isolates runtime state per createWallpaperRuntime instance', async () => {
 		const storageA = {
-			getPluginData: vi.fn(async () => STORED_WALLPAPER),
+			getPluginData: vi.fn(async () => STORED_WALLPAPER_BLOB),
 			setPluginData: vi.fn(async () => {}),
 			deletePluginData: vi.fn(async () => {})
 		};
@@ -134,7 +133,7 @@ describe('@chronos/plugin-wallpaper', () => {
 		await runtimeA.syncFromStorage(true);
 		await runtimeB.syncFromStorage(true);
 
-		expect(runtimeA.uri).toBe(EXPECTED_DATA_URI);
+		expect(runtimeA.uri).toMatch(/^blob:/);
 		expect(runtimeB.uri).toBeNull();
 
 		runtimeA.dispose();

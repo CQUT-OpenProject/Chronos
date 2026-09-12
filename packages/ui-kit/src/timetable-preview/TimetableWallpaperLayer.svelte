@@ -16,7 +16,7 @@
 		<div
 			class={timetableWallpaperBackdropClass(blurred)}
 			style:background-image={`url("${wallpaperUri}")`}
-			style:background-size="cover"
+			style:background-size="100% 100%"
 			style:background-position="center"
 			style:background-repeat="no-repeat"
 		></div>

@@ -18,9 +18,9 @@ describe('timetable-wallpaper-layer', () => {
 		expect(classes).not.toContain('scale-');
 	});
 
-	it('includes anti-bleed inset and motion-safe transitions', () => {
+	it('includes exact-fit inset and motion-safe transitions', () => {
 		const classes = timetableWallpaperBackdropClass(false);
-		expect(classes).toContain('inset-[-24px]');
+		expect(classes).toContain('inset-0');
 		expect(classes).toContain('motion-reduce:transition-none');
 		expect(classes).toContain('will-change-[filter]');
 		expect(classes).not.toContain('ease-[');
