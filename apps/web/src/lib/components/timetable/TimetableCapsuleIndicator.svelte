@@ -159,8 +159,53 @@
 	});
 
 	const isCollapsing = $derived(!isExpanded && showExpandedTrack);
+	const isTooltipSlotOpen = $derived(isExpanded || isCollapsing);
+
+	let isTooltipEntering = $state(false);
+	let tooltipTrackingActive = $state(false);
+	let tooltipTrackTimer: ReturnType<typeof setTimeout> | null = null;
+
+	$effect(() => {
+		if (!isExpanded) {
+			isTooltipEntering = false;
+			return;
+		}
+
+		isTooltipEntering = true;
+		let enterFrame = 0;
+		let enterFrame2 = 0;
+		enterFrame = requestAnimationFrame(() => {
+			enterFrame2 = requestAnimationFrame(() => {
+				isTooltipEntering = false;
+			});
+		});
+
+		return () => {
+			cancelAnimationFrame(enterFrame);
+			cancelAnimationFrame(enterFrame2);
+		};
+	});
+
+	$effect(() => {
+		if (tooltipTrackTimer) {
+			clearTimeout(tooltipTrackTimer);
+			tooltipTrackTimer = null;
+		}
+
+		if (!isExpanded) {
+			tooltipTrackingActive = false;
+			return;
+		}
+
+		tooltipTrackingActive = false;
+		tooltipTrackTimer = setTimeout(() => {
+			tooltipTrackingActive = true;
+			tooltipTrackTimer = null;
+		}, STATE_TRANSITION_MS);
+	});
 
 	onDestroy(() => {
+		if (tooltipTrackTimer) clearTimeout(tooltipTrackTimer);
 		transitionState.cancelAll();
 		gesture.destroy();
 	});
@@ -308,8 +353,15 @@
 		style:--indicator-glass-fade-duration={`${GLASS_FADE_MS}ms`}
 	>
 		<div
-			class={['floating-tooltip pointer-events-none', isExpanded && 'floating-tooltip--visible']}
-			style:transform={`translateX(${tooltipOffsetX}px) translateY(${isExpanded ? -6 : 12}px)`}
+			class={[
+				'floating-tooltip pointer-events-none',
+				isTooltipSlotOpen && 'floating-tooltip--slot',
+				isTooltipEntering && 'floating-tooltip--entering',
+				isExpanded && !isTooltipEntering && 'floating-tooltip--visible',
+				isExpanded && tooltipTrackingActive && 'floating-tooltip--tracking',
+				isCollapsing && 'floating-tooltip--exiting'
+			]}
+			style:--tooltip-x={`${tooltipOffsetX}px`}
 			role="status"
 			aria-live="polite"
 		>
@@ -457,6 +509,7 @@
 	}
 
 	.floating-tooltip {
+		--tooltip-y: -6px;
 		border-radius: 9999px;
 		background-color: color-mix(in srgb, var(--color-inverse-surface, #2f3033) 70%, transparent);
 		backdrop-filter: blur(16px) saturate(1.3);
@@ -469,20 +522,33 @@
 		color: var(--color-inverse-on-surface, #f1f0f4);
 		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 		max-height: 0;
+		margin-bottom: 0;
 		opacity: 0;
 		overflow: hidden;
+		transform: translateX(0) translateY(var(--tooltip-y));
 		transition:
 			opacity var(--indicator-transition-duration) var(--indicator-easing),
-			transform var(--indicator-transition-duration) var(--indicator-easing),
-			max-height var(--indicator-transition-duration) var(--indicator-easing),
-			margin-bottom var(--indicator-transition-duration) var(--indicator-easing);
-		margin-bottom: 0;
+			transform var(--indicator-transition-duration) var(--indicator-easing);
+	}
+
+	.floating-tooltip--slot {
+		max-height: 2rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.floating-tooltip--entering,
+	.floating-tooltip--exiting {
+		opacity: 0;
+		transform: translateX(0) translateY(var(--tooltip-y));
 	}
 
 	.floating-tooltip--visible {
-		max-height: 2rem;
-		margin-bottom: 1.5rem;
 		opacity: 1;
+		transform: translateX(var(--tooltip-x, 0px)) translateY(var(--tooltip-y));
+	}
+
+	.floating-tooltip--visible.floating-tooltip--tracking {
+		transition-property: opacity;
 	}
 
 	.indicator-dot {
