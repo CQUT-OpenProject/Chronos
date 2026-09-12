@@ -1,11 +1,18 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createWorkbenchColorsFromTokens } from '@chronos/core/theme/workbench-colors';
-import { buildGeneratedThemeCss, buildM3Tokens } from '@chronos/ui-kit/theme/m3-theme';
+import {
+	buildGeneratedThemeCss,
+	buildGeneratedThemeInlineCss,
+	buildM3Tokens
+} from '@chronos/ui-kit/theme/m3-theme';
 import { writeIfChanged } from '../build-utils/write-if-changed';
 
 const themeDir = dirname(fileURLToPath(import.meta.url));
 const generatedThemePath = resolve(themeDir, 'generated-colors.css');
+const generatedThemeInlinePath = fileURLToPath(
+	new URL('../../../../../packages/ui-kit/src/theme/theme-inline.generated.css', import.meta.url)
+);
 const generatedWorkbenchPath = fileURLToPath(
 	new URL(
 		'../../../../../packages/ui-kit/src/theme/m3-default-workbench.generated.ts',
@@ -29,6 +36,7 @@ export const m3DefaultWorkbenchColors: {
 
 export function writeGeneratedThemeCss() {
 	writeGeneratedM3DefaultWorkbench();
+	writeIfChanged(generatedThemeInlinePath, buildGeneratedThemeInlineCss());
 	writeIfChanged(generatedThemePath, buildGeneratedThemeCss());
 	return generatedThemePath;
 }

@@ -27,6 +27,7 @@
 	} from '$lib/navigation';
 	import ShellRouteHost from '$lib/components/shell/ShellRouteHost.svelte';
 	import { PREVIEW_PAINT_READY_CONTEXT, TIMETABLE_PRESENTATION_CONTEXT } from '@chronos/ui-kit';
+	import { toStore } from 'svelte/store';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
@@ -79,11 +80,17 @@
 	setContext('appShell', shell);
 	setContext('timetableScreen', timetableScreen);
 	setContext('shellTab', shellTab);
-	setContext(PREVIEW_PAINT_READY_CONTEXT, () => gate.previewPaintReady);
-	setContext(TIMETABLE_PRESENTATION_CONTEXT, () => ({
-		displayedWeek: timetableScreen.state.displayedWeek,
-		coursePalette: shell.appearance.coursePalette
-	}));
+	setContext(
+		PREVIEW_PAINT_READY_CONTEXT,
+		toStore(() => gate.previewPaintReady)
+	);
+	setContext(
+		TIMETABLE_PRESENTATION_CONTEXT,
+		toStore(() => ({
+			displayedWeek: timetableScreen.state.displayedWeek,
+			coursePalette: shell.appearance.coursePalette
+		}))
+	);
 
 	$effect(() => {
 		void getAppController().slotVersion;

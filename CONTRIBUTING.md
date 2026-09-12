@@ -277,7 +277,17 @@ export default defineChronosPlugin({
 
 ### 官方插件 Tailwind
 
-官方插件产物中的 Svelte `<style>` 会由 Rollup 独立打包生成 `bundle.css`；而 Tailwind 原子类（Utility Class）则统一由宿主 `apps/web/src/routes/layout.css` 中的 `@source` 规则扫描插件的 `src` 目录并提取生成——无需在各个插件的构建流程中重复运行 Tailwind 编译器。
+官方 UI 插件在 `bundle/entry.ts` 中引入 `bundle/styles.css`，该文件 `@import '@chronos/ui-kit/theme/plugin-tailwind.css'` 并 `@source` 插件自身 `src/`。构建时 Tailwind v4 只编译 utilities（无 Preflight），原子类写入自包含 `bundle.css`，宿主在插件 activate 时注入 `<style data-plugin-id>`，deactivate 时卸载。
+
+宿主 `layout.css` **不再** `@source` 官方在线 UI 插件（wallpaper / today / calendar-holidays / codec-qrcode）。Profile 内置插件（`source-cqut`、`codec-share`）仍随宿主编译，可保留 `@source`。
+
+第三方插件应使用同一 CSS 入口契约。以下类仍由宿主全局提供，插件 CSS 不必重复产出：`text-*` 字阶（`typography.css`）、`ui-*` 模式、`.bottom-bar`。颜色原子类必须走 `plugin-tailwind.css` 的 `@theme inline` 桥，以便跟随宿主 CSS 变量与动态主题。
+
+开发态 HMR 将产物写入 `dist/dev-plugins/{pluginId}/{rev}/` 并生成带修订号的 manifest（不写 `static/official-plugins`）。Vite dev server 通过 middleware 按 `/official-plugins/bundles/{pluginId}/{rev}/…` 提供资源，缺失修订返回 404，无修订的生产 URL 仍走 static；完整安装链路验证请执行 `node --experimental-strip-types scripts/build-official-plugins.ts` 或 `vp build`。
+
+`MountableSlotOutlet` 会把宿主 Svelte context 传给 `CHRONOS_MOUNTABLE.mount()`，但仅对**进程内**、与宿主共享 Svelte 运行时的组件有效（如 Profile 内置 `source-cqut` / `codec-share`）。官方自包含 ESM 插件自带独立 Svelte 运行时，其组件内 `getContext()` 无法读取宿主 context；应通过 props / engine API 获取数据。
+
+插件富 UI 通过 `ChronosUiController`（`controller.snapshot` 可读 store）订阅宿主状态，在插件自身 Svelte 运行时用 `fromStore(controller.snapshot)` 读取快照；动作仍调用 controller 方法。`TIMETABLE_PRESENTATION_CONTEXT` 与 `PREVIEW_PAINT_READY_CONTEXT` 提供 `Readable` 订阅源，同样用 `fromStore()` 消费。`MountableSlotOutlet` 在 props 变化时调用 `update()`，仅在组件或挂载目标变化时重新挂载。
 
 ### 分发形态
 
@@ -326,7 +336,7 @@ export default defineChronosPlugin({
 若插件包含 JavaScript 逻辑或 Svelte 组件：
 
 1. Bundle 必须自包含（Svelte 运行时编译打包进产物中），通过 Blob ESM 方式加载；
-2. Manifest 需完整声明 `cssUrl`、`cssSha256`、`jsSha256`，`version` 字段取自 `apps/web/package.json`；
+2. 富 UI 插件需提供 `bundle/styles.css`（`@import '@chronos/ui-kit/theme/plugin-tailwind.css'` + `@source '../src'`），并在 `entry.ts` 中引入；Manifest 需完整声明 `cssUrl`、`cssSha256`、`sha256`，`version` 字段取自 `apps/web/package.json`；
 3. 富 UI 必须提供 Mountable 包装器，不暴露裸 Svelte 组件；
 4. 本地验证可在「我的 → 插件管理」中通过模拟 Catalog 在线安装流程进行全链路测试，确保运行表现与内置插件完全一致（见 [ADR 0011](.agents/docs/adr/0011-single-track-official-plugin-install.md)）。
 

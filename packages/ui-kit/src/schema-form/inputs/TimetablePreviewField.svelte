@@ -1,42 +1,46 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import type { ReactiveChronosController } from '../../reactivity/engine-controller.svelte';
+	import { fromStore } from 'svelte/store';
+	import type { ChronosUiController } from '../../reactivity/chronos-ui-controller';
 	import { AcademicCalendarService, computeTimetableWeekLayout, todayIsoDate } from '@chronos/core';
 	import TimetablePreviewGrid from '../../timetable-preview/TimetablePreviewGrid.svelte';
 	import {
 		TIMETABLE_PRESENTATION_CONTEXT,
 		resolveCoursePalette,
 		resolveDisplayedWeek,
-		type TimetablePresentationAccessor
+		type TimetablePresentationSource
 	} from '../../timetable-preview/timetable-presentation';
 
 	interface Props {
-		controller?: ReactiveChronosController;
+		controller?: ChronosUiController;
 		label: string;
 		description?: string;
 	}
 
 	let { controller, label, description = '' }: Props = $props();
 
-	const getPresentation = getContext<TimetablePresentationAccessor | undefined>(
+	const presentationSource = getContext<TimetablePresentationSource | undefined>(
 		TIMETABLE_PRESENTATION_CONTEXT
 	);
 	const calendarService = new AcademicCalendarService();
+	const ui = $derived(controller ? fromStore(controller.snapshot) : null);
+	const presentationView = $derived(presentationSource ? fromStore(presentationSource) : null);
 
-	const timetable = $derived(controller?.currentTimetable ?? null);
-	const today = $derived(controller?.clockTodayIso ?? todayIsoDate());
+	const timetable = $derived(ui?.current.currentTimetable ?? null);
+	const today = $derived(ui?.current.clockTodayIso ?? todayIsoDate());
 	const academicWeek = $derived(
 		calendarService.calculateAcademicWeek(today, timetable?.academicConfig)
 	);
-	const presentation = $derived(getPresentation?.() ?? {});
-	const displayedWeek = $derived(resolveDisplayedWeek(controller, presentation, academicWeek));
-	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller?.activeWeek ?? 1));
-	const currentPeriodIndex = $derived(controller?.currentPeriodIndex ?? null);
+	const presentation = $derived(presentationView?.current ?? {});
+	const activeWeek = $derived(ui?.current.activeWeek ?? academicWeek);
+	const displayedWeek = $derived(resolveDisplayedWeek(presentation, academicWeek, activeWeek));
+	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? activeWeek ?? 1));
+	const currentPeriodIndex = $derived(ui?.current.currentPeriodIndex ?? null);
 	const coursePalette = $derived(resolveCoursePalette(presentation));
 	const paletteCourses = $derived(timetable?.courses ?? []);
-	const layoutMode = $derived(controller?.userPreferences?.timetableLayoutMode ?? 'fixed');
-	const capsuleCornerStyle = $derived(controller?.userPreferences?.capsuleCornerStyle ?? 'sharp');
-	const courseBadges = $derived(controller?.courseBadges ?? {});
+	const layoutMode = $derived(ui?.current.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const capsuleCornerStyle = $derived(ui?.current.userPreferences?.capsuleCornerStyle ?? 'sharp');
+	const courseBadges = $derived(ui?.current.courseBadges ?? {});
 	const hostTranslate = $derived(
 		controller ? (key: string) => controller.translatePlugin('host-ui', key) : (key: string) => key
 	);

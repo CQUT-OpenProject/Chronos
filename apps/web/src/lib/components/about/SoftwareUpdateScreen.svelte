@@ -19,6 +19,7 @@
 	import HighlightRowList from '$lib/components/ui/HighlightRowList.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
+	import UpdateInstallProgress from '$lib/components/about/UpdateInstallProgress.svelte';
 	import {
 		CalendarMonthFill,
 		CheckCircleFill,
@@ -80,6 +81,11 @@
 			second: '2-digit'
 		});
 	}
+
+	function formatErrorMessage(message: string | null): string {
+		if (!message) return '';
+		return message.startsWith('about.') ? hostT(message) : message;
+	}
 </script>
 
 <div class="flex flex-col gap-6 py-2">
@@ -129,23 +135,30 @@
 			{/if}
 
 			<div class="pt-2">
-				<Button
-					variant="filled"
-					class="w-full"
-					disabled={updateState.state.updating}
-					onclick={() => void updateState.installUpdate()}
-				>
-					<DownloadFill class="size-5" />
-					{updateState.state.updating
-						? hostT('about.update.installing')
-						: hostT('about.update.install')}
-				</Button>
+				{#if updateState.state.updating}
+					<UpdateInstallProgress
+						phase={updateState.state.installPhase ?? 'downloading'}
+						percent={updateState.state.installPercent}
+					/>
+				{:else}
+					<Button
+						variant="filled"
+						class="w-full"
+						disabled={updateState.state.updating}
+						onclick={() => void updateState.installUpdate()}
+					>
+						<DownloadFill class="size-5" />
+						{hostT('about.update.install')}
+					</Button>
+				{/if}
 			</div>
 		</div>
 	{:else if updateState.state.errorMessage}
 		<Card variant="filled" class="flex flex-col items-center gap-3 py-8 text-center">
 			<InfoFill class="h-8 w-8 text-on-surface-variant" />
-			<p class="text-body-medium text-danger">{updateState.state.errorMessage}</p>
+			<p class="text-body-medium text-danger">
+				{formatErrorMessage(updateState.state.errorMessage)}
+			</p>
 			<Button variant="filled" onclick={() => void updateState.checkUpdate()} class="mt-2">
 				<Refresh class="size-4" />
 				{hostT('about.update.retry')}

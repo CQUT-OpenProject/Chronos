@@ -23,7 +23,16 @@ function pluginRequiresTailwindSource(pluginId: string): boolean {
 	return plugin.tailwindSource ?? Boolean(plugin.entry);
 }
 
-function verifyPluginTailwindSourceCoverage(
+const CSS_FINGERPRINTS: Record<string, readonly string[]> = {
+	'tool-today': ['bg-secondary-container', 'border-border'],
+	'tool-wallpaper': ['bg-canvas'],
+	'tool-calendar-holidays': ['text-error'],
+	'tool-qrcode': ['border-dashed']
+};
+
+const PREFLIGHT_MARKERS = ['border: 0 solid', 'border:0 solid'] as const;
+
+function verifySelfContainedPluginCss(
 	catalog: { manifests: string[] },
 	webPublicDir: string
 ): number {
@@ -33,23 +42,47 @@ function verifyPluginTailwindSourceCoverage(
 	for (const manifestUrl of catalog.manifests) {
 		const manifestPath = resolve(webPublicDir, ...manifestUrl.replace(/^\//, '').split('/'));
 		if (!existsSync(manifestPath)) continue;
-		const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { id?: string };
-		const pluginId = manifest.id;
+		const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Record<string, unknown>;
+		const pluginId = typeof manifest.id === 'string' ? manifest.id : undefined;
 		if (!pluginId || seen.has(pluginId)) continue;
 		seen.add(pluginId);
 
 		if (!pluginRequiresTailwindSource(pluginId)) continue;
 
-		const plugin = OFFICIAL_PLUGINS.find((entry) => entry.id === pluginId);
-		const sourceDirName = plugin?.sourceDir;
-		if (!sourceDirName) {
-			console.error(`✗ ${pluginId}: no Tailwind @source mapping in verify-official-plugins`);
+		const cssUrl = manifest.cssUrl;
+		if (typeof cssUrl !== 'string' || !cssUrl) {
+			console.error(`✗ ${pluginId}: missing self-contained cssUrl`);
 			failures++;
 			continue;
 		}
-		const srcPath = resolve(root, 'packages/plugins', sourceDirName, 'src');
-		if (!existsSync(srcPath)) {
-			console.error(`✗ ${pluginId}: missing plugin source dir ${srcPath}`);
+
+		const cssPath = resolve(webPublicDir, ...cssUrl.replace(/^\//, '').split('/'));
+		if (!existsSync(cssPath)) {
+			console.error(`✗ ${pluginId}: missing bundle.css at ${cssUrl}`);
+			failures++;
+			continue;
+		}
+
+		const cssContent = readFileSync(cssPath, 'utf8');
+		if (PREFLIGHT_MARKERS.some((marker) => cssContent.includes(marker))) {
+			console.error(`✗ ${pluginId}: bundle.css appears to include Tailwind Preflight`);
+			failures++;
+		}
+		if (/--color-surface:\s*#/.test(cssContent)) {
+			console.error(`✗ ${pluginId}: bundle.css must not emit :root token hex values`);
+			failures++;
+		}
+
+		const fingerprints = CSS_FINGERPRINTS[pluginId] ?? [];
+		for (const token of fingerprints) {
+			if (!cssContent.includes(token)) {
+				console.error(`✗ ${pluginId}: bundle.css missing fingerprint "${token}"`);
+				failures++;
+			}
+		}
+
+		if (cssContent.includes('.rounded-2xl') && !/corner-shape:\s*squircle/.test(cssContent)) {
+			console.error(`✗ ${pluginId}: .rounded-2xl in bundle.css is missing squircle override`);
 			failures++;
 		}
 	}
@@ -102,7 +135,7 @@ export function verifyOfficialPlugins(): void {
 		}
 	}
 
-	failures += verifyPluginTailwindSourceCoverage(catalog, webPublicDir);
+	failures += verifySelfContainedPluginCss(catalog, webPublicDir);
 
 	if (failures > 0) {
 		console.error(`verify-official-plugins: ${failures} failure(s)`);

@@ -180,6 +180,73 @@ describe('OfficialPluginRuntimeActivator', () => {
 		expect(styles.filter((el) => !el.removed)).toHaveLength(0);
 	});
 
+	it('injects CSS before loading the bundle', async () => {
+		type FakeStyle = {
+			attrs: Map<string, string>;
+			textContent: string | null;
+			removed: boolean;
+			setAttribute: (key: string, value: string) => void;
+			remove: () => void;
+		};
+		const styles: FakeStyle[] = [];
+		vi.stubGlobal('document', {
+			createElement: () => {
+				const el: FakeStyle = {
+					attrs: new Map(),
+					textContent: null,
+					removed: false,
+					setAttribute(key: string, value: string) {
+						el.attrs.set(key, value);
+					},
+					remove() {
+						el.removed = true;
+					}
+				};
+				styles.push(el);
+				return el;
+			},
+			head: { appendChild: vi.fn() },
+			querySelector: (selector: string) => {
+				const match = /data-plugin-id="([^"]+)"/.exec(selector);
+				return (
+					styles.find((el) => !el.removed && el.attrs.get('data-plugin-id') === match?.[1]) ?? null
+				);
+			}
+		});
+
+		const originalLoad = engine.loadPlugin.bind(engine);
+		const loadSpy = vi.spyOn(engine, 'loadPlugin').mockImplementation(async (...args) => {
+			const live = styles.find(
+				(el) => !el.removed && el.attrs.get('data-plugin-id') === 'test-plugin'
+			);
+			expect(live).toBeDefined();
+			expect(live?.textContent).toBe('.x{color:red}');
+			return originalLoad(...args);
+		});
+
+		installed.add('test-plugin');
+		await activator.activate({
+			manifest: {
+				id: 'test-plugin',
+				name: { 'zh-CN': 'T' },
+				version: '1',
+				description: { 'zh-CN': 'T' },
+				author: 'Chronos',
+				type: 'tool',
+				bundleFormat: 'esm',
+				bundleUrl: '/b.js',
+				sha256: 'x'
+			},
+			code: SAMPLE_BUNDLE,
+			cssCode: '.x{color:red}',
+			enabled: true,
+			installedAt: 1
+		});
+
+		expect(loadSpy).toHaveBeenCalled();
+		expect(styles.filter((el) => !el.removed)).toHaveLength(1);
+	});
+
 	it('unload disposes engine plugin handle', async () => {
 		installed.add('test-plugin');
 		await activator.activate({
@@ -226,6 +293,39 @@ describe('OfficialPluginRuntimeActivator', () => {
 		});
 
 		expect(revertSpy).not.toHaveBeenCalled();
+	});
+
+	it('disposes partially registered theme assets when icon theme registration fails', async () => {
+		const registerThemeSpy = vi.spyOn(engine.themes, 'registerTheme');
+		vi.spyOn(engine.iconThemes, 'registerIconTheme').mockImplementation(() => {
+			throw new Error('icon theme failed');
+		});
+
+		installed.add('theme-json');
+		await expect(
+			activator.activate({
+				manifest: {
+					id: 'theme-json',
+					name: { 'zh-CN': 'T' },
+					version: '1',
+					description: { 'zh-CN': 'T' },
+					author: 'Chronos',
+					type: 'theme',
+					bundleFormat: 'esm',
+					colorsUrl: '/c.json',
+					colorsSha256: 'x',
+					iconThemeUrl: '/i.json',
+					iconThemeSha256: 'y'
+				},
+				colorsJson: THEME_COLORS_JSON,
+				iconThemeJson: '{"id":"icon-test","icons":{}}',
+				enabled: true,
+				installedAt: 1
+			})
+		).rejects.toThrow(/icon theme failed/);
+
+		expect(registerThemeSpy).toHaveBeenCalled();
+		expect(activator.isActive('theme-json')).toBe(false);
 	});
 
 	it('calls revertToDefaultThemes when deactivating installed plugin with revertThemes', async () => {

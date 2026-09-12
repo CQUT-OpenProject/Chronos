@@ -24,8 +24,9 @@
 		findInvalidSchemaFields,
 		TIMETABLE_PRESENTATION_CONTEXT,
 		resolveCoursePalette,
-		type TimetablePresentationAccessor
+		type TimetablePresentationSource
 	} from '@chronos/ui-kit';
+	import { fromStore } from 'svelte/store';
 
 	let {
 		transfer,
@@ -38,10 +39,11 @@
 	} = $props();
 
 	const controller = getAppController();
-	const getPresentation = getContext<TimetablePresentationAccessor | undefined>(
+	const presentationSource = getContext<TimetablePresentationSource | undefined>(
 		TIMETABLE_PRESENTATION_CONTEXT
 	);
-	const coursePalette = $derived(resolveCoursePalette(getPresentation?.() ?? {}));
+	const presentationView = $derived(presentationSource ? fromStore(presentationSource) : null);
+	const coursePalette = $derived(resolveCoursePalette(presentationView?.current));
 	const transferState = $derived(transfer.state);
 	const preview = $derived(transferState.preview);
 	const activeSlot = $derived(

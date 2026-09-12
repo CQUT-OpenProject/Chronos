@@ -8,12 +8,12 @@ export type OfficialPluginDef = {
 	type: 'theme' | 'tool';
 	name: Record<string, string>;
 	description: Record<string, string>;
-	/** packages/plugins source directory for Tailwind @source coverage */
+	/** packages/plugins source directory */
 	sourceDir: string;
 	entry?: string;
 	colorsJson?: string;
 	iconsJson?: string;
-	/** JSON-only assets skip Tailwind @source dir verification (default: has entry) */
+	/** JSON-only assets skip self-contained bundle.css verification (default: has entry) */
 	tailwindSource?: boolean;
 };
 

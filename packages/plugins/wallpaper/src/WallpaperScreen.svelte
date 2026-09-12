@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '@chronos/ui-kit';
+	import type { ChronosUiController } from '@chronos/ui-kit';
 	import { TimetableLivePreview, pluginText } from '@chronos/ui-kit';
 	import { getWallpaperRuntime } from './runtime.svelte';
 	import { WALLPAPER_MESSAGES } from './messages';
 	import { WALLPAPER_PLUGIN_ID } from './storage';
 
 	interface Props {
-		controller: ReactiveChronosController;
+		controller: ChronosUiController;
 		pluginId: string;
 	}
 

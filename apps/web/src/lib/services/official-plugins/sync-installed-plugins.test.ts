@@ -4,6 +4,7 @@ import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 import {
 	buildCatalogManifestMap,
 	isOfficialCatalogManifestUrl,
+	recordNeedsCssBackfill,
 	shouldSyncInstalledPlugin
 } from './sync-installed-plugins';
 
@@ -42,17 +43,57 @@ describe('isOfficialCatalogManifestUrl', () => {
 	});
 });
 
+describe('recordNeedsCssBackfill', () => {
+	it('detects tool plugins with bundle but no cssCode', () => {
+		expect(
+			recordNeedsCssBackfill(
+				record({
+					manifest: BASE_MANIFEST,
+					code: 'export default {}'
+				})
+			)
+		).toBe(true);
+	});
+
+	it('ignores records that already have cssCode', () => {
+		expect(
+			recordNeedsCssBackfill(
+				record({
+					manifest: BASE_MANIFEST,
+					code: 'export default {}',
+					cssCode: '.x{color:red}'
+				})
+			)
+		).toBe(false);
+	});
+});
+
 describe('shouldSyncInstalledPlugin', () => {
-	it('skips when versions already match', () => {
+	it('skips when versions already match and assets are complete', () => {
 		expect(
 			shouldSyncInstalledPlugin(
 				record({
 					manifest: { ...BASE_MANIFEST, version: '0.4.1' },
-					manifestUrl: '/official-plugins/manifests/test-plugin.manifest.json'
+					manifestUrl: '/official-plugins/manifests/test-plugin.manifest.json',
+					code: 'export default {}',
+					cssCode: '.x{color:red}'
 				}),
 				'0.4.1'
 			)
 		).toBe(false);
+	});
+
+	it('syncs same-version tool plugins missing cssCode', () => {
+		expect(
+			shouldSyncInstalledPlugin(
+				record({
+					manifest: { ...BASE_MANIFEST, version: '0.4.1' },
+					manifestUrl: '/official-plugins/manifests/test-plugin.manifest.json',
+					code: 'export default {}'
+				}),
+				'0.4.1'
+			)
+		).toBe(true);
 	});
 
 	it('syncs stale official plugins', () => {

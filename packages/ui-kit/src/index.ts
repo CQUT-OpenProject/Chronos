@@ -1,5 +1,6 @@
 /// <reference types="svelte" />
 export * from './reactivity/engine-controller.svelte';
+export type { ChronosUiController, ChronosUiSnapshot } from './reactivity/chronos-ui-controller';
 export { m3DefaultTheme } from './theme/m3-default-theme';
 export { default as SchemaForm } from './schema-form/SchemaForm.svelte';
 export {
@@ -50,9 +51,10 @@ export {
 	TIMETABLE_PRESENTATION_CONTEXT,
 	resolveCoursePalette,
 	resolveDisplayedWeek,
-	type TimetablePresentationAccessor,
-	type TimetablePresentationSnapshot
+	type TimetablePresentationSnapshot,
+	type TimetablePresentationSource
 } from './timetable-preview/timetable-presentation';
+export type { PreviewPaintReadySource } from './timetable-preview/preview-paint-ready';
 export * from './timetable-preview/timetable-grid-chrome';
 export * from './timetable-preview/day-labels';
 export * from './haptic/haptic';

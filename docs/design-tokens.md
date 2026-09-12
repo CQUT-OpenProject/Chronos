@@ -3,7 +3,7 @@
 ## Architecture
 
 1. **Static layer (build time)** — `packages/ui-kit/src/theme/m3-theme.ts` generates Material colors; `CHRONOS_HOST_COLORS` overrides host semantics; `theme/generated-colors.css` is the CSS output.
-2. **Tailwind bridge** — `@theme` / `@theme inline` in `generated-colors.css`, `typography.css`, `radius.css`.
+2. **Tailwind bridge** — `@theme` / `@theme inline` in `generated-colors.css`, `typography.css`, and `packages/ui-kit/src/theme/radius.css`. Official plugins reuse the generated `@theme inline` via `theme-inline.generated.css`.
 3. **Runtime layer** — plugin themes via `WORKBENCH_COLOR_REGISTRY` + `applyActiveTheme` (closed keys only).
 4. **Consumption** — `text-*` typography, `ui-*` component patterns, Tailwind utilities (`bg-surface`, `rounded-dialog`).
 
@@ -14,7 +14,7 @@
 | Host canvas/surface/outline/success colors | `CHRONOS_HOST_COLORS` in `packages/ui-kit/src/theme/m3-theme.ts`   |
 | Material brand seed / algorithm            | `BRAND_SOURCE_ARGB`, `m3-theme.ts`                                 |
 | Typography scale                           | `typography-tokens.ts` + `apps/web/src/lib/theme/typography.css`   |
-| Radius / squircle                          | `radius-tokens.ts` + `apps/web/src/lib/theme/radius.css`           |
+| Radius / squircle                          | `radius-tokens.ts` + `packages/ui-kit/src/theme/radius.css`        |
 | Form fields, section surfaces              | `apps/web/src/lib/theme/ui-patterns.css`                           |
 | Shell bar height / safe area               | `apps/web/src/lib/theme/layout-tokens.css`                         |
 | Plugin theme colors                        | Official `colors.json` or plugin `workbenchColors` (registry keys) |

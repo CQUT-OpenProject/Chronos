@@ -497,10 +497,8 @@
 	const gridGestureHandlers = createGridGestureHandlers({
 		interaction,
 		onClickEmpty: () => {
-			if (!interaction.isDragging && !interaction.isClickGuarded()) {
-				haptic.light();
-				interaction.exitEdit();
-			}
+			if (interaction.isDragging || interaction.isClickGuarded()) return;
+			interaction.exitEdit();
 		}
 	});
 

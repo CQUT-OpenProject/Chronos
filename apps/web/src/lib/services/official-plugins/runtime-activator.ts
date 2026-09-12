@@ -25,18 +25,27 @@ export class OfficialPluginRuntimeActivator {
 		const manifest = record.manifest;
 		await this.deactivate(manifest.id);
 
-		const disposables: Disposable[] = [];
-		disposables.push(...this.activateThemeAssets(record));
-		disposables.push(...(await this.activateBundledPlugin(record)));
-
-		const composite: Disposable = {
-			dispose: () => {
-				for (const d of disposables) d.dispose();
-			}
-		};
 		if (record.cssCode) this.injectCss(manifest.id, record.cssCode);
-		this.activeHandles.set(manifest.id, composite);
-		return composite;
+
+		const disposables: Disposable[] = [];
+		try {
+			disposables.push(...this.activateThemeAssets(record));
+			disposables.push(...(await this.activateBundledPlugin(record)));
+
+			const composite: Disposable = {
+				dispose: () => {
+					for (const d of disposables) d.dispose();
+				}
+			};
+			this.activeHandles.set(manifest.id, composite);
+			return composite;
+		} catch (error) {
+			for (const disposable of disposables) {
+				disposable.dispose();
+			}
+			this.removeCss(manifest.id);
+			throw error;
+		}
 	}
 
 	private activateThemeAssets(record: InstalledOfficialPluginRecord): Disposable[] {

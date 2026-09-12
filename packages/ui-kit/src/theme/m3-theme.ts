@@ -293,15 +293,6 @@ export function buildGeneratedThemeCss(): string {
 	lightVars.push(...hostColorCssVars('light'));
 	darkVars.push(...hostColorCssVars('dark'));
 
-	const themeInlineVars = [
-		...getM3ColorNames().map((name) => `\t--color-${name}: var(--color-${name});`),
-		...CHRONOS_COLOR_ALIASES.map(
-			(alias) => `\t--color-${alias.name}: var(--color-${alias.source});`
-		),
-		...CHRONOS_HOST_INLINE_THEME_KEYS.map((key) => `\t--color-${key}: var(--color-${key});`),
-		'\t--color-border: var(--color-border-subtle);'
-	].join('\n');
-
 	return `/* generated, do not edit */
 
 @layer tokens {
@@ -314,10 +305,31 @@ ${darkVars.join('\n')}
 	}
 }
 
-@theme inline {
-${themeInlineVars}
-}
+${themeInlineBlock()}
 `;
+}
+
+/** Tailwind `@theme inline` bridge only — no `:root` hex token values. */
+export function buildGeneratedThemeInlineCss(): string {
+	return `/* generated, do not edit */
+
+${themeInlineBlock()}
+`;
+}
+
+function themeInlineBlock(): string {
+	const themeInlineVars = [
+		...getM3ColorNames().map((name) => `\t--color-${name}: var(--color-${name});`),
+		...CHRONOS_COLOR_ALIASES.map(
+			(alias) => `\t--color-${alias.name}: var(--color-${alias.source});`
+		),
+		...CHRONOS_HOST_INLINE_THEME_KEYS.map((key) => `\t--color-${key}: var(--color-${key});`),
+		'\t--color-border: var(--color-border-subtle);'
+	].join('\n');
+
+	return `@theme inline {
+${themeInlineVars}
+}`;
 }
 
 function mergeHostColorsIntoTokens(

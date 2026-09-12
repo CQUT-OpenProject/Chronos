@@ -1,4 +1,4 @@
-import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
+import type { ChronosUiController } from '../reactivity/chronos-ui-controller';
 
 export interface ImportTabTransferController {
 	state: {
@@ -8,7 +8,7 @@ export interface ImportTabTransferController {
 }
 
 export interface ImportTabComponentProps {
-	controller?: ReactiveChronosController;
+	controller?: ChronosUiController;
 	transfer: ImportTabTransferController;
 	onContinue: () => void;
 }
@@ -17,7 +17,7 @@ export async function previewAndNotify(
 	transfer: ImportTabTransferController,
 	tabId: string,
 	inputs: Record<string, unknown>,
-	controller?: ReactiveChronosController
+	controller?: ChronosUiController
 ): Promise<boolean> {
 	const ok = await transfer.previewWithSlot(tabId, inputs);
 	if (!ok && transfer.state.errorMessage) {

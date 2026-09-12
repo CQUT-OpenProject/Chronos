@@ -6,7 +6,7 @@
 @import '../../../../packages/ui-kit/src/timetable-preview/timetable-dynamic-tint.css';
 @import '../lib/theme/generated-colors.css';
 @import '../lib/theme/typography.css';
-@import '../lib/theme/radius.css';
+@import '../../../../packages/ui-kit/src/theme/radius.css';
 @import '../lib/theme/layout-tokens.css';
 @import '../lib/theme/ui-patterns.css';
 @import '../lib/content/markdown-prose.css';

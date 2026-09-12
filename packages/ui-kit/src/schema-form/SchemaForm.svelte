@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ConfigSchema, SchemaField } from '@chronos/core';
 	import { resolveLocalizedText } from '@chronos/core';
-	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
+	import type { ChronosUiController } from '../reactivity/chronos-ui-controller';
 	import TextField from './inputs/TextField.svelte';
 	import Checkbox from './inputs/Checkbox.svelte';
 	import SelectField from './inputs/SelectField.svelte';
@@ -17,7 +17,7 @@
 		schema: ConfigSchema<Record<string, unknown>>;
 		value?: Record<string, unknown>;
 		disabled?: boolean;
-		controller?: ReactiveChronosController;
+		controller?: ChronosUiController;
 		onValueChange?: (value: Record<string, unknown>) => void;
 		dateFieldLabels?: DateFieldLabels;
 		dateFieldLocale?: string;

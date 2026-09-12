@@ -392,10 +392,10 @@ describe('OfficialPluginService', () => {
 
 	it('activates cached plugins before awaiting catalog sync', async () => {
 		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
-		const staleManifest: PluginManifest = {
+		const completeManifest: PluginManifest = {
 			id: 'test-plugin',
 			name: { 'zh-CN': 'Test' },
-			version: '0.4.0',
+			version: '0.4.1',
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
@@ -406,8 +406,9 @@ describe('OfficialPluginService', () => {
 
 		await engine.storage.setPluginData(OFFICIAL_PLUGINS_PLUGIN_ID, INSTALLED_STORAGE_KEY, [
 			{
-				manifest: staleManifest,
+				manifest: completeManifest,
 				code: SAMPLE_BUNDLE,
+				cssCode: '.x{color:red}',
 				manifestUrl: OFFICIAL_MANIFEST_URL,
 				enabled: true,
 				installedAt: Date.now()
@@ -555,6 +556,69 @@ describe('OfficialPluginService', () => {
 		expect(service.getInstalled('test-plugin')?.manifest.version).toBe('0.4.0');
 	});
 
+	it('syncs same-version tool plugins missing cssCode during init before activation', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const cssCode = '.x{color:red}';
+		const cssHash = await engine.env.runtime.sha256(cssCode);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '0.4.1',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash,
+			cssUrl: '/test.bundle.css',
+			cssSha256: cssHash
+		};
+
+		await engine.storage.setPluginData(OFFICIAL_PLUGINS_PLUGIN_ID, INSTALLED_STORAGE_KEY, [
+			{
+				manifest,
+				code: SAMPLE_BUNDLE,
+				manifestUrl: OFFICIAL_MANIFEST_URL,
+				enabled: true,
+				installedAt: Date.now()
+			}
+		]);
+
+		httpRequest.mockImplementation(async (url: string) => {
+			if (url === '/official-plugins/catalog.json') {
+				return httpResponse({
+					json: async <T>() =>
+						({
+							version: 2,
+							updatedAt: Date.now(),
+							manifests: [OFFICIAL_MANIFEST_URL]
+						}) as T
+				});
+			}
+			if (url === OFFICIAL_MANIFEST_URL) {
+				return httpResponse({ json: async <T>() => manifest as T });
+			}
+			if (
+				url.split('?')[0] === '/test.bundle.js' ||
+				url.split('?')[0] === 'http://localhost/test.bundle.js'
+			) {
+				return httpResponse({ text: async () => SAMPLE_BUNDLE });
+			}
+			if (
+				url.split('?')[0] === '/test.bundle.css' ||
+				url.split('?')[0] === 'http://localhost/test.bundle.css'
+			) {
+				return httpResponse({ text: async () => cssCode });
+			}
+			throw new Error(`Unexpected URL: ${url}`);
+		});
+
+		await service.init();
+
+		expect(service.getInstalled('test-plugin')?.cssCode).toBe(cssCode);
+		expect(service.isPluginActive('test-plugin')).toBe(true);
+	});
+
 	it('preserves plugin config when syncing stale official plugins during init', async () => {
 		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
 		const staleManifest: PluginManifest = {
@@ -648,6 +712,70 @@ describe('OfficialPluginService', () => {
 
 		expect(service.installQueue.getTask('queued-plugin')).toBeUndefined();
 		expect(service.isPluginActive('queued-plugin')).toBe(true);
+	});
+
+	it('rolls back active runtime when hot update activation fails', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		await service.install(manifest);
+		expect(service.isPluginActive('test-plugin')).toBe(true);
+
+		const mismatchedBundle = SAMPLE_BUNDLE.replace("id: 'test-plugin'", "id: 'other-plugin'");
+		await expect(
+			service.applyHotUpdate({
+				id: 'test-plugin',
+				code: mismatchedBundle,
+				cssCode: null,
+				colorsJson: null,
+				iconThemeJson: null
+			})
+		).rejects.toThrow(/id mismatch/);
+
+		expect(service.getInstalled('test-plugin')?.code).toBe(SAMPLE_BUNDLE);
+		expect(service.isPluginActive('test-plugin')).toBe(true);
+	});
+
+	it('updates disabled plugin assets through applyHotUpdate without activating runtime', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		await service.install(manifest);
+		await service.disable('test-plugin');
+
+		const updatedBundle = SAMPLE_BUNDLE.replace('Test', 'Updated');
+		const updated = await service.applyHotUpdate({
+			id: 'test-plugin',
+			code: updatedBundle,
+			cssCode: null,
+			colorsJson: null,
+			iconThemeJson: null
+		});
+
+		expect(updated.code).toBe(updatedBundle);
+		expect(service.isPluginActive('test-plugin')).toBe(false);
 	});
 
 	it('rolls back runtime when an upgrade install is aborted after deactivation', async () => {

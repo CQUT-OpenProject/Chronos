@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
-	import type { ReactiveChronosController } from '@chronos/ui-kit';
 	import {
 		appLocaleToBcp47,
 		pluginText,
 		TIMETABLE_PRESENTATION_CONTEXT,
 		resolveCoursePalette,
-		type TimetablePresentationAccessor
+		type ChronosUiController,
+		type TimetablePresentationSource
 	} from '@chronos/ui-kit';
+	import { fromStore } from 'svelte/store';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import {
 		AcademicCalendarService,
@@ -23,17 +24,19 @@
 	import { createTodayScreenController } from './today-screen.svelte';
 
 	interface Props {
-		controller: ReactiveChronosController;
+		controller: ChronosUiController;
 		pluginId: string;
 		active?: boolean;
 	}
 
 	let { controller, pluginId, active = true }: Props = $props();
 
-	const getPresentation = getContext<TimetablePresentationAccessor | undefined>(
+	const presentationSource = getContext<TimetablePresentationSource | undefined>(
 		TIMETABLE_PRESENTATION_CONTEXT
 	);
-	const presentation = $derived(getPresentation?.() ?? {});
+	const ui = $derived(fromStore(controller.snapshot));
+	const presentationView = $derived(presentationSource ? fromStore(presentationSource) : null);
+	const presentation = $derived(presentationView?.current ?? {});
 	const coursePalette = $derived(resolveCoursePalette(presentation));
 
 	const HEADLINE_SMALL_FONT_PX = 24;
@@ -42,9 +45,9 @@
 	const calendarService = new AcademicCalendarService();
 	const screen = createTodayScreenController();
 
-	const timetable = $derived(controller.currentTimetable);
+	const timetable = $derived(ui.current.currentTimetable);
 	const periodTimes = $derived(timetable?.academicConfig.periodTimes ?? []);
-	const todayIso = $derived(controller.clockTodayIso || screen.today);
+	const todayIso = $derived(ui.current.clockTodayIso || screen.today);
 	const academicWeek = $derived(
 		timetable ? calendarService.calculateAcademicWeek(todayIso, timetable.academicConfig) : 1
 	);
@@ -61,12 +64,13 @@
 	);
 
 	function pt(key: keyof (typeof TODAY_MESSAGES)['zh-cn'], params?: Record<string, unknown>) {
+		void ui.current.slotVersion;
 		return pluginText(controller, TODAY_PLUGIN_ID, TODAY_MESSAGES, key, params);
 	}
 
 	function formatHeaderDate(iso: string): string {
 		const date = new Date(`${iso}T12:00:00`);
-		const weekday = date.toLocaleDateString(appLocaleToBcp47(controller.currentLocale), {
+		const weekday = date.toLocaleDateString(appLocaleToBcp47(ui.current.currentLocale), {
 			weekday: 'short'
 		});
 		return `${formatCompactDate(iso)} ${weekday}`;

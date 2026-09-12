@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { createUpdateState } from './update-state.svelte';
 import { fetchLatestProjectRelease } from './release-feed-adapter';
+import * as serviceWorkerAdapter from './service-worker-adapter';
 import { AppError, failure, success } from '@chronos/core';
 
 const mockTrackEvent = vi.fn();
@@ -292,6 +293,127 @@ describe('createUpdateState', () => {
 
 		expect(applyUpdateMock).toHaveBeenCalled();
 		expect(mockTrackEvent).toHaveBeenCalledWith('pwa_update_apply');
+	});
+
+	it('updates install progress from applyUpdate callbacks', async () => {
+		let resolveInstall!: () => void;
+		const applyUpdateMock = vi.fn().mockImplementation(
+			(options?: { onProgress?: (p: { phase: string; percent: number }) => void }) =>
+				new Promise<void>((resolve) => {
+					resolveInstall = resolve;
+					options?.onProgress?.({ phase: 'downloading', percent: 25 });
+					options?.onProgress?.({ phase: 'installing', percent: 80 });
+				})
+		);
+		const updateState = createUpdateState({
+			currentVersion: '0.2.0',
+			applyUpdate: applyUpdateMock
+		});
+
+		const installPromise = updateState.installUpdate();
+
+		expect(updateState.state.updating).toBe(true);
+		expect(updateState.state.installPhase).toBe('installing');
+		expect(updateState.state.installPercent).toBe(80);
+
+		resolveInstall();
+		await installPromise;
+
+		expect(updateState.state.updating).toBe(false);
+		expect(updateState.state.installPhase).toBeNull();
+	});
+
+	it('resets updating state and stores i18n key when install fails', async () => {
+		const { SwUpdateError } = await import('$lib/client/pwa-sw');
+		const applyUpdateMock = vi.fn().mockRejectedValue(new SwUpdateError('download_timeout'));
+		const updateState = createUpdateState({
+			currentVersion: '0.2.0',
+			applyUpdate: applyUpdateMock
+		});
+
+		await updateState.installUpdate();
+
+		expect(updateState.state.updating).toBe(false);
+		expect(updateState.state.installPhase).toBeNull();
+		expect(updateState.state.errorMessage).toBe('about.update.error.downloadTimeout');
+	});
+
+	it('maps download_failed install errors to the download failed message key', async () => {
+		const { SwUpdateError } = await import('$lib/client/pwa-sw');
+		const applyUpdateMock = vi.fn().mockRejectedValue(new SwUpdateError('download_failed'));
+		const updateState = createUpdateState({
+			currentVersion: '0.2.0',
+			applyUpdate: applyUpdateMock
+		});
+
+		await updateState.installUpdate();
+
+		expect(updateState.state.errorMessage).toBe('about.update.error.downloadFailed');
+	});
+
+	it('keeps the last successful check when a later remote fetch fails', async () => {
+		mockTrackEvent.mockClear();
+		let fetchCount = 0;
+		const updateState = createUpdateState({
+			currentVersion: '0.2.0',
+			fetchLatestRelease: async () => {
+				fetchCount += 1;
+				if (fetchCount === 1) {
+					return success({
+						tagName: 'v0.3.0',
+						name: 'Chronos 0.3.0',
+						publishedAt: '2026-08-19',
+						body: 'new'
+					});
+				}
+				return failure(AppError.network('offline'));
+			},
+			localCatalog: {
+				getRelease: async () => failure(AppError.notFound('none')),
+				listReleases: async () => failure(AppError.notFound('none'))
+			},
+			checkSwUpdate: async () => false
+		});
+
+		await updateState.checkUpdate();
+		expect(updateState.state.hasUpdate).toBe(true);
+		expect(updateState.state.latestRelease?.tagName).toBe('v0.3.0');
+
+		await updateState.checkUpdate();
+		expect(updateState.state.hasUpdate).toBe(true);
+		expect(updateState.state.latestRelease?.tagName).toBe('v0.3.0');
+		expect(updateState.state.errorMessage).toBeNull();
+		expect(mockTrackEvent).toHaveBeenLastCalledWith('update_check_success', {
+			has_update: true,
+			latest_version: 'v0.3.0',
+			update_source: 'semver',
+			cached: true
+		});
+	});
+
+	it('forwards install progress through the built-in service worker adapter', async () => {
+		const applyUpdateAndReload = vi
+			.fn()
+			.mockImplementation(
+				async (options?: {
+					onProgress?: (progress: { phase: string; percent: number }) => void;
+				}) => {
+					options?.onProgress?.({ phase: 'installing', percent: 80 });
+				}
+			);
+		vi.spyOn(serviceWorkerAdapter, 'createDefaultServiceWorkerAdapter').mockReturnValue({
+			isSupported: () => true,
+			isUpdatePending: () => false,
+			checkForUpdate: async () => false,
+			applyUpdateAndReload
+		});
+
+		const updateState = createUpdateState();
+		await updateState.installUpdate();
+
+		expect(applyUpdateAndReload).toHaveBeenCalledWith({
+			onProgress: expect.any(Function)
+		});
 	});
 
 	it('supports pluggable ServiceWorkerAdapter and ReleaseFeedAdapter', async () => {

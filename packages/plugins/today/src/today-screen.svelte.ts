@@ -1,4 +1,4 @@
-import type { ReactiveChronosController } from '@chronos/ui-kit';
+import type { ChronosUiController } from '@chronos/ui-kit';
 import { haptic } from '@chronos/ui-kit';
 import {
 	currentTimeMinutes,
@@ -9,6 +9,7 @@ import {
 	todayIsoDate,
 	type PeriodTime
 } from '@chronos/core';
+import { get } from 'svelte/store';
 import type { TodayScope } from './constants';
 import { attachCourseStatuses, queryTodayCourses, type TodayCourseEntry } from './today-courses';
 
@@ -18,14 +19,14 @@ export interface TodayScreenController {
 	readonly scope: TodayScope;
 	readonly courseEntries: TodayCourseEntry[];
 	readonly currentPeriodIndex: number | null;
-	init(controller: ReactiveChronosController, pluginId: string): Promise<void>;
+	init(controller: ChronosUiController, pluginId: string): Promise<void>;
 	dispose(): void;
 	persistScope(nextScope: TodayScope): Promise<void>;
 	refreshCourses(): Promise<void>;
 }
 
 export function createTodayScreenController(): TodayScreenController {
-	let chronosController = $state<ReactiveChronosController | null>(null);
+	let chronosController = $state<ChronosUiController | null>(null);
 	let pluginId = '';
 	let scope = $state<TodayScope>('active');
 	let courseEntries = $state.raw<TodayCourseEntry[]>([]);
@@ -34,8 +35,13 @@ export function createTodayScreenController(): TodayScreenController {
 	let unsubscribeTimeTick: (() => void) | undefined;
 	let unsubscribeTimetableSwitch: (() => void) | undefined;
 
+	function readSnapshot() {
+		if (!chronosController) return null;
+		return get(chronosController.snapshot);
+	}
+
 	function getTimetable() {
-		return chronosController?.currentTimetable ?? null;
+		return readSnapshot()?.currentTimetable ?? null;
 	}
 
 	function getPeriodTimes(): PeriodTime[] {
@@ -43,22 +49,22 @@ export function createTodayScreenController(): TodayScreenController {
 	}
 
 	function getTodayIso(): string {
-		return chronosController?.clockTodayIso || todayIsoDate();
+		return readSnapshot()?.clockTodayIso || todayIsoDate();
 	}
 
 	function getNow(): Date {
-		return chronosController?.clockNow ?? new Date();
+		return readSnapshot()?.clockNow ?? new Date();
 	}
 
 	function getCurrentPeriodIndex(): number | null {
-		const controller = chronosController;
-		if (!controller) return null;
+		const snapshot = readSnapshot();
+		if (!snapshot) return null;
 		const periodTimes = getPeriodTimes();
 		const parsed = parsePeriodRanges(periodTimes);
 		if (parsed.length === 0) {
-			return controller.currentPeriodIndex ?? null;
+			return snapshot.currentPeriodIndex ?? null;
 		}
-		return findCurrentPeriodIndex(parsed, currentTimeMinutes(controller.clockNow));
+		return findCurrentPeriodIndex(parsed, currentTimeMinutes(snapshot.clockNow));
 	}
 
 	async function refreshCourses() {
@@ -109,7 +115,7 @@ export function createTodayScreenController(): TodayScreenController {
 		}
 	}
 
-	async function init(controller: ReactiveChronosController, nextPluginId: string) {
+	async function init(controller: ChronosUiController, nextPluginId: string) {
 		if (isDisposed) return;
 		if (chronosController) return;
 		chronosController = controller;
@@ -172,12 +178,14 @@ export function createTodayScreenController(): TodayScreenController {
 		if (isDisposed) return;
 		const controller = chronosController;
 		if (!controller) return;
-		void controller.clockNow;
-		void controller.clockTodayIso;
-		void scope;
-		void getTimetable()?.id;
-		void getTimetable()?.academicConfig.periodTimes;
-		void refreshCourses();
+		return controller.snapshot.subscribe((snapshot) => {
+			void snapshot.clockNow;
+			void snapshot.clockTodayIso;
+			void scope;
+			void snapshot.currentTimetable?.id;
+			void snapshot.currentTimetable?.academicConfig.periodTimes;
+			void refreshCourses();
+		});
 	});
 
 	return {

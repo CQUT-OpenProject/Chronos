@@ -1,4 +1,4 @@
-/** Radius and squircle compensation tokens — consumed by theme/radius.css and ui-patterns. */
+/** Radius and squircle compensation tokens — consumed by ui-kit theme/radius.css and host ui-patterns. */
 export const RADIUS_TOKEN_CSS_VARS = {
 	'--radius-full': 'calc(infinity * 1px)',
 	'--radius-dialog': '28px',
