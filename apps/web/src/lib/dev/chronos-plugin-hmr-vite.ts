@@ -7,6 +7,7 @@ import {
 	type OfficialPluginBuildResult
 } from '../../../../../scripts/official-plugin-build/build-plugin.ts';
 import { createDevOfficialPluginBundleMiddleware } from '../../../../../scripts/official-plugin-build/dev-bundle-middleware.ts';
+import type { OfficialPluginBuildPaths } from '../../../../../scripts/official-plugin-build/paths.ts';
 
 export type PluginHmrPayload = OfficialPluginBuildResult;
 
@@ -43,14 +44,16 @@ export async function buildSingleOfficialPlugin(
 	createAliasRecord: (root?: string) => Record<string, string>,
 	releaseVersion = '0.0.0-dev',
 	_logger?: Logger,
-	rev?: string
+	rev?: string,
+	paths?: OfficialPluginBuildPaths
 ): Promise<PluginHmrPayload> {
 	return buildOfficialPluginAssets(plugin, {
 		root,
 		releaseVersion,
 		createAliasRecord,
 		mode: 'dev',
-		rev
+		rev,
+		paths
 	});
 }
 

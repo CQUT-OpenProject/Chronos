@@ -14,10 +14,13 @@ export interface OfficialPluginBuildPaths {
 	pluginBundleDir: (pluginId: string) => string;
 }
 
-export function createOfficialPluginBuildPaths(root: string): OfficialPluginBuildPaths {
+export function createOfficialPluginBuildPaths(
+	root: string,
+	options?: { devPluginsRoot?: string }
+): OfficialPluginBuildPaths {
 	const staticBundleDir = resolve(root, 'apps/web/static/official-plugins/bundles');
 	const manifestDir = resolve(root, 'apps/web/static/official-plugins/manifests');
-	const devPluginsRoot = resolve(root, 'dist/dev-plugins');
+	const devPluginsRoot = options?.devPluginsRoot ?? resolve(root, 'dist/dev-plugins');
 
 	return {
 		root,

@@ -7,7 +7,7 @@ import {
 	OFFICIAL_PLUGIN_BUNDLE_JS
 } from './compile-entry.ts';
 import { publishDevPluginBuild } from './dev-publish.ts';
-import { createOfficialPluginBuildPaths } from './paths.ts';
+import { createOfficialPluginBuildPaths, type OfficialPluginBuildPaths } from './paths.ts';
 
 export type OfficialPluginBuildMode = 'production' | 'dev';
 
@@ -17,6 +17,7 @@ export interface BuildOfficialPluginOptions {
 	createAliasRecord: (root?: string) => Record<string, string>;
 	mode: OfficialPluginBuildMode;
 	rev?: string;
+	paths?: OfficialPluginBuildPaths;
 }
 
 export interface OfficialPluginBuildResult {
@@ -39,7 +40,7 @@ export async function buildOfficialPluginAssets(
 	options: BuildOfficialPluginOptions
 ): Promise<OfficialPluginBuildResult> {
 	const { root, releaseVersion, createAliasRecord, mode } = options;
-	const paths = createOfficialPluginBuildPaths(root);
+	const paths = options.paths ?? createOfficialPluginBuildPaths(root);
 	const outDir = mode === 'dev' ? paths.devTempDir(plugin.id) : paths.pluginBundleDir(plugin.id);
 
 	if (mode === 'dev') {
