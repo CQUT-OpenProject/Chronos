@@ -64,7 +64,7 @@ Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. No 
 
 ## Plugin KV binary (`setPluginData`)
 
-`IStorageService.setPluginData` / `getPluginData` accept JSON or binary for the same namespaced key space:
+See [ADR 0036](.agents/docs/adr/0036-plugin-kv-binary-storage.md). `IStorageService.setPluginData` / `getPluginData` accept JSON or binary for the same namespaced key space:
 
 - **Write**: `Blob` (carries `mimeType`) or `Uint8Array` (stored as `application/octet-stream`).
 - **Read**: binary keys always return `Blob`; JSON keys return parsed JSON. A key holds one kind only.

@@ -100,3 +100,9 @@ flowchart TD
 - `vp check` — 格式化、Lint 与类型检查全量通过
 - `vp test` — 全仓单元测试通过
 - 结构性检查：`app-state.ts`、`period-clock.ts` 无悬挂引用；课表首屏、周次切换、详情编辑、设置保存与主题回退链路正常
+
+---
+
+## 修订记录
+
+- **2026-09-13**（[ADR 0036](./0036-plugin-kv-binary-storage.md)）：Dexie 增至四张**通用**表（新增 `pluginBinary`，与 `pluginData` 并列路由插件 KV）；仍为无插件专表。上文 §影响「三张核心表」表述由 ADR 0036 取代。

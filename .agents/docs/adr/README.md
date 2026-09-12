@@ -41,6 +41,7 @@
 | [ADR 0033](./0033-persistent-shell-freeze-and-secondary-view-transition.md) | **外壳常驻保活与二级页面视图过渡隔离**                                | Accepted                                           | `apps/web`, `packages/ui-kit`                                                                 | 根 Layout 常驻主外壳；进入二级页时通过 `content-visibility: hidden` 离屏冻结；View Transition 仅挂载于二级页面      |
 | [ADR 0034](./0034-design-token-layering.md)                                 | **设计 Token 分层与命名规范**                                         | Accepted                                           | `packages/ui-kit/src/theme`, `apps/web/src/lib/theme`                                         | 宿主颜色单源集中管理；规整 `theme/` 目录；排版 `text-*` 与组件 `ui-*` 命名规范化                                    |
 | [ADR 0035](./0035-pwa-manual-update-and-document-cache.md)                  | **PWA 手动更新与导航文档同代**                                        | Accepted                                           | `apps/web/vite.config.ts`, `apps/web/src/lib/client/pwa-sw.ts`                                | 导航 HTML 使用 CacheFirst，与 controlling SW 同代；用户确认安装后再删除 pages-cache 并 skipWaiting                  |
+| [ADR 0036](./0036-plugin-kv-binary-storage.md)                              | **Plugin KV 二进制存储与 Dexie pluginBinary 表**                      | Accepted                                           | `packages/core`, `apps/web/src/lib/storage`, `packages/plugins/wallpaper`                     | `setPluginData` 支持 `Blob`/`Uint8Array`；Dexie v2 `pluginBinary`；壁纸层 `fit: cover \| fill` 显式参数             |
 
 ---
 

@@ -65,3 +65,9 @@ flowchart LR
 - **宿主解耦**：微内核与插件代码不再直接依赖 Web 专有 API；
 - **测试友好**：单测可通过纯内存实现（如 `InMemoryStorageProvider`）完成毫秒级验证；
 - **能力可控**：宿主可在服务层统一注入鉴权头、跨域代理与离线缓存策略。
+
+---
+
+## 修订记录
+
+- **2026-09-13**（[ADR 0036](./0036-plugin-kv-binary-storage.md)）：`IStorageService` 插件 KV 扩展二进制值——写 `Blob | Uint8Array`，读二进制 key 统一为 `Blob`；同 key JSON 与二进制互斥。

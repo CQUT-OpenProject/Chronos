@@ -95,6 +95,7 @@
 	<TimetableWallpaperLayer
 		wallpaperUri={hasDynamicColorBackground ? dynamicColorUri : null}
 		blurred={screenState.isEditing}
+		fit="fill"
 	>
 		{#key screenState.currentTimetable?.id}
 			<TimetableWeekSwiper
