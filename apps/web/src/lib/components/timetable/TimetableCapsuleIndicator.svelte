@@ -4,7 +4,9 @@
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import {
 		applyScrollingDotTrackVisual,
+		calculateExpandedDotPitchPx,
 		calculateExpandedDots,
+		calculateExpandedTooltipOffsetX,
 		calculateScrollingDotTrack,
 		scrollingDotTrackNeedsStructureUpdate
 	} from '$lib/timetable/capsule-indicator';
@@ -207,6 +209,12 @@
 	const expandedWidth = $derived(
 		`calc(${totalWeeks * expandedDotStyle.base}px + ${(totalWeeks - 1) * expandedDotStyle.gap}rem + 1.5rem + 2px)`
 	);
+	const expandedDotPitchPx = $derived(
+		calculateExpandedDotPitchPx(expandedDotStyle.base, expandedDotStyle.gap)
+	);
+	const tooltipOffsetX = $derived(
+		calculateExpandedTooltipOffsetX(gesture.scrubWeek, startWeek, totalWeeks, expandedDotPitchPx)
+	);
 
 	function onKeydown(e: KeyboardEvent) {
 		if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
@@ -301,6 +309,7 @@
 	>
 		<div
 			class={['floating-tooltip pointer-events-none', isExpanded && 'floating-tooltip--visible']}
+			style:transform={`translateX(${tooltipOffsetX}px) translateY(${isExpanded ? -6 : 12}px)`}
 			role="status"
 			aria-live="polite"
 		>
@@ -374,12 +383,12 @@
 	.capsule-indicator--glass {
 		background-color: color-mix(
 			in srgb,
-			var(--color-surface-container-high, #e5e8f0) 20%,
+			var(--color-surface-container-high, #e5e8f0) 28%,
 			transparent
 		);
 		backdrop-filter: blur(16px) saturate(1.3);
 		-webkit-backdrop-filter: blur(16px) saturate(1.3);
-		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 20%, transparent);
+		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 26%, transparent);
 		box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.1);
 		transition:
 			width var(--indicator-transition-duration) var(--indicator-easing),
@@ -462,7 +471,6 @@
 		max-height: 0;
 		opacity: 0;
 		overflow: hidden;
-		transform: translateY(4px);
 		transition:
 			opacity var(--indicator-transition-duration) var(--indicator-easing),
 			transform var(--indicator-transition-duration) var(--indicator-easing),
@@ -473,9 +481,8 @@
 
 	.floating-tooltip--visible {
 		max-height: 2rem;
-		margin-bottom: 0.625rem;
+		margin-bottom: 1.5rem;
 		opacity: 1;
-		transform: translateY(0);
 	}
 
 	.indicator-dot {

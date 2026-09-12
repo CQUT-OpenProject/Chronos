@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
+	calculateCompactTooltipOffsetX,
+	calculateExpandedDotPitchPx,
 	calculateExpandedDots,
+	calculateExpandedTooltipOffsetX,
 	calculateScrollingDotTrack,
 	scrollingDotTrackNeedsStructureUpdate,
 	type ScrollingDotTrack
@@ -265,5 +268,42 @@ describe('calculateExpandedDots', () => {
 				currentAcademicWeek: 6
 			})
 		).toEqual([]);
+	});
+});
+
+describe('calculateCompactTooltipOffsetX', () => {
+	it('offsets from the viewport center to the active dot position', () => {
+		const track = calculateScrollingDotTrack({ ...base, scrollWeek: 10 });
+		const expected = (10 - track.windowStart - 1.5) * 11.5;
+		expect(calculateCompactTooltipOffsetX(10, track)).toBeCloseTo(expected);
+	});
+
+	it('tracks fractional scroll weeks via windowStart', () => {
+		const previous = traceWeeks([8, 9, 10]).at(-1)!;
+		const track = calculateScrollingDotTrack({
+			...base,
+			scrollWeek: 10.3,
+			previousWindowStart: previous.windowStart
+		});
+		const expected = (10.3 - track.windowStart - 1.5) * 11.5;
+		expect(calculateCompactTooltipOffsetX(10.3, track)).toBeCloseTo(expected);
+	});
+
+	it('returns zero for an empty track', () => {
+		expect(calculateCompactTooltipOffsetX(5, { dots: [], windowStart: 5, trackOffset: 0 })).toBe(0);
+	});
+});
+
+describe('calculateExpandedTooltipOffsetX', () => {
+	const dotPitchPx = calculateExpandedDotPitchPx(5.5, 0.5);
+
+	it('returns zero for a single-week range', () => {
+		expect(calculateExpandedTooltipOffsetX(5, 5, 1, dotPitchPx)).toBe(0);
+	});
+
+	it('offsets symmetrically from the center week', () => {
+		expect(calculateExpandedTooltipOffsetX(1, 1, 20, dotPitchPx)).toBeCloseTo(-9.5 * dotPitchPx);
+		expect(calculateExpandedTooltipOffsetX(10.5, 1, 20, dotPitchPx)).toBeCloseTo(0);
+		expect(calculateExpandedTooltipOffsetX(20, 1, 20, dotPitchPx)).toBeCloseTo(9.5 * dotPitchPx);
 	});
 });
