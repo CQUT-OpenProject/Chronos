@@ -27,8 +27,8 @@ export class OfficialPluginRuntimeActivator {
 
 		if (record.cssCode) this.injectCss(manifest.id, record.cssCode);
 
+		const disposables: Disposable[] = [];
 		try {
-			const disposables: Disposable[] = [];
 			disposables.push(...this.activateThemeAssets(record));
 			disposables.push(...(await this.activateBundledPlugin(record)));
 
@@ -40,6 +40,9 @@ export class OfficialPluginRuntimeActivator {
 			this.activeHandles.set(manifest.id, composite);
 			return composite;
 		} catch (error) {
+			for (const disposable of disposables) {
+				disposable.dispose();
+			}
 			this.removeCss(manifest.id);
 			throw error;
 		}

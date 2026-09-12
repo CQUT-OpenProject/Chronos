@@ -295,6 +295,39 @@ describe('OfficialPluginRuntimeActivator', () => {
 		expect(revertSpy).not.toHaveBeenCalled();
 	});
 
+	it('disposes partially registered theme assets when icon theme registration fails', async () => {
+		const registerThemeSpy = vi.spyOn(engine.themes, 'registerTheme');
+		vi.spyOn(engine.iconThemes, 'registerIconTheme').mockImplementation(() => {
+			throw new Error('icon theme failed');
+		});
+
+		installed.add('theme-json');
+		await expect(
+			activator.activate({
+				manifest: {
+					id: 'theme-json',
+					name: { 'zh-CN': 'T' },
+					version: '1',
+					description: { 'zh-CN': 'T' },
+					author: 'Chronos',
+					type: 'theme',
+					bundleFormat: 'esm',
+					colorsUrl: '/c.json',
+					colorsSha256: 'x',
+					iconThemeUrl: '/i.json',
+					iconThemeSha256: 'y'
+				},
+				colorsJson: THEME_COLORS_JSON,
+				iconThemeJson: '{"id":"icon-test","icons":{}}',
+				enabled: true,
+				installedAt: 1
+			})
+		).rejects.toThrow(/icon theme failed/);
+
+		expect(registerThemeSpy).toHaveBeenCalled();
+		expect(activator.isActive('theme-json')).toBe(false);
+	});
+
 	it('calls revertToDefaultThemes when deactivating installed plugin with revertThemes', async () => {
 		const revertSpy = vi.spyOn(engine, 'revertToDefaultThemes');
 		installed.add('test-plugin');

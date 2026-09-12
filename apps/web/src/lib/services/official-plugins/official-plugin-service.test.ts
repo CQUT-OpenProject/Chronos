@@ -714,6 +714,70 @@ describe('OfficialPluginService', () => {
 		expect(service.isPluginActive('queued-plugin')).toBe(true);
 	});
 
+	it('rolls back active runtime when hot update activation fails', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		await service.install(manifest);
+		expect(service.isPluginActive('test-plugin')).toBe(true);
+
+		const mismatchedBundle = SAMPLE_BUNDLE.replace("id: 'test-plugin'", "id: 'other-plugin'");
+		await expect(
+			service.applyHotUpdate({
+				id: 'test-plugin',
+				code: mismatchedBundle,
+				cssCode: null,
+				colorsJson: null,
+				iconThemeJson: null
+			})
+		).rejects.toThrow(/id mismatch/);
+
+		expect(service.getInstalled('test-plugin')?.code).toBe(SAMPLE_BUNDLE);
+		expect(service.isPluginActive('test-plugin')).toBe(true);
+	});
+
+	it('updates disabled plugin assets through applyHotUpdate without activating runtime', async () => {
+		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
+		const manifest: PluginManifest = {
+			id: 'test-plugin',
+			name: { 'zh-CN': 'Test' },
+			version: '1.0.0',
+			description: { 'zh-CN': 'Test plugin' },
+			author: 'Chronos',
+			type: 'tool',
+			bundleFormat: 'esm',
+			bundleUrl: '/test.bundle.js',
+			sha256: hash
+		};
+
+		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
+		await service.install(manifest);
+		await service.disable('test-plugin');
+
+		const updatedBundle = SAMPLE_BUNDLE.replace('Test', 'Updated');
+		const updated = await service.applyHotUpdate({
+			id: 'test-plugin',
+			code: updatedBundle,
+			cssCode: null,
+			colorsJson: null,
+			iconThemeJson: null
+		});
+
+		expect(updated.code).toBe(updatedBundle);
+		expect(service.isPluginActive('test-plugin')).toBe(false);
+	});
+
 	it('rolls back runtime when an upgrade install is aborted after deactivation', async () => {
 		const hash = await engine.env.runtime.sha256(SAMPLE_BUNDLE);
 		const manifestV1: PluginManifest = {

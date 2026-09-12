@@ -157,6 +157,115 @@ export class OfficialPluginService implements Disposable {
 		await this.install(manifest, manifestUrl);
 	}
 
+	async applyHotUpdate(data: {
+		id: string;
+		type?: 'theme' | 'tool';
+		manifest?: Record<string, unknown>;
+		code: string | null;
+		cssCode: string | null;
+		colorsJson: string | null;
+		iconThemeJson: string | null;
+	}): Promise<InstalledOfficialPluginRecord> {
+		const existing = this.installedStore.find(data.id);
+		if (!existing) {
+			throw new Error(`Plugin not installed: ${data.id}`);
+		}
+
+		const isTheme = data.type === 'theme' || existing.manifest.type === 'theme';
+		const nextManifest = data.manifest
+			? { ...existing.manifest, ...data.manifest, id: existing.manifest.id }
+			: existing.manifest;
+
+		const candidate: InstalledOfficialPluginRecord = {
+			...existing,
+			manifest: nextManifest as InstalledOfficialPluginRecord['manifest'],
+			code: isTheme ? null : data.code,
+			cssCode: isTheme ? null : data.cssCode,
+			colorsJson: isTheme ? data.colorsJson : null,
+			iconThemeJson: isTheme ? data.iconThemeJson : null
+		};
+
+		return this.replacePluginAssets(candidate, {
+			preserveInstalledAt: true,
+			revertThemesOnDeactivate: false
+		});
+	}
+
+	private async replacePluginAssets(
+		candidate: InstalledOfficialPluginRecord,
+		options?: {
+			preserveInstalledAt?: boolean;
+			revertThemesOnDeactivate?: boolean;
+			signal?: AbortSignal;
+		}
+	): Promise<InstalledOfficialPluginRecord> {
+		const pluginId = candidate.manifest.id;
+		const existing = this.installedStore.find(pluginId);
+		const hadActiveRuntime = Boolean(existing?.enabled && this.runtimeActivator.isActive(pluginId));
+
+		const record: InstalledOfficialPluginRecord = {
+			...candidate,
+			enabled: existing?.enabled ?? candidate.enabled,
+			installedAt:
+				options?.preserveInstalledAt && existing
+					? existing.installedAt
+					: (candidate.installedAt ?? existing?.installedAt ?? Date.now()),
+			manifestUrl: candidate.manifestUrl ?? existing?.manifestUrl
+		};
+
+		let runtimeTouched = false;
+		const rollbackErrors: unknown[] = [];
+
+		const rollbackRuntime = async (cause: unknown): Promise<InstalledOfficialPluginRecord> => {
+			if (runtimeTouched) {
+				try {
+					await this.runtimeActivator.deactivate(pluginId, {
+						revertThemes: options?.revertThemesOnDeactivate ?? true
+					});
+					if (existing && hadActiveRuntime) {
+						await this.runtimeActivator.activate(existing);
+					}
+				} catch (rollbackErr) {
+					rollbackErrors.push(rollbackErr);
+				}
+			}
+
+			if (rollbackErrors.length > 0) {
+				throw new AggregateError(
+					[cause, ...rollbackErrors],
+					`Failed to replace plugin ${pluginId} and rollback previous runtime`
+				);
+			}
+			throw cause;
+		};
+
+		try {
+			options?.signal?.throwIfAborted?.();
+
+			if (existing?.enabled) {
+				await this.runtimeActivator.deactivate(pluginId, {
+					revertThemes: options?.revertThemesOnDeactivate ?? false
+				});
+				runtimeTouched = true;
+			}
+
+			options?.signal?.throwIfAborted?.();
+
+			if (record.enabled) {
+				await this.runtimeActivator.activate(record);
+				runtimeTouched = true;
+			}
+
+			options?.signal?.throwIfAborted?.();
+
+			await this.installedStore.upsert(record);
+			runtimeTouched = false;
+			return record;
+		} catch (err: unknown) {
+			return rollbackRuntime(err);
+		}
+	}
+
 	async install(
 		manifest: PluginManifest,
 		manifestUrl?: string,
@@ -175,22 +284,6 @@ export class OfficialPluginService implements Disposable {
 		validatePluginManifest(manifest);
 
 		const existingSnapshot = this.installedStore.find(manifest.id);
-		const hadActiveRuntime = Boolean(
-			existingSnapshot?.enabled && this.runtimeActivator.isActive(manifest.id)
-		);
-		let runtimeTouched = false;
-		let committed = false;
-
-		const rollbackIfNeeded = async (): Promise<void> => {
-			if (!runtimeTouched) return;
-			await this.rollbackRuntime(manifest.id, existingSnapshot, hadActiveRuntime);
-			runtimeTouched = false;
-		};
-
-		const throwAborted = async (): Promise<never> => {
-			await rollbackIfNeeded();
-			throw new DOMException('Aborted', 'AbortError');
-		};
 
 		try {
 			const assets = await this.assetPipeline.download(manifest, manifestUrl, {
@@ -198,9 +291,7 @@ export class OfficialPluginService implements Disposable {
 				onProgress: options?.onProgress
 			});
 
-			if (signal?.aborted) {
-				await throwAborted();
-			}
+			signal?.throwIfAborted?.();
 			options?.onProgress?.({ stage: 'installing', percent: 88 });
 
 			const record: InstalledOfficialPluginRecord = {
@@ -214,29 +305,14 @@ export class OfficialPluginService implements Disposable {
 				installedAt: existingSnapshot?.installedAt ?? Date.now()
 			};
 
-			if (this.installedStore.has(manifest.id)) {
-				await this.runtimeActivator.deactivate(manifest.id);
-				runtimeTouched = true;
-			}
-
-			if (signal?.aborted) {
-				await throwAborted();
-			}
-
-			// Activate before persisting: a rejected bundle must not leave a
-			// dirty enabled record that errors on every boot.
-			if (record.enabled) {
-				await this.runtimeActivator.activate(record);
-				runtimeTouched = true;
-			}
-
-			if (signal?.aborted) {
-				await throwAborted();
-			}
+			signal?.throwIfAborted?.();
 			options?.onProgress?.({ stage: 'installing', percent: 96 });
 
-			await this.installedStore.upsert(record);
-			committed = true;
+			await this.replacePluginAssets(record, {
+				preserveInstalledAt: Boolean(existingSnapshot),
+				revertThemesOnDeactivate: true,
+				signal
+			});
 
 			options?.onProgress?.({ stage: 'completed', percent: 100 });
 
@@ -248,28 +324,10 @@ export class OfficialPluginService implements Disposable {
 				this.engine.notify(hostT('plugins.notify.installed', { pluginId: manifest.id }), 'info');
 			}
 		} catch (err: unknown) {
-			if (!committed && runtimeTouched && !signal?.aborted && !isAbortError(err)) {
-				await this.rollbackRuntime(manifest.id, existingSnapshot, hadActiveRuntime);
-			}
 			if (signal?.aborted || isAbortError(err)) {
 				throw new DOMException('Aborted', 'AbortError');
 			}
 			throw err;
-		}
-	}
-
-	private async rollbackRuntime(
-		pluginId: string,
-		existing: InstalledOfficialPluginRecord | undefined,
-		hadActiveRuntime: boolean
-	): Promise<void> {
-		await this.runtimeActivator.deactivate(pluginId);
-		if (existing && hadActiveRuntime) {
-			try {
-				await this.runtimeActivator.activate(existing);
-			} catch (err) {
-				console.error(`[OfficialPluginService] Failed to rollback plugin ${pluginId}:`, err);
-			}
 		}
 	}
 
@@ -320,15 +378,6 @@ export class OfficialPluginService implements Disposable {
 
 	isPluginActive(pluginId: string): boolean {
 		return this.runtimeActivator.isActive(pluginId);
-	}
-
-	getRuntimeActivator(): OfficialPluginRuntimeActivator {
-		return this.runtimeActivator;
-	}
-
-	async updateRecord(record: InstalledOfficialPluginRecord): Promise<void> {
-		await this.installedStore.upsert(record);
-		this.installedStore.notify();
 	}
 
 	private async syncInstalledWithHost(catalogUrl = DEFAULT_OFFICIAL_CATALOG_URL): Promise<void> {

@@ -12,13 +12,9 @@ import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 describe('official-plugin-hmr', () => {
 	let mockService: Partial<OfficialPluginService>;
 	let mockEngine: Partial<ChronosEngine>;
-	let mockActivator: {
-		deactivate: ReturnType<typeof vi.fn>;
-		activate: ReturnType<typeof vi.fn>;
-	};
+	let applyHotUpdateFn: ReturnType<typeof vi.fn>;
 	let notifyFn: ReturnType<typeof vi.fn>;
 	let setThemeFn: ReturnType<typeof vi.fn>;
-	let updateRecordFn: ReturnType<typeof vi.fn>;
 	let installedMap: Map<string, InstalledOfficialPluginRecord>;
 
 	const sampleRecord: InstalledOfficialPluginRecord = {
@@ -41,21 +37,23 @@ describe('official-plugin-hmr', () => {
 
 	beforeEach(() => {
 		installedMap = new Map([['tool-test', { ...sampleRecord }]]);
-		mockActivator = {
-			deactivate: vi.fn().mockResolvedValue(undefined),
-			activate: vi.fn().mockResolvedValue({ dispose: vi.fn() })
-		};
+		applyHotUpdateFn = vi.fn().mockImplementation(async (data) => {
+			const existing = installedMap.get(data.id)!;
+			const updated = {
+				...existing,
+				code: data.code,
+				cssCode: data.cssCode,
+				installedAt: Date.now()
+			};
+			installedMap.set(data.id, updated);
+			return updated;
+		});
 		notifyFn = vi.fn();
 		setThemeFn = vi.fn();
-		updateRecordFn = vi.fn().mockImplementation((rec) => {
-			installedMap.set(rec.manifest.id, rec);
-			return Promise.resolve();
-		});
 
 		mockService = {
 			getInstalled: vi.fn().mockImplementation((id: string) => installedMap.get(id)),
-			getRuntimeActivator: vi.fn().mockReturnValue(mockActivator as any),
-			updateRecord: updateRecordFn as any
+			applyHotUpdate: applyHotUpdateFn as any
 		};
 
 		mockEngine = {
@@ -67,7 +65,7 @@ describe('official-plugin-hmr', () => {
 		} as any;
 	});
 
-	it('hot-reloads an active installed plugin by deactivating and reactivating with new assets', async () => {
+	it('hot-reloads an active installed plugin through applyHotUpdate', async () => {
 		await handlePluginHmr(mockService as OfficialPluginService, mockEngine as ChronosEngine, {
 			id: 'tool-test',
 			type: 'tool',
@@ -79,40 +77,11 @@ describe('official-plugin-hmr', () => {
 			iconThemeJson: null
 		});
 
-		expect(mockActivator.deactivate).toHaveBeenCalledWith('tool-test', { revertThemes: false });
-		expect(mockActivator.activate).toHaveBeenCalledWith(
-			expect.objectContaining({
-				code: 'export default { id: "tool-test", v: 2, apply: () => {} };',
-				cssCode: '.test { color: blue; }'
-			})
-		);
-		expect(updateRecordFn).toHaveBeenCalled();
+		expect(applyHotUpdateFn).toHaveBeenCalled();
 		expect(notifyFn).toHaveBeenCalledWith(
 			expect.stringContaining('[HMR] 插件 tool-test 已热重载 (12.5ms)'),
 			'info'
 		);
-	});
-
-	it('clears cssCode to null when hot-reloading tool plugin with no CSS', async () => {
-		await handlePluginHmr(mockService as OfficialPluginService, mockEngine as ChronosEngine, {
-			id: 'tool-test',
-			type: 'tool',
-			rev: 'abc-nocss',
-			costMs: '10.0',
-			code: 'export default { id: "tool-test", v: 3, apply: () => {} };',
-			cssCode: null,
-			colorsJson: null,
-			iconThemeJson: null
-		});
-
-		expect(mockActivator.activate).toHaveBeenCalledWith(
-			expect.objectContaining({
-				code: 'export default { id: "tool-test", v: 3, apply: () => {} };',
-				cssCode: null
-			})
-		);
-		const savedRecord = installedMap.get('tool-test');
-		expect(savedRecord?.cssCode).toBeNull();
 	});
 
 	it('updates disabled plugin in store without activating runtime', async () => {
@@ -128,13 +97,7 @@ describe('official-plugin-hmr', () => {
 			iconThemeJson: null
 		});
 
-		expect(mockActivator.deactivate).not.toHaveBeenCalled();
-		expect(mockActivator.activate).not.toHaveBeenCalled();
-		expect(updateRecordFn).toHaveBeenCalledWith(
-			expect.objectContaining({
-				code: 'new code'
-			})
-		);
+		expect(applyHotUpdateFn).toHaveBeenCalled();
 		expect(notifyFn).toHaveBeenCalledWith(
 			expect.stringContaining('[HMR] 插件 tool-test 已更新 (8.0ms，未启用)'),
 			'info'
@@ -152,8 +115,7 @@ describe('official-plugin-hmr', () => {
 			iconThemeJson: null
 		});
 
-		expect(mockActivator.deactivate).not.toHaveBeenCalled();
-		expect(mockActivator.activate).not.toHaveBeenCalled();
+		expect(applyHotUpdateFn).not.toHaveBeenCalled();
 		expect(notifyFn).toHaveBeenCalledWith(
 			expect.stringContaining('[HMR] 插件 unknown-plugin 已重编 (5.0ms，未安装)'),
 			'info'
@@ -180,6 +142,10 @@ describe('official-plugin-hmr', () => {
 			installedAt: 1000
 		};
 		installedMap.set('theme-test', themeRecord);
+		applyHotUpdateFn.mockImplementation(async (data) => ({
+			...themeRecord,
+			colorsJson: data.colorsJson
+		}));
 
 		await handlePluginHmr(mockService as OfficialPluginService, mockEngine as ChronosEngine, {
 			id: 'theme-test',
@@ -192,17 +158,11 @@ describe('official-plugin-hmr', () => {
 			iconThemeJson: null
 		});
 
-		expect(mockActivator.deactivate).toHaveBeenCalledWith('theme-test', { revertThemes: false });
-		expect(mockActivator.activate).toHaveBeenCalledWith(
-			expect.objectContaining({
-				colorsJson: '{"id":"theme-test","updated":true}'
-			})
-		);
 		expect(setThemeFn).toHaveBeenCalledWith('theme-test');
 	});
 
-	it('catches and reports error gracefully when activation fails without crashing', async () => {
-		mockActivator.activate.mockRejectedValue(new Error('Syntax error in plugin'));
+	it('catches and reports error gracefully when applyHotUpdate fails', async () => {
+		applyHotUpdateFn.mockRejectedValue(new Error('Syntax error in plugin'));
 
 		await handlePluginHmr(mockService as OfficialPluginService, mockEngine as ChronosEngine, {
 			id: 'tool-test',
@@ -221,20 +181,17 @@ describe('official-plugin-hmr', () => {
 	});
 
 	it('serializes hot-reload handling per plugin id', async () => {
-		let releaseFirstActivate: (() => void) | undefined;
-		const firstActivateGate = new Promise<void>((resolve) => {
-			releaseFirstActivate = resolve;
+		let releaseFirst: (() => void) | undefined;
+		const firstGate = new Promise<void>((resolve) => {
+			releaseFirst = resolve;
 		});
 		const callOrder: string[] = [];
 
-		mockActivator.deactivate.mockImplementation(async () => {
-			callOrder.push('deactivate');
-		});
-		mockActivator.activate.mockImplementation(async () => {
-			callOrder.push('activate-start');
-			await firstActivateGate;
-			callOrder.push('activate-end');
-			return { dispose: vi.fn() };
+		applyHotUpdateFn.mockImplementation(async () => {
+			callOrder.push('apply-start');
+			await firstGate;
+			callOrder.push('apply-end');
+			return installedMap.get('tool-test')!;
 		});
 
 		enqueuePluginHmr(mockService as OfficialPluginService, mockEngine as ChronosEngine, {
@@ -259,16 +216,15 @@ describe('official-plugin-hmr', () => {
 		});
 
 		await vi.waitFor(() => {
-			expect(callOrder).toContain('activate-start');
+			expect(callOrder).toContain('apply-start');
 		});
-		expect(callOrder.filter((entry) => entry === 'activate-start')).toHaveLength(1);
+		expect(callOrder.filter((entry) => entry === 'apply-start')).toHaveLength(1);
 
-		releaseFirstActivate?.();
+		releaseFirst?.();
 		await vi.waitFor(() => {
-			expect(callOrder.filter((entry) => entry === 'activate-end')).toHaveLength(2);
+			expect(callOrder.filter((entry) => entry === 'apply-end')).toHaveLength(2);
 		});
-		expect(mockActivator.deactivate).toHaveBeenCalledTimes(2);
-		expect(mockActivator.activate).toHaveBeenCalledTimes(2);
+		expect(applyHotUpdateFn).toHaveBeenCalledTimes(2);
 	});
 
 	it('setupPluginHmr returns a disposable and manages service reference', () => {

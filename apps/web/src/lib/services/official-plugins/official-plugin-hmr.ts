@@ -1,6 +1,6 @@
 import type { OfficialPluginService } from './official-plugin-service';
 import type { ChronosEngine, Disposable } from '@chronos/core';
-import type { InstalledOfficialPluginRecord } from './official-plugin-types';
+import type { PluginManifest } from '@chronos/core';
 
 export interface PluginHmrData {
 	id: string;
@@ -114,46 +114,37 @@ export async function handlePluginHmr(
 	engine: ChronosEngine,
 	data: PluginHmrData
 ): Promise<void> {
-	const { id, type, manifest, code, cssCode, colorsJson, iconThemeJson, costMs } = data;
-	const existing = service.getInstalled(id);
+	const { id, costMs } = data;
 
-	if (!existing) {
+	if (!service.getInstalled(id)) {
 		engine.notify(`[HMR] 插件 ${id} 已重编 (${costMs}ms，未安装)`, 'info');
 		return;
 	}
 
-	const isTheme = type === 'theme' || existing.manifest.type === 'theme';
-	const nextManifest = manifest
-		? { ...existing.manifest, ...manifest, id: existing.manifest.id }
-		: existing.manifest;
-
-	const updatedRecord: InstalledOfficialPluginRecord = {
-		...existing,
-		manifest: nextManifest,
-		code: isTheme ? null : code,
-		cssCode: isTheme ? null : cssCode,
-		colorsJson: isTheme ? colorsJson : null,
-		iconThemeJson: isTheme ? iconThemeJson : null,
-		installedAt: Date.now()
-	};
+	const existing = service.getInstalled(id);
+	if (!existing) return;
 
 	if (!existing.enabled) {
-		await service.updateRecord(updatedRecord);
-		engine.notify(`[HMR] 插件 ${id} 已更新 (${costMs}ms，未启用)`, 'info');
+		try {
+			await service.applyHotUpdate(data);
+			engine.notify(`[HMR] 插件 ${id} 已更新 (${costMs}ms，未启用)`, 'info');
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err : new Error(String(err));
+			console.error(`[Plugin HMR] 热更新 ${id} 失败:`, error);
+			engine.notify(`[HMR] 热更新 ${id} 失败: ${error.message}`, 'error');
+		}
 		return;
 	}
 
 	try {
-		const activator = service.getRuntimeActivator();
-		await activator.deactivate(id, { revertThemes: false });
-		await activator.activate(updatedRecord);
-		await service.updateRecord(updatedRecord);
+		const updated = await service.applyHotUpdate(data);
 
-		if (updatedRecord.manifest.type === 'theme') {
+		if (updated.manifest.type === 'theme') {
+			const manifest = updated.manifest as PluginManifest & { themeId?: string };
 			const currentActiveThemeId = engine.state.activeThemeId;
 			if (
 				currentActiveThemeId &&
-				(currentActiveThemeId === id || updatedRecord.manifest.themeId === currentActiveThemeId)
+				(currentActiveThemeId === id || manifest.themeId === currentActiveThemeId)
 			) {
 				engine.setTheme(currentActiveThemeId);
 			}

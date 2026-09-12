@@ -8,6 +8,7 @@ import {
 export class OfficialPluginInstalledStore {
 	private cache: InstalledOfficialPluginRecord[] = [];
 	private changeListeners = new Set<() => void>();
+	private writeChain: Promise<void> = Promise.resolve();
 
 	constructor(private readonly engine: ChronosEngine) {}
 
@@ -63,18 +64,35 @@ export class OfficialPluginInstalledStore {
 	}
 
 	async upsert(record: InstalledOfficialPluginRecord): Promise<void> {
-		const existingIndex = this.cache.findIndex((p) => p.manifest.id === record.manifest.id);
-		if (existingIndex >= 0) {
-			this.cache[existingIndex] = record;
-		} else {
-			this.cache.push(record);
-		}
-		await this.persist();
+		await this.enqueueWrite(async () => {
+			const nextCache = this.cache.slice();
+			const existingIndex = nextCache.findIndex((p) => p.manifest.id === record.manifest.id);
+			if (existingIndex >= 0) {
+				nextCache[existingIndex] = record;
+			} else {
+				nextCache.push(record);
+			}
+			await this.engine.storage.setPluginData(
+				OFFICIAL_PLUGINS_PLUGIN_ID,
+				INSTALLED_STORAGE_KEY,
+				nextCache
+			);
+			this.cache = nextCache;
+			this.notify();
+		});
 	}
 
 	async remove(pluginId: string): Promise<void> {
-		this.cache = this.cache.filter((p) => p.manifest.id !== pluginId);
-		await this.persist();
+		await this.enqueueWrite(async () => {
+			const nextCache = this.cache.filter((p) => p.manifest.id !== pluginId);
+			await this.engine.storage.setPluginData(
+				OFFICIAL_PLUGINS_PLUGIN_ID,
+				INSTALLED_STORAGE_KEY,
+				nextCache
+			);
+			this.cache = nextCache;
+			this.notify();
+		});
 	}
 
 	async setEnabled(pluginId: string, enabled: boolean): Promise<void> {
@@ -82,21 +100,28 @@ export class OfficialPluginInstalledStore {
 		if (!record) {
 			throw new Error(`Plugin not installed: ${pluginId}`);
 		}
-		record.enabled = enabled;
-		await this.persist();
+		await this.upsert({ ...record, enabled });
 	}
 
 	async persist(): Promise<void> {
-		await this.engine.storage.setPluginData(
-			OFFICIAL_PLUGINS_PLUGIN_ID,
-			INSTALLED_STORAGE_KEY,
-			this.cache
-		);
-		this.notify();
+		await this.enqueueWrite(async () => {
+			await this.engine.storage.setPluginData(
+				OFFICIAL_PLUGINS_PLUGIN_ID,
+				INSTALLED_STORAGE_KEY,
+				this.cache
+			);
+			this.notify();
+		});
 	}
 
 	clear(): void {
 		this.cache = [];
 		this.notify();
+	}
+
+	private enqueueWrite(task: () => Promise<void>): Promise<void> {
+		const next = this.writeChain.then(task);
+		this.writeChain = next.catch(() => {});
+		return next;
 	}
 }
