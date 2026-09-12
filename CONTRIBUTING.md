@@ -283,7 +283,7 @@ export default defineChronosPlugin({
 
 第三方插件应使用同一 CSS 入口契约。以下类仍由宿主全局提供，插件 CSS 不必重复产出：`text-*` 字阶（`typography.css`）、`ui-*` 模式、`.bottom-bar`。颜色原子类必须走 `plugin-tailwind.css` 的 `@theme inline` 桥，以便跟随宿主 CSS 变量与动态主题。
 
-开发态 HMR 将产物写入 `dist/dev-plugins/{pluginId}/`（不写 `static/official-plugins`），Vite dev server 通过 middleware 优先 serve 该目录；完整安装链路验证请执行 `node --experimental-strip-types scripts/build-official-plugins.ts` 或 `vp build`。
+开发态 HMR 将产物写入 `dist/dev-plugins/{pluginId}/{rev}/` 并生成带修订号的 manifest（不写 `static/official-plugins`）。Vite dev server 通过 middleware 按 `/official-plugins/bundles/{pluginId}/{rev}/…` 提供资源，缺失修订返回 404，无修订的生产 URL 仍走 static；完整安装链路验证请执行 `node --experimental-strip-types scripts/build-official-plugins.ts` 或 `vp build`。
 
 `MountableSlotOutlet` 会把宿主 Svelte context 传给 `CHRONOS_MOUNTABLE.mount()`，但仅对**进程内**、与宿主共享 Svelte 运行时的组件有效（如 Profile 内置 `source-cqut` / `codec-share`）。官方自包含 ESM 插件自带独立 Svelte 运行时，其组件内 `getContext()` 无法读取宿主 context；应通过 props / engine API 获取数据。
 

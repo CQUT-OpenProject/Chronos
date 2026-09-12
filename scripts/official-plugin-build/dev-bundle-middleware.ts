@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import type { Connect } from 'vite';
 import { createOfficialPluginBuildPaths } from './paths.ts';
 
-const DEV_BUNDLE_PATH =
-	/^\/official-plugins\/bundles\/([^/]+)\/(bundle\.js|bundle\.css|colors\.json|icons\.json)$/;
+const DEV_BUNDLE_WITH_REV_PATH =
+	/^\/official-plugins\/bundles\/([^/]+)\/([^/]+)\/(bundle\.js|bundle\.css|colors\.json|icons\.json)$/;
 
 export function createDevOfficialPluginBundleMiddleware(
 	monorepoRoot: string
@@ -13,16 +13,17 @@ export function createDevOfficialPluginBundleMiddleware(
 
 	return (req, res, next) => {
 		const url = req.url?.split('?')[0] ?? '';
-		const match = DEV_BUNDLE_PATH.exec(url);
+		const match = DEV_BUNDLE_WITH_REV_PATH.exec(url);
 		if (!match) {
 			next();
 			return;
 		}
 
-		const [, pluginId, fileName] = match;
-		const filePath = resolve(paths.devOutDir(pluginId), fileName);
+		const [, pluginId, rev, fileName] = match;
+		const filePath = resolve(paths.devRevDir(pluginId, rev), fileName);
 		if (!existsSync(filePath)) {
-			next();
+			res.statusCode = 404;
+			res.end('Not Found');
 			return;
 		}
 

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import type { Logger, Plugin } from 'vite';
 import type { OfficialPluginDef } from '../../../../../scripts/official-plugins.config.ts';
@@ -13,6 +14,7 @@ export interface ChronosPluginHmrOptions {
 	monorepoRoot: string;
 	plugins: OfficialPluginDef[];
 	createAliasRecord: (root?: string) => Record<string, string>;
+	hostVersion?: string;
 }
 
 function formatPluginHmrPath(rootDir: string, filePath: string): string {
@@ -27,24 +29,35 @@ function logPluginHmrError(logger: Logger, message: string): void {
 	logger.error(`(plugin) ${message}`, { timestamp: true });
 }
 
+function resolveHostVersion(monorepoRoot: string, override?: string): string {
+	if (override) return override;
+	const packageJson = JSON.parse(
+		readFileSync(resolve(monorepoRoot, 'apps/web/package.json'), 'utf8')
+	) as { version: string };
+	return packageJson.version;
+}
+
 export async function buildSingleOfficialPlugin(
 	plugin: OfficialPluginDef,
 	root: string,
 	createAliasRecord: (root?: string) => Record<string, string>,
 	releaseVersion = '0.0.0-dev',
-	_logger?: Logger
+	_logger?: Logger,
+	rev?: string
 ): Promise<PluginHmrPayload> {
 	return buildOfficialPluginAssets(plugin, {
 		root,
 		releaseVersion,
 		createAliasRecord,
-		mode: 'dev'
+		mode: 'dev',
+		rev
 	});
 }
 
 export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin {
-	const { monorepoRoot, plugins, createAliasRecord } = options;
+	const { monorepoRoot, plugins, createAliasRecord, hostVersion } = options;
 	const pluginBySourceDir = new Map(plugins.map((plugin) => [plugin.sourceDir, plugin]));
+	const resolvedHostVersion = resolveHostVersion(monorepoRoot, hostVersion);
 
 	return {
 		name: 'chronos-plugin-hmr',
@@ -77,21 +90,19 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 								pluginDef,
 								monorepoRoot,
 								createAliasRecord,
-								'0.0.0-dev',
+								resolvedHostVersion,
 								logger
 							);
 							const costMs = (performance.now() - startTime).toFixed(1);
-							const rev = Date.now().toString(36);
 							const hmrMessage = triggerFile
-								? `hmr update ${formatPluginHmrPath(server.config.root, triggerFile)} → ${pluginDef.id} in ${costMs}ms`
-								: `hmr update ${pluginDef.id} in ${costMs}ms`;
+								? `hmr update ${formatPluginHmrPath(server.config.root, triggerFile)} → ${pluginDef.id}@${payload.rev ?? '?'} in ${costMs}ms`
+								: `hmr update ${pluginDef.id}@${payload.rev ?? '?'} in ${costMs}ms`;
 
 							server.ws.send({
 								type: 'custom',
 								event: 'chronos:plugin-hmr',
 								data: {
 									...payload,
-									rev,
 									costMs
 								}
 							});

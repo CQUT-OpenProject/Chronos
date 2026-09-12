@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vite-plus/test';
-import { buildManifestForPlugin } from './build-manifest.ts';
+import { buildDevManifestForPlugin, buildManifestForPlugin } from './build-manifest.ts';
 
 describe('buildManifestForPlugin', () => {
 	it('includes bundle and css hashes when assets are present', () => {
@@ -24,5 +24,39 @@ describe('buildManifestForPlugin', () => {
 		expect(manifest.sha256).toBe(createHash('sha256').update(code).digest('hex'));
 		expect(manifest.cssUrl).toBe('/official-plugins/bundles/tool-today/bundle.css');
 		expect(manifest.cssSha256).toBe(createHash('sha256').update(cssCode).digest('hex'));
+	});
+
+	it('includes rev-scoped URLs for dev manifests', () => {
+		const code = 'export default { id: "tool-today" };';
+
+		const manifest = buildManifestForPlugin(
+			{
+				id: 'tool-today',
+				type: 'tool',
+				sourceDir: 'today',
+				name: { 'zh-CN': '今日', en: 'Today' },
+				description: { 'zh-CN': 'd', en: 'd' }
+			},
+			{ code, cssCode: null, colorsJson: null, iconThemeJson: null },
+			'0.5.4'
+		);
+
+		expect(manifest.bundleUrl).toBe('/official-plugins/bundles/tool-today/bundle.js');
+
+		const devManifest = buildDevManifestForPlugin(
+			{
+				id: 'tool-today',
+				type: 'tool',
+				sourceDir: 'today',
+				name: { 'zh-CN': '今日', en: 'Today' },
+				description: { 'zh-CN': 'd', en: 'd' }
+			},
+			{ code, cssCode: null, colorsJson: null, iconThemeJson: null },
+			'0.5.4',
+			'abc123'
+		);
+
+		expect(devManifest.devRev).toBe('abc123');
+		expect(devManifest.bundleUrl).toBe('/official-plugins/bundles/tool-today/abc123/bundle.js');
 	});
 });

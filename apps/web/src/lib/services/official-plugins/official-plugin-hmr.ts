@@ -5,8 +5,9 @@ import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 export interface PluginHmrData {
 	id: string;
 	type?: 'theme' | 'tool';
-	rev: string;
+	rev?: string;
 	costMs: string;
+	manifest?: Record<string, unknown>;
 	code: string | null;
 	cssCode: string | null;
 	colorsJson: string | null;
@@ -113,7 +114,7 @@ export async function handlePluginHmr(
 	engine: ChronosEngine,
 	data: PluginHmrData
 ): Promise<void> {
-	const { id, type, code, cssCode, colorsJson, iconThemeJson, costMs } = data;
+	const { id, type, manifest, code, cssCode, colorsJson, iconThemeJson, costMs } = data;
 	const existing = service.getInstalled(id);
 
 	if (!existing) {
@@ -122,13 +123,17 @@ export async function handlePluginHmr(
 	}
 
 	const isTheme = type === 'theme' || existing.manifest.type === 'theme';
+	const nextManifest = manifest
+		? { ...existing.manifest, ...manifest, id: existing.manifest.id }
+		: existing.manifest;
 
 	const updatedRecord: InstalledOfficialPluginRecord = {
 		...existing,
-		code: isTheme ? null : (code ?? existing.code),
+		manifest: nextManifest,
+		code: isTheme ? null : code,
 		cssCode: isTheme ? null : cssCode,
-		colorsJson: isTheme ? (colorsJson ?? existing.colorsJson) : null,
-		iconThemeJson: isTheme ? (iconThemeJson ?? existing.iconThemeJson) : null,
+		colorsJson: isTheme ? colorsJson : null,
+		iconThemeJson: isTheme ? iconThemeJson : null,
 		installedAt: Date.now()
 	};
 
