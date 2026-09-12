@@ -1,4 +1,10 @@
-import { probeSwUpdate, applyUpdateAndReload, isSwUpdatePending } from '$lib/client/pwa-sw';
+import {
+	probeSwUpdate,
+	applyUpdateAndReload,
+	isSwUpdatePending,
+	type ApplyUpdateOptions,
+	type SwUpdateProgress
+} from '$lib/client/pwa-sw';
 
 /**
  * Seam for ServiceWorker update lifecycle operations.
@@ -7,8 +13,10 @@ export interface ServiceWorkerAdapter {
 	isSupported(): boolean;
 	isUpdatePending(): boolean;
 	checkForUpdate(): Promise<boolean>;
-	applyUpdateAndReload(): Promise<void>;
+	applyUpdateAndReload(options?: ApplyUpdateOptions): Promise<void>;
 }
+
+export type { SwUpdateProgress };
 
 export function createDefaultServiceWorkerAdapter(): ServiceWorkerAdapter {
 	return {
@@ -21,8 +29,8 @@ export function createDefaultServiceWorkerAdapter(): ServiceWorkerAdapter {
 		async checkForUpdate() {
 			return probeSwUpdate();
 		},
-		async applyUpdateAndReload() {
-			return applyUpdateAndReload();
+		async applyUpdateAndReload(options?: ApplyUpdateOptions) {
+			return applyUpdateAndReload(options);
 		}
 	};
 }
