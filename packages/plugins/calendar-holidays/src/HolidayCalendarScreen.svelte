@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '@chronos/ui-kit';
+	import type { ChronosUiController } from '@chronos/ui-kit';
 	import { appLocaleToBcp47, pluginText } from '@chronos/ui-kit';
 	import {
 		filterHolidaysInTermRange,
@@ -11,7 +11,7 @@
 	import { syncHolidayCalendarFromHolidayCn } from './holiday-sync';
 
 	interface Props {
-		controller: ReactiveChronosController;
+		controller: ChronosUiController;
 		pluginId: string;
 	}
 

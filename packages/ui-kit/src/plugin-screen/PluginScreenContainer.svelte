@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
+	import type { ChronosUiController } from '../reactivity/chronos-ui-controller';
 	import SchemaForm from '../schema-form/SchemaForm.svelte';
 	import { resolvePluginScreenSlot } from './resolve-plugin-screen-slot';
 	import MountableSlotOutlet from './MountableSlotOutlet.svelte';
 
 	interface Props {
-		controller: ReactiveChronosController;
+		controller: ChronosUiController;
 		pluginId: string;
 		viewId?: string;
 		active?: boolean;

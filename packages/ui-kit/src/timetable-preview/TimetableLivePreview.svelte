@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ReactiveChronosController } from '../reactivity/engine-controller.svelte';
+	import type { ChronosUiController } from '../reactivity/chronos-ui-controller';
 	import {
 		AcademicCalendarService,
 		computeTimetableWeekLayout,
@@ -9,7 +9,7 @@
 	import TimetableWallpaperLayer from './TimetableWallpaperLayer.svelte';
 
 	interface Props {
-		controller: ReactiveChronosController;
+		controller: ChronosUiController;
 		displayedWeek?: number;
 		coursePalette?: readonly CoursePaletteEntry[];
 		hasDynamicBackground?: boolean;

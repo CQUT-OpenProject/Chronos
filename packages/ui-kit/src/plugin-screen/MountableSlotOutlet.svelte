@@ -17,28 +17,40 @@
 
 	const mountable = $derived(isChronosMountable(component));
 
+	let mountHandle = $state<
+		{ update?(props: Record<string, unknown>): void; unmount?(): void } | undefined
+	>();
+
 	$effect(() => {
-		if (!containerEl || !mountable) return;
-		const targetComponent = component;
-		const initialProps = untrack(() => props);
-		let instance: { unmount?(): void } | (() => void) | undefined;
-		try {
-			instance = targetComponent.mount(containerEl, initialProps, parentContext);
-		} catch (error) {
-			console.error('[MountableSlotOutlet] mount failed:', error);
+		if (!containerEl || !mountable) {
+			mountHandle = undefined;
 			return;
 		}
+
+		const targetComponent = component;
+		const initialProps = untrack(() => props);
+		try {
+			mountHandle = targetComponent.mount(containerEl, initialProps, parentContext);
+		} catch (error) {
+			console.error('[MountableSlotOutlet] mount failed:', error);
+			mountHandle = undefined;
+			return;
+		}
+
 		return () => {
 			try {
-				if (typeof instance === 'function') {
-					instance();
-				} else if (typeof instance?.unmount === 'function') {
-					instance.unmount();
-				}
+				mountHandle?.unmount?.();
 			} catch (error) {
 				console.error('[MountableSlotOutlet] unmount failed:', error);
+			} finally {
+				mountHandle = undefined;
 			}
 		};
+	});
+
+	$effect(() => {
+		if (!mountHandle?.update) return;
+		mountHandle.update(props);
 	});
 </script>
 

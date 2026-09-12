@@ -8,6 +8,7 @@ import {
 	type Timetable,
 	type UserPreferences
 } from '@chronos/core';
+import { get } from 'svelte/store';
 import { ReactiveChronosController } from '../src/reactivity/engine-controller.svelte';
 
 function createMockEnv(): ChronosEnv {
@@ -212,6 +213,21 @@ describe('ReactiveChronosController', () => {
 		expect(controller.slotVersion).toBeGreaterThan(preUnloadVersion);
 		expect(controller.getSlots('import.source.tab').length).toBe(0);
 
+		controller.dispose();
+	});
+
+	it('exposes a readable snapshot store for cross-runtime consumers', () => {
+		const controller = new ReactiveChronosController(engine);
+		const locales: string[] = [];
+		const unsubscribe = controller.snapshot.subscribe((snapshot) => {
+			locales.push(snapshot.currentLocale);
+		});
+
+		expect(get(controller.snapshot).currentLocale).toBe('zh-cn');
+		engine.setLocale('en');
+		expect(locales.at(-1)).toBe('en');
+
+		unsubscribe();
 		controller.dispose();
 	});
 

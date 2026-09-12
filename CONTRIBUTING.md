@@ -287,6 +287,8 @@ export default defineChronosPlugin({
 
 `MountableSlotOutlet` 会把宿主 Svelte context 传给 `CHRONOS_MOUNTABLE.mount()`，但仅对**进程内**、与宿主共享 Svelte 运行时的组件有效（如 Profile 内置 `source-cqut` / `codec-share`）。官方自包含 ESM 插件自带独立 Svelte 运行时，其组件内 `getContext()` 无法读取宿主 context；应通过 props / engine API 获取数据。
 
+插件富 UI 通过 `ChronosUiController`（`controller.snapshot` 可读 store）订阅宿主状态，在插件自身 Svelte 运行时用 `fromStore(controller.snapshot)` 读取快照；动作仍调用 controller 方法。`TIMETABLE_PRESENTATION_CONTEXT` 与 `PREVIEW_PAINT_READY_CONTEXT` 提供 `Readable` 订阅源，同样用 `fromStore()` 消费。`MountableSlotOutlet` 在 props 变化时调用 `update()`，仅在组件或挂载目标变化时重新挂载。
+
 ### 分发形态
 
 | 形态              | 适用场景                                   | 交付要求                                                                                                                                                                                        |

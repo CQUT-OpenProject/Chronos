@@ -28,13 +28,19 @@
 		parsePeriodRanges
 	} from '@chronos/core';
 	import { getContext } from 'svelte';
-	import { PREVIEW_PAINT_READY_CONTEXT } from './preview-paint-ready';
+	import { fromStore } from 'svelte/store';
+	import { PREVIEW_PAINT_READY_CONTEXT, type PreviewPaintReadySource } from './preview-paint-ready';
 
 	const ROW_HEIGHT = '5.5rem';
 	const SIDEBAR_WIDTH = '3.25rem';
 	const FIT_MIN_FONT_PX = 6;
-	const getPaintReady = getContext<(() => boolean) | undefined>(PREVIEW_PAINT_READY_CONTEXT);
-	const paintReady = $derived(getPaintReady?.() ?? true);
+	const paintReadySource = getContext<PreviewPaintReadySource | undefined>(
+		PREVIEW_PAINT_READY_CONTEXT
+	);
+	const paintReadyView = $derived(
+		paintReadySource ? fromStore(paintReadySource) : { current: true }
+	);
+	const paintReady = $derived(paintReadyView.current);
 
 	interface Props {
 		displayedWeek: number;

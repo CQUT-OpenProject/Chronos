@@ -11,12 +11,16 @@ import type {
 	ChronosContext
 } from '@chronos/core';
 import { todayIsoDate } from '@chronos/core';
+import { writable, type Readable, type Writable } from 'svelte/store';
+import type { ChronosUiController, ChronosUiSnapshot } from './chronos-ui-controller';
 
 /**
  * ReactiveChronosController serves as the Svelte 5 Runes reactive bridge
  * connecting the headless ChronosEngine to UI components.
  */
-export class ReactiveChronosController implements Disposable {
+export class ReactiveChronosController implements ChronosUiController {
+	readonly snapshot: Readable<ChronosUiSnapshot>;
+	private readonly snapshotStore: Writable<ChronosUiSnapshot>;
 	private engine: ChronosEngine;
 	private disposables: Disposable[] = [];
 
@@ -40,18 +44,23 @@ export class ReactiveChronosController implements Disposable {
 
 	constructor(engine: ChronosEngine) {
 		this.engine = engine;
+		this.snapshotStore = writable(this.readSnapshot());
+		this.snapshot = this.snapshotStore;
 		this.syncAllState();
 
 		// Subscribe to engine lifecycle events
 		this.disposables.push(
 			this.engine.on('timetable:loaded', ({ timetable }: { timetable: Timetable }) => {
 				this.currentTimetable = timetable;
+				this.pushSnapshot();
 			}),
 			this.engine.on('timetable:switched', ({ timetable }: { timetable: Timetable }) => {
 				this.currentTimetable = timetable;
+				this.pushSnapshot();
 			}),
 			this.engine.on('timetable:updated', ({ timetable }: { timetable: Timetable }) => {
 				this.currentTimetable = timetable;
+				this.pushSnapshot();
 			}),
 			this.engine.on(
 				'timetables:updated',
@@ -61,10 +70,12 @@ export class ReactiveChronosController implements Disposable {
 					timetables: Array<{ id: string; name: string; courseCount?: number; updatedAt: number }>;
 				}) => {
 					this.timetables = timetables;
+					this.pushSnapshot();
 				}
 			),
 			this.engine.on('preferences:updated', ({ preferences }: { preferences: UserPreferences }) => {
 				this.userPreferences = preferences;
+				this.pushSnapshot();
 			}),
 			this.engine.on(
 				'time:tick',
@@ -83,29 +94,37 @@ export class ReactiveChronosController implements Disposable {
 					this.currentPeriodIndex = currentPeriod;
 					this.clockNow = now;
 					this.clockTodayIso = todayIso;
+					this.pushSnapshot();
 				}
 			),
 			this.engine.on('theme:changed', ({ themeId }: { themeId: string }) => {
 				this.activeThemeId = themeId;
+				this.pushSnapshot();
 			}),
 			this.engine.on('iconTheme:changed', ({ iconThemeId }: { iconThemeId: string }) => {
 				this.activeIconThemeId = iconThemeId;
+				this.pushSnapshot();
 			}),
 			this.engine.on('i18n:localeChanged', ({ locale }: { locale: string }) => {
 				this.currentLocale = locale;
 				this.slotVersion++;
+				this.pushSnapshot();
 			}),
 			this.engine.on('slots:updated', () => {
 				this.slotVersion++;
+				this.pushSnapshot();
 			}),
 			this.engine.on('badges:updated', ({ badges }: { badges: Record<string, CourseBadge[]> }) => {
 				this.courseBadges = badges;
+				this.pushSnapshot();
 			}),
 			this.engine.on('plugin:loaded', () => {
 				this.slotVersion++;
+				this.pushSnapshot();
 			}),
 			this.engine.on('plugin:unloaded', () => {
 				this.slotVersion++;
+				this.pushSnapshot();
 			})
 		);
 	}
@@ -149,6 +168,27 @@ export class ReactiveChronosController implements Disposable {
 		return this.engine.slots.resolveOwner(slotName, slotId);
 	}
 
+	private pushSnapshot(): void {
+		this.snapshotStore.set(this.readSnapshot());
+	}
+
+	private readSnapshot(): ChronosUiSnapshot {
+		return {
+			currentTimetable: this.currentTimetable,
+			timetables: this.timetables,
+			activeWeek: this.activeWeek,
+			currentPeriodIndex: this.currentPeriodIndex,
+			activeThemeId: this.activeThemeId,
+			activeIconThemeId: this.activeIconThemeId,
+			userPreferences: this.userPreferences,
+			currentLocale: this.currentLocale,
+			clockNow: this.clockNow,
+			clockTodayIso: this.clockTodayIso,
+			slotVersion: this.slotVersion,
+			courseBadges: this.courseBadges
+		};
+	}
+
 	private syncAllState(): void {
 		this.currentTimetable = this.engine.state.currentTimetable;
 		this.timetables = this.engine.state.timetables ?? [];
@@ -162,6 +202,7 @@ export class ReactiveChronosController implements Disposable {
 		this.clockTodayIso = todayIsoDate();
 		this.courseBadges = this.engine.badges.getAll();
 		this.slotVersion++;
+		this.pushSnapshot();
 	}
 
 	// Action proxies
