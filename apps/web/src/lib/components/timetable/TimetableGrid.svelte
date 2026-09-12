@@ -37,6 +37,7 @@
 	} from '@chronos/ui-kit';
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 	import { createGridGestureHandlers } from '$lib/timetable/grid-gesture';
+	import { touchGestureSurfaceAttach } from '$lib/utils/touch-gesture-surface';
 	import { rearrangeCourseSchedule } from '$lib/timetable/course-reorder';
 	import {
 		type TimetableDragSession,
@@ -379,15 +380,11 @@
 			let periodIdx = Math.floor(relY / rowHeight) + 1;
 			periodIdx = Math.max(1, Math.min(periodIdx, gridModel.displayedPeriodCount - span + 1));
 
-			if (
-				interaction.updateDragTarget({
-					targetColIndex: colIdx,
-					targetDayOfWeek: targetDay,
-					targetStartPeriod: periodIdx
-				})
-			) {
-				haptic.selection();
-			}
+			interaction.updateDragTarget({
+				targetColIndex: colIdx,
+				targetDayOfWeek: targetDay,
+				targetStartPeriod: periodIdx
+			});
 		}
 
 		if (scrollContainer && !isFitLayout) {
@@ -498,6 +495,7 @@
 		interaction,
 		onClickEmpty: () => {
 			if (interaction.isDragging || interaction.isClickGuarded()) return;
+			haptic.light();
 			interaction.exitEdit();
 		}
 	});
@@ -551,8 +549,9 @@
 />
 
 <div
-	class="relative flex h-full w-full flex-col select-none {solidBgClass}"
+	class="timetable-grid-surface relative flex h-full w-full touch-manipulation flex-col select-none {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"
+	{@attach touchGestureSurfaceAttach}
 	onpointerdown={gridGestureHandlers.onpointerdown}
 	onpointermove={gridGestureHandlers.onpointermove}
 	onpointerup={gridGestureHandlers.onpointerup}
@@ -827,3 +826,9 @@
 		{/if}
 	</button>
 {/snippet}
+
+<style>
+	.timetable-grid-surface {
+		-webkit-touch-callout: none;
+	}
+</style>
