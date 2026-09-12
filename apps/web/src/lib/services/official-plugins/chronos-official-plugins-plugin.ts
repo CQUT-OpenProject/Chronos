@@ -1,19 +1,12 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import type { Plugin } from 'vite';
+import type { Plugin, ResolvedConfig } from 'vite';
 
 export interface OfficialPluginsPluginOptions {
 	catalogPath?: string;
 	buildCommand?: (reason: string) => void;
 	isBuild: boolean;
 	isTest?: boolean;
-}
-
-/** Shared across plugin instances so SvelteKit's multi-pass build only runs once. */
-let productionBuildCompleted = false;
-
-export function resetOfficialPluginsBuildStateForTesting(): void {
-	productionBuildCompleted = false;
 }
 
 export function defaultBuildOfficialPlugins(
@@ -43,11 +36,15 @@ function ensureCatalogBuilt(
 
 export function createOfficialPluginsPlugin(options: OfficialPluginsPluginOptions): Plugin {
 	const { catalogPath, buildCommand, isBuild, isTest = Boolean(process.env.VITEST) } = options;
+	let resolvedConfig: ResolvedConfig | null = null;
 
 	return {
 		name: 'chronos-official-plugins',
 		configureServer() {
 			ensureCatalogBuilt(catalogPath, buildCommand, 'catalog.json missing');
+		},
+		configResolved(config) {
+			resolvedConfig = config;
 		},
 		buildStart() {
 			if (isTest) {
@@ -58,8 +55,9 @@ export function createOfficialPluginsPlugin(options: OfficialPluginsPluginOption
 				ensureCatalogBuilt(catalogPath, buildCommand, 'catalog.json missing');
 				return;
 			}
-			if (productionBuildCompleted) return;
-			productionBuildCompleted = true;
+			if (!resolvedConfig?.build.ssr) {
+				return;
+			}
 			buildCommand?.('production build');
 		}
 	};
