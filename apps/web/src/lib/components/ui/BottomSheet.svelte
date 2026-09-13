@@ -292,6 +292,7 @@
 			ontransitionend={onContentTransitionEnd}
 		>
 			{#if showHandle}
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
 					bind:this={dragHandleRef}
 					class="relative flex shrink-0 touch-none justify-center py-3 before:absolute before:inset-x-0 before:-top-4 before:-bottom-4 before:content-['']"

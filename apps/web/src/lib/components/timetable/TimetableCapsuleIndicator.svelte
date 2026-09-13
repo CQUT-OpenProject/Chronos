@@ -96,7 +96,7 @@
 	}
 
 	let isInitialized = false;
-	let prevDisplayedWeek = displayedWeek;
+	let prevDisplayedWeek = 0;
 	let prevIsExpanded = false;
 	let prevPagerPreviewActive = false;
 

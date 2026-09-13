@@ -491,14 +491,16 @@
 		interaction.cancelDrag();
 	}
 
-	const gridGestureHandlers = createGridGestureHandlers({
-		interaction,
-		onClickEmpty: () => {
-			if (interaction.isDragging || interaction.isClickGuarded()) return;
-			haptic.light();
-			interaction.exitEdit();
-		}
-	});
+	const gridGestureHandlers = $derived(
+		createGridGestureHandlers({
+			interaction,
+			onClickEmpty: () => {
+				if (interaction.isDragging || interaction.isClickGuarded()) return;
+				haptic.light();
+				interaction.exitEdit();
+			}
+		})
+	);
 
 	$effect(() => {
 		if (!settling) return;
@@ -548,6 +550,7 @@
 	ondrop={(e) => e.preventDefault()}
 />
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="timetable-grid-surface relative flex h-full w-full touch-manipulation flex-col select-none {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"

@@ -121,10 +121,9 @@
 				aria-hidden={!isDragOverDeleteZone}
 				aria-label={hostT('timetable.deleteWeek.dropHint')}
 			>
-				<DeleteFill
-					class="edit-bottom-bar-delete-icon size-6 shrink-0 text-error"
-					aria-hidden="true"
-				/>
+				<span class="edit-bottom-bar-delete-icon inline-flex shrink-0" aria-hidden="true">
+					<DeleteFill class="size-6 text-error" />
+				</span>
 				<span class="edit-bottom-bar-delete-text text-label-large truncate font-medium text-error">
 					{hostT('timetable.deleteWeek.dropHint')}
 				</span>
