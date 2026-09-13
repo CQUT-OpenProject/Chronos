@@ -94,12 +94,16 @@ describe('Domain Models in @chronos/core', () => {
 		expect(DEFAULT_USER_PREFERENCES.timetableLayoutMode).toBe('fixed');
 		expect(DEFAULT_USER_PREFERENCES.capsuleCornerStyle).toBe('sharp');
 		expect(DEFAULT_USER_PREFERENCES.hapticFeedbackEnabled).toBe(true);
+		expect(DEFAULT_USER_PREFERENCES.reduceMotionEnabled).toBe(false);
 		expect(DEFAULT_USER_PREFERENCES.currentPeriodHighlightEnabled).toBe(false);
 	});
 
 	it('provides standard PREFERENCE_STORAGE_KEYS', () => {
 		expect(PREFERENCE_STORAGE_KEYS.hapticFeedbackEnabled).toBe(
 			'chronos_preferences:haptic_feedback_enabled'
+		);
+		expect(PREFERENCE_STORAGE_KEYS.reduceMotionEnabled).toBe(
+			'chronos_preferences:reduce_motion_enabled'
 		);
 		expect(PREFERENCE_STORAGE_KEYS.currentPeriodHighlightEnabled).toBe(
 			'chronos_preferences:current_period_highlight_enabled'

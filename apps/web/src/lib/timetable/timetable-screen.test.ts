@@ -50,6 +50,7 @@ describe('TimetableScreenController', () => {
 				paletteMode: 'vibrant',
 				capsuleCornerStyle: 'rounded',
 				hapticFeedbackEnabled: true,
+				reduceMotionEnabled: false,
 				currentPeriodHighlightEnabled: true
 			}
 		} as any,
@@ -62,6 +63,7 @@ describe('TimetableScreenController', () => {
 		setColorScheme: async () => {},
 		setCapsuleCornerStyle: async () => {},
 		setHapticFeedbackEnabled: async () => {},
+		setReduceMotionEnabled: async () => {},
 		switchTimetable: async () => {},
 		deleteTimetable: async () => {},
 		clearAllData: async () => {}

@@ -21,6 +21,7 @@ function createMockEnv(): ChronosEnv {
 		timetableLayoutMode: 'fixed',
 		capsuleCornerStyle: 'rounded',
 		hapticFeedbackEnabled: true,
+		reduceMotionEnabled: false,
 		currentPeriodHighlightEnabled: true
 	};
 	const pluginData = new Map<string, unknown>();

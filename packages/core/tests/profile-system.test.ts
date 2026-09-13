@@ -51,6 +51,7 @@ describe('Profile System and Layered Config', () => {
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
 						hapticFeedbackEnabled: true,
+						reduceMotionEnabled: false,
 						currentPeriodHighlightEnabled: true
 					}),
 					savePreferences: vi.fn().mockResolvedValue(undefined),
@@ -156,6 +157,7 @@ describe('Profile System and Layered Config', () => {
 						timetableLayoutMode: 'fixed',
 						capsuleCornerStyle: 'rounded',
 						hapticFeedbackEnabled: true,
+						reduceMotionEnabled: false,
 						currentPeriodHighlightEnabled: true
 					}),
 					savePreferences: vi.fn().mockResolvedValue(undefined),

@@ -28,6 +28,7 @@ function createNativeHostEnv(): ChronosEnv {
 		timetableLayoutMode: 'fixed',
 		capsuleCornerStyle: 'rounded',
 		hapticFeedbackEnabled: true,
+		reduceMotionEnabled: false,
 		currentPeriodHighlightEnabled: true
 	};
 

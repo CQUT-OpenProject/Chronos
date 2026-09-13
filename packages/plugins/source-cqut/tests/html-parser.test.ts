@@ -37,6 +37,7 @@ function createMockEnv(): ChronosEnv {
 				timetableLayoutMode: 'fixed',
 				capsuleCornerStyle: 'rounded',
 				hapticFeedbackEnabled: true,
+				reduceMotionEnabled: false,
 				currentPeriodHighlightEnabled: true
 			})),
 			savePreferences: vi.fn(async () => {}),
