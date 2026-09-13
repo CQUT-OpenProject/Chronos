@@ -317,4 +317,17 @@
 			filter: none;
 		}
 	}
+
+	:root.reduce-motion .bottom-bar,
+	:root.reduce-motion .edit-bottom-bar-layer,
+	:root.reduce-motion .edit-bottom-bar-trash-slot,
+	:root.reduce-motion .edit-bottom-bar-trash,
+	:root.reduce-motion .edit-bottom-bar-delete-text,
+	:root.reduce-motion .edit-bottom-bar-delete-icon {
+		transition-duration: 1ms !important;
+	}
+
+	:root.reduce-motion .edit-bottom-bar-layer--hidden {
+		filter: none;
+	}
 </style>

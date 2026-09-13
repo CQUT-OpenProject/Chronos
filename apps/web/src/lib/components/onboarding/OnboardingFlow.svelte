@@ -25,6 +25,7 @@
 		WifiOffFill,
 		ChevronRight
 	} from '$lib/icons';
+	import { isReducedMotionActive } from '@chronos/ui-kit';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const shell = getContext<AppShellController>('appShell');
@@ -94,13 +95,7 @@
 		return () => node.removeEventListener('keydown', onKeydown);
 	}
 
-	function prefersReducedMotion() {
-		return (
-			typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-		);
-	}
-
-	const stepTransitionDuration = $derived(prefersReducedMotion() ? 1 : 200);
+	const stepTransitionDuration = $derived(isReducedMotionActive() ? 1 : 200);
 
 	function handleNext() {
 		if (step === ONBOARDING_STEP.legal) {

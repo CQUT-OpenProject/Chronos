@@ -205,6 +205,24 @@
 	}
 }
 
+:root.reduce-motion.nav-forward::view-transition-group(page-root),
+:root.reduce-motion.nav-back::view-transition-group(page-root),
+:root.reduce-motion.nav-forward::view-transition-old(page-root),
+:root.reduce-motion.nav-forward::view-transition-new(page-root),
+:root.reduce-motion.nav-back::view-transition-old(page-root),
+:root.reduce-motion.nav-back::view-transition-new(page-root),
+:root.reduce-motion.nav-forward::view-transition-old(root),
+:root.reduce-motion.nav-forward::view-transition-new(root),
+:root.reduce-motion.nav-back::view-transition-old(root),
+:root.reduce-motion.nav-back::view-transition-new(root) {
+	animation: none !important;
+}
+
+:root.reduce-motion .shell-root.is-receded {
+	transform: none;
+	opacity: 1;
+}
+
 @layer components {
 	.shell-page {
 		min-height: 100dvh;

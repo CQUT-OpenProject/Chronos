@@ -1,25 +1,20 @@
 <script lang="ts">
 	import { cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
+	import { isReducedMotionActive } from '@chronos/ui-kit';
 	import { dismissSnackbar, snackbarStore } from './snackbar-state.svelte';
 	import Button from './Button.svelte';
 
 	let snackbarEl = $state<HTMLElement | null>(null);
 
-	function prefersReducedMotion() {
-		return (
-			typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-		);
-	}
-
 	const enterFly = $derived({
 		y: 20,
-		duration: prefersReducedMotion() ? 1 : 250,
+		duration: isReducedMotionActive() ? 1 : 250,
 		easing: cubicOut
 	});
 	const exitFly = $derived({
 		y: 20,
-		duration: prefersReducedMotion() ? 1 : 180,
+		duration: isReducedMotionActive() ? 1 : 180,
 		easing: cubicOut
 	});
 

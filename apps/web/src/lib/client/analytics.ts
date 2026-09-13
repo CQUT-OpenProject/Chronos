@@ -32,6 +32,7 @@ export type AnalyticsEvent =
 	| 'settings_capsule_corner_change'
 	| 'settings_locale_change'
 	| 'settings_haptic_feedback_change'
+	| 'settings_reduce_motion_change'
 	| 'timetable_switch'
 	| 'timetable_delete'
 	| 'timetable_overlap_expand'

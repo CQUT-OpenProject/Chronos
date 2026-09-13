@@ -573,4 +573,14 @@
 			animation-duration: 1ms !important;
 		}
 	}
+
+	:root.reduce-motion .capsule-indicator,
+	:root.reduce-motion .capsule-indicator--glass,
+	:root.reduce-motion .dots-track,
+	:root.reduce-motion .indicator-dot,
+	:root.reduce-motion .floating-tooltip,
+	:root.reduce-motion .dots-track-overlay--fading {
+		transition-duration: 1ms !important;
+		animation-duration: 1ms !important;
+	}
 </style>
