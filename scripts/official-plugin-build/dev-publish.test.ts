@@ -5,6 +5,8 @@ import { tmpdir } from 'node:os';
 import { publishDevPluginBuild, readPublishedDevManifest } from './dev-publish.ts';
 import { createOfficialPluginBuildPaths } from './paths.ts';
 
+const releaseVersion = '0.0.0-test';
+
 const pluginDef = {
 	id: 'tool-test',
 	type: 'tool' as const,
@@ -35,12 +37,12 @@ describe('publishDevPluginBuild', () => {
 				colorsJson: null,
 				iconThemeJson: null
 			},
-			releaseVersion: '0.5.4',
+			releaseVersion,
 			paths
 		});
 
 		expect(published.rev).toBe('rev1');
-		expect(published.manifest.version).toBe('0.5.4');
+		expect(published.manifest.version).toBe(releaseVersion);
 		expect(published.manifest.bundleUrl).toBe('/official-plugins/bundles/tool-test/rev1/bundle.js');
 		expect(existsSync(resolve(paths.devRevDir('tool-test', 'rev1'), 'bundle.js'))).toBe(true);
 		expect(existsSync(resolve(paths.devRevDir('tool-test', 'rev1'), 'bundle.css'))).toBe(true);
@@ -60,7 +62,7 @@ describe('publishDevPluginBuild', () => {
 				colorsJson: null,
 				iconThemeJson: null
 			},
-			releaseVersion: '0.5.4',
+			releaseVersion,
 			paths
 		});
 
@@ -73,7 +75,7 @@ describe('publishDevPluginBuild', () => {
 				colorsJson: null,
 				iconThemeJson: null
 			},
-			releaseVersion: '0.5.4',
+			releaseVersion,
 			paths
 		});
 
@@ -102,7 +104,7 @@ describe('publishDevPluginBuild', () => {
 				colorsJson: null,
 				iconThemeJson: null
 			},
-			releaseVersion: '0.5.4',
+			releaseVersion,
 			paths
 		});
 
