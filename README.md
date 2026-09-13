@@ -2,9 +2,6 @@
 
 # _Chronos_
 
-<img src=".github/assets/light.png" alt="Preview Light" height="500" />
-<img src=".github/assets/dark.png" alt="Preview Dark" height="500" />
-
 微内核、插件化的课程表应用框架
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CQUT-OpenProject/Chronos)
@@ -12,6 +9,8 @@
 </div>
 
 ## 基础功能
+
+![mockup](.github/assets/mockup.png)
 
 Chronos 的核心功能仅为查看、管理与分享课表。另外，您可在「插件中心」安装 Chronos 官方或第三方插件以个性化使用体验。
 
