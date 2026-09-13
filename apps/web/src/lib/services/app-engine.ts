@@ -92,6 +92,7 @@ async function bootstrapEnginePhase2(engine: ChronosEngine): Promise<void> {
 		sharedOfficialPlugins = new OfficialPluginService(engine);
 	}
 	await sharedOfficialPlugins.init();
+	await applyThemeFromPreferences(engine);
 }
 
 function waitForIdleTurn(): Promise<void> {
