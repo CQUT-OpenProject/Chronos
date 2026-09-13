@@ -58,3 +58,4 @@ export type { PreviewPaintReadySource } from './timetable-preview/preview-paint-
 export * from './timetable-preview/timetable-grid-chrome';
 export * from './timetable-preview/day-labels';
 export * from './haptic/haptic';
+export * from './motion/motion';
