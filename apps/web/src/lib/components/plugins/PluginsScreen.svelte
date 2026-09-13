@@ -319,11 +319,6 @@
 									<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
 										{name}
 									</span>
-									{#if plugin.version && plugin.version !== '1.0.0'}
-										<span class="text-label-small font-mono text-[10px] text-on-surface-variant">
-											v{plugin.version}
-										</span>
-									{/if}
 									<span
 										class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
 									>
@@ -442,13 +437,6 @@
 											<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
 												{name}
 											</span>
-											{#if record.manifest.version}
-												<span
-													class="text-label-small font-mono text-[10px] text-on-surface-variant"
-												>
-													v{record.manifest.version}
-												</span>
-											{/if}
 											<span
 												class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
 											>
@@ -578,13 +566,6 @@
 														<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
 															{name}
 														</span>
-														{#if manifest.version}
-															<span
-																class="text-label-small font-mono text-[10px] text-on-surface-variant"
-															>
-																v{manifest.version}
-															</span>
-														{/if}
 													</div>
 													{#if desc}
 														<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
