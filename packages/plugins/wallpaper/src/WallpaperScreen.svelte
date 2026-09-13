@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { IAnalyticsService } from '@chronos/core';
+	import { trackPluginAnalytics } from '@chronos/core';
 	import type { ChronosUiController } from '@chronos/ui-kit';
 	import { TimetableLivePreview, pluginText } from '@chronos/ui-kit';
+	import { WALLPAPER_ANALYTICS } from './analytics';
 	import WallpaperCropEditor from './WallpaperCropEditor.svelte';
 	import { getWallpaperRuntime } from './runtime.svelte';
 	import { WALLPAPER_MESSAGES } from './messages';
@@ -23,12 +24,7 @@
 		return pluginText(controller, WALLPAPER_PLUGIN_ID, WALLPAPER_MESSAGES, key);
 	}
 
-	function trackWallpaper(
-		event: string,
-		properties?: Record<string, string | number | boolean>
-	): void {
-		controller.getPluginContext(pluginId).tryService(IAnalyticsService)?.track(event, properties);
-	}
+	const pluginContext = $derived(controller.getPluginContext(pluginId));
 
 	const previewEmpty = $derived(pt('screen.preview.empty'));
 	const clearLabel = $derived(pt('screen.action.clear'));
@@ -46,19 +42,19 @@
 		const file = input.files?.[0];
 		input.value = '';
 		if (!file) return;
-		trackWallpaper('wallpaper_pick');
+		trackPluginAnalytics(pluginContext, WALLPAPER_PLUGIN_ID, WALLPAPER_ANALYTICS.pick);
 		cropSource = file;
 	}
 
 	function onCropCancel() {
-		trackWallpaper('wallpaper_crop_cancel');
+		trackPluginAnalytics(pluginContext, WALLPAPER_PLUGIN_ID, WALLPAPER_ANALYTICS.cropCancel);
 		cropSource = null;
 	}
 
 	async function onCropConfirm(blob: Blob) {
 		try {
 			await runtime.setWallpaper(blob);
-			trackWallpaper('wallpaper_crop_confirm');
+			trackPluginAnalytics(pluginContext, WALLPAPER_PLUGIN_ID, WALLPAPER_ANALYTICS.cropConfirm);
 			cropSource = null;
 		} catch (error) {
 			const msg =
@@ -71,7 +67,7 @@
 
 	async function clearWallpaper() {
 		await runtime.setWallpaper(null);
-		trackWallpaper('wallpaper_clear');
+		trackPluginAnalytics(pluginContext, WALLPAPER_PLUGIN_ID, WALLPAPER_ANALYTICS.clear);
 	}
 </script>
 

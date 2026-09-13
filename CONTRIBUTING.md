@@ -452,6 +452,11 @@ proxy?(pluginId, action, payload, options?): Promise<HttpResponse>
 
 包含单一 `track(event, properties?)` 方法。通过宿主 `ChronosEnv.analytics` 提供；未配置统计 Key 的构建版本不会启用埋点服务，运行时代码应容忍该服务未注入的情况。
 
+- **宿主 UI**：`trackEvent(name: HostAnalyticsEvent)`（`apps/web/src/lib/client/analytics.ts`）
+- **插件 UI**：`trackPluginAnalytics(ctx, pluginId, action)`（`@chronos/core`）→ PostHog 事件名 `plugin.{pluginId}.{action}`；action 在插件包内以 `as const` 定义。禁止插件 import `$lib/client/analytics`。
+
+详见 [ADR 0037](.agents/docs/adr/0037-plugin-analytics-namespacing.md)。
+
 ### 宿主装配规则
 
 `ChronosEnv` 作为宿主启动阶段的环境适配器（针对 Web 与未来原生平台）。所有宿主在创建 `ChronosEngine` 时必须传入完整的 `env` 实例；`ScopedContext.service()` 从 `env` 解析标准端口，保证来源单一明确。

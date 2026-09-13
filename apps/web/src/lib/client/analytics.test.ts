@@ -70,6 +70,20 @@ describe('analytics', () => {
 		});
 	});
 
+	it('captureAnalyticsEvent accepts plugin-scoped event names', async () => {
+		envState.PUBLIC_POSTHOG_KEY = 'phc_test';
+		const { initAnalytics, captureAnalyticsEvent } = await import('./analytics');
+
+		initAnalytics();
+		captureAnalyticsEvent('plugin.tool-wallpaper.pick', { source: 'plugin' });
+
+		await vi.waitFor(() => {
+			expect(posthog.capture).toHaveBeenCalledWith('plugin.tool-wallpaper.pick', {
+				source: 'plugin'
+			});
+		});
+	});
+
 	it('routes trackEvent through bound analytics port', async () => {
 		const { trackEvent, bindAnalyticsPort } = await import('./analytics');
 		const track = vi.fn();

@@ -68,6 +68,9 @@ export * from './runtime/badge-manager';
 export * from './runtime/scoped-context';
 export * from './runtime/engine';
 
+// Analytics
+export * from './analytics/plugin-analytics';
+
 // Plugin authoring
 export * from './plugin/define-chronos-plugin';
 export * from './plugin/call-plugin-server';

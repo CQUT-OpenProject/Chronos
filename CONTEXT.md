@@ -6,14 +6,14 @@ Canonical vocabulary for runtime modules. Prefer these names over file names.
 
 Registered on `ChronosEnv` at engine construction. Runtime code reads `engine.storage` / `engine.http` / `ctx.service(...)`, not ad-hoc platform globals.
 
-| Port                | Role                                                                                                                                            |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `IHttpService`      | Network + optional session                                                                                                                      |
-| `IStorageService`   | Timetables, preferences, wallpaper, plugin KV                                                                                                   |
-| `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                   |
-| `IRuntimeService`   | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                     |
-| `IAnalyticsService` | Optional product analytics (registered via `ChronosEnv.analytics` → container; screens may still call `$lib/client/analytics` during migration) |
-| `IHostNavigation`   | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                            |
+| Port                | Role                                                                                                                                                                                                                                      |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IHttpService`      | Network + optional session                                                                                                                                                                                                                |
+| `IStorageService`   | Timetables, preferences, wallpaper, plugin KV                                                                                                                                                                                             |
+| `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                                                                                                             |
+| `IRuntimeService`   | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                                                                                                               |
+| `IAnalyticsService` | Optional product analytics (`track(event: string)`). **Host**: `trackEvent(HostAnalyticsEvent)` in `apps/web`. **Plugins**: `trackPluginAnalytics(ctx, pluginId, action)` → `plugin.{id}.{action}`; never import `$lib/client/analytics`. |
+| `IHostNavigation`   | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                                                                                                                      |
 
 `ChronosEnv` is the host bootstrap adapter (web + native). All hosts must pass a complete `env` at `ChronosEngine` construction; `ScopedContext.service()` resolves standard ports from `env` directly.
 

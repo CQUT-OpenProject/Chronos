@@ -406,10 +406,14 @@ describe('Web Providers', () => {
 		expect(hash.length).toBe(64);
 	});
 
-	it('WebAnalyticsProvider routes events cleanly', () => {
+	it('WebAnalyticsProvider routes host and plugin events cleanly', () => {
 		const analytics = new WebAnalyticsProvider();
 		expect(() => {
 			analytics.track('timetable_switch', { timetableId: 'tt_123' });
+			analytics.track('plugin.tool-wallpaper.pick', {
+				source: 'plugin',
+				plugin_id: 'tool-wallpaper'
+			});
 		}).not.toThrow();
 	});
 
