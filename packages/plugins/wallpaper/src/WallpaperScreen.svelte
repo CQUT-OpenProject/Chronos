@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { IAnalyticsService } from '@chronos/core';
 	import type { ChronosUiController } from '@chronos/ui-kit';
 	import { TimetableLivePreview, pluginText } from '@chronos/ui-kit';
 	import WallpaperCropEditor from './WallpaperCropEditor.svelte';
@@ -22,6 +23,13 @@
 		return pluginText(controller, WALLPAPER_PLUGIN_ID, WALLPAPER_MESSAGES, key);
 	}
 
+	function trackWallpaper(
+		event: string,
+		properties?: Record<string, string | number | boolean>
+	): void {
+		controller.getPluginContext(pluginId).tryService(IAnalyticsService)?.track(event, properties);
+	}
+
 	const previewEmpty = $derived(pt('screen.preview.empty'));
 	const clearLabel = $derived(pt('screen.action.clear'));
 	const pickLabel = $derived(pt(hasWallpaper ? 'screen.action.repick' : 'screen.action.pick'));
@@ -38,16 +46,19 @@
 		const file = input.files?.[0];
 		input.value = '';
 		if (!file) return;
+		trackWallpaper('wallpaper_pick');
 		cropSource = file;
 	}
 
 	function onCropCancel() {
+		trackWallpaper('wallpaper_crop_cancel');
 		cropSource = null;
 	}
 
 	async function onCropConfirm(blob: Blob) {
 		try {
 			await runtime.setWallpaper(blob);
+			trackWallpaper('wallpaper_crop_confirm');
 			cropSource = null;
 		} catch (error) {
 			const msg =
@@ -60,6 +71,7 @@
 
 	async function clearWallpaper() {
 		await runtime.setWallpaper(null);
+		trackWallpaper('wallpaper_clear');
 	}
 </script>
 

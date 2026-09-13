@@ -13,6 +13,7 @@
 	import { createCapsuleIndicatorGesture } from '$lib/timetable/capsule-indicator-gesture.svelte';
 	import type { CapsulePagerPreview } from '$lib/timetable/capsule-pager-preview';
 	import { createTransitionStateScheduler } from '$lib/timetable/capsule-indicator-transition';
+	import { trackEvent } from '$lib/client/analytics';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const STATE_TRANSITION_MS = 200;
@@ -39,7 +40,8 @@
 		getStartWeek: () => startWeek,
 		getEndWeek: () => endWeek,
 		getDisplayedWeek: () => displayedWeek,
-		onWeekChange: (week) => screen.setDisplayedWeek(week)
+		onWeekChange: (week) => screen.setDisplayedWeek(week),
+		onScrubCommit: (week) => trackEvent('timetable_week_scrub', { week, trigger: 'scrub' })
 	});
 
 	const transitionState = createTransitionStateScheduler();
@@ -261,30 +263,32 @@
 		calculateExpandedTooltipOffsetX(gesture.scrubWeek, startWeek, totalWeeks, expandedDotPitchPx)
 	);
 
+	function changeWeekByKeyboard(week: number, feedback: () => void) {
+		feedback();
+		screen.setDisplayedWeek(week);
+		trackEvent('timetable_week_scrub', { week, trigger: 'keyboard' });
+	}
+
 	function onKeydown(e: KeyboardEvent) {
 		if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
 			e.preventDefault();
 			if (displayedWeek > startWeek) {
-				haptic.light();
-				screen.setDisplayedWeek(displayedWeek - 1);
+				changeWeekByKeyboard(displayedWeek - 1, () => haptic.light());
 			}
 		} else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
 			e.preventDefault();
 			if (displayedWeek < endWeek) {
-				haptic.light();
-				screen.setDisplayedWeek(displayedWeek + 1);
+				changeWeekByKeyboard(displayedWeek + 1, () => haptic.light());
 			}
 		} else if (e.key === 'Home') {
 			e.preventDefault();
 			if (displayedWeek !== startWeek) {
-				haptic.medium();
-				screen.setDisplayedWeek(startWeek);
+				changeWeekByKeyboard(startWeek, () => haptic.medium());
 			}
 		} else if (e.key === 'End') {
 			e.preventDefault();
 			if (displayedWeek !== endWeek) {
-				haptic.medium();
-				screen.setDisplayedWeek(endWeek);
+				changeWeekByKeyboard(endWeek, () => haptic.medium());
 			}
 		}
 	}
