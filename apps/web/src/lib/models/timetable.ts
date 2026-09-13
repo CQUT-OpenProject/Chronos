@@ -1,5 +1,6 @@
 import {
 	DEFAULT_TIMETABLE_NAME,
+	TIMETABLE_NAME_MAX_LENGTH,
 	normalizeTimetableName,
 	createTimetable,
 	type AcademicConfig,
@@ -8,7 +9,12 @@ import {
 	type TimetableViewPrefs
 } from '@chronos/core';
 
-export { DEFAULT_TIMETABLE_NAME, normalizeTimetableName, createTimetable };
+export {
+	DEFAULT_TIMETABLE_NAME,
+	TIMETABLE_NAME_MAX_LENGTH,
+	normalizeTimetableName,
+	createTimetable
+};
 export type { AcademicConfig, Timetable, TimetableViewPrefs };
 export type TimetableImportMetadata = ImportMetadata;
 
