@@ -427,9 +427,15 @@ proxy?(pluginId, action, payload, options?): Promise<HttpResponse>
 
 ### IStorageService
 
-包含课表增删改查、当前活动课表指针维护、偏好设置读写以及按 pluginId 自动划分命名空间的插件键值存储（如 `getPluginData` / `setPluginData` 等）；可选支持 `clearAllData`（清除全部数据）、`estimateStorageBytes`（存储占用估算）与 `onChanged`（变更监听）。
+包含课表增删改查、当前活动课表指针维护、偏好设置读写以及按 `pluginId` 自动划分命名空间的插件键值存储（`getPluginData` / `setPluginData` 等）；可选支持 `clearAllData`（清除全部数据）、`estimateStorageBytes`（存储占用估算）与 `onChanged`（变更监听）。
 
-**预留能力说明**：`queryCourses(filter)` 支持跨课表课程联合查询，当前暂无生产消费方。该接口属于架构预留能力，请勿擅自清理，亦无需在出现明确业务需求前继续扩充。
+**插件 KV 值类型**（详见 [ADR 0036](.agents/docs/adr/0036-plugin-kv-binary-storage.md)）：
+
+- **JSON**：可序列化对象，存入 Dexie `pluginData` 表，读出为解析后的 JSON；
+- **二进制**：写入 `Blob`（MIME 取自 `blob.type`）或 `Uint8Array`（存为 `application/octet-stream`），存入 Dexie `pluginBinary` 表，读出**始终**为 `Blob`；
+- 同一 `pluginId:key` 仅存 JSON 或二进制之一，写入一侧时删除另一侧。
+
+**预留能力说明**：`queryCourses(filter)` 支持跨课表课程联合查询。该接口属于架构预留能力，请勿擅自清理，亦无需在出现明确业务需求前继续扩充。
 
 ### IVaultService
 
@@ -445,6 +451,11 @@ proxy?(pluginId, action, payload, options?): Promise<HttpResponse>
 ### IAnalyticsService
 
 包含单一 `track(event, properties?)` 方法。通过宿主 `ChronosEnv.analytics` 提供；未配置统计 Key 的构建版本不会启用埋点服务，运行时代码应容忍该服务未注入的情况。
+
+- **宿主 UI**：`trackEvent(name: HostAnalyticsEvent)`（`apps/web/src/lib/client/analytics.ts`）
+- **插件 UI**：`trackPluginAnalytics(ctx, pluginId, action)`（`@chronos/core`）→ PostHog 事件名 `plugin.{pluginId}.{action}`；action 在插件包内以 `as const` 定义。禁止插件 import `$lib/client/analytics`。
+
+详见 [ADR 0037](.agents/docs/adr/0037-plugin-analytics-namespacing.md)。
 
 ### 宿主装配规则
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { PREFERENCE_STORAGE_KEYS } from '@chronos/core';
 import {
 	getAppController,
 	disposeAppEngine,
@@ -7,6 +8,11 @@ import {
 	getProfileBuiltinPlugins
 } from './app-engine';
 import type { ChronosDB } from '$lib/storage/db';
+import {
+	INSTALLED_STORAGE_KEY,
+	OFFICIAL_PLUGINS_PLUGIN_ID,
+	type InstalledOfficialPluginRecord
+} from './official-plugins/official-plugin-types';
 
 class MockLocalStorage implements Storage {
 	private map = new Map<string, string>();
@@ -112,6 +118,64 @@ describe('app-engine bootstrap', () => {
 		const ids = getProfileBuiltinPlugins().map((plugin) => plugin.id);
 		expect(ids).toContain('core-shell');
 		expect(ids.length).toBeGreaterThan(1);
+	});
+
+	it('restores plugin theme from preferences after phase 2 bootstrap', async () => {
+		const themeColorsJson = JSON.stringify({
+			id: 'yumemita',
+			name: 'YUMEMITA',
+			variants: {
+				light: { colors: { 'color.primary': '#2288dd' } },
+				dark: { colors: { 'color.primary': '#2288dd' } }
+			}
+		});
+		const installedThemePlugin: InstalledOfficialPluginRecord = {
+			manifest: {
+				id: 'theme-yumemita',
+				name: { 'zh-CN': 'YUMEMITA' },
+				version: '1.0.0',
+				description: { 'zh-CN': 'Theme' },
+				author: 'Chronos',
+				type: 'theme',
+				bundleFormat: 'esm',
+				colorsUrl: '/theme-yumemita.colors.json',
+				colorsSha256: 'x'
+			},
+			colorsJson: themeColorsJson,
+			manifestUrl: 'https://example.com/theme-yumemita.manifest.json',
+			enabled: true,
+			installedAt: 1
+		};
+
+		const installedPluginDataId = `${OFFICIAL_PLUGINS_PLUGIN_ID}:${INSTALLED_STORAGE_KEY}`;
+		const installedPluginDataRow = {
+			id: installedPluginDataId,
+			pluginId: OFFICIAL_PLUGINS_PLUGIN_ID,
+			key: INSTALLED_STORAGE_KEY,
+			valueJson: JSON.stringify([installedThemePlugin]),
+			updatedAt: 1
+		};
+		const mockDb = createMockDb();
+		const getPluginData = vi.fn(async (id: string) =>
+			id === installedPluginDataId ? installedPluginDataRow : undefined
+		);
+		Object.defineProperty(mockDb.pluginData, 'get', { value: getPluginData });
+
+		const mockStore = new MockLocalStorage();
+		mockStore.setItem(PREFERENCE_STORAGE_KEYS.visualThemeId, 'yumemita');
+
+		vi.stubGlobal('requestIdleCallback', (cb: () => void) => {
+			cb();
+			return 1;
+		});
+
+		try {
+			const engine = await ensureEngineFullyReady({ database: mockDb, localStorage: mockStore });
+			expect(engine.themes.getTheme('yumemita')).toBeDefined();
+			expect(engine.state.activeThemeId).toBe('yumemita');
+		} finally {
+			vi.unstubAllGlobals();
+		}
 	});
 
 	it('waits for idle-scheduled phase 2 before listing deferred builtins', async () => {

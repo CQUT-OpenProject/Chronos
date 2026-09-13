@@ -315,6 +315,8 @@ const zhCn = {
 	'mine.section.fallback': '扩展设置',
 	'mine.feedback.section.haptic': '触感反馈',
 	'mine.feedback.haptic.label': '振动反馈',
+	'mine.feedback.section.motion': '动画',
+	'mine.feedback.motion.label': '减少动画效果',
 
 	// onboarding
 	'onboarding.skip': '跳过',
@@ -885,6 +887,8 @@ const en = {
 	'mine.section.fallback': 'Extensions',
 	'mine.feedback.section.haptic': 'Haptic feedback',
 	'mine.feedback.haptic.label': 'Vibration',
+	'mine.feedback.section.motion': 'Animation',
+	'mine.feedback.motion.label': 'Reduce motion',
 
 	// onboarding
 	'onboarding.skip': 'Skip',

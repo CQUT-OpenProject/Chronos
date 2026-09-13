@@ -29,10 +29,20 @@ export interface PluginDataRow {
 	updatedAt: number;
 }
 
+export interface PluginBinaryRow {
+	id: string;
+	pluginId: string;
+	key: string;
+	mimeType: string;
+	bytes: ArrayBuffer;
+	updatedAt: number;
+}
+
 export class ChronosDB extends Dexie {
 	timetables!: Table<TimetableRow, string>;
 	courses!: Table<CourseRow, string>;
 	pluginData!: Table<PluginDataRow, string>;
+	pluginBinary!: Table<PluginBinaryRow, string>;
 
 	constructor(name = 'chronos') {
 		super(name);
@@ -40,6 +50,9 @@ export class ChronosDB extends Dexie {
 			timetables: 'id, updatedAt',
 			courses: 'id, timetableId, [timetableId+dayOfWeek]',
 			pluginData: 'id, pluginId, key, updatedAt'
+		});
+		this.version(2).stores({
+			pluginBinary: 'id, pluginId, key, updatedAt'
 		});
 	}
 }

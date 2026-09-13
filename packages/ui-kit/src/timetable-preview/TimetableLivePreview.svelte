@@ -7,6 +7,7 @@
 	} from '@chronos/core';
 	import TimetablePreviewGrid from './TimetablePreviewGrid.svelte';
 	import TimetableWallpaperLayer from './TimetableWallpaperLayer.svelte';
+	import type { TimetableWallpaperFit } from './timetable-wallpaper-layer';
 
 	interface Props {
 		controller: ChronosUiController;
@@ -15,6 +16,7 @@
 		hasDynamicBackground?: boolean;
 		dynamicColorUri?: string | null;
 		interactive?: boolean;
+		fit?: TimetableWallpaperFit;
 	}
 
 	let {
@@ -23,7 +25,8 @@
 		coursePalette: propCoursePalette,
 		hasDynamicBackground = false,
 		dynamicColorUri = null,
-		interactive = false
+		interactive = false,
+		fit = 'cover'
 	}: Props = $props();
 
 	const calendarService = new AcademicCalendarService();
@@ -66,6 +69,7 @@
 {#if timetable && gridModel}
 	<TimetableWallpaperLayer
 		wallpaperUri={hasDynamicBackground && dynamicColorUri ? dynamicColorUri : null}
+		{fit}
 	>
 		<TimetablePreviewGrid
 			{displayedWeek}

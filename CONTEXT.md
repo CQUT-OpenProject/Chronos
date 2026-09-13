@@ -6,14 +6,14 @@ Canonical vocabulary for runtime modules. Prefer these names over file names.
 
 Registered on `ChronosEnv` at engine construction. Runtime code reads `engine.storage` / `engine.http` / `ctx.service(...)`, not ad-hoc platform globals.
 
-| Port                | Role                                                                                                                                            |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `IHttpService`      | Network + optional session                                                                                                                      |
-| `IStorageService`   | Timetables, preferences, wallpaper, plugin KV                                                                                                   |
-| `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                   |
-| `IRuntimeService`   | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                     |
-| `IAnalyticsService` | Optional product analytics (registered via `ChronosEnv.analytics` → container; screens may still call `$lib/client/analytics` during migration) |
-| `IHostNavigation`   | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                            |
+| Port                | Role                                                                                                                                                                                                                                      |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IHttpService`      | Network + optional session                                                                                                                                                                                                                |
+| `IStorageService`   | Timetables, preferences, wallpaper, plugin KV                                                                                                                                                                                             |
+| `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                                                                                                             |
+| `IRuntimeService`   | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                                                                                                               |
+| `IAnalyticsService` | Optional product analytics (`track(event: string)`). **Host**: `trackEvent(HostAnalyticsEvent)` in `apps/web`. **Plugins**: `trackPluginAnalytics(ctx, pluginId, action)` → `plugin.{id}.{action}`; never import `$lib/client/analytics`. |
+| `IHostNavigation`   | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                                                                                                                      |
 
 `ChronosEnv` is the host bootstrap adapter (web + native). All hosts must pass a complete `env` at `ChronosEngine` construction; `ScopedContext.service()` resolves standard ports from `env` directly.
 
@@ -61,6 +61,17 @@ Import UI executes `import.source.tab` slots directly. Host `transfer-state` is 
 - **Official online plugins**: `OfficialPluginService` facade orchestrates four deep modules (`OfficialPluginCatalogClient`, `OfficialPluginAssetPipeline`, `OfficialPluginInstalledStore`, `OfficialPluginRuntimeActivator`) → fetch manifest + assets (SHA-256) → `loadEsmPluginFromCode` (when bundle present) → `engine.loadPlugin`. `init()` order: `load → dedupeBuiltinOverlap → activate cache → syncInstalledWithHost`.
 
 Both paths share the same `ChronosEngine` lifecycle and slot owner tracking. No `plugin.inject` dependency topology — optional services use `ctx.service(...)` inside `apply`. Official plugin catalog is generated at build/dev time to `apps/web/static/official-plugins/catalog.json` (not tracked in Git).
+
+## Plugin KV binary (`setPluginData`)
+
+See [ADR 0036](.agents/docs/adr/0036-plugin-kv-binary-storage.md). `IStorageService.setPluginData` / `getPluginData` accept JSON or binary for the same namespaced key space:
+
+- **Write**: `Blob` (carries `mimeType`) or `Uint8Array` (stored as `application/octet-stream`).
+- **Read**: binary keys always return `Blob`; JSON keys return parsed JSON. A key holds one kind only.
+- **Web host**: Dexie `pluginBinary` table (schema v2) stores raw `ArrayBuffer`; `PluginKvRepository` routes binary vs JSON.
+- **Native bridge**: binary crosses the wire as `{ __binary, mimeType, base64 }` until a native host stores bytes directly.
+
+First production consumer: `tool-wallpaper` (`wallpaper_image` key).
 
 ## Plugin server proxy
 

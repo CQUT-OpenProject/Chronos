@@ -11,7 +11,7 @@ import { db, type ChronosDB } from '$lib/storage/db';
 import { clearAppCaches } from '$lib/storage/cache-storage';
 import { PreferencesStore } from '$lib/storage/preferences-store';
 import { TimetableRepository } from '$lib/storage/timetable-repository';
-import { PluginDataRepository } from '$lib/storage/plugin-data-repository';
+import { PluginKvRepository } from '$lib/storage/plugin-kv-repository';
 import { clearKeysWithPrefix } from '$lib/storage/storage-key-utils';
 
 /**
@@ -23,7 +23,7 @@ export class DexieStorageProvider implements IStorageService {
 	private storageListener?: (e: StorageEvent) => void;
 	private readonly preferences: PreferencesStore;
 	private readonly timetables: TimetableRepository;
-	private readonly pluginData: PluginDataRepository;
+	private readonly pluginKv: PluginKvRepository;
 
 	constructor(
 		database: ChronosDB = db,
@@ -32,7 +32,7 @@ export class DexieStorageProvider implements IStorageService {
 	) {
 		this.preferences = new PreferencesStore(localStore);
 		this.timetables = new TimetableRepository(database);
-		this.pluginData = new PluginDataRepository(database);
+		this.pluginKv = new PluginKvRepository(database);
 
 		if (typeof window !== 'undefined') {
 			this.storageListener = (e: StorageEvent) => {
@@ -116,13 +116,13 @@ export class DexieStorageProvider implements IStorageService {
 	}
 
 	async getPluginData<T>(pluginId: string, key: string): Promise<T | null> {
-		return this.pluginData.get<T>(pluginId, key);
+		return this.pluginKv.get<T>(pluginId, key);
 	}
 
 	async setPluginData<T>(pluginId: string, key: string, value: T): Promise<void> {
 		const id = `${pluginId}:${key}`;
 		try {
-			await this.pluginData.set(pluginId, key, value);
+			await this.pluginKv.set(pluginId, key, value);
 			this.notifyChange({ type: 'pluginData', key: id });
 		} catch (err) {
 			console.warn(`[DexieStorageProvider] Failed to set plugin data for ${id}:`, err);
@@ -133,7 +133,7 @@ export class DexieStorageProvider implements IStorageService {
 	async deletePluginData(pluginId: string, key: string): Promise<void> {
 		const id = `${pluginId}:${key}`;
 		try {
-			await this.pluginData.delete(pluginId, key);
+			await this.pluginKv.delete(pluginId, key);
 			this.notifyChange({ type: 'pluginData', key: id });
 		} catch (err) {
 			console.warn(`[DexieStorageProvider] Failed to delete plugin data for ${id}:`, err);
@@ -143,7 +143,7 @@ export class DexieStorageProvider implements IStorageService {
 
 	async clearPluginData(pluginId: string): Promise<void> {
 		try {
-			await this.pluginData.clear(pluginId);
+			await this.pluginKv.clear(pluginId);
 			this.notifyChange({ type: 'pluginData', key: pluginId });
 		} catch (err) {
 			console.warn(`[DexieStorageProvider] Failed to clear plugin data for ${pluginId}:`, err);
@@ -154,7 +154,7 @@ export class DexieStorageProvider implements IStorageService {
 	async clearAllData(): Promise<void> {
 		try {
 			await this.timetables.clearTimetables();
-			await this.pluginData.clearAll();
+			await this.pluginKv.clearAll();
 			if (typeof localStorage !== 'undefined') {
 				clearKeysWithPrefix(localStorage, 'chronos');
 			}
@@ -173,7 +173,7 @@ export class DexieStorageProvider implements IStorageService {
 	async estimateStorageBytes(): Promise<number> {
 		const [timetableBytes, pluginBytes] = await Promise.all([
 			this.timetables.estimateBytes(),
-			this.pluginData.estimateBytes()
+			this.pluginKv.estimateBytes()
 		]);
 		return timetableBytes + pluginBytes;
 	}

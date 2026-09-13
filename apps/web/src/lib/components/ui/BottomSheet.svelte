@@ -12,6 +12,7 @@
 		overlayOpacityFromDrag,
 		shouldDismissSheet
 	} from '$lib/components/ui/bottom-sheet-drag';
+	import { isReducedMotionActive } from '@chronos/ui-kit';
 
 	let {
 		open = $bindable(false),
@@ -55,12 +56,6 @@
 		dragOffsetPx > 0 || isSnappingBack ? `transform: translateY(${dragOffsetPx}px)` : undefined
 	);
 
-	function prefersReducedMotion(): boolean {
-		return (
-			typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-		);
-	}
-
 	function getSheetHeight(): number {
 		return contentRef?.getBoundingClientRect().height ?? 0;
 	}
@@ -101,7 +96,7 @@
 
 	function startDismissAnimation() {
 		const sheetHeight = getSheetHeight();
-		if (prefersReducedMotion() || sheetHeight <= 0) {
+		if (isReducedMotionActive() || sheetHeight <= 0) {
 			finishDismiss();
 			return;
 		}
@@ -113,7 +108,7 @@
 	}
 
 	function startSnapBackAnimation() {
-		if (prefersReducedMotion()) {
+		if (isReducedMotionActive()) {
 			dragOffsetPx = 0;
 			resetDragState();
 			return;
@@ -292,6 +287,7 @@
 			ontransitionend={onContentTransitionEnd}
 		>
 			{#if showHandle}
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
 					bind:this={dragHandleRef}
 					class="relative flex shrink-0 touch-none justify-center py-3 before:absolute before:inset-x-0 before:-top-4 before:-bottom-4 before:content-['']"
@@ -407,5 +403,10 @@
 		:global(.bottom-sheet-content[data-dialog-content]) {
 			transition-duration: 1ms;
 		}
+	}
+
+	:root.reduce-motion :global(.bottom-sheet-overlay[data-dialog-overlay]),
+	:root.reduce-motion :global(.bottom-sheet-content[data-dialog-content]) {
+		transition-duration: 1ms;
 	}
 </style>

@@ -1,3 +1,5 @@
+import { isReducedMotionActive } from '@chronos/ui-kit';
+
 const MAX_FINISH_MS = 120;
 const WHEEL_QUIET_MS = 48;
 
@@ -5,7 +7,6 @@ const WHEEL_QUIET_MS = 48;
 export function createWeekPagerSnap(node: HTMLElement, onSettled: () => void) {
 	const listeners = new AbortController();
 	const options = { passive: true, capture: true, signal: listeners.signal };
-	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 	let pointerDown = false;
 	let touching = false;
 	let wheelActiveUntil = 0;
@@ -81,7 +82,7 @@ export function createWeekPagerSnap(node: HTMLElement, onSettled: () => void) {
 		lastOffset = offset;
 		lastTime = now;
 		lastVelocity = velocity;
-		if (pointerDown || touching || now < wheelActiveUntil || reducedMotion.matches) return;
+		if (pointerDown || touching || now < wheelActiveUntil || isReducedMotionActive()) return;
 
 		const width = node.clientWidth;
 		const maxOffset = node.scrollWidth - width;

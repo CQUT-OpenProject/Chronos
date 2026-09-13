@@ -1,8 +1,22 @@
 <script lang="ts">
+	import { cubicOut } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
+	import { isReducedMotionActive } from '@chronos/ui-kit';
 	import { dismissSnackbar, snackbarStore } from './snackbar-state.svelte';
 	import Button from './Button.svelte';
 
 	let snackbarEl = $state<HTMLElement | null>(null);
+
+	const enterFly = $derived({
+		y: 20,
+		duration: isReducedMotionActive() ? 1 : 250,
+		easing: cubicOut
+	});
+	const exitFly = $derived({
+		y: 20,
+		duration: isReducedMotionActive() ? 1 : 180,
+		easing: cubicOut
+	});
 
 	function handleOutsideInteraction(target: EventTarget | null) {
 		if (!snackbarStore.open || !snackbarStore.canDismissOutside) return;
@@ -37,12 +51,14 @@
 {#if snackbarStore.open}
 	<div
 		class="pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-bar-height)+0.75rem)] z-[80] flex justify-center"
+		in:fly={enterFly}
+		out:fly={exitFly}
 		role="status"
 		aria-live={snackbarStore.priority}
 	>
 		<div
 			bind:this={snackbarEl}
-			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-inverse-on-surface shadow-lg transition-all duration-200"
+			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-inverse-on-surface shadow-lg"
 		>
 			<span class="text-body-medium flex-1">{snackbarStore.message}</span>
 			{#if snackbarStore.action}

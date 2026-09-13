@@ -68,6 +68,9 @@ export * from './runtime/badge-manager';
 export * from './runtime/scoped-context';
 export * from './runtime/engine';
 
+// Analytics
+export * from './analytics/plugin-analytics';
+
 // Plugin authoring
 export * from './plugin/define-chronos-plugin';
 export * from './plugin/call-plugin-server';
@@ -84,3 +87,10 @@ export * from './hosts/native-protocol';
 export { I18nCatalog, interpolateMessage, resolveLocaleMapText } from './i18n/i18n-catalog';
 export type { PluginMessageCatalog } from './i18n/i18n-catalog';
 export { PLUGIN_CONFIG_STORAGE_KEY } from './constants/plugin-storage';
+export type { PluginBinaryValue, PluginBinaryWireFormat } from './storage/plugin-data-value';
+export {
+	deserializePluginDataFromNative,
+	isPluginBinaryValue,
+	isPluginBinaryWireFormat,
+	serializePluginDataForNative
+} from './storage/plugin-data-value';

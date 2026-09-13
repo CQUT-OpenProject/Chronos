@@ -28,7 +28,10 @@ export const WALLPAPER_MESSAGES = {
 		'screen.error.importFailed': '壁纸导入失败，请重试',
 		'screen.action.clear': '清除壁纸',
 		'screen.action.repick': '重新选择',
-		'screen.action.pick': '选择壁纸'
+		'screen.action.pick': '选择壁纸',
+		'screen.action.cancel': '取消',
+		'screen.action.confirmCrop': '确认裁剪',
+		'screen.crop.hint': '拖动调整位置，双指或滚轮缩放'
 	},
 	en: {
 		'plugin.name': 'Custom Wallpaper',
@@ -46,6 +49,9 @@ export const WALLPAPER_MESSAGES = {
 		'screen.error.importFailed': 'Failed to import wallpaper. Please try again',
 		'screen.action.clear': 'Remove wallpaper',
 		'screen.action.repick': 'Choose again',
-		'screen.action.pick': 'Choose wallpaper'
+		'screen.action.pick': 'Choose wallpaper',
+		'screen.action.cancel': 'Cancel',
+		'screen.action.confirmCrop': 'Apply crop',
+		'screen.crop.hint': 'Drag to reposition, pinch or scroll to zoom'
 	}
 } as const;

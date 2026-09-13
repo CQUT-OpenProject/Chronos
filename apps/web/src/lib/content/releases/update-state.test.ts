@@ -324,6 +324,7 @@ describe('createUpdateState', () => {
 	});
 
 	it('resets updating state and stores i18n key when install fails', async () => {
+		mockTrackEvent.mockClear();
 		const { SwUpdateError } = await import('$lib/client/pwa-sw');
 		const applyUpdateMock = vi.fn().mockRejectedValue(new SwUpdateError('download_timeout'));
 		const updateState = createUpdateState({
@@ -336,6 +337,9 @@ describe('createUpdateState', () => {
 		expect(updateState.state.updating).toBe(false);
 		expect(updateState.state.installPhase).toBeNull();
 		expect(updateState.state.errorMessage).toBe('about.update.error.downloadTimeout');
+		expect(mockTrackEvent).toHaveBeenCalledWith('pwa_update_install_fail', {
+			code: 'download_timeout'
+		});
 	});
 
 	it('maps download_failed install errors to the download failed message key', async () => {

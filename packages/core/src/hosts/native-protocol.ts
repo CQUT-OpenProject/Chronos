@@ -1,3 +1,7 @@
+import {
+	deserializePluginDataFromNative,
+	serializePluginDataForNative
+} from '../storage/plugin-data-value';
 import type { ChronosEnv } from '../types/env';
 import type { Disposable } from '../types/services';
 import type { HttpRequestOptions, HttpResponse } from '../types/services';
@@ -122,10 +126,21 @@ export function createNativeHostEnv(
 			queryCourses: (filter) => bridge.callNative('storage', 'queryCourses', { filter }),
 			getPreferences: () => bridge.callNative('storage', 'getPreferences'),
 			savePreferences: (p) => bridge.callNative('storage', 'savePreferences', p),
-			getPluginData: (pid, k) =>
-				bridge.callNative('storage', 'getPluginData', { pluginId: pid, key: k }),
-			setPluginData: (pid, k, v) =>
-				bridge.callNative('storage', 'setPluginData', { pluginId: pid, key: k, value: v }),
+			getPluginData: async <T>(pid: string, k: string) => {
+				const value = await bridge.callNative<unknown>('storage', 'getPluginData', {
+					pluginId: pid,
+					key: k
+				});
+				return deserializePluginDataFromNative(value) as T | null;
+			},
+			setPluginData: async (pid, k, v) => {
+				const value = await serializePluginDataForNative(v);
+				await bridge.callNative('storage', 'setPluginData', {
+					pluginId: pid,
+					key: k,
+					value
+				});
+			},
 			deletePluginData: (pid, k) =>
 				bridge.callNative('storage', 'deletePluginData', { pluginId: pid, key: k })
 		},

@@ -4,13 +4,16 @@
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import {
 		applyScrollingDotTrackVisual,
+		calculateExpandedDotPitchPx,
 		calculateExpandedDots,
+		calculateExpandedTooltipOffsetX,
 		calculateScrollingDotTrack,
 		scrollingDotTrackNeedsStructureUpdate
 	} from '$lib/timetable/capsule-indicator';
 	import { createCapsuleIndicatorGesture } from '$lib/timetable/capsule-indicator-gesture.svelte';
 	import type { CapsulePagerPreview } from '$lib/timetable/capsule-pager-preview';
 	import { createTransitionStateScheduler } from '$lib/timetable/capsule-indicator-transition';
+	import { trackEvent } from '$lib/client/analytics';
 	import { haptic } from '$lib/haptic/haptic';
 
 	const STATE_TRANSITION_MS = 200;
@@ -37,7 +40,8 @@
 		getStartWeek: () => startWeek,
 		getEndWeek: () => endWeek,
 		getDisplayedWeek: () => displayedWeek,
-		onWeekChange: (week) => screen.setDisplayedWeek(week)
+		onWeekChange: (week) => screen.setDisplayedWeek(week),
+		onScrubCommit: (week) => trackEvent('timetable_week_scrub', { week, trigger: 'scrub' })
 	});
 
 	const transitionState = createTransitionStateScheduler();
@@ -94,7 +98,7 @@
 	}
 
 	let isInitialized = false;
-	let prevDisplayedWeek = displayedWeek;
+	let prevDisplayedWeek = 0;
 	let prevIsExpanded = false;
 	let prevPagerPreviewActive = false;
 
@@ -157,8 +161,53 @@
 	});
 
 	const isCollapsing = $derived(!isExpanded && showExpandedTrack);
+	const isTooltipSlotOpen = $derived(isExpanded || isCollapsing);
+
+	let isTooltipEntering = $state(false);
+	let tooltipTrackingActive = $state(false);
+	let tooltipTrackTimer: ReturnType<typeof setTimeout> | null = null;
+
+	$effect(() => {
+		if (!isExpanded) {
+			isTooltipEntering = false;
+			return;
+		}
+
+		isTooltipEntering = true;
+		let enterFrame = 0;
+		let enterFrame2 = 0;
+		enterFrame = requestAnimationFrame(() => {
+			enterFrame2 = requestAnimationFrame(() => {
+				isTooltipEntering = false;
+			});
+		});
+
+		return () => {
+			cancelAnimationFrame(enterFrame);
+			cancelAnimationFrame(enterFrame2);
+		};
+	});
+
+	$effect(() => {
+		if (tooltipTrackTimer) {
+			clearTimeout(tooltipTrackTimer);
+			tooltipTrackTimer = null;
+		}
+
+		if (!isExpanded) {
+			tooltipTrackingActive = false;
+			return;
+		}
+
+		tooltipTrackingActive = false;
+		tooltipTrackTimer = setTimeout(() => {
+			tooltipTrackingActive = true;
+			tooltipTrackTimer = null;
+		}, STATE_TRANSITION_MS);
+	});
 
 	onDestroy(() => {
+		if (tooltipTrackTimer) clearTimeout(tooltipTrackTimer);
 		transitionState.cancelAll();
 		gesture.destroy();
 	});
@@ -207,31 +256,39 @@
 	const expandedWidth = $derived(
 		`calc(${totalWeeks * expandedDotStyle.base}px + ${(totalWeeks - 1) * expandedDotStyle.gap}rem + 1.5rem + 2px)`
 	);
+	const expandedDotPitchPx = $derived(
+		calculateExpandedDotPitchPx(expandedDotStyle.base, expandedDotStyle.gap)
+	);
+	const tooltipOffsetX = $derived(
+		calculateExpandedTooltipOffsetX(gesture.scrubWeek, startWeek, totalWeeks, expandedDotPitchPx)
+	);
+
+	function changeWeekByKeyboard(week: number, feedback: () => void) {
+		feedback();
+		screen.setDisplayedWeek(week);
+		trackEvent('timetable_week_scrub', { week, trigger: 'keyboard' });
+	}
 
 	function onKeydown(e: KeyboardEvent) {
 		if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
 			e.preventDefault();
 			if (displayedWeek > startWeek) {
-				haptic.light();
-				screen.setDisplayedWeek(displayedWeek - 1);
+				changeWeekByKeyboard(displayedWeek - 1, () => haptic.light());
 			}
 		} else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
 			e.preventDefault();
 			if (displayedWeek < endWeek) {
-				haptic.light();
-				screen.setDisplayedWeek(displayedWeek + 1);
+				changeWeekByKeyboard(displayedWeek + 1, () => haptic.light());
 			}
 		} else if (e.key === 'Home') {
 			e.preventDefault();
 			if (displayedWeek !== startWeek) {
-				haptic.medium();
-				screen.setDisplayedWeek(startWeek);
+				changeWeekByKeyboard(startWeek, () => haptic.medium());
 			}
 		} else if (e.key === 'End') {
 			e.preventDefault();
 			if (displayedWeek !== endWeek) {
-				haptic.medium();
-				screen.setDisplayedWeek(endWeek);
+				changeWeekByKeyboard(endWeek, () => haptic.medium());
 			}
 		}
 	}
@@ -300,7 +357,15 @@
 		style:--indicator-glass-fade-duration={`${GLASS_FADE_MS}ms`}
 	>
 		<div
-			class={['floating-tooltip pointer-events-none', isExpanded && 'floating-tooltip--visible']}
+			class={[
+				'floating-tooltip pointer-events-none',
+				isTooltipSlotOpen && 'floating-tooltip--slot',
+				isTooltipEntering && 'floating-tooltip--entering',
+				isExpanded && !isTooltipEntering && 'floating-tooltip--visible',
+				isExpanded && tooltipTrackingActive && 'floating-tooltip--tracking',
+				isCollapsing && 'floating-tooltip--exiting'
+			]}
+			style:--tooltip-x={`${tooltipOffsetX}px`}
 			role="status"
 			aria-live="polite"
 		>
@@ -374,12 +439,12 @@
 	.capsule-indicator--glass {
 		background-color: color-mix(
 			in srgb,
-			var(--color-surface-container-high, #e5e8f0) 20%,
+			var(--color-surface-container-high, #e5e8f0) 28%,
 			transparent
 		);
 		backdrop-filter: blur(16px) saturate(1.3);
 		-webkit-backdrop-filter: blur(16px) saturate(1.3);
-		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 20%, transparent);
+		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 26%, transparent);
 		box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.1);
 		transition:
 			width var(--indicator-transition-duration) var(--indicator-easing),
@@ -448,6 +513,7 @@
 	}
 
 	.floating-tooltip {
+		--tooltip-y: -6px;
 		border-radius: 9999px;
 		background-color: color-mix(in srgb, var(--color-inverse-surface, #2f3033) 70%, transparent);
 		backdrop-filter: blur(16px) saturate(1.3);
@@ -460,22 +526,33 @@
 		color: var(--color-inverse-on-surface, #f1f0f4);
 		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 		max-height: 0;
+		margin-bottom: 0;
 		opacity: 0;
 		overflow: hidden;
-		transform: translateY(4px);
+		transform: translateX(0) translateY(var(--tooltip-y));
 		transition:
 			opacity var(--indicator-transition-duration) var(--indicator-easing),
-			transform var(--indicator-transition-duration) var(--indicator-easing),
-			max-height var(--indicator-transition-duration) var(--indicator-easing),
-			margin-bottom var(--indicator-transition-duration) var(--indicator-easing);
-		margin-bottom: 0;
+			transform var(--indicator-transition-duration) var(--indicator-easing);
+	}
+
+	.floating-tooltip--slot {
+		max-height: 2rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.floating-tooltip--entering,
+	.floating-tooltip--exiting {
+		opacity: 0;
+		transform: translateX(0) translateY(var(--tooltip-y));
 	}
 
 	.floating-tooltip--visible {
-		max-height: 2rem;
-		margin-bottom: 0.625rem;
 		opacity: 1;
-		transform: translateY(0);
+		transform: translateX(var(--tooltip-x, 0px)) translateY(var(--tooltip-y));
+	}
+
+	.floating-tooltip--visible.floating-tooltip--tracking {
+		transition-property: opacity;
 	}
 
 	.indicator-dot {
@@ -499,5 +576,15 @@
 			transition-duration: 1ms !important;
 			animation-duration: 1ms !important;
 		}
+	}
+
+	:root.reduce-motion .capsule-indicator,
+	:root.reduce-motion .capsule-indicator--glass,
+	:root.reduce-motion .dots-track,
+	:root.reduce-motion .indicator-dot,
+	:root.reduce-motion .floating-tooltip,
+	:root.reduce-motion .dots-track-overlay--fading {
+		transition-duration: 1ms !important;
+		animation-duration: 1ms !important;
 	}
 </style>

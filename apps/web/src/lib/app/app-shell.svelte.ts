@@ -10,6 +10,7 @@ import type {
 	TimetableLayoutMode,
 	UserPreferences
 } from '@chronos/core';
+import { applyReduceMotionClass } from '@chronos/ui-kit';
 
 function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean {
 	if (themeMode === 'dark') return true;
@@ -90,6 +91,11 @@ export function createAppShell() {
 				);
 				return () => ac.abort();
 			});
+
+			$effect(() => {
+				const reduceMotionEnabled = controller.userPreferences?.reduceMotionEnabled ?? false;
+				applyReduceMotionClass(reduceMotionEnabled);
+			});
 		});
 	}
 
@@ -140,6 +146,10 @@ export function createAppShell() {
 		await updatePreferences({ hapticFeedbackEnabled: enabled });
 	}
 
+	async function setReduceMotionEnabled(enabled: boolean) {
+		await updatePreferences({ reduceMotionEnabled: enabled });
+	}
+
 	async function setCurrentPeriodHighlightEnabled(enabled: boolean) {
 		await updatePreferences({ currentPeriodHighlightEnabled: enabled });
 	}
@@ -185,6 +195,7 @@ export function createAppShell() {
 		setPaletteMode,
 		setCapsuleCornerStyle,
 		setHapticFeedbackEnabled,
+		setReduceMotionEnabled,
 		setCurrentPeriodHighlightEnabled,
 		switchTimetable,
 		deleteTimetable,

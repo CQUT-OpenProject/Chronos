@@ -97,6 +97,36 @@ export function applyScrollingDotTrackVisual(
 	}
 }
 
+const DEFAULT_DOT_PITCH = 11.5;
+
+export function calculateCompactTooltipOffsetX(
+	scrollWeek: number,
+	track: ScrollingDotTrack,
+	dotPitch = DEFAULT_DOT_PITCH,
+	visibleCount = 4
+): number {
+	if (track.dots.length === 0) return 0;
+	const slotCenter = (visibleCount - 1) / 2;
+	const activePosition = scrollWeek - track.windowStart;
+	return (activePosition - slotCenter) * dotPitch;
+}
+
+export function calculateExpandedTooltipOffsetX(
+	currentWeek: number,
+	startWeek: number,
+	totalWeeks: number,
+	dotPitchPx: number
+): number {
+	if (totalWeeks <= 1) return 0;
+	const centerIndex = (totalWeeks - 1) / 2;
+	const activeIndex = currentWeek - startWeek;
+	return (activeIndex - centerIndex) * dotPitchPx;
+}
+
+export function calculateExpandedDotPitchPx(base: number, gapRem: number): number {
+	return base + gapRem * 16;
+}
+
 export function calculateExpandedDots({
 	startWeek,
 	endWeek,

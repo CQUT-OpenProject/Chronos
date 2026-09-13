@@ -36,6 +36,10 @@
 					if (statusBar) {
 						statusBar.setAttribute('content', dark ? 'black-translucent' : 'default');
 					}
+					var reduceMotion = localStorage.getItem('chronos_preferences:reduce_motion_enabled');
+					if (reduceMotion === '1' || reduceMotion === 'true') {
+						document.documentElement.classList.add('reduce-motion');
+					}
 				} catch (e) {}
 			})();
 		</script>

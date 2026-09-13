@@ -175,4 +175,96 @@ describe('createCapsuleIndicatorGesture', () => {
 
 		vi.useRealTimers();
 	});
+
+	it('fires onScrubCommit when scrubbing ends on a different week', () => {
+		vi.useFakeTimers();
+		const onScrubCommit = vi.fn();
+		const gesture = createCapsuleIndicatorGesture({
+			getStartWeek: () => 1,
+			getEndWeek: () => 20,
+			getDisplayedWeek: () => 1,
+			onWeekChange: vi.fn(),
+			onScrubCommit
+		});
+
+		gesture.containerEl = {
+			getBoundingClientRect: () =>
+				({
+					left: 0,
+					top: 0,
+					width: 200,
+					height: 32,
+					right: 200,
+					bottom: 32
+				}) as DOMRect,
+			setPointerCapture: vi.fn(),
+			releasePointerCapture: vi.fn(),
+			hasPointerCapture: vi.fn().mockReturnValue(true)
+		} as unknown as HTMLElement;
+
+		gesture.onPointerDown({
+			button: 0,
+			pointerId: 1,
+			clientX: 10,
+			clientY: 16
+		} as unknown as PointerEvent);
+		vi.advanceTimersByTime(220);
+
+		gesture.onPointerMove({
+			pointerId: 1,
+			clientX: 195,
+			clientY: 16,
+			preventDefault: vi.fn()
+		} as unknown as PointerEvent);
+
+		gesture.onPointerUp({
+			pointerId: 1
+		} as unknown as PointerEvent);
+
+		expect(onScrubCommit).toHaveBeenCalledWith(20, 1);
+
+		vi.useRealTimers();
+	});
+
+	it('does not fire onScrubCommit when scrubbing ends on the same week', () => {
+		vi.useFakeTimers();
+		const onScrubCommit = vi.fn();
+		const gesture = createCapsuleIndicatorGesture({
+			getStartWeek: () => 1,
+			getEndWeek: () => 20,
+			getDisplayedWeek: () => 5,
+			onWeekChange: vi.fn(),
+			onScrubCommit
+		});
+
+		gesture.containerEl = {
+			getBoundingClientRect: () =>
+				({
+					left: 0,
+					top: 0,
+					width: 200,
+					height: 32,
+					right: 200,
+					bottom: 32
+				}) as DOMRect,
+			setPointerCapture: vi.fn(),
+			releasePointerCapture: vi.fn(),
+			hasPointerCapture: vi.fn().mockReturnValue(true)
+		} as unknown as HTMLElement;
+
+		gesture.onPointerDown({
+			button: 0,
+			pointerId: 1,
+			clientX: 100,
+			clientY: 16
+		} as unknown as PointerEvent);
+		vi.advanceTimersByTime(220);
+		gesture.onPointerUp({
+			pointerId: 1
+		} as unknown as PointerEvent);
+
+		expect(onScrubCommit).not.toHaveBeenCalled();
+
+		vi.useRealTimers();
+	});
 });

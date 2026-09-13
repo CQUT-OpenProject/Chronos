@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vite-plus/test';
 import { buildDevManifestForPlugin, buildManifestForPlugin } from './build-manifest.ts';
 
+const releaseVersion = '0.0.0-test';
+
 describe('buildManifestForPlugin', () => {
 	it('includes bundle and css hashes when assets are present', () => {
 		const code = 'export default { id: "tool-today" };';
@@ -16,10 +18,10 @@ describe('buildManifestForPlugin', () => {
 				description: { 'zh-CN': 'd', en: 'd' }
 			},
 			{ code, cssCode, colorsJson: null, iconThemeJson: null },
-			'0.5.4'
+			releaseVersion
 		);
 
-		expect(manifest.version).toBe('0.5.4');
+		expect(manifest.version).toBe(releaseVersion);
 		expect(manifest.bundleUrl).toBe('/official-plugins/bundles/tool-today/bundle.js');
 		expect(manifest.sha256).toBe(createHash('sha256').update(code).digest('hex'));
 		expect(manifest.cssUrl).toBe('/official-plugins/bundles/tool-today/bundle.css');
@@ -38,7 +40,7 @@ describe('buildManifestForPlugin', () => {
 				description: { 'zh-CN': 'd', en: 'd' }
 			},
 			{ code, cssCode: null, colorsJson: null, iconThemeJson: null },
-			'0.5.4'
+			releaseVersion
 		);
 
 		expect(manifest.bundleUrl).toBe('/official-plugins/bundles/tool-today/bundle.js');
@@ -52,7 +54,7 @@ describe('buildManifestForPlugin', () => {
 				description: { 'zh-CN': 'd', en: 'd' }
 			},
 			{ code, cssCode: null, colorsJson: null, iconThemeJson: null },
-			'0.5.4',
+			releaseVersion,
 			'abc123'
 		);
 

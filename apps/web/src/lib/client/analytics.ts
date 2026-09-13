@@ -2,7 +2,8 @@ import { env } from '$env/dynamic/public';
 import type { PostHog } from 'posthog-js';
 import type { IAnalyticsService } from '@chronos/core';
 
-export type AnalyticsEvent =
+/** Host-owned analytics events (apps/web UI, PWA, settings). Plugin events use `trackPluginAnalytics`. */
+export type HostAnalyticsEvent =
 	| 'onboarding_step_next'
 	| 'onboarding_step_back'
 	| 'onboarding_skip'
@@ -12,6 +13,7 @@ export type AnalyticsEvent =
 	| 'empty_import_click'
 	| 'empty_import_guide_open'
 	| 'timetable_week_swipe'
+	| 'timetable_week_scrub'
 	| 'timetable_week_jump_current'
 	| 'course_detail_open'
 	| 'course_editor_open'
@@ -32,6 +34,8 @@ export type AnalyticsEvent =
 	| 'settings_capsule_corner_change'
 	| 'settings_locale_change'
 	| 'settings_haptic_feedback_change'
+	| 'settings_period_highlight_change'
+	| 'settings_reduce_motion_change'
 	| 'timetable_switch'
 	| 'timetable_delete'
 	| 'timetable_overlap_expand'
@@ -45,6 +49,7 @@ export type AnalyticsEvent =
 	| 'pwa_install_dismiss'
 	| 'pwa_install_cta_click'
 	| 'pwa_update_apply'
+	| 'pwa_update_install_fail'
 	| 'update_check_attempt'
 	| 'update_check_success'
 	| 'update_check_fail'
@@ -52,9 +57,11 @@ export type AnalyticsEvent =
 	| 'about_clear_all_data'
 	| 'developer_easter_egg_open';
 
+/** @deprecated Use `HostAnalyticsEvent` */
+export type AnalyticsEvent = HostAnalyticsEvent;
+
 let client: PostHog | null = null;
-let pending: Array<[AnalyticsEvent, Record<string, string | number | boolean> | undefined]> | null =
-	null;
+let pending: Array<[string, Record<string, string | number | boolean> | undefined]> | null = null;
 let analyticsPort: IAnalyticsService | null = null;
 
 export function bindAnalyticsPort(service: IAnalyticsService): void {
@@ -90,9 +97,9 @@ export function initAnalytics() {
 		});
 }
 
-/** PostHog adapter entry — used by `WebAnalyticsProvider` only. */
-export function capturePostHogEvent(
-	name: AnalyticsEvent,
+/** PostHog capture — accepts host and plugin event names. */
+export function captureAnalyticsEvent(
+	name: string,
 	properties?: Record<string, string | number | boolean>
 ) {
 	if (client) {
@@ -102,14 +109,17 @@ export function capturePostHogEvent(
 	pending?.push([name, properties]);
 }
 
+/** @deprecated Use `captureAnalyticsEvent` */
+export const capturePostHogEvent = captureAnalyticsEvent;
+
 /** UI telemetry facade — routes through `IAnalyticsService` when the engine port is bound. */
 export function trackEvent(
-	name: AnalyticsEvent,
+	name: HostAnalyticsEvent,
 	properties?: Record<string, string | number | boolean>
 ) {
 	if (analyticsPort) {
 		analyticsPort.track(name, properties);
 		return;
 	}
-	capturePostHogEvent(name, properties);
+	captureAnalyticsEvent(name, properties);
 }

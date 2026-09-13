@@ -5,12 +5,15 @@
 	import Switch from '$lib/components/ui/Switch.svelte';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
-	import { MobileVibrateFill } from '$lib/icons';
+	import { AnimationFill, MobileVibrateFill } from '$lib/icons';
 	import { haptic } from '$lib/haptic/haptic';
 
 	let { shell }: { shell: AppShellController } = $props();
 	const hapticFeedbackEnabled = $derived(
 		shell.controller.userPreferences?.hapticFeedbackEnabled ?? true
+	);
+	const reduceMotionEnabled = $derived(
+		shell.controller.userPreferences?.reduceMotionEnabled ?? false
 	);
 
 	async function toggleHapticFeedback(checked: boolean) {
@@ -19,6 +22,11 @@
 		if (checked) {
 			haptic.light();
 		}
+	}
+
+	async function toggleReduceMotion(checked: boolean) {
+		trackEvent('settings_reduce_motion_change', { enabled: checked });
+		await shell.setReduceMotionEnabled(checked);
 	}
 </script>
 
@@ -32,6 +40,19 @@
 		>
 			{#snippet trailing()}
 				<Switch checked={hapticFeedbackEnabled} onCheckedChange={toggleHapticFeedback} />
+			{/snippet}
+		</MineRow>
+	</MineSection>
+
+	<MineSection title={hostT('mine.feedback.section.motion')}>
+		<MineRow
+			label
+			title={hostT('mine.feedback.motion.label')}
+			icon={AnimationFill}
+			iconTone="primary"
+		>
+			{#snippet trailing()}
+				<Switch checked={reduceMotionEnabled} onCheckedChange={toggleReduceMotion} />
 			{/snippet}
 		</MineRow>
 	</MineSection>

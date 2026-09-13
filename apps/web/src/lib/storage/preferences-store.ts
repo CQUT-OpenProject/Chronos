@@ -81,6 +81,8 @@ export class PreferencesStore {
 		);
 		const hapticRaw = this.localStore.getItem(SETTINGS_KEYS.hapticFeedbackEnabled);
 		const hapticFeedbackEnabled = hapticRaw !== '0' && hapticRaw !== 'false';
+		const reduceMotionRaw = this.localStore.getItem(SETTINGS_KEYS.reduceMotionEnabled);
+		const reduceMotionEnabled = reduceMotionRaw === '1' || reduceMotionRaw === 'true';
 		const periodHighlightRaw = this.localStore.getItem(SETTINGS_KEYS.currentPeriodHighlightEnabled);
 		const currentPeriodHighlightEnabled =
 			periodHighlightRaw === '1' || periodHighlightRaw === 'true';
@@ -95,6 +97,7 @@ export class PreferencesStore {
 			timetableLayoutMode,
 			capsuleCornerStyle,
 			hapticFeedbackEnabled,
+			reduceMotionEnabled,
 			currentPeriodHighlightEnabled,
 			visualThemeId,
 			...(locale ? { locale } : {})
@@ -120,6 +123,12 @@ export class PreferencesStore {
 			this.localStore.setItem(
 				SETTINGS_KEYS.hapticFeedbackEnabled,
 				patch.hapticFeedbackEnabled ? '1' : '0'
+			);
+		}
+		if (patch.reduceMotionEnabled !== undefined) {
+			this.localStore.setItem(
+				SETTINGS_KEYS.reduceMotionEnabled,
+				patch.reduceMotionEnabled ? '1' : '0'
 			);
 		}
 		if (patch.currentPeriodHighlightEnabled !== undefined) {

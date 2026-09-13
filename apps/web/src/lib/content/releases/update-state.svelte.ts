@@ -214,6 +214,9 @@ export function createUpdateState(options: UpdateStateOptions = {}) {
 			installPhase = null;
 			installPercent = 0;
 			errorMessage = resolveInstallError(err);
+			trackEvent('pwa_update_install_fail', {
+				code: err instanceof SwUpdateError ? err.code : 'install_failed'
+			});
 		}
 	}
 
