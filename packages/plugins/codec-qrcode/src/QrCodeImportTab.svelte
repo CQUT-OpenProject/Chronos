@@ -102,7 +102,7 @@
 			</div>
 			<button
 				type="button"
-				class="text-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50"
+				class="ui-btn ui-btn-filled mt-1"
 				disabled={loading}
 				onclick={() => fileInputRef?.click()}
 			>

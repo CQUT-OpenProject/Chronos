@@ -68,7 +68,7 @@
 				{/if}
 				<button
 					type="button"
-					class="text-label-large rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
+					class="ui-btn ui-btn-filled ui-btn-block"
 					disabled={saving}
 					onclick={saveSchemaConfig}
 				>

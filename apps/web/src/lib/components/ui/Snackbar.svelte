@@ -50,7 +50,7 @@
 
 {#if snackbarStore.open}
 	<div
-		class="pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-bar-height)+0.75rem)] z-[80] flex justify-center"
+		class="pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-bar-height)+0.75rem)] z-[var(--z-toast)] flex justify-center"
 		in:fly={enterFly}
 		out:fly={exitFly}
 		role="status"
@@ -65,7 +65,7 @@
 				<Button
 					variant="text"
 					tone="inverse"
-					class="h-8 shrink-0 px-2"
+					class="shrink-0"
 					onclick={() => {
 						dismissSnackbar();
 						snackbarStore.action?.onClick();

@@ -59,7 +59,9 @@ Patterns in `ui-patterns.css`:
 
 - `ui-section-surface` — default compact padding (`0.375rem`) for list groups (Mine, Plugins).
 - `ui-section-surface--comfortable` — `1rem` padding for forms and plugin content panels.
+- `ui-section-stack` — inner `flex` column with `gap: 1rem` for comfortable panels (title + form + CTA). Do not put `gap-*` on `ui-section-surface` itself; use this wrapper instead.
 - `ui-segmented-track` / `ui-segmented-thumb` — segmented control; track is outlined, thumb has no shadow.
+- `ui-btn` / `ui-btn-filled` / `ui-btn-outlined` / `ui-btn-text` / `ui-btn-block` — shared CTA patterns for plugins and host. Host `Button.svelte` composes these classes; plugins use the CSS classes directly.
 
 Rules:
 

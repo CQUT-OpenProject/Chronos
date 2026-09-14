@@ -96,7 +96,7 @@
 			<p class="text-body-medium text-on-surface-variant">{pt('screen.intro.body')}</p>
 			<button
 				type="button"
-				class="text-label-large w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
+				class="ui-btn ui-btn-filled ui-btn-block"
 				disabled={syncing || !timetable}
 				onclick={onSync}
 			>

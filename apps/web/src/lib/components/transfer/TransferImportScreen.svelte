@@ -115,7 +115,7 @@
 					<SchemaForm schema={activeSlot.inputSchema} bind:value={schemaFormValues} {controller} />
 					<button
 						type="button"
-						class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+						class="ui-btn ui-btn-filled ui-btn-block"
 						disabled={schemaLoading}
 						onclick={handleSchemaSubmit}
 					>
