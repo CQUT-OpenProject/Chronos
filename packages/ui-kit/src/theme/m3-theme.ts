@@ -52,7 +52,7 @@ export const CHRONOS_HOST_COLORS: Record<'light' | 'dark', Record<ChronosHostCol
 		outline: '#334155',
 		'outline-variant': '#2e3038',
 		success: '#4ade80',
-		warning: '#fbbf24',
+		warning: '#fb923c',
 		danger: '#e60012'
 	}
 };

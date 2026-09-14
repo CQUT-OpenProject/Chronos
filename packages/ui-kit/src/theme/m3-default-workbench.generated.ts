@@ -135,7 +135,7 @@ export const m3DefaultWorkbenchColors: {
 		"color.ink": "#f8fafc",
 		"color.border-subtle": "#2e3038",
 		"color.success": "#4ade80",
-		"color.warning": "#fbbf24",
+		"color.warning": "#fb923c",
 		"color.danger": "#e60012"
 	}
 };
