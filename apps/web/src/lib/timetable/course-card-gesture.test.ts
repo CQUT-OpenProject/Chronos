@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { createCourse, type Course } from '@chronos/core';
-import { COURSE_CARD_DRAG_THRESHOLD_PX, createCourseCardHandlers } from './course-card-gesture';
-import { createTimetableInteraction } from './timetable-interaction.svelte';
+import {
+	TIMETABLE_POINTER_THRESHOLD_PX,
+	createTimetableInteraction
+} from './timetable-interaction.svelte';
 
 const sampleCourse = createCourse({
 	id: 'course-1',
@@ -38,8 +40,7 @@ function createHarness() {
 	const onCourseClick = vi.fn<(course: Course) => void>();
 	const onLongPress = vi.fn<(course: Course, event: PointerEvent) => void>();
 	const onDragStart = vi.fn<(course: Course, event: PointerEvent) => void>();
-	const handlers = createCourseCardHandlers(sampleCourse, {
-		interaction,
+	const handlers = interaction.createCourseCardHandlers(sampleCourse, {
 		onCourseClick,
 		onLongPress,
 		onDragStart
@@ -65,7 +66,7 @@ describe('createCourseCardHandlers', () => {
 		handlers.onpointerdown(mockPointerEvent({ clientX: 100, clientY: 100 }));
 		handlers.onpointermove(
 			mockPointerEvent({
-				clientX: 100 + COURSE_CARD_DRAG_THRESHOLD_PX + 5,
+				clientX: 100 + TIMETABLE_POINTER_THRESHOLD_PX + 5,
 				clientY: 100
 			})
 		);
@@ -88,7 +89,7 @@ describe('createCourseCardHandlers', () => {
 		handlers.onpointermove(
 			mockPointerEvent({
 				clientX: 50,
-				clientY: 50 + COURSE_CARD_DRAG_THRESHOLD_PX + 1
+				clientY: 50 + TIMETABLE_POINTER_THRESHOLD_PX + 1
 			})
 		);
 		handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 80 }));
@@ -141,7 +142,7 @@ describe('createCourseCardHandlers', () => {
 
 			handlers.onpointermove(
 				mockPointerEvent({
-					clientX: 30 + COURSE_CARD_DRAG_THRESHOLD_PX + 2,
+					clientX: 30 + TIMETABLE_POINTER_THRESHOLD_PX + 2,
 					clientY: 30
 				})
 			);

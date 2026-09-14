@@ -35,8 +35,6 @@
 		timetableSidebarTintClass,
 		timetableSolidBgClass
 	} from '@chronos/ui-kit';
-	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
-	import { createGridGestureHandlers } from '$lib/timetable/grid-gesture';
 	import { rearrangeCourseSchedule } from '$lib/timetable/course-reorder';
 	import {
 		type TimetableDragSession,
@@ -459,8 +457,7 @@
 	}
 
 	const gridGestureHandlers = $derived(
-		createGridGestureHandlers({
-			interaction,
+		interaction.createGridHandlers({
 			onClickEmpty: () => {
 				if (interaction.isDragging || interaction.isClickGuarded()) return;
 				interaction.exitEdit();
@@ -696,8 +693,7 @@
 	{@const locationLines = placed.locationLines}
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
-	{@const handlers = createCourseCardHandlers(placed.course, {
-		interaction,
+	{@const handlers = interaction.createCourseCardHandlers(placed.course, {
 		onCourseClick: isEditing ? undefined : onCourseClick,
 		onLongPress: (_c, event) => {
 			interaction.enterEditFromLongPress(event);

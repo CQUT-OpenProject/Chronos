@@ -45,6 +45,17 @@ export interface DragGridGeometry {
 	displayedPeriodCount: number;
 }
 
+export interface GridHandlerOptions {
+	onEmptyLongPress?: (event: PointerEvent) => void;
+	onClickEmpty?: (event: MouseEvent) => void;
+}
+
+export interface CourseCardHandlerOptions {
+	onCourseClick?: (course: Course) => void;
+	onLongPress?: (course: Course, event: PointerEvent) => void;
+	onDragStart?: (course: Course, event: PointerEvent) => void;
+}
+
 export interface TimetableInteractionOptions {
 	now?: () => number;
 	longPressDelayMs?: number;
@@ -57,6 +68,20 @@ interface DragMoveLock {
 	pointerId: number;
 	startX: number;
 	startY: number;
+}
+
+function hasClosest(target: unknown): target is { closest: (selector: string) => unknown } {
+	return (
+		typeof target === 'object' &&
+		target !== null &&
+		'closest' in target &&
+		typeof (target as { closest?: unknown }).closest === 'function'
+	);
+}
+
+function isCourseCapsuleTarget(target: EventTarget | null): boolean {
+	if (!hasClosest(target)) return false;
+	return Boolean(target.closest('.course-capsule'));
 }
 
 export function createTimetableInteraction(options: TimetableInteractionOptions = {}) {
@@ -331,6 +356,94 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		return now() < clickGuardUntil;
 	}
 
+	function createGridHandlers(options: GridHandlerOptions = {}) {
+		const { onEmptyLongPress, onClickEmpty } = options;
+		return {
+			onpointerdown: (event: PointerEvent) => {
+				if (event.button !== 0) return;
+				resetClickFlags();
+				if (mode !== 'view' || isClickGuarded()) return;
+				if (isCourseCapsuleTarget(event.target)) return;
+
+				watchLongPress(event, (pressEvent) => {
+					if (onEmptyLongPress) {
+						onEmptyLongPress(pressEvent);
+					} else {
+						enterEditFromLongPress(pressEvent);
+					}
+				});
+			},
+			onpointermove: (event: PointerEvent) => {
+				notePointerMove(event);
+			},
+			onpointerup: (event: PointerEvent) => {
+				notePointerUp(event);
+			},
+			onpointerleave: (event: PointerEvent) => {
+				notePointerLost(event);
+			},
+			onpointercancel: (event: PointerEvent) => {
+				notePointerCancel(event);
+			},
+			onclick: (event: MouseEvent) => {
+				if (consumeClickSuppression()) {
+					event.preventDefault();
+					event.stopPropagation();
+					return;
+				}
+				if (mode === 'dragging' || isClickGuarded()) {
+					event.preventDefault();
+					event.stopPropagation();
+					return;
+				}
+				if (mode === 'view') return;
+				if (hasClosest(event.target)) {
+					if (event.target.closest('.course-capsule') || event.target.closest('button')) {
+						return;
+					}
+				}
+				onClickEmpty?.(event);
+			}
+		};
+	}
+
+	function createCourseCardHandlers(course: Course, options: CourseCardHandlerOptions = {}) {
+		const { onCourseClick, onLongPress, onDragStart } = options;
+		return {
+			onpointerdown: (event: PointerEvent) => {
+				if (event.button !== 0) return;
+				resetClickFlags();
+				if (mode === 'dragging' || isClickGuarded()) return;
+				if (mode !== 'view') {
+					onDragStart?.(course, event);
+					return;
+				}
+				watchLongPress(event, (pressEvent) => {
+					onLongPress?.(course, pressEvent);
+				});
+			},
+			onpointermove: (event: PointerEvent) => {
+				notePointerMove(event);
+			},
+			onpointerup: (event: PointerEvent) => {
+				notePointerUp(event);
+			},
+			onpointerleave: (event: PointerEvent) => {
+				notePointerLost(event);
+			},
+			onpointercancel: (event: PointerEvent) => {
+				notePointerCancel(event);
+			},
+			onclick: (event: MouseEvent) => {
+				if (consumeClickSuppression() || mode !== 'view' || isClickGuarded()) {
+					event.preventDefault();
+					return;
+				}
+				onCourseClick?.(course);
+			}
+		};
+	}
+
 	function destroy() {
 		clearTimer();
 		clearReleaseTimer();
@@ -369,14 +482,14 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		setDragOverDeleteZone,
 		endDrag,
 		cancelDrag,
-		resetClickFlags,
 		watchLongPress,
 		notePointerMove,
 		notePagerFirstMove,
 		notePointerUp,
 		notePointerLost,
 		notePointerCancel,
-		consumeClickSuppression,
+		createGridHandlers,
+		createCourseCardHandlers,
 		isClickGuarded,
 		destroy
 	};

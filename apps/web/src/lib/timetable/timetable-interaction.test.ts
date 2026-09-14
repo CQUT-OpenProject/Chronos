@@ -63,6 +63,15 @@ function mockPointerEvent(init: Partial<PointerEvent> = {}): PointerEvent {
 	} as unknown as PointerEvent;
 }
 
+function mockMouseEvent(init: Partial<MouseEvent> = {}): MouseEvent {
+	return {
+		button: 0,
+		preventDefault: () => {},
+		stopPropagation: () => {},
+		...init
+	} as unknown as MouseEvent;
+}
+
 describe('createTimetableInteraction', () => {
 	it('derives isEditing and allowPagerTouch from mode', () => {
 		const interaction = createTimetableInteraction();
@@ -193,17 +202,28 @@ describe('createTimetableInteraction', () => {
 		vi.useFakeTimers();
 		try {
 			const interaction = createTimetableInteraction();
-			const onFire = vi.fn();
-			interaction.watchLongPress(mockPointerEvent({ clientX: 10, clientY: 10 }), onFire);
-			interaction.notePointerMove(
+			const onClickEmpty = vi.fn();
+			const handlers = interaction.createGridHandlers({ onClickEmpty });
+			handlers.onpointerdown(mockPointerEvent({ clientX: 10, clientY: 10 }));
+			handlers.onpointermove(
 				mockPointerEvent({
 					clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1,
 					clientY: 10
 				})
 			);
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS + 50);
-			expect(onFire).not.toHaveBeenCalled();
-			expect(interaction.consumeClickSuppression()).toBe(true);
+			expect(interaction.isEditing).toBe(false);
+			handlers.onpointerup(
+				mockPointerEvent({
+					clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1,
+					clientY: 10
+				})
+			);
+			const clickEvt = mockMouseEvent();
+			const preventDefault = vi.spyOn(clickEvt, 'preventDefault');
+			handlers.onclick(clickEvt);
+			expect(preventDefault).toHaveBeenCalled();
+			expect(onClickEmpty).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
@@ -213,12 +233,18 @@ describe('createTimetableInteraction', () => {
 		vi.useFakeTimers();
 		try {
 			const interaction = createTimetableInteraction();
-			const onFire = vi.fn();
-			interaction.watchLongPress(mockPointerEvent({ clientX: 10, clientY: 10 }), onFire);
+			const onClickEmpty = vi.fn();
+			const handlers = interaction.createGridHandlers({ onClickEmpty });
+			handlers.onpointerdown(mockPointerEvent({ clientX: 10, clientY: 10 }));
 			interaction.notePagerFirstMove();
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS + 50);
-			expect(onFire).not.toHaveBeenCalled();
-			expect(interaction.consumeClickSuppression()).toBe(true);
+			expect(interaction.isEditing).toBe(false);
+			handlers.onpointerup(mockPointerEvent({ clientX: 10, clientY: 10 }));
+			const clickEvt = mockMouseEvent();
+			const preventDefault = vi.spyOn(clickEvt, 'preventDefault');
+			handlers.onclick(clickEvt);
+			expect(preventDefault).toHaveBeenCalled();
+			expect(onClickEmpty).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}

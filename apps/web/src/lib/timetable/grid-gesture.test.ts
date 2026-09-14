@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { createCourse } from '@chronos/core';
-import { createGridGestureHandlers, GRID_GESTURE_DRAG_THRESHOLD_PX } from './grid-gesture';
-import { createTimetableInteraction } from './timetable-interaction.svelte';
+import {
+	createTimetableInteraction,
+	TIMETABLE_POINTER_THRESHOLD_PX
+} from './timetable-interaction.svelte';
 
 function createMockElement(closestMatch: string | null = null) {
 	return {
@@ -44,14 +46,13 @@ function createHarness() {
 	const onClickEmpty = vi.fn(() => {
 		interaction.exitEdit();
 	});
-	const handlers = createGridGestureHandlers({
-		interaction,
+	const handlers = interaction.createGridHandlers({
 		onClickEmpty
 	});
 	return { interaction, handlers, onLongPressFeedback, onClickEmpty };
 }
 
-describe('createGridGestureHandlers', () => {
+describe('createGridHandlers', () => {
 	it('triggers enterEditFromLongPress after delay and suppresses subsequent click', () => {
 		vi.useFakeTimers();
 		try {
@@ -130,7 +131,7 @@ describe('createGridGestureHandlers', () => {
 
 			handlers.onpointermove(
 				mockPointerEvent({
-					clientX: 50 + GRID_GESTURE_DRAG_THRESHOLD_PX + 2,
+					clientX: 50 + TIMETABLE_POINTER_THRESHOLD_PX + 2,
 					clientY: 50
 				})
 			);
@@ -246,8 +247,7 @@ describe('createGridGestureHandlers', () => {
 		const onClickEmpty = vi.fn(() => {
 			interaction.exitEdit();
 		});
-		const handlers = createGridGestureHandlers({
-			interaction,
+		const handlers = interaction.createGridHandlers({
 			onClickEmpty
 		});
 		interaction.enterEdit();
