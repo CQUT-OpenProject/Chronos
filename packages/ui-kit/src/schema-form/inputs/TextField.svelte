@@ -27,11 +27,11 @@
 	const inputId = $derived(id || instanceId);
 </script>
 
-<div class="flex flex-col gap-1.5 text-left">
-	<label for={inputId} class="text-sm font-medium text-on-surface">
+<div class="ui-form-field">
+	<label class="ui-field-label" for={inputId}>
 		{label}
 		{#if required}
-			<span class="ml-0.5 text-error">*</span>
+			<span class="text-error">*</span>
 		{/if}
 	</label>
 
@@ -46,10 +46,10 @@
 			value = e.currentTarget.value;
 			oninput?.(e);
 		}}
-		class="w-full rounded-xl border border-outline/30 bg-surface-container px-3.5 py-2.5 text-sm text-on-surface transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+		class="ui-form-field-input"
 	/>
 
 	{#if description}
-		<span class="text-xs text-on-surface-variant">{description}</span>
+		<span class="text-body-small text-on-surface-variant">{description}</span>
 	{/if}
 </div>

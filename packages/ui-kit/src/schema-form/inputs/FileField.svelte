@@ -55,15 +55,16 @@
 	}
 </script>
 
-<div class="flex flex-col gap-1.5 text-left">
-	<label for={inputId} class="text-sm font-medium text-on-surface">
+<div class="ui-form-field">
+	<span class="ui-field-label">
 		{label}
 		{#if required}
-			<span class="ml-0.5 text-error">*</span>
+			<span class="text-error">*</span>
 		{/if}
-	</label>
+	</span>
 
-	<div class="relative flex items-center">
+	<label class="ui-btn ui-btn-outlined w-full cursor-pointer">
+		<span>{selectedFileName || description || 'Choose file'}</span>
 		<input
 			id={inputId}
 			type="file"
@@ -71,13 +72,7 @@
 			{disabled}
 			{required}
 			onchange={handleFileChange}
-			class="w-full rounded-xl border border-outline/30 bg-surface-container px-3.5 py-2 text-sm text-on-surface file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1 file:text-xs file:font-medium file:text-on-primary hover:file:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+			class="sr-only"
 		/>
-	</div>
-
-	{#if selectedFileName}
-		<span class="text-xs text-primary">已选择: {selectedFileName}</span>
-	{:else if description}
-		<span class="text-xs text-on-surface-variant">{description}</span>
-	{/if}
+	</label>
 </div>

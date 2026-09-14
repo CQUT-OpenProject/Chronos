@@ -59,10 +59,20 @@
 }
 
 .ui-form-field > .ui-form-field-input,
+.ui-form-field > select.ui-form-field-input,
 .ui-form-field .ui-date-field-input {
 	border-bottom: 1px solid color-mix(in srgb, var(--color-on-surface-variant) 35%, transparent);
 	padding-bottom: 0.25rem;
 	transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ui-form-field > select.ui-form-field-input {
+	cursor: pointer;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0 center;
+	padding-right: 1.25rem;
 }
 
 .ui-form-field:focus-within > .ui-form-field-input,

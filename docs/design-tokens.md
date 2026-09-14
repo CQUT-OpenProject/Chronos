@@ -62,6 +62,7 @@ Patterns in `ui-patterns.css`:
 - `ui-section-stack` — inner `flex` column with `gap: 1rem` for comfortable panels (title + form + CTA). Do not put `gap-*` on `ui-section-surface` itself; use this wrapper instead.
 - `ui-segmented-track` / `ui-segmented-thumb` — segmented control; track is outlined, thumb has no shadow. Prefer `@chronos/ui-kit` `SegmentedControl` (tablist semantics + keyboard nav).
 - `ui-btn` / `ui-btn-filled` / `ui-btn-outlined` / `ui-btn-text` / `ui-btn-block` — shared CTA patterns for plugins and host. Host `Button.svelte` composes these classes; plugins use the CSS classes directly.
+- `ui-form-field` / `ui-field-label` / `ui-form-field-input` — the only input style for host and `SchemaForm` fields (underline in grouped surfaces).
 
 Rules:
 
