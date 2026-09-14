@@ -15,6 +15,11 @@ export function normalizeAppLocale(value: string | undefined | null): AppLocale 
 	return 'zh-cn';
 }
 
+/** Map app locale ids to BCP 47 tags for `html[lang]` and browser language heuristics. */
+export function appLocaleToBcp47(locale: AppLocale): string {
+	return locale === 'en' ? 'en' : 'zh-CN';
+}
+
 function mapLanguageTagToAppLocale(tag: string): AppLocale | null {
 	const normalized = tag.trim().toLowerCase().replace('_', '-');
 	if (!normalized) return null;
@@ -25,7 +30,8 @@ function mapLanguageTagToAppLocale(tag: string): AppLocale | null {
 
 /** Resolve locale from system language tags; falls back to zh-cn when unavailable. */
 export function detectSystemAppLocale(): AppLocale {
-	if (typeof navigator === 'undefined') return 'zh-cn';
+	// Node SSR exposes a stub navigator (often en-US only); use browser APIs only on the client.
+	if (typeof window === 'undefined') return 'zh-cn';
 
 	const candidates = navigator.languages?.length
 		? navigator.languages
@@ -50,7 +56,7 @@ export function resolveAppLocale(_saved?: AppLocale | null): AppLocale {
 export function syncParaglideLocale(locale: AppLocale): void {
 	void setParaglideLocale(locale as Locale, { reload: false });
 	if (typeof document !== 'undefined') {
-		document.documentElement.lang = locale;
+		document.documentElement.lang = appLocaleToBcp47(locale);
 		document.documentElement.dir = getTextDirection(locale as Locale);
 	}
 }

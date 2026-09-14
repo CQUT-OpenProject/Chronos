@@ -13,6 +13,7 @@ vi.mock('$lib/paraglide/runtime', () => ({
 }));
 
 import {
+	appLocaleToBcp47,
 	applySessionAppLocale,
 	detectSystemAppLocale,
 	syncAppLocaleOnStartup,
@@ -72,23 +73,45 @@ describe('locale-sync', () => {
 		});
 	}
 
+	function mockBrowserNavigator(languages: string[]) {
+		mockNavigatorLanguages(languages);
+		if (typeof globalThis.window === 'undefined') {
+			// @ts-expect-error test shim
+			globalThis.window = {};
+		}
+	}
+
 	it('syncParaglideLocale updates cookie without reload', () => {
 		syncParaglideLocale('en');
 		expect(setParaglideLocale).toHaveBeenCalledWith('en', { reload: false });
 	});
 
+	it('appLocaleToBcp47 maps locales to standard html lang tags', () => {
+		expect(appLocaleToBcp47('zh-cn')).toBe('zh-CN');
+		expect(appLocaleToBcp47('en')).toBe('en');
+	});
+
+	it('detectSystemAppLocale ignores stub navigator during SSR', () => {
+		const originalWindow = globalThis.window;
+		// @ts-expect-error test shim
+		delete globalThis.window;
+		mockNavigatorLanguages(['en-US']);
+		expect(detectSystemAppLocale()).toBe('zh-cn');
+		globalThis.window = originalWindow;
+	});
+
 	it('detectSystemAppLocale maps Chinese system tags to zh-cn', () => {
-		mockNavigatorLanguages(['zh-CN', 'en-US']);
+		mockBrowserNavigator(['zh-CN', 'en-US']);
 		expect(detectSystemAppLocale()).toBe('zh-cn');
 	});
 
 	it('detectSystemAppLocale maps English system tags to en', () => {
-		mockNavigatorLanguages(['en-US', 'zh-CN']);
+		mockBrowserNavigator(['en-US', 'zh-CN']);
 		expect(detectSystemAppLocale()).toBe('en');
 	});
 
 	it('detectSystemAppLocale falls back to zh-cn for unsupported tags', () => {
-		mockNavigatorLanguages(['fr-FR']);
+		mockBrowserNavigator(['fr-FR']);
 		expect(detectSystemAppLocale()).toBe('zh-cn');
 	});
 
@@ -100,7 +123,7 @@ describe('locale-sync', () => {
 	});
 
 	it('syncAppLocaleOnStartup follows the system language', () => {
-		mockNavigatorLanguages(['en-GB']);
+		mockBrowserNavigator(['en-GB']);
 		syncAppLocaleOnStartup(engine);
 		expect(engine.locale).toBe('en');
 		expect(setParaglideLocale).toHaveBeenCalledWith('en', { reload: false });
