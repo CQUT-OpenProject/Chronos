@@ -4,13 +4,15 @@ import { WebHttpProxyProvider } from './web-http';
 import { PluginProxyHttpAdapter } from './plugin-proxy-http';
 import { WebRuntimeProvider } from './web-runtime';
 import { WebAnalyticsProvider } from './web-analytics';
+import { WebErrorCaptureProvider } from './web-error-capture';
 
 export {
 	DexieStorageProvider,
 	WebHttpProxyProvider,
 	PluginProxyHttpAdapter,
 	WebRuntimeProvider,
-	WebAnalyticsProvider
+	WebAnalyticsProvider,
+	WebErrorCaptureProvider
 };
 
 export interface WebProviderOptions {
@@ -35,7 +37,8 @@ export function createWebProviders(options?: WebProviderOptions) {
 		storage: new DexieStorageProvider(options?.database, options?.localStorage),
 		http,
 		runtime: new WebRuntimeProvider(),
-		analytics: new WebAnalyticsProvider()
+		analytics: new WebAnalyticsProvider(),
+		errorCapture: new WebErrorCaptureProvider()
 	};
 }
 
@@ -50,6 +53,7 @@ export function createWebChronosEnv(options?: WebProviderOptions) {
 		storage: providers.storage,
 		runtime: providers.runtime,
 		analytics: providers.analytics,
+		errorCapture: providers.errorCapture,
 		...(options?.navigation ? { navigation: options.navigation } : {})
 	};
 }
