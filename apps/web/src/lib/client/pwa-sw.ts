@@ -103,8 +103,14 @@ function waitForInstallingWorker(
 		};
 
 		const onStateChange = () => {
-			if (worker.state === 'installed' && registration.waiting) {
-				finish(markUpdatePending());
+			if (worker.state === 'installed') {
+				if (registration.waiting) {
+					finish(markUpdatePending());
+					return;
+				}
+				queueMicrotask(() => {
+					if (registration.waiting) finish(markUpdatePending());
+				});
 			}
 			if (worker.state === 'redundant') {
 				finish(false);
@@ -149,12 +155,15 @@ export async function waitForWaitingWorker(
 		let settled = false;
 		let stateChangeListener: (() => void) | undefined;
 		let timeoutId: ReturnType<typeof setTimeout>;
+		let pollId: ReturnType<typeof setInterval> | undefined;
+		let attachedWorker: ServiceWorker | undefined;
 
 		const cleanup = () => {
-			if (stateChangeListener && registration.installing) {
-				registration.installing.removeEventListener('statechange', stateChangeListener);
+			if (stateChangeListener && attachedWorker) {
+				attachedWorker.removeEventListener('statechange', stateChangeListener);
 			}
 			registration.removeEventListener('updatefound', onUpdateFound);
+			if (pollId) clearInterval(pollId);
 		};
 
 		const finish = (result: WaitForWaitingWorkerResult) => {
@@ -165,14 +174,27 @@ export async function waitForWaitingWorker(
 			resolve(result);
 		};
 
+		const tryFinishReady = (): boolean => {
+			if (!registration.waiting) return false;
+			reportProgress(onProgress, { phase: 'installing', percent: 80 });
+			markUpdatePending();
+			finish('ready');
+			return true;
+		};
+
 		const attachInstallingWorker = (worker: ServiceWorker) => {
+			if (stateChangeListener && attachedWorker) {
+				attachedWorker.removeEventListener('statechange', stateChangeListener);
+			}
+			attachedWorker = worker;
 			reportProgress(onProgress, { phase: 'downloading', percent: 25 });
 
 			stateChangeListener = () => {
-				if (worker.state === 'installed' && registration.waiting) {
-					reportProgress(onProgress, { phase: 'installing', percent: 80 });
-					markUpdatePending();
-					finish('ready');
+				if (worker.state === 'installed') {
+					if (tryFinishReady()) return;
+					queueMicrotask(() => {
+						tryFinishReady();
+					});
 				}
 				if (worker.state === 'redundant') {
 					finish('redundant');
@@ -194,6 +216,12 @@ export async function waitForWaitingWorker(
 		if (registration.installing) {
 			attachInstallingWorker(registration.installing);
 		}
+
+		if (settled) return;
+
+		pollId = setInterval(() => {
+			tryFinishReady();
+		}, 250);
 
 		timeoutId = setTimeout(() => finish('timeout'), timeoutMs);
 	});

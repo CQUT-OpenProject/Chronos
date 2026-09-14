@@ -162,6 +162,67 @@ describe('waitForWaitingWorker', () => {
 		await expect(pending).resolves.toBe('timeout');
 	});
 
+	it('reaches ready when waiting is assigned after installed without another statechange', async () => {
+		vi.useFakeTimers();
+		const onProgress = vi.fn();
+		let stateChangeListener: (() => void) | undefined;
+		const worker = {
+			state: 'installing',
+			addEventListener: vi.fn((event: string, listener: () => void) => {
+				if (event === 'statechange') stateChangeListener = listener;
+			}),
+			removeEventListener: vi.fn()
+		};
+		const registration = createRegistrationStub({ installing: worker });
+
+		const pending = waitForWaitingWorker(registration as never, {
+			onProgress,
+			timeoutMs: 10_000
+		});
+		await Promise.resolve();
+
+		expect(onProgress).toHaveBeenCalledWith({ phase: 'downloading', percent: 25 });
+
+		worker.state = 'installed';
+		Object.defineProperty(registration, 'installing', { value: undefined, configurable: true });
+		stateChangeListener?.();
+
+		Object.defineProperty(registration, 'waiting', { value: worker, configurable: true });
+		await vi.advanceTimersByTimeAsync(2000);
+
+		expect(onProgress).toHaveBeenCalledWith({ phase: 'installing', percent: 80 });
+		await expect(pending).resolves.toBe('ready');
+	});
+
+	it('reaches ready when attach finds an already-installed worker before waiting is set', async () => {
+		vi.useFakeTimers();
+		const onProgress = vi.fn();
+		let stateChangeListener: (() => void) | undefined;
+		const worker = {
+			state: 'installed',
+			addEventListener: vi.fn((event: string, listener: () => void) => {
+				if (event === 'statechange') stateChangeListener = listener;
+			}),
+			removeEventListener: vi.fn()
+		};
+		const registration = createRegistrationStub({ installing: worker });
+
+		const pending = waitForWaitingWorker(registration as never, {
+			onProgress,
+			timeoutMs: 10_000
+		});
+		await Promise.resolve();
+
+		expect(onProgress).toHaveBeenCalledWith({ phase: 'downloading', percent: 25 });
+		expect(stateChangeListener).toBeDefined();
+
+		Object.defineProperty(registration, 'waiting', { value: worker, configurable: true });
+		await vi.advanceTimersByTimeAsync(2000);
+
+		expect(onProgress).toHaveBeenCalledWith({ phase: 'installing', percent: 80 });
+		await expect(pending).resolves.toBe('ready');
+	});
+
 	it('returns redundant when installing worker becomes redundant', async () => {
 		vi.useFakeTimers();
 		let stateChangeListener: (() => void) | undefined;

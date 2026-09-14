@@ -513,7 +513,7 @@
 	ondrop={(e) => e.preventDefault()}
 />
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 <div
 	class="relative flex h-full w-full flex-col select-none {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"
