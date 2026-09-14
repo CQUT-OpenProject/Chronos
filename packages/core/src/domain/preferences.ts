@@ -46,7 +46,7 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
 	schemaVersion: CURRENT_PREFERENCES_SCHEMA_VERSION,
 	themeMode: 'auto',
 	paletteMode: 'vibrant',
-	timetableLayoutMode: 'fixed',
+	timetableLayoutMode: 'compact',
 	capsuleCornerStyle: 'sharp',
 	hapticFeedbackEnabled: true,
 	reduceMotionEnabled: false,

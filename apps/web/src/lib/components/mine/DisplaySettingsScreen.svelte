@@ -22,7 +22,7 @@
 
 	let { shell }: { shell: AppShellController } = $props();
 	const themeMode = $derived(shell.controller.userPreferences?.themeMode ?? 'auto');
-	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'compact');
 	const paletteMode = $derived(shell.controller.userPreferences?.paletteMode ?? 'vibrant');
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
@@ -84,9 +84,9 @@
 	const themeOptions = $derived.by(() => {
 		void shell.controller.currentLocale;
 		return [
+			{ mode: 'auto' as const, label: hostT('display.theme.auto') },
 			{ mode: 'light' as const, label: hostT('display.theme.light') },
-			{ mode: 'dark' as const, label: hostT('display.theme.dark') },
-			{ mode: 'auto' as const, label: hostT('display.theme.auto') }
+			{ mode: 'dark' as const, label: hostT('display.theme.dark') }
 		] as const;
 	});
 
@@ -94,14 +94,14 @@
 		void shell.controller.currentLocale;
 		return [
 			{
-				mode: 'fixed' as const,
-				label: hostT('display.layout.fixed.label'),
-				description: hostT('display.layout.fixed.desc')
-			},
-			{
 				mode: 'compact' as const,
 				label: hostT('display.layout.compact.label'),
 				description: hostT('display.layout.compact.desc')
+			},
+			{
+				mode: 'fixed' as const,
+				label: hostT('display.layout.fixed.label'),
+				description: hostT('display.layout.fixed.desc')
 			}
 		] as const;
 	});
@@ -110,14 +110,14 @@
 		void shell.controller.currentLocale;
 		return [
 			{
-				mode: 'pill' as const,
-				label: hostT('display.capsule.pill.label'),
-				description: hostT('display.capsule.pill.desc')
-			},
-			{
 				mode: 'sharp' as const,
 				label: hostT('display.capsule.sharp.label'),
 				description: hostT('display.capsule.sharp.desc')
+			},
+			{
+				mode: 'pill' as const,
+				label: hostT('display.capsule.pill.label'),
+				description: hostT('display.capsule.pill.desc')
 			}
 		] as const;
 	});

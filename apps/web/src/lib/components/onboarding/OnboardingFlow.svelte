@@ -35,19 +35,19 @@
 	const stepIndices = [0, 1, 2, 3, 4, 5] as const;
 	const isLastStep = $derived(step === onboardingController.totalSteps - 1);
 	const stepTitleId = 'onboarding-step-title';
-	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'compact');
 
 	const layoutOptions = $derived.by(() => {
 		return [
 			{
-				mode: 'fixed' as const,
-				label: hostT('onboarding.layout.fixed.label'),
-				description: hostT('onboarding.layout.fixed.desc')
-			},
-			{
 				mode: 'compact' as const,
 				label: hostT('onboarding.layout.compact.label'),
 				description: hostT('onboarding.layout.compact.desc')
+			},
+			{
+				mode: 'fixed' as const,
+				label: hostT('onboarding.layout.fixed.label'),
+				description: hostT('onboarding.layout.fixed.desc')
 			}
 		] as const;
 	});
