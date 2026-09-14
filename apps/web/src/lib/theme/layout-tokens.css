@@ -5,6 +5,8 @@
 		background-color: var(--period-active-bg, var(--color-brand));
 		background-image: var(--period-active-bg-image, none);
 		color: var(--color-on-primary);
+		margin-inline: -0.25rem;
+		width: calc(100% + 0.5rem);
 	}
 
 	/* Light: raw course paint. Dark: 42%/18% course mix (was layout blendColors 0.58/0.18). */
