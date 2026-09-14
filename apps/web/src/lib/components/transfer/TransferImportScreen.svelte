@@ -100,26 +100,28 @@
 				class="w-full"
 			/>
 		{:else if activeSlot?.inputSchema}
-			<div class="ui-section-surface ui-section-surface--comfortable flex flex-col gap-4">
-				<div>
-					<h2 class="text-title-medium text-on-surface">
-						{resolveLocalizedText(activeSlot.title)}
-					</h2>
-					{#if activeSlot.supportingText}
-						<p class="text-body-small mt-0.5 text-on-surface-variant">
-							{resolveLocalizedText(activeSlot.supportingText)}
-						</p>
-					{/if}
+			<div class="ui-section-surface ui-section-surface--comfortable">
+				<div class="ui-section-stack">
+					<div>
+						<h2 class="text-title-medium text-on-surface">
+							{resolveLocalizedText(activeSlot.title)}
+						</h2>
+						{#if activeSlot.supportingText}
+							<p class="text-body-small mt-0.5 text-on-surface-variant">
+								{resolveLocalizedText(activeSlot.supportingText)}
+							</p>
+						{/if}
+					</div>
+					<SchemaForm schema={activeSlot.inputSchema} bind:value={schemaFormValues} {controller} />
+					<button
+						type="button"
+						class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+						disabled={schemaLoading}
+						onclick={handleSchemaSubmit}
+					>
+						{schemaLoading ? hostT('transfer.import.fetching') : hostT('transfer.import.submit')}
+					</button>
 				</div>
-				<SchemaForm schema={activeSlot.inputSchema} bind:value={schemaFormValues} {controller} />
-				<button
-					type="button"
-					class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
-					disabled={schemaLoading}
-					onclick={handleSchemaSubmit}
-				>
-					{schemaLoading ? hostT('transfer.import.fetching') : hostT('transfer.import.submit')}
-				</button>
 			</div>
 		{:else}
 			<div

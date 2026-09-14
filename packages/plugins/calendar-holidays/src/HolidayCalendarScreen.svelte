@@ -92,31 +92,33 @@
 
 <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
 	<section class="ui-section-surface ui-section-surface--comfortable">
-		<p class="text-body-medium text-on-surface-variant">{pt('screen.intro.body')}</p>
-		<button
-			type="button"
-			class="text-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
-			disabled={syncing || !timetable}
-			onclick={onSync}
-		>
-			{syncing
-				? pt('screen.sync.syncing')
-				: hasSyncedBefore
-					? pt('screen.sync.resync')
-					: pt('screen.sync.action')}
-		</button>
-		<div class="mt-3 flex items-center justify-between gap-3">
-			<a
-				class="text-body-small shrink-0 text-primary"
-				href="https://github.com/NateScarlet/holiday-cn"
-				target="_blank"
-				rel="noreferrer"
+		<div class="ui-section-stack">
+			<p class="text-body-medium text-on-surface-variant">{pt('screen.intro.body')}</p>
+			<button
+				type="button"
+				class="text-label-large w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
+				disabled={syncing || !timetable}
+				onclick={onSync}
 			>
-				{pt('screen.intro.source')}
-			</a>
-			<p class="text-body-small text-right text-on-surface-variant">
-				{formatSyncedAt(holidayCalendar?.syncedAt)}
-			</p>
+				{syncing
+					? pt('screen.sync.syncing')
+					: hasSyncedBefore
+						? pt('screen.sync.resync')
+						: pt('screen.sync.action')}
+			</button>
+			<div class="flex items-center justify-between gap-3">
+				<a
+					class="text-body-small shrink-0 text-primary"
+					href="https://github.com/NateScarlet/holiday-cn"
+					target="_blank"
+					rel="noreferrer"
+				>
+					{pt('screen.intro.source')}
+				</a>
+				<p class="text-body-small text-right text-on-surface-variant">
+					{formatSyncedAt(holidayCalendar?.syncedAt)}
+				</p>
+			</div>
 		</div>
 	</section>
 

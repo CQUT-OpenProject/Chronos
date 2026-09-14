@@ -60,19 +60,21 @@
 	/>
 {:else if screenSlot?.schema}
 	<div class="flex w-full flex-col p-4">
-		<div class="ui-section-surface ui-section-surface--comfortable flex flex-col gap-4">
-			<SchemaForm schema={screenSlot.schema} bind:value={formValues} {controller} />
-			{#if saveError}
-				<p class="text-body-small text-error">{saveError}</p>
-			{/if}
-			<button
-				type="button"
-				class="text-label-large rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
-				disabled={saving}
-				onclick={saveSchemaConfig}
-			>
-				{saving ? hostT('plugins.config.saving') : hostT('plugins.config.save')}
-			</button>
+		<div class="ui-section-surface ui-section-surface--comfortable">
+			<div class="ui-section-stack">
+				<SchemaForm schema={screenSlot.schema} bind:value={formValues} {controller} />
+				{#if saveError}
+					<p class="text-body-small text-error">{saveError}</p>
+				{/if}
+				<button
+					type="button"
+					class="text-label-large rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
+					disabled={saving}
+					onclick={saveSchemaConfig}
+				>
+					{saving ? hostT('plugins.config.saving') : hostT('plugins.config.save')}
+				</button>
+			</div>
 		</div>
 	</div>
 {:else}
