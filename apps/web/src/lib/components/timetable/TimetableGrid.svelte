@@ -49,6 +49,18 @@
 	const SCROLL_ROW_HEIGHT = '5.5rem';
 	const SIDEBAR_WIDTH_REM = 3.25;
 
+	function setCapsulePressed(el: HTMLButtonElement, pressed: boolean) {
+		if (pressed) {
+			el.setAttribute('data-pressed', '');
+		} else {
+			el.removeAttribute('data-pressed');
+		}
+	}
+
+	function clearCapsulePressed(event: PointerEvent) {
+		setCapsulePressed(event.currentTarget as HTMLButtonElement, false);
+	}
+
 	function estimateGridBodyWidth(): number {
 		if (typeof window === 'undefined') return 0;
 		const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
@@ -614,7 +626,7 @@
 						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
 						{@const isConcealed = item.kind === 'course' && item.course.id === concealedCourseId}
 						<div
-							class="absolute box-border overflow-hidden transition-[transform,opacity] duration-200 ease-out {isConcealed
+							class="absolute box-border overflow-hidden transition-transform duration-200 ease-out {isConcealed
 								? 'opacity-0'
 								: ''}"
 							style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
@@ -696,16 +708,22 @@
 	{@const handlers = interaction.createCourseCardHandlers(placed.course, {
 		onCourseClick: isEditing ? undefined : onCourseClick,
 		onLongPress: (_c, event) => {
+			const capsuleEl = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>(
+				'button.course-capsule'
+			);
+			if (capsuleEl) {
+				setCapsulePressed(capsuleEl, false);
+			}
 			interaction.enterEditFromLongPress(event);
 			if (placed.displayModel.isInDisplayedWeek) {
 				startDrag(placed, event, {
 					hapticOnStart: false,
 					persistAfterDrop: false,
-					waitForMove: true
+					waitForMove: false
 				});
 			}
 		},
-		onDragStart: (_c, event) => startDrag(placed, event)
+		onDragStart: (_c, event) => startDrag(placed, event, { hapticOnStart: false })
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
@@ -715,7 +733,7 @@
 		draggable="false"
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left select-none {isEditing
 			? 'cursor-grab active:cursor-grabbing'
-			: ''} {placed.displayModel.isHolidayMuted
+			: 'course-capsule--pressable'} {placed.displayModel.isHolidayMuted
 			? 'opacity-40'
 			: placed.displayModel.isInDisplayedWeek
 				? ''
@@ -728,11 +746,25 @@
 			teacher,
 			isHolidayMuted: placed.displayModel.isHolidayMuted
 		})}
-		onpointerdown={handlers.onpointerdown}
+		onpointerdown={(event) => {
+			if (!isEditing) {
+				setCapsulePressed(event.currentTarget as HTMLButtonElement, true);
+			}
+			handlers.onpointerdown(event);
+		}}
 		onpointermove={handlers.onpointermove}
-		onpointerup={handlers.onpointerup}
-		onpointerleave={handlers.onpointerleave}
-		onpointercancel={handlers.onpointercancel}
+		onpointerup={(event) => {
+			clearCapsulePressed(event);
+			handlers.onpointerup(event);
+		}}
+		onpointerleave={(event) => {
+			clearCapsulePressed(event);
+			handlers.onpointerleave(event);
+		}}
+		onpointercancel={(event) => {
+			clearCapsulePressed(event);
+			handlers.onpointercancel(event);
+		}}
 		onclick={handlers.onclick}
 		ondragstart={(event) => event.preventDefault()}
 		oncontextmenu={(event) => event.preventDefault()}
