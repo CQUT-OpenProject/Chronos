@@ -67,9 +67,10 @@ export interface Timetable {
 }
 
 export const DEFAULT_TIMETABLE_NAME = '未命名课表';
+export const TIMETABLE_NAME_MAX_LENGTH = 50;
 
 export function normalizeTimetableName(name: string): string {
-	const trimmed = name.trim();
+	const trimmed = name.trim().slice(0, TIMETABLE_NAME_MAX_LENGTH);
 	return trimmed.length > 0 ? trimmed : DEFAULT_TIMETABLE_NAME;
 }
 

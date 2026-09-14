@@ -63,6 +63,15 @@ function mockPointerEvent(init: Partial<PointerEvent> = {}): PointerEvent {
 	} as unknown as PointerEvent;
 }
 
+function mockMouseEvent(init: Partial<MouseEvent> = {}): MouseEvent {
+	return {
+		button: 0,
+		preventDefault: () => {},
+		stopPropagation: () => {},
+		...init
+	} as unknown as MouseEvent;
+}
+
 describe('createTimetableInteraction', () => {
 	it('derives isEditing and allowPagerTouch from mode', () => {
 		const interaction = createTimetableInteraction();
@@ -193,21 +202,28 @@ describe('createTimetableInteraction', () => {
 		vi.useFakeTimers();
 		try {
 			const interaction = createTimetableInteraction();
-			const onFire = vi.fn();
-			interaction.watchLongPress(mockPointerEvent({ clientX: 10, clientY: 10 }), onFire);
-			interaction.notePointerMove(
+			const onClickEmpty = vi.fn();
+			const handlers = interaction.createGridHandlers({ onClickEmpty });
+			handlers.onpointerdown(mockPointerEvent({ clientX: 10, clientY: 10 }));
+			handlers.onpointermove(
 				mockPointerEvent({
 					clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1,
 					clientY: 10
 				})
 			);
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS + 50);
-			expect(onFire).not.toHaveBeenCalled();
-			expect(
-				interaction.notePointerUp(
-					mockPointerEvent({ clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1, clientY: 10 })
-				)
-			).toEqual({ startedMode: 'view', gesture: 'moved' });
+			expect(interaction.isEditing).toBe(false);
+			handlers.onpointerup(
+				mockPointerEvent({
+					clientX: 10 + TIMETABLE_POINTER_THRESHOLD_PX + 1,
+					clientY: 10
+				})
+			);
+			const clickEvt = mockMouseEvent();
+			const preventDefault = vi.spyOn(clickEvt, 'preventDefault');
+			handlers.onclick(clickEvt);
+			expect(preventDefault).toHaveBeenCalled();
+			expect(onClickEmpty).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
@@ -217,15 +233,18 @@ describe('createTimetableInteraction', () => {
 		vi.useFakeTimers();
 		try {
 			const interaction = createTimetableInteraction();
-			const onFire = vi.fn();
-			interaction.watchLongPress(mockPointerEvent({ clientX: 10, clientY: 10 }), onFire);
+			const onClickEmpty = vi.fn();
+			const handlers = interaction.createGridHandlers({ onClickEmpty });
+			handlers.onpointerdown(mockPointerEvent({ clientX: 10, clientY: 10 }));
 			interaction.notePagerFirstMove();
 			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS + 50);
-			expect(onFire).not.toHaveBeenCalled();
-			expect(interaction.notePointerUp(mockPointerEvent())).toEqual({
-				startedMode: 'view',
-				gesture: 'moved'
-			});
+			expect(interaction.isEditing).toBe(false);
+			handlers.onpointerup(mockPointerEvent({ clientX: 10, clientY: 10 }));
+			const clickEvt = mockMouseEvent();
+			const preventDefault = vi.spyOn(clickEvt, 'preventDefault');
+			handlers.onclick(clickEvt);
+			expect(preventDefault).toHaveBeenCalled();
+			expect(onClickEmpty).not.toHaveBeenCalled();
 		} finally {
 			vi.useRealTimers();
 		}
@@ -270,31 +289,6 @@ describe('createTimetableInteraction', () => {
 		interaction.enterEditFromLongPress(mockPointerEvent());
 		expect(interaction.mode).toBe('edit');
 		expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
-	});
-
-	it('distinguishes a long-press release from a later edit-mode tap without a timeout', () => {
-		vi.useFakeTimers();
-		try {
-			const interaction = createTimetableInteraction();
-			const down = mockPointerEvent({ clientX: 10, clientY: 10 });
-			interaction.watchLongPress(down, () => interaction.enterEditFromLongPress(down));
-			vi.advanceTimersByTime(TIMETABLE_LONG_PRESS_DELAY_MS);
-
-			expect(interaction.notePointerUp(down)).toEqual({
-				startedMode: 'view',
-				gesture: 'long-press'
-			});
-			expect(interaction.mode).toBe('edit');
-
-			const nextDown = mockPointerEvent({ clientX: 20, clientY: 20 });
-			expect(interaction.watchEditTap(nextDown)).toBe(true);
-			expect(interaction.notePointerUp(nextDown)).toEqual({
-				startedMode: 'edit',
-				gesture: 'tap'
-			});
-		} finally {
-			vi.useRealTimers();
-		}
 	});
 
 	it('waitForMove drag shows a session immediately but does not track until the threshold', () => {
@@ -385,6 +379,108 @@ describe('createTimetableInteraction', () => {
 
 		expect(interaction.endDrag()?.persistAfterDrop).toBe(false);
 		expect(interaction.mode).toBe('view');
+	});
+
+	const fiveDayGeometry = {
+		gridRect: { left: 0, top: 0, width: 500, height: 800 },
+		visibleDays: [
+			{ dayOfWeek: 1 },
+			{ dayOfWeek: 2 },
+			{ dayOfWeek: 3 },
+			{ dayOfWeek: 4 },
+			{ dayOfWeek: 5 }
+		],
+		displayedPeriodCount: 10
+	};
+
+	it('maps a pointer in the grid interior to the matching column and period', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(dragInput());
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: 250, clientY: 360 }),
+				fiveDayGeometry
+			)
+		).toBe(true);
+		expect(interaction.drag?.targetColIndex).toBe(2);
+		expect(interaction.drag?.targetDayOfWeek).toBe(3);
+		expect(interaction.drag?.targetStartPeriod).toBe(5);
+	});
+
+	it('clamps pointers outside the grid to the first cell', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(
+			dragInput({ targetColIndex: 2, targetDayOfWeek: 3, targetStartPeriod: 4 })
+		);
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: -20, clientY: -40 }),
+				fiveDayGeometry
+			)
+		).toBe(true);
+		expect(interaction.drag?.targetColIndex).toBe(0);
+		expect(interaction.drag?.targetDayOfWeek).toBe(1);
+		expect(interaction.drag?.targetStartPeriod).toBe(1);
+	});
+
+	it('clamps a two-period course to the last valid start period at the grid bottom', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(dragInput());
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: 450, clientY: 790 }),
+				fiveDayGeometry
+			)
+		).toBe(true);
+		expect(interaction.drag?.targetColIndex).toBe(4);
+		expect(interaction.drag?.targetDayOfWeek).toBe(5);
+		expect(interaction.drag?.targetStartPeriod).toBe(9);
+	});
+
+	it('does not map while waitForMove is still locked', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(
+			dragInput({
+				waitForMove: true,
+				originX: 10,
+				originY: 10
+			})
+		);
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: 250, clientY: 360 }),
+				fiveDayGeometry
+			)
+		).toBe(false);
+		expect(interaction.drag?.targetColIndex).toBe(0);
+		expect(interaction.drag?.targetStartPeriod).toBe(1);
+	});
+
+	it('does not map without a drag session, matching pointer, or usable geometry', () => {
+		const interaction = createTimetableInteraction();
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: 250, clientY: 360 }),
+				fiveDayGeometry
+			)
+		).toBe(false);
+
+		interaction.beginDrag(dragInput());
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ pointerId: 9, clientX: 250, clientY: 360 }),
+				fiveDayGeometry
+			)
+		).toBe(false);
+		expect(interaction.drag?.targetColIndex).toBe(0);
+
+		expect(
+			interaction.updateDragFromPointer(mockPointerEvent({ clientX: 250, clientY: 360 }), {
+				...fiveDayGeometry,
+				visibleDays: [],
+				displayedPeriodCount: 0
+			})
+		).toBe(false);
 	});
 
 	it('does not cancel an armed long press when a waitForMove drag tracks after long press fired', () => {

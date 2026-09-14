@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { createCourse } from '@chronos/core';
-import { createGridGestureHandlers, GRID_GESTURE_DRAG_THRESHOLD_PX } from './grid-gesture';
-import { createTimetableInteraction } from './timetable-interaction.svelte';
+import {
+	createTimetableInteraction,
+	TIMETABLE_POINTER_THRESHOLD_PX
+} from './timetable-interaction.svelte';
 
 function createMockElement(closestMatch: string | null = null) {
 	return {
@@ -25,6 +27,16 @@ function mockPointerEvent(init: Partial<PointerEvent> = {}): PointerEvent {
 	} as unknown as PointerEvent;
 }
 
+function mockMouseEvent(init: Partial<MouseEvent> = {}): MouseEvent {
+	return {
+		button: 0,
+		target: createMockElement(),
+		preventDefault: () => {},
+		stopPropagation: () => {},
+		...init
+	} as unknown as MouseEvent;
+}
+
 function createHarness() {
 	const onLongPressFeedback = vi.fn();
 	const interaction = createTimetableInteraction({
@@ -34,15 +46,14 @@ function createHarness() {
 	const onClickEmpty = vi.fn(() => {
 		interaction.exitEdit();
 	});
-	const handlers = createGridGestureHandlers({
-		interaction,
+	const handlers = interaction.createGridHandlers({
 		onClickEmpty
 	});
 	return { interaction, handlers, onLongPressFeedback, onClickEmpty };
 }
 
-describe('createGridGestureHandlers', () => {
-	it('keeps edit after long press and exits only on a fresh empty pointer tap', () => {
+describe('createGridHandlers', () => {
+	it('triggers enterEditFromLongPress after delay and suppresses subsequent click', () => {
 		vi.useFakeTimers();
 		try {
 			const { handlers, onLongPressFeedback, onClickEmpty, interaction } = createHarness();
@@ -58,21 +69,42 @@ describe('createGridGestureHandlers', () => {
 			expect(interaction.isEditing).toBe(true);
 
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
+			handlers.onclick(mockMouseEvent());
 			expect(onClickEmpty).not.toHaveBeenCalled();
-			expect(interaction.isEditing).toBe(true);
 
-			handlers.onpointerdown(mockPointerEvent({ clientX: 100, clientY: 100 }));
-			handlers.onpointerup(mockPointerEvent({ clientX: 100, clientY: 100 }));
+			handlers.onclick(mockMouseEvent());
 			expect(onClickEmpty).toHaveBeenCalledTimes(1);
 		} finally {
 			vi.useRealTimers();
 		}
 	});
 
-	it('does not let time after pointerup affect the long-press outcome', () => {
+	it('exits edit mode on the very first click after long press when no click was fired on pointerup (touch/mobile)', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback, onClickEmpty, interaction } = createHarness();
+			const { handlers, onLongPressFeedback, onClickEmpty } = createHarness();
+
+			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
+			handlers.onpointerdown(downEvt);
+			vi.advanceTimersByTime(400);
+			expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
+
+			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
+
+			handlers.onpointerdown(mockPointerEvent({ clientX: 100, clientY: 100 }));
+			handlers.onpointerup(mockPointerEvent({ clientX: 100, clientY: 100 }));
+			handlers.onclick(mockMouseEvent());
+
+			expect(onClickEmpty).toHaveBeenCalledTimes(1);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('clears longPressFired after release timer even if next click has no pointerdown', () => {
+		vi.useFakeTimers();
+		try {
+			const { handlers, onLongPressFeedback, onClickEmpty } = createHarness();
 
 			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
 			handlers.onpointerdown(downEvt);
@@ -82,8 +114,8 @@ describe('createGridGestureHandlers', () => {
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(60);
 
-			expect(onClickEmpty).not.toHaveBeenCalled();
-			expect(interaction.isEditing).toBe(true);
+			handlers.onclick(mockMouseEvent());
+			expect(onClickEmpty).toHaveBeenCalledTimes(1);
 		} finally {
 			vi.useRealTimers();
 		}
@@ -99,7 +131,7 @@ describe('createGridGestureHandlers', () => {
 
 			handlers.onpointermove(
 				mockPointerEvent({
-					clientX: 50 + GRID_GESTURE_DRAG_THRESHOLD_PX + 2,
+					clientX: 50 + TIMETABLE_POINTER_THRESHOLD_PX + 2,
 					clientY: 50
 				})
 			);
@@ -164,7 +196,7 @@ describe('createGridGestureHandlers', () => {
 		}
 	});
 
-	it('records an empty tap without starting a long press when already editing', () => {
+	it('does not start long press timer when already in editing mode', () => {
 		vi.useFakeTimers();
 		try {
 			const { interaction, handlers, onLongPressFeedback } = createHarness();
@@ -174,24 +206,21 @@ describe('createGridGestureHandlers', () => {
 			vi.advanceTimersByTime(500);
 
 			expect(onLongPressFeedback).not.toHaveBeenCalled();
-			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
 		} finally {
 			vi.useRealTimers();
 		}
 	});
 
-	it('does not exit edit mode for a pointer tap on a button or capsule', () => {
+	it('does not exit edit mode when clicking on a button or capsule in edit mode', () => {
 		const { interaction, handlers, onClickEmpty } = createHarness();
 		interaction.enterEdit();
 
 		const buttonTarget = createMockElement('button');
-		handlers.onpointerdown(mockPointerEvent({ target: buttonTarget as unknown as EventTarget }));
-		handlers.onpointerup(mockPointerEvent({ target: buttonTarget as unknown as EventTarget }));
+		handlers.onclick(mockMouseEvent({ target: buttonTarget as unknown as EventTarget }));
 		expect(onClickEmpty).not.toHaveBeenCalled();
 
 		const capsuleTarget = createMockElement('.course-capsule');
-		handlers.onpointerdown(mockPointerEvent({ target: capsuleTarget as unknown as EventTarget }));
-		handlers.onpointerup(mockPointerEvent({ target: capsuleTarget as unknown as EventTarget }));
+		handlers.onclick(mockMouseEvent({ target: capsuleTarget as unknown as EventTarget }));
 		expect(onClickEmpty).not.toHaveBeenCalled();
 	});
 
@@ -209,7 +238,7 @@ describe('createGridGestureHandlers', () => {
 		}
 	});
 
-	it('does not start an empty-tap session while a drag click guard is active', () => {
+	it('suppresses click and does not exit edit mode while a drag click-guard is active', () => {
 		let now = 1_000;
 		const interaction = createTimetableInteraction({
 			now: () => now,
@@ -218,8 +247,7 @@ describe('createGridGestureHandlers', () => {
 		const onClickEmpty = vi.fn(() => {
 			interaction.exitEdit();
 		});
-		const handlers = createGridGestureHandlers({
-			interaction,
+		const handlers = interaction.createGridHandlers({
 			onClickEmpty
 		});
 		interaction.enterEdit();
@@ -241,18 +269,15 @@ describe('createGridGestureHandlers', () => {
 			persistAfterDrop: true
 		});
 
-		handlers.onpointerdown(mockPointerEvent());
-		handlers.onpointerup(mockPointerEvent());
+		handlers.onclick(mockMouseEvent());
 		expect(onClickEmpty).not.toHaveBeenCalled();
 
 		interaction.endDrag();
-		handlers.onpointerdown(mockPointerEvent());
-		handlers.onpointerup(mockPointerEvent());
+		handlers.onclick(mockMouseEvent());
 		expect(onClickEmpty).not.toHaveBeenCalled();
 
 		now = 1_120;
-		handlers.onpointerdown(mockPointerEvent());
-		handlers.onpointerup(mockPointerEvent());
+		handlers.onclick(mockMouseEvent());
 		expect(onClickEmpty).toHaveBeenCalledTimes(1);
 	});
 });

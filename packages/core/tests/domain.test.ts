@@ -5,6 +5,7 @@ import {
 	createTimetable,
 	deriveWeekendViewPrefs,
 	normalizeTimetableName,
+	TIMETABLE_NAME_MAX_LENGTH,
 	CURRENT_TIMETABLE_SCHEMA_VERSION,
 	DEFAULT_TIMETABLE_NAME,
 	CURRENT_PREFERENCES_SCHEMA_VERSION,
@@ -44,8 +45,12 @@ describe('Domain Models in @chronos/core', () => {
 	});
 
 	it('normalizes timetable name', () => {
+		expect(TIMETABLE_NAME_MAX_LENGTH).toBe(50);
 		expect(normalizeTimetableName('  ')).toBe(DEFAULT_TIMETABLE_NAME);
 		expect(normalizeTimetableName(' 2026春课表 ')).toBe('2026春课表');
+		expect(normalizeTimetableName('x'.repeat(TIMETABLE_NAME_MAX_LENGTH + 10))).toBe(
+			'x'.repeat(TIMETABLE_NAME_MAX_LENGTH)
+		);
 	});
 
 	it('creates Timetable with schemaVersion 1 and customMetadata support', () => {

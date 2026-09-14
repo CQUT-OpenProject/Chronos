@@ -3,6 +3,7 @@ import type { Course, PlacedCourseCapsule } from '@chronos/core';
 export const TIMETABLE_POINTER_THRESHOLD_PX = 5;
 export const TIMETABLE_LONG_PRESS_DELAY_MS = 450;
 export const TIMETABLE_CLICK_GUARD_MS = 120;
+export const TIMETABLE_LONG_PRESS_CLICK_SUPPRESS_MS = 50;
 
 export type TimetableInteractionMode = 'view' | 'edit' | 'dragging';
 
@@ -38,6 +39,23 @@ export interface DragTargetPatch {
 	targetStartPeriod: number;
 }
 
+export interface DragGridGeometry {
+	gridRect: { left: number; top: number; width: number; height: number };
+	visibleDays: readonly { dayOfWeek: number }[];
+	displayedPeriodCount: number;
+}
+
+export interface GridHandlerOptions {
+	onEmptyLongPress?: (event: PointerEvent) => void;
+	onClickEmpty?: (event: MouseEvent) => void;
+}
+
+export interface CourseCardHandlerOptions {
+	onCourseClick?: (course: Course) => void;
+	onLongPress?: (course: Course, event: PointerEvent) => void;
+	onDragStart?: (course: Course, event: PointerEvent) => void;
+}
+
 export interface TimetableInteractionOptions {
 	now?: () => number;
 	longPressDelayMs?: number;
@@ -52,20 +70,18 @@ interface DragMoveLock {
 	startY: number;
 }
 
-interface PointerGesture {
-	pointerId: number;
-	startedMode: TimetableInteractionMode;
-	startX: number;
-	startY: number;
-	hasMoved: boolean;
-	longPressed: boolean;
-	onLongPress: ((event: PointerEvent) => void) | null;
-	sourceEvent: PointerEvent;
+function hasClosest(target: unknown): target is { closest: (selector: string) => unknown } {
+	return (
+		typeof target === 'object' &&
+		target !== null &&
+		'closest' in target &&
+		typeof (target as { closest?: unknown }).closest === 'function'
+	);
 }
 
-export interface TimetablePointerEnd {
-	startedMode: TimetableInteractionMode;
-	gesture: 'tap' | 'moved' | 'long-press';
+function isCourseCapsuleTarget(target: EventTarget | null): boolean {
+	if (!hasClosest(target)) return false;
+	return Boolean(target.closest('.course-capsule'));
 }
 
 export function createTimetableInteraction(options: TimetableInteractionOptions = {}) {
@@ -79,8 +95,15 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	let drag = $state<TimetableDragSession | null>(null);
 	let clickGuardUntil = $state(0);
 
-	let pointerGesture: PointerGesture | null = null;
+	let pendingPointerId: number | null = null;
+	let startX = 0;
+	let startY = 0;
+	let hasMoved = false;
+	let longPressFired = false;
 	let timer: ReturnType<typeof setTimeout> | null = null;
+	let releaseTimer: ReturnType<typeof setTimeout> | null = null;
+	let longPressCallback: ((event: PointerEvent) => void) | null = null;
+	let longPressEvent: PointerEvent | null = null;
 	let dragMoveLock: DragMoveLock | null = null;
 
 	function clearTimer() {
@@ -90,13 +113,15 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		}
 	}
 
-	function armClickGuard() {
-		clickGuardUntil = now() + clickGuardMs;
+	function clearReleaseTimer() {
+		if (releaseTimer !== null) {
+			clearTimeout(releaseTimer);
+			releaseTimer = null;
+		}
 	}
 
-	function clearPointerGesture() {
-		clearTimer();
-		pointerGesture = null;
+	function armClickGuard() {
+		clickGuardUntil = now() + clickGuardMs;
 	}
 
 	function clearDragMoveLock() {
@@ -131,8 +156,12 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function exitEdit() {
-		clearPointerGesture();
+		clearTimer();
+		clearReleaseTimer();
 		clearDragMoveLock();
+		pendingPointerId = null;
+		longPressCallback = null;
+		longPressEvent = null;
 		if (drag) {
 			drag = null;
 			armClickGuard();
@@ -171,6 +200,30 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		return true;
 	}
 
+	function updateDragFromPointer(event: PointerEvent, geometry: DragGridGeometry): boolean {
+		if (!drag || event.pointerId !== drag.pointerId || dragMoveLock) return false;
+		const visibleDayCount = geometry.visibleDays.length;
+		if (visibleDayCount <= 0 || geometry.displayedPeriodCount <= 0) return false;
+
+		const relX = event.clientX - geometry.gridRect.left;
+		const relY = event.clientY - geometry.gridRect.top;
+		const colWidth = geometry.gridRect.width / visibleDayCount;
+		let colIdx = Math.floor(relX / colWidth);
+		colIdx = Math.max(0, Math.min(colIdx, visibleDayCount - 1));
+		const targetDay = geometry.visibleDays[colIdx]?.dayOfWeek ?? drag.targetDayOfWeek;
+
+		const rowHeight = geometry.gridRect.height / geometry.displayedPeriodCount;
+		const span = drag.course.endPeriod - drag.course.startPeriod + 1;
+		let periodIdx = Math.floor(relY / rowHeight) + 1;
+		periodIdx = Math.max(1, Math.min(periodIdx, geometry.displayedPeriodCount - span + 1));
+
+		return updateDragTarget({
+			targetColIndex: colIdx,
+			targetDayOfWeek: targetDay,
+			targetStartPeriod: periodIdx
+		});
+	}
+
 	function setDragOverDeleteZone(over: boolean): boolean {
 		if (!drag || dragMoveLock) return false;
 		if (drag.overDeleteZone === over) return false;
@@ -198,28 +251,33 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		return current;
 	}
 
+	function resetClickFlags() {
+		clearReleaseTimer();
+		longPressFired = false;
+		hasMoved = false;
+	}
+
 	function watchLongPress(event: PointerEvent, onFire: (event: PointerEvent) => void): boolean {
 		if (event.button !== 0) return false;
 		if (mode !== 'view') return false;
 
-		clearPointerGesture();
-		const gesture: PointerGesture = {
-			pointerId: event.pointerId,
-			startedMode: mode,
-			startX: event.clientX,
-			startY: event.clientY,
-			hasMoved: false,
-			longPressed: false,
-			onLongPress: onFire,
-			sourceEvent: event
-		};
-		pointerGesture = gesture;
+		pendingPointerId = event.pointerId;
+		startX = event.clientX;
+		startY = event.clientY;
+		hasMoved = false;
+		longPressFired = false;
+		longPressCallback = onFire;
+		longPressEvent = event;
+
+		clearTimer();
 		timer = setTimeout(() => {
-			if (pointerGesture !== gesture || gesture.hasMoved) return;
+			longPressFired = true;
 			timer = null;
-			gesture.longPressed = true;
-			gesture.onLongPress?.(gesture.sourceEvent);
-			gesture.onLongPress = null;
+			const callback = longPressCallback;
+			const sourceEvent = longPressEvent;
+			longPressCallback = null;
+			longPressEvent = null;
+			if (callback && sourceEvent) callback(sourceEvent);
 		}, longPressDelayMs);
 
 		return true;
@@ -228,72 +286,171 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	function notePointerMove(event: PointerEvent) {
 		tryReleaseDragMoveLock(event);
 
-		if (
-			!pointerGesture ||
-			event.pointerId !== pointerGesture.pointerId ||
-			pointerGesture.hasMoved
-		) {
-			return;
-		}
+		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
+		if (pendingPointerId === null || hasMoved) return;
 
-		const dx = Math.abs(event.clientX - pointerGesture.startX);
-		const dy = Math.abs(event.clientY - pointerGesture.startY);
+		const dx = Math.abs(event.clientX - startX);
+		const dy = Math.abs(event.clientY - startY);
 		if (dx > thresholdPx || dy > thresholdPx) {
-			pointerGesture.hasMoved = true;
+			hasMoved = true;
 			clearTimer();
 		}
 	}
 
 	function notePagerFirstMove() {
-		if (!pointerGesture) return;
-		pointerGesture.hasMoved = true;
+		hasMoved = true;
 		clearTimer();
-		pointerGesture.onLongPress = null;
+		longPressCallback = null;
+		longPressEvent = null;
 	}
 
-	function notePointerUp(event: PointerEvent): TimetablePointerEnd | null {
-		if (!pointerGesture || event.pointerId !== pointerGesture.pointerId) return null;
-		const gesture = pointerGesture;
-		clearPointerGesture();
-		return {
-			startedMode: gesture.startedMode,
-			gesture: gesture.longPressed ? 'long-press' : gesture.hasMoved ? 'moved' : 'tap'
-		};
+	function notePointerUp(event: PointerEvent) {
+		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
+		clearTimer();
+		pendingPointerId = null;
+		longPressCallback = null;
+		longPressEvent = null;
+		if (longPressFired) {
+			clearReleaseTimer();
+			releaseTimer = setTimeout(() => {
+				longPressFired = false;
+				releaseTimer = null;
+			}, TIMETABLE_LONG_PRESS_CLICK_SUPPRESS_MS);
+		}
 	}
 
 	function notePointerLost(event: PointerEvent) {
-		if (!pointerGesture || event.pointerId !== pointerGesture.pointerId) return;
-		clearPointerGesture();
+		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
+		clearTimer();
+		pendingPointerId = null;
+		longPressCallback = null;
+		longPressEvent = null;
 	}
 
 	function notePointerCancel(event: PointerEvent) {
-		if (!pointerGesture || event.pointerId !== pointerGesture.pointerId) return;
-		clearPointerGesture();
+		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
+		clearTimer();
+		clearReleaseTimer();
+		pendingPointerId = null;
+		hasMoved = false;
+		longPressFired = false;
+		longPressCallback = null;
+		longPressEvent = null;
 	}
 
-	function watchEditTap(event: PointerEvent): boolean {
-		if (event.button !== 0 || mode !== 'edit') return false;
-		clearPointerGesture();
-		pointerGesture = {
-			pointerId: event.pointerId,
-			startedMode: mode,
-			startX: event.clientX,
-			startY: event.clientY,
-			hasMoved: false,
-			longPressed: false,
-			onLongPress: null,
-			sourceEvent: event
-		};
-		return true;
+	function consumeClickSuppression(): boolean {
+		clearTimer();
+		clearReleaseTimer();
+		if (longPressFired) {
+			longPressFired = false;
+			return true;
+		}
+		if (hasMoved) {
+			hasMoved = false;
+			return true;
+		}
+		return false;
 	}
 
 	function isClickGuarded(): boolean {
 		return now() < clickGuardUntil;
 	}
 
+	function createGridHandlers(options: GridHandlerOptions = {}) {
+		const { onEmptyLongPress, onClickEmpty } = options;
+		return {
+			onpointerdown: (event: PointerEvent) => {
+				if (event.button !== 0) return;
+				resetClickFlags();
+				if (mode !== 'view' || isClickGuarded()) return;
+				if (isCourseCapsuleTarget(event.target)) return;
+
+				watchLongPress(event, (pressEvent) => {
+					if (onEmptyLongPress) {
+						onEmptyLongPress(pressEvent);
+					} else {
+						enterEditFromLongPress(pressEvent);
+					}
+				});
+			},
+			onpointermove: (event: PointerEvent) => {
+				notePointerMove(event);
+			},
+			onpointerup: (event: PointerEvent) => {
+				notePointerUp(event);
+			},
+			onpointerleave: (event: PointerEvent) => {
+				notePointerLost(event);
+			},
+			onpointercancel: (event: PointerEvent) => {
+				notePointerCancel(event);
+			},
+			onclick: (event: MouseEvent) => {
+				if (consumeClickSuppression()) {
+					event.preventDefault();
+					event.stopPropagation();
+					return;
+				}
+				if (mode === 'dragging' || isClickGuarded()) {
+					event.preventDefault();
+					event.stopPropagation();
+					return;
+				}
+				if (mode === 'view') return;
+				if (hasClosest(event.target)) {
+					if (event.target.closest('.course-capsule') || event.target.closest('button')) {
+						return;
+					}
+				}
+				onClickEmpty?.(event);
+			}
+		};
+	}
+
+	function createCourseCardHandlers(course: Course, options: CourseCardHandlerOptions = {}) {
+		const { onCourseClick, onLongPress, onDragStart } = options;
+		return {
+			onpointerdown: (event: PointerEvent) => {
+				if (event.button !== 0) return;
+				resetClickFlags();
+				if (mode === 'dragging' || isClickGuarded()) return;
+				if (mode !== 'view') {
+					onDragStart?.(course, event);
+					return;
+				}
+				watchLongPress(event, (pressEvent) => {
+					onLongPress?.(course, pressEvent);
+				});
+			},
+			onpointermove: (event: PointerEvent) => {
+				notePointerMove(event);
+			},
+			onpointerup: (event: PointerEvent) => {
+				notePointerUp(event);
+			},
+			onpointerleave: (event: PointerEvent) => {
+				notePointerLost(event);
+			},
+			onpointercancel: (event: PointerEvent) => {
+				notePointerCancel(event);
+			},
+			onclick: (event: MouseEvent) => {
+				if (consumeClickSuppression() || mode !== 'view' || isClickGuarded()) {
+					event.preventDefault();
+					return;
+				}
+				onCourseClick?.(course);
+			}
+		};
+	}
+
 	function destroy() {
-		clearPointerGesture();
+		clearTimer();
+		clearReleaseTimer();
 		clearDragMoveLock();
+		pendingPointerId = null;
+		longPressCallback = null;
+		longPressEvent = null;
 		drag = null;
 		mode = 'view';
 		clickGuardUntil = 0;
@@ -321,16 +478,18 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		toggleEditing,
 		beginDrag,
 		updateDragTarget,
+		updateDragFromPointer,
 		setDragOverDeleteZone,
 		endDrag,
 		cancelDrag,
 		watchLongPress,
-		watchEditTap,
 		notePointerMove,
 		notePagerFirstMove,
 		notePointerUp,
 		notePointerLost,
 		notePointerCancel,
+		createGridHandlers,
+		createCourseCardHandlers,
 		isClickGuarded,
 		destroy
 	};

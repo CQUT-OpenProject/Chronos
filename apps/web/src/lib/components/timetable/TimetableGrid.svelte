@@ -35,9 +35,6 @@
 		timetableSidebarTintClass,
 		timetableSolidBgClass
 	} from '@chronos/ui-kit';
-	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
-	import { createGridGestureHandlers } from '$lib/timetable/grid-gesture';
-	import { touchGestureSurfaceAttach } from '$lib/utils/touch-gesture-surface';
 	import { rearrangeCourseSchedule } from '$lib/timetable/course-reorder';
 	import {
 		type TimetableDragSession,
@@ -250,24 +247,6 @@
 		}
 	}
 
-	function handleOverlapPointerUp(key: string, event: PointerEvent) {
-		const result = interaction.notePointerUp(event);
-		if (
-			(result?.startedMode === 'view' && result.gesture === 'tap') ||
-			(result === null && interaction.isEditing)
-		) {
-			expandSlot(key);
-		}
-	}
-
-	function handleOverlapClick(key: string, event: MouseEvent) {
-		if (event.detail !== 0) {
-			event.preventDefault();
-			return;
-		}
-		expandSlot(key);
-	}
-
 	const bodyScrollAttach: Attachment = (node) => {
 		const element = node as HTMLDivElement;
 		scrollContainer = element;
@@ -365,25 +344,11 @@
 			return;
 		}
 
-		if (gridBodyEl && visibleDayCount > 0 && gridModel.displayedPeriodCount > 0) {
-			const gridRect = gridBodyEl.getBoundingClientRect();
-			const relX = event.clientX - gridRect.left;
-			const relY = event.clientY - gridRect.top;
-
-			const colWidth = gridRect.width / visibleDayCount;
-			let colIdx = Math.floor(relX / colWidth);
-			colIdx = Math.max(0, Math.min(colIdx, visibleDayCount - 1));
-			const targetDay = gridModel.visibleDays[colIdx]?.dayOfWeek ?? dragState.targetDayOfWeek;
-
-			const rowHeight = gridRect.height / gridModel.displayedPeriodCount;
-			const span = dragState.course.endPeriod - dragState.course.startPeriod + 1;
-			let periodIdx = Math.floor(relY / rowHeight) + 1;
-			periodIdx = Math.max(1, Math.min(periodIdx, gridModel.displayedPeriodCount - span + 1));
-
-			interaction.updateDragTarget({
-				targetColIndex: colIdx,
-				targetDayOfWeek: targetDay,
-				targetStartPeriod: periodIdx
+		if (gridBodyEl) {
+			interaction.updateDragFromPointer(event, {
+				gridRect: gridBodyEl.getBoundingClientRect(),
+				visibleDays: gridModel.visibleDays,
+				displayedPeriodCount: gridModel.displayedPeriodCount
 			});
 		}
 
@@ -492,11 +457,9 @@
 	}
 
 	const gridGestureHandlers = $derived(
-		createGridGestureHandlers({
-			interaction,
+		interaction.createGridHandlers({
 			onClickEmpty: () => {
 				if (interaction.isDragging || interaction.isClickGuarded()) return;
-				haptic.light();
 				interaction.exitEdit();
 			}
 		})
@@ -552,14 +515,14 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="timetable-grid-surface relative flex h-full w-full touch-manipulation flex-col select-none {solidBgClass}"
+	class="relative flex h-full w-full flex-col select-none {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"
-	{@attach touchGestureSurfaceAttach}
 	onpointerdown={gridGestureHandlers.onpointerdown}
 	onpointermove={gridGestureHandlers.onpointermove}
 	onpointerup={gridGestureHandlers.onpointerup}
 	onpointerleave={gridGestureHandlers.onpointerleave}
 	onpointercancel={gridGestureHandlers.onpointercancel}
+	onclick={gridGestureHandlers.onclick}
 	ondragstart={(e) => e.preventDefault()}
 >
 	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
@@ -667,8 +630,7 @@
 									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
 									style={capsuleCornerAttrs(isEditing ? ALL_CORNERS_ROUNDED : item.corners).style}
 									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
-									onpointerup={(event) => handleOverlapPointerUp(item.key, event)}
-									onclick={(event) => handleOverlapClick(item.key, event)}
+									onclick={() => expandSlot(item.key)}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
 										{hostT('timetable.grid.overlap', { count: item.count })}
@@ -731,8 +693,7 @@
 	{@const locationLines = placed.locationLines}
 	{@const locationMetrics = placed.locationMetrics}
 	{@const teacher = placed.teacher}
-	{@const handlers = createCourseCardHandlers(placed.course, {
-		interaction,
+	{@const handlers = interaction.createCourseCardHandlers(placed.course, {
 		onCourseClick: isEditing ? undefined : onCourseClick,
 		onLongPress: (_c, event) => {
 			interaction.enterEditFromLongPress(event);
@@ -829,9 +790,3 @@
 		{/if}
 	</button>
 {/snippet}
-
-<style>
-	.timetable-grid-surface {
-		-webkit-touch-callout: none;
-	}
-</style>

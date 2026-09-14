@@ -10,6 +10,7 @@
 		resolvePickerMonthIso,
 		type DateFieldLabels
 	} from './date-field-utils';
+	import { haptic } from '../haptic/haptic';
 
 	let {
 		label,
@@ -58,6 +59,7 @@
 
 	function handleOpenChange(nextOpen: boolean) {
 		if (nextOpen) {
+			haptic.light();
 			draftIso = safeValue;
 			placeholder = isoToCalendarDate(
 				resolvePickerMonthIso(safeValue, today(getLocalTimeZone()).toString())
@@ -66,11 +68,16 @@
 	}
 
 	function handleDraftChange(next: DateValue | undefined) {
-		draftIso = calendarDateToIso(next);
+		const nextIso = calendarDateToIso(next);
+		if (nextIso !== draftIso) {
+			haptic.light();
+			draftIso = nextIso;
+		}
 	}
 
 	function confirmSelection() {
 		if (required && !draftIso) return;
+		haptic.light();
 		if (draftIso !== safeValue) {
 			value = draftIso;
 			onValueChange?.(draftIso);
@@ -79,6 +86,7 @@
 	}
 
 	function selectToday() {
+		haptic.light();
 		const next = today(getLocalTimeZone());
 		draftIso = calendarDateToIso(next);
 		placeholder = next;
@@ -86,7 +94,12 @@
 
 	function clearDate() {
 		if (required) return;
+		haptic.light();
 		draftIso = '';
+	}
+
+	function stepMonth() {
+		haptic.light();
 	}
 </script>
 
@@ -182,6 +195,7 @@
 							<DatePicker.Header class="mb-3 flex items-center justify-between gap-2">
 								<DatePicker.PrevButton
 									class="inline-flex size-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-on-surface/5 active:bg-on-surface/10"
+									onclick={stepMonth}
 								>
 									<svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 										<path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
@@ -190,6 +204,7 @@
 								<DatePicker.Heading class="text-title-small text-on-surface" />
 								<DatePicker.NextButton
 									class="inline-flex size-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-on-surface/5 active:bg-on-surface/10"
+									onclick={stepMonth}
 								>
 									<svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 										<path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />

@@ -62,9 +62,7 @@ export function getTimetableScreen(): TimetableScreenController {
 function createTimetableScreen() {
 	let shellRef = $state<AppShellController | null>(null);
 	let expandedSlots = $state(new SvelteSet<string>());
-	const interaction = createTimetableInteraction({
-		onLongPressFeedback: () => haptic.heavy()
-	});
+	const interaction = createTimetableInteraction();
 	let displayedWeekMemory = $state(1);
 	let displayedWeekTimetableIdMemory = $state<string | null>(null);
 	let pendingWeekDelete = $state<{ course: Course; week: number } | null>(null);
