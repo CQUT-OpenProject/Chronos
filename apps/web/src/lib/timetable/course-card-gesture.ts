@@ -11,15 +11,18 @@ export const COURSE_CARD_LONG_PRESS_DELAY_MS = TIMETABLE_LONG_PRESS_DELAY_MS;
 export interface CourseCardGestureOptions {
 	interaction: TimetableInteraction;
 	onCourseClick?: (course: Course) => void;
+	onLongPress?: (course: Course, event: PointerEvent) => void;
 	onDragStart?: (course: Course, event: PointerEvent) => void;
 }
 
 export function createCourseCardHandlers(course: Course, options: CourseCardGestureOptions) {
-	const { interaction, onCourseClick, onDragStart } = options;
+	const { interaction, onCourseClick, onLongPress, onDragStart } = options;
 
 	return {
 		onpointerdown: (event: PointerEvent) => {
 			if (event.button !== 0) return;
+
+			interaction.resetClickFlags();
 
 			if (interaction.isDragging || interaction.isClickGuarded()) return;
 
@@ -28,16 +31,15 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 				return;
 			}
 
-			interaction.watchTapGesture(event);
+			interaction.watchLongPress(event, (pressEvent) => {
+				onLongPress?.(course, pressEvent);
+			});
 		},
 		onpointermove: (event: PointerEvent) => {
 			interaction.notePointerMove(event);
 		},
 		onpointerup: (event: PointerEvent) => {
-			const result = interaction.notePointerUp(event);
-			if (result?.startedMode === 'view' && result.gesture === 'tap') {
-				onCourseClick?.(course);
-			}
+			interaction.notePointerUp(event);
 		},
 		onpointerleave: (event: PointerEvent) => {
 			interaction.notePointerLost(event);
@@ -47,7 +49,7 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 		},
 		onclick: (event: MouseEvent) => {
 			if (
-				event.detail !== 0 ||
+				interaction.consumeClickSuppression() ||
 				interaction.isEditing ||
 				interaction.isDragging ||
 				interaction.isClickGuarded()

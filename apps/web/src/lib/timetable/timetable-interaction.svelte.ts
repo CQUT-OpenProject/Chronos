@@ -3,6 +3,7 @@ import type { Course, PlacedCourseCapsule } from '@chronos/core';
 export const TIMETABLE_POINTER_THRESHOLD_PX = 5;
 export const TIMETABLE_LONG_PRESS_DELAY_MS = 450;
 export const TIMETABLE_CLICK_GUARD_MS = 120;
+export const TIMETABLE_LONG_PRESS_CLICK_SUPPRESS_MS = 50;
 
 export type TimetableInteractionMode = 'view' | 'edit' | 'dragging';
 
@@ -52,22 +53,6 @@ interface DragMoveLock {
 	startY: number;
 }
 
-interface PointerGesture {
-	pointerId: number;
-	startedMode: TimetableInteractionMode;
-	startX: number;
-	startY: number;
-	hasMoved: boolean;
-	longPressed: boolean;
-	onLongPress: ((event: PointerEvent) => void) | null;
-	sourceEvent: PointerEvent;
-}
-
-export interface TimetablePointerEnd {
-	startedMode: TimetableInteractionMode;
-	gesture: 'tap' | 'moved' | 'long-press';
-}
-
 export function createTimetableInteraction(options: TimetableInteractionOptions = {}) {
 	const now = options.now ?? Date.now;
 	const longPressDelayMs = options.longPressDelayMs ?? TIMETABLE_LONG_PRESS_DELAY_MS;
@@ -79,8 +64,15 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	let drag = $state<TimetableDragSession | null>(null);
 	let clickGuardUntil = $state(0);
 
-	let pointerGesture: PointerGesture | null = null;
+	let pendingPointerId: number | null = null;
+	let startX = 0;
+	let startY = 0;
+	let hasMoved = false;
+	let longPressFired = false;
 	let timer: ReturnType<typeof setTimeout> | null = null;
+	let releaseTimer: ReturnType<typeof setTimeout> | null = null;
+	let longPressCallback: ((event: PointerEvent) => void) | null = null;
+	let longPressEvent: PointerEvent | null = null;
 	let dragMoveLock: DragMoveLock | null = null;
 
 	function clearTimer() {
@@ -90,13 +82,15 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		}
 	}
 
-	function armClickGuard() {
-		clickGuardUntil = now() + clickGuardMs;
+	function clearReleaseTimer() {
+		if (releaseTimer !== null) {
+			clearTimeout(releaseTimer);
+			releaseTimer = null;
+		}
 	}
 
-	function clearPointerGesture() {
-		clearTimer();
-		pointerGesture = null;
+	function armClickGuard() {
+		clickGuardUntil = now() + clickGuardMs;
 	}
 
 	function clearDragMoveLock() {
@@ -131,8 +125,12 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function exitEdit() {
-		clearPointerGesture();
+		clearTimer();
+		clearReleaseTimer();
 		clearDragMoveLock();
+		pendingPointerId = null;
+		longPressCallback = null;
+		longPressEvent = null;
 		if (drag) {
 			drag = null;
 			armClickGuard();
@@ -198,28 +196,33 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		return current;
 	}
 
+	function resetClickFlags() {
+		clearReleaseTimer();
+		longPressFired = false;
+		hasMoved = false;
+	}
+
 	function watchLongPress(event: PointerEvent, onFire: (event: PointerEvent) => void): boolean {
 		if (event.button !== 0) return false;
 		if (mode !== 'view') return false;
 
-		clearPointerGesture();
-		const gesture: PointerGesture = {
-			pointerId: event.pointerId,
-			startedMode: mode,
-			startX: event.clientX,
-			startY: event.clientY,
-			hasMoved: false,
-			longPressed: false,
-			onLongPress: onFire,
-			sourceEvent: event
-		};
-		pointerGesture = gesture;
+		pendingPointerId = event.pointerId;
+		startX = event.clientX;
+		startY = event.clientY;
+		hasMoved = false;
+		longPressFired = false;
+		longPressCallback = onFire;
+		longPressEvent = event;
+
+		clearTimer();
 		timer = setTimeout(() => {
-			if (pointerGesture !== gesture || gesture.hasMoved) return;
+			longPressFired = true;
 			timer = null;
-			gesture.longPressed = true;
-			gesture.onLongPress?.(gesture.sourceEvent);
-			gesture.onLongPress = null;
+			const callback = longPressCallback;
+			const sourceEvent = longPressEvent;
+			longPressCallback = null;
+			longPressEvent = null;
+			if (callback && sourceEvent) callback(sourceEvent);
 		}, longPressDelayMs);
 
 		return true;
@@ -228,79 +231,70 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	function notePointerMove(event: PointerEvent) {
 		tryReleaseDragMoveLock(event);
 
-		if (
-			!pointerGesture ||
-			event.pointerId !== pointerGesture.pointerId ||
-			pointerGesture.hasMoved
-		) {
-			return;
-		}
+		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
+		if (pendingPointerId === null || hasMoved) return;
 
-		const dx = Math.abs(event.clientX - pointerGesture.startX);
-		const dy = Math.abs(event.clientY - pointerGesture.startY);
+		const dx = Math.abs(event.clientX - startX);
+		const dy = Math.abs(event.clientY - startY);
 		if (dx > thresholdPx || dy > thresholdPx) {
-			pointerGesture.hasMoved = true;
+			hasMoved = true;
 			clearTimer();
 		}
 	}
 
 	function notePagerFirstMove() {
-		if (!pointerGesture) return;
-		pointerGesture.hasMoved = true;
+		hasMoved = true;
 		clearTimer();
-		pointerGesture.onLongPress = null;
+		longPressCallback = null;
+		longPressEvent = null;
 	}
 
-	function notePointerUp(event: PointerEvent): TimetablePointerEnd | null {
-		if (!pointerGesture || event.pointerId !== pointerGesture.pointerId) return null;
-		const gesture = pointerGesture;
-		clearPointerGesture();
-		return {
-			startedMode: gesture.startedMode,
-			gesture: gesture.longPressed ? 'long-press' : gesture.hasMoved ? 'moved' : 'tap'
-		};
+	function notePointerUp(event: PointerEvent) {
+		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
+		clearTimer();
+		pendingPointerId = null;
+		longPressCallback = null;
+		longPressEvent = null;
+		if (longPressFired) {
+			clearReleaseTimer();
+			releaseTimer = setTimeout(() => {
+				longPressFired = false;
+				releaseTimer = null;
+			}, TIMETABLE_LONG_PRESS_CLICK_SUPPRESS_MS);
+		}
 	}
 
 	function notePointerLost(event: PointerEvent) {
-		if (!pointerGesture || event.pointerId !== pointerGesture.pointerId) return;
-		clearPointerGesture();
+		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
+		clearTimer();
+		pendingPointerId = null;
+		longPressCallback = null;
+		longPressEvent = null;
 	}
 
 	function notePointerCancel(event: PointerEvent) {
-		if (!pointerGesture || event.pointerId !== pointerGesture.pointerId) return;
-		clearPointerGesture();
+		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
+		clearTimer();
+		clearReleaseTimer();
+		pendingPointerId = null;
+		hasMoved = false;
+		longPressFired = false;
+		longPressCallback = null;
+		longPressEvent = null;
 	}
 
-	function watchTapGesture(event: PointerEvent): boolean {
-		if (event.button !== 0 || mode !== 'view') return false;
-		clearPointerGesture();
-		pointerGesture = {
-			pointerId: event.pointerId,
-			startedMode: mode,
-			startX: event.clientX,
-			startY: event.clientY,
-			hasMoved: false,
-			longPressed: false,
-			onLongPress: null,
-			sourceEvent: event
-		};
-		return true;
-	}
-
-	function watchEditTap(event: PointerEvent): boolean {
-		if (event.button !== 0 || mode !== 'edit') return false;
-		clearPointerGesture();
-		pointerGesture = {
-			pointerId: event.pointerId,
-			startedMode: mode,
-			startX: event.clientX,
-			startY: event.clientY,
-			hasMoved: false,
-			longPressed: false,
-			onLongPress: null,
-			sourceEvent: event
-		};
-		return true;
+	function consumeClickSuppression(): boolean {
+		clearTimer();
+		clearReleaseTimer();
+		if (longPressFired) {
+			longPressFired = false;
+			return true;
+		}
+		if (hasMoved) {
+			hasMoved = false;
+			return true;
+		}
+		return false;
 	}
 
 	function isClickGuarded(): boolean {
@@ -308,8 +302,12 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	}
 
 	function destroy() {
-		clearPointerGesture();
+		clearTimer();
+		clearReleaseTimer();
 		clearDragMoveLock();
+		pendingPointerId = null;
+		longPressCallback = null;
+		longPressEvent = null;
 		drag = null;
 		mode = 'view';
 		clickGuardUntil = 0;
@@ -340,14 +338,14 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		setDragOverDeleteZone,
 		endDrag,
 		cancelDrag,
+		resetClickFlags,
 		watchLongPress,
-		watchTapGesture,
-		watchEditTap,
 		notePointerMove,
 		notePagerFirstMove,
 		notePointerUp,
 		notePointerLost,
 		notePointerCancel,
+		consumeClickSuppression,
 		isClickGuarded,
 		destroy
 	};

@@ -10,7 +10,7 @@ export const GRID_GESTURE_LONG_PRESS_DELAY_MS = TIMETABLE_LONG_PRESS_DELAY_MS;
 export interface GridGestureOptions {
 	interaction: TimetableInteraction;
 	onEmptyLongPress?: (event: PointerEvent) => void;
-	onClickEmpty?: (event: PointerEvent) => void;
+	onClickEmpty?: (event: MouseEvent) => void;
 }
 
 function hasClosest(target: unknown): target is { closest: (selector: string) => unknown } {
@@ -22,9 +22,9 @@ function hasClosest(target: unknown): target is { closest: (selector: string) =>
 	);
 }
 
-function isInteractiveTarget(target: EventTarget | null): boolean {
+function isExcludedTarget(target: EventTarget | null): boolean {
 	if (!hasClosest(target)) return false;
-	return Boolean(target.closest('.course-capsule') || target.closest('button'));
+	return Boolean(target.closest('.course-capsule'));
 }
 
 export function createGridGestureHandlers(options: GridGestureOptions) {
@@ -33,11 +33,9 @@ export function createGridGestureHandlers(options: GridGestureOptions) {
 	return {
 		onpointerdown: (event: PointerEvent) => {
 			if (event.button !== 0) return;
-			if (interaction.isDragging || interaction.isClickGuarded()) return;
-			if (interaction.isEditing) {
-				if (!isInteractiveTarget(event.target)) interaction.watchEditTap(event);
-				return;
-			}
+			interaction.resetClickFlags();
+			if (interaction.isEditing || interaction.isDragging || interaction.isClickGuarded()) return;
+			if (isExcludedTarget(event.target)) return;
 
 			interaction.watchLongPress(event, (pressEvent) => {
 				if (onEmptyLongPress) {
@@ -51,16 +49,33 @@ export function createGridGestureHandlers(options: GridGestureOptions) {
 			interaction.notePointerMove(event);
 		},
 		onpointerup: (event: PointerEvent) => {
-			const result = interaction.notePointerUp(event);
-			if (result?.startedMode === 'edit' && result.gesture === 'tap') {
-				onClickEmpty?.(event);
-			}
+			interaction.notePointerUp(event);
 		},
 		onpointerleave: (event: PointerEvent) => {
 			interaction.notePointerLost(event);
 		},
 		onpointercancel: (event: PointerEvent) => {
 			interaction.notePointerCancel(event);
+		},
+		onclick: (event: MouseEvent) => {
+			if (interaction.consumeClickSuppression()) {
+				event.preventDefault();
+				event.stopPropagation();
+				return;
+			}
+			if (interaction.isDragging || interaction.isClickGuarded()) {
+				event.preventDefault();
+				event.stopPropagation();
+				return;
+			}
+			if (interaction.isEditing) {
+				if (hasClosest(event.target)) {
+					if (event.target.closest('.course-capsule') || event.target.closest('button')) {
+						return;
+					}
+				}
+				onClickEmpty?.(event);
+			}
 		}
 	};
 }

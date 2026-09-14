@@ -37,7 +37,6 @@
 	} from '@chronos/ui-kit';
 	import { createCourseCardHandlers } from '$lib/timetable/course-card-gesture';
 	import { createGridGestureHandlers } from '$lib/timetable/grid-gesture';
-	import { touchGestureSurfaceAttach } from '$lib/utils/touch-gesture-surface';
 	import { rearrangeCourseSchedule } from '$lib/timetable/course-reorder';
 	import {
 		type TimetableDragSession,
@@ -248,24 +247,6 @@
 		} else {
 			internalExpandedSlots = new Set([...internalExpandedSlots, key]);
 		}
-	}
-
-	function handleOverlapPointerUp(key: string, event: PointerEvent) {
-		const result = interaction.notePointerUp(event);
-		if (
-			(result?.startedMode === 'view' && result.gesture === 'tap') ||
-			(result === null && interaction.isEditing)
-		) {
-			expandSlot(key);
-		}
-	}
-
-	function handleOverlapClick(key: string, event: MouseEvent) {
-		if (event.detail !== 0) {
-			event.preventDefault();
-			return;
-		}
-		expandSlot(key);
 	}
 
 	const bodyScrollAttach: Attachment = (node) => {
@@ -491,36 +472,9 @@
 		interaction.cancelDrag();
 	}
 
-	function resolveCapsuleAtPoint(event: PointerEvent): PlacedCourseCapsule | null {
-		const el = document.elementFromPoint(event.clientX, event.clientY);
-		const capsuleEl = el?.closest('.course-capsule');
-		if (!capsuleEl) return null;
-		const courseId = capsuleEl.getAttribute('data-course-id');
-		if (!courseId) return null;
-		for (const item of placements) {
-			if (item.kind === 'course' && item.course.id === courseId) {
-				return item.displayModel.isInDisplayedWeek ? item : null;
-			}
-		}
-		return null;
-	}
-
-	function handleGridLongPress(event: PointerEvent) {
-		interaction.enterEditFromLongPress(event);
-		const placed = resolveCapsuleAtPoint(event);
-		if (placed) {
-			startDrag(placed, event, {
-				hapticOnStart: false,
-				persistAfterDrop: false,
-				waitForMove: true
-			});
-		}
-	}
-
 	const gridGestureHandlers = $derived(
 		createGridGestureHandlers({
 			interaction,
-			onEmptyLongPress: handleGridLongPress,
 			onClickEmpty: () => {
 				if (interaction.isDragging || interaction.isClickGuarded()) return;
 				interaction.exitEdit();
@@ -578,14 +532,14 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="timetable-grid-surface relative flex h-full w-full touch-manipulation flex-col select-none {solidBgClass}"
+	class="relative flex h-full w-full flex-col select-none {solidBgClass}"
 	style="--row-height: {rowHeightCss}; --sidebar-width: 3.25rem"
-	{@attach touchGestureSurfaceAttach}
 	onpointerdown={gridGestureHandlers.onpointerdown}
 	onpointermove={gridGestureHandlers.onpointermove}
 	onpointerup={gridGestureHandlers.onpointerup}
 	onpointerleave={gridGestureHandlers.onpointerleave}
 	onpointercancel={gridGestureHandlers.onpointercancel}
+	onclick={gridGestureHandlers.onclick}
 	ondragstart={(e) => e.preventDefault()}
 >
 	<div class="flex shrink-0 items-center py-2 {timetableSidebarTintClass(hasDynamicBackground)}">
@@ -693,8 +647,7 @@
 									class="flex h-full w-full items-center justify-center border border-outline-variant/50 bg-surface-variant p-2 text-center"
 									style={capsuleCornerAttrs(isEditing ? ALL_CORNERS_ROUNDED : item.corners).style}
 									aria-label={buildOverlapPlaceholderAriaLabel(item.count)}
-									onpointerup={(event) => handleOverlapPointerUp(item.key, event)}
-									onclick={(event) => handleOverlapClick(item.key, event)}
+									onclick={() => expandSlot(item.key)}
 								>
 									<span class="text-on-surface-variant" style:font-size="{item.placeholderPx}px">
 										{hostT('timetable.grid.overlap', { count: item.count })}
@@ -760,6 +713,16 @@
 	{@const handlers = createCourseCardHandlers(placed.course, {
 		interaction,
 		onCourseClick: isEditing ? undefined : onCourseClick,
+		onLongPress: (_c, event) => {
+			interaction.enterEditFromLongPress(event);
+			if (placed.displayModel.isInDisplayedWeek) {
+				startDrag(placed, event, {
+					hapticOnStart: false,
+					persistAfterDrop: false,
+					waitForMove: true
+				});
+			}
+		},
 		onDragStart: (_c, event) => startDrag(placed, event)
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
@@ -768,7 +731,6 @@
 	<button
 		type="button"
 		draggable="false"
-		data-course-id={placed.course.id}
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left select-none {isEditing
 			? 'cursor-grab active:cursor-grabbing'
 			: ''} {placed.displayModel.isHolidayMuted
@@ -846,9 +808,3 @@
 		{/if}
 	</button>
 {/snippet}
-
-<style>
-	.timetable-grid-surface {
-		-webkit-touch-callout: none;
-	}
-</style>
