@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { readBundledPluginVersion, trackPluginAnalytics } from '@chronos/core';
 	import type { ChronosUiController } from '@chronos/ui-kit';
-	import { pluginText } from '@chronos/ui-kit';
+	import { pluginText, scrollRevealScrollbar } from '@chronos/ui-kit';
 	import { ERROR_LOG_ANALYTICS } from './analytics';
 	import { copyTextWithFallback } from './copy-text';
 	import { formatErrorLogClipboard, type ErrorLogEntry } from './error-log';
@@ -56,7 +56,10 @@
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+	<div
+		use:scrollRevealScrollbar
+		class="secondary-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
+	>
 		<div class="p-4">
 			<div class="ui-section-surface divide-y divide-outline/10 overflow-hidden">
 				{#if entries.length === 0}

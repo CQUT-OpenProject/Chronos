@@ -38,6 +38,7 @@ export { default as MountableSlotOutlet } from './plugin-screen/MountableSlotOut
 export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-slot';
 export { mountableSvelteComponent } from './plugin-screen/mountable-svelte';
 export { pluginText } from './i18n/plugin-text';
+export { scrollRevealScrollbar } from './actions/scroll-reveal-scrollbar';
 export { CHRONOS_MOUNTABLE } from '@chronos/core';
 export {
 	previewAndNotify,

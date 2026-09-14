@@ -3,6 +3,7 @@
 	import {
 		appLocaleToBcp47,
 		pluginText,
+		scrollRevealScrollbar,
 		SegmentedControl,
 		TIMETABLE_PRESENTATION_CONTEXT,
 		resolveCoursePalette,
@@ -98,7 +99,10 @@
 	});
 </script>
 
-<div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+<div
+	use:scrollRevealScrollbar
+	class="secondary-scroll flex min-h-0 flex-1 flex-col overflow-y-auto"
+>
 	<header class="border-b border-outline/10 bg-surface px-4 pt-6 pb-4">
 		<p class="text-headline-small text-on-surface">{formatHeaderDate(todayIso)}</p>
 		{#if timetable}

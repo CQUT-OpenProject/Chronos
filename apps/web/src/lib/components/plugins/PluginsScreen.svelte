@@ -20,6 +20,7 @@
 	import PluginConfigModal from './PluginConfigModal.svelte';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 
+	import { scrollRevealScrollbar } from '@chronos/ui-kit';
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { groupCatalogManifestsByCategory } from '$lib/services/official-plugins/catalog-sort';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
@@ -293,7 +294,10 @@
 	</div>
 
 	{#if activeTab === 'installed'}
-		<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
+		<div
+			use:scrollRevealScrollbar
+			class="secondary-scroll mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4"
+		>
 			<section class="ui-section">
 				<div class="flex items-center justify-between px-1">
 					<h3 class="text-label-large font-medium text-on-surface">
@@ -507,7 +511,10 @@
 		</div>
 	{:else}
 		<div class="flex min-h-0 flex-1 flex-col">
-			<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
+			<div
+				use:scrollRevealScrollbar
+				class="secondary-scroll mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4"
+			>
 				<section class="ui-section">
 					{#if loadingCatalog}
 						<div class="flex flex-col items-center justify-center py-12">

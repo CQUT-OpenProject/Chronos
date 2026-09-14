@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ChronosUiController } from '@chronos/ui-kit';
-	import { appLocaleToBcp47, pluginText } from '@chronos/ui-kit';
+	import { appLocaleToBcp47, pluginText, scrollRevealScrollbar } from '@chronos/ui-kit';
 	import {
 		filterHolidaysInTermRange,
 		formatCompactDate,
@@ -91,7 +91,10 @@
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+	<div
+		use:scrollRevealScrollbar
+		class="secondary-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
+	>
 		<div class="flex flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
 			<section class="ui-section-surface ui-section-surface--comfortable">
 				<div class="ui-section-stack">
