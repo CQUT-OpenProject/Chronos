@@ -7,7 +7,7 @@
 	--timetable-holiday-date-bg: rgb(255 66 69);
 	--timetable-holiday-date-fg: var(--timetable-accent-date-fg);
 	--timetable-today-date-bg: var(--color-brand);
-	--timetable-today-date-fg: var(--timetable-accent-date-fg);
+	--timetable-today-date-fg: var(--color-on-primary);
 }
 
 .dark {
