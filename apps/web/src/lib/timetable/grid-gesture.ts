@@ -22,11 +22,6 @@ function hasClosest(target: unknown): target is { closest: (selector: string) =>
 	);
 }
 
-function isCourseTarget(target: EventTarget | null): boolean {
-	if (!hasClosest(target)) return false;
-	return Boolean(target.closest('.course-capsule'));
-}
-
 function isInteractiveTarget(target: EventTarget | null): boolean {
 	if (!hasClosest(target)) return false;
 	return Boolean(target.closest('.course-capsule') || target.closest('button'));
@@ -43,7 +38,6 @@ export function createGridGestureHandlers(options: GridGestureOptions) {
 				if (!isInteractiveTarget(event.target)) interaction.watchEditTap(event);
 				return;
 			}
-			if (isCourseTarget(event.target)) return;
 
 			interaction.watchLongPress(event, (pressEvent) => {
 				if (onEmptyLongPress) {

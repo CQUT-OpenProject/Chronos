@@ -11,12 +11,11 @@ export const COURSE_CARD_LONG_PRESS_DELAY_MS = TIMETABLE_LONG_PRESS_DELAY_MS;
 export interface CourseCardGestureOptions {
 	interaction: TimetableInteraction;
 	onCourseClick?: (course: Course) => void;
-	onLongPress?: (course: Course, event: PointerEvent) => void;
 	onDragStart?: (course: Course, event: PointerEvent) => void;
 }
 
 export function createCourseCardHandlers(course: Course, options: CourseCardGestureOptions) {
-	const { interaction, onCourseClick, onLongPress, onDragStart } = options;
+	const { interaction, onCourseClick, onDragStart } = options;
 
 	return {
 		onpointerdown: (event: PointerEvent) => {
@@ -29,9 +28,7 @@ export function createCourseCardHandlers(course: Course, options: CourseCardGest
 				return;
 			}
 
-			interaction.watchLongPress(event, (pressEvent) => {
-				onLongPress?.(course, pressEvent);
-			});
+			interaction.watchTapGesture(event);
 		},
 		onpointermove: (event: PointerEvent) => {
 			interaction.notePointerMove(event);

@@ -271,6 +271,22 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		clearPointerGesture();
 	}
 
+	function watchTapGesture(event: PointerEvent): boolean {
+		if (event.button !== 0 || mode !== 'view') return false;
+		clearPointerGesture();
+		pointerGesture = {
+			pointerId: event.pointerId,
+			startedMode: mode,
+			startX: event.clientX,
+			startY: event.clientY,
+			hasMoved: false,
+			longPressed: false,
+			onLongPress: null,
+			sourceEvent: event
+		};
+		return true;
+	}
+
 	function watchEditTap(event: PointerEvent): boolean {
 		if (event.button !== 0 || mode !== 'edit') return false;
 		clearPointerGesture();
@@ -325,6 +341,7 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		endDrag,
 		cancelDrag,
 		watchLongPress,
+		watchTapGesture,
 		watchEditTap,
 		notePointerMove,
 		notePagerFirstMove,

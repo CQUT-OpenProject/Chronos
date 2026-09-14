@@ -491,12 +491,38 @@
 		interaction.cancelDrag();
 	}
 
+	function resolveCapsuleAtPoint(event: PointerEvent): PlacedCourseCapsule | null {
+		const el = document.elementFromPoint(event.clientX, event.clientY);
+		const capsuleEl = el?.closest('.course-capsule');
+		if (!capsuleEl) return null;
+		const courseId = capsuleEl.getAttribute('data-course-id');
+		if (!courseId) return null;
+		for (const item of placements) {
+			if (item.kind === 'course' && item.course.id === courseId) {
+				return item.displayModel.isInDisplayedWeek ? item : null;
+			}
+		}
+		return null;
+	}
+
+	function handleGridLongPress(event: PointerEvent) {
+		interaction.enterEditFromLongPress(event);
+		const placed = resolveCapsuleAtPoint(event);
+		if (placed) {
+			startDrag(placed, event, {
+				hapticOnStart: false,
+				persistAfterDrop: false,
+				waitForMove: true
+			});
+		}
+	}
+
 	const gridGestureHandlers = $derived(
 		createGridGestureHandlers({
 			interaction,
+			onEmptyLongPress: handleGridLongPress,
 			onClickEmpty: () => {
 				if (interaction.isDragging || interaction.isClickGuarded()) return;
-				haptic.light();
 				interaction.exitEdit();
 			}
 		})
@@ -734,16 +760,6 @@
 	{@const handlers = createCourseCardHandlers(placed.course, {
 		interaction,
 		onCourseClick: isEditing ? undefined : onCourseClick,
-		onLongPress: (_c, event) => {
-			interaction.enterEditFromLongPress(event);
-			if (placed.displayModel.isInDisplayedWeek) {
-				startDrag(placed, event, {
-					hapticOnStart: false,
-					persistAfterDrop: false,
-					waitForMove: true
-				});
-			}
-		},
 		onDragStart: (_c, event) => startDrag(placed, event)
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
@@ -752,6 +768,7 @@
 	<button
 		type="button"
 		draggable="false"
+		data-course-id={placed.course.id}
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left select-none {isEditing
 			? 'cursor-grab active:cursor-grabbing'
 			: ''} {placed.displayModel.isHolidayMuted

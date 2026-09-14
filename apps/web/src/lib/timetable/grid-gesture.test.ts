@@ -143,7 +143,7 @@ describe('createGridGestureHandlers', () => {
 		}
 	});
 
-	it('ignores target that is inside a course-capsule', () => {
+	it('starts long press when target is inside a course-capsule', () => {
 		vi.useFakeTimers();
 		try {
 			const { handlers, onLongPressFeedback } = createHarness();
@@ -158,7 +158,7 @@ describe('createGridGestureHandlers', () => {
 			);
 			vi.advanceTimersByTime(500);
 
-			expect(onLongPressFeedback).not.toHaveBeenCalled();
+			expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
 		} finally {
 			vi.useRealTimers();
 		}

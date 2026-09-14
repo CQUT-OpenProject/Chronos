@@ -7,7 +7,6 @@
 	import { getContext } from 'svelte';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
-	import { haptic } from '$lib/haptic/haptic';
 	import { createCapsulePagerPreview } from '$lib/timetable/capsule-pager-preview';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 	import TimetableCapsuleIndicator from './TimetableCapsuleIndicator.svelte';
@@ -66,7 +65,6 @@
 		) {
 			return;
 		}
-		haptic.light();
 		screen.setEditing(false);
 	}
 
