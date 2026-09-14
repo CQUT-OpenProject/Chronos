@@ -572,7 +572,7 @@
 						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
 					>
 						<div
-							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {period.index ===
+							class="flex h-full w-full flex-col items-center justify-center rounded-lg {period.index ===
 							effectivePeriodIndex
 								? 'period-active'
 								: ''}"
