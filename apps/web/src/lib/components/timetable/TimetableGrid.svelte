@@ -719,7 +719,7 @@
 				startDrag(placed, event, {
 					hapticOnStart: false,
 					persistAfterDrop: false,
-					waitForMove: false
+					waitForMove: true
 				});
 			}
 		},
