@@ -58,7 +58,7 @@
 
 <svelte:window ononline={handleOnline} onoffline={handleOffline} />
 
-<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
+<div class="ui-section-surface ui-section-surface--comfortable">
 	<div class="flex flex-col gap-4">
 		{#if !isOnline}
 			<div class="flex items-center gap-2 rounded-xl bg-error-container/40 p-3 text-error">
@@ -94,7 +94,7 @@
 					/>
 					<button
 						type="button"
-						class="flex size-8 items-center justify-center text-on-surface-variant"
+						class="flex size-11 shrink-0 items-center justify-center rounded-full text-on-surface-variant outline-none focus-visible:ring-2 focus-visible:ring-brand"
 						onclick={() => (passwordVisible = !passwordVisible)}
 						aria-label={passwordToggleLabel}
 					>
@@ -129,7 +129,7 @@
 		<div class="flex w-full pt-1">
 			<button
 				type="button"
-				class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+				class="ui-btn ui-btn-filled ui-btn-block"
 				disabled={onlineImportDisabled}
 				onclick={handleOnlinePreview}
 			>

@@ -61,7 +61,7 @@
 		</span>
 		<Slider.Thumb
 			index={0}
-			class="block size-5 rounded-full bg-brand shadow-md transition-transform outline-none hover:scale-110 focus-visible:ring-2 focus-visible:ring-brand active:scale-125"
+			class="block size-5 rounded-full bg-brand shadow-control transition-transform outline-none hover:scale-110 focus-visible:ring-2 focus-visible:ring-brand active:scale-125"
 		/>
 	{/snippet}
 </Slider.Root>

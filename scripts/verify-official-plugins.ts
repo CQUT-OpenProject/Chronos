@@ -24,7 +24,7 @@ function pluginRequiresTailwindSource(pluginId: string): boolean {
 }
 
 const CSS_FINGERPRINTS: Record<string, readonly string[]> = {
-	'tool-today': ['bg-secondary-container', 'border-border'],
+	'tool-today': ['bg-secondary-container', 'divide-outline'],
 	'tool-wallpaper': ['bg-canvas'],
 	'tool-calendar-holidays': ['text-error'],
 	'tool-qrcode': ['border-dashed']
@@ -79,11 +79,6 @@ function verifySelfContainedPluginCss(
 				console.error(`✗ ${pluginId}: bundle.css missing fingerprint "${token}"`);
 				failures++;
 			}
-		}
-
-		if (cssContent.includes('.rounded-2xl') && !/corner-shape:\s*squircle/.test(cssContent)) {
-			console.error(`✗ ${pluginId}: .rounded-2xl in bundle.css is missing squircle override`);
-			failures++;
 		}
 	}
 

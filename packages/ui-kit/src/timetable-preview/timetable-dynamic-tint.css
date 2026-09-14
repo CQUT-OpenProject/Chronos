@@ -2,11 +2,18 @@
 :root {
 	--dynamic-tint-sidebar: rgb(255 255 255 / 0.54);
 	--dynamic-tint-grid: rgb(255 255 255 / 0.38);
+	--dynamic-tint-holiday-overlay: rgb(255 255 255 / 0.16);
+	--timetable-accent-date-fg: rgb(26 26 26);
+	--timetable-holiday-date-bg: rgb(255 66 69);
+	--timetable-holiday-date-fg: var(--timetable-accent-date-fg);
+	--timetable-today-date-bg: var(--color-brand);
+	--timetable-today-date-fg: var(--timetable-accent-date-fg);
 }
 
 .dark {
 	--dynamic-tint-sidebar: rgb(24 24 27 / 0.72);
 	--dynamic-tint-grid: rgb(24 24 27 / 0.62);
+	--dynamic-tint-holiday-overlay: rgb(24 24 27 / 0.1);
 }
 
 .timetable-dynamic-tint-body {

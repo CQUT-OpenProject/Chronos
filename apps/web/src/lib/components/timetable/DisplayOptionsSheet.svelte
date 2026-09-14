@@ -43,7 +43,7 @@
 	onOpenChangeComplete={handleOpenChangeComplete}
 >
 	{#if viewPrefs}
-		<div class="p-4">
+		<div class="px-4 pb-[var(--tabbar-safe)]">
 			<div class="ui-section-surface">
 				<MineRow label title={hostT('timetable.details.showSaturday')}>
 					{#snippet trailing()}

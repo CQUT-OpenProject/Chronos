@@ -91,36 +91,38 @@
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-	<section class="rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
-		<p class="text-body-medium text-on-surface-variant">{pt('screen.intro.body')}</p>
-		<button
-			type="button"
-			class="text-label-large mt-4 w-full rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
-			disabled={syncing || !timetable}
-			onclick={onSync}
-		>
-			{syncing
-				? pt('screen.sync.syncing')
-				: hasSyncedBefore
-					? pt('screen.sync.resync')
-					: pt('screen.sync.action')}
-		</button>
-		<div class="mt-3 flex items-center justify-between gap-3">
-			<a
-				class="text-body-small shrink-0 text-primary"
-				href="https://github.com/NateScarlet/holiday-cn"
-				target="_blank"
-				rel="noreferrer"
+	<section class="ui-section-surface ui-section-surface--comfortable">
+		<div class="ui-section-stack">
+			<p class="text-body-medium text-on-surface-variant">{pt('screen.intro.body')}</p>
+			<button
+				type="button"
+				class="ui-btn ui-btn-filled ui-btn-block"
+				disabled={syncing || !timetable}
+				onclick={onSync}
 			>
-				{pt('screen.intro.source')}
-			</a>
-			<p class="text-body-small text-right text-on-surface-variant">
-				{formatSyncedAt(holidayCalendar?.syncedAt)}
-			</p>
+				{syncing
+					? pt('screen.sync.syncing')
+					: hasSyncedBefore
+						? pt('screen.sync.resync')
+						: pt('screen.sync.action')}
+			</button>
+			<div class="flex items-center justify-between gap-3">
+				<a
+					class="text-body-small shrink-0 text-primary"
+					href="https://github.com/NateScarlet/holiday-cn"
+					target="_blank"
+					rel="noreferrer"
+				>
+					{pt('screen.intro.source')}
+				</a>
+				<p class="text-body-small text-right text-on-surface-variant">
+					{formatSyncedAt(holidayCalendar?.syncedAt)}
+				</p>
+			</div>
 		</div>
 	</section>
 
-	<section class="rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
+	<section class="ui-section-surface ui-section-surface--comfortable">
 		<h3 class="text-title-small text-on-surface">{pt('screen.list.heading')}</h3>
 
 		{#if termHolidays.length === 0}

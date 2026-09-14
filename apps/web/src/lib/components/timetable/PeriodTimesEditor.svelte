@@ -317,7 +317,7 @@
 			</button>
 			<button
 				type="button"
-				class="text-label-large h-11 rounded-full bg-brand px-6 text-on-primary hover:shadow-xs active:opacity-90"
+				class="text-label-large h-11 rounded-full bg-brand px-6 text-on-primary active:opacity-90"
 				onclick={confirmEdit}
 			>
 				{hostT('common.confirm')}

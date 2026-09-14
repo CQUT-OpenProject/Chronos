@@ -22,10 +22,10 @@
 <Dialog.Root bind:open {onOpenChange}>
 	<Dialog.Portal>
 		<Dialog.Overlay
-			class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-xs transition-opacity duration-200"
+			class="fixed inset-0 z-[var(--z-overlay)] bg-black/50 backdrop-blur-xs transition-opacity duration-200"
 		/>
 		<Dialog.Content
-			class="fixed top-1/2 left-1/2 z-[70] flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-dialog border border-outline-variant/50 bg-surface-container-high p-6 text-on-surface shadow-xl transition-all duration-200 outline-none"
+			class="fixed top-1/2 left-1/2 z-[var(--z-overlay)] flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-dialog bg-surface-container-high p-6 text-on-surface shadow-overlay transition-all duration-200 outline-none"
 		>
 			{#if title}
 				<Dialog.Title class="text-headline-small font-medium text-on-surface">

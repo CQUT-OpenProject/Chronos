@@ -1,0 +1,9 @@
+/* Chronos elevation tokens — semantic shadow scale for surfaces and controls */
+
+@theme {
+	--shadow-raised: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.04);
+	--shadow-raised-dark: 0 1px 3px 0 rgb(0 0 0 / 0.22);
+	--shadow-overlay: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+	--shadow-floating: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+	--shadow-control: 0 2px 4px rgb(0 0 0 / 0.18), 0 1px 1px rgb(0 0 0 / 0.08);
+}

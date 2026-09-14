@@ -127,29 +127,33 @@
 	{/if}
 
 	{#if selectedAction}
-		<div class="flex flex-col gap-3 rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
-			<div>
-				<h2 class="text-title-medium text-on-surface">
-					{resolveLocalizedText(selectedAction.title)}
-				</h2>
-				<p class="text-body-small mt-0.5 text-on-surface-variant">
-					{actionDescription(selectedAction)}
-				</p>
+		<div class="ui-section-surface ui-section-surface--comfortable">
+			<div class="flex flex-col gap-4">
+				<div>
+					<h2 class="text-title-medium text-on-surface">
+						{resolveLocalizedText(selectedAction.title)}
+					</h2>
+					<p class="text-body-small mt-0.5 text-on-surface-variant">
+						{actionDescription(selectedAction)}
+					</p>
+				</div>
+				<div class="flex w-full pt-1">
+					<Button
+						variant="filled"
+						class="w-full"
+						disabled={runningId !== null || !currentTimetable}
+						onclick={() => handleActionExport(selectedAction)}
+					>
+						{runningId === selectedAction.id
+							? hostT('transfer.export.exporting')
+							: exportButtonLabel(selectedAction)}
+					</Button>
+				</div>
 			</div>
-			<Button
-				variant="filled"
-				class="w-full"
-				disabled={runningId !== null || !currentTimetable}
-				onclick={() => handleActionExport(selectedAction)}
-			>
-				{runningId === selectedAction.id
-					? hostT('transfer.export.exporting')
-					: exportButtonLabel(selectedAction)}
-			</Button>
 		</div>
 	{:else}
 		<div
-			class="rounded-2xl border border-outline/30 bg-surface p-6 text-center text-on-surface-variant shadow-xs"
+			class="ui-section-surface ui-section-surface--comfortable py-6 text-center text-on-surface-variant"
 		>
 			{hostT('transfer.export.noMethod')}
 		</div>

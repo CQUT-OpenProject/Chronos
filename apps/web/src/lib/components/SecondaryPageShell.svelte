@@ -27,7 +27,9 @@
 	}
 </script>
 
-<div class="secondary-page relative z-[60] flex h-dvh flex-col overflow-hidden bg-canvas">
+<div
+	class="secondary-page relative z-[var(--z-secondary-page)] flex h-dvh flex-col overflow-hidden bg-canvas"
+>
 	<TopAppBar {title} {actions} class="shrink-0">
 		{#snippet leading()}
 			<IconButton ariaLabel={hostT('ui.nav.back')} onclick={handleBack}>

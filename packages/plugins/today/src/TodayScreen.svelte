@@ -3,6 +3,7 @@
 	import {
 		appLocaleToBcp47,
 		pluginText,
+		SegmentedControl,
 		TIMETABLE_PRESENTATION_CONTEXT,
 		resolveCoursePalette,
 		type ChronosUiController,
@@ -59,10 +60,6 @@
 		{ value: 'active' as const, label: pt('screen.scope.active') },
 		{ value: 'all' as const, label: pt('screen.scope.all') }
 	]);
-	const selectedScopeIndex = $derived(
-		scopeSegments.findIndex((segment) => segment.value === screen.scope)
-	);
-
 	function pt(key: keyof (typeof TODAY_MESSAGES)['zh-cn'], params?: Record<string, unknown>) {
 		void ui.current.slotVersion;
 		return pluginText(controller, TODAY_PLUGIN_ID, TODAY_MESSAGES, key, params);
@@ -117,37 +114,19 @@
 			</div>
 		{/if}
 
-		<div
-			class="rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs"
-		>
-			{#if selectedScopeIndex >= 0}
-				<div
-					class="rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs {active
-						? 'transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]'
-						: ''}"
-					style:left="calc(0.375rem + {selectedScopeIndex} * ((100% - 0.75rem) / 2))"
-					style:width="calc((100% - 0.75rem) / 2)"
-				></div>
-			{/if}
-			{#each scopeSegments as segment (segment.value)}
-				<button
-					type="button"
-					class="text-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 {screen.scope ===
-					segment.value
-						? 'text-on-secondary-container'
-						: 'text-on-surface-variant hover:text-on-surface'}"
-					onclick={() => void screen.persistScope(segment.value)}
-				>
-					{segment.label}
-				</button>
-			{/each}
-		</div>
+		<SegmentedControl
+			class="mt-4"
+			segments={scopeSegments}
+			value={screen.scope}
+			animateThumb={active}
+			onValueChange={(scope) => void screen.persistScope(scope as 'active' | 'all')}
+		/>
 	</header>
 
 	<div class="flex flex-1 flex-col gap-4 p-4">
 		{#if !timetable}
 			<section
-				class="flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs"
+				class="ui-section-surface ui-section-surface--comfortable flex flex-1 flex-col items-center justify-center py-16 text-center"
 			>
 				<div
 					class="mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container"
@@ -163,7 +142,7 @@
 			</section>
 		{:else if screen.courseEntries.length === 0}
 			<section
-				class="flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs"
+				class="ui-section-surface ui-section-surface--comfortable flex flex-1 flex-col items-center justify-center py-16 text-center"
 			>
 				<div
 					class="mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container"
@@ -181,7 +160,7 @@
 				</p>
 			</section>
 		{:else}
-			<section class="overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs">
+			<section class="ui-section-surface overflow-hidden">
 				<ul class="divide-y divide-outline/10">
 					{#each screen.courseEntries as entry (`${entry.hit.timetableId}-${entry.hit.course.id}`)}
 						{@const paint = resolvePaint(entry.hit)}

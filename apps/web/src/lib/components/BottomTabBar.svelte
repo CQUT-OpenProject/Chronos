@@ -165,7 +165,7 @@
 						{/if}
 					</span>
 					<span
-						class="text-label-small text-[11px] leading-tight sm:text-xs {active
+						class="text-label-small leading-tight {active
 							? 'text-on-surface'
 							: 'text-on-surface-variant'}"
 					>

@@ -107,19 +107,11 @@
 		<div class="bottom-bar">
 			<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
 				{#if hasWallpaper}
-					<button
-						type="button"
-						class="flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface"
-						onclick={clearWallpaper}
-					>
+					<button type="button" class="ui-btn ui-btn-outlined flex-1" onclick={clearWallpaper}>
 						{clearLabel}
 					</button>
 				{/if}
-				<button
-					type="button"
-					class="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary"
-					onclick={onPickWallpaper}
-				>
+				<button type="button" class="ui-btn ui-btn-filled flex-1" onclick={onPickWallpaper}>
 					{pickLabel}
 				</button>
 			</div>

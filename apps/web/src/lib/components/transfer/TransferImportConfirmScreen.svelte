@@ -113,7 +113,7 @@
 				hasInvalidConfirmInputs ||
 				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
 				Boolean(confirmValidationError)}
-			class="text-body-large h-12 w-full shadow-xs"
+			class="text-body-large h-12 w-full"
 			onclick={handleConfirm}
 		>
 			{#if loading}

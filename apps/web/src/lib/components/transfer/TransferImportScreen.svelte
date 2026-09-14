@@ -65,15 +65,18 @@
 			onValueChange={handleSourceChange}
 		/>
 	{:else if useScrollableTabs}
-		<div class="flex w-full gap-2 overflow-x-auto pb-1">
+		<div class="flex w-full gap-2 overflow-x-auto pb-1" role="tablist">
 			{#each availableSlots as slot (slot.id)}
 				{@const title = resolveLocalizedText(slot.title)}
 				{@const badge = resolveLocalizedText(slot.badge)}
 				{@const isSelected = transfer.state.selectedSlotId === slot.id}
 				<button
 					type="button"
-					class="text-label-large rounded-pill relative flex shrink-0 items-center gap-1.5 px-4 py-2 text-center transition-colors {isSelected
-						? 'bg-secondary-container font-medium text-on-secondary-container shadow-xs'
+					role="tab"
+					aria-selected={isSelected}
+					tabindex={isSelected ? 0 : -1}
+					class="text-label-large rounded-pill relative flex shrink-0 items-center gap-1.5 px-4 py-2 text-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 {isSelected
+						? 'bg-secondary-container font-medium text-on-secondary-container'
 						: 'bg-surface-variant/40 text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface'}"
 					onclick={() => handleSourceChange(slot.id)}
 				>
@@ -100,8 +103,8 @@
 				class="w-full"
 			/>
 		{:else if activeSlot?.inputSchema}
-			<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
-				<div class="flex flex-col gap-4">
+			<div class="ui-section-surface ui-section-surface--comfortable">
+				<div class="ui-section-stack">
 					<div>
 						<h2 class="text-title-medium text-on-surface">
 							{resolveLocalizedText(activeSlot.title)}
@@ -115,7 +118,7 @@
 					<SchemaForm schema={activeSlot.inputSchema} bind:value={schemaFormValues} {controller} />
 					<button
 						type="button"
-						class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+						class="ui-btn ui-btn-filled ui-btn-block"
 						disabled={schemaLoading}
 						onclick={handleSchemaSubmit}
 					>
@@ -125,7 +128,7 @@
 			</div>
 		{:else}
 			<div
-				class="rounded-2xl border border-outline/30 bg-surface p-4 text-center text-on-surface-variant shadow-xs"
+				class="ui-section-surface ui-section-surface--comfortable text-center text-on-surface-variant"
 			>
 				{hostT('transfer.import.noPlugin')}
 			</div>

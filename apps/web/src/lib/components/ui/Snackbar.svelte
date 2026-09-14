@@ -50,7 +50,7 @@
 
 {#if snackbarStore.open}
 	<div
-		class="pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-bar-height)+0.75rem)] z-[80] flex justify-center"
+		class="pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-bar-height)+0.75rem)] z-[var(--z-toast)] flex justify-center"
 		in:fly={enterFly}
 		out:fly={exitFly}
 		role="status"
@@ -58,14 +58,14 @@
 	>
 		<div
 			bind:this={snackbarEl}
-			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-inverse-on-surface shadow-lg"
+			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-inverse-on-surface shadow-floating"
 		>
 			<span class="text-body-medium flex-1">{snackbarStore.message}</span>
 			{#if snackbarStore.action}
 				<Button
 					variant="text"
 					tone="inverse"
-					class="h-8 shrink-0 px-2"
+					class="shrink-0"
 					onclick={() => {
 						dismissSnackbar();
 						snackbarStore.action?.onClick();

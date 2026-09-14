@@ -60,19 +60,21 @@
 	/>
 {:else if screenSlot?.schema}
 	<div class="flex w-full flex-col p-4">
-		<div class="flex flex-col gap-4 rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
-			<SchemaForm schema={screenSlot.schema} bind:value={formValues} {controller} />
-			{#if saveError}
-				<p class="text-body-small text-error">{saveError}</p>
-			{/if}
-			<button
-				type="button"
-				class="text-label-large rounded-full bg-primary px-4 py-3 text-on-primary disabled:opacity-50"
-				disabled={saving}
-				onclick={saveSchemaConfig}
-			>
-				{saving ? hostT('plugins.config.saving') : hostT('plugins.config.save')}
-			</button>
+		<div class="ui-section-surface ui-section-surface--comfortable">
+			<div class="ui-section-stack">
+				<SchemaForm schema={screenSlot.schema} bind:value={formValues} {controller} />
+				{#if saveError}
+					<p class="text-body-small text-error">{saveError}</p>
+				{/if}
+				<button
+					type="button"
+					class="ui-btn ui-btn-filled ui-btn-block"
+					disabled={saving}
+					onclick={saveSchemaConfig}
+				>
+					{saving ? hostT('plugins.config.saving') : hostT('plugins.config.save')}
+				</button>
+			</div>
 		</div>
 	</div>
 {:else}
@@ -80,8 +82,8 @@
 		<div
 			class="flex flex-col items-center justify-center py-16 text-center text-on-surface-variant"
 		>
-			<p class="text-base font-medium">{hostT('pluginScreen.notFound')}</p>
-			<p class="mt-1 text-xs opacity-75">
+			<p class="text-body-large font-medium">{hostT('pluginScreen.notFound')}</p>
+			<p class="text-body-small mt-1 opacity-75">
 				{hostT('pluginScreen.notFoundDetail', { pluginId, viewId })}
 			</p>
 		</div>

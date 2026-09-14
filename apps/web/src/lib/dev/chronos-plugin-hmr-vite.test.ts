@@ -66,7 +66,7 @@ describe('chronos-plugin-hmr-vite', () => {
 		expect(result.code).not.toMatch(/import\s*['"][^'"]+\.css['"]/);
 		const css = result.cssCode ?? '';
 		expect(css).toContain('bg-secondary-container');
-		expect(css).toMatch(/corner-shape:\s*squircle/);
+		expect(css).toContain('--radius-dialog');
 		expect(css).not.toMatch(/border:\s*0\s*solid/);
 		expect(css).not.toMatch(/--color-surface:\s*#/);
 	}, 60_000);

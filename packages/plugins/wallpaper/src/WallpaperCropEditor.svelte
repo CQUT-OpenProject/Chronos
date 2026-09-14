@@ -351,7 +351,7 @@
 		<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
 			<button
 				type="button"
-				class="flex flex-1 items-center justify-center gap-2 rounded-full border border-outline bg-surface px-4 py-3 text-sm font-medium text-on-surface"
+				class="ui-btn ui-btn-outlined flex-1"
 				disabled={confirming}
 				onclick={onCancel}
 			>
@@ -359,7 +359,7 @@
 			</button>
 			<button
 				type="button"
-				class="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-on-primary disabled:opacity-60"
+				class="ui-btn ui-btn-filled flex-1"
 				disabled={confirming || !imageEl || frameWidth <= 0}
 				onclick={confirmCrop}
 			>

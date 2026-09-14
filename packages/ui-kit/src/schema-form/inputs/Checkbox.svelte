@@ -21,7 +21,10 @@
 	const inputId = $derived(id || instanceId);
 </script>
 
-<div class="flex items-start gap-3 py-1 text-left">
+<label
+	for={inputId}
+	class="flex min-h-11 cursor-pointer items-center gap-3 py-1 text-left select-none"
+>
 	<input
 		id={inputId}
 		type="checkbox"
@@ -31,14 +34,12 @@
 			checked = e.currentTarget.checked;
 			onchange?.(e);
 		}}
-		class="mt-1 size-4.5 rounded border-outline/40 text-primary accent-primary transition focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+		class="size-5 shrink-0 rounded border-outline/40 text-brand accent-brand transition focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
 	/>
-	<div class="flex flex-col">
-		<label for={inputId} class="cursor-pointer text-sm font-medium text-on-surface select-none">
-			{label}
-		</label>
+	<span class="flex min-w-0 flex-col">
+		<span class="text-body-medium font-medium text-on-surface">{label}</span>
 		{#if description}
-			<span class="text-xs text-on-surface-variant">{description}</span>
+			<span class="text-body-small text-on-surface-variant">{description}</span>
 		{/if}
-	</div>
-</div>
+	</span>
+</label>

@@ -14,7 +14,8 @@
 | Host canvas/surface/outline/success colors | `CHRONOS_HOST_COLORS` in `packages/ui-kit/src/theme/m3-theme.ts`   |
 | Material brand seed / algorithm            | `BRAND_SOURCE_ARGB`, `m3-theme.ts`                                 |
 | Typography scale                           | `typography-tokens.ts` + `apps/web/src/lib/theme/typography.css`   |
-| Radius / squircle                          | `radius-tokens.ts` + `packages/ui-kit/src/theme/radius.css`        |
+| Radius                                     | `radius-tokens.ts` + `packages/ui-kit/src/theme/radius.css`        |
+| Elevation / shadow scale                   | `apps/web/src/lib/theme/elevation-tokens.css`                      |
 | Form fields, section surfaces              | `apps/web/src/lib/theme/ui-patterns.css`                           |
 | Shell bar height / safe area               | `apps/web/src/lib/theme/layout-tokens.css`                         |
 | Plugin theme colors                        | Official `colors.json` or plugin `workbenchColors` (registry keys) |
@@ -41,11 +42,61 @@ See `WORKBENCH_COLOR_KEYS` in `packages/core/src/theme/workbench-colors.ts`. Hos
 
 Legacy `m3-*` aliases have been completely removed.
 
+## Elevation
+
+Each surface uses **one** depth cue. Do not combine `border` with generic Tailwind shadows (`shadow-xs`, `shadow-md`, etc.) on the same element.
+
+| Level      | Semantic         | Implementation                                             | Use                                                        |
+| ---------- | ---------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| `outlined` | Flat stroke      | `border` only                                              | Inputs, outlined `Card`, segmented track, selected options |
+| `raised`   | Grouped content  | `ui-section-surface` (`border-subtle` + `--shadow-raised`) | List groups, content cards                                 |
+| `floating` | Transient toast  | `shadow-floating` only                                     | Snackbar, tooltips                                         |
+| `overlay`  | Modal layer      | `shadow-overlay` only (no border)                          | Dialog, BottomSheet, DatePicker                            |
+| `inset`    | Recessed         | `shadow-inner`                                             | Drag placeholders                                          |
+| `control`  | Thumb affordance | `shadow-control`                                           | Switch / Slider thumbs                                     |
+
+Patterns in `ui-patterns.css`:
+
+- `ui-section-surface` — default compact padding (`0.375rem`) for list groups (Mine, Plugins).
+- `ui-section-surface--comfortable` — `1rem` padding for forms and plugin content panels.
+- `ui-section-stack` — inner `flex` column with `gap: 1rem` for comfortable panels (title + form + CTA). Do not put `gap-*` on `ui-section-surface` itself; use this wrapper instead.
+- `ui-segmented-track` / `ui-segmented-thumb` — segmented control; track is outlined, thumb has no shadow. Prefer `@chronos/ui-kit` `SegmentedControl` (tablist semantics + keyboard nav).
+- `ui-btn` / `ui-btn-filled` / `ui-btn-outlined` / `ui-btn-text` / `ui-btn-block` — shared CTA patterns for plugins and host. Host `Button.svelte` composes these classes; plugins use the CSS classes directly.
+- `ui-form-field` / `ui-field-label` / `ui-form-field-input` — the only input style for host and `SchemaForm` fields (underline in grouped surfaces).
+
+Rules:
+
+- Inputs and buttons: no elevation shadow (including `hover:shadow-*`).
+- Do not nest two raised surfaces with outer shadows.
+- Plugins rely on host-provided `ui-*` classes; do not hand-roll `border + shadow-xs` cards.
+
 ## Radius tokens
 
-| CSS variable                 | Value      | Use                     |
-| ---------------------------- | ---------- | ----------------------- |
-| `--radius-section-surface`   | `1.5rem`   | Grouped list cards      |
-| `--radius-section-item`      | `1.125rem` | List item press overlay |
-| `--squircle-compensation-ui` | `1.65`     | General UI squircles    |
-| `--squircle-compensation`    | `1.72`     | Timetable capsules only |
+Chronos uses standard CSS `border-radius` only (no `corner-shape` / squircle). Tailwind `rounded-*` scales and semantic tokens are defined in `radius.css` `@theme`. Plugins should use host semantic classes such as `rounded-dialog` and `rounded-t-sheet` when needed.
+
+| CSS variable               | Value      | Use                       |
+| -------------------------- | ---------- | ------------------------- |
+| `--radius-lg`              | `0.5rem`   | Tailwind `rounded-lg`     |
+| `--radius-xl`              | `0.75rem`  | Tailwind `rounded-xl`     |
+| `--radius-2xl`             | `1rem`     | Tailwind `rounded-2xl`    |
+| `--radius-3xl`             | `1.5rem`   | Tailwind `rounded-3xl`    |
+| `--radius-dialog`          | `28px`     | Dialog surfaces           |
+| `--radius-sheet-top`       | `28px`     | Bottom sheet top corners  |
+| `--radius-section-surface` | `1.25rem`  | Grouped list cards        |
+| `--radius-section-item`    | `0.75rem`  | List item press overlay   |
+| `--radius-leading-icon`    | `0.875rem` | Leading icon chips        |
+| `--radius-capsule`         | `0.75rem`  | Timetable course capsules |
+
+## Z-index stack
+
+Defined in `layout-tokens.css` (`:root`):
+
+| Token                | Value | Use                                     |
+| -------------------- | ----- | --------------------------------------- |
+| `--z-shell`          | 15    | Shell chrome (tab bar)                  |
+| `--z-secondary-page` | 60    | Secondary page shell                    |
+| `--z-overlay`        | 70    | Dialog, BottomSheet, DatePicker overlay |
+| `--z-toast`          | 80    | Snackbar                                |
+| `--z-onboarding`     | 85    | Onboarding full-screen flow             |
+
+Use `z-[var(--z-overlay)]` etc. in components; do not add ad hoc `z-[NN]` values.

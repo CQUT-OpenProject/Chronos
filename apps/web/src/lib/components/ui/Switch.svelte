@@ -34,6 +34,6 @@
 	class="peer rounded-pill inline-flex shrink-0 cursor-pointer items-center border-2 border-transparent bg-outline transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-40 data-[state=checked]:bg-brand {rootSizeClass} {className}"
 >
 	<Switch.Thumb
-		class="rounded-pill pointer-events-none block bg-white shadow-[0_2px_4px_rgba(0,0,0,0.18),0_1px_1px_rgba(0,0,0,0.08)] transition-transform duration-200 ease-out {thumbSizeClass}"
+		class="rounded-pill pointer-events-none block bg-white shadow-control transition-transform duration-200 ease-out {thumbSizeClass}"
 	/>
 </Switch.Root>

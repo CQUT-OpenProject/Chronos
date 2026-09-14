@@ -13,7 +13,7 @@
 		...props
 	}: {
 		variant?: 'filled' | 'outlined' | 'text' | 'danger';
-		tone?: 'default' | 'inverse';
+		tone?: 'default' | 'inverse' | 'danger';
 		disabled?: boolean;
 		href?: string;
 		onclick?: (event: MouseEvent) => void;
@@ -23,14 +23,15 @@
 		HTMLAnchorAttributes = $props();
 
 	const variantClasses = $derived({
-		filled: 'bg-brand text-on-primary hover:shadow-xs active:opacity-90',
-		outlined: 'border border-outline text-brand hover:bg-brand/10 active:bg-brand/20',
+		filled: 'ui-btn-filled',
+		outlined: 'ui-btn-outlined',
 		text:
 			tone === 'inverse'
-				? 'text-inverse-primary hover:underline'
-				: 'text-brand hover:bg-brand/10 active:bg-brand/20',
-		danger:
-			'bg-error-container text-on-error-container hover:opacity-90 active:opacity-90 focus-visible:ring-error'
+				? 'text-inverse-primary hover:underline focus-visible:ring-inverse-primary'
+				: tone === 'danger'
+					? 'text-error hover:bg-error/10 active:bg-error/20 focus-visible:ring-error'
+					: 'ui-btn-text',
+		danger: 'ui-btn-danger'
 	});
 </script>
 
@@ -39,9 +40,9 @@
 		{href}
 		{onclick}
 		{...props}
-		class="text-label-large inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full px-6 transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand {disabled
+		class="ui-btn {variantClasses[variant]} {disabled
 			? 'pointer-events-none opacity-40'
-			: ''} {variantClasses[variant]} {className}"
+			: ''} {className}"
 	>
 		{@render children?.()}
 	</a>
@@ -51,9 +52,7 @@
 		{disabled}
 		{onclick}
 		{...props}
-		class="text-label-large inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full px-6 transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:pointer-events-none disabled:opacity-40 {variantClasses[
-			variant
-		]} {className}"
+		class="ui-btn {variantClasses[variant]} {className}"
 	>
 		{@render children?.()}
 	</button>

@@ -20,7 +20,7 @@
 </script>
 
 <div
-	class="rounded-pill flex h-12 items-center gap-2.5 border border-outline-variant bg-surface px-4 shadow-xs transition-colors focus-within:border-brand {className}"
+	class="rounded-pill flex h-12 items-center gap-2.5 border border-outline-variant bg-surface px-4 transition-colors focus-within:border-brand {className}"
 >
 	<Search aria-hidden="true" class="size-5 shrink-0 text-on-surface-variant" />
 	<input
@@ -36,7 +36,7 @@
 			variant="standard"
 			size="sm"
 			ariaLabel={hostT('ui.search.clearAria')}
-			class="!size-6 !p-0 text-on-surface-variant hover:!bg-surface-variant/50"
+			class="text-on-surface-variant"
 			onclick={() => (value = '')}
 		>
 			<Close class="size-4" />

@@ -165,7 +165,7 @@
 
 {#if shouldRenderOnboarding}
 	<div
-		class="fixed inset-0 z-[85] flex flex-col bg-canvas text-ink outline-none"
+		class="fixed inset-0 z-[var(--z-onboarding)] flex flex-col bg-canvas text-ink outline-none"
 		class:invisible={!showOnboarding}
 		class:pointer-events-none={!showOnboarding}
 		role="dialog"
@@ -342,7 +342,7 @@
 					{#each stepIndices as stepIndex (stepIndex)}
 						<li
 							class="h-1.5 w-6 rounded-full transition-colors {stepIndex <= step
-								? 'bg-brand dark:bg-soft-blue'
+								? 'bg-brand'
 								: 'bg-outline-variant'}"
 							aria-current={stepIndex === step ? 'step' : undefined}
 							aria-label={hostT('onboarding.steps.label', {

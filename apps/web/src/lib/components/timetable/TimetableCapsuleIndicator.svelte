@@ -383,7 +383,7 @@
 			aria-valuenow={ariaWeek}
 			aria-valuetext={tooltipWeekLabel}
 			class={[
-				'capsule-indicator inline-flex h-6.5 cursor-pointer items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:h-7',
+				'capsule-indicator inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-2 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none',
 				isExpanded && 'capsule-indicator--expanded',
 				hasGlass && 'capsule-indicator--glass'
 			]}
@@ -445,7 +445,7 @@
 		backdrop-filter: blur(16px) saturate(1.3);
 		-webkit-backdrop-filter: blur(16px) saturate(1.3);
 		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 26%, transparent);
-		box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.1);
+		box-shadow: none;
 		transition:
 			width var(--indicator-transition-duration) var(--indicator-easing),
 			padding var(--indicator-transition-duration) var(--indicator-easing),
@@ -524,7 +524,7 @@
 		font-weight: 600;
 		white-space: nowrap;
 		color: var(--color-inverse-on-surface, #f1f0f4);
-		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+		box-shadow: var(--shadow-floating);
 		max-height: 0;
 		margin-bottom: 0;
 		opacity: 0;

@@ -320,7 +320,7 @@
 										{name}
 									</span>
 									<span
-										class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
+										class="text-label-small py-0.2 text-caption rounded-full px-1.5 font-medium {meta.badgeClass}"
 									>
 										{meta.label}
 									</span>
@@ -340,7 +340,7 @@
 										{hostT('plugins.action.settings')}
 									</Button>
 								{:else}
-									<span class="text-label-small text-[11px] text-on-surface-variant/80">
+									<span class="text-label-small text-on-surface-variant/80">
 										{hostT('plugins.builtin.defaultEnabled')}
 									</span>
 								{/if}
@@ -438,13 +438,13 @@
 												{name}
 											</span>
 											<span
-												class="text-label-small py-0.2 rounded-full px-1.5 text-[10px] font-medium {meta.badgeClass}"
+												class="text-label-small py-0.2 text-caption rounded-full px-1.5 font-medium {meta.badgeClass}"
 											>
 												{meta.label}
 											</span>
 											{#if isThemePluginInUse(record.manifest, record.enabled)}
 												<span
-													class="text-label-small py-0.2 rounded-full bg-primary-container/80 px-1.5 text-[10px] font-medium text-on-primary-container"
+													class="text-label-small py-0.2 text-caption rounded-full bg-primary-container/80 px-1.5 font-medium text-on-primary-container"
 												>
 													{hostT('plugins.badge.inUse')}
 												</span>
@@ -456,7 +456,7 @@
 											</p>
 										{/if}
 										{#if record.manifest.author}
-											<p class="text-caption mt-1 text-[10px] text-on-surface-variant/70">
+											<p class="text-caption mt-1 text-on-surface-variant/70">
 												by {record.manifest.author}
 											</p>
 										{/if}
@@ -466,7 +466,8 @@
 								<div class="flex items-center justify-between gap-2">
 									<Button
 										variant="text"
-										class="h-6 shrink-0 px-1.5 text-[10px] text-error hover:bg-error/10"
+										tone="danger"
+										class="text-caption h-6 shrink-0 px-1.5"
 										disabled={isBusy}
 										onclick={() => promptUninstall(record.manifest.id, name)}
 									>
@@ -477,7 +478,7 @@
 										{#if record.manifest.configSchema}
 											<Button
 												variant="outlined"
-												class="h-7 px-2.5 text-[11px] font-normal"
+												class="text-label-small h-7 px-2.5 font-normal"
 												disabled={isBusy || !record.enabled}
 												onclick={() =>
 													handleOpenConfig(record.manifest.id, name, record.manifest.configSchema)}
@@ -486,7 +487,7 @@
 												{hostT('plugins.action.settings')}
 											</Button>
 										{/if}
-										<span class="text-label-small text-[11px] text-on-surface-variant">
+										<span class="text-label-small text-on-surface-variant">
 											{hostT('plugins.action.enable')}
 										</span>
 										<Switch
@@ -574,7 +575,7 @@
 													{/if}
 													{#if manifest.author}
 														<div class="mt-1 flex flex-wrap items-center gap-1">
-															<span class="text-caption text-[10px] text-on-surface-variant/70">
+															<span class="text-caption text-on-surface-variant/70">
 																by {manifest.author}
 															</span>
 														</div>
@@ -634,13 +635,19 @@
 
 <Dialog bind:open={linkInstallDialogOpen} title={hostT('plugins.link.title')}>
 	<div class="flex flex-col gap-3 py-2">
-		<input
-			class="text-body-medium w-full rounded-xl border border-border bg-surface px-3 py-2 text-on-surface outline-none focus:border-primary disabled:opacity-60"
-			type="url"
-			placeholder={hostT('plugins.link.placeholder')}
-			bind:value={manifestUrlInput}
-			disabled={linkInstallInProgress}
-		/>
+		<div class="ui-form-field">
+			<label class="ui-field-label" for="plugin-manifest-url">
+				{hostT('plugins.link.placeholder')}
+			</label>
+			<input
+				id="plugin-manifest-url"
+				class="ui-form-field-input"
+				type="url"
+				placeholder={hostT('plugins.link.placeholder')}
+				bind:value={manifestUrlInput}
+				disabled={linkInstallInProgress}
+			/>
+		</div>
 		{#if linkInstallSource}
 			<p class="text-body-small text-on-surface-variant">
 				{hostT('plugins.link.source', { origin: linkInstallSource })}

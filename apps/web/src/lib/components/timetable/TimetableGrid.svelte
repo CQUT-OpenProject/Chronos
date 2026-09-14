@@ -32,6 +32,10 @@
 
 	import {
 		timetableBodyTintClass,
+		timetableDayColumnDateClass,
+		timetableDayColumnDateShellClass,
+		timetableHolidayColumnOverlayClass,
+		timetablePeriodIndexClass,
 		timetableSidebarTintClass,
 		timetableSolidBgClass
 	} from '@chronos/ui-kit';
@@ -538,13 +542,7 @@
 					<span class="text-body-small max-w-full truncate text-on-surface-variant">
 						{timetableDayColumnHeaderLabel(day)}
 					</span>
-					<div
-						class="text-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
-							? 'bg-brand text-on-primary'
-							: day.holiday
-								? 'text-on-surface-variant'
-								: 'text-on-surface'}"
-					>
+					<div class="{timetableDayColumnDateShellClass()} {timetableDayColumnDateClass(day)}">
 						{dayOfMonth(day.date)}
 					</div>
 				</div>
@@ -572,12 +570,12 @@
 						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
 					>
 						<div
-							class="flex h-full w-full flex-col items-center justify-center rounded-2xl {period.index ===
+							class="flex h-full w-full flex-col items-center justify-center {period.index ===
 							effectivePeriodIndex
 								? 'period-active'
 								: ''}"
 						>
-							<span class="text-body-medium font-bold">
+							<span class={timetablePeriodIndexClass()}>
 								{period.index}
 							</span>
 							<span
@@ -602,7 +600,9 @@
 				{#each gridModel.visibleDays as day, columnIndex (day.dayOfWeek)}
 					{#if day.holiday}
 						<div
-							class="pointer-events-none absolute top-0 bg-surface-container-low/60"
+							class="pointer-events-none absolute top-0 {timetableHolidayColumnOverlayClass(
+								hasDynamicBackground
+							)}"
 							style:left="{(columnIndex / visibleDayCount) * 100}%"
 							style:width="{100 / visibleDayCount}%"
 							style:height="100%"
@@ -669,7 +669,7 @@
 								{dropPreview.course.name}
 							</span>
 							<span
-								class="inline-flex max-w-full items-center justify-center rounded-full bg-surface-container-highest/90 px-1.5 py-0.5 text-center leading-none font-medium whitespace-nowrap text-on-surface tabular-nums shadow-xs"
+								class="inline-flex max-w-full items-center justify-center rounded-full bg-surface-container-highest/90 px-1.5 py-0.5 text-center leading-none font-medium whitespace-nowrap text-on-surface tabular-nums"
 								{@attach createFitWidthFontAttachment(() => ({
 									lines: [periodLabel],
 									maxFontPx: 11,

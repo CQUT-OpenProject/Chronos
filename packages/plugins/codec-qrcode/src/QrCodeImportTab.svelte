@@ -54,7 +54,7 @@
 	}
 </script>
 
-<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
+<div class="ui-section-surface ui-section-surface--comfortable">
 	<div class="flex flex-col gap-4">
 		<div>
 			<h2 class="text-title-medium text-on-surface">{title}</h2>
@@ -102,7 +102,7 @@
 			</div>
 			<button
 				type="button"
-				class="text-label-large mt-1 rounded-full bg-primary px-6 py-2.5 font-medium text-on-primary disabled:opacity-50"
+				class="ui-btn ui-btn-filled mt-1"
 				disabled={loading}
 				onclick={() => fileInputRef?.click()}
 			>

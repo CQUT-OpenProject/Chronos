@@ -81,9 +81,7 @@
 	<TopAppBar class="shrink-0">
 		{#snippet titleSnippet()}
 			<div class="flex min-h-0 flex-1 items-center py-0.5 text-left sm:py-1" aria-label={weekLabel}>
-				<p
-					class="text-title-large truncate text-base leading-tight font-bold sm:text-lg md:text-xl"
-				>
+				<p class="text-title-large truncate leading-tight">
 					{weekLabel}
 				</p>
 			</div>

@@ -5,6 +5,8 @@
 		background-color: var(--period-active-bg, var(--color-brand));
 		background-image: var(--period-active-bg-image, none);
 		color: var(--color-on-primary);
+		margin-inline: -0.25rem;
+		width: calc(100% + 0.5rem);
 	}
 
 	/* Light: raw course paint. Dark: 42%/18% course mix (was layout blendColors 0.58/0.18). */
@@ -72,6 +74,11 @@
 		--spacing-tabbar: 4.25rem;
 		--top-bar-height: calc(var(--spacing-topbar) + var(--topbar-safe));
 		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
+		--z-shell: 15;
+		--z-secondary-page: 60;
+		--z-overlay: 70;
+		--z-toast: 80;
+		--z-onboarding: 85;
 	}
 
 	@media (max-height: 720px) {

@@ -31,8 +31,8 @@
 	};
 
 	const sizeClasses = {
-		md: 'size-10',
-		sm: 'p-1.5'
+		md: 'size-11',
+		sm: 'size-11'
 	};
 
 	const focusRingClass = $derived(

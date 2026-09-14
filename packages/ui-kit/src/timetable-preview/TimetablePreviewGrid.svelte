@@ -16,6 +16,10 @@
 	} from '../utils/fit-width-font.svelte';
 	import {
 		timetableBodyTintClass,
+		timetableDayColumnDateClass,
+		timetableDayColumnDateShellClass,
+		timetableHolidayColumnOverlayClass,
+		timetablePeriodIndexClass,
 		timetableSidebarTintClass,
 		timetableSolidBgClass
 	} from './timetable-grid-chrome';
@@ -187,13 +191,7 @@
 						<span class="text-body-small max-w-full truncate text-on-surface-variant">
 							{timetableDayColumnHeaderLabel(day, hostTranslate)}
 						</span>
-						<div
-							class="text-body-medium mt-1 flex size-[26px] items-center justify-center rounded-full {day.isToday
-								? 'bg-brand text-on-primary'
-								: day.holiday
-									? 'text-on-surface-variant'
-									: 'text-on-surface'}"
-						>
+						<div class="{timetableDayColumnDateShellClass()} {timetableDayColumnDateClass(day)}">
 							{dayOfMonth(day.date)}
 						</div>
 					</div>
@@ -221,12 +219,12 @@
 							class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
 						>
 							<div
-								class="flex h-full w-full flex-col items-center justify-center rounded-2xl {period.index ===
+								class="flex h-full w-full flex-col items-center justify-center {period.index ===
 								currentPeriodIndex
 									? 'period-active'
 									: ''}"
 							>
-								<span class="text-body-medium font-bold">{period.index}</span>
+								<span class={timetablePeriodIndexClass()}>{period.index}</span>
 								<span
 									class="text-caption mt-1 font-mono leading-tight {period.index ===
 									currentPeriodIndex
@@ -248,7 +246,9 @@
 					{#each gridModel.visibleDays as day, columnIndex (day.dayOfWeek)}
 						{#if day.holiday}
 							<div
-								class="pointer-events-none absolute top-0 bg-surface-container-low/60"
+								class="pointer-events-none absolute top-0 {timetableHolidayColumnOverlayClass(
+									hasDynamicBackground
+								)}"
 								style:left="{(columnIndex / visibleDayCount) * 100}%"
 								style:width="{100 / visibleDayCount}%"
 								style:height="100%"
