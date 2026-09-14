@@ -121,3 +121,20 @@ export interface IHostNavigation {
 	openCourseEditor(courseId: string): void;
 }
 export const IHostNavigation = createServiceIdentifier<IHostNavigation>('hostNavigation');
+
+// 7. Host error capture port (optional — global error / rejection / console.error)
+export type ErrorCaptureSource = 'error' | 'unhandledrejection' | 'console';
+
+export interface CapturedError {
+	id: string;
+	ts: number;
+	source: ErrorCaptureSource;
+	name?: string;
+	message: string;
+	stack?: string;
+}
+
+export interface IErrorCaptureService {
+	onCaptured(listener: (entry: CapturedError) => void): Disposable;
+}
+export const IErrorCaptureService = createServiceIdentifier<IErrorCaptureService>('errorCapture');

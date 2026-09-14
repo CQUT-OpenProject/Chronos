@@ -2,6 +2,7 @@ import type {
 	HttpRequestOptions,
 	HttpResponse,
 	IAnalyticsService,
+	IErrorCaptureService,
 	IStorageService,
 	VaultSecretOptions
 } from './services';
@@ -49,6 +50,9 @@ export interface ChronosEnv {
 
 	/** Optional product analytics port */
 	analytics?: Pick<IAnalyticsService, 'track'>;
+
+	/** Optional global error capture port (browser hosts install window listeners) */
+	errorCapture?: Pick<IErrorCaptureService, 'onCaptured'>;
 
 	/** Optional hardware security credential abstraction (native hosts: Keychain / Keystore) */
 	vault?: {

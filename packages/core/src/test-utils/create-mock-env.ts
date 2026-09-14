@@ -2,16 +2,19 @@ import { vi } from 'vite-plus/test';
 import { DEFAULT_USER_PREFERENCES } from '../domain/preferences';
 import type { Timetable } from '../domain/timetable';
 import type { ChronosEnv, StorageChangeEvent } from '../types/env';
+import { createMockErrorCapture, type MockErrorCapture } from './create-mock-error-capture';
 
 export interface MockEnvOptions {
 	http?: Partial<ChronosEnv['http']>;
 	storage?: Partial<ChronosEnv['storage']>;
 	vault?: Partial<NonNullable<ChronosEnv['vault']>>;
 	runtime?: Partial<ChronosEnv['runtime']>;
+	errorCapture?: MockErrorCapture;
 	platform?: ChronosEnv['platform'];
 }
 
 export function createMockEnv(options: MockEnvOptions = {}) {
+	const errorCapture = options.errorCapture ?? createMockErrorCapture();
 	const timetables = new Map<string, Timetable>();
 	let activeId: string | null = null;
 	let prefs = { ...DEFAULT_USER_PREFERENCES };
@@ -71,11 +74,13 @@ export function createMockEnv(options: MockEnvOptions = {}) {
 		runtime: {
 			sha256: async () => 'hash',
 			...options.runtime
-		}
+		},
+		errorCapture
 	};
 
 	return {
 		env,
+		errorCapture,
 		timetables,
 		triggerStorageChange: (e: StorageChangeEvent) => {
 			for (const l of listeners) l(e);
