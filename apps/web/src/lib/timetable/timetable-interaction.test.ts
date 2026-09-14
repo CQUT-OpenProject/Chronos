@@ -355,6 +355,108 @@ describe('createTimetableInteraction', () => {
 		expect(interaction.mode).toBe('view');
 	});
 
+	const fiveDayGeometry = {
+		gridRect: { left: 0, top: 0, width: 500, height: 800 },
+		visibleDays: [
+			{ dayOfWeek: 1 },
+			{ dayOfWeek: 2 },
+			{ dayOfWeek: 3 },
+			{ dayOfWeek: 4 },
+			{ dayOfWeek: 5 }
+		],
+		displayedPeriodCount: 10
+	};
+
+	it('maps a pointer in the grid interior to the matching column and period', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(dragInput());
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: 250, clientY: 360 }),
+				fiveDayGeometry
+			)
+		).toBe(true);
+		expect(interaction.drag?.targetColIndex).toBe(2);
+		expect(interaction.drag?.targetDayOfWeek).toBe(3);
+		expect(interaction.drag?.targetStartPeriod).toBe(5);
+	});
+
+	it('clamps pointers outside the grid to the first cell', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(
+			dragInput({ targetColIndex: 2, targetDayOfWeek: 3, targetStartPeriod: 4 })
+		);
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: -20, clientY: -40 }),
+				fiveDayGeometry
+			)
+		).toBe(true);
+		expect(interaction.drag?.targetColIndex).toBe(0);
+		expect(interaction.drag?.targetDayOfWeek).toBe(1);
+		expect(interaction.drag?.targetStartPeriod).toBe(1);
+	});
+
+	it('clamps a two-period course to the last valid start period at the grid bottom', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(dragInput());
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: 450, clientY: 790 }),
+				fiveDayGeometry
+			)
+		).toBe(true);
+		expect(interaction.drag?.targetColIndex).toBe(4);
+		expect(interaction.drag?.targetDayOfWeek).toBe(5);
+		expect(interaction.drag?.targetStartPeriod).toBe(9);
+	});
+
+	it('does not map while waitForMove is still locked', () => {
+		const interaction = createTimetableInteraction();
+		interaction.beginDrag(
+			dragInput({
+				waitForMove: true,
+				originX: 10,
+				originY: 10
+			})
+		);
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: 250, clientY: 360 }),
+				fiveDayGeometry
+			)
+		).toBe(false);
+		expect(interaction.drag?.targetColIndex).toBe(0);
+		expect(interaction.drag?.targetStartPeriod).toBe(1);
+	});
+
+	it('does not map without a drag session, matching pointer, or usable geometry', () => {
+		const interaction = createTimetableInteraction();
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ clientX: 250, clientY: 360 }),
+				fiveDayGeometry
+			)
+		).toBe(false);
+
+		interaction.beginDrag(dragInput());
+		expect(
+			interaction.updateDragFromPointer(
+				mockPointerEvent({ pointerId: 9, clientX: 250, clientY: 360 }),
+				fiveDayGeometry
+			)
+		).toBe(false);
+		expect(interaction.drag?.targetColIndex).toBe(0);
+
+		expect(
+			interaction.updateDragFromPointer(mockPointerEvent({ clientX: 250, clientY: 360 }), {
+				...fiveDayGeometry,
+				visibleDays: [],
+				displayedPeriodCount: 0
+			})
+		).toBe(false);
+	});
+
 	it('does not cancel an armed long press when a waitForMove drag tracks after long press fired', () => {
 		vi.useFakeTimers();
 		try {

@@ -346,25 +346,11 @@
 			return;
 		}
 
-		if (gridBodyEl && visibleDayCount > 0 && gridModel.displayedPeriodCount > 0) {
-			const gridRect = gridBodyEl.getBoundingClientRect();
-			const relX = event.clientX - gridRect.left;
-			const relY = event.clientY - gridRect.top;
-
-			const colWidth = gridRect.width / visibleDayCount;
-			let colIdx = Math.floor(relX / colWidth);
-			colIdx = Math.max(0, Math.min(colIdx, visibleDayCount - 1));
-			const targetDay = gridModel.visibleDays[colIdx]?.dayOfWeek ?? dragState.targetDayOfWeek;
-
-			const rowHeight = gridRect.height / gridModel.displayedPeriodCount;
-			const span = dragState.course.endPeriod - dragState.course.startPeriod + 1;
-			let periodIdx = Math.floor(relY / rowHeight) + 1;
-			periodIdx = Math.max(1, Math.min(periodIdx, gridModel.displayedPeriodCount - span + 1));
-
-			interaction.updateDragTarget({
-				targetColIndex: colIdx,
-				targetDayOfWeek: targetDay,
-				targetStartPeriod: periodIdx
+		if (gridBodyEl) {
+			interaction.updateDragFromPointer(event, {
+				gridRect: gridBodyEl.getBoundingClientRect(),
+				visibleDays: gridModel.visibleDays,
+				displayedPeriodCount: gridModel.displayedPeriodCount
 			});
 		}
 
