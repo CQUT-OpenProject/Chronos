@@ -8,6 +8,7 @@
 @import '../lib/theme/typography.css';
 @import '../../../../packages/ui-kit/src/theme/radius.css';
 @import '../lib/theme/layout-tokens.css';
+@import '../lib/theme/elevation-tokens.css';
 @import '../lib/theme/ui-patterns.css';
 @import '../lib/content/markdown-prose.css';
 @plugin '@tailwindcss/forms';
