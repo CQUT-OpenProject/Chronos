@@ -127,7 +127,7 @@
 	{/if}
 
 	{#if selectedAction}
-		<div class="flex flex-col gap-3 rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
+		<div class="ui-section-surface ui-section-surface--comfortable flex flex-col gap-3">
 			<div>
 				<h2 class="text-title-medium text-on-surface">
 					{resolveLocalizedText(selectedAction.title)}
@@ -149,7 +149,7 @@
 		</div>
 	{:else}
 		<div
-			class="rounded-2xl border border-outline/30 bg-surface p-6 text-center text-on-surface-variant shadow-xs"
+			class="ui-section-surface ui-section-surface--comfortable py-6 text-center text-on-surface-variant"
 		>
 			{hostT('transfer.export.noMethod')}
 		</div>

@@ -28,10 +28,10 @@
 	}
 </script>
 
-<div class="rounded-pill relative flex w-full border border-border bg-surface p-1.5 shadow-xs">
+<div class="ui-segmented-track">
 	{#if segmentCount > 0 && selectedIndex >= 0}
 		<div
-			class="rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
+			class="ui-segmented-thumb"
 			style:left="calc(0.375rem + {safeIndex} * ((100% - 0.75rem) / {segmentCount}))"
 			style:width="calc((100% - 0.75rem) / {segmentCount})"
 		></div>

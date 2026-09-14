@@ -54,7 +54,7 @@
 	}
 </script>
 
-<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
+<div class="ui-section-surface ui-section-surface--comfortable">
 	<div class="flex flex-col gap-4">
 		<div>
 			<h2 class="text-title-medium text-on-surface">{title}</h2>

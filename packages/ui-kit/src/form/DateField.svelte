@@ -59,7 +59,6 @@
 
 	function handleOpenChange(nextOpen: boolean) {
 		if (nextOpen) {
-			haptic.light();
 			draftIso = safeValue;
 			placeholder = isoToCalendarDate(
 				resolvePickerMonthIso(safeValue, today(getLocalTimeZone()).toString())
@@ -188,7 +187,7 @@
 					></div>
 				{/if}
 				<DatePicker.ContentStatic
-					class="ui-date-picker-content fixed top-1/2 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-outline-variant/50 bg-surface-container-high p-4 text-on-surface shadow-xl outline-none"
+					class="ui-date-picker-content fixed top-1/2 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-container-high p-4 text-on-surface shadow-overlay outline-none"
 				>
 					<DatePicker.Calendar class="flex w-full flex-col">
 						{#snippet children({ months, weekdays })}
@@ -298,7 +297,7 @@
 								</div>
 								<button
 									type="button"
-									class="text-label-large h-9 rounded-full bg-brand px-4 text-on-primary hover:shadow-xs active:opacity-90 disabled:opacity-40"
+									class="text-label-large h-9 rounded-full bg-brand px-4 text-on-primary active:opacity-90 disabled:opacity-40"
 									disabled={required && !draftIso}
 									onclick={confirmSelection}
 								>

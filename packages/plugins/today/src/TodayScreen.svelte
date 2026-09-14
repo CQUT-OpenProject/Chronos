@@ -117,12 +117,10 @@
 			</div>
 		{/if}
 
-		<div
-			class="rounded-pill relative mt-4 flex w-full border border-border bg-surface p-1.5 shadow-xs"
-		>
+		<div class="ui-segmented-track mt-4">
 			{#if selectedScopeIndex >= 0}
 				<div
-					class="rounded-pill absolute top-1.5 bottom-1.5 bg-secondary-container shadow-xs {active
+					class="ui-segmented-thumb {active
 						? 'transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]'
 						: ''}"
 					style:left="calc(0.375rem + {selectedScopeIndex} * ((100% - 0.75rem) / 2))"
@@ -147,7 +145,7 @@
 	<div class="flex flex-1 flex-col gap-4 p-4">
 		{#if !timetable}
 			<section
-				class="flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs"
+				class="ui-section-surface ui-section-surface--comfortable flex flex-1 flex-col items-center justify-center py-16 text-center"
 			>
 				<div
 					class="mb-4 flex size-16 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container"
@@ -163,7 +161,7 @@
 			</section>
 		{:else if screen.courseEntries.length === 0}
 			<section
-				class="flex flex-1 flex-col items-center justify-center rounded-2xl border border-outline/20 bg-surface px-6 py-16 text-center shadow-xs"
+				class="ui-section-surface ui-section-surface--comfortable flex flex-1 flex-col items-center justify-center py-16 text-center"
 			>
 				<div
 					class="mb-4 flex size-16 items-center justify-center rounded-full bg-tertiary-container text-on-tertiary-container"
@@ -181,7 +179,7 @@
 				</p>
 			</section>
 		{:else}
-			<section class="overflow-hidden rounded-2xl border border-outline/20 bg-surface shadow-xs">
+			<section class="ui-section-surface overflow-hidden">
 				<ul class="divide-y divide-outline/10">
 					{#each screen.courseEntries as entry (`${entry.hit.timetableId}-${entry.hit.course.id}`)}
 						{@const paint = resolvePaint(entry.hit)}

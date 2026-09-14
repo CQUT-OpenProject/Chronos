@@ -91,7 +91,7 @@
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-	<section class="rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
+	<section class="ui-section-surface ui-section-surface--comfortable">
 		<p class="text-body-medium text-on-surface-variant">{pt('screen.intro.body')}</p>
 		<button
 			type="button"
@@ -120,7 +120,7 @@
 		</div>
 	</section>
 
-	<section class="rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
+	<section class="ui-section-surface ui-section-surface--comfortable">
 		<h3 class="text-title-small text-on-surface">{pt('screen.list.heading')}</h3>
 
 		{#if termHolidays.length === 0}

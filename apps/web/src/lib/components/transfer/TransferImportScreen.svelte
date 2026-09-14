@@ -73,7 +73,7 @@
 				<button
 					type="button"
 					class="text-label-large rounded-pill relative flex shrink-0 items-center gap-1.5 px-4 py-2 text-center transition-colors {isSelected
-						? 'bg-secondary-container font-medium text-on-secondary-container shadow-xs'
+						? 'bg-secondary-container font-medium text-on-secondary-container'
 						: 'bg-surface-variant/40 text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface'}"
 					onclick={() => handleSourceChange(slot.id)}
 				>
@@ -100,32 +100,30 @@
 				class="w-full"
 			/>
 		{:else if activeSlot?.inputSchema}
-			<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
-				<div class="flex flex-col gap-4">
-					<div>
-						<h2 class="text-title-medium text-on-surface">
-							{resolveLocalizedText(activeSlot.title)}
-						</h2>
-						{#if activeSlot.supportingText}
-							<p class="text-body-small mt-0.5 text-on-surface-variant">
-								{resolveLocalizedText(activeSlot.supportingText)}
-							</p>
-						{/if}
-					</div>
-					<SchemaForm schema={activeSlot.inputSchema} bind:value={schemaFormValues} {controller} />
-					<button
-						type="button"
-						class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
-						disabled={schemaLoading}
-						onclick={handleSchemaSubmit}
-					>
-						{schemaLoading ? hostT('transfer.import.fetching') : hostT('transfer.import.submit')}
-					</button>
+			<div class="ui-section-surface ui-section-surface--comfortable flex flex-col gap-4">
+				<div>
+					<h2 class="text-title-medium text-on-surface">
+						{resolveLocalizedText(activeSlot.title)}
+					</h2>
+					{#if activeSlot.supportingText}
+						<p class="text-body-small mt-0.5 text-on-surface-variant">
+							{resolveLocalizedText(activeSlot.supportingText)}
+						</p>
+					{/if}
 				</div>
+				<SchemaForm schema={activeSlot.inputSchema} bind:value={schemaFormValues} {controller} />
+				<button
+					type="button"
+					class="text-label-large w-full rounded-full bg-primary py-3 text-center font-medium text-on-primary disabled:opacity-50"
+					disabled={schemaLoading}
+					onclick={handleSchemaSubmit}
+				>
+					{schemaLoading ? hostT('transfer.import.fetching') : hostT('transfer.import.submit')}
+				</button>
 			</div>
 		{:else}
 			<div
-				class="rounded-2xl border border-outline/30 bg-surface p-4 text-center text-on-surface-variant shadow-xs"
+				class="ui-section-surface ui-section-surface--comfortable text-center text-on-surface-variant"
 			>
 				{hostT('transfer.import.noPlugin')}
 			</div>

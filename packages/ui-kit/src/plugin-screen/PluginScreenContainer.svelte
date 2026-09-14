@@ -60,7 +60,7 @@
 	/>
 {:else if screenSlot?.schema}
 	<div class="flex w-full flex-col p-4">
-		<div class="flex flex-col gap-4 rounded-2xl border border-outline/20 bg-surface p-4 shadow-xs">
+		<div class="ui-section-surface ui-section-surface--comfortable flex flex-col gap-4">
 			<SchemaForm schema={screenSlot.schema} bind:value={formValues} {controller} />
 			{#if saveError}
 				<p class="text-body-small text-error">{saveError}</p>

@@ -58,7 +58,7 @@
 
 <svelte:window ononline={handleOnline} onoffline={handleOffline} />
 
-<div class="rounded-2xl border border-outline/30 bg-surface p-4 shadow-xs">
+<div class="ui-section-surface ui-section-surface--comfortable">
 	<div class="flex flex-col gap-4">
 		{#if !isOnline}
 			<div class="flex items-center gap-2 rounded-xl bg-error-container/40 p-3 text-error">

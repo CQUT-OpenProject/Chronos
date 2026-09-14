@@ -58,7 +58,7 @@
 	>
 		<div
 			bind:this={snackbarEl}
-			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-inverse-on-surface shadow-lg"
+			class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-inverse-surface px-4 py-3 text-inverse-on-surface shadow-floating"
 		>
 			<span class="text-body-medium flex-1">{snackbarStore.message}</span>
 			{#if snackbarStore.action}

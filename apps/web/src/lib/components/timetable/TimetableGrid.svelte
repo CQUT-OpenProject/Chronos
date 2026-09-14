@@ -669,7 +669,7 @@
 								{dropPreview.course.name}
 							</span>
 							<span
-								class="inline-flex max-w-full items-center justify-center rounded-full bg-surface-container-highest/90 px-1.5 py-0.5 text-center leading-none font-medium whitespace-nowrap text-on-surface tabular-nums shadow-xs"
+								class="inline-flex max-w-full items-center justify-center rounded-full bg-surface-container-highest/90 px-1.5 py-0.5 text-center leading-none font-medium whitespace-nowrap text-on-surface tabular-nums"
 								{@attach createFitWidthFontAttachment(() => ({
 									lines: [periodLabel],
 									maxFontPx: 11,

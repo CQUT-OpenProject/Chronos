@@ -278,7 +278,7 @@
 		/>
 		<Dialog.Content
 			bind:ref={contentRef}
-			class="bottom-sheet-content rounded-t-sheet fixed inset-x-0 bottom-0 z-[70] flex max-h-[85dvh] flex-col border border-outline-variant/50 bg-surface-container-high text-on-surface shadow-xl outline-none"
+			class="bottom-sheet-content rounded-t-sheet fixed inset-x-0 bottom-0 z-[70] flex max-h-[85dvh] flex-col bg-surface-container-high text-on-surface shadow-overlay outline-none"
 			style={contentTransformStyle}
 			data-dragging={isDragging ? '' : undefined}
 			data-snapping-back={isSnappingBack ? '' : undefined}

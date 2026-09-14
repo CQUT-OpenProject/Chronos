@@ -20,7 +20,7 @@
 </script>
 
 <div
-	class="rounded-pill flex h-12 items-center gap-2.5 border border-outline-variant bg-surface px-4 shadow-xs transition-colors focus-within:border-brand {className}"
+	class="rounded-pill flex h-12 items-center gap-2.5 border border-outline-variant bg-surface px-4 transition-colors focus-within:border-brand {className}"
 >
 	<Search aria-hidden="true" class="size-5 shrink-0 text-on-surface-variant" />
 	<input
