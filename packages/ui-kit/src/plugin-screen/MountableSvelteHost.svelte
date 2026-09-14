@@ -13,4 +13,6 @@
 	const resolvedProps = $derived.by(() => fromStore(propsStore).current);
 </script>
 
-<ResolvedComponent {...resolvedProps} />
+<div class="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+	<ResolvedComponent {...resolvedProps} />
+</div>

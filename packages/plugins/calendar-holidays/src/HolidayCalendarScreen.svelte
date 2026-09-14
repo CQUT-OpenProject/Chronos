@@ -90,63 +90,69 @@
 	}
 </script>
 
-<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-	<section class="ui-section-surface ui-section-surface--comfortable">
-		<div class="ui-section-stack">
-			<p class="text-body-medium text-on-surface-variant">{pt('screen.intro.body')}</p>
-			<button
-				type="button"
-				class="ui-btn ui-btn-filled ui-btn-block"
-				disabled={syncing || !timetable}
-				onclick={onSync}
-			>
-				{syncing
-					? pt('screen.sync.syncing')
-					: hasSyncedBefore
-						? pt('screen.sync.resync')
-						: pt('screen.sync.action')}
-			</button>
-			<div class="flex items-center justify-between gap-3">
-				<a
-					class="text-body-small shrink-0 text-primary"
-					href="https://github.com/NateScarlet/holiday-cn"
-					target="_blank"
-					rel="noreferrer"
-				>
-					{pt('screen.intro.source')}
-				</a>
-				<p class="text-body-small text-right text-on-surface-variant">
-					{formatSyncedAt(holidayCalendar?.syncedAt)}
-				</p>
-			</div>
-		</div>
-	</section>
+<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+	<div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+		<div class="flex flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+			<section class="ui-section-surface ui-section-surface--comfortable">
+				<div class="ui-section-stack">
+					<p class="text-body-medium text-on-surface-variant">{pt('screen.intro.body')}</p>
+					<button
+						type="button"
+						class="ui-btn ui-btn-filled ui-btn-block"
+						disabled={syncing || !timetable}
+						onclick={onSync}
+					>
+						{syncing
+							? pt('screen.sync.syncing')
+							: hasSyncedBefore
+								? pt('screen.sync.resync')
+								: pt('screen.sync.action')}
+					</button>
+					<div class="flex items-center justify-between gap-3">
+						<a
+							class="text-body-small shrink-0 text-primary"
+							href="https://github.com/NateScarlet/holiday-cn"
+							target="_blank"
+							rel="noreferrer"
+						>
+							{pt('screen.intro.source')}
+						</a>
+						<p class="text-body-small text-right text-on-surface-variant">
+							{formatSyncedAt(holidayCalendar?.syncedAt)}
+						</p>
+					</div>
+				</div>
+			</section>
 
-	<section class="ui-section-surface ui-section-surface--comfortable">
-		<h3 class="text-title-small text-on-surface">{pt('screen.list.heading')}</h3>
+			<section class="ui-section-surface ui-section-surface--comfortable">
+				<h3 class="text-title-small text-on-surface">{pt('screen.list.heading')}</h3>
 
-		{#if termHolidays.length === 0}
-			<p class="text-body-medium py-6 text-center text-on-surface-variant">
-				{holidayCalendar?.holidays.length ? pt('screen.list.empty') : pt('screen.list.emptyHint')}
-			</p>
-		{:else}
-			<div class="mt-3 flex flex-col gap-4">
-				{#each groupedHolidays as group (group.key)}
-					<ul class="divide-y divide-outline/10">
-						{#each group.items as holiday (holiday.date)}
-							<li class="py-3">
-								<span class="text-body-medium text-on-surface"
-									>{formatHolidayRow(holiday, controller.currentLocale)}</span
-								>
-							</li>
+				{#if termHolidays.length === 0}
+					<p class="text-body-medium py-6 text-center text-on-surface-variant">
+						{holidayCalendar?.holidays.length
+							? pt('screen.list.empty')
+							: pt('screen.list.emptyHint')}
+					</p>
+				{:else}
+					<div class="mt-3 flex flex-col gap-4">
+						{#each groupedHolidays as group (group.key)}
+							<ul class="divide-y divide-outline/10">
+								{#each group.items as holiday (holiday.date)}
+									<li class="py-3">
+										<span class="text-body-medium text-on-surface"
+											>{formatHolidayRow(holiday, controller.currentLocale)}</span
+										>
+									</li>
+								{/each}
+							</ul>
 						{/each}
-					</ul>
-				{/each}
-			</div>
-		{/if}
-	</section>
+					</div>
+				{/if}
+			</section>
 
-	{#if errorMessage}
-		<p class="text-body-small text-error">{errorMessage}</p>
-	{/if}
+			{#if errorMessage}
+				<p class="text-body-small text-error">{errorMessage}</p>
+			{/if}
+		</div>
+	</div>
 </div>
