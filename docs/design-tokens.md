@@ -86,3 +86,17 @@ Chronos uses standard CSS `border-radius` only (no `corner-shape` / squircle). T
 | `--radius-section-item`    | `0.75rem`  | List item press overlay   |
 | `--radius-leading-icon`    | `0.875rem` | Leading icon chips        |
 | `--radius-capsule`         | `0.75rem`  | Timetable course capsules |
+
+## Z-index stack
+
+Defined in `layout-tokens.css` (`:root`):
+
+| Token                | Value | Use                                     |
+| -------------------- | ----- | --------------------------------------- |
+| `--z-shell`          | 15    | Shell chrome (tab bar)                  |
+| `--z-secondary-page` | 60    | Secondary page shell                    |
+| `--z-overlay`        | 70    | Dialog, BottomSheet, DatePicker overlay |
+| `--z-toast`          | 80    | Snackbar                                |
+| `--z-onboarding`     | 85    | Onboarding full-screen flow             |
+
+Use `z-[var(--z-overlay)]` etc. in components; do not add ad hoc `z-[NN]` values.

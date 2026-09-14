@@ -82,8 +82,8 @@
 		<div
 			class="flex flex-col items-center justify-center py-16 text-center text-on-surface-variant"
 		>
-			<p class="text-base font-medium">{hostT('pluginScreen.notFound')}</p>
-			<p class="mt-1 text-xs opacity-75">
+			<p class="text-body-large font-medium">{hostT('pluginScreen.notFound')}</p>
+			<p class="text-body-small mt-1 opacity-75">
 				{hostT('pluginScreen.notFoundDetail', { pluginId, viewId })}
 			</p>
 		</div>

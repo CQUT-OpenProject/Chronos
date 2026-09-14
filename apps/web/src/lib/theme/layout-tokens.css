@@ -72,6 +72,11 @@
 		--spacing-tabbar: 4.25rem;
 		--top-bar-height: calc(var(--spacing-topbar) + var(--topbar-safe));
 		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
+		--z-shell: 15;
+		--z-secondary-page: 60;
+		--z-overlay: 70;
+		--z-toast: 80;
+		--z-onboarding: 85;
 	}
 
 	@media (max-height: 720px) {

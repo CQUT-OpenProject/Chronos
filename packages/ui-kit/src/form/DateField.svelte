@@ -183,11 +183,11 @@
 				{#if open}
 					<div
 						aria-hidden="true"
-						class="date-picker-overlay fixed inset-0 z-[70] bg-black/50"
+						class="date-picker-overlay fixed inset-0 z-[var(--z-overlay)] bg-black/50"
 					></div>
 				{/if}
 				<DatePicker.ContentStatic
-					class="ui-date-picker-content fixed top-1/2 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-container-high p-4 text-on-surface shadow-overlay outline-none"
+					class="ui-date-picker-content fixed top-1/2 left-1/2 z-[var(--z-overlay)] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-container-high p-4 text-on-surface shadow-overlay outline-none"
 				>
 					<DatePicker.Calendar class="flex w-full flex-col">
 						{#snippet children({ months, weekdays })}

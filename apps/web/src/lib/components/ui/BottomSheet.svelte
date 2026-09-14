@@ -274,11 +274,11 @@
 	<Dialog.Portal>
 		<Dialog.Overlay
 			bind:ref={overlayRef}
-			class="bottom-sheet-overlay fixed inset-0 z-[70] bg-black/50"
+			class="bottom-sheet-overlay fixed inset-0 z-[var(--z-overlay)] bg-black/50"
 		/>
 		<Dialog.Content
 			bind:ref={contentRef}
-			class="bottom-sheet-content rounded-t-sheet fixed inset-x-0 bottom-0 z-[70] flex max-h-[85dvh] flex-col bg-surface-container-high text-on-surface shadow-overlay outline-none"
+			class="bottom-sheet-content rounded-t-sheet fixed inset-x-0 bottom-0 z-[var(--z-overlay)] flex max-h-[85dvh] flex-col bg-surface-container-high text-on-surface shadow-overlay outline-none"
 			style={contentTransformStyle}
 			data-dragging={isDragging ? '' : undefined}
 			data-snapping-back={isSnappingBack ? '' : undefined}

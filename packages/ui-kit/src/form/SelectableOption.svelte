@@ -24,7 +24,7 @@
 	class="flex min-h-[56px] w-full items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors duration-200 {disabled
 		? 'cursor-not-allowed border-outline-variant/40 bg-surface/50 opacity-40'
 		: selected
-			? 'cursor-pointer border-brand bg-primary-container/30 dark:border-soft-blue'
+			? 'cursor-pointer border-brand bg-primary-container/30'
 			: 'cursor-pointer border-outline-variant/60 bg-surface hover:bg-surface-variant/30'}"
 	{onclick}
 >

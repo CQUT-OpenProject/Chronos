@@ -36,7 +36,7 @@
 			variant="standard"
 			size="sm"
 			ariaLabel={hostT('ui.search.clearAria')}
-			class="!size-6 !p-0 text-on-surface-variant hover:!bg-surface-variant/50"
+			class="text-on-surface-variant"
 			onclick={() => (value = '')}
 		>
 			<Close class="size-4" />

@@ -383,7 +383,7 @@
 			aria-valuenow={ariaWeek}
 			aria-valuetext={tooltipWeekLabel}
 			class={[
-				'capsule-indicator inline-flex h-6.5 cursor-pointer items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none sm:h-7',
+				'capsule-indicator inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-2 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none',
 				isExpanded && 'capsule-indicator--expanded',
 				hasGlass && 'capsule-indicator--glass'
 			]}
