@@ -13,7 +13,7 @@
 		...props
 	}: {
 		variant?: 'filled' | 'outlined' | 'text' | 'danger';
-		tone?: 'default' | 'inverse';
+		tone?: 'default' | 'inverse' | 'danger';
 		disabled?: boolean;
 		href?: string;
 		onclick?: (event: MouseEvent) => void;
@@ -28,7 +28,9 @@
 		text:
 			tone === 'inverse'
 				? 'text-inverse-primary hover:underline focus-visible:ring-inverse-primary'
-				: 'ui-btn-text',
+				: tone === 'danger'
+					? 'text-error hover:bg-error/10 active:bg-error/20 focus-visible:ring-error'
+					: 'ui-btn-text',
 		danger: 'ui-btn-danger'
 	});
 </script>

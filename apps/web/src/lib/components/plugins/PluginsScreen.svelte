@@ -466,7 +466,8 @@
 								<div class="flex items-center justify-between gap-2">
 									<Button
 										variant="text"
-										class="text-caption h-6 shrink-0 px-1.5 text-error hover:bg-error/10"
+										tone="danger"
+										class="text-caption h-6 shrink-0 px-1.5"
 										disabled={isBusy}
 										onclick={() => promptUninstall(record.manifest.id, name)}
 									>
