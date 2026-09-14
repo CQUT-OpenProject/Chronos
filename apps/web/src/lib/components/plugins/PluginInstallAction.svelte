@@ -128,7 +128,11 @@
 			{hostT('plugins.badge.installed')}
 		</span>
 	{:else}
-		<Button variant="filled" class="h-8 shrink-0 px-3.5 text-xs font-medium" onclick={onInstall}>
+		<Button
+			variant="filled"
+			class="text-label-small h-7 !min-h-7 shrink-0 px-2.5"
+			onclick={onInstall}
+		>
 			{hostT('plugins.action.install')}
 		</Button>
 	{/if}
