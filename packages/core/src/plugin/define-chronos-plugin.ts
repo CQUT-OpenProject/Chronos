@@ -31,7 +31,7 @@ function resolveMessageFallback(
 
 declare const __CHRONOS_PLUGIN_VERSION__: string | undefined;
 
-function readBundledPluginVersion(): string {
+export function readBundledPluginVersion(): string {
 	if (typeof __CHRONOS_PLUGIN_VERSION__ === 'string' && __CHRONOS_PLUGIN_VERSION__) {
 		return __CHRONOS_PLUGIN_VERSION__;
 	}
