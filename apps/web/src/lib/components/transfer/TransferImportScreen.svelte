@@ -65,14 +65,17 @@
 			onValueChange={handleSourceChange}
 		/>
 	{:else if useScrollableTabs}
-		<div class="flex w-full gap-2 overflow-x-auto pb-1">
+		<div class="flex w-full gap-2 overflow-x-auto pb-1" role="tablist">
 			{#each availableSlots as slot (slot.id)}
 				{@const title = resolveLocalizedText(slot.title)}
 				{@const badge = resolveLocalizedText(slot.badge)}
 				{@const isSelected = transfer.state.selectedSlotId === slot.id}
 				<button
 					type="button"
-					class="text-label-large rounded-pill relative flex shrink-0 items-center gap-1.5 px-4 py-2 text-center transition-colors {isSelected
+					role="tab"
+					aria-selected={isSelected}
+					tabindex={isSelected ? 0 : -1}
+					class="text-label-large rounded-pill relative flex shrink-0 items-center gap-1.5 px-4 py-2 text-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 {isSelected
 						? 'bg-secondary-container font-medium text-on-secondary-container'
 						: 'bg-surface-variant/40 text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface'}"
 					onclick={() => handleSourceChange(slot.id)}

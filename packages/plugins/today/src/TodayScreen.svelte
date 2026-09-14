@@ -3,6 +3,7 @@
 	import {
 		appLocaleToBcp47,
 		pluginText,
+		SegmentedControl,
 		TIMETABLE_PRESENTATION_CONTEXT,
 		resolveCoursePalette,
 		type ChronosUiController,
@@ -59,10 +60,6 @@
 		{ value: 'active' as const, label: pt('screen.scope.active') },
 		{ value: 'all' as const, label: pt('screen.scope.all') }
 	]);
-	const selectedScopeIndex = $derived(
-		scopeSegments.findIndex((segment) => segment.value === screen.scope)
-	);
-
 	function pt(key: keyof (typeof TODAY_MESSAGES)['zh-cn'], params?: Record<string, unknown>) {
 		void ui.current.slotVersion;
 		return pluginText(controller, TODAY_PLUGIN_ID, TODAY_MESSAGES, key, params);
@@ -117,29 +114,13 @@
 			</div>
 		{/if}
 
-		<div class="ui-segmented-track mt-4">
-			{#if selectedScopeIndex >= 0}
-				<div
-					class="ui-segmented-thumb {active
-						? 'transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]'
-						: ''}"
-					style:left="calc(0.375rem + {selectedScopeIndex} * ((100% - 0.75rem) / 2))"
-					style:width="calc((100% - 0.75rem) / 2)"
-				></div>
-			{/if}
-			{#each scopeSegments as segment (segment.value)}
-				<button
-					type="button"
-					class="text-label-large rounded-pill relative z-10 flex-1 cursor-pointer py-2 text-center transition-colors duration-200 {screen.scope ===
-					segment.value
-						? 'text-on-secondary-container'
-						: 'text-on-surface-variant hover:text-on-surface'}"
-					onclick={() => void screen.persistScope(segment.value)}
-				>
-					{segment.label}
-				</button>
-			{/each}
-		</div>
+		<SegmentedControl
+			class="mt-4"
+			segments={scopeSegments}
+			value={screen.scope}
+			animateThumb={active}
+			onValueChange={(scope) => void screen.persistScope(scope as 'active' | 'all')}
+		/>
 	</header>
 
 	<div class="flex flex-1 flex-col gap-4 p-4">
