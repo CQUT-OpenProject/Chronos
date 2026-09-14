@@ -257,7 +257,7 @@ const zhCn = {
 	'timetable.details.totalWeeks': '总周数',
 	'timetable.details.periods.heading': '节次时间',
 	'timetable.details.periods.add': '添加节次',
-	'timetable.details.periods.label': '第 {index} 节课',
+	'timetable.details.periods.label': '第 {index} 节',
 	'timetable.details.periods.deleteAria': '删除第 {index} 节',
 	'timetable.details.periods.duration': '{count} 分钟',
 	'timetable.details.periods.invalidEnd': '结束时间不晚于开始时间',
