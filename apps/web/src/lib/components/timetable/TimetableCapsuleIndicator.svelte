@@ -571,7 +571,7 @@
 		content: '';
 		position: absolute;
 		inset: 0;
-		z-index: 0;
+		z-index: -1;
 		border-radius: inherit;
 		pointer-events: none;
 		background-color: color-mix(in srgb, var(--color-inverse-surface, #2f3033) 70%, transparent);
