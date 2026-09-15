@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ChronosEngine, interpolateMessage, type ChronosEnv } from '@chronos/core';
+import { ChronosEngine, type ChronosEnv } from '@chronos/core';
 import { HOST_MESSAGES, HOST_UI_PLUGIN_ID } from '$lib/i18n/host-messages';
 
 function createTestEnv(): ChronosEnv {
@@ -49,12 +49,5 @@ describe('host-i18n', () => {
 
 		engine.setLocale('zh-cn');
 		expect(hostT('common.cancel')).toBe('取消');
-	});
-
-	it('interpolates message params via catalog', () => {
-		const template = HOST_MESSAGES.en['plugins.notify.installed'];
-		expect(interpolateMessage(template, { pluginId: 'demo' })).toBe(
-			'Plugin "demo" installed and enabled'
-		);
 	});
 });

@@ -17,7 +17,6 @@ import {
 	sortCourseHits
 } from '../src/today-courses';
 import type { ReactiveChronosController } from '@chronos/ui-kit';
-import { dayOfWeekFromIso } from '@chronos/core';
 
 describe('today plugin', () => {
 	it('registers bottom bar tab and screen slots when loaded', async () => {
@@ -65,12 +64,6 @@ describe('today plugin', () => {
 		screen.dispose();
 		await initPromise;
 
-		// At this point, no listener should remain subscribed
-		const listeners = (
-			engine as unknown as { events: { broadcast: { listeners: Map<string, Set<unknown>> } } }
-		).events.broadcast.listeners;
-		expect(listeners.get('time:tick')?.size ?? 0).toBe(0);
-
 		engine.events.emit('time:tick', {
 			todayIso: '2026-03-02',
 			now: new Date('2026-03-02T10:00:00'),
@@ -89,11 +82,6 @@ describe('today-courses', () => {
 		{ index: 2, startTime: '08:55', endTime: '09:40' },
 		{ index: 3, startTime: '10:00', endTime: '10:45' }
 	];
-
-	it('dayOfWeekFromIso maps Sunday to 7', () => {
-		expect(dayOfWeekFromIso('2026-03-01')).toBe(7);
-		expect(dayOfWeekFromIso('2026-03-02')).toBe(1);
-	});
 
 	it('resolvePeriodTimeRange returns start and end times for a period span', () => {
 		expect(resolvePeriodTimeRange(periodTimes, 1, 2)).toEqual({

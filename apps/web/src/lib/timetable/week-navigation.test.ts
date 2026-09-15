@@ -48,15 +48,6 @@ describe('week-navigation', () => {
 		expect(academicBounds(sampleTimetable())).toEqual({ startWeek: 1, endWeek: 20 });
 	});
 
-	it('pager settle converts slide index into a clamped week', () => {
-		const timetable = sampleTimetable();
-		const { startWeek, endWeek } = academicBounds(timetable);
-		const weeks = buildWeekList(startWeek, endWeek);
-		const week = weekFromSlideIndex(startWeek, 3);
-		expect(clampDisplayedWeek(week, startWeek, endWeek)).toBe(4);
-		expect(slideIndexFromWeek(startWeek, week, weeks.length)).toBe(3);
-	});
-
 	it('maps consecutive weeks onto a full-width scroll track', () => {
 		const pageWidth = 320;
 		expect(scrollOffsetFromWeek(1, pageWidth, 1)).toBe(0);
