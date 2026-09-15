@@ -9,15 +9,20 @@
 
 	let {
 		children,
-		footer
+		footer,
+		rubberBand = true
 	}: {
 		children?: Snippet;
 		footer?: Snippet;
+		rubberBand?: boolean;
 	} = $props();
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col">
-	<div use:appScroll class="secondary-scroll mx-auto w-full max-w-lg flex-1 overflow-y-auto p-4">
+	<div
+		use:appScroll={{ rubberBand }}
+		class="secondary-scroll mx-auto w-full max-w-lg flex-1 overflow-y-auto p-4"
+	>
 		{@render children?.()}
 	</div>
 

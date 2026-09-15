@@ -12,12 +12,14 @@
 		backFallback = { kind: 'shell' } as BackFallback,
 		actions,
 		flush = false,
+		rubberBand = true,
 		children
 	}: {
 		title: string;
 		backFallback?: BackFallback;
 		actions?: import('svelte').Snippet;
 		flush?: boolean;
+		rubberBand?: boolean;
 		children?: import('svelte').Snippet;
 	} = $props();
 
@@ -44,7 +46,7 @@
 		</main>
 	{:else}
 		<main
-			use:appScroll
+			use:appScroll={{ rubberBand }}
 			class="secondary-scroll mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto p-4"
 		>
 			{@render children?.()}

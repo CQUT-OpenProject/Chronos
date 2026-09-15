@@ -129,7 +129,7 @@
 		</Button>
 	{/snippet}
 
-	<FormScreenLayout {footer}>
+	<FormScreenLayout {footer} rubberBand={false}>
 		<div class="flex flex-col gap-6 py-1">
 			<Card variant="filled" class="border border-outline-variant/50 !bg-surface-variant/30 p-4.5">
 				<div class="flex flex-col gap-3.5">

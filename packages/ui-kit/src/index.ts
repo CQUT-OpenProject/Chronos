@@ -38,7 +38,7 @@ export { default as MountableSlotOutlet } from './plugin-screen/MountableSlotOut
 export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-slot';
 export { mountableSvelteComponent } from './plugin-screen/mountable-svelte';
 export { pluginText } from './i18n/plugin-text';
-export { appScroll } from './actions/app-scroll';
+export { appScroll, type AppScrollOptions } from './actions/app-scroll';
 export {
 	computeScrollThumbMetrics,
 	scrollRevealScrollbar,
