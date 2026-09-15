@@ -350,7 +350,7 @@
 {#if hasMultipleWeeks}
 	<div
 		class={[
-			'capsule-indicator-wrapper absolute inset-x-0 bottom-2.5 z-20 flex touch-none flex-col items-center select-none sm:bottom-3',
+			'capsule-indicator-wrapper pointer-events-none absolute inset-x-0 bottom-2.5 z-20 flex flex-col items-center select-none sm:bottom-3',
 			className
 		]}
 		style:--indicator-transition-duration={`${STATE_TRANSITION_MS}ms`}
@@ -383,7 +383,7 @@
 			aria-valuenow={ariaWeek}
 			aria-valuetext={tooltipWeekLabel}
 			class={[
-				'capsule-indicator inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-2 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none',
+				'capsule-indicator pointer-events-auto inline-flex min-h-11 cursor-pointer touch-none items-center justify-center rounded-full px-2 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none',
 				isExpanded && 'capsule-indicator--expanded',
 				hasGlass && 'capsule-indicator--glass'
 			]}
