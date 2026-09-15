@@ -176,6 +176,13 @@ button.ui-date-field-input {
 	pointer-events: none;
 }
 
+.ui-screen-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	padding: 1rem;
+}
+
 .ui-section {
 	display: flex;
 	flex-direction: column;
