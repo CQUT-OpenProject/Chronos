@@ -128,8 +128,12 @@ export function scrollRevealScrollbar(node: HTMLElement) {
 			if (hideTimer !== undefined) clearTimeout(hideTimer);
 			host.classList.remove('is-scrolling');
 
-			parent.insertBefore(node, host);
-			host.remove();
+			if (host.isConnected) {
+				if (parent.isConnected) {
+					parent.insertBefore(node, host);
+				}
+				host.remove();
+			}
 
 			for (const className of migratedClasses) {
 				node.classList.add(className);
