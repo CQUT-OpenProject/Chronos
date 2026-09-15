@@ -4,11 +4,13 @@
 
 	let {
 		variant = 'elevated',
+		flush = false,
 		children,
 		class: className = '',
 		...props
 	}: {
 		variant?: 'elevated' | 'outlined' | 'filled';
+		flush?: boolean;
 		children?: Snippet;
 		class?: string;
 	} & HTMLAttributes<HTMLDivElement> = $props();
@@ -22,7 +24,12 @@
 
 <div
 	{...props}
-	class="w-full rounded-3xl p-4 transition-shadow {variantClasses[variant]} {className}"
+	class={[
+		'w-full rounded-3xl transition-shadow',
+		!flush && 'p-4',
+		variantClasses[variant],
+		className
+	]}
 >
 	{@render children?.()}
 </div>
