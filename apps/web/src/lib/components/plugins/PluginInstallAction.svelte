@@ -49,47 +49,53 @@
 			<span class="text-caption font-mono text-[11px] font-medium text-primary">
 				{stageText}
 			</span>
-			<button
-				type="button"
-				role="progressbar"
-				aria-valuenow={percent}
-				aria-valuemin="0"
-				aria-valuemax="100"
-				aria-label={hostT('plugins.action.cancel')}
-				title={hostT('plugins.action.cancel')}
-				class="group relative flex size-8 cursor-pointer items-center justify-center rounded-full transition-transform active:scale-95"
-				onclick={onCancel}
-			>
-				<svg class="size-8 -rotate-90" viewBox="0 0 28 28">
-					<!-- Background track -->
-					<circle
-						cx="14"
-						cy="14"
-						r={CIRCLE_RADIUS}
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2.5"
-						class="text-surface-variant/80"
-					/>
-					<!-- Active progress arc -->
-					<circle
-						cx="14"
-						cy="14"
-						r={CIRCLE_RADIUS}
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2.5"
-						stroke-linecap="round"
-						stroke-dasharray={CIRCUMFERENCE}
-						stroke-dashoffset={strokeOffset}
-						class="text-primary transition-[stroke-dashoffset] duration-200"
-					/>
-				</svg>
-				<!-- Stop square in center -->
-				<span
-					class="absolute size-2.5 rounded-[2px] bg-primary transition-transform group-hover:scale-110"
-				></span>
-			</button>
+			<div class="group relative size-8">
+				<div
+					role="progressbar"
+					aria-valuenow={percent}
+					aria-valuemin={0}
+					aria-valuemax={100}
+					aria-valuetext={stageText}
+					class="pointer-events-none absolute inset-0"
+				>
+					<svg class="size-8 -rotate-90" viewBox="0 0 28 28" aria-hidden="true">
+						<!-- Background track -->
+						<circle
+							cx="14"
+							cy="14"
+							r={CIRCLE_RADIUS}
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.5"
+							class="text-surface-variant/80"
+						/>
+						<!-- Active progress arc -->
+						<circle
+							cx="14"
+							cy="14"
+							r={CIRCLE_RADIUS}
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.5"
+							stroke-linecap="round"
+							stroke-dasharray={CIRCUMFERENCE}
+							stroke-dashoffset={strokeOffset}
+							class="text-primary transition-[stroke-dashoffset] duration-200"
+						/>
+					</svg>
+				</div>
+				<button
+					type="button"
+					aria-label={hostT('plugins.action.cancel')}
+					title={hostT('plugins.action.cancel')}
+					class="relative flex size-8 cursor-pointer items-center justify-center rounded-full transition-transform active:scale-95"
+					onclick={onCancel}
+				>
+					<!-- Stop square in center -->
+					<span class="size-2.5 rounded-[2px] bg-primary transition-transform group-hover:scale-110"
+					></span>
+				</button>
+			</div>
 		</div>
 	{:else if task?.status === 'queued'}
 		<div class="flex items-center gap-1.5">
