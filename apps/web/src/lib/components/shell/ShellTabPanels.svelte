@@ -9,6 +9,7 @@
 	import TimetableScreen from '$lib/components/timetable/TimetableScreen.svelte';
 	import EmptyTimetableState from '$lib/components/timetable/EmptyTimetableState.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
+	import { scrollRubberBand } from '@chronos/ui-kit';
 	import { getAppController } from '$lib/services/app-engine';
 
 	interface Props {
@@ -103,7 +104,11 @@
 
 {#snippet panel(active: boolean, content: Snippet)}
 	<div
-		class={['absolute inset-0 overflow-y-auto', active ? 'z-10' : 'pointer-events-none z-0 hidden']}
+		use:scrollRubberBand
+		class={[
+			'app-scroll-y absolute inset-0 overflow-y-auto',
+			active ? 'z-10' : 'pointer-events-none z-0 hidden'
+		]}
 		inert={!active}
 		aria-hidden={!active}
 	>
@@ -133,7 +138,7 @@
 			{@const pluginActive = !frozen && pluginSelected}
 			<div
 				class={[
-					'absolute inset-0 overflow-y-auto',
+					'absolute inset-0 overflow-hidden',
 					pluginSelected ? 'z-10' : 'pointer-events-none z-0 hidden'
 				]}
 				inert={!pluginActive}

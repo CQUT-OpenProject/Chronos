@@ -5,7 +5,7 @@
 	 */
 	import type { Snippet } from 'svelte';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
-	import { scrollRevealScrollbar } from '@chronos/ui-kit';
+	import { appScroll } from '@chronos/ui-kit';
 
 	let {
 		children,
@@ -17,10 +17,7 @@
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col">
-	<div
-		use:scrollRevealScrollbar
-		class="secondary-scroll mx-auto w-full max-w-lg flex-1 overflow-y-auto p-4"
-	>
+	<div use:appScroll class="secondary-scroll mx-auto w-full max-w-lg flex-1 overflow-y-auto p-4">
 		{@render children?.()}
 	</div>
 

@@ -38,7 +38,13 @@ export { default as MountableSlotOutlet } from './plugin-screen/MountableSlotOut
 export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-slot';
 export { mountableSvelteComponent } from './plugin-screen/mountable-svelte';
 export { pluginText } from './i18n/plugin-text';
-export { scrollRevealScrollbar } from './actions/scroll-reveal-scrollbar';
+export { appScroll } from './actions/app-scroll';
+export {
+	computeScrollThumbMetrics,
+	scrollRevealScrollbar,
+	splitScrollLayoutClasses
+} from './actions/scroll-reveal-scrollbar';
+export { dampenOverscroll, scrollRubberBand } from './actions/scroll-rubber-band';
 export { CHRONOS_MOUNTABLE } from '@chronos/core';
 export {
 	previewAndNotify,

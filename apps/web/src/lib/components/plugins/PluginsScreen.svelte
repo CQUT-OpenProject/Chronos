@@ -20,7 +20,7 @@
 	import PluginConfigModal from './PluginConfigModal.svelte';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 
-	import { scrollRevealScrollbar } from '@chronos/ui-kit';
+	import { appScroll } from '@chronos/ui-kit';
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { groupCatalogManifestsByCategory } from '$lib/services/official-plugins/catalog-sort';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
@@ -295,7 +295,7 @@
 
 	{#if activeTab === 'installed'}
 		<div
-			use:scrollRevealScrollbar
+			use:appScroll
 			class="secondary-scroll mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4"
 		>
 			<section class="ui-section">
@@ -512,7 +512,7 @@
 	{:else}
 		<div class="flex min-h-0 flex-1 flex-col">
 			<div
-				use:scrollRevealScrollbar
+				use:appScroll
 				class="secondary-scroll mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4"
 			>
 				<section class="ui-section">

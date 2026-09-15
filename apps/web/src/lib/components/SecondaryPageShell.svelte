@@ -5,7 +5,7 @@
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 	import { navigateBack, type BackFallback } from '$lib/navigation';
-	import { scrollRevealScrollbar } from '@chronos/ui-kit';
+	import { appScroll } from '@chronos/ui-kit';
 
 	let {
 		title,
@@ -44,7 +44,7 @@
 		</main>
 	{:else}
 		<main
-			use:scrollRevealScrollbar
+			use:appScroll
 			class="secondary-scroll mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto p-4"
 		>
 			{@render children?.()}

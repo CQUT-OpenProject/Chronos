@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { readBundledPluginVersion, trackPluginAnalytics } from '@chronos/core';
 	import type { ChronosUiController } from '@chronos/ui-kit';
-	import { pluginText, scrollRevealScrollbar } from '@chronos/ui-kit';
+	import { appScroll, pluginText } from '@chronos/ui-kit';
 	import { ERROR_LOG_ANALYTICS } from './analytics';
 	import { copyTextWithFallback } from './copy-text';
 	import { formatErrorLogClipboard, type ErrorLogEntry } from './error-log';
@@ -17,7 +17,16 @@
 	let { controller, pluginId }: Props = $props();
 
 	const runtime = $derived(getErrorLogRuntime(pluginId));
-	const entries = $derived([...runtime.entries].sort((a, b) => b.ts - a.ts));
+	const entries = $derived.by(() => {
+		const seen = new Set<string>();
+		return [...runtime.entries]
+			.sort((a, b) => b.ts - a.ts)
+			.filter((entry) => {
+				if (seen.has(entry.id)) return false;
+				seen.add(entry.id);
+				return true;
+			});
+	});
 	const pluginContext = $derived(controller.getPluginContext(pluginId));
 	function pt(key: keyof (typeof ERROR_LOG_MESSAGES)['zh-cn']) {
 		return pluginText(controller, ERROR_LOG_PLUGIN_ID, ERROR_LOG_MESSAGES, key);
@@ -56,10 +65,7 @@
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<div
-		use:scrollRevealScrollbar
-		class="secondary-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
-	>
+	<div use:appScroll class="secondary-scroll min-h-0 flex-1 overflow-y-auto">
 		<div class="p-4">
 			<div class="ui-section-surface divide-y divide-outline/10 overflow-hidden">
 				{#if entries.length === 0}

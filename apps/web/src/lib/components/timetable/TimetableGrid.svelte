@@ -13,6 +13,7 @@
 	} from '@chronos/core';
 	import type { CapsuleCornerStyle, CapsuleCorners, TimetableLayoutMode } from '@chronos/core';
 	import MiddleTruncateText from '@chronos/ui-kit/timetable-preview/MiddleTruncateText.svelte';
+	import { scrollRubberBand } from '@chronos/ui-kit';
 	import { capsuleCornerAttrs } from '@chronos/ui-kit/timetable/capsule-corners';
 	import {
 		courseCapsuleInnerWidthPx,
@@ -265,6 +266,7 @@
 
 	const bodyScrollAttach: Attachment = (node) => {
 		const element = node as HTMLDivElement;
+		const rubberBand = scrollRubberBand(element, !isFitLayout);
 		scrollContainer = element;
 		bodyViewportHeight = element.clientHeight;
 		const observer = new ResizeObserver(() => {
@@ -272,6 +274,7 @@
 		});
 		observer.observe(element);
 		return () => {
+			rubberBand.destroy();
 			observer.disconnect();
 			if (scrollContainer === element) scrollContainer = undefined;
 		};
@@ -566,7 +569,7 @@
 		{@attach bodyScrollAttach}
 		class="min-h-0 flex-1 {isFitLayout
 			? 'overflow-hidden'
-			: 'overflow-y-auto'} {timetableBodyTintClass(hasDynamicBackground)}"
+			: 'app-scroll-y overflow-y-auto'} {timetableBodyTintClass(hasDynamicBackground)}"
 		role="region"
 		aria-label={hostT('timetable.grid.aria')}
 	>

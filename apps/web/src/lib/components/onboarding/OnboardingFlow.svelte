@@ -16,6 +16,7 @@
 	import HighlightRowList from '$lib/components/ui/HighlightRowList.svelte';
 	import HighlightRow from '$lib/components/ui/HighlightRow.svelte';
 	import InstallGuideCard from '$lib/components/pwa/InstallGuideCard.svelte';
+	import { scrollRubberBand } from '@chronos/ui-kit';
 	import {
 		CheckCircleFill,
 		DownloadFill,
@@ -190,7 +191,7 @@
 				</button>
 			</div>
 
-			<div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+			<div use:scrollRubberBand class="app-scroll-y min-h-0 flex-1 overflow-y-auto px-6 py-4">
 				{#key step}
 					<div
 						class="flex h-full flex-col"

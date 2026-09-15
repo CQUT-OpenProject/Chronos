@@ -12,7 +12,7 @@
 		overlayOpacityFromDrag,
 		shouldDismissSheet
 	} from '$lib/components/ui/bottom-sheet-drag';
-	import { isReducedMotionActive } from '@chronos/ui-kit';
+	import { isReducedMotionActive, scrollRubberBand } from '@chronos/ui-kit';
 
 	let {
 		open = $bindable(false),
@@ -324,9 +324,13 @@
 
 			{#if description || children}
 				<div
+					use:scrollRubberBand={showHandle}
 					class={[
 						showHandle
-							? ['min-h-0 flex-1 overflow-y-auto', !footer && 'pb-[var(--tabbar-safe)]']
+							? [
+									'app-scroll-y min-h-0 flex-1 overflow-y-auto',
+									!footer && 'pb-[var(--tabbar-safe)]'
+								]
 							: 'shrink-0 px-6 pb-5'
 					]}
 				>
