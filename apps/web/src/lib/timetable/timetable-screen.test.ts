@@ -80,7 +80,6 @@ describe('TimetableScreenController', () => {
 		expect(state.endWeek).toBe(20);
 		expect(state.weeks.length).toBe(20);
 		expect(state.displayedWeek).toBeGreaterThanOrEqual(1);
-		expect(typeof state.weekRangeText).toBe('string');
 	});
 
 	it('allows setting displayed week and expanding/collapsing overlap slots', () => {

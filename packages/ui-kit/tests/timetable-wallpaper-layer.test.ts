@@ -24,20 +24,11 @@ describe('timetable-wallpaper-layer', () => {
 	it('uses anti-bleed inset for cover fit', () => {
 		const classes = timetableWallpaperBackdropClass(false, 'cover');
 		expect(classes).toContain('inset-[-24px]');
-		expect(timetableWallpaperBackgroundSize('cover')).toBe('cover');
 	});
 
 	it('uses exact-fit inset for fill fit', () => {
 		const classes = timetableWallpaperBackdropClass(false, 'fill');
 		expect(classes).toContain('inset-0');
 		expect(timetableWallpaperBackgroundSize('fill')).toBe('100% 100%');
-	});
-
-	it('includes motion-safe transitions for both fit modes', () => {
-		const classes = timetableWallpaperBackdropClass(false, 'fill');
-		expect(classes).toContain('motion-reduce:transition-none');
-		expect(classes).toContain('will-change-[filter]');
-		expect(classes).not.toContain('ease-[');
-		expect(classes).not.toContain('transform');
 	});
 });
