@@ -100,7 +100,9 @@
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<header class="shrink-0 border-b border-outline/10 bg-surface px-4 pt-6 pb-4">
+	<header
+		class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-6 pb-4 backdrop-blur-sm"
+	>
 		<p class="text-headline-small text-on-surface">{formatHeaderDate(todayIso)}</p>
 		{#if timetable}
 			<div class="mt-1 flex items-center justify-between gap-3">
@@ -124,7 +126,7 @@
 		/>
 	</header>
 
-	<div use:appScroll class="secondary-scroll min-h-0 flex-1 overflow-y-auto">
+	<div use:appScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
 		<div class="flex flex-col gap-4 p-4">
 			{#if !timetable}
 				<section
