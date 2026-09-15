@@ -5,7 +5,7 @@
 	 */
 	import type { Snippet } from 'svelte';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
-	import { appScroll } from '@chronos/ui-kit';
+	import { scrollRevealScrollbar, scrollRubberBand } from '@chronos/ui-kit';
 
 	let {
 		children,
@@ -20,7 +20,8 @@
 
 <div class="flex h-full min-h-0 flex-1 flex-col">
 	<div
-		use:appScroll={{ rubberBand }}
+		use:scrollRevealScrollbar
+		use:scrollRubberBand={rubberBand}
 		class="secondary-scroll mx-auto w-full max-w-lg flex-1 overflow-y-auto p-4"
 	>
 		{@render children?.()}
