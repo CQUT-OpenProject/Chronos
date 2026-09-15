@@ -44,12 +44,7 @@
 
 {#snippet editAction()}
 	{#if course}
-		<IconButton
-			variant="standard"
-			size="sm"
-			ariaLabel={hostT('route.courseEditAria')}
-			onclick={editCourse}
-		>
+		<IconButton variant="standard" ariaLabel={hostT('route.courseEditAria')} onclick={editCourse}>
 			<Edit class="size-[22px]" />
 		</IconButton>
 	{/if}

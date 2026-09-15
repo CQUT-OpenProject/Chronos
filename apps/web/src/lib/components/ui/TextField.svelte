@@ -80,7 +80,7 @@
 			<IconButton
 				size="sm"
 				ariaLabel={passwordAriaLabel}
-				class="!size-8 text-on-surface-variant"
+				class="text-on-surface-variant"
 				onclick={togglePasswordVisibility}
 			>
 				{#if passwordVisible}

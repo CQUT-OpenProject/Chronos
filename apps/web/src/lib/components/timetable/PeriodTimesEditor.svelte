@@ -199,7 +199,6 @@
 		<div class="flex items-center gap-1">
 			<IconButton
 				variant="standard"
-				size="sm"
 				ariaLabel={hostT('timetable.details.periods.reset')}
 				disabled={isDefault}
 				onclick={() => (resetConfirmOpen = true)}

@@ -32,7 +32,7 @@
 
 	const sizeClasses = {
 		md: 'size-11',
-		sm: 'size-11'
+		sm: 'size-8'
 	};
 
 	const focusRingClass = $derived(

@@ -48,7 +48,6 @@
 		<IconButton
 			variant="tonal"
 			size="sm"
-			class="!p-2"
 			ariaLabel={decreaseAriaLabel}
 			disabled={value <= min}
 			onclick={() => step(-1)}
@@ -59,7 +58,6 @@
 		<IconButton
 			variant="tonal"
 			size="sm"
-			class="!p-2"
 			ariaLabel={increaseAriaLabel}
 			disabled={value >= max}
 			onclick={() => step(1)}
