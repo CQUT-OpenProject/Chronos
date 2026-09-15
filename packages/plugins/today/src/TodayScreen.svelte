@@ -3,7 +3,7 @@
 	import {
 		appLocaleToBcp47,
 		pluginText,
-		appScroll,
+		appShellScroll,
 		SegmentedControl,
 		TIMETABLE_PRESENTATION_CONTEXT,
 		resolveCoursePalette,
@@ -126,7 +126,7 @@
 		/>
 	</header>
 
-	<div use:appScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
+	<div use:appShellScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
 		<div class="flex flex-col gap-4 p-4">
 			{#if !timetable}
 				<section

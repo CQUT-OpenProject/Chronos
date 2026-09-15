@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { readBundledPluginVersion, trackPluginAnalytics } from '@chronos/core';
 	import type { ChronosUiController } from '@chronos/ui-kit';
-	import { appScroll, pluginText } from '@chronos/ui-kit';
+	import { appShellScroll, pluginText } from '@chronos/ui-kit';
 	import { ERROR_LOG_ANALYTICS } from './analytics';
 	import { copyTextWithFallback } from './copy-text';
 	import { formatErrorLogClipboard, type ErrorLogEntry } from './error-log';
@@ -65,7 +65,7 @@
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<div use:appScroll class="secondary-scroll min-h-0 flex-1 overflow-y-auto">
+	<div use:appShellScroll class="secondary-scroll min-h-0 flex-1 overflow-y-auto">
 		<div class="p-4">
 			<div class="ui-section-surface divide-y divide-outline/10 overflow-hidden">
 				{#if entries.length === 0}
