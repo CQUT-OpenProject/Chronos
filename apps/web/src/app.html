@@ -2,6 +2,41 @@
 
 <html lang="%paraglide.lang%" dir="%paraglide.dir%">
 	<head>
+		<script>
+			(function () {
+				try {
+					function mapTag(tag) {
+						var normalized = tag.trim().toLowerCase().replace('_', '-');
+						if (!normalized) return null;
+						if (normalized.indexOf('zh') === 0) return 'zh-cn';
+						if (normalized.indexOf('en') === 0) return 'en';
+						return null;
+					}
+					function detectLocale() {
+						var candidates =
+							navigator.languages && navigator.languages.length
+								? Array.from(navigator.languages)
+								: navigator.language
+									? [navigator.language]
+									: [];
+						for (var i = 0; i < candidates.length; i++) {
+							var locale = mapTag(candidates[i]);
+							if (locale) return locale;
+						}
+						return 'zh-cn';
+					}
+					function toBcp47(locale) {
+						return locale === 'en' ? 'en' : 'zh-CN';
+					}
+					var locale = detectLocale();
+					document.documentElement.lang = toBcp47(locale);
+					document.cookie =
+						'PARAGLIDE_LOCALE=' +
+						encodeURIComponent(locale) +
+						'; path=/; max-age=34560000; samesite=lax';
+				} catch (e) {}
+			})();
+		</script>
 		<meta charset="utf-8" />
 
 		<meta

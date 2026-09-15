@@ -71,6 +71,9 @@ export * from './runtime/engine';
 // Analytics
 export * from './analytics/plugin-analytics';
 
+// Error capture
+export * from './error-capture';
+
 // Plugin authoring
 export * from './plugin/define-chronos-plugin';
 export * from './plugin/call-plugin-server';

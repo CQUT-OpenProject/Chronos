@@ -49,6 +49,18 @@
 	const SCROLL_ROW_HEIGHT = '5.5rem';
 	const SIDEBAR_WIDTH_REM = 3.25;
 
+	function setCapsulePressed(el: HTMLButtonElement, pressed: boolean) {
+		if (pressed) {
+			el.setAttribute('data-pressed', '');
+		} else {
+			el.removeAttribute('data-pressed');
+		}
+	}
+
+	function clearCapsulePressed(event: PointerEvent) {
+		setCapsulePressed(event.currentTarget as HTMLButtonElement, false);
+	}
+
 	function estimateGridBodyWidth(): number {
 		if (typeof window === 'undefined') return 0;
 		const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
@@ -107,7 +119,7 @@
 	let internalExpandedSlots = $state(new Set<string>());
 
 	interface DragSettlePreview {
-		courseId: string;
+		concealedCourseId: string;
 		targetColIndex: number;
 		targetDayOfWeek: number;
 		targetStartPeriod: number;
@@ -117,7 +129,12 @@
 
 	let settling = $state<DragSettlePreview | null>(null);
 
-	const concealedCourseId = $derived(dragState?.course.id ?? settling?.courseId ?? null);
+	function isCourseConcealed(courseId: string): boolean {
+		if (dragState?.course.id === courseId) return true;
+		if (!settling) return false;
+		if (settling.concealedCourseId === courseId) return true;
+		return settling.course.id === courseId;
+	}
 
 	const dropPreview = $derived(
 		dragState && !dragState.overDeleteZone
@@ -418,7 +435,7 @@
 		return {
 			updatedCourses,
 			settling: {
-				courseId: targetCourse.id,
+				concealedCourseId: current.course.id,
 				targetColIndex: targetColIndex >= 0 ? targetColIndex : current.targetColIndex,
 				targetDayOfWeek: current.targetDayOfWeek,
 				targetStartPeriod: clampedStart,
@@ -428,31 +445,41 @@
 		};
 	}
 
-	async function commitDragSession(current: TimetableDragSession) {
-		const update = buildDragUpdate(current);
-		if (!update) return;
-
-		settling = update.settling;
+	async function commitDragSession(update: {
+		updatedCourses: Course[];
+		settling: DragSettlePreview;
+	}) {
 		try {
 			await controller.saveCurrentTimetableDetails({ courses: update.updatedCourses });
 			trackEvent('timetable_course_reorder');
 		} catch {
 			settling = null;
 		} finally {
-			await tick();
-			settling = null;
+			if (settling) {
+				await tick();
+				settling = null;
+			}
 		}
 	}
 
 	function handleWindowPointerUp(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
-		const current = interaction.endDrag();
-		if (!current) return;
-		if (current.overDeleteZone) {
-			onRequestWeekDelete?.(current.course, displayedWeek);
+		const session = dragState;
+		if (session.overDeleteZone) {
+			const current = interaction.endDrag();
+			if (current) onRequestWeekDelete?.(current.course, displayedWeek);
 			return;
 		}
-		void commitDragSession(current);
+
+		const update = buildDragUpdate(session);
+		if (!update) {
+			interaction.endDrag();
+			return;
+		}
+
+		settling = update.settling;
+		interaction.endDrag();
+		void commitDragSession(update);
 	}
 
 	function handleWindowPointerCancel(event: PointerEvent) {
@@ -554,7 +581,7 @@
 		{@attach bodyScrollAttach}
 		class="min-h-0 flex-1 {isFitLayout
 			? 'overflow-hidden'
-			: 'overflow-y-auto'} {timetableBodyTintClass(hasDynamicBackground)}"
+			: 'app-scroll-y overflow-y-auto'} {timetableBodyTintClass(hasDynamicBackground)}"
 		role="region"
 		aria-label={hostT('timetable.grid.aria')}
 	>
@@ -612,9 +639,9 @@
 				{#if capsuleLayoutReady}
 					{#each placements as item (item.key)}
 						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
-						{@const isConcealed = item.kind === 'course' && item.course.id === concealedCourseId}
+						{@const isConcealed = item.kind === 'course' && isCourseConcealed(item.course.id)}
 						<div
-							class="absolute box-border overflow-hidden transition-[transform,opacity] duration-200 ease-out {isConcealed
+							class="absolute box-border overflow-hidden transition-transform duration-200 ease-out {isConcealed
 								? 'opacity-0'
 								: ''}"
 							style:top="calc((var(--row-height) * {item.geometry.startPeriod - 1}))"
@@ -705,7 +732,7 @@
 				});
 			}
 		},
-		onDragStart: (_c, event) => startDrag(placed, event)
+		onDragStart: (_c, event) => startDrag(placed, event, { hapticOnStart: false })
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
@@ -715,7 +742,7 @@
 		draggable="false"
 		class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left select-none {isEditing
 			? 'cursor-grab active:cursor-grabbing'
-			: ''} {placed.displayModel.isHolidayMuted
+			: 'course-capsule--pressable'} {placed.displayModel.isHolidayMuted
 			? 'opacity-40'
 			: placed.displayModel.isInDisplayedWeek
 				? ''
@@ -728,11 +755,25 @@
 			teacher,
 			isHolidayMuted: placed.displayModel.isHolidayMuted
 		})}
-		onpointerdown={handlers.onpointerdown}
+		onpointerdown={(event) => {
+			if (!isEditing && !interaction.isDragging) {
+				setCapsulePressed(event.currentTarget as HTMLButtonElement, true);
+			}
+			handlers.onpointerdown(event);
+		}}
 		onpointermove={handlers.onpointermove}
-		onpointerup={handlers.onpointerup}
-		onpointerleave={handlers.onpointerleave}
-		onpointercancel={handlers.onpointercancel}
+		onpointerup={(event) => {
+			clearCapsulePressed(event);
+			handlers.onpointerup(event);
+		}}
+		onpointerleave={(event) => {
+			clearCapsulePressed(event);
+			handlers.onpointerleave(event);
+		}}
+		onpointercancel={(event) => {
+			clearCapsulePressed(event);
+			handlers.onpointercancel(event);
+		}}
 		onclick={handlers.onclick}
 		ondragstart={(event) => event.preventDefault()}
 		oncontextmenu={(event) => event.preventDefault()}

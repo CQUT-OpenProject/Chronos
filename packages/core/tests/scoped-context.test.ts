@@ -5,7 +5,8 @@ import { HierarchicalSlotRegistry } from '../src/runtime/hierarchical-slot-regis
 import { ThemeRegistry } from '../src/runtime/theme-registry';
 import { BadgeManager } from '../src/runtime/badge-manager';
 import { I18nCatalog } from '../src/i18n/i18n-catalog';
-import { IHttpService, createServiceIdentifier } from '../src/types/services';
+import { IErrorCaptureService, IHttpService, createServiceIdentifier } from '../src/types/services';
+import { createMockErrorCapture } from '../src/test-utils/create-mock-error-capture';
 import type { ChronosEnv } from '../src/types/env';
 import { DEFAULT_USER_PREFERENCES } from '../src/domain/preferences';
 
@@ -54,7 +55,8 @@ function createMockHost() {
 		},
 		runtime: {
 			sha256: async () => ''
-		}
+		},
+		errorCapture: createMockErrorCapture()
 	};
 
 	return {
@@ -117,6 +119,10 @@ describe('ScopedContext in @chronos/core', () => {
 		const http = ctx.service(IHttpService);
 		expect(http).toBeDefined();
 		expect(typeof http.request).toBe('function');
+
+		const errorCapture = ctx.service(IErrorCaptureService);
+		expect(errorCapture).toBeDefined();
+		expect(typeof errorCapture.onCaptured).toBe('function');
 
 		const missingId = createServiceIdentifier<unknown>('nonExistent');
 		expect(() => ctx.service(missingId)).toThrowError();

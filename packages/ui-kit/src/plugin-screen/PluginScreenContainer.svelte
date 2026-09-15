@@ -56,7 +56,7 @@
 	<MountableSlotOutlet
 		component={screenSlot.component}
 		props={{ controller, pluginId, active }}
-		class="flex min-h-0 w-full flex-1 flex-col"
+		class="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
 	/>
 {:else if screenSlot?.schema}
 	<div class="flex w-full flex-col p-4">

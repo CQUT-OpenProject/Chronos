@@ -38,6 +38,18 @@
 	const ROW_HEIGHT = '5.5rem';
 	const SIDEBAR_WIDTH = '3.25rem';
 	const FIT_MIN_FONT_PX = 6;
+
+	function setCapsulePressed(el: HTMLButtonElement, pressed: boolean) {
+		if (pressed) {
+			el.setAttribute('data-pressed', '');
+		} else {
+			el.removeAttribute('data-pressed');
+		}
+	}
+
+	function clearCapsulePressed(event: PointerEvent) {
+		setCapsulePressed(event.currentTarget as HTMLButtonElement, false);
+	}
 	const paintReadySource = getContext<PreviewPaintReadySource | undefined>(
 		PREVIEW_PAINT_READY_CONTEXT
 	);
@@ -296,7 +308,7 @@
 								{#if interactive}
 									<button
 										type="button"
-										class="course-capsule flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {item
+										class="course-capsule course-capsule--pressable flex h-full min-h-0 w-full flex-col overflow-hidden border p-2 text-left {item
 											.displayModel.isHolidayMuted
 											? 'opacity-40'
 											: item.displayModel.isInDisplayedWeek
@@ -304,6 +316,11 @@
 												: 'opacity-45'}"
 										style="{capsuleCornerAttrs(item.corners).style}; --capsule: {item.colors
 											.background}; --capsule-fg: {item.colors.text}"
+										onpointerdown={(event) =>
+											setCapsulePressed(event.currentTarget as HTMLButtonElement, true)}
+										onpointerup={clearCapsulePressed}
+										onpointerleave={clearCapsulePressed}
+										onpointercancel={clearCapsulePressed}
 										onclick={() => onCourseClick?.(item.course)}
 									>
 										{#if badgeText}

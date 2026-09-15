@@ -81,6 +81,17 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 			en: "Bottom tab showing today's courses"
 		},
 		entry: resolve(root, 'packages/plugins/today/bundle/entry.ts')
+	},
+	{
+		id: 'tool-error-log',
+		type: 'tool',
+		sourceDir: 'error-log',
+		name: { 'zh-CN': '错误日志', en: 'Error Log' },
+		description: {
+			'zh-CN': '记录未处理异常与 console.error',
+			en: 'Capture unhandled errors and console.error'
+		},
+		entry: resolve(root, 'packages/plugins/error-log/bundle/entry.ts')
 	}
 ];
 

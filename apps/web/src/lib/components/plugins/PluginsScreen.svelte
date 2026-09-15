@@ -16,10 +16,9 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
-	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
+	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import PluginConfigModal from './PluginConfigModal.svelte';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
-
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { groupCatalogManifestsByCategory } from '$lib/services/official-plugins/catalog-sort';
 	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
@@ -277,336 +276,329 @@
 	}
 </script>
 
+{#snippet tabHeader()}
+	<SegmentedControl
+		segments={tabSegments}
+		value={activeTab}
+		onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
+	/>
+{/snippet}
+
 {#snippet linkImportFooter()}
 	<Button variant="outlined" class="w-full" onclick={promptLinkInstall}>
 		{hostT('plugins.link.open')}
 	</Button>
 {/snippet}
 
-<div class="flex h-full min-h-0 flex-col text-on-surface">
-	<div class="mx-auto w-full max-w-lg shrink-0 px-4 pt-3 pb-4">
-		<SegmentedControl
-			segments={tabSegments}
-			value={activeTab}
-			onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
-		/>
-	</div>
-
+<FormScreenLayout
+	class="text-on-surface"
+	header={tabHeader}
+	footer={activeTab === 'official' ? linkImportFooter : undefined}
+>
 	{#if activeTab === 'installed'}
-		<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
+		<section class="ui-section">
+			<div class="flex items-center justify-between px-1">
+				<h3 class="text-label-large font-medium text-on-surface">
+					{hostT('plugins.builtin.heading')}
+				</h3>
+				<span class="text-label-small text-on-surface-variant"
+					>{hostT('plugins.builtin.count', {
+						count: profileBuiltinPlugins.length
+					})}</span
+				>
+			</div>
+
+			<div class="ui-section-surface divide-y divide-border/40">
+				{#each profileBuiltinPlugins as plugin (plugin.id)}
+					{@const name = resolveManifestText(plugin.name)}
+					{@const desc = resolveManifestText(plugin.description)}
+					{@const meta = getPluginCategoryMeta(plugin.category)}
+					<div
+						class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
+					>
+						<div class="flex min-w-0 flex-1 flex-col justify-center">
+							<div class="flex flex-wrap items-center gap-1.5">
+								<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
+									{name}
+								</span>
+								<span
+									class="text-label-small py-0.2 text-caption rounded-full px-1.5 font-medium {meta.badgeClass}"
+								>
+									{meta.label}
+								</span>
+							</div>
+							{#if desc}
+								<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
+									{desc}
+								</p>
+							{/if}
+						</div>
+						<div class="flex shrink-0 items-center gap-1.5">
+							{#if plugin.configSchema}
+								<Button
+									variant="outlined"
+									class="h-7.5 px-2.5 text-xs font-normal"
+									onclick={() => handleOpenConfig(plugin.id, name, plugin.configSchema)}
+								>
+									<TuneFill class="mr-1 size-3.5" />
+									{hostT('plugins.action.settings')}
+								</Button>
+							{:else}
+								<span class="text-label-small text-on-surface-variant/80">
+									{hostT('plugins.builtin.defaultEnabled')}
+								</span>
+							{/if}
+						</div>
+					</div>
+				{/each}
+			</div>
+		</section>
+
+		{#if activeInstallTasks.length > 0}
 			<section class="ui-section">
 				<div class="flex items-center justify-between px-1">
 					<h3 class="text-label-large font-medium text-on-surface">
-						{hostT('plugins.builtin.heading')}
+						{hostT('plugins.installing.heading')}
 					</h3>
-					<span class="text-label-small text-on-surface-variant"
-						>{hostT('plugins.builtin.count', {
-							count: profileBuiltinPlugins.length
-						})}</span
-					>
+					<span class="text-label-small text-on-surface-variant">
+						{hostT('plugins.builtin.count', { count: activeInstallTasks.length })}
+					</span>
 				</div>
-
 				<div class="ui-section-surface divide-y divide-border/40">
-					{#each profileBuiltinPlugins as plugin (plugin.id)}
-						{@const name = resolveManifestText(plugin.name)}
-						{@const desc = resolveManifestText(plugin.description)}
-						{@const meta = getPluginCategoryMeta(plugin.category)}
+					{#each activeInstallTasks as task (task.pluginId)}
+						{@const manifest = task.manifest}
+						{@const name = resolveManifestText(manifest.name)}
+						{@const desc = resolveManifestText(manifest.description)}
 						<div
 							class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
 						>
 							<div class="flex min-w-0 flex-1 flex-col justify-center">
-								<div class="flex flex-wrap items-center gap-1.5">
-									<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
-										{name}
-									</span>
-									<span
-										class="text-label-small py-0.2 text-caption rounded-full px-1.5 font-medium {meta.badgeClass}"
-									>
-										{meta.label}
-									</span>
-								</div>
+								<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
+									{name}
+								</span>
 								{#if desc}
-									<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">{desc}</p>
+									<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
+										{desc}
+									</p>
 								{/if}
 							</div>
-							<div class="flex shrink-0 items-center gap-1.5">
-								{#if plugin.configSchema}
-									<Button
-										variant="outlined"
-										class="h-7.5 px-2.5 text-xs font-normal"
-										onclick={() => handleOpenConfig(plugin.id, name, plugin.configSchema)}
-									>
-										<TuneFill class="mr-1 size-3.5" />
-										{hostT('plugins.action.settings')}
-									</Button>
-								{:else}
-									<span class="text-label-small text-on-surface-variant/80">
-										{hostT('plugins.builtin.defaultEnabled')}
-									</span>
-								{/if}
-							</div>
+							<PluginInstallAction
+								{manifest}
+								installed={isInstalled(manifest.id)}
+								{task}
+								onInstall={() => handleInstall(manifest, task.manifestUrl)}
+								onCancel={() => handleCancel(manifest.id)}
+								onRetry={() => handleRetry(manifest.id)}
+							/>
 						</div>
 					{/each}
 				</div>
 			</section>
+		{/if}
 
-			{#if activeInstallTasks.length > 0}
-				<section class="ui-section">
-					<div class="flex items-center justify-between px-1">
-						<h3 class="text-label-large font-medium text-on-surface">
-							{hostT('plugins.installing.heading')}
-						</h3>
-						<span class="text-label-small text-on-surface-variant">
-							{hostT('plugins.builtin.count', { count: activeInstallTasks.length })}
-						</span>
+		<section class="ui-section">
+			<div class="flex items-center justify-between px-1">
+				<h3 class="text-label-large font-medium text-on-surface">
+					{hostT('plugins.installed.heading')}
+				</h3>
+				<span class="text-label-small text-on-surface-variant"
+					>{hostT('plugins.builtin.count', {
+						count: installedRecords.length
+					})}</span
+				>
+			</div>
+
+			{#if installedRecords.length === 0}
+				<div
+					class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-8 text-center text-on-surface-variant"
+				>
+					<p class="text-body-medium">{hostT('plugins.empty.installed')}</p>
+					<div class="mt-2 flex flex-wrap items-center justify-center gap-2">
+						<Button variant="text" class="text-xs" onclick={() => (activeTab = 'official')}>
+							{hostT('plugins.empty.browse')}
+						</Button>
+						<Button variant="outlined" class="text-xs" onclick={promptLinkInstall}>
+							{hostT('plugins.link.open')}
+						</Button>
 					</div>
-					<div class="ui-section-surface divide-y divide-border/40">
-						{#each activeInstallTasks as task (task.pluginId)}
-							{@const manifest = task.manifest}
-							{@const name = resolveManifestText(manifest.name)}
-							{@const desc = resolveManifestText(manifest.description)}
-							<div
-								class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
-							>
-								<div class="flex min-w-0 flex-1 flex-col justify-center">
-									<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
-										{name}
-									</span>
+				</div>
+			{:else}
+				<div class="ui-section-surface divide-y divide-border/40">
+					{#each installedRecords as record (record.manifest.id)}
+						{@const name = resolveManifestText(record.manifest.name)}
+						{@const desc = resolveManifestText(record.manifest.description)}
+						{@const meta = getPluginCategoryMeta(record.manifest.type)}
+						{@const isBusy = operatingPluginId === record.manifest.id}
+						<div
+							class={[
+								'flex flex-col gap-2 p-3 transition-colors hover:bg-surface-variant/30',
+								!record.enabled && 'opacity-60'
+							]}
+						>
+							<div class="flex items-start justify-between gap-3">
+								<div class="min-w-0 flex-1">
+									<div class="flex flex-wrap items-center gap-1.5">
+										<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
+											{name}
+										</span>
+										<span
+											class="text-label-small py-0.2 text-caption rounded-full px-1.5 font-medium {meta.badgeClass}"
+										>
+											{meta.label}
+										</span>
+										{#if isThemePluginInUse(record.manifest, record.enabled)}
+											<span
+												class="text-label-small py-0.2 text-caption rounded-full bg-primary-container/80 px-1.5 font-medium text-on-primary-container"
+											>
+												{hostT('plugins.badge.inUse')}
+											</span>
+										{/if}
+									</div>
 									{#if desc}
 										<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
 											{desc}
 										</p>
 									{/if}
+									{#if record.manifest.author}
+										<p class="text-caption mt-1 text-on-surface-variant/70">
+											by {record.manifest.author}
+										</p>
+									{/if}
 								</div>
-								<PluginInstallAction
-									{manifest}
-									installed={isInstalled(manifest.id)}
-									{task}
-									onInstall={() => handleInstall(manifest, task.manifestUrl)}
-									onCancel={() => handleCancel(manifest.id)}
-									onRetry={() => handleRetry(manifest.id)}
-								/>
 							</div>
-						{/each}
-					</div>
-				</section>
-			{/if}
 
-			<section class="ui-section">
-				<div class="flex items-center justify-between px-1">
-					<h3 class="text-label-large font-medium text-on-surface">
-						{hostT('plugins.installed.heading')}
-					</h3>
-					<span class="text-label-small text-on-surface-variant"
-						>{hostT('plugins.builtin.count', {
-							count: installedRecords.length
-						})}</span
-					>
-				</div>
+							<div class="flex items-center justify-between gap-2">
+								<Button
+									variant="text"
+									tone="danger"
+									class="text-caption h-6 shrink-0 px-1.5"
+									disabled={isBusy}
+									onclick={() => promptUninstall(record.manifest.id, name)}
+								>
+									{hostT('common.uninstall')}
+								</Button>
 
-				{#if installedRecords.length === 0}
-					<div
-						class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-8 text-center text-on-surface-variant"
-					>
-						<p class="text-body-medium">{hostT('plugins.empty.installed')}</p>
-						<div class="mt-2 flex flex-wrap items-center justify-center gap-2">
-							<Button variant="text" class="text-xs" onclick={() => (activeTab = 'official')}>
-								{hostT('plugins.empty.browse')}
-							</Button>
-							<Button variant="outlined" class="text-xs" onclick={promptLinkInstall}>
-								{hostT('plugins.link.open')}
-							</Button>
+								<div class="flex shrink-0 items-center gap-1.5">
+									{#if record.manifest.configSchema}
+										<Button
+											variant="outlined"
+											class="text-label-small h-7 px-2.5 font-normal"
+											disabled={isBusy || !record.enabled}
+											onclick={() =>
+												handleOpenConfig(record.manifest.id, name, record.manifest.configSchema)}
+										>
+											<TuneFill class="mr-0.5 size-3" />
+											{hostT('plugins.action.settings')}
+										</Button>
+									{/if}
+									<span class="text-label-small text-on-surface-variant">
+										{hostT('plugins.action.enable')}
+									</span>
+									<Switch
+										size="sm"
+										checked={record.enabled}
+										disabled={isBusy}
+										onCheckedChange={(checked) =>
+											handleToggleEnabled(record.manifest.id, checked === true)}
+									/>
+								</div>
+							</div>
 						</div>
-					</div>
-				{:else}
-					<div class="ui-section-surface divide-y divide-border/40">
-						{#each installedRecords as record (record.manifest.id)}
-							{@const name = resolveManifestText(record.manifest.name)}
-							{@const desc = resolveManifestText(record.manifest.description)}
-							{@const meta = getPluginCategoryMeta(record.manifest.type)}
-							{@const isBusy = operatingPluginId === record.manifest.id}
-							<div
-								class={[
-									'flex flex-col gap-2 p-3 transition-colors hover:bg-surface-variant/30',
-									!record.enabled && 'opacity-60'
-								]}
-							>
-								<div class="flex items-start justify-between gap-3">
-									<div class="min-w-0 flex-1">
-										<div class="flex flex-wrap items-center gap-1.5">
-											<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
-												{name}
-											</span>
-											<span
-												class="text-label-small py-0.2 text-caption rounded-full px-1.5 font-medium {meta.badgeClass}"
-											>
-												{meta.label}
-											</span>
-											{#if isThemePluginInUse(record.manifest, record.enabled)}
-												<span
-													class="text-label-small py-0.2 text-caption rounded-full bg-primary-container/80 px-1.5 font-medium text-on-primary-container"
-												>
-													{hostT('plugins.badge.inUse')}
+					{/each}
+				</div>
+			{/if}
+		</section>
+	{:else}
+		<section class="ui-section">
+			{#if loadingCatalog}
+				<div class="flex flex-col items-center justify-center py-12">
+					<LoadingIndicator size="large" />
+					<p class="text-body-small mt-2 text-on-surface-variant">
+						{hostT('plugins.catalog.loading')}
+					</p>
+				</div>
+			{:else if catalogError}
+				<div
+					class="flex flex-col items-center justify-center rounded-2xl border border-error/30 bg-error-container/20 p-6 text-center"
+				>
+					<p class="text-body-medium font-medium text-error">
+						{hostT('plugins.catalog.error.title')}
+					</p>
+					<p class="text-body-small mt-1 text-on-surface-variant">{catalogError}</p>
+					<Button variant="outlined" class="mt-3 h-8 px-4 text-xs" onclick={loadOfficialCatalog}>
+						{hostT('plugins.catalog.retry')}
+					</Button>
+				</div>
+			{:else if catalogManifests.length === 0}
+				<div
+					class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-12 text-center text-on-surface-variant"
+				>
+					<p class="text-body-medium">{hostT('plugins.catalog.empty')}</p>
+				</div>
+			{:else}
+				<div class="flex flex-col gap-5">
+					{#each groupedCatalogManifests as group (group.category)}
+						{@const groupMeta = getPluginCategoryMeta(group.category)}
+						<div class="flex flex-col gap-2">
+							<div class="flex items-center justify-between px-1">
+								<h3 class="text-label-large font-medium text-on-surface">
+									{groupMeta.label}
+								</h3>
+								<span class="text-label-small text-on-surface-variant">
+									{hostT('plugins.builtin.count', {
+										count: group.entries.length
+									})}
+								</span>
+							</div>
+							<div class="ui-section-surface divide-y divide-border/40">
+								{#each group.entries as entry (entry.manifest.id)}
+									{@const manifest = entry.manifest}
+									{@const name = resolveManifestText(manifest.name)}
+									{@const desc = resolveManifestText(manifest.description)}
+									{@const installed = isInstalled(manifest.id)}
+									<div
+										class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
+									>
+										<div class="flex min-w-0 flex-1 flex-col justify-center">
+											<div class="flex flex-wrap items-center gap-1.5">
+												<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
+													{name}
 												</span>
+											</div>
+											{#if desc}
+												<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
+													{desc}
+												</p>
+											{/if}
+											{#if manifest.author}
+												<div class="mt-1 flex flex-wrap items-center gap-1">
+													<span class="text-caption text-on-surface-variant/70">
+														by {manifest.author}
+													</span>
+												</div>
 											{/if}
 										</div>
-										{#if desc}
-											<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
-												{desc}
-											</p>
-										{/if}
-										{#if record.manifest.author}
-											<p class="text-caption mt-1 text-on-surface-variant/70">
-												by {record.manifest.author}
-											</p>
-										{/if}
-									</div>
-								</div>
 
-								<div class="flex items-center justify-between gap-2">
-									<Button
-										variant="text"
-										tone="danger"
-										class="text-caption h-6 shrink-0 px-1.5"
-										disabled={isBusy}
-										onclick={() => promptUninstall(record.manifest.id, name)}
-									>
-										{hostT('common.uninstall')}
-									</Button>
-
-									<div class="flex shrink-0 items-center gap-1.5">
-										{#if record.manifest.configSchema}
-											<Button
-												variant="outlined"
-												class="text-label-small h-7 px-2.5 font-normal"
-												disabled={isBusy || !record.enabled}
-												onclick={() =>
-													handleOpenConfig(record.manifest.id, name, record.manifest.configSchema)}
-											>
-												<TuneFill class="mr-0.5 size-3" />
-												{hostT('plugins.action.settings')}
-											</Button>
-										{/if}
-										<span class="text-label-small text-on-surface-variant">
-											{hostT('plugins.action.enable')}
-										</span>
-										<Switch
-											size="sm"
-											checked={record.enabled}
-											disabled={isBusy}
-											onCheckedChange={(checked) =>
-												handleToggleEnabled(record.manifest.id, checked === true)}
-										/>
+										<div class="flex shrink-0 flex-col items-end gap-1">
+											<PluginInstallAction
+												{manifest}
+												{installed}
+												task={taskMap.get(manifest.id)}
+												onInstall={() => handleInstall(manifest, entry.url)}
+												onCancel={() => handleCancel(manifest.id)}
+												onRetry={() => handleRetry(manifest.id)}
+											/>
+										</div>
 									</div>
-								</div>
+								{/each}
 							</div>
-						{/each}
-					</div>
-				{/if}
-			</section>
-		</div>
-	{:else}
-		<div class="flex min-h-0 flex-1 flex-col">
-			<div class="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
-				<section class="ui-section">
-					{#if loadingCatalog}
-						<div class="flex flex-col items-center justify-center py-12">
-							<LoadingIndicator size="large" />
-							<p class="text-body-small mt-2 text-on-surface-variant">
-								{hostT('plugins.catalog.loading')}
-							</p>
 						</div>
-					{:else if catalogError}
-						<div
-							class="flex flex-col items-center justify-center rounded-2xl border border-error/30 bg-error-container/20 p-6 text-center"
-						>
-							<p class="text-body-medium font-medium text-error">
-								{hostT('plugins.catalog.error.title')}
-							</p>
-							<p class="text-body-small mt-1 text-on-surface-variant">{catalogError}</p>
-							<Button
-								variant="outlined"
-								class="mt-3 h-8 px-4 text-xs"
-								onclick={loadOfficialCatalog}
-							>
-								{hostT('plugins.catalog.retry')}
-							</Button>
-						</div>
-					{:else if catalogManifests.length === 0}
-						<div
-							class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-surface/40 px-4 py-12 text-center text-on-surface-variant"
-						>
-							<p class="text-body-medium">{hostT('plugins.catalog.empty')}</p>
-						</div>
-					{:else}
-						<div class="flex flex-col gap-5">
-							{#each groupedCatalogManifests as group (group.category)}
-								{@const groupMeta = getPluginCategoryMeta(group.category)}
-								<div class="flex flex-col gap-2">
-									<div class="flex items-center justify-between px-1">
-										<h3 class="text-label-large font-medium text-on-surface">
-											{groupMeta.label}
-										</h3>
-										<span class="text-label-small text-on-surface-variant">
-											{hostT('plugins.builtin.count', {
-												count: group.entries.length
-											})}
-										</span>
-									</div>
-									<div class="ui-section-surface divide-y divide-border/40">
-										{#each group.entries as entry (entry.manifest.id)}
-											{@const manifest = entry.manifest}
-											{@const name = resolveManifestText(manifest.name)}
-											{@const desc = resolveManifestText(manifest.description)}
-											{@const installed = isInstalled(manifest.id)}
-											<div
-												class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
-											>
-												<div class="flex min-w-0 flex-1 flex-col justify-center">
-													<div class="flex flex-wrap items-center gap-1.5">
-														<span class="text-body-medium line-clamp-1 font-medium text-on-surface">
-															{name}
-														</span>
-													</div>
-													{#if desc}
-														<p class="text-body-small mt-0.5 line-clamp-1 text-on-surface-variant">
-															{desc}
-														</p>
-													{/if}
-													{#if manifest.author}
-														<div class="mt-1 flex flex-wrap items-center gap-1">
-															<span class="text-caption text-on-surface-variant/70">
-																by {manifest.author}
-															</span>
-														</div>
-													{/if}
-												</div>
-
-												<div class="flex shrink-0 flex-col items-end gap-1">
-													<PluginInstallAction
-														{manifest}
-														{installed}
-														task={taskMap.get(manifest.id)}
-														onInstall={() => handleInstall(manifest, entry.url)}
-														onCancel={() => handleCancel(manifest.id)}
-														onRetry={() => handleRetry(manifest.id)}
-													/>
-												</div>
-											</div>
-										{/each}
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</section>
-			</div>
-			<ActionBottomBar>
-				{@render linkImportFooter()}
-			</ActionBottomBar>
-		</div>
+					{/each}
+				</div>
+			{/if}
+		</section>
 	{/if}
-</div>
+</FormScreenLayout>
 
 <PluginConfigModal
 	bind:open={configModalOpen}

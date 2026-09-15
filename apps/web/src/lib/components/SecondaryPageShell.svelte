@@ -5,18 +5,21 @@
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 	import { navigateBack, type BackFallback } from '$lib/navigation';
+	import { scrollRevealScrollbar, scrollRubberBand } from '@chronos/ui-kit';
 
 	let {
 		title,
 		backFallback = { kind: 'shell' } as BackFallback,
 		actions,
 		flush = false,
+		rubberBand = true,
 		children
 	}: {
 		title: string;
 		backFallback?: BackFallback;
 		actions?: import('svelte').Snippet;
 		flush?: boolean;
+		rubberBand?: boolean;
 		children?: import('svelte').Snippet;
 	} = $props();
 
@@ -37,11 +40,17 @@
 			</IconButton>
 		{/snippet}
 	</TopAppBar>
-	<main
-		class="min-h-0 w-full flex-1 {flush
-			? 'flex flex-col overflow-hidden'
-			: 'mx-auto max-w-lg overflow-y-auto p-4'}"
-	>
-		{@render children?.()}
-	</main>
+	{#if flush}
+		<main class="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+			{@render children?.()}
+		</main>
+	{:else}
+		<main
+			use:scrollRevealScrollbar
+			use:scrollRubberBand={rubberBand}
+			class="secondary-scroll mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto p-4"
+		>
+			{@render children?.()}
+		</main>
+	{/if}
 </div>

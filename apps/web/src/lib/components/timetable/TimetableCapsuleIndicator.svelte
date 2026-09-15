@@ -350,7 +350,7 @@
 {#if hasMultipleWeeks}
 	<div
 		class={[
-			'capsule-indicator-wrapper absolute bottom-2.5 left-1/2 z-20 flex -translate-x-1/2 touch-none flex-col items-center select-none sm:bottom-3',
+			'capsule-indicator-wrapper pointer-events-none absolute inset-x-0 bottom-2.5 z-20 flex flex-col items-center select-none sm:bottom-3',
 			className
 		]}
 		style:--indicator-transition-duration={`${STATE_TRANSITION_MS}ms`}
@@ -383,7 +383,7 @@
 			aria-valuenow={ariaWeek}
 			aria-valuetext={tooltipWeekLabel}
 			class={[
-				'capsule-indicator inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-2 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none',
+				'capsule-indicator pointer-events-auto inline-flex min-h-11 cursor-pointer touch-none items-center justify-center rounded-full px-2 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none',
 				isExpanded && 'capsule-indicator--expanded',
 				hasGlass && 'capsule-indicator--glass'
 			]}
@@ -416,42 +416,55 @@
 
 	.capsule-indicator {
 		--dot-pitch: 11.5px;
-		contain: layout style paint;
+		position: relative;
+		isolation: isolate;
 		overflow: hidden;
 		width: calc(4 * var(--dot-pitch) - 6px + 1.25rem + 2px);
 		max-width: min(320px, calc(100vw - 2.5rem));
 		padding-inline: 0.625rem;
 		background-color: transparent;
-		backdrop-filter: blur(0px) saturate(1);
-		-webkit-backdrop-filter: blur(0px) saturate(1);
 		border: 1px solid transparent;
-		box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0);
 		transition:
 			width var(--indicator-transition-duration) var(--indicator-easing),
-			padding var(--indicator-transition-duration) var(--indicator-easing),
-			background-color var(--indicator-glass-fade-duration) var(--indicator-easing),
-			border-color var(--indicator-glass-fade-duration) var(--indicator-easing),
-			box-shadow var(--indicator-glass-fade-duration) var(--indicator-easing),
-			backdrop-filter var(--indicator-glass-fade-duration) var(--indicator-easing),
-			-webkit-backdrop-filter var(--indicator-glass-fade-duration) var(--indicator-easing);
+			padding var(--indicator-transition-duration) var(--indicator-easing);
 	}
 
-	.capsule-indicator--glass {
+	.capsule-indicator::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		border-radius: inherit;
+		pointer-events: none;
 		background-color: color-mix(
 			in srgb,
 			var(--color-surface-container-high, #e5e8f0) 28%,
 			transparent
 		);
+		backdrop-filter: blur(0px) saturate(1);
+		-webkit-backdrop-filter: blur(0px) saturate(1);
+		border: 1px solid transparent;
+		opacity: 0;
+		transition:
+			opacity var(--indicator-glass-fade-duration) var(--indicator-easing),
+			border-color var(--indicator-glass-fade-duration) var(--indicator-easing),
+			backdrop-filter var(--indicator-glass-fade-duration) var(--indicator-easing),
+			-webkit-backdrop-filter var(--indicator-glass-fade-duration) var(--indicator-easing);
+	}
+
+	.capsule-indicator > * {
+		position: relative;
+		z-index: 1;
+	}
+
+	.capsule-indicator--glass::before {
+		opacity: 1;
 		backdrop-filter: blur(16px) saturate(1.3);
 		-webkit-backdrop-filter: blur(16px) saturate(1.3);
 		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 26%, transparent);
-		box-shadow: none;
 		transition:
-			width var(--indicator-transition-duration) var(--indicator-easing),
-			padding var(--indicator-transition-duration) var(--indicator-easing),
-			background-color var(--indicator-transition-duration) var(--indicator-easing),
+			opacity var(--indicator-transition-duration) var(--indicator-easing),
 			border-color var(--indicator-transition-duration) var(--indicator-easing),
-			box-shadow var(--indicator-transition-duration) var(--indicator-easing),
 			backdrop-filter var(--indicator-transition-duration) var(--indicator-easing),
 			-webkit-backdrop-filter var(--indicator-transition-duration) var(--indicator-easing);
 	}
@@ -514,17 +527,16 @@
 
 	.floating-tooltip {
 		--tooltip-y: -6px;
+		position: relative;
+		isolation: isolate;
 		border-radius: 9999px;
-		background-color: color-mix(in srgb, var(--color-inverse-surface, #2f3033) 70%, transparent);
-		backdrop-filter: blur(16px) saturate(1.3);
-		-webkit-backdrop-filter: blur(16px) saturate(1.3);
+		background-color: transparent;
 		padding: 0.25rem 0.75rem;
 		font-size: 0.75rem;
 		line-height: 1rem;
 		font-weight: 600;
 		white-space: nowrap;
 		color: var(--color-inverse-on-surface, #f1f0f4);
-		box-shadow: var(--shadow-floating);
 		max-height: 0;
 		margin-bottom: 0;
 		opacity: 0;
@@ -555,6 +567,19 @@
 		transition-property: opacity;
 	}
 
+	.floating-tooltip::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		pointer-events: none;
+		background-color: color-mix(in srgb, var(--color-inverse-surface, #2f3033) 70%, transparent);
+		backdrop-filter: blur(16px) saturate(1.3);
+		-webkit-backdrop-filter: blur(16px) saturate(1.3);
+		box-shadow: var(--shadow-floating);
+	}
+
 	.indicator-dot {
 		flex-shrink: 0;
 		border-radius: 9999px;
@@ -568,10 +593,11 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.capsule-indicator,
-		.capsule-indicator--glass,
+		.capsule-indicator::before,
 		.dots-track,
 		.indicator-dot,
 		.floating-tooltip,
+		.floating-tooltip::before,
 		.dots-track-overlay--fading {
 			transition-duration: 1ms !important;
 			animation-duration: 1ms !important;
@@ -579,10 +605,11 @@
 	}
 
 	:root.reduce-motion .capsule-indicator,
-	:root.reduce-motion .capsule-indicator--glass,
+	:root.reduce-motion .capsule-indicator::before,
 	:root.reduce-motion .dots-track,
 	:root.reduce-motion .indicator-dot,
 	:root.reduce-motion .floating-tooltip,
+	:root.reduce-motion .floating-tooltip::before,
 	:root.reduce-motion .dots-track-overlay--fading {
 		transition-duration: 1ms !important;
 		animation-duration: 1ms !important;

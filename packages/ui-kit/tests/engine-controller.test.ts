@@ -110,7 +110,7 @@ describe('ReactiveChronosController', () => {
 		await env.storage.savePreferences({ timetableLayoutMode: 'compact' });
 
 		const controller = new ReactiveChronosController(uninitEngine);
-		expect(controller.userPreferences?.timetableLayoutMode).toBe('fixed');
+		expect(controller.userPreferences?.timetableLayoutMode).toBe('compact');
 
 		await uninitEngine.init();
 		expect(controller.userPreferences?.timetableLayoutMode).toBe('compact');

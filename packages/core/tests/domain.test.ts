@@ -96,7 +96,7 @@ describe('Domain Models in @chronos/core', () => {
 		expect(DEFAULT_USER_PREFERENCES.schemaVersion).toBe(2);
 		expect(DEFAULT_USER_PREFERENCES.themeMode).toBe('auto');
 		expect(DEFAULT_USER_PREFERENCES.paletteMode).toBe('vibrant');
-		expect(DEFAULT_USER_PREFERENCES.timetableLayoutMode).toBe('fixed');
+		expect(DEFAULT_USER_PREFERENCES.timetableLayoutMode).toBe('compact');
 		expect(DEFAULT_USER_PREFERENCES.capsuleCornerStyle).toBe('sharp');
 		expect(DEFAULT_USER_PREFERENCES.hapticFeedbackEnabled).toBe(true);
 		expect(DEFAULT_USER_PREFERENCES.reduceMotionEnabled).toBe(false);

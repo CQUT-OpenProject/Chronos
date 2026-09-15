@@ -184,6 +184,10 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		return this.env.analytics;
 	}
 
+	get errorCapture(): import('../types/services').IErrorCaptureService | undefined {
+		return this.env.errorCapture;
+	}
+
 	get navigation(): import('../types/services').IHostNavigation | undefined {
 		return this.env.navigation;
 	}

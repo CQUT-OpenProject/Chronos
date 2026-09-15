@@ -1,23 +1,44 @@
 <script lang="ts">
 	/**
-	 * Scrollable form body with a pinned bottom action bar.
-	 * Use inside `SecondaryPageShell` with `flush` so only this module owns scrolling.
+	 * Flush secondary-page body: optional pinned header, scrollable stack, optional bottom bar.
+	 * Use inside `SecondaryPageShell` with `flush`.
 	 */
 	import type { Snippet } from 'svelte';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
+	import { scrollRevealScrollbar, scrollRubberBand } from '@chronos/ui-kit';
 
 	let {
 		children,
-		footer
+		header,
+		footer,
+		rubberBand = true,
+		class: className = ''
 	}: {
 		children?: Snippet;
+		header?: Snippet;
 		footer?: Snippet;
+		rubberBand?: boolean;
+		class?: string;
 	} = $props();
 </script>
 
-<div class="flex h-full min-h-0 flex-1 flex-col">
-	<div class="mx-auto w-full max-w-lg flex-1 overflow-y-auto p-4">
-		{@render children?.()}
+<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden {className}">
+	{#if header}
+		<header
+			class="relative z-10 mx-auto w-full max-w-lg shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-3 pb-4 backdrop-blur-sm"
+		>
+			{@render header()}
+		</header>
+	{/if}
+
+	<div
+		use:scrollRevealScrollbar
+		use:scrollRubberBand={rubberBand}
+		class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto"
+	>
+		<div class="ui-screen-stack mx-auto w-full max-w-lg">
+			{@render children?.()}
+		</div>
 	</div>
 
 	{#if footer}
