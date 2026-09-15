@@ -5,19 +5,17 @@
 	 */
 	import type { Snippet } from 'svelte';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
-	import { scrollRevealScrollbar, scrollRubberBand } from '@chronos/ui-kit';
+	import { appShellScroll } from '@chronos/ui-kit';
 
 	let {
 		children,
 		header,
 		footer,
-		rubberBand = true,
 		class: className = ''
 	}: {
 		children?: Snippet;
 		header?: Snippet;
 		footer?: Snippet;
-		rubberBand?: boolean;
 		class?: string;
 	} = $props();
 </script>
@@ -31,11 +29,7 @@
 		</header>
 	{/if}
 
-	<div
-		use:scrollRevealScrollbar
-		use:scrollRubberBand={rubberBand}
-		class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto"
-	>
+	<div use:appShellScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
 		<div class="ui-screen-stack mx-auto w-full max-w-lg">
 			{@render children?.()}
 		</div>

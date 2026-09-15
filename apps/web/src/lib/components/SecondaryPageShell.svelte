@@ -5,21 +5,19 @@
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 	import { navigateBack, type BackFallback } from '$lib/navigation';
-	import { scrollRevealScrollbar, scrollRubberBand } from '@chronos/ui-kit';
+	import { appShellScroll } from '@chronos/ui-kit';
 
 	let {
 		title,
 		backFallback = { kind: 'shell' } as BackFallback,
 		actions,
 		flush = false,
-		rubberBand = true,
 		children
 	}: {
 		title: string;
 		backFallback?: BackFallback;
 		actions?: import('svelte').Snippet;
 		flush?: boolean;
-		rubberBand?: boolean;
 		children?: import('svelte').Snippet;
 	} = $props();
 
@@ -46,8 +44,7 @@
 		</main>
 	{:else}
 		<main
-			use:scrollRevealScrollbar
-			use:scrollRubberBand={rubberBand}
+			use:appShellScroll
 			class="secondary-scroll mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto p-4"
 		>
 			{@render children?.()}

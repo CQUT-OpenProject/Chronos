@@ -27,11 +27,7 @@
 </script>
 
 {#if ready}
-	<SecondaryPageShell
-		title={hostT('route.import')}
-		backFallback={{ kind: 'shell', tab: 'mine' }}
-		rubberBand={false}
-	>
+	<SecondaryPageShell title={hostT('route.import')} backFallback={{ kind: 'shell', tab: 'mine' }}>
 		<TransferImportScreen {transfer} onContinue={continueToConfirm} />
 	</SecondaryPageShell>
 {:else}
