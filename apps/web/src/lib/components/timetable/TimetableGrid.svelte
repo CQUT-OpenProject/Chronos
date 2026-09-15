@@ -594,26 +594,22 @@
 			>
 				{#each gridModel.periods as period (period.index)}
 					<div
-						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
+						class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 text-center {period.index ===
+						effectivePeriodIndex
+							? 'period-active'
+							: ''}"
 					>
-						<div
-							class="flex h-full w-full flex-col items-center justify-center {period.index ===
+						<span class={timetablePeriodIndexClass()}>
+							{period.index}
+						</span>
+						<span
+							class="text-caption mt-1 font-mono leading-tight {period.index ===
 							effectivePeriodIndex
-								? 'period-active'
-								: ''}"
+								? ''
+								: 'text-on-surface-variant'}"
 						>
-							<span class={timetablePeriodIndexClass()}>
-								{period.index}
-							</span>
-							<span
-								class="text-caption mt-1 font-mono leading-tight {period.index ===
-								effectivePeriodIndex
-									? ''
-									: 'text-on-surface-variant'}"
-							>
-								{period.startTime}<br />{period.endTime}
-							</span>
-						</div>
+							{period.startTime}<br />{period.endTime}
+						</span>
 					</div>
 				{/each}
 			</aside>
