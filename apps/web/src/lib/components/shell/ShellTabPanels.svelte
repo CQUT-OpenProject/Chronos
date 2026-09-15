@@ -127,7 +127,16 @@
 {:else}
 	<div class="relative h-[calc(100dvh-var(--bottom-bar-height))] overflow-hidden">
 		{#if timetableMounted}
-			{@render panel(timetableSelected, timetablePanel)}
+			<div
+				class={[
+					'absolute inset-0 overflow-hidden',
+					timetableSelected ? 'z-10' : 'pointer-events-none z-0 hidden'
+				]}
+				inert={!timetableActive}
+				aria-hidden={!timetableSelected}
+			>
+				{@render timetablePanel()}
+			</div>
 		{/if}
 		{#if mineMounted}
 			{@render panel(mineSelected, minePanel)}
