@@ -56,6 +56,42 @@
 	:root.reduce-motion button.course-capsule.course-capsule--pressable::after {
 		transition: none;
 	}
+
+	.course-capsule-slot {
+		transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.course-capsule-slot--concealed {
+		opacity: 0;
+		filter: blur(6px);
+		transition:
+			transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+			filter 120ms cubic-bezier(0.4, 0, 0.2, 1),
+			opacity 120ms cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	@keyframes course-drop-preview-in {
+		from {
+			filter: blur(8px);
+		}
+
+		to {
+			filter: blur(0);
+		}
+	}
+
+	.course-drop-preview {
+		animation: course-drop-preview-in 150ms cubic-bezier(0.4, 0, 0.2, 1) both;
+	}
+
+	:root.reduce-motion .course-capsule-slot--concealed {
+		transition: none;
+		filter: none;
+	}
+
+	:root.reduce-motion .course-drop-preview {
+		animation: none;
+	}
 }
 
 @layer base {

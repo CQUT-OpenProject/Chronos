@@ -119,7 +119,7 @@
 	let internalExpandedSlots = $state(new Set<string>());
 
 	interface DragSettlePreview {
-		courseId: string;
+		concealedCourseId: string;
 		targetColIndex: number;
 		targetDayOfWeek: number;
 		targetStartPeriod: number;
@@ -129,7 +129,12 @@
 
 	let settling = $state<DragSettlePreview | null>(null);
 
-	const concealedCourseId = $derived(dragState?.course.id ?? settling?.courseId ?? null);
+	function isCourseConcealed(courseId: string): boolean {
+		if (dragState?.course.id === courseId) return true;
+		if (!settling) return false;
+		if (settling.concealedCourseId === courseId) return true;
+		return settling.course.id === courseId;
+	}
 
 	const dropPreview = $derived(
 		dragState && !dragState.overDeleteZone
@@ -430,7 +435,7 @@
 		return {
 			updatedCourses,
 			settling: {
-				courseId: targetCourse.id,
+				concealedCourseId: current.course.id,
 				targetColIndex: targetColIndex >= 0 ? targetColIndex : current.targetColIndex,
 				targetDayOfWeek: current.targetDayOfWeek,
 				targetStartPeriod: clampedStart,
@@ -440,31 +445,41 @@
 		};
 	}
 
-	async function commitDragSession(current: TimetableDragSession) {
-		const update = buildDragUpdate(current);
-		if (!update) return;
-
-		settling = update.settling;
+	async function commitDragSession(update: {
+		updatedCourses: Course[];
+		settling: DragSettlePreview;
+	}) {
 		try {
 			await controller.saveCurrentTimetableDetails({ courses: update.updatedCourses });
 			trackEvent('timetable_course_reorder');
 		} catch {
 			settling = null;
 		} finally {
-			await tick();
-			settling = null;
+			if (settling) {
+				await tick();
+				settling = null;
+			}
 		}
 	}
 
 	function handleWindowPointerUp(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
-		const current = interaction.endDrag();
-		if (!current) return;
-		if (current.overDeleteZone) {
-			onRequestWeekDelete?.(current.course, displayedWeek);
+		const session = dragState;
+		if (session.overDeleteZone) {
+			const current = interaction.endDrag();
+			if (current) onRequestWeekDelete?.(current.course, displayedWeek);
 			return;
 		}
-		void commitDragSession(current);
+
+		const update = buildDragUpdate(session);
+		if (!update) {
+			interaction.endDrag();
+			return;
+		}
+
+		settling = update.settling;
+		interaction.endDrag();
+		void commitDragSession(update);
 	}
 
 	function handleWindowPointerCancel(event: PointerEvent) {
@@ -624,7 +639,7 @@
 				{#if capsuleLayoutReady}
 					{#each placements as item (item.key)}
 						{@const span = item.geometry.endPeriod - item.geometry.startPeriod + 1}
-						{@const isConcealed = item.kind === 'course' && item.course.id === concealedCourseId}
+						{@const isConcealed = item.kind === 'course' && isCourseConcealed(item.course.id)}
 						<div
 							class="absolute box-border overflow-hidden transition-transform duration-200 ease-out {isConcealed
 								? 'opacity-0'
@@ -708,12 +723,6 @@
 	{@const handlers = interaction.createCourseCardHandlers(placed.course, {
 		onCourseClick: isEditing ? undefined : onCourseClick,
 		onLongPress: (_c, event) => {
-			const capsuleEl = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>(
-				'button.course-capsule'
-			);
-			if (capsuleEl) {
-				setCapsulePressed(capsuleEl, false);
-			}
 			interaction.enterEditFromLongPress(event);
 			if (placed.displayModel.isInDisplayedWeek) {
 				startDrag(placed, event, {
@@ -747,7 +756,7 @@
 			isHolidayMuted: placed.displayModel.isHolidayMuted
 		})}
 		onpointerdown={(event) => {
-			if (!isEditing) {
+			if (!isEditing && !interaction.isDragging) {
 				setCapsulePressed(event.currentTarget as HTMLButtonElement, true);
 			}
 			handlers.onpointerdown(event);
