@@ -17,17 +17,44 @@ function isAtTop(node: HTMLElement): boolean {
 	return node.scrollTop <= 0;
 }
 
-function isAtBottom(node: HTMLElement): boolean {
-	return node.scrollTop + node.clientHeight >= node.scrollHeight - 1;
+function getMaxScroll(node: HTMLElement): number {
+	return Math.max(0, node.scrollHeight - node.clientHeight);
 }
 
-/** Adds touch overscroll rubber-band feedback on a vertical scroll container. */
-export function scrollRubberBand(node: HTMLElement, enabled: boolean = true) {
-	if (!enabled || typeof window === 'undefined' || isReducedMotionActive()) {
-		return { destroy() {} };
+function isAtBottom(node: HTMLElement): boolean {
+	const maxScroll = getMaxScroll(node);
+	return maxScroll <= 0 || node.scrollTop >= maxScroll - 1;
+}
+
+/** Advances rubber-band pull only after native scroll has stopped at a boundary. */
+export function computeNextPullOffset(
+	pullOffset: number,
+	dy: number,
+	atTop: boolean,
+	atBottom: boolean,
+	scrollMoved: boolean
+): number {
+	if (scrollMoved) return 0;
+
+	if (pullOffset !== 0) {
+		let next = pullOffset + dy;
+		if (next > 0 && !atTop) next = 0;
+		if (next < 0 && !atBottom) next = 0;
+		return next;
 	}
 
+	if (atTop && dy > 0) return dy;
+	if (atBottom && dy < 0) return dy;
+	return 0;
+}
+
+function canUseRubberBand(): boolean {
+	return typeof window !== 'undefined' && !isReducedMotionActive();
+}
+
+function attachRubberBand(node: HTMLElement) {
 	let lastY = 0;
+	let lastScrollTop = 0;
 	let pullOffset = 0;
 	let springTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -63,6 +90,7 @@ export function scrollRubberBand(node: HTMLElement, enabled: boolean = true) {
 		if (event.touches.length !== 1) return;
 		clearSpring();
 		lastY = event.touches[0].clientY;
+		lastScrollTop = node.scrollTop;
 		pullOffset = 0;
 	};
 
@@ -72,25 +100,27 @@ export function scrollRubberBand(node: HTMLElement, enabled: boolean = true) {
 		const dy = y - lastY;
 		lastY = y;
 
-		const atTop = isAtTop(node);
-		const atBottom = isAtBottom(node);
+		const scrollTop = node.scrollTop;
+		const scrollMoved = scrollTop !== lastScrollTop;
+		lastScrollTop = scrollTop;
 
-		if (pullOffset !== 0) {
-			pullOffset += dy;
-			if (pullOffset > 0 && !atTop) pullOffset = 0;
-			if (pullOffset < 0 && !atBottom) pullOffset = 0;
-		} else if ((atTop && dy > 0) || (atBottom && dy < 0)) {
-			pullOffset += dy;
-		} else {
-			return;
-		}
+		const nextPullOffset = computeNextPullOffset(
+			pullOffset,
+			dy,
+			isAtTop(node),
+			isAtBottom(node),
+			scrollMoved
+		);
+
+		if (nextPullOffset === pullOffset && nextPullOffset === 0) return;
+
+		pullOffset = nextPullOffset;
 
 		if (pullOffset === 0) {
 			node.style.transform = '';
 			return;
 		}
 
-		event.preventDefault();
 		applyPull();
 	};
 
@@ -101,7 +131,7 @@ export function scrollRubberBand(node: HTMLElement, enabled: boolean = true) {
 	};
 
 	node.addEventListener('touchstart', onTouchStart, { passive: true });
-	node.addEventListener('touchmove', onTouchMove, { passive: false });
+	node.addEventListener('touchmove', onTouchMove, { passive: true });
 	node.addEventListener('touchend', onTouchEnd, { passive: true });
 	node.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
@@ -113,6 +143,32 @@ export function scrollRubberBand(node: HTMLElement, enabled: boolean = true) {
 			node.removeEventListener('touchcancel', onTouchEnd);
 			clearSpring();
 			node.style.transform = '';
+		}
+	};
+}
+
+/** Adds touch overscroll rubber-band feedback on a vertical scroll container. */
+export function scrollRubberBand(node: HTMLElement, enabled: boolean = true) {
+	let active: ReturnType<typeof attachRubberBand> | null = null;
+
+	const setEnabled = (next: boolean) => {
+		if (next && canUseRubberBand()) {
+			if (!active) active = attachRubberBand(node);
+			return;
+		}
+		active?.destroy();
+		active = null;
+	};
+
+	setEnabled(enabled);
+
+	return {
+		update(nextEnabled: boolean) {
+			setEnabled(nextEnabled);
+		},
+		destroy() {
+			active?.destroy();
+			active = null;
 		}
 	};
 }
