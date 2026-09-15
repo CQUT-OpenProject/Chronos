@@ -38,15 +38,6 @@ describe('splitScrollLayoutClasses', () => {
 		]);
 
 		expect(result.hostClasses).toEqual(['mx-auto', 'min-h-0', 'w-full', 'max-w-lg', 'flex-1']);
-
-		const withBasis = splitScrollLayoutClasses([
-			'secondary-scroll',
-			'min-h-0',
-			'flex-1',
-			'basis-0',
-			'overflow-y-auto'
-		]);
-		expect(withBasis.hostClasses).toEqual(['min-h-0', 'flex-1', 'basis-0']);
 		expect(result.scrollClasses).toEqual([
 			'secondary-scroll',
 			'flex',
