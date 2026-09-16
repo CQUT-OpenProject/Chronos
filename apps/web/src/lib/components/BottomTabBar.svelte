@@ -13,7 +13,7 @@
 	import ShellSvgIcon from '$lib/shell/ShellSvgIcon.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 	import Button from '$lib/components/ui/Button.svelte';
-	import DisplayOptionsSheet from '$lib/components/timetable/DisplayOptionsSheet.svelte';
+	import LayoutOptionsSheet from '$lib/components/timetable/LayoutOptionsSheet.svelte';
 	import { DeleteFill } from '$lib/icons';
 
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
@@ -26,11 +26,11 @@
 	const isDragging = $derived(Boolean(timetableScreen?.interaction.isDragging));
 	const isDragOverDeleteZone = $derived(Boolean(timetableScreen?.interaction.drag?.overDeleteZone));
 
-	let displayOptionsOpen = $state(false);
+	let layoutOptionsSheet = $state(false);
 
 	$effect(() => {
 		if (!isEditing) {
-			displayOptionsOpen = false;
+			layoutOptionsSheet = false;
 		}
 	});
 
@@ -97,7 +97,7 @@
 					class="edit-bottom-bar-action min-w-0"
 					onclick={() => {
 						haptic.light();
-						displayOptionsOpen = true;
+						layoutOptionsSheet = true;
 					}}
 				>
 					{hostT('timetable.details.section.display')}
@@ -177,7 +177,7 @@
 	{/if}
 </div>
 
-<DisplayOptionsSheet bind:open={displayOptionsOpen} />
+<LayoutOptionsSheet bind:open={layoutOptionsSheet} />
 
 <style>
 	.bottom-bar {
