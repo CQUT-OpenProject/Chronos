@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
-	import { beforeNavigate, afterNavigate, goto } from '$app/navigation';
+	import { beforeNavigate, afterNavigate, goto, pushState, replaceState } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { Component } from 'svelte';
 	import { createAppShell } from '$lib/app/app-shell.svelte';
@@ -17,14 +17,12 @@
 		updateTransitionDirection,
 		setupSecondaryPageViewTransition,
 		secondaryTransitionGate,
-		recordNavigation,
 		configureNavigateBack,
-		restoreShellTabFromHistory,
 		stampShellTabOnHistory,
-		syncDeepLinkEntryState,
 		isShellRoute,
 		isSecondaryRoute
 	} from '$lib/navigation';
+	import { onAfterNavigate, onBeforeNavigate } from '$lib/navigation/nav-coordinator';
 	import ShellRouteHost from '$lib/components/shell/ShellRouteHost.svelte';
 	import { PREVIEW_PAINT_READY_CONTEXT, TIMETABLE_PRESENTATION_CONTEXT } from '@chronos/ui-kit';
 	import { toStore } from 'svelte/store';
@@ -46,11 +44,15 @@
 	const shellTab = createShellTabController(() => getAppController());
 
 	configureNavigateBack({
-		goto: (href) => goto(href),
-		setActiveTab: (tabId) => shellTab.setActiveTab(tabId)
+		goto: (href, opts) => goto(href, opts),
+		pushState,
+		replaceState,
+		setActiveTab: (tabId) => shellTab.setActiveTab(tabId),
+		historyBack: () => history.back()
 	});
 
-	beforeNavigate(({ from, to, type, delta }) => {
+	beforeNavigate((navigation) => {
+		const { from, to, type, delta } = navigation;
 		const fromPath = from?.url.pathname;
 		const toPath = to?.url.pathname;
 		if (!toPath) return;
@@ -60,15 +62,11 @@
 		}
 
 		updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
-		recordNavigation(fromPath, toPath, type, delta ?? undefined);
-
-		if (isShellRoute(toPath)) {
-			restoreShellTabFromHistory((tabId) => shellTab.setActiveTab(tabId));
-		}
+		onBeforeNavigate(navigation);
 	});
 
 	afterNavigate(() => {
-		syncDeepLinkEntryState();
+		onAfterNavigate();
 	});
 
 	const blockShell = $derived(onboardingController.isActive(page.url.pathname));

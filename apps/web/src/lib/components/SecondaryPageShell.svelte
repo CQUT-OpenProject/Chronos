@@ -5,6 +5,7 @@
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
 	import { haptic } from '$lib/haptic/haptic';
 	import { navigateBack, type BackFallback } from '$lib/navigation';
+	import { registerPageBackFallback } from '$lib/navigation/nav-coordinator';
 	import { appShellScroll } from '@chronos/ui-kit';
 
 	let {
@@ -20,6 +21,8 @@
 		flush?: boolean;
 		children?: import('svelte').Snippet;
 	} = $props();
+
+	$effect(() => registerPageBackFallback(backFallback));
 
 	function handleBack(event: MouseEvent) {
 		event.preventDefault();

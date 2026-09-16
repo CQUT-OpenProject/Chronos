@@ -6,21 +6,21 @@ const mocks = vi.hoisted(() => {
 		pageState,
 		replaceState: vi.fn((_url: string, state: App.PageState) => {
 			pageState.current = state;
+		}),
+		pushState: vi.fn((_url: string, state: App.PageState) => {
+			pageState.current = state;
 		})
 	};
 });
 
 vi.mock('$app/navigation', () => ({
-	replaceState: mocks.replaceState
+	replaceState: mocks.replaceState,
+	pushState: mocks.pushState
 }));
 
+import { bindOverlayCloser } from './nav-coordinator';
 import { configureNavigateBack, navigateBack } from './navigate-back';
-import {
-	canPopInAppHistory,
-	initNavJournal,
-	markDeepLinkEntry,
-	recordNavigation
-} from './nav-journal';
+import { initNavStack, markDeepLinkEntry, pushOverlay, recordNavigation } from './nav-stack';
 
 describe('navigateBack', () => {
 	const goto = vi.fn();
@@ -30,8 +30,14 @@ describe('navigateBack', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.pageState.current = {};
-		initNavJournal('/');
-		configureNavigateBack({ goto, setActiveTab });
+		initNavStack('/');
+		configureNavigateBack({
+			goto,
+			pushState: mocks.pushState,
+			replaceState: mocks.replaceState,
+			setActiveTab,
+			historyBack: back
+		});
 		vi.stubGlobal('history', {
 			back,
 			get state() {
@@ -44,14 +50,13 @@ describe('navigateBack', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('calls history.back when in-app history can pop', () => {
+	it('navigates to the previous route via goto when stack can pop', () => {
 		recordNavigation('/', '/about', 'link');
 
 		navigateBack({ kind: 'route', href: '/about' });
 
-		expect(canPopInAppHistory()).toBe(true);
-		expect(back).toHaveBeenCalled();
-		expect(goto).not.toHaveBeenCalled();
+		expect(back).not.toHaveBeenCalled();
+		expect(goto).toHaveBeenCalled();
 	});
 
 	it('falls back to shell navigation', () => {
@@ -71,5 +76,17 @@ describe('navigateBack', () => {
 
 		expect(back).not.toHaveBeenCalled();
 		expect(goto).toHaveBeenCalled();
+	});
+
+	it('closes overlays through the registry before leaving the page', () => {
+		const close = vi.fn();
+		bindOverlayCloser('bottom-sheet', close);
+		recordNavigation('/', '/about', 'link');
+		pushOverlay('bottom-sheet');
+
+		navigateBack({ kind: 'shell' });
+
+		expect(close).toHaveBeenCalled();
+		expect(goto).not.toHaveBeenCalled();
 	});
 });

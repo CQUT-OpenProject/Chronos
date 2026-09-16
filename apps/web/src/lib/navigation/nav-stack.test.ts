@@ -15,21 +15,27 @@ vi.mock('$app/navigation', () => ({
 }));
 
 import {
-	canPopInAppHistory,
+	canPopInAppStack,
 	getNavJournalDepth,
 	getNavJournalTop,
-	initNavJournal,
+	getOverlayDepth,
+	getRouteDepth,
+	getStackDepth,
+	initNavStack,
 	isDeepLinkEntry,
 	markDeepLinkEntry,
+	popOverlay,
+	pushOverlay,
 	recordNavigation,
+	replaceRoute,
 	syncDeepLinkEntryState
-} from './nav-journal';
+} from './nav-stack';
 
-describe('nav-journal', () => {
+describe('nav-stack', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.pageState.current = {};
-		initNavJournal('/');
+		initNavStack('/');
 		vi.stubGlobal('history', {
 			get state() {
 				return mocks.pageState.current;
@@ -41,9 +47,9 @@ describe('nav-journal', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('initializes with a single entry', () => {
-		initNavJournal('/about');
-		expect(getNavJournalDepth()).toBe(1);
+	it('initializes with a single route frame', () => {
+		initNavStack('/about');
+		expect(getRouteDepth()).toBe(1);
 		expect(getNavJournalTop()).toBe('/about');
 	});
 
@@ -52,8 +58,30 @@ describe('nav-journal', () => {
 		recordNavigation('/about', '/about/update', 'link');
 		recordNavigation('/about/update', '/about/update', 'link');
 
-		expect(getNavJournalDepth()).toBe(3);
+		expect(getRouteDepth()).toBe(3);
 		expect(getNavJournalTop()).toBe('/about/update');
+	});
+
+	it('replaces the top route on replace navigations', () => {
+		initNavStack('/s');
+		recordNavigation('/s', '/transfer/import/confirm', 'goto', undefined, { replace: true });
+
+		expect(getRouteDepth()).toBe(1);
+		expect(getNavJournalTop()).toBe('/transfer/import/confirm');
+	});
+
+	it('tracks overlay frames above the current route', () => {
+		pushOverlay('bottom-sheet');
+		expect(getStackDepth()).toBe(2);
+		expect(getOverlayDepth()).toBe(1);
+		expect(canPopInAppStack()).toBe(true);
+	});
+
+	it('pops overlay frames before route depth checks', () => {
+		pushOverlay('bottom-sheet');
+		expect(popOverlay()).toBe(true);
+		expect(getOverlayDepth()).toBe(0);
+		expect(getRouteDepth()).toBe(1);
 	});
 
 	it('trims journal on popstate back', () => {
@@ -65,21 +93,11 @@ describe('nav-journal', () => {
 		expect(getNavJournalTop()).toBe('/about');
 	});
 
-	it('appends journal on popstate forward', () => {
-		recordNavigation('/', '/about', 'link');
-		recordNavigation('/about', '/about/update', 'link');
-		recordNavigation('/about/update', '/about', 'popstate', -1);
-		recordNavigation('/about', '/about/update', 'popstate', 1);
-
-		expect(getNavJournalDepth()).toBe(3);
-		expect(getNavJournalTop()).toBe('/about/update');
-	});
-
 	it('marks and detects deep-link entries before router sync', () => {
 		markDeepLinkEntry();
 		expect(mocks.replaceState).not.toHaveBeenCalled();
 		expect(isDeepLinkEntry()).toBe(true);
-		expect(canPopInAppHistory()).toBe(false);
+		expect(canPopInAppStack()).toBe(false);
 	});
 
 	it('syncs deep-link marker into page state when router is ready', () => {
@@ -91,14 +109,17 @@ describe('nav-journal', () => {
 	});
 
 	it('stops treating entry as deep-link after navigating deeper in-app', () => {
+		initNavStack('/about');
 		markDeepLinkEntry();
 		recordNavigation('/about', '/about/update', 'link');
 
 		expect(isDeepLinkEntry()).toBe(false);
 	});
 
-	it('allows pop when journal depth is greater than one', () => {
-		recordNavigation('/', '/about', 'link');
-		expect(canPopInAppHistory()).toBe(true);
+	it('replaces route frames directly via replaceRoute', () => {
+		initNavStack('/s');
+		replaceRoute('/transfer/import/confirm');
+		expect(getNavJournalTop()).toBe('/transfer/import/confirm');
+		expect(getRouteDepth()).toBe(1);
 	});
 });
