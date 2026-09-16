@@ -283,12 +283,10 @@ describe('createTimetableInteraction', () => {
 		expect(interaction.isClickGuarded()).toBe(false);
 	});
 
-	it('enterEditFromLongPress enters edit and fires feedback once', () => {
-		const onLongPressFeedback = vi.fn();
-		const interaction = createTimetableInteraction({ onLongPressFeedback });
+	it('enterEditFromLongPress enters edit mode', () => {
+		const interaction = createTimetableInteraction();
 		interaction.enterEditFromLongPress(mockPointerEvent());
 		expect(interaction.mode).toBe('edit');
-		expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
 	});
 
 	it('waitForMove drag shows a session immediately but does not track until the threshold', () => {

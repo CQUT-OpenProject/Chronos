@@ -159,7 +159,7 @@ export const haptic = {
 		);
 	},
 
-	/** 重度/确认反馈：长按课程卡片触发、拖拽开始 (~80ms fallback) */
+	/** 重度/确认反馈 (~80ms fallback) */
 	heavy(): boolean {
 		return triggerNativeOrVibrate({ method: 'impact', params: { style: 'heavy' } }, FALLBACK.heavy);
 	},
