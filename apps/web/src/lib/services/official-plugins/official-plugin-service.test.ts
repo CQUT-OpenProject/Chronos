@@ -781,6 +781,10 @@ describe('OfficialPluginService', () => {
 		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 		await service.install(manifest);
 		await service.disable('test-plugin');
+		await engine.storage.setPluginData('test-plugin', PLUGIN_CONFIG_STORAGE_KEY, {
+			choice: 'kept'
+		});
+		await engine.storage.setPluginData('test-plugin', 'private', { draft: 'kept' });
 
 		const updatedBundle = SAMPLE_BUNDLE.replace('Test', 'Updated');
 		const updated = await service.applyHotUpdate({
@@ -792,6 +796,11 @@ describe('OfficialPluginService', () => {
 		});
 
 		expect(updated.code).toBe(updatedBundle);
+		expect(updated.enabled).toBe(false);
+		expect(await engine.storage.getPluginData('test-plugin', PLUGIN_CONFIG_STORAGE_KEY)).toEqual({
+			choice: 'kept'
+		});
+		expect(await engine.storage.getPluginData('test-plugin', 'private')).toEqual({ draft: 'kept' });
 		expect(service.isPluginActive('test-plugin')).toBe(false);
 	});
 
