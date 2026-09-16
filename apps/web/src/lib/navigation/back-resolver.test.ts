@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vite-plus/test';
 import { resolveBack, resolvePopstateBack } from './back-resolver';
-import { initNavStack, markDeepLinkEntry, pushOverlay, recordNavigation } from './nav-stack';
+import {
+	initNavStack,
+	markDeepLinkEntry,
+	popOverlay,
+	pushOverlay,
+	recordNavigation
+} from './nav-stack';
 
 describe('back-resolver', () => {
 	beforeEach(() => {
@@ -40,6 +46,14 @@ describe('back-resolver', () => {
 	it('syncs same-url popstate when an overlay is open', () => {
 		recordNavigation('/', '/about', 'link');
 		pushOverlay('bottom-sheet');
+
+		expect(resolvePopstateBack('/about', '/about', { kind: 'shell' })).toBe('sync');
+	});
+
+	it('syncs same-url popstate even when overlay frame was already popped', () => {
+		recordNavigation('/', '/about', 'link');
+		pushOverlay('bottom-sheet');
+		popOverlay();
 
 		expect(resolvePopstateBack('/about', '/about', { kind: 'shell' })).toBe('sync');
 	});

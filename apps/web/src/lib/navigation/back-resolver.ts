@@ -41,10 +41,11 @@ export function resolvePopstateBack(
 	toPath: string,
 	fallback: BackFallback
 ): BackPlan | 'sync' {
-	const top = getTopFrame();
-
-	if (fromPath === toPath && top?.kind === 'overlay') {
-		applyPopstateOverlayClose(top.id);
+	if (fromPath === toPath) {
+		const top = getTopFrame();
+		if (top?.kind === 'overlay') {
+			applyPopstateOverlayClose(top.id);
+		}
 		return 'sync';
 	}
 
