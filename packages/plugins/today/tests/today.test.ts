@@ -4,11 +4,13 @@ import {
 	createCourse,
 	createTimetable,
 	type CourseQueryHit,
-	type IStorageService
+	IStorageService,
+	buildCoursePaintLookup,
+	COURSE_PALETTE_ENTRIES
 } from '@chronos/core';
 import { createMockEnv } from '@chronos/core/test-utils';
 import { createTodayPlugin } from '../src/index';
-import { createTodayScreenController } from '../src/today-screen.svelte';
+import { coursePaintKey, createTodayScreenController } from '../src/today-screen.svelte';
 import {
 	attachCourseStatuses,
 	queryTodayCourses,
@@ -72,6 +74,71 @@ describe('today plugin', () => {
 		});
 
 		expect(screen.courseEntries).toEqual([]);
+		engine.dispose();
+	});
+
+	it('resolves course paints via ICoursePresentationService using full timetable scope', async () => {
+		const courseA = createCourse({
+			id: 'ca',
+			name: 'Course A',
+			dayOfWeek: 1,
+			startPeriod: 1,
+			endPeriod: 1
+		});
+		const courseB = createCourse({
+			id: 'cb',
+			name: 'Course B',
+			dayOfWeek: 1,
+			startPeriod: 2,
+			endPeriod: 2
+		});
+		const timetable = createTimetable({ id: 'main', name: 'Main', courses: [courseA, courseB] });
+		const lookup = buildCoursePaintLookup(timetable.courses, COURSE_PALETTE_ENTRIES);
+
+		const { env, timetables } = createMockEnv({
+			coursePresentation: {
+				getCoursePalette: () => COURSE_PALETTE_ENTRIES,
+				resolveCoursePaintsForTimetable: async () => lookup,
+				resolveCoursePaint: async ({ course }) =>
+					lookup.get(course.name) ?? COURSE_PALETTE_ENTRIES[0]!
+			}
+		});
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+		timetables.set(timetable.id, timetable);
+		await engine.switchTimetable(timetable.id);
+		await engine.loadPlugin(createTodayPlugin());
+
+		const mockController = {
+			snapshot: {
+				subscribe: (listener: (value: unknown) => void) => {
+					listener({
+						clockNow: new Date('2026-03-02T10:00:00'),
+						clockTodayIso: '2026-03-02',
+						currentTimetable: timetable,
+						coursePaletteRevision: 0
+					});
+					return () => {};
+				}
+			},
+			getPluginContext: (id: string) => engine.getPluginContext(id)
+		} as unknown as ReactiveChronosController;
+
+		const storage = engine.getPluginContext('tool-today').service(IStorageService);
+		vi.spyOn(storage, 'queryCourses').mockResolvedValue([
+			{
+				timetableId: timetable.id,
+				timetableName: timetable.name,
+				course: courseA
+			}
+		]);
+
+		const screen = createTodayScreenController();
+		await screen.init(mockController, 'tool-today');
+
+		expect(screen.paintByCourseKey.get(coursePaintKey(timetable.id, courseA.name))).toEqual(
+			lookup.get('Course A')
+		);
 		engine.dispose();
 	});
 });
