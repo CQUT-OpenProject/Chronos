@@ -33,6 +33,7 @@
 	}
 
 	const hint = $derived(pt('screen.crop.hint'));
+	const viewportAria = $derived(pt('screen.crop.viewportAria'));
 	const cancelLabel = $derived(pt('screen.action.cancel'));
 	const confirmLabel = $derived(pt('screen.action.confirmCrop'));
 
@@ -298,8 +299,10 @@
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col">
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		bind:this={viewportEl}
+		aria-label={viewportAria}
 		class="relative min-h-0 flex-1 touch-none overflow-hidden bg-black select-none"
 		onpointerdown={onPointerDown}
 		onpointermove={onPointerMove}

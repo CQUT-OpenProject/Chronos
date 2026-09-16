@@ -161,8 +161,10 @@
 					onkeydown={(event) => handleWheelKeydown(column.kind, event)}
 				>
 					{#each column.items as n}
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<div
 							role="option"
+							tabindex="-1"
 							id="{idPrefix}-{column.kind}-{n}"
 							aria-selected={n === column.current}
 							class="time-wheel-row text-body-large flex cursor-pointer items-center justify-center tabular-nums transition-colors {n ===
