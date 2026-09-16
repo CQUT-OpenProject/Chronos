@@ -20,6 +20,7 @@ export {
 } from './form/time-wheel-utils';
 export { findInvalidSchemaFields } from './schema-form/validate-schema';
 export { default as DateField } from './form/DateField.svelte';
+export { default as TimePicker } from './form/TimePicker.svelte';
 export { default as TimeWheel } from './form/TimeWheel.svelte';
 export { default as BottomSheet } from './overlay/BottomSheet.svelte';
 export {
