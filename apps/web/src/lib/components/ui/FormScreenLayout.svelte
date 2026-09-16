@@ -23,7 +23,7 @@
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden {className}">
 	{#if header}
 		<header
-			class="relative z-10 mx-auto w-full max-w-lg shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-3 pb-4 backdrop-blur-sm"
+			class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-3 pb-4 backdrop-blur-sm"
 		>
 			{@render header()}
 		</header>

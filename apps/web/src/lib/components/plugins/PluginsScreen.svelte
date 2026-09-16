@@ -280,11 +280,13 @@
 </script>
 
 {#snippet tabHeader()}
-	<SegmentedControl
-		segments={tabSegments}
-		value={activeTab}
-		onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
-	/>
+	<div class="mx-auto w-full max-w-lg">
+		<SegmentedControl
+			segments={tabSegments}
+			value={activeTab}
+			onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
+		/>
+	</div>
 {/snippet}
 
 {#snippet linkImportFooter()}
