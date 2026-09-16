@@ -10,17 +10,35 @@ import {
 } from '@chronos/core';
 import { createMockEnv } from '@chronos/core/test-utils';
 import { createTodayPlugin } from '../src/index';
+import { TODAY_CONFIG_SCHEMA } from '../src/messages';
 import { coursePaintKey, createTodayScreenController } from '../src/today-screen.svelte';
 import {
 	attachCourseStatuses,
 	queryTodayCourses,
 	resolveCourseTimeStatus,
+	resolveMinutesUntilCourseStart,
 	resolvePeriodTimeRange,
 	sortCourseHits
 } from '../src/today-courses';
+import { DEFAULT_PREPARE_REMINDER_MINUTES } from '../src/constants';
 import type { ReactiveChronosController } from '@chronos/ui-kit';
 
 describe('today plugin', () => {
+	it('exposes prepare reminder config with 30 minute default', async () => {
+		const { env } = createMockEnv();
+		const engine = new ChronosEngine({ env });
+		await engine.init();
+
+		const handle = await engine.loadPlugin(createTodayPlugin());
+		const ctx = engine.getPluginContext('tool-today');
+
+		expect(ctx.config.prepareReminderMinutes).toBe(DEFAULT_PREPARE_REMINDER_MINUTES);
+		expect(TODAY_CONFIG_SCHEMA.prepareReminderMinutes.default).toBe(30);
+
+		handle.dispose();
+		engine.dispose();
+	});
+
 	it('registers bottom bar tab and screen slots when loaded', async () => {
 		const { env } = createMockEnv();
 		const engine = new ChronosEngine({ env });
@@ -192,6 +210,34 @@ describe('today-courses', () => {
 		expect(sortCourseHits(hits).map((hit) => hit.course.id)).toEqual(['c1', 'c2']);
 	});
 
+	it('resolveCourseTimeStatus marks preparing courses within reminder window', () => {
+		const preparing = createCourse({
+			id: 'prep',
+			name: 'Preparing',
+			dayOfWeek: 1,
+			startPeriod: 3,
+			endPeriod: 3
+		});
+
+		const nowMinutes = 9 * 60 + 30;
+		expect(resolveCourseTimeStatus(preparing, periodTimes, nowMinutes, 2, 30)).toBe('preparing');
+		expect(resolveCourseTimeStatus(preparing, periodTimes, nowMinutes, 2, 29)).toBe('upcoming');
+		expect(resolveCourseTimeStatus(preparing, periodTimes, nowMinutes, 2, 0)).toBe('upcoming');
+	});
+
+	it('resolveMinutesUntilCourseStart returns minutes before class starts', () => {
+		const course = createCourse({
+			id: 'c1',
+			name: 'Math',
+			dayOfWeek: 1,
+			startPeriod: 3,
+			endPeriod: 3
+		});
+
+		expect(resolveMinutesUntilCourseStart(course, periodTimes, 9 * 60 + 30)).toBe(30);
+		expect(resolveMinutesUntilCourseStart(course, periodTimes, 10 * 60)).toBeNull();
+	});
+
 	it('resolveCourseTimeStatus marks current, past, and upcoming courses', () => {
 		const upcoming = createCourse({
 			id: 'u',
@@ -247,10 +293,11 @@ describe('today-courses', () => {
 			}
 		];
 
-		const entries = attachCourseStatuses(hits, periodTimes, 9 * 60, 2);
+		const entries = attachCourseStatuses(hits, periodTimes, 9 * 60 + 30, 2, 30);
 		expect(entries.map((entry) => entry.hit.course.id)).toEqual(['c1', 'c2']);
 		expect(entries[0]?.status).toBe('past');
-		expect(entries[1]?.status).toBe('upcoming');
+		expect(entries[1]?.status).toBe('preparing');
+		expect(entries[1]?.minutesUntilStart).toBe(30);
 	});
 
 	it('queryTodayCourses uses active timetable filter when scope is active', async () => {

@@ -228,6 +228,12 @@
 												>
 													{pt('screen.status.current')}
 												</span>
+											{:else if entry.status === 'preparing'}
+												<span
+													class="text-label-small shrink-0 rounded-full bg-secondary-container px-2 py-0.5 text-on-secondary-container"
+												>
+													{pt('screen.status.preparing')}
+												</span>
 											{/if}
 										</div>
 

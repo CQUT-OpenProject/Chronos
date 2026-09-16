@@ -13,7 +13,7 @@ import {
 	type PeriodTime
 } from '@chronos/core';
 import { get } from 'svelte/store';
-import type { TodayScope } from './constants';
+import { DEFAULT_PREPARE_REMINDER_MINUTES, type TodayScope } from './constants';
 import { attachCourseStatuses, queryTodayCourses, type TodayCourseEntry } from './today-courses';
 
 export function coursePaintKey(timetableId: string, courseName: string): string {
@@ -24,6 +24,7 @@ export interface TodayScreenController {
 	readonly today: string;
 	readonly now: Date;
 	readonly scope: TodayScope;
+	readonly prepareReminderMinutes: number;
 	readonly courseEntries: TodayCourseEntry[];
 	readonly paintByCourseKey: ReadonlyMap<string, CoursePaletteEntry>;
 	readonly currentPeriodIndex: number | null;
@@ -37,10 +38,12 @@ export function createTodayScreenController(): TodayScreenController {
 	let chronosController = $state<ChronosUiController | null>(null);
 	let pluginId = '';
 	let scope = $state<TodayScope>('active');
+	let prepareReminderMinutes = $state(DEFAULT_PREPARE_REMINDER_MINUTES);
 	let courseEntries = $state.raw<TodayCourseEntry[]>([]);
 	let paintByCourseKey = $state.raw<Map<string, CoursePaletteEntry>>(new Map());
 	let isDisposed = false;
 
+	let unsubscribeConfigChanged: (() => void) | undefined;
 	let unsubscribeTimeTick: (() => void) | undefined;
 	let unsubscribeTimetableSwitch: (() => void) | undefined;
 
@@ -130,7 +133,8 @@ export function createTodayScreenController(): TodayScreenController {
 				visibleHits,
 				periodTimes,
 				currentTimeMinutes(currentNow),
-				getCurrentPeriodIndex()
+				getCurrentPeriodIndex(),
+				prepareReminderMinutes
 			);
 			const nextPaints = await resolveCoursePaints(controller, nextEntries);
 			if (isDisposed || chronosController !== controller) return;
@@ -144,14 +148,21 @@ export function createTodayScreenController(): TodayScreenController {
 		}
 	}
 
-	async function loadScopeFromConfig() {
+	function readPrepareReminderMinutes(config: Record<string, unknown>): number {
+		const value = config.prepareReminderMinutes;
+		return typeof value === 'number' && value >= 0 ? value : DEFAULT_PREPARE_REMINDER_MINUTES;
+	}
+
+	async function loadConfigFromPlugin() {
 		const controller = chronosController;
 		if (!controller) return;
 		try {
 			const ctx = controller.getPluginContext(pluginId);
 			scope = (ctx.config.scope as TodayScope) ?? 'active';
+			prepareReminderMinutes = readPrepareReminderMinutes(ctx.config);
 		} catch {
 			scope = 'active';
+			prepareReminderMinutes = DEFAULT_PREPARE_REMINDER_MINUTES;
 		}
 	}
 
@@ -161,11 +172,22 @@ export function createTodayScreenController(): TodayScreenController {
 		chronosController = controller;
 		pluginId = nextPluginId;
 
-		await loadScopeFromConfig();
+		await loadConfigFromPlugin();
 		if (isDisposed || chronosController !== controller) return;
 
 		try {
 			const ctx = controller.getPluginContext(pluginId);
+			const configChangedDisposable = ctx.on(
+				'config:changed',
+				({ pluginId: changedId, config }) => {
+					if (isDisposed || changedId !== pluginId) return;
+					scope = (config.scope as TodayScope) ?? scope;
+					prepareReminderMinutes = readPrepareReminderMinutes(config);
+					void refreshCourses();
+				}
+			);
+			unsubscribeConfigChanged = () => configChangedDisposable.dispose();
+
 			const timeTickDisposable = ctx.on('time:tick', () => {
 				if (isDisposed) return;
 				void refreshCourses();
@@ -205,6 +227,8 @@ export function createTodayScreenController(): TodayScreenController {
 
 	function dispose() {
 		isDisposed = true;
+		unsubscribeConfigChanged?.();
+		unsubscribeConfigChanged = undefined;
 		unsubscribeTimeTick?.();
 		unsubscribeTimeTick = undefined;
 		unsubscribeTimetableSwitch?.();
@@ -224,6 +248,7 @@ export function createTodayScreenController(): TodayScreenController {
 			void snapshot.clockTodayIso;
 			void snapshot.coursePaletteRevision;
 			void scope;
+			void prepareReminderMinutes;
 			void snapshot.currentTimetable?.id;
 			void snapshot.currentTimetable?.academicConfig.periodTimes;
 			void refreshCourses();
@@ -239,6 +264,9 @@ export function createTodayScreenController(): TodayScreenController {
 		},
 		get scope() {
 			return scope;
+		},
+		get prepareReminderMinutes() {
+			return prepareReminderMinutes;
 		},
 		get courseEntries() {
 			return courseEntries;

@@ -12,11 +12,12 @@ import type { TodayScope } from './constants';
 
 export type { TodayScope };
 
-export type CourseTimeStatus = 'past' | 'current' | 'upcoming';
+export type CourseTimeStatus = 'past' | 'current' | 'preparing' | 'upcoming';
 
 export interface TodayCourseEntry {
 	hit: CourseQueryHit;
 	status: CourseTimeStatus;
+	minutesUntilStart: number | null;
 }
 
 const calendarService = new AcademicCalendarService();
@@ -52,11 +53,23 @@ export function sortCourseHits(hits: CourseQueryHit[]): CourseQueryHit[] {
 	});
 }
 
+export function resolveMinutesUntilCourseStart(
+	course: Course,
+	periodTimes: PeriodTime[],
+	nowMinutes: number
+): number | null {
+	const ranges = parsePeriodRanges(periodTimes);
+	const start = ranges.find((period) => period.index === course.startPeriod);
+	if (!start || nowMinutes >= start.startMinutes) return null;
+	return start.startMinutes - nowMinutes;
+}
+
 export function resolveCourseTimeStatus(
 	course: Course,
 	periodTimes: PeriodTime[],
 	nowMinutes: number,
-	currentPeriodIndex: number | null
+	currentPeriodIndex: number | null,
+	prepareReminderMinutes = 0
 ): CourseTimeStatus {
 	const ranges = parsePeriodRanges(periodTimes);
 	const start = ranges.find((period) => period.index === course.startPeriod);
@@ -65,7 +78,13 @@ export function resolveCourseTimeStatus(
 	if (start && end) {
 		if (nowMinutes > end.endMinutes) return 'past';
 		if (nowMinutes >= start.startMinutes && nowMinutes <= end.endMinutes) return 'current';
-		if (nowMinutes < start.startMinutes) return 'upcoming';
+		if (nowMinutes < start.startMinutes) {
+			const minutesUntilStart = start.startMinutes - nowMinutes;
+			if (prepareReminderMinutes > 0 && minutesUntilStart <= prepareReminderMinutes) {
+				return 'preparing';
+			}
+			return 'upcoming';
+		}
 	}
 
 	if (currentPeriodIndex == null) return 'upcoming';
@@ -80,11 +99,19 @@ export function attachCourseStatuses(
 	hits: CourseQueryHit[],
 	periodTimes: PeriodTime[],
 	nowMinutes: number,
-	currentPeriodIndex: number | null
+	currentPeriodIndex: number | null,
+	prepareReminderMinutes = 0
 ): TodayCourseEntry[] {
 	return sortCourseHits(hits).map((hit) => ({
 		hit,
-		status: resolveCourseTimeStatus(hit.course, periodTimes, nowMinutes, currentPeriodIndex)
+		status: resolveCourseTimeStatus(
+			hit.course,
+			periodTimes,
+			nowMinutes,
+			currentPeriodIndex,
+			prepareReminderMinutes
+		),
+		minutesUntilStart: resolveMinutesUntilCourseStart(hit.course, periodTimes, nowMinutes)
 	}));
 }
 
