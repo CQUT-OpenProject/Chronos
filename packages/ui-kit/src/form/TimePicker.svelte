@@ -123,7 +123,7 @@
 	</div>
 </div>
 
-<BottomSheet bind:open title={label} dragDismissAria={sheetDragDismissAria}>
+<BottomSheet bind:open title={label} dragDismissAria={sheetDragDismissAria} manageHistory={false}>
 	<div class="flex flex-col gap-3 px-4 pt-1 pb-2">
 		<TimeWheel
 			bind:this={timeWheel}

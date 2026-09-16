@@ -1,3 +1,10 @@
+export interface OverlayHistoryPort {
+	pushOverlay(id: string): void;
+	closeOverlay(id: string): void;
+	dismissWithoutPop(id: string): void;
+	onPopOverlay(handler: () => void): () => void;
+}
+
 export interface HistoryOverlaySync {
 	syncOpenState(isOpen: boolean): void;
 	skipNextHistoryBack(): void;
@@ -5,22 +12,22 @@ export interface HistoryOverlaySync {
 }
 
 export function createHistoryOverlaySync(options: {
+	overlayId: string;
 	isOpen: () => boolean;
 	setOpen: (open: boolean) => void;
+	port?: OverlayHistoryPort;
 }): HistoryOverlaySync {
 	let historyPushed = false;
 	let closingFromPopstate = false;
 	let skipNextBack = false;
 
-	function onPopState() {
+	const unsubscribePop = options.port?.onPopOverlay(() => {
 		if (!options.isOpen()) return;
 		closingFromPopstate = true;
 		options.setOpen(false);
 		historyPushed = false;
 		closingFromPopstate = false;
-	}
-
-	window.addEventListener('popstate', onPopState);
+	});
 
 	return {
 		skipNextHistoryBack() {
@@ -29,7 +36,11 @@ export function createHistoryOverlaySync(options: {
 		syncOpenState(isOpen: boolean) {
 			if (isOpen) {
 				if (!historyPushed) {
-					history.pushState({ chronosOverlay: 1 }, '', window.location.href);
+					if (options.port) {
+						options.port.pushOverlay(options.overlayId);
+					} else {
+						history.pushState({ chronosOverlay: options.overlayId }, '', window.location.href);
+					}
 					historyPushed = true;
 				}
 				return;
@@ -38,6 +49,11 @@ export function createHistoryOverlaySync(options: {
 			if (historyPushed && !closingFromPopstate) {
 				if (skipNextBack) {
 					skipNextBack = false;
+					if (options.port) {
+						options.port.dismissWithoutPop(options.overlayId);
+					}
+				} else if (options.port) {
+					options.port.closeOverlay(options.overlayId);
 				} else {
 					history.back();
 				}
@@ -45,7 +61,7 @@ export function createHistoryOverlaySync(options: {
 			historyPushed = false;
 		},
 		dispose() {
-			window.removeEventListener('popstate', onPopState);
+			unsubscribePop?.();
 			if (historyPushed && options.isOpen()) {
 				closingFromPopstate = true;
 				options.setOpen(false);

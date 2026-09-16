@@ -1,36 +1,22 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { createHistoryOverlaySync } from '../src/overlay/history-overlay';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createHistoryOverlaySync, type OverlayHistoryPort } from '../src/overlay/history-overlay';
 
 describe('createHistoryOverlaySync in ui-kit', () => {
-	let isOpen = false;
-	const setOpen = vi.fn((open: boolean) => {
-		isOpen = open;
-	});
 	const back = vi.fn();
 	const pushState = vi.fn();
-	const listeners = new Map<string, Set<EventListener>>();
+	let setOpen: ReturnType<typeof vi.fn<(open: boolean) => void>>;
+	let isOpen = false;
 
 	beforeEach(() => {
 		isOpen = false;
-		setOpen.mockClear();
+		setOpen = vi.fn((open: boolean) => {
+			isOpen = open;
+		});
 		back.mockClear();
 		pushState.mockClear();
-		listeners.clear();
-
 		vi.stubGlobal('history', { back, pushState });
 		vi.stubGlobal('window', {
-			location: { href: 'https://example.com/app' },
-			addEventListener(type: string, listener: EventListener) {
-				if (!listeners.has(type)) listeners.set(type, new Set());
-				listeners.get(type)!.add(listener);
-			},
-			removeEventListener(type: string, listener: EventListener) {
-				listeners.get(type)?.delete(listener);
-			},
-			dispatchEvent(event: Event) {
-				listeners.get(event.type)?.forEach((listener) => listener(event));
-				return true;
-			}
+			location: { href: 'https://example.com/app' }
 		});
 	});
 
@@ -38,63 +24,111 @@ describe('createHistoryOverlaySync in ui-kit', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('pushes history state when overlay opens', () => {
+	it('pushes history when overlay opens without a port', () => {
 		const sync = createHistoryOverlaySync({
+			overlayId: 'bottom-sheet',
 			isOpen: () => isOpen,
 			setOpen
 		});
 
-		isOpen = true;
 		sync.syncOpenState(true);
 
-		expect(pushState).toHaveBeenCalledWith({ chronosOverlay: 1 }, '', 'https://example.com/app');
-		sync.dispose();
+		expect(pushState).toHaveBeenCalledWith(
+			{ chronosOverlay: 'bottom-sheet' },
+			'',
+			'https://example.com/app'
+		);
+	});
+
+	it('uses the injected port when provided', () => {
+		const port: OverlayHistoryPort = {
+			pushOverlay: vi.fn(),
+			closeOverlay: vi.fn(),
+			dismissWithoutPop: vi.fn(),
+			onPopOverlay: vi.fn(() => () => {})
+		};
+
+		const sync = createHistoryOverlaySync({
+			overlayId: 'bottom-sheet',
+			port,
+			isOpen: () => isOpen,
+			setOpen
+		});
+
+		sync.syncOpenState(true);
+		expect(port.pushOverlay).toHaveBeenCalledWith('bottom-sheet');
 	});
 
 	it('closes overlay on popstate without calling history.back again', () => {
+		const popHandlers: Array<() => void> = [];
+		const port: OverlayHistoryPort = {
+			pushOverlay: vi.fn(),
+			closeOverlay: vi.fn(),
+			dismissWithoutPop: vi.fn(),
+			onPopOverlay: vi.fn((handler) => {
+				popHandlers.push(handler);
+				return () => {};
+			})
+		};
+
 		const sync = createHistoryOverlaySync({
+			overlayId: 'bottom-sheet',
+			port,
 			isOpen: () => isOpen,
 			setOpen
 		});
 
-		isOpen = true;
 		sync.syncOpenState(true);
 		isOpen = true;
-		window.dispatchEvent(new Event('popstate'));
+		popHandlers.forEach((handler) => handler());
 
 		expect(setOpen).toHaveBeenCalledWith(false);
-		expect(back).not.toHaveBeenCalled();
-		sync.dispose();
+		expect(port.closeOverlay).not.toHaveBeenCalled();
 	});
 
-	it('calls history.back when overlay closes programmatically', () => {
+	it('calls port.closeOverlay when overlay closes programmatically', () => {
+		const port: OverlayHistoryPort = {
+			pushOverlay: vi.fn(),
+			closeOverlay: vi.fn(),
+			dismissWithoutPop: vi.fn(),
+			onPopOverlay: vi.fn(() => () => {})
+		};
+
 		const sync = createHistoryOverlaySync({
+			overlayId: 'bottom-sheet',
+			port,
 			isOpen: () => isOpen,
 			setOpen
 		});
 
-		isOpen = true;
 		sync.syncOpenState(true);
-		isOpen = false;
+		isOpen = true;
 		sync.syncOpenState(false);
 
-		expect(back).toHaveBeenCalledTimes(1);
-		sync.dispose();
+		expect(port.closeOverlay).toHaveBeenCalledWith('bottom-sheet');
 	});
 
-	it('skips history.back once when skipNextHistoryBack was called before close', () => {
+	it('skips history pop once when skipNextHistoryBack was called before close', () => {
+		const port: OverlayHistoryPort = {
+			pushOverlay: vi.fn(),
+			closeOverlay: vi.fn(),
+			dismissWithoutPop: vi.fn(),
+			onPopOverlay: vi.fn(() => () => {})
+		};
+
 		const sync = createHistoryOverlaySync({
+			overlayId: 'bottom-sheet',
+			port,
 			isOpen: () => isOpen,
 			setOpen
 		});
 
-		isOpen = true;
 		sync.syncOpenState(true);
+		isOpen = true;
 		sync.skipNextHistoryBack();
-		isOpen = false;
 		sync.syncOpenState(false);
 
-		expect(back).not.toHaveBeenCalled();
-		sync.dispose();
+		expect(port.dismissWithoutPop).toHaveBeenCalledWith('bottom-sheet');
+		expect(port.closeOverlay).not.toHaveBeenCalled();
 	});
 });

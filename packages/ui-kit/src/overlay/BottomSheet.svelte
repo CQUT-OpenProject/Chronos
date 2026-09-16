@@ -8,7 +8,11 @@
 		overlayOpacityFromDrag,
 		shouldDismissSheet
 	} from './bottom-sheet-drag';
-	import { createHistoryOverlaySync, type HistoryOverlaySync } from './history-overlay';
+	import {
+		createHistoryOverlaySync,
+		type HistoryOverlaySync,
+		type OverlayHistoryPort
+	} from './history-overlay';
 
 	let {
 		open = $bindable(false),
@@ -17,6 +21,8 @@
 		showHandle = true,
 		dragDismissAria = 'Drag down to close',
 		manageHistory = true,
+		overlayId = 'bottom-sheet',
+		historyPort,
 		actions,
 		children,
 		footer,
@@ -29,6 +35,8 @@
 		showHandle?: boolean;
 		dragDismissAria?: string;
 		manageHistory?: boolean;
+		overlayId?: string;
+		historyPort?: OverlayHistoryPort;
 		actions?: Snippet;
 		children?: Snippet;
 		footer?: Snippet;
@@ -208,6 +216,8 @@
 		}
 
 		const sync = createHistoryOverlaySync({
+			overlayId,
+			port: historyPort,
 			isOpen: () => sheetOpen,
 			setOpen: (nextOpen) => {
 				open = nextOpen;
