@@ -1,13 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
-import type { Logger, Plugin } from 'vite';
+import type { Logger, Plugin, ViteDevServer } from 'vite';
 import type { OfficialPluginDef } from '../../../../../scripts/official-plugins.config.ts';
+import { buildAllOfficialPluginsDev } from '../../../../../scripts/official-plugin-build/build-all-dev.ts';
 import {
 	buildOfficialPluginAssets,
 	type OfficialPluginBuildResult
 } from '../../../../../scripts/official-plugin-build/build-plugin.ts';
 import { createDevOfficialPluginBundleMiddleware } from '../../../../../scripts/official-plugin-build/dev-bundle-middleware.ts';
+import { loadDevPluginBuildPayload } from '../../../../../scripts/official-plugin-build/load-dev-build-payload.ts';
 import type { OfficialPluginBuildPaths } from '../../../../../scripts/official-plugin-build/paths.ts';
+
+const DEV_PLUGIN_HMR_BOOTSTRAP_PATH = '/__chronos/dev-plugin-hmr.json';
 
 export type PluginHmrPayload = OfficialPluginBuildResult;
 
@@ -57,6 +61,21 @@ export async function buildSingleOfficialPlugin(
 	});
 }
 
+function sendPluginHmrUpdate(
+	server: ViteDevServer,
+	payload: PluginHmrPayload,
+	costMs: string
+): void {
+	server.ws.send({
+		type: 'custom',
+		event: 'chronos:plugin-hmr',
+		data: {
+			...payload,
+			costMs
+		}
+	});
+}
+
 export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin {
 	const { monorepoRoot, plugins, createAliasRecord, hostVersion } = options;
 	const pluginBySourceDir = new Map(plugins.map((plugin) => [plugin.sourceDir, plugin]));
@@ -65,11 +84,47 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 	return {
 		name: 'chronos-plugin-hmr',
 		apply: 'serve',
-		configureServer(server) {
+		async configureServer(server) {
 			const logger = server.config.logger;
 			const pluginsDir = resolve(monorepoRoot, 'packages/plugins');
 			server.watcher.add(pluginsDir);
 			server.middlewares.use(createDevOfficialPluginBundleMiddleware(monorepoRoot));
+			server.middlewares.use((req, res, next) => {
+				const url = req.url?.split('?')[0] ?? '';
+				if (url !== DEV_PLUGIN_HMR_BOOTSTRAP_PATH) {
+					next();
+					return;
+				}
+
+				const payloads = plugins
+					.map((plugin) => loadDevPluginBuildPayload(plugin, monorepoRoot))
+					.filter((payload): payload is PluginHmrPayload => payload != null)
+					.map((payload) => ({
+						...payload,
+						costMs: '0'
+					}));
+
+				res.statusCode = 200;
+				res.setHeader('Content-Type', 'application/json; charset=utf-8');
+				res.setHeader('Cache-Control', 'no-cache');
+				res.end(JSON.stringify(payloads));
+			});
+
+			const warmStart = performance.now();
+			logPluginHmrInfo(logger, 'warming official plugin dev builds...');
+			await buildAllOfficialPluginsDev({
+				root: monorepoRoot,
+				releaseVersion: resolvedHostVersion,
+				createAliasRecord,
+				plugins,
+				onBuilt: (payload) => {
+					sendPluginHmrUpdate(server, payload, '0');
+				}
+			});
+			logPluginHmrInfo(
+				logger,
+				`official plugin dev builds ready in ${(performance.now() - warmStart).toFixed(1)}ms`
+			);
 
 			const pendingTimers = new Map<string, NodeJS.Timeout>();
 			const inFlightBuilds = new Set<string>();
@@ -97,18 +152,10 @@ export function chronosPluginHmrPlugin(options: ChronosPluginHmrOptions): Plugin
 								logger
 							);
 							const costMs = (performance.now() - startTime).toFixed(1);
+							sendPluginHmrUpdate(server, payload, costMs);
 							const hmrMessage = triggerFile
 								? `hmr update ${formatPluginHmrPath(server.config.root, triggerFile)} → ${pluginDef.id}@${payload.rev ?? '?'} in ${costMs}ms`
 								: `hmr update ${pluginDef.id}@${payload.rev ?? '?'} in ${costMs}ms`;
-
-							server.ws.send({
-								type: 'custom',
-								event: 'chronos:plugin-hmr',
-								data: {
-									...payload,
-									costMs
-								}
-							});
 							logPluginHmrInfo(logger, hmrMessage);
 						} catch (err: unknown) {
 							const error = err instanceof Error ? err : new Error(String(err));

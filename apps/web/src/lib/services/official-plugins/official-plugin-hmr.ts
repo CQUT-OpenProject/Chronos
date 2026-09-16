@@ -106,18 +106,44 @@ export function enqueuePluginHmr(
 }
 
 export function setupPluginHmr(service: OfficialPluginService, engine: ChronosEngine): Disposable {
-	return pluginHmrCoordinator.setup(service, engine);
+	const disposable = pluginHmrCoordinator.setup(service, engine);
+	if (import.meta.env.DEV) {
+		void bootstrapDevPluginBuilds(service, engine);
+	}
+	return disposable;
+}
+
+async function bootstrapDevPluginBuilds(
+	service: OfficialPluginService,
+	engine: ChronosEngine
+): Promise<void> {
+	try {
+		const response = await fetch('/__chronos/dev-plugin-hmr.json');
+		if (!response.ok) return;
+
+		const payloads = (await response.json()) as PluginHmrData[];
+		for (const data of payloads) {
+			if (!service.getInstalled(data.id)) continue;
+			await handlePluginHmr(service, engine, data, { silent: true });
+		}
+	} catch (error) {
+		console.warn('[Plugin HMR] Failed to bootstrap dev plugin builds:', error);
+	}
 }
 
 export async function handlePluginHmr(
 	service: OfficialPluginService,
 	engine: ChronosEngine,
-	data: PluginHmrData
+	data: PluginHmrData,
+	options?: { silent?: boolean }
 ): Promise<void> {
 	const { id, costMs } = data;
+	const silent = options?.silent ?? false;
 
 	if (!service.getInstalled(id)) {
-		engine.notify(`[HMR] 插件 ${id} 已重编 (${costMs}ms，未安装)`, 'info');
+		if (!silent) {
+			engine.notify(`[HMR] 插件 ${id} 已重编 (${costMs}ms，未安装)`, 'info');
+		}
 		return;
 	}
 
@@ -127,7 +153,9 @@ export async function handlePluginHmr(
 	if (!existing.enabled) {
 		try {
 			await service.applyHotUpdate(data);
-			engine.notify(`[HMR] 插件 ${id} 已更新 (${costMs}ms，未启用)`, 'info');
+			if (!silent) {
+				engine.notify(`[HMR] 插件 ${id} 已更新 (${costMs}ms，未启用)`, 'info');
+			}
 		} catch (err: unknown) {
 			const error = err instanceof Error ? err : new Error(String(err));
 			console.error(`[Plugin HMR] 热更新 ${id} 失败:`, error);
@@ -150,7 +178,9 @@ export async function handlePluginHmr(
 			}
 		}
 
-		engine.notify(`[HMR] 插件 ${id} 已热重载 (${costMs}ms)`, 'info');
+		if (!silent) {
+			engine.notify(`[HMR] 插件 ${id} 已热重载 (${costMs}ms)`, 'info');
+		}
 	} catch (err: unknown) {
 		const error = err instanceof Error ? err : new Error(String(err));
 		console.error(`[Plugin HMR] 热重载 ${id} 失败:`, error);
