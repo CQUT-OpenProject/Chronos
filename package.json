@@ -3,7 +3,7 @@
 	"private": true,
 	"version": "0.5.9",
 	"type": "module",
-	"packageManager": "pnpm@11.20.0",
+	"packageManager": "pnpm@12.4.2",
 	"scripts": {
 		"dev": "vp -C apps/web dev",
 		"build": "vp -C apps/web build",
