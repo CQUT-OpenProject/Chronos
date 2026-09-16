@@ -15,7 +15,7 @@ export const TODAY_MESSAGES = {
 		'screen.empty.noTimetable': '请先选择或创建课表',
 		'screen.empty.noCourses': '今天没有课',
 		'screen.empty.noCoursesHint': '享受轻松的一天吧',
-		'screen.status.current': '进行中',
+		'screen.status.current': '上课中',
 		'screen.status.preparing': '准备上课',
 		'screen.status.past': '已结束',
 		'screen.status.upcoming': '未开始',

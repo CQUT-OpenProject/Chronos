@@ -44,7 +44,6 @@ export function createTodayScreenController(): TodayScreenController {
 	let isDisposed = false;
 
 	let unsubscribeConfigChanged: (() => void) | undefined;
-	let unsubscribeTimeTick: (() => void) | undefined;
 	let unsubscribeTimetableSwitch: (() => void) | undefined;
 
 	function readSnapshot() {
@@ -188,12 +187,6 @@ export function createTodayScreenController(): TodayScreenController {
 			);
 			unsubscribeConfigChanged = () => configChangedDisposable.dispose();
 
-			const timeTickDisposable = ctx.on('time:tick', () => {
-				if (isDisposed) return;
-				void refreshCourses();
-			});
-			unsubscribeTimeTick = () => timeTickDisposable.dispose();
-
 			const timetableSwitchDisposable = ctx.on('timetable:switched', () => {
 				if (isDisposed) return;
 				void refreshCourses();
@@ -229,8 +222,6 @@ export function createTodayScreenController(): TodayScreenController {
 		isDisposed = true;
 		unsubscribeConfigChanged?.();
 		unsubscribeConfigChanged = undefined;
-		unsubscribeTimeTick?.();
-		unsubscribeTimeTick = undefined;
 		unsubscribeTimetableSwitch?.();
 		unsubscribeTimetableSwitch = undefined;
 		chronosController = null;
