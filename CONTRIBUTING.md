@@ -270,6 +270,7 @@ export default defineChronosPlugin({
 - 需要服务端代理转发的场景，可编写插件服务端 Handler，路由挂载于 `/api/plugins/{pluginId}/{action}`；前端通过 `IHttpService.proxy(pluginId, action, payload)` 发起调用。网络数据包统一采用 core 单源定义的 `PluginServerResponse<T>` 规范信封（见 [ADR 0025](.agents/docs/adr/0025-official-plugin-modules-and-proxy-contract.md)）。
 - 插件可通过 `allowedDomains` 声明允许访问的域名白名单。
 - 如需打开宿主内置页面（如课程编辑器），请通过 `ctx.tryService(IHostNavigation)?.openCourseEditor(courseId)` 调用，**严禁**在插件内部硬编码宿主路由路径（如 `/timetable/...`，见 [ADR 0031](.agents/docs/adr/0031-round7-clock-profile-codegen-navigation-i18n.md)）。
+- 如需渲染与课表页一致的课程颜色，请通过 `ctx.tryService(ICoursePresentationService)` 获取当前调色板并按课表 ID 解析颜色（`resolveCoursePaintsForTimetable` / `resolveCoursePaint`）。**严禁**对可见课程子集自行调用 `assignCourseDisplayColors`。官方 ESM 插件无法读取宿主 Svelte context，`TIMETABLE_PRESENTATION_CONTEXT` 仅供进程内宿主 UI 使用。
 
 ### Profile 内置插件打包
 
@@ -287,7 +288,7 @@ export default defineChronosPlugin({
 
 `MountableSlotOutlet` 会把宿主 Svelte context 传给 `CHRONOS_MOUNTABLE.mount()`，但仅对**进程内**、与宿主共享 Svelte 运行时的组件有效（如 Profile 内置 `source-cqut` / `codec-share`）。官方自包含 ESM 插件自带独立 Svelte 运行时，其组件内 `getContext()` 无法读取宿主 context；应通过 props / engine API 获取数据。
 
-插件富 UI 通过 `ChronosUiController`（`controller.snapshot` 可读 store）订阅宿主状态，在插件自身 Svelte 运行时用 `fromStore(controller.snapshot)` 读取快照；动作仍调用 controller 方法。`TIMETABLE_PRESENTATION_CONTEXT` 与 `PREVIEW_PAINT_READY_CONTEXT` 提供 `Readable` 订阅源，同样用 `fromStore()` 消费。`MountableSlotOutlet` 在 props 变化时调用 `update()`，仅在组件或挂载目标变化时重新挂载。
+插件富 UI 通过 `ChronosUiController`（`controller.snapshot` 可读 store）订阅宿主状态，在插件自身 Svelte 运行时用 `fromStore(controller.snapshot)` 读取快照；动作仍调用 controller 方法。`TIMETABLE_PRESENTATION_CONTEXT` 与 `PREVIEW_PAINT_READY_CONTEXT` 提供 `Readable` 订阅源，同样用 `fromStore()` 消费，但**仅限进程内**宿主/内置插件；官方 ESM 插件应使用 `ICoursePresentationService` 获取课程颜色。`MountableSlotOutlet` 在 props 变化时调用 `update()`，仅在组件或挂载目标变化时重新挂载。
 
 ### 分发形态
 
