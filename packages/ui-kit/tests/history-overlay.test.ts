@@ -1,31 +1,25 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { createHistoryOverlaySync } from './history-overlay';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { createHistoryOverlaySync } from '../src/overlay/history-overlay';
 
-const { pushStateMock } = vi.hoisted(() => ({
-	pushStateMock: vi.fn()
-}));
-
-vi.mock('$app/navigation', () => ({
-	pushState: pushStateMock
-}));
-
-describe('createHistoryOverlaySync', () => {
+describe('createHistoryOverlaySync in ui-kit', () => {
 	let isOpen = false;
 	const setOpen = vi.fn((open: boolean) => {
 		isOpen = open;
 	});
 	const back = vi.fn();
+	const pushState = vi.fn();
 	const listeners = new Map<string, Set<EventListener>>();
 
 	beforeEach(() => {
 		isOpen = false;
 		setOpen.mockClear();
-		pushStateMock.mockClear();
 		back.mockClear();
+		pushState.mockClear();
 		listeners.clear();
 
-		vi.stubGlobal('history', { back });
+		vi.stubGlobal('history', { back, pushState });
 		vi.stubGlobal('window', {
+			location: { href: 'https://example.com/app' },
 			addEventListener(type: string, listener: EventListener) {
 				if (!listeners.has(type)) listeners.set(type, new Set());
 				listeners.get(type)!.add(listener);
@@ -44,7 +38,7 @@ describe('createHistoryOverlaySync', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('pushes history when overlay opens', () => {
+	it('pushes history state when overlay opens', () => {
 		const sync = createHistoryOverlaySync({
 			isOpen: () => isOpen,
 			setOpen
@@ -53,7 +47,7 @@ describe('createHistoryOverlaySync', () => {
 		isOpen = true;
 		sync.syncOpenState(true);
 
-		expect(pushStateMock).toHaveBeenCalledWith('', { chronosOverlay: 1 });
+		expect(pushState).toHaveBeenCalledWith({ chronosOverlay: 1 }, '', 'https://example.com/app');
 		sync.dispose();
 	});
 
