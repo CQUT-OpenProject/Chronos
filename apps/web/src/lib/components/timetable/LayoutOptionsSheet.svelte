@@ -7,7 +7,6 @@
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import MineRow from '$lib/components/mine/MineRow.svelte';
 	import Switch from '$lib/components/ui/Switch.svelte';
-	import { haptic } from '$lib/haptic/haptic';
 	import { createViewPrefsSaver } from '$lib/timetable/view-prefs-save';
 
 	let {
@@ -28,7 +27,6 @@
 	function setPref<K extends keyof TimetableViewPrefs>(key: K, next: boolean) {
 		const base = viewPrefs;
 		if (!base) return;
-		haptic.light();
 		localPrefs = saver.apply(base, { [key]: next });
 	}
 

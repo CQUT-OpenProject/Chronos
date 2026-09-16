@@ -148,7 +148,6 @@
 	}
 
 	async function toggleCurrentPeriodHighlight(checked: boolean) {
-		haptic.light();
 		trackEvent('settings_period_highlight_change', { enabled: checked });
 		await shell.setCurrentPeriodHighlightEnabled(checked);
 	}
