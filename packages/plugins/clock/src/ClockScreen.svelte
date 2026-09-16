@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { trackPluginAnalytics } from '@chronos/core';
+	import { formatCompactDate, trackPluginAnalytics } from '@chronos/core';
 	import {
 		appLocaleToBcp47,
 		appShellScroll,
 		DateField,
 		pluginText,
-		TimeWheel,
+		TimePicker,
 		type ChronosUiController,
 		type DateFieldLabels,
 		type TimePickerLabels,
 		type TimeValue
 	} from '@chronos/ui-kit';
 	import { fromStore } from 'svelte/store';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import { CLOCK_ANALYTICS } from './analytics';
 	import { combineLocalDateTime, partsFromDate } from './clock';
 	import { CLOCK_PLUGIN_ID, CLOCK_STORAGE_KEY } from './constants';
@@ -27,6 +27,7 @@
 
 	const ui = $derived(fromStore(controller.snapshot));
 	const pluginContext = $derived(controller.getPluginContext(pluginId));
+	const locale = $derived(appLocaleToBcp47(ui.current.currentLocale));
 
 	function pt(key: keyof (typeof CLOCK_MESSAGES)['zh-cn'], params?: Record<string, unknown>) {
 		void ui.current.slotVersion;
@@ -36,13 +37,11 @@
 	const wallParts = partsFromDate(new Date());
 	let draftIso = $state(wallParts.isoDate);
 	let draftTime = $state<TimeValue>(wallParts.time);
-	let timeWheel: { scrollToValue(): void } | null = $state(null);
 
 	onMount(() => {
 		const parts = partsFromDate(controller.getPluginContext(pluginId).state.now);
 		draftIso = parts.isoDate;
 		draftTime = parts.time;
-		void tick().then(() => timeWheel?.scrollToValue());
 	});
 
 	const dateFieldLabels = $derived<DateFieldLabels>({
@@ -54,33 +53,35 @@
 		triggerLabeled: (label, display) => pt('screen.field.date.triggerLabeled', { label, display })
 	});
 
-	const timeWheelLabels = $derived<TimePickerLabels>({
+	const timePickerLabels = $derived<TimePickerLabels>({
 		placeholder: pt('screen.field.time'),
 		hour: pt('screen.field.time.hour'),
 		minute: pt('screen.field.time.minute'),
-		cancel: '',
+		cancel: pt('screen.field.time.cancel'),
 		confirm: pt('screen.field.date.confirm'),
-		triggerEmpty: () => '',
-		triggerLabeled: () => '',
+		triggerEmpty: (label) => pt('screen.field.date.triggerEmpty', { label }),
+		triggerLabeled: (label, display) => pt('screen.field.date.triggerLabeled', { label, display }),
 		columnAria: (label, column) => pt('screen.field.time.columnAria', { label, column })
 	});
 
 	const frozen = $derived(ui.current.clockFrozen);
-	const statusText = $derived(
-		frozen
-			? pt('screen.status.frozen', {
-					datetime: ui.current.clockNow.toLocaleString(appLocaleToBcp47(ui.current.currentLocale), {
-						year: 'numeric',
-						month: '2-digit',
-						day: '2-digit',
-						hour: '2-digit',
-						minute: '2-digit'
-					})
-				})
-			: pt('screen.status.system')
+	const effectiveNow = $derived(pluginContext.state.now);
+	const headerDate = $derived(formatCompactDate(partsFromDate(effectiveNow).isoDate));
+	const headerTime = $derived(
+		effectiveNow.toLocaleTimeString(locale, {
+			hour: '2-digit',
+			minute: '2-digit'
+		})
+	);
+	const statusBadge = $derived(frozen ? pt('screen.status.frozen') : pt('screen.status.system'));
+	const statusSubtitle = $derived(
+		frozen ? pt('screen.status.subtitle.frozen') : pt('screen.status.subtitle.system')
 	);
 
-	const canApply = $derived(combineLocalDateTime(draftIso, draftTime) != null);
+	const draftInstant = $derived(combineLocalDateTime(draftIso, draftTime));
+	const canApply = $derived(
+		draftInstant != null && draftInstant.getTime() !== effectiveNow.getTime()
+	);
 
 	async function onApply() {
 		const next = combineLocalDateTime(draftIso, draftTime);
@@ -100,41 +101,57 @@
 		const parts = partsFromDate(pluginContext.state.now);
 		draftIso = parts.isoDate;
 		draftTime = parts.time;
-		await tick();
-		timeWheel?.scrollToValue();
 		trackPluginAnalytics(pluginContext, CLOCK_PLUGIN_ID, CLOCK_ANALYTICS.reset);
 		pluginContext.actions.notify(pt('screen.notify.reset'), 'info');
 	}
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<div use:appShellScroll class="secondary-scroll min-h-0 flex-1 overflow-y-auto">
-		<div class="flex flex-col gap-4 p-4">
-			<div class="ui-section-surface divide-outline/10 overflow-hidden p-4">
-				<p class="text-body-medium text-on-surface">{statusText}</p>
+	<header
+		class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-6 pb-4 backdrop-blur-sm"
+	>
+		<div class="flex items-start justify-between gap-3">
+			<div class="min-w-0">
+				<p class="text-headline-small text-on-surface tabular-nums">
+					{headerDate}
+					<span class="text-on-surface-variant">·</span>
+					{headerTime}
+				</p>
+				<p class="text-body-medium mt-1 text-on-surface-variant">{statusSubtitle}</p>
 			</div>
+			<span
+				class="text-label-small shrink-0 rounded-full px-2.5 py-1 {frozen
+					? 'bg-secondary-container text-on-secondary-container'
+					: 'bg-surface-container-high text-on-surface-variant'}"
+			>
+				{statusBadge}
+			</span>
+		</div>
+	</header>
 
-			<div class="ui-section-surface divide-outline/10 overflow-hidden p-4">
-				<DateField
-					label={pt('screen.field.date')}
-					bind:value={draftIso}
-					required
-					variant="section"
-					labels={dateFieldLabels}
-					locale={appLocaleToBcp47(ui.current.currentLocale)}
-				/>
-			</div>
+	<div use:appShellScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
+		<div class="flex flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+			<section class="ui-section-surface ui-section-surface--comfortable">
+				<div class="ui-section-stack">
+					<DateField
+						label={pt('screen.field.date')}
+						bind:value={draftIso}
+						required
+						variant="section"
+						labels={dateFieldLabels}
+						{locale}
+					/>
 
-			<div class="ui-section-surface divide-outline/10 overflow-hidden p-4">
-				<p class="text-title-medium mb-3 text-on-surface">{pt('screen.field.time')}</p>
-				<TimeWheel
-					bind:this={timeWheel}
-					bind:value={draftTime}
-					label={pt('screen.field.time')}
-					labels={timeWheelLabels}
-					idPrefix="clock-time"
-				/>
-			</div>
+					<TimePicker
+						label={pt('screen.field.time')}
+						bind:value={draftTime}
+						variant="section"
+						labels={timePickerLabels}
+						sheetDragDismissAria={pt('screen.field.time.sheetDragDismiss')}
+						idPrefix="clock-time"
+					/>
+				</div>
+			</section>
 		</div>
 	</div>
 
