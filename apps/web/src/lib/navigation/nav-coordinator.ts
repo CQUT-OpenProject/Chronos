@@ -1,212 +1,255 @@
-import type { Pathname } from '$app/types';
-import { resolve } from '$app/paths';
 import type { BeforeNavigate } from '@sveltejs/kit';
+import { resolveBack, resolveTraversal, type BackFallback } from './back-resolver';
 import {
-	applyPopstateOverlayClose,
-	resolveBack,
-	resolvePopstateBack,
-	type BackFallback
-} from './back-resolver';
-import { closeOverlayById, registerOverlayCloser } from './overlay-registry';
-import {
+	findRecord,
+	getNavigationSnapshot,
 	getTopFrame,
-	getTopRoutePathname,
-	isDeepLinkEntry,
-	markDeepLinkEntry,
-	popOverlay,
-	popRoute,
+	getTopRoute,
+	initNavStack,
+	invalidateOverlays,
+	markerFor,
+	moveToRecord,
 	pushOverlay,
-	recordNavigation,
-	resetStackToRoute,
-	syncDeepLinkEntryState,
-	type NavigationRecordType
+	pushRoute,
+	type NavFrame
 } from './nav-stack';
-import { isShellRoute, toAppPathname } from './routes';
+import { appRouteHref, isShellRoute } from './routes';
 
 export type NavigationCoordinatorDeps = {
 	goto: (href: string, opts?: { replaceState?: boolean }) => void | Promise<void>;
 	pushState: (url: string, state: App.PageState) => void;
 	replaceState: (url: string, state: App.PageState) => void;
+	getPage: () => { url: URL; state: App.PageState };
 	setActiveTab: (tabId: string) => void;
-	historyBack: () => void;
+	historyGo: (delta: number) => void;
 };
-
-let deps: NavigationCoordinatorDeps | null = null;
-let pendingReplace = false;
-let pendingShellTab: string | undefined;
-const DEFAULT_PAGE_BACK_FALLBACK: BackFallback = { kind: 'shell' };
-let pageBackFallback: BackFallback = DEFAULT_PAGE_BACK_FALLBACK;
-let suppressOverlayHistoryPop = false;
-
-export function configureNavigationCoordinator(next: NavigationCoordinatorDeps): void {
-	deps = next;
+let deps: NavigationCoordinatorDeps | undefined;
+let ready = false;
+let whenReady: Promise<void>;
+let completeInitialization: (() => void) | undefined;
+let renderingTarget: NavFrame | undefined;
+let intent: { type: string; replace: boolean; shellTab?: string } | undefined;
+let departureTab: string | undefined;
+let requestedReplace = false;
+let requestId = 0;
+let backPending = false;
+let correctingFrom: string | undefined;
+let fallbackRegistration: { fallback: BackFallback } | undefined;
+let pendingFallbackTab: string | undefined;
+function href(url: URL): string {
+	return url.pathname + url.search + url.hash;
 }
-
+function writeMarker(frame: NavFrame): void {
+	if (deps) deps.replaceState('', { ...deps.getPage().state, chronosNavigation: markerFor(frame) });
+}
+export function configureNavigationCoordinator(next: NavigationCoordinatorDeps): void {
+	ready = false;
+	whenReady = new Promise((resolve) => {
+		completeInitialization = resolve;
+	});
+	departureTab = undefined;
+	++requestId;
+	renderingTarget = undefined;
+	correctingFrom = undefined;
+	deps = next;
+	intent = undefined;
+	requestedReplace = false;
+	backPending = false;
+	fallbackRegistration = undefined;
+}
 export function registerPageBackFallback(fallback: BackFallback): () => void {
-	pageBackFallback = fallback;
+	const registration = { fallback };
+	fallbackRegistration = registration;
 	return () => {
-		pageBackFallback = DEFAULT_PAGE_BACK_FALLBACK;
+		if (fallbackRegistration === registration) fallbackRegistration = undefined;
 	};
 }
-
-export function navigateForward(
-	href: string,
+export async function navigateForward(
+	url: string,
 	opts: { replace?: boolean } = {}
-): void | Promise<void> {
-	if (!deps) return;
-	pendingReplace = opts.replace ?? false;
-	return deps.goto(href, { replaceState: opts.replace });
-}
-
-function resetStackForFallback(fallback: BackFallback): void {
-	if (fallback.kind === 'shell') {
-		resetStackToRoute('/');
-		return;
-	}
-
-	resetStackToRoute(fallback.href);
-}
-
-function applyFallback(fallback: BackFallback): void {
-	if (!deps) return;
-
-	if (fallback.kind === 'shell') {
-		if (fallback.tab) deps.setActiveTab(fallback.tab);
-		void deps.goto(resolve('/'));
-		return;
-	}
-
-	void deps.goto((resolve as (path: string) => string)(fallback.href));
-}
-
-async function executeGotoRoute(pathname: string, shellTab?: string): Promise<void> {
-	if (!deps) return;
-	if (shellTab) deps.setActiveTab(shellTab);
-	popRoute();
-	await deps.goto((resolve as (path: string) => string)(pathname as Pathname));
-}
-
-export async function executeBackPlan(
-	plan: ReturnType<typeof resolveBack>,
-	_fallback: BackFallback
 ): Promise<void> {
-	if (!deps) return;
-
-	switch (plan.type) {
-		case 'close-overlay':
-			closeOverlayById(plan.overlayId);
-			break;
-		case 'goto-route':
-			await executeGotoRoute(plan.pathname, plan.shellTab);
-			break;
-		case 'fallback':
-			resetStackForFallback(plan.fallback);
-			applyFallback(plan.fallback);
-			break;
-	}
-}
-
-export function navigateBack(fallback: BackFallback): void {
-	void executeBackPlan(resolveBack(fallback), fallback);
-}
-
-export function dismissOverlayWithoutHistoryPop(overlayId: string): void {
-	const top = getTopFrame();
-	if (top?.kind !== 'overlay' || top.id !== overlayId) return;
-	suppressOverlayHistoryPop = true;
-	popOverlay();
-	suppressOverlayHistoryPop = false;
-}
-
-export function openOverlayHistory(overlayId: string): void {
-	if (!deps) return;
-	pushOverlay(overlayId);
-	const state = (history.state ?? {}) as App.PageState;
-	deps.pushState('', { ...state, chronosOverlay: overlayId });
-}
-
-export function closeOverlayHistory(overlayId: string): void {
-	const top = getTopFrame();
-	if (top?.kind !== 'overlay' || top.id !== overlayId) return;
-	popOverlay();
-	if (suppressOverlayHistoryPop) return;
-	deps?.historyBack();
-}
-
-export function handleOverlayPopstate(): void {
-	const top = getTopFrame();
-	if (top?.kind === 'overlay') {
-		applyPopstateOverlayClose(top.id);
-	}
-}
-
-export function stampShellTabOnHistory(shellTabId: string): void {
-	pendingShellTab = shellTabId;
-	if (!deps || typeof history === 'undefined') return;
-	const state = (history.state ?? {}) as App.PageState;
+	if (!deps || backPending) return;
+	const request = ++requestId;
+	requestedReplace = opts.replace ?? getTopFrame()?.kind === 'overlay';
 	try {
-		deps.replaceState('', { ...state, chronosShellTab: shellTabId });
-	} catch {
-		// Router not initialized yet.
+		await deps.goto(appRouteHref(url), { replaceState: requestedReplace });
+	} finally {
+		if (request === requestId) {
+			requestedReplace = false;
+			intent = undefined;
+		}
 	}
 }
-
-export function restoreShellTabFromHistory(setActiveTab: (tabId: string) => void): void {
-	if (typeof history === 'undefined') return;
-	const state = history.state as App.PageState | null;
-	const tab = state?.chronosShellTab;
-	if (tab) setActiveTab(tab);
+export function navigateBack(
+	fallback = fallbackRegistration?.fallback ?? ({ kind: 'shell' } as BackFallback)
+): void {
+	if (!deps || backPending) return;
+	const plan = resolveBack(getNavigationSnapshot(), fallback);
+	backPending = true;
+	if (
+		plan.type === 'traverse' &&
+		findRecord(deps.getPage().state.chronosNavigation)?.id === getTopFrame()?.id
+	) {
+		deps.historyGo(plan.delta);
+		return;
+	}
+	const target = plan.type === 'fallback' ? plan.fallback : fallback;
+	pendingFallbackTab = target.kind === 'shell' ? target.tab : undefined;
+	requestedReplace = true;
+	void Promise.resolve(
+		deps.goto(appRouteHref(target.kind === 'shell' ? '/' : target.href), { replaceState: true })
+	)
+		.catch(() => {
+			/* Router keeps the previous page on canceled/failed navigation. */
+		})
+		.finally(() => {
+			backPending = false;
+			requestedReplace = false;
+			pendingFallbackTab = undefined;
+			intent = undefined;
+		});
 }
-
-export function onBeforeNavigate({ from, to, type, delta, cancel }: BeforeNavigate): void {
-	if (!to?.url.pathname) return;
-
-	const fromPath = from?.url.pathname;
-	const toPath = to.url.pathname;
-
-	if (type === 'popstate') {
-		const fromApp = fromPath ? toAppPathname(fromPath) : '';
-		const toApp = toAppPathname(toPath);
-		const plan = resolvePopstateBack(fromApp, toApp, pageBackFallback);
-
-		if (plan === 'sync') {
-			recordNavigation(fromPath, toPath, type, delta ?? undefined);
-			if (isShellRoute(toPath)) restoreShellTabFromHistory((tabId) => deps?.setActiveTab(tabId));
+export function stageShellTabDeparture(tabId: string): void {
+	departureTab = tabId;
+}
+/** Preserve the source and direction when a shallow traversal needs a full route render. */
+export function getPendingTraversal(): { from: string; delta: number } | undefined {
+	const source = getTopRoute();
+	const current = getTopFrame();
+	if (!renderingTarget || !source || !current) return;
+	return { from: source.href.split(/[?#]/)[0], delta: renderingTarget.position - current.position };
+}
+export function onBeforeNavigate(navigation: BeforeNavigate): void {
+	if (navigation.willUnload || !navigation.to) {
+		intent = undefined;
+		return;
+	}
+	if (navigation.type === 'popstate') renderingTarget = undefined;
+	const staged = { type: navigation.type, replace: requestedReplace, shellTab: departureTab };
+	departureTab = undefined;
+	intent = staged;
+	void navigation.complete?.catch(() => {
+		if (intent !== staged) return;
+		intent = undefined;
+		backPending = false;
+		correctingFrom = undefined;
+	});
+}
+/** Called after successful route navigation AND when public page.state changes (shallow routing). */
+export function syncNavigationPage(completed = false): void {
+	if (!deps || (!ready && !completed)) return;
+	const page = deps.getPage();
+	if (!ready) {
+		ready = true;
+		initNavStack(href(page.url), !isShellRoute(page.url.pathname));
+		writeMarker(getTopFrame()!);
+		completeInitialization?.();
+		completeInitialization = undefined;
+		intent = undefined;
+		return;
+	}
+	if (!completed && intent) return;
+	const actual = renderingTarget ?? findRecord(page.state.chronosNavigation);
+	const current = getTopFrame()!;
+	// A completed goto creates/replaces a browser entry even when URL is identical.
+	if (completed && intent && intent.type !== 'popstate' && !renderingTarget) {
+		const replace = intent.replace;
+		if (intent.shellTab && getTopRoute()) getTopRoute()!.shellTab = intent.shellTab;
+		intent = undefined;
+		invalidateOverlays(() => true);
+		const frame = pushRoute(href(page.url), replace);
+		if (backPending) frame.entry = 'normal';
+		if (pendingFallbackTab) frame.shellTab = pendingFallbackTab;
+		writeMarker(frame);
+		if (isShellRoute(page.url.pathname) && frame.shellTab) deps.setActiveTab(frame.shellTab);
+		backPending = false;
+		return;
+	}
+	if (actual && actual.id !== current.id) {
+		const targetId = resolveTraversal(getNavigationSnapshot(), actual.id);
+		const target = getNavigationSnapshot().records.find((frame) => frame.id === targetId);
+		if (target && target.id !== actual.id) {
+			// The original traversal has completed; no cancel/restore race with SvelteKit.
+			if (correctingFrom !== actual.id) {
+				correctingFrom = actual.id;
+				backPending = true;
+				deps.historyGo(target.position - actual.position);
+			}
 			return;
 		}
-
-		cancel();
-		void executeBackPlan(plan, pageBackFallback);
-		return;
-	}
-
-	updateTransitionRecord(fromPath, toPath, type, delta ?? undefined);
-
-	if (isShellRoute(toPath)) {
-		restoreShellTabFromHistory((tabId) => deps?.setActiveTab(tabId));
+		if (!completed && actual.kind === 'route' && actual.href !== getTopRoute()?.href) {
+			// A route replacing a shallow entry may later be traversed shallowly by the router.
+			// The public state identifies the target, but its page component still needs loading.
+			renderingTarget = actual;
+			backPending = true;
+			void Promise.resolve(deps.goto(actual.href, { replaceState: true })).catch(() => {
+				if (renderingTarget !== actual) return;
+				renderingTarget = undefined;
+				intent = undefined;
+				deps?.historyGo(current.position - actual.position);
+			});
+			return;
+		}
+		invalidateOverlays(
+			(frame) => frame.position > actual.position && frame.position <= current.position
+		);
+		if (intent?.shellTab && getTopRoute()) getTopRoute()!.shellTab = intent.shellTab;
+		moveToRecord(actual);
+		if (renderingTarget) {
+			renderingTarget = undefined;
+			writeMarker(actual);
+		}
+		correctingFrom = undefined;
+		if (actual.kind === 'route' && isShellRoute(page.url.pathname) && actual.shellTab)
+			deps.setActiveTab(actual.shellTab);
+		backPending = false;
+		intent = undefined;
+	} else if (actual?.id === current.id) {
+		// Includes returning to the original valid position after a forward tombstone.
+		correctingFrom = undefined;
+		backPending = false;
+		if (completed) intent = undefined;
+	} else if (completed) {
+		// Unknown document/session: learn only the current entry, never history.length.
+		invalidateOverlays(() => true);
+		initNavStack(href(page.url), !isShellRoute(page.url.pathname));
+		writeMarker(getTopFrame()!);
+		backPending = false;
+		intent = undefined;
 	}
 }
-
-function updateTransitionRecord(
-	fromPath: string | undefined,
-	toPath: string,
-	type: NavigationRecordType,
-	delta?: number
-): void {
-	recordNavigation(fromPath, toPath, type, delta, {
-		replace: pendingReplace,
-		shellTab: pendingShellTab
-	});
-	pendingReplace = false;
-	pendingShellTab = undefined;
-}
-
 export function onAfterNavigate(): void {
-	syncDeepLinkEntryState();
+	syncNavigationPage(true);
 }
-
-export function bindOverlayCloser(overlayId: string, close: () => void): () => void {
-	return registerOverlayCloser(overlayId, close);
+export function openOverlayHistory(
+	overlayId: string,
+	onDismiss: () => void
+): { close(): void; dispose(): void } {
+	if (!deps) return { close() {}, dispose() {} };
+	if (!ready) {
+		let canceled = false;
+		let handle: { close(): void; dispose(): void } | undefined;
+		void whenReady.then(() => {
+			if (!canceled) handle = openOverlayHistory(overlayId, onDismiss);
+		});
+		return {
+			close() {
+				canceled = true;
+				handle?.close();
+			},
+			dispose() {
+				canceled = true;
+				handle?.dispose();
+			}
+		};
+	}
+	const frame = pushOverlay(overlayId, onDismiss);
+	deps.pushState('', { ...deps.getPage().state, chronosNavigation: markerFor(frame) });
+	function remove(): void {
+		if (!frame.valid) return;
+		invalidateOverlays((candidate) => candidate.id === frame.id);
+		const current = getTopFrame();
+		if (current?.kind === 'overlay' && !current.valid && !backPending && !intent) navigateBack();
+	}
+	return { close: remove, dispose: remove };
 }
-
-export { markDeepLinkEntry, isDeepLinkEntry, syncDeepLinkEntryState, getTopRoutePathname };

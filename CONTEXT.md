@@ -125,3 +125,9 @@ Kernel events: `dynamicColor:set`, `dynamicColor:changed`, `dynamicColor:hydrate
 ## Share-link codec
 
 Canonical implementation: `@chronos/plugin-codec-share/share-link`. Slots: `import.source.tab` (`share-link`), `export.action` (`share-link`).
+
+## UI overlay port
+
+`ChronosUiController.overlayHistoryPort` is optional. `openOverlay(id, onDismiss)` returns an instance handle with idempotent `close()` / `dispose()`. All overlays use `createHistoryOverlaySync`; no port means no browser-history effects. Host wrappers inject the shared coordinator port; plugin BottomSheet/TimePicker/DateField and SchemaForm receive the controller port. System dismissal cancels drafts only. Never call confirmation callbacks from `onDismiss`.
+
+This replaces pushOverlay/closeOverlay/onPopOverlay/bindCloser and skipNextHistoryBack without deprecated aliases. Route actions inside an overlay use host navigation (plugins: `IHostNavigation`), which replaces the overlay entry on successful navigation. Closed overlays are skipped during browser forward.

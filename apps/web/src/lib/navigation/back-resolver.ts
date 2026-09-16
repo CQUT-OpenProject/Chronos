@@ -1,79 +1,36 @@
-import type { Pathname } from '$app/types';
-import {
-	findPrevRouteFrame,
-	getTopFrame,
-	getTopRoute,
-	isDeepLinkEntry,
-	popOverlay
-} from './nav-stack';
-
-export type BackFallback = { kind: 'shell'; tab?: string } | { kind: 'route'; href: Pathname };
-
+import type { NavigationSnapshot, NavFrame } from './nav-stack';
+export type BackFallback = { kind: 'shell'; tab?: string } | { kind: 'route'; href: string };
 export type BackPlan =
-	| { type: 'close-overlay'; overlayId: string }
-	| { type: 'goto-route'; pathname: string; shellTab?: string }
+	| { type: 'traverse'; targetId: string; delta: number }
 	| { type: 'fallback'; fallback: BackFallback };
-
-export function resolveBack(fallback: BackFallback): BackPlan {
-	const top = getTopFrame();
-	if (!top) return { type: 'fallback', fallback };
-
-	if (top.kind === 'overlay') {
-		return { type: 'close-overlay', overlayId: top.id };
-	}
-
-	if (isDeepLinkEntry() || !findPrevRouteFrame()) {
-		return { type: 'fallback', fallback };
-	}
-
-	const prev = findPrevRouteFrame();
-	if (!prev) return { type: 'fallback', fallback };
-
-	return {
-		type: 'goto-route',
-		pathname: prev.pathname,
-		shellTab: prev.shellTab
-	};
+export function isValidTarget(frame: Readonly<NavFrame>): boolean {
+	return frame.kind === 'route' || frame.valid;
 }
-
-export function resolvePopstateBack(
-	fromPath: string,
-	toPath: string,
-	fallback: BackFallback
-): BackPlan | 'sync' {
-	if (fromPath === toPath) {
-		const top = getTopFrame();
-		if (top?.kind === 'overlay') {
-			applyPopstateOverlayClose(top.id);
+export function resolveBack(snapshot: NavigationSnapshot, fallback: BackFallback): BackPlan {
+	const current = snapshot.records[snapshot.cursor];
+	if (current && !(current.kind === 'route' && current.entry === 'deeplink')) {
+		for (let i = snapshot.cursor - 1; i >= 0; i--) {
+			const frame = snapshot.records[i];
+			if (isValidTarget(frame))
+				return { type: 'traverse', targetId: frame.id, delta: frame.position - current.position };
 		}
-		return 'sync';
 	}
-
-	const topRoute = getTopRoute();
-	if (!topRoute) return 'sync';
-
-	if (isDeepLinkEntry()) {
-		return { type: 'fallback', fallback };
-	}
-
-	const prev = findPrevRouteFrame();
-	if (!prev) {
-		if (toPath === topRoute.pathname) return 'sync';
-		return { type: 'fallback', fallback };
-	}
-
-	if (toPath === prev.pathname) return 'sync';
-
-	return {
-		type: 'goto-route',
-		pathname: prev.pathname,
-		shellTab: prev.shellTab
-	};
+	return { type: 'fallback', fallback };
 }
-
-export function applyPopstateOverlayClose(overlayId: string): void {
-	const top = getTopFrame();
-	if (top?.kind === 'overlay' && top.id === overlayId) {
-		popOverlay();
+/** Closed overlays cannot be resurrected by browser forward. */
+export function resolveTraversal(
+	snapshot: NavigationSnapshot,
+	targetId: string
+): string | undefined {
+	const target = snapshot.records.findIndex((frame) => frame.id === targetId);
+	if (target < 0) return undefined;
+	if (isValidTarget(snapshot.records[target])) return targetId;
+	const direction = target > snapshot.cursor ? 1 : -1;
+	for (let i = target + direction; i >= 0 && i < snapshot.records.length; i += direction) {
+		if (isValidTarget(snapshot.records[i])) return snapshot.records[i].id;
 	}
+	const current = snapshot.records[snapshot.cursor];
+	if (current && isValidTarget(current)) return current.id;
+	for (let i = snapshot.cursor - 1; i >= 0; i--)
+		if (isValidTarget(snapshot.records[i])) return snapshot.records[i].id;
 }

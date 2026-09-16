@@ -1,4 +1,11 @@
 <script lang="ts">
+	import { getContext, setContext, onDestroy } from 'svelte';
+	import {
+		createHistoryOverlaySync,
+		OVERLAY_LIFECYCLE_CONTEXT,
+		type HistoryOverlaySync,
+		type OverlayHistoryPort
+	} from '../overlay/history-overlay';
 	import { DatePicker } from 'bits-ui';
 	import { getLocalTimeZone, today, type DateValue } from '@internationalized/date';
 	import {
@@ -13,6 +20,7 @@
 	import { haptic } from '../haptic/haptic';
 
 	let {
+		historyPort,
 		label,
 		value = $bindable(''),
 		id,
@@ -26,6 +34,7 @@
 		variant = 'field',
 		locale = 'zh-CN'
 	}: {
+		historyPort?: OverlayHistoryPort;
 		label: string;
 		value?: string;
 		id?: string;
@@ -47,6 +56,20 @@
 	const isSection = $derived(variant === 'section');
 
 	let open = $state(false);
+	const historySync = createHistoryOverlaySync({
+		overlayId: `date-field-${instanceId}`,
+		get port() {
+			return historyPort;
+		},
+		parent: getContext<HistoryOverlaySync | undefined>(OVERLAY_LIFECYCLE_CONTEXT),
+		setOpen: (next) => {
+			open = next;
+		}
+	});
+	setContext(OVERLAY_LIFECYCLE_CONTEXT, historySync);
+	$effect(() => historySync.syncOpenState(open));
+	onDestroy(() => historySync.dispose());
+
 	let draftIso = $state('');
 	let placeholder = $state<DateValue | undefined>(undefined);
 

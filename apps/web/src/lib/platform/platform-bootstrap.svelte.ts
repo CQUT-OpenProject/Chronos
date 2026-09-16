@@ -3,12 +3,7 @@ import { connectivity } from '$lib/platform/connectivity.svelte';
 import { onboardingController } from '$lib/client/onboarding.svelte';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
 import { initAnalytics } from '$lib/client/analytics';
-import {
-	getNavJournalDepth,
-	initNavJournal,
-	isSecondaryRoute,
-	markDeepLinkEntry
-} from '$lib/navigation';
+
 import { attachOfflineUx } from '$lib/platform/offline-ux.svelte';
 import { ensureEngineReady } from '$lib/services/app-engine';
 import { configureHostI18n } from '$lib/i18n/host-i18n.svelte';
@@ -21,7 +16,7 @@ export type PlatformBootstrapDeps = {
 };
 
 export type PlatformBootstrapController = {
-	init(pathname: string): () => void;
+	init(): () => void;
 };
 
 export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBootstrapController {
@@ -29,14 +24,10 @@ export function createPlatformBootstrap(deps: PlatformBootstrapDeps): PlatformBo
 	let disposeEffects: (() => void) | null = null;
 	let disposeOfflineUx: (() => void) | null = null;
 
-	function init(pathname: string): () => void {
+	function init(): () => void {
 		if (started) return () => {};
 		started = true;
 
-		initNavJournal(pathname);
-		if (isSecondaryRoute(pathname) && getNavJournalDepth() === 1) {
-			markDeepLinkEntry();
-		}
 		registerHyperellipse();
 		connectivity.init();
 

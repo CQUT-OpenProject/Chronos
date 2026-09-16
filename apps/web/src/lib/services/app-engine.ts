@@ -59,8 +59,8 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 		coursePresentation,
 		navigation: {
 			openCourseEditor(courseId: string) {
-				void import('$app/navigation').then(({ goto }) => {
-					void goto(`/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`);
+				void import('$lib/navigation/nav-coordinator').then(({ navigateForward }) => {
+					void navigateForward(`/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`);
 				});
 			}
 		}

@@ -17,12 +17,17 @@
 		updateTransitionDirection,
 		setupSecondaryPageViewTransition,
 		secondaryTransitionGate,
-		configureNavigateBack,
-		stampShellTabOnHistory,
+		configureNavigationCoordinator,
+		stageShellTabDeparture,
 		isShellRoute,
 		isSecondaryRoute
 	} from '$lib/navigation';
-	import { onAfterNavigate, onBeforeNavigate } from '$lib/navigation/nav-coordinator';
+	import {
+		onAfterNavigate,
+		onBeforeNavigate,
+		syncNavigationPage,
+		getPendingTraversal
+	} from '$lib/navigation/nav-coordinator';
 	import ShellRouteHost from '$lib/components/shell/ShellRouteHost.svelte';
 	import { PREVIEW_PAINT_READY_CONTEXT, TIMETABLE_PRESENTATION_CONTEXT } from '@chronos/ui-kit';
 	import { toStore } from 'svelte/store';
@@ -43,30 +48,48 @@
 	const platform = createPlatformBootstrap({ shell, timetableScreen });
 	const shellTab = createShellTabController(() => getAppController());
 
-	configureNavigateBack({
+	configureNavigationCoordinator({
 		goto: (href, opts) => goto(href, opts),
 		pushState,
 		replaceState,
-		setActiveTab: (tabId) => shellTab.setActiveTab(tabId),
-		historyBack: () => history.back()
+		getPage: () => ({ url: page.url, state: page.state }),
+		setActiveTab: (tabId) => {
+			shellTab.setActiveTab(tabId);
+			shellTab.reconcileActiveTab();
+		},
+		historyGo: (delta) => history.go(delta)
 	});
 
 	beforeNavigate((navigation) => {
 		const { from, to, type, delta } = navigation;
-		const fromPath = from?.url.pathname;
+		const traversal = getPendingTraversal();
+		const fromPath = traversal?.from ?? from?.url.pathname;
 		const toPath = to?.url.pathname;
 		if (!toPath) return;
 
 		if (fromPath && isShellRoute(fromPath) && isSecondaryRoute(toPath)) {
-			stampShellTabOnHistory(shellTab.activeTabId);
+			stageShellTabDeparture(shellTab.activeTabId);
 		}
 
-		updateTransitionDirection(fromPath, toPath, type, delta ?? undefined);
+		updateTransitionDirection(
+			fromPath,
+			toPath,
+			traversal ? 'popstate' : type,
+			traversal?.delta ?? delta ?? undefined
+		);
 		onBeforeNavigate(navigation);
 	});
 
-	afterNavigate(() => {
-		onAfterNavigate();
+	afterNavigate(({ type }) => {
+		// SvelteKit's initial enter callback runs before its public history API is ready.
+		if (type === 'enter') queueMicrotask(onAfterNavigate);
+		else onAfterNavigate();
+	});
+
+	$effect(() => {
+		void page.state;
+		void page.url;
+		syncNavigationPage();
 	});
 
 	const blockShell = $derived(onboardingController.isActive(page.url.pathname));
@@ -103,10 +126,11 @@
 	});
 
 	onMount(() => {
-		platform.init(page.url.pathname);
+		const disposePlatform = platform.init();
 		void import('$lib/components/pwa/InstallPrompt.svelte').then((module) => {
 			InstallPrompt = module.default;
 		});
+		return disposePlatform;
 	});
 </script>
 

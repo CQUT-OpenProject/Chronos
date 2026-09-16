@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { navigateForward } from '$lib/navigation';
 	import { trackEvent } from '$lib/client/analytics';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -13,8 +12,12 @@
 	function goToInstallPage() {
 		programmaticClose = true;
 		trackEvent('pwa_install_cta_click');
-		pwaInstallController.dismiss({ track: false });
-		void goto(resolve('/about/install'));
+		void navigateForward('/about/install').then(
+			() => pwaInstallController.dismiss({ track: false }),
+			() => {
+				programmaticClose = false;
+			}
+		);
 	}
 
 	// Overlay / Esc closes bypass footer buttons: count them as dismissals.

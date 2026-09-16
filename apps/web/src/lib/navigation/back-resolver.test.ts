@@ -1,67 +1,32 @@
-import { beforeEach, describe, expect, it } from 'vite-plus/test';
-import { resolveBack, resolvePopstateBack } from './back-resolver';
-import {
-	initNavStack,
-	markDeepLinkEntry,
-	popOverlay,
-	pushOverlay,
-	recordNavigation
-} from './nav-stack';
-
-describe('back-resolver', () => {
-	beforeEach(() => {
-		initNavStack('/');
-	});
-
-	it('closes the top overlay before leaving the route', () => {
-		recordNavigation('/', '/about', 'link');
-		pushOverlay('bottom-sheet');
-
-		expect(resolveBack({ kind: 'shell' })).toEqual({
-			type: 'close-overlay',
-			overlayId: 'bottom-sheet'
+import { describe, expect, it } from 'vite-plus/test';
+import { resolveBack, resolveTraversal } from './back-resolver';
+import type { NavigationSnapshot } from './nav-stack';
+describe('pure back plans', () => {
+	it('skips invalid overlays in both directions without changing its snapshot', () => {
+		const snapshot: NavigationSnapshot = {
+			records: [
+				{ kind: 'route', id: 'a', session: 's', position: 0, href: '/', entry: 'normal' },
+				{
+					kind: 'overlay',
+					id: 'b',
+					session: 's',
+					position: 1,
+					href: '/',
+					overlayId: 'sheet',
+					valid: false
+				},
+				{ kind: 'route', id: 'c', session: 's', position: 2, href: '/about', entry: 'normal' }
+			],
+			cursor: 2
+		};
+		const before = structuredClone(snapshot);
+		expect(resolveBack(snapshot, { kind: 'shell' })).toEqual({
+			type: 'traverse',
+			targetId: 'a',
+			delta: -2
 		});
-	});
-
-	it('returns goto-route for a normal secondary stack', () => {
-		recordNavigation('/', '/about', 'link');
-
-		expect(resolveBack({ kind: 'shell' })).toEqual({
-			type: 'goto-route',
-			pathname: '/',
-			shellTab: undefined
-		});
-	});
-
-	it('uses fallback for deep-link entries', () => {
-		initNavStack('/about');
-		markDeepLinkEntry();
-
-		expect(resolveBack({ kind: 'route', href: '/transfer/import' })).toEqual({
-			type: 'fallback',
-			fallback: { kind: 'route', href: '/transfer/import' }
-		});
-	});
-
-	it('syncs same-url popstate when an overlay is open', () => {
-		recordNavigation('/', '/about', 'link');
-		pushOverlay('bottom-sheet');
-
-		expect(resolvePopstateBack('/about', '/about', { kind: 'shell' })).toBe('sync');
-	});
-
-	it('syncs same-url popstate even when overlay frame was already popped', () => {
-		recordNavigation('/', '/about', 'link');
-		pushOverlay('bottom-sheet');
-		popOverlay();
-
-		expect(resolvePopstateBack('/about', '/about', { kind: 'shell' })).toBe('sync');
-	});
-
-	it('syncs popstate when browser target matches previous route', () => {
-		recordNavigation('/', '/about', 'link');
-		recordNavigation('/about', '/about/update', 'link');
-
-		expect(resolvePopstateBack('/about/update', '/about', { kind: 'shell' })).toBe('sync');
+		expect(resolveTraversal(snapshot, 'b')).toBe('a');
+		expect(resolveTraversal({ ...snapshot, cursor: 0 }, 'b')).toBe('c');
+		expect(snapshot).toEqual(before);
 	});
 });

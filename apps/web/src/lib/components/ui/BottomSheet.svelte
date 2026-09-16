@@ -35,12 +35,6 @@
 		onOpenChangeComplete?: (open: boolean) => void;
 	} = $props();
 
-	let uiSheet: UiBottomSheet | null = $state(null);
-
-	export function skipNextHistoryBack() {
-		uiSheet?.skipNextHistoryBack();
-	}
-
 	const resolvedDragDismissAria = $derived(
 		dragDismissAria ?? hostT('ui.bottomSheet.dragDismissAria')
 	);
@@ -48,7 +42,6 @@
 </script>
 
 <UiBottomSheet
-	bind:this={uiSheet}
 	bind:open
 	{title}
 	{description}

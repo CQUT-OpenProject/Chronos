@@ -1,74 +1,62 @@
 export interface OverlayHistoryPort {
-	pushOverlay(id: string): void;
-	closeOverlay(id: string): void;
-	dismissWithoutPop(id: string): void;
-	onPopOverlay(handler: () => void): () => void;
-	bindCloser?(id: string, close: () => void): () => void;
+	openOverlay(id: string, onDismiss: () => void): { close(): void; dispose(): void };
 }
-
 export interface HistoryOverlaySync {
 	syncOpenState(isOpen: boolean): void;
-	skipNextHistoryBack(): void;
 	dispose(): void;
 }
+/** Component ancestry, independent of the browser's chronological record order. */
+export const OVERLAY_LIFECYCLE_CONTEXT = Symbol('overlay-lifecycle');
+const childrenByLifecycle = new WeakMap<HistoryOverlaySync, Set<() => void>>();
 
 export function createHistoryOverlaySync(options: {
 	overlayId: string;
-	isOpen: () => boolean;
 	setOpen: (open: boolean) => void;
 	port?: OverlayHistoryPort;
+	parent?: HistoryOverlaySync;
 }): HistoryOverlaySync {
-	let historyPushed = false;
-	let closingFromPopstate = false;
-	let skipNextBack = false;
-
-	const unsubscribePop = options.port?.onPopOverlay(() => {
-		if (!options.isOpen()) return;
-		closingFromPopstate = true;
+	let handle: ReturnType<OverlayHistoryPort['openOverlay']> | undefined;
+	let disposed = false;
+	let open = false;
+	const children = new Set<() => void>();
+	const siblings = options.parent && childrenByLifecycle.get(options.parent);
+	function cancelChildren() {
+		for (const cancel of children) cancel();
+	}
+	function cancel() {
+		if (!open) return;
+		open = false;
+		const closing = handle;
+		handle = undefined;
+		closing?.dispose();
+		cancelChildren();
 		options.setOpen(false);
-		historyPushed = false;
-		closingFromPopstate = false;
-	});
-
-	return {
-		skipNextHistoryBack() {
-			skipNextBack = true;
-		},
-		syncOpenState(isOpen: boolean) {
-			if (isOpen) {
-				if (!historyPushed) {
-					if (options.port) {
-						options.port.pushOverlay(options.overlayId);
-					} else {
-						history.pushState({ chronosOverlay: options.overlayId }, '', window.location.href);
-					}
-					historyPushed = true;
-				}
-				return;
+	}
+	const sync: HistoryOverlaySync = {
+		syncOpenState(next) {
+			if (disposed || next === open) return;
+			open = next;
+			if (next) {
+				handle = options.port?.openOverlay(options.overlayId, () => {
+					handle = undefined;
+					cancel();
+				});
+			} else {
+				const closing = handle;
+				handle = undefined;
+				closing?.close();
+				cancelChildren();
 			}
-
-			if (historyPushed && !closingFromPopstate) {
-				if (skipNextBack) {
-					skipNextBack = false;
-					if (options.port) {
-						options.port.dismissWithoutPop(options.overlayId);
-					}
-				} else if (options.port) {
-					options.port.closeOverlay(options.overlayId);
-				} else {
-					history.back();
-				}
-			}
-			historyPushed = false;
 		},
 		dispose() {
-			unsubscribePop?.();
-			if (historyPushed && options.isOpen()) {
-				closingFromPopstate = true;
-				options.setOpen(false);
-				historyPushed = false;
-				closingFromPopstate = false;
-			}
+			if (disposed) return;
+			disposed = true;
+			siblings?.delete(cancel);
+			cancel();
+			children.clear();
 		}
 	};
+	childrenByLifecycle.set(sync, children);
+	siblings?.add(cancel);
+	return sync;
 }

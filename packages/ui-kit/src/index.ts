@@ -33,6 +33,7 @@ export {
 } from './overlay/bottom-sheet-drag';
 export {
 	createHistoryOverlaySync,
+	OVERLAY_LIFECYCLE_CONTEXT,
 	type HistoryOverlaySync,
 	type OverlayHistoryPort
 } from './overlay/history-overlay';

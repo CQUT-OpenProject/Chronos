@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext, setContext, onDestroy } from 'svelte';
 	import { Dialog } from 'bits-ui';
 	import type { Snippet } from 'svelte';
 	import { isReducedMotionActive } from '../motion/motion';
@@ -10,6 +11,7 @@
 	} from './bottom-sheet-drag';
 	import {
 		createHistoryOverlaySync,
+		OVERLAY_LIFECYCLE_CONTEXT,
 		type HistoryOverlaySync,
 		type OverlayHistoryPort
 	} from './history-overlay';
@@ -43,8 +45,6 @@
 		onOpenChange?: (open: boolean) => void;
 		onOpenChangeComplete?: (open: boolean) => void;
 	} = $props();
-
-	let historySync: HistoryOverlaySync | null = null;
 
 	let titleRef = $state<HTMLElement | null>(null);
 	let contentRef = $state<HTMLElement | null>(null);
@@ -204,45 +204,22 @@
 		});
 	}
 
-	export function skipNextHistoryBack() {
-		historySync?.skipNextHistoryBack();
-	}
-
-	$effect(() => {
-		if (!manageHistory || !historyPort?.bindCloser) return;
-		return historyPort.bindCloser(overlayId, () => {
-			open = false;
-		});
-	});
-
-	$effect(() => {
-		if (!manageHistory) {
-			historySync?.dispose();
-			historySync = null;
-			return;
+	const historySync = createHistoryOverlaySync({
+		get overlayId() {
+			return overlayId;
+		},
+		get port() {
+			return manageHistory ? historyPort : undefined;
+		},
+		parent: getContext<HistoryOverlaySync | undefined>(OVERLAY_LIFECYCLE_CONTEXT),
+		setOpen: (next) => {
+			open = next;
+			sheetOpen = next;
 		}
-
-		const sync = createHistoryOverlaySync({
-			overlayId,
-			port: historyPort,
-			isOpen: () => sheetOpen,
-			setOpen: (nextOpen) => {
-				open = nextOpen;
-				sheetOpen = nextOpen;
-			}
-		});
-		historySync = sync;
-		return () => {
-			sync.dispose();
-			historySync = null;
-		};
 	});
-
-	$effect(() => {
-		if (!manageHistory || !historySync) return;
-		void sheetOpen;
-		historySync.syncOpenState(sheetOpen);
-	});
+	setContext(OVERLAY_LIFECYCLE_CONTEXT, historySync);
+	$effect(() => historySync.syncOpenState(sheetOpen));
+	onDestroy(() => historySync.dispose());
 
 	function handleDialogOpenChange(next: boolean) {
 		if (next) {

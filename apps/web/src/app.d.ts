@@ -2,9 +2,7 @@
 
 declare namespace App {
 	interface PageState {
-		chronosOverlay?: string;
-		chronosEntry?: 'deeplink';
-		chronosShellTab?: string;
+		chronosNavigation?: import('./lib/navigation/nav-stack').NavigationMarker;
 	}
 }
 
