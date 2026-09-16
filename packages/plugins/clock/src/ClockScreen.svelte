@@ -134,7 +134,7 @@
 			class="mx-auto flex w-full max-w-lg flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
 		>
 			<section class="ui-section-surface ui-section-surface--comfortable">
-				<div class="ui-section-stack">
+				<div class="ui-section-stack divide-y divide-outline/10">
 					<DateField
 						label={pt('screen.field.date')}
 						bind:value={draftIso}
