@@ -154,7 +154,8 @@ describe('placeCapsules', () => {
 			courseDisplayModels: [courseModel('a', 1, 2, 3, { location: '两江校区 弘远楼A0213' })],
 			visibleDays,
 			columnWidthPx: 110,
-			expandedSlotKeys: new Set()
+			expandedSlotKeys: new Set(),
+			layoutMode: 'fixed'
 		});
 
 		expect(items).toHaveLength(1);
