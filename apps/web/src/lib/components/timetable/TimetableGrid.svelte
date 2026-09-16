@@ -732,7 +732,11 @@
 	})}
 	{@const pluginBadges = controller.courseBadges[placed.course.id] ?? []}
 	{@const badgeText = placed.badgeLabel || pluginBadges[0]?.text}
-	{@const innerWidthPx = courseCapsuleInnerWidthPx(columnWidthPx, placed.geometry.widthPercent)}
+	{@const innerWidthPx = courseCapsuleInnerWidthPx(
+		columnWidthPx,
+		placed.geometry.widthPercent,
+		visibleDayCount
+	)}
 	<button
 		type="button"
 		draggable="false"

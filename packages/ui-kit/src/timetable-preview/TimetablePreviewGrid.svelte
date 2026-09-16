@@ -299,7 +299,8 @@
 								{@const badgeText = item.badgeLabel || courseBadgesForThis[0]?.text}
 								{@const innerWidthPx = courseCapsuleInnerWidthPx(
 									columnWidthPx,
-									item.geometry.widthPercent
+									item.geometry.widthPercent,
+									visibleDayCount
 								)}
 								{#if interactive}
 									<button

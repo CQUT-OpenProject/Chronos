@@ -12,8 +12,17 @@ export type FitWidthFontParams = {
 const DEFAULT_MIN_FONT_PX = 6;
 export const COURSE_CAPSULE_PAD_X_PX = 8;
 
-export function courseCapsuleInnerWidthPx(columnWidthPx: number, widthPercent: number): number {
-	return Math.max(0, (columnWidthPx * widthPercent) / 100 - COURSE_CAPSULE_PAD_X_PX * 2);
+/**
+ * `columnWidthPx` is one day column; `widthPercent` is relative to the full grid body.
+ * Multiply by `visibleDayCount` so we do not apply the column fraction twice.
+ */
+export function courseCapsuleInnerWidthPx(
+	columnWidthPx: number,
+	widthPercent: number,
+	visibleDayCount: number
+): number {
+	const capsuleWidthPx = (columnWidthPx * widthPercent * visibleDayCount) / 100;
+	return Math.max(0, capsuleWidthPx - COURSE_CAPSULE_PAD_X_PX * 2);
 }
 
 /**
