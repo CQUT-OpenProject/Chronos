@@ -58,7 +58,7 @@
 	const currentPeriodIndex = $derived(ui?.current.currentPeriodIndex ?? null);
 	const coursePalette = $derived(resolveCoursePalette(presentation));
 	const paletteCourses = $derived(timetable?.courses ?? []);
-	const layoutMode = $derived(ui?.current.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const layoutMode = $derived(ui?.current.userPreferences?.timetableLayoutMode ?? 'compact');
 	const capsuleCornerStyle = $derived(ui?.current.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const courseBadges = $derived(ui?.current.courseBadges ?? {});
 	const hostTranslate = $derived(

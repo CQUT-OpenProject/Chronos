@@ -139,7 +139,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		visibleDays,
 		columnWidthPx,
 		expandedSlotKeys,
-		layoutMode = 'fixed',
+		layoutMode = DEFAULT_USER_PREFERENCES.timetableLayoutMode,
 		coursePalette = COURSE_PALETTE_ENTRIES,
 		paletteCourses,
 		capsuleCornerStyle = DEFAULT_USER_PREFERENCES.capsuleCornerStyle

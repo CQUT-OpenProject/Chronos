@@ -48,7 +48,7 @@
 	const displayedWeek = $derived(controller.activeWeek ?? academicWeek ?? 1);
 	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller.activeWeek ?? 1));
 	const currentPeriodIndex = $derived(controller.currentPeriodIndex);
-	const layoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const layoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'compact');
 	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const paletteCourses = $derived(timetable?.courses ?? []);
 	const courseBadges = $derived(controller.courseBadges ?? {});

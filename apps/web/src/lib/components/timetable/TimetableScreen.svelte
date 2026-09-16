@@ -29,7 +29,7 @@
 	const coursePalette = $derived(shell.appearance.coursePalette);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const dynamicColorUri = $derived(shell.state.dynamicColorUri);
-	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'compact');
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
 	);

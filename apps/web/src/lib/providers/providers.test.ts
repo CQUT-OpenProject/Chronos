@@ -165,6 +165,11 @@ describe('Web Providers', () => {
 		localStorage = new MockStorage();
 	});
 
+	it('DexieStorageProvider defaults timetableLayoutMode to compact when unset', async () => {
+		const storage = new DexieStorageProvider(db, localStorage);
+		expect((await storage.getPreferences()).timetableLayoutMode).toBe('compact');
+	});
+
 	it('DexieStorageProvider preserves timetableLayoutMode on partial preferences update', async () => {
 		const storage = new DexieStorageProvider(db, localStorage);
 		await storage.savePreferences({ timetableLayoutMode: 'compact' });

@@ -27,7 +27,8 @@ function normalizeThemeMode(raw: string | null): ThemeMode {
 function normalizeLayoutMode(raw: string | null): TimetableLayoutMode {
 	const value = raw?.trim().toLowerCase();
 	if (value === 'compact') return 'compact';
-	return 'fixed';
+	if (value === 'fixed') return 'fixed';
+	return DEFAULT_USER_PREFERENCES.timetableLayoutMode;
 }
 
 function normalizePaletteMode(raw: string | null): PaletteMode {

@@ -48,7 +48,7 @@ export function computeTimetableWeekLayout(
 		todayIso,
 		columnWidthPx = 0,
 		expandedSlotKeys = new Set<string>(),
-		layoutMode = 'fixed',
+		layoutMode = DEFAULT_USER_PREFERENCES.timetableLayoutMode,
 		capsuleCornerStyle = DEFAULT_USER_PREFERENCES.capsuleCornerStyle,
 		coursePalette = COURSE_PALETTE_ENTRIES,
 		paletteCourses,
