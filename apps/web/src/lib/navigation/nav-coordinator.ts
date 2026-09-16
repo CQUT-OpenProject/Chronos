@@ -21,7 +21,7 @@ import {
 	syncDeepLinkEntryState,
 	type NavigationRecordType
 } from './nav-stack';
-import { isSecondaryRoute, isShellRoute, toAppPathname } from './routes';
+import { isShellRoute, toAppPathname } from './routes';
 
 export type NavigationCoordinatorDeps = {
 	goto: (href: string, opts?: { replaceState?: boolean }) => void | Promise<void>;
@@ -88,7 +88,7 @@ async function executeGotoRoute(pathname: string, shellTab?: string): Promise<vo
 
 export async function executeBackPlan(
 	plan: ReturnType<typeof resolveBack>,
-	fallback: BackFallback
+	_fallback: BackFallback
 ): Promise<void> {
 	if (!deps) return;
 

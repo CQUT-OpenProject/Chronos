@@ -26,6 +26,7 @@ describe('overlay-history-port', () => {
 	});
 
 	it('exposes bindCloser on the shared port', () => {
-		expect(getOverlayHistoryPort().bindCloser).toBeTypeOf('function');
+		const port = getOverlayHistoryPort();
+		expect(typeof port.bindCloser).toBe('function');
 	});
 });

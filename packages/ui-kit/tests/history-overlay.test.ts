@@ -41,8 +41,9 @@ describe('createHistoryOverlaySync in ui-kit', () => {
 	});
 
 	it('uses the injected port when provided', () => {
+		const pushOverlay = vi.fn();
 		const port: OverlayHistoryPort = {
-			pushOverlay: vi.fn(),
+			pushOverlay,
 			closeOverlay: vi.fn(),
 			dismissWithoutPop: vi.fn(),
 			onPopOverlay: vi.fn(() => () => {})
@@ -56,14 +57,15 @@ describe('createHistoryOverlaySync in ui-kit', () => {
 		});
 
 		sync.syncOpenState(true);
-		expect(port.pushOverlay).toHaveBeenCalledWith('bottom-sheet');
+		expect(pushOverlay).toHaveBeenCalledWith('bottom-sheet');
 	});
 
 	it('closes overlay on popstate without calling history.back again', () => {
 		const popHandlers: Array<() => void> = [];
+		const closeOverlay = vi.fn();
 		const port: OverlayHistoryPort = {
 			pushOverlay: vi.fn(),
-			closeOverlay: vi.fn(),
+			closeOverlay,
 			dismissWithoutPop: vi.fn(),
 			onPopOverlay: vi.fn((handler) => {
 				popHandlers.push(handler);
@@ -83,13 +85,14 @@ describe('createHistoryOverlaySync in ui-kit', () => {
 		popHandlers.forEach((handler) => handler());
 
 		expect(setOpen).toHaveBeenCalledWith(false);
-		expect(port.closeOverlay).not.toHaveBeenCalled();
+		expect(closeOverlay).not.toHaveBeenCalled();
 	});
 
 	it('calls port.closeOverlay when overlay closes programmatically', () => {
+		const closeOverlay = vi.fn();
 		const port: OverlayHistoryPort = {
 			pushOverlay: vi.fn(),
-			closeOverlay: vi.fn(),
+			closeOverlay,
 			dismissWithoutPop: vi.fn(),
 			onPopOverlay: vi.fn(() => () => {})
 		};
@@ -105,14 +108,16 @@ describe('createHistoryOverlaySync in ui-kit', () => {
 		isOpen = true;
 		sync.syncOpenState(false);
 
-		expect(port.closeOverlay).toHaveBeenCalledWith('bottom-sheet');
+		expect(closeOverlay).toHaveBeenCalledWith('bottom-sheet');
 	});
 
 	it('skips history pop once when skipNextHistoryBack was called before close', () => {
+		const closeOverlay = vi.fn();
+		const dismissWithoutPop = vi.fn();
 		const port: OverlayHistoryPort = {
 			pushOverlay: vi.fn(),
-			closeOverlay: vi.fn(),
-			dismissWithoutPop: vi.fn(),
+			closeOverlay,
+			dismissWithoutPop,
 			onPopOverlay: vi.fn(() => () => {})
 		};
 
@@ -128,7 +133,7 @@ describe('createHistoryOverlaySync in ui-kit', () => {
 		sync.skipNextHistoryBack();
 		sync.syncOpenState(false);
 
-		expect(port.dismissWithoutPop).toHaveBeenCalledWith('bottom-sheet');
-		expect(port.closeOverlay).not.toHaveBeenCalled();
+		expect(dismissWithoutPop).toHaveBeenCalledWith('bottom-sheet');
+		expect(closeOverlay).not.toHaveBeenCalled();
 	});
 });
