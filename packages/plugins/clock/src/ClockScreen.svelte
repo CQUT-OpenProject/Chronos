@@ -65,7 +65,7 @@
 	});
 
 	const frozen = $derived(ui.current.clockFrozen);
-	const effectiveNow = $derived(pluginContext.state.now);
+	const effectiveNow = $derived(ui.current.clockNow);
 	const headerDate = $derived(formatCompactDate(partsFromDate(effectiveNow).isoDate));
 	const headerTime = $derived(
 		effectiveNow.toLocaleTimeString(locale, {
