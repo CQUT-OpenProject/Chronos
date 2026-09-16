@@ -28,8 +28,7 @@ export function resolvePluginCatalogCategory(input: {
 	if (baseType !== 'tool') return baseType ?? 'extension';
 
 	if (input.toolGroup === 'dev') return 'tool-dev';
-	if (input.toolGroup === 'utility') return 'tool-utility';
-	throw new Error('Tool plugin is missing required toolGroup');
+	return 'tool-utility';
 }
 
 export function resolveManifestCatalogCategory(

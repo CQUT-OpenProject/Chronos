@@ -28,9 +28,7 @@ describe('plugin-tags', () => {
 		expect(resolvePluginCatalogCategory({ type: 'theme' })).toBe('theme');
 	});
 
-	it('requires toolGroup for tool plugins', () => {
-		expect(() => resolvePluginCatalogCategory({ type: 'tool' })).toThrow(
-			'Tool plugin is missing required toolGroup'
-		);
+	it('defaults tool plugins without toolGroup to utility', () => {
+		expect(resolvePluginCatalogCategory({ type: 'tool' })).toBe('tool-utility');
 	});
 });
