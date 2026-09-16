@@ -3,9 +3,8 @@
 	--dynamic-tint-sidebar: rgb(255 255 255 / 0.54);
 	--dynamic-tint-grid: rgb(255 255 255 / 0.38);
 	--dynamic-tint-holiday-overlay: rgb(255 255 255 / 0.16);
-	--timetable-accent-date-fg: rgb(26 26 26);
-	--timetable-holiday-date-bg: rgb(255 66 69);
-	--timetable-holiday-date-fg: var(--timetable-accent-date-fg);
+	--timetable-holiday-date-bg: var(--color-error-container);
+	--timetable-holiday-date-fg: var(--color-on-error-container);
 	--timetable-today-date-bg: var(--color-brand);
 	--timetable-today-date-fg: var(--color-on-primary);
 }
@@ -14,6 +13,8 @@
 	--dynamic-tint-sidebar: rgb(24 24 27 / 0.72);
 	--dynamic-tint-grid: rgb(24 24 27 / 0.62);
 	--dynamic-tint-holiday-overlay: rgb(24 24 27 / 0.1);
+	--timetable-holiday-date-bg: var(--color-error);
+	--timetable-holiday-date-fg: var(--color-on-error);
 }
 
 .timetable-dynamic-tint-body {

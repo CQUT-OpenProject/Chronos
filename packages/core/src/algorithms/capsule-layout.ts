@@ -495,7 +495,7 @@ export function locationDisplayLines(
 
 function parseColor(hex: string): string {
 	const normalized = hex.trim();
-	return /^#[0-9A-Fa-f]{6}$/.test(normalized) ? normalized : '#EADDFF';
+	return /^#[0-9A-Fa-f]{6}$/.test(normalized) ? normalized : COURSE_PALETTE_ENTRIES[0]!.background;
 }
 
 function courseColors(
