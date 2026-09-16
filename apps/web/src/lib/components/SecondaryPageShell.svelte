@@ -22,7 +22,9 @@
 		children?: import('svelte').Snippet;
 	} = $props();
 
-	$effect(() => registerPageBackFallback(backFallback));
+	$effect(() => {
+		return registerPageBackFallback(backFallback);
+	});
 
 	function handleBack(event: MouseEvent) {
 		event.preventDefault();
