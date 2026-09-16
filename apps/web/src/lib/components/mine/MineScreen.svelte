@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
+	import { resolveMineSectionId } from '$lib/components/mine/mine-section-id';
 	import MineSection from '$lib/components/mine/MineSection.svelte';
 	import MineRow, { type MineIconTone } from '$lib/components/mine/MineRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchField from '$lib/components/ui/SearchField.svelte';
 	import { getAppController } from '$lib/services/app-engine';
 
-	import { DEFAULT_MINE_SECTION_ID, resolveLocalizedText } from '@chronos/core';
+	import { resolveLocalizedText } from '@chronos/core';
 	import { CodeFill } from '$lib/icons';
 	import { resolveShellIcon } from '$lib/shell/resolve-shell-icon';
 	import type { Component } from 'svelte';
@@ -50,6 +51,7 @@
 		const pluginSections = controller.getSlots('mine.section');
 		const pluginItems = controller.getSlots('mine.item');
 		const sectionMap: Record<string, SettingSection> = {};
+		const registeredSectionIds = new Set(pluginSections.map((section) => section.id));
 
 		for (const pSec of pluginSections) {
 			sectionMap[pSec.id] = {
@@ -60,7 +62,7 @@
 		}
 
 		for (const item of pluginItems) {
-			const targetSectionId = item.sectionId ?? DEFAULT_MINE_SECTION_ID;
+			const targetSectionId = resolveMineSectionId(item.sectionId, registeredSectionIds);
 			let section = sectionMap[targetSectionId];
 			if (!section) {
 				section = {
