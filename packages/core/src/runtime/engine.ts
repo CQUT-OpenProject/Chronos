@@ -192,6 +192,10 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		return this.env.navigation;
 	}
 
+	get coursePresentation(): import('../types/services').ICoursePresentationService | undefined {
+		return this.env.coursePresentation;
+	}
+
 	get locale(): string {
 		return this._locale;
 	}

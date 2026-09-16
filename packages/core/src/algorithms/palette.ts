@@ -124,3 +124,18 @@ export function assignCourseDisplayColors(
 
 	return assigned;
 }
+
+export function buildCoursePaintLookup(
+	courses: { name: string }[],
+	palette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
+): Map<string, CoursePaletteEntry> {
+	return assignCourseDisplayColors(courses, palette);
+}
+
+export function lookupCoursePaint(
+	lookup: ReadonlyMap<string, CoursePaletteEntry>,
+	course: { name: string },
+	palette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
+): CoursePaletteEntry {
+	return lookup.get(normalizedCourseName(course.name)) ?? resolveCoursePaint(course, palette);
+}

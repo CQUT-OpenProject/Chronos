@@ -1,3 +1,4 @@
+import type { CoursePaletteEntry } from '../algorithms/palette';
 import type { Timetable } from '../domain/timetable';
 import type { UserPreferences } from '../domain/preferences';
 import type { CourseQueryFilter, CourseQueryHit } from './course-query';
@@ -122,7 +123,21 @@ export interface IHostNavigation {
 }
 export const IHostNavigation = createServiceIdentifier<IHostNavigation>('hostNavigation');
 
-// 7. Host error capture port (optional — global error / rejection / console.error)
+// 7. Host course presentation port (optional — palette + per-timetable paint assignment)
+export interface ICoursePresentationService {
+	getCoursePalette(): readonly CoursePaletteEntry[];
+	resolveCoursePaintsForTimetable(
+		timetableId: string
+	): Promise<ReadonlyMap<string, CoursePaletteEntry>>;
+	resolveCoursePaint(input: {
+		timetableId: string;
+		course: { name: string };
+	}): Promise<CoursePaletteEntry>;
+}
+export const ICoursePresentationService =
+	createServiceIdentifier<ICoursePresentationService>('coursePresentation');
+
+// 8. Host error capture port (optional — global error / rejection / console.error)
 export type ErrorCaptureSource = 'error' | 'unhandledrejection' | 'console';
 
 export interface CapturedError {

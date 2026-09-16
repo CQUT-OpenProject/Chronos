@@ -146,4 +146,5 @@ export interface ChronosEvents {
 	'dynamicColor:set': { blob: Blob | null };
 	'dynamicColor:changed': { uri: string | null };
 	'dynamicColor:hydrate': void;
+	'coursePalette:changed': void;
 }
