@@ -1,4 +1,5 @@
 import type { ChronosContext, ChronosPlugin, PluginCategory } from '../types/context';
+import type { ToolGroup } from '../types/official-plugins';
 import type { ConfigSchema } from '../schema/schema';
 import type { PluginMessageCatalog } from '../i18n/i18n-catalog';
 
@@ -11,6 +12,7 @@ export interface DefineChronosPluginOptions<Config extends object = Record<strin
 	readonly descriptionKey?: string;
 	readonly version?: string;
 	readonly category?: PluginCategory;
+	readonly toolGroup?: ToolGroup;
 	readonly order?: number;
 	readonly author?: string;
 	readonly homepage?: string;
@@ -54,6 +56,7 @@ export function defineChronosPlugin<Config extends object = Record<string, unkno
 					resolveMessageFallback(options.messages, options.descriptionKey!)
 			: undefined,
 		category: options.category,
+		toolGroup: options.toolGroup,
 		order: options.order,
 		author: options.author,
 		homepage: options.homepage,

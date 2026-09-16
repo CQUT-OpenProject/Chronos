@@ -3,9 +3,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-export type OfficialPluginDef = {
+type OfficialPluginBase = {
 	id: string;
-	type: 'theme' | 'tool';
 	name: Record<string, string>;
 	description: Record<string, string>;
 	/** packages/plugins source directory */
@@ -16,6 +15,10 @@ export type OfficialPluginDef = {
 	/** JSON-only assets skip self-contained bundle.css verification (default: has entry) */
 	tailwindSource?: boolean;
 };
+
+export type OfficialPluginDef =
+	| (OfficialPluginBase & { type: 'theme' })
+	| (OfficialPluginBase & { type: 'tool'; toolGroup: 'utility' | 'dev' });
 
 export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 	{
@@ -41,6 +44,7 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 	{
 		id: 'tool-wallpaper',
 		type: 'tool',
+		toolGroup: 'utility',
 		sourceDir: 'wallpaper',
 		name: { 'zh-CN': '自定义壁纸', en: 'Custom Wallpaper' },
 		description: {
@@ -52,6 +56,7 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 	{
 		id: 'tool-qrcode',
 		type: 'tool',
+		toolGroup: 'utility',
 		sourceDir: 'codec-qrcode',
 		name: { 'zh-CN': '二维码', en: 'QR Code' },
 		description: {
@@ -63,6 +68,7 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 	{
 		id: 'tool-calendar-holidays',
 		type: 'tool',
+		toolGroup: 'utility',
 		sourceDir: 'calendar-holidays',
 		name: { 'zh-CN': '法定节假日', en: 'Public Holidays' },
 		description: {
@@ -74,6 +80,7 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 	{
 		id: 'tool-today',
 		type: 'tool',
+		toolGroup: 'utility',
 		sourceDir: 'today',
 		name: { 'zh-CN': '今日', en: 'Today' },
 		description: {
@@ -85,6 +92,7 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 	{
 		id: 'tool-error-log',
 		type: 'tool',
+		toolGroup: 'dev',
 		sourceDir: 'error-log',
 		name: { 'zh-CN': '错误日志', en: 'Error Log' },
 		description: {

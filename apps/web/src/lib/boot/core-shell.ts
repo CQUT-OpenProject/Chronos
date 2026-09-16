@@ -158,6 +158,7 @@ export const coreShellPlugin = defineChronosPlugin({
 	descriptionKey: 'plugin.description',
 	version: 'builtin',
 	category: 'tool',
+	toolGroup: 'utility',
 	order: 0,
 	apply(ctx, t) {
 		registerCoreShellSlots(ctx, t);

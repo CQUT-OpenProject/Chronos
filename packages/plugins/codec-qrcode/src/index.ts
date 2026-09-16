@@ -181,6 +181,7 @@ export function createQrCodecPlugin(options: CreateQrCodecPluginOptions = {}) {
 		nameKey: 'plugin.name',
 		descriptionKey: 'plugin.description',
 		category: 'tool',
+		toolGroup: 'utility',
 		order: 35,
 		author: 'CQUT OpenProject',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',

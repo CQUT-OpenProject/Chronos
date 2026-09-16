@@ -9,6 +9,7 @@ import type {
 	ImportTabSlotContribution
 } from './slots';
 import type { ConfigSchema } from '../schema/schema';
+import type { ToolGroup } from './official-plugins';
 
 /** Plugin category classification */
 export type PluginCategory = 'source' | 'parser' | 'codec' | 'theme' | 'tool';
@@ -21,6 +22,8 @@ export interface ChronosPlugin<Config extends object = Record<string, unknown>> 
 	readonly description?: LocalizedText;
 	/** Domain category of the plugin */
 	readonly category?: PluginCategory;
+	/** Required when category is tool — catalog subgroup in plugin center. */
+	readonly toolGroup?: ToolGroup;
 	/** Display and initialization priority (built-in sources: 10-90, user extensions: 100+) */
 	readonly order?: number;
 	/** Author or maintainer information */

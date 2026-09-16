@@ -25,6 +25,9 @@ export function buildManifestForPlugin(
 		type: plugin.type,
 		bundleFormat: 'esm'
 	};
+	if (plugin.type === 'tool') {
+		manifest.toolGroup = plugin.toolGroup;
+	}
 
 	applyAssetManifestFields(manifest, plugin.id, assets, (fileName) =>
 		pluginAssetUrl(plugin.id, fileName)
@@ -92,6 +95,9 @@ export function buildDevManifestForPlugin(
 		bundleFormat: 'esm',
 		devRev: rev
 	};
+	if (plugin.type === 'tool') {
+		manifest.toolGroup = plugin.toolGroup;
+	}
 
 	applyAssetManifestFields(manifest, plugin.id, assets, (fileName) =>
 		pluginDevAssetUrl(plugin.id, rev, fileName)

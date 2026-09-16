@@ -13,6 +13,7 @@ describe('buildManifestForPlugin', () => {
 			{
 				id: 'tool-today',
 				type: 'tool',
+				toolGroup: 'utility',
 				sourceDir: 'today',
 				name: { 'zh-CN': '今日', en: 'Today' },
 				description: { 'zh-CN': 'd', en: 'd' }
@@ -28,6 +29,36 @@ describe('buildManifestForPlugin', () => {
 		expect(manifest.cssSha256).toBe(createHash('sha256').update(cssCode).digest('hex'));
 	});
 
+	it('includes toolGroup for utility and dev tool plugins', () => {
+		const utilityManifest = buildManifestForPlugin(
+			{
+				id: 'tool-today',
+				type: 'tool',
+				toolGroup: 'utility',
+				sourceDir: 'today',
+				name: { 'zh-CN': '今日', en: 'Today' },
+				description: { 'zh-CN': 'd', en: 'd' }
+			},
+			{ code: 'export default {}', cssCode: null, colorsJson: null, iconThemeJson: null },
+			releaseVersion
+		);
+		const devManifest = buildManifestForPlugin(
+			{
+				id: 'tool-clock',
+				type: 'tool',
+				toolGroup: 'dev',
+				sourceDir: 'clock',
+				name: { 'zh-CN': '自定义时间', en: 'Custom Date & Time' },
+				description: { 'zh-CN': 'd', en: 'd' }
+			},
+			{ code: 'export default {}', cssCode: null, colorsJson: null, iconThemeJson: null },
+			releaseVersion
+		);
+
+		expect(utilityManifest.toolGroup).toBe('utility');
+		expect(devManifest.toolGroup).toBe('dev');
+	});
+
 	it('includes rev-scoped URLs for dev manifests', () => {
 		const code = 'export default { id: "tool-today" };';
 
@@ -35,6 +66,7 @@ describe('buildManifestForPlugin', () => {
 			{
 				id: 'tool-today',
 				type: 'tool',
+				toolGroup: 'utility',
 				sourceDir: 'today',
 				name: { 'zh-CN': '今日', en: 'Today' },
 				description: { 'zh-CN': 'd', en: 'd' }
@@ -49,6 +81,7 @@ describe('buildManifestForPlugin', () => {
 			{
 				id: 'tool-today',
 				type: 'tool',
+				toolGroup: 'utility',
 				sourceDir: 'today',
 				name: { 'zh-CN': '今日', en: 'Today' },
 				description: { 'zh-CN': 'd', en: 'd' }

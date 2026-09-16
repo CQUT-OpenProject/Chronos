@@ -21,7 +21,10 @@
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { groupCatalogManifestsByCategory } from '$lib/services/official-plugins/catalog-sort';
-	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
+	import {
+		getPluginCategoryMeta,
+		resolvePluginCatalogCategory
+	} from '$lib/services/official-plugins/plugin-tags';
 	import {
 		assertValidManifestInstallUrl,
 		describeInstallSource
@@ -312,7 +315,12 @@
 				{#each profileBuiltinPlugins as plugin (plugin.id)}
 					{@const name = resolveManifestText(plugin.name)}
 					{@const desc = resolveManifestText(plugin.description)}
-					{@const meta = getPluginCategoryMeta(plugin.category)}
+					{@const meta = getPluginCategoryMeta(
+						resolvePluginCatalogCategory({
+							category: plugin.category,
+							toolGroup: plugin.toolGroup
+						})
+					)}
 					<div
 						class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
 					>
@@ -427,7 +435,7 @@
 					{#each installedRecords as record (record.manifest.id)}
 						{@const name = resolveManifestText(record.manifest.name)}
 						{@const desc = resolveManifestText(record.manifest.description)}
-						{@const meta = getPluginCategoryMeta(record.manifest.type)}
+						{@const meta = getPluginCategoryMeta(resolvePluginCatalogCategory(record.manifest))}
 						{@const isBusy = operatingPluginId === record.manifest.id}
 						<div
 							class={[

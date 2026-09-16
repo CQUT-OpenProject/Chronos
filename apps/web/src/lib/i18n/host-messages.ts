@@ -139,7 +139,8 @@ const zhCn = {
 	'pluginTags.source': '数据源',
 	'pluginTags.codec': '编解码',
 	'pluginTags.exporter': '导出器',
-	'pluginTags.tool': '工具',
+	'pluginTags.toolUtility': '实用工具',
+	'pluginTags.toolDev': '开发工具',
 	'pluginTags.extension': '扩展',
 
 	// transfer
@@ -709,7 +710,8 @@ const en = {
 	'pluginTags.source': 'Data source',
 	'pluginTags.codec': 'Codec',
 	'pluginTags.exporter': 'Exporter',
-	'pluginTags.tool': 'Tool',
+	'pluginTags.toolUtility': 'Utility',
+	'pluginTags.toolDev': 'Developer',
 	'pluginTags.extension': 'Extension',
 
 	// transfer

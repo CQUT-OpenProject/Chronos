@@ -68,6 +68,7 @@ export function createWallpaperPlugin(options: CreateWallpaperPluginOptions = {}
 		nameKey: 'plugin.name',
 		descriptionKey: 'plugin.description',
 		category: 'tool',
+		toolGroup: 'utility',
 		order: 40,
 		author: 'Chronos Community',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',
