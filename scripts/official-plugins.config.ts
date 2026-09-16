@@ -100,6 +100,18 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 			en: 'Capture unhandled errors and console.error'
 		},
 		entry: resolve(root, 'packages/plugins/error-log/bundle/entry.ts')
+	},
+	{
+		id: 'tool-clock',
+		type: 'tool',
+		toolGroup: 'dev',
+		sourceDir: 'clock',
+		name: { 'zh-CN': '自定义时间', en: 'Custom Date & Time' },
+		description: {
+			'zh-CN': '冻结课表当前日期和时间，用于预览任意时刻的课程',
+			en: 'Freeze the app clock to preview courses at any date and time'
+		},
+		entry: resolve(root, 'packages/plugins/clock/bundle/entry.ts')
 	}
 ];
 

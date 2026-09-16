@@ -15,7 +15,8 @@ import {
 	Today,
 	WallpaperFill,
 	CodeFill,
-	History
+	History,
+	ScheduleFill
 } from '$lib/icons';
 import type { Component } from 'svelte';
 
@@ -37,5 +38,6 @@ export const SHELL_ICON_MAP = {
 	today: Today,
 	'calendar-today': CalendarTodayFill,
 	event: EventFill,
-	history: History
+	history: History,
+	schedule: ScheduleFill
 } as const satisfies Record<string, Component<{ class?: string }>>;
