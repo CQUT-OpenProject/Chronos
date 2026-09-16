@@ -41,6 +41,7 @@ export class ReactiveChronosController implements ChronosUiController {
 	// Slot reactivity version signal (increments on slot changes or locale switches)
 	slotVersion = $state<number>(0);
 	courseBadges = $state<Record<string, CourseBadge[]>>({});
+	coursePaletteRevision = $state<number>(0);
 
 	constructor(engine: ChronosEngine) {
 		this.engine = engine;
@@ -125,6 +126,10 @@ export class ReactiveChronosController implements ChronosUiController {
 			this.engine.on('plugin:unloaded', () => {
 				this.slotVersion++;
 				this.pushSnapshot();
+			}),
+			this.engine.on('coursePalette:changed', () => {
+				this.coursePaletteRevision++;
+				this.pushSnapshot();
 			})
 		);
 	}
@@ -185,7 +190,8 @@ export class ReactiveChronosController implements ChronosUiController {
 			clockNow: this.clockNow,
 			clockTodayIso: this.clockTodayIso,
 			slotVersion: this.slotVersion,
-			courseBadges: this.courseBadges
+			courseBadges: this.courseBadges,
+			coursePaletteRevision: this.coursePaletteRevision
 		};
 	}
 

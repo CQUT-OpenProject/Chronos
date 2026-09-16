@@ -2,7 +2,13 @@ import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { applyActiveTheme } from '$lib/appearance/apply-active-theme';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
-import { getAppController, getAppEngine, resetAppToInitialState } from '$lib/services/app-engine';
+import {
+	getAppController,
+	getAppEngine,
+	getSharedCoursePaletteRef,
+	notifyCoursePaletteChanged,
+	resetAppToInitialState
+} from '$lib/services/app-engine';
 import type {
 	CapsuleCornerStyle,
 	PaletteMode,
@@ -24,7 +30,7 @@ export function createAppShell() {
 	let dynamicColorCleanup: (() => void) | null = null;
 	let disposeAppearanceEffects: (() => void) | null = null;
 	let dynamicColorUri = $state<string | null>(null);
-	const appearance = createAppearance();
+	const appearance = createAppearance(getSharedCoursePaletteRef(), notifyCoursePaletteChanged);
 	const controller = getAppController();
 	const engine = getAppEngine();
 

@@ -24,6 +24,7 @@ export type ChronosUiSnapshot = {
 	clockTodayIso: string;
 	slotVersion: number;
 	courseBadges: Record<string, CourseBadge[]>;
+	coursePaletteRevision: number;
 };
 
 export interface ChronosUiController extends Disposable {
