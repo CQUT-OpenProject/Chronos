@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { createHostTimePickerLabels } from '$lib/components/ui/host-form-labels';
+	import { getOverlayHistoryPort } from '$lib/navigation/overlay-history-port';
 	import {
 		TimePicker as UiTimePicker,
 		type TimePickerLabels,
 		type TimeValue
 	} from '@chronos/ui-kit';
+
+	const historyPort = getOverlayHistoryPort();
 
 	let {
 		label,
@@ -51,4 +54,5 @@
 	{variant}
 	labels={resolvedLabels}
 	sheetDragDismissAria={resolvedSheetDragDismissAria}
+	{historyPort}
 />

@@ -13,12 +13,18 @@ import type {
 import { todayIsoDate } from '@chronos/core';
 import { writable, type Readable, type Writable } from 'svelte/store';
 import type { ChronosUiController, ChronosUiSnapshot } from './chronos-ui-controller';
+import type { OverlayHistoryPort } from '../overlay/history-overlay';
+
+export type ReactiveChronosControllerOptions = {
+	overlayHistoryPort?: OverlayHistoryPort;
+};
 
 /**
  * ReactiveChronosController serves as the Svelte 5 Runes reactive bridge
  * connecting the headless ChronosEngine to UI components.
  */
 export class ReactiveChronosController implements ChronosUiController {
+	readonly overlayHistoryPort?: OverlayHistoryPort;
 	readonly snapshot: Readable<ChronosUiSnapshot>;
 	private readonly snapshotStore: Writable<ChronosUiSnapshot>;
 	private engine: ChronosEngine;
@@ -44,7 +50,8 @@ export class ReactiveChronosController implements ChronosUiController {
 	courseBadges = $state<Record<string, CourseBadge[]>>({});
 	coursePaletteRevision = $state<number>(0);
 
-	constructor(engine: ChronosEngine) {
+	constructor(engine: ChronosEngine, options: ReactiveChronosControllerOptions = {}) {
+		this.overlayHistoryPort = options.overlayHistoryPort;
 		this.engine = engine;
 		this.snapshotStore = writable(this.readSnapshot());
 		this.snapshot = this.snapshotStore;

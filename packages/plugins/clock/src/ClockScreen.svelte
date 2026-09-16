@@ -151,6 +151,7 @@
 						labels={timePickerLabels}
 						sheetDragDismissAria={pt('screen.field.time.sheetDragDismiss')}
 						idPrefix="clock-time"
+						historyPort={controller.overlayHistoryPort}
 					/>
 				</div>
 			</section>

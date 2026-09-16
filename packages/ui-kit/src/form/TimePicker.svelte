@@ -10,6 +10,7 @@
 		type TimePickerLabels,
 		type TimeValue
 	} from './time-wheel-utils';
+	import type { OverlayHistoryPort } from '../overlay/history-overlay';
 
 	let {
 		label,
@@ -22,7 +23,10 @@
 		description,
 		variant = 'field',
 		labels = DEFAULT_TIME_PICKER_LABELS,
-		sheetDragDismissAria = '向下拖动关闭'
+		sheetDragDismissAria = '向下拖动关闭',
+		historyPort,
+		manageHistory,
+		overlayId
 	}: {
 		label: string;
 		value?: TimeValue;
@@ -35,12 +39,17 @@
 		variant?: 'field' | 'section';
 		labels?: TimePickerLabels;
 		sheetDragDismissAria?: string;
+		historyPort?: OverlayHistoryPort;
+		manageHistory?: boolean;
+		overlayId?: string;
 	} = $props();
 
 	const instanceId = $props.id();
 	const fieldId = $derived(id ?? instanceId);
 	const labelId = $derived(`${fieldId}-label`);
 	const resolvedIdPrefix = $derived(idPrefix ?? fieldId);
+	const resolvedOverlayId = $derived(overlayId ?? `time-picker-${instanceId}`);
+	const resolvedManageHistory = $derived(manageHistory ?? historyPort != null);
 	const isSection = $derived(variant === 'section');
 
 	let open = $state(false);
@@ -123,7 +132,14 @@
 	</div>
 </div>
 
-<BottomSheet bind:open title={label} dragDismissAria={sheetDragDismissAria} manageHistory={false}>
+<BottomSheet
+	bind:open
+	title={label}
+	dragDismissAria={sheetDragDismissAria}
+	manageHistory={resolvedManageHistory}
+	overlayId={resolvedOverlayId}
+	{historyPort}
+>
 	<div class="flex flex-col gap-3 px-4 pt-1 pb-2">
 		<TimeWheel
 			bind:this={timeWheel}

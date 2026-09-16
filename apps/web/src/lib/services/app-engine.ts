@@ -2,6 +2,7 @@ import { ChronosEngine, ProfileManager, DEFAULT_VISUAL_THEME_ID } from '@chronos
 import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
+import { getOverlayHistoryPort } from '$lib/navigation/overlay-history-port';
 import { resolveActiveProfile } from '$lib/boot/profile-registry';
 import { resolveBuiltinPlugin, resolveProfileBuiltinPlugins } from '$lib/boot/profile-bootstrap';
 import { EAGER_BUILTIN_PLUGIN_IDS } from '$lib/profile-codegen/profile-definitions';
@@ -189,7 +190,9 @@ export { getSharedCoursePaletteRef, notifyCoursePaletteChanged };
 export function getAppController(options?: WebProviderOptions): ReactiveChronosController {
 	if (!sharedController) {
 		const engine = getAppEngine(options);
-		sharedController = new ReactiveChronosController(engine);
+		sharedController = new ReactiveChronosController(engine, {
+			overlayHistoryPort: getOverlayHistoryPort()
+		});
 	}
 	return sharedController;
 }
