@@ -7,6 +7,7 @@ import {
 	PALETTE_MODE_VIBRANT
 } from '../domain/preferences';
 import { DEFAULT_VISUAL_THEME_ID, HOST_DEFAULT_ICON_THEME_ID } from '../theme/theme-defaults';
+import { todayIsoDate } from '../algorithms/date';
 import type { ChronosEnv } from '../types/env';
 import type { Disposable } from '../types/services';
 import type { ChronosPlugin } from '../types/context';
@@ -217,6 +218,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	get state() {
+		const now = this.timeKeeper.now();
 		return {
 			currentTimetable: this._currentTimetable,
 			timetables: this._timetables,
@@ -224,7 +226,10 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			currentPeriodIndex: this._currentPeriodIndex,
 			activeThemeId: this._activeThemeId,
 			activeIconThemeId: this.resolveActiveIconThemeId(),
-			userPreferences: this._userPreferences
+			userPreferences: this._userPreferences,
+			now,
+			todayIso: todayIsoDate(now),
+			clockFrozen: this.timeKeeper.isFrozen()
 		};
 	}
 
@@ -241,7 +246,8 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			setTheme: this.setTheme.bind(this),
 			updatePreferences: this.updatePreferences.bind(this),
 			revertToDefaultThemes: this.revertToDefaultThemes.bind(this),
-			notify: this.notify.bind(this)
+			notify: this.notify.bind(this),
+			setVirtualNow: this.setVirtualNow.bind(this)
 		};
 	}
 
@@ -258,7 +264,15 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		await this.storageSync.clearAllData();
 	}
 
-	updateTime(now = new Date()): void {
+	now(): Date {
+		return this.timeKeeper.now();
+	}
+
+	setVirtualNow(now: Date | null): void {
+		this.timeKeeper.setVirtualNow(now);
+	}
+
+	updateTime(now?: Date): void {
 		this.timeKeeper.updateTime(now);
 	}
 

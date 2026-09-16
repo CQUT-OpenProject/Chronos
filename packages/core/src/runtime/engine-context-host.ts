@@ -27,6 +27,9 @@ export interface EngineContextHost {
 		readonly activeThemeId: string;
 		readonly activeIconThemeId: string;
 		readonly userPreferences: Readonly<UserPreferences>;
+		readonly now: Date;
+		readonly todayIso: string;
+		readonly clockFrozen: boolean;
 	};
 	readonly actions: {
 		createTimetable(name: string, config?: Partial<AcademicConfig>): Promise<Timetable>;
@@ -44,5 +47,6 @@ export interface EngineContextHost {
 		updatePreferences(patch: Partial<UserPreferences>): Promise<void>;
 		revertToDefaultThemes(): Promise<void>;
 		notify(message: string, type?: 'info' | 'warn' | 'error'): void;
+		setVirtualNow(now: Date | null): void;
 	};
 }

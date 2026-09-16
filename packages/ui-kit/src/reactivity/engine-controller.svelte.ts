@@ -37,6 +37,7 @@ export class ReactiveChronosController implements ChronosUiController {
 	currentLocale = $state<string>('zh-cn');
 	clockNow = $state<Date>(new Date());
 	clockTodayIso = $state<string>(todayIsoDate());
+	clockFrozen = $state(false);
 
 	// Slot reactivity version signal (increments on slot changes or locale switches)
 	slotVersion = $state<number>(0);
@@ -84,17 +85,20 @@ export class ReactiveChronosController implements ChronosUiController {
 					currentWeek,
 					currentPeriod,
 					now,
-					todayIso
+					todayIso,
+					frozen
 				}: {
 					currentWeek: number;
 					currentPeriod: number | null;
 					now: Date;
 					todayIso: string;
+					frozen: boolean;
 				}) => {
 					this.activeWeek = currentWeek;
 					this.currentPeriodIndex = currentPeriod;
 					this.clockNow = now;
 					this.clockTodayIso = todayIso;
+					this.clockFrozen = frozen;
 					this.pushSnapshot();
 				}
 			),
@@ -189,6 +193,7 @@ export class ReactiveChronosController implements ChronosUiController {
 			currentLocale: this.currentLocale,
 			clockNow: this.clockNow,
 			clockTodayIso: this.clockTodayIso,
+			clockFrozen: this.clockFrozen,
 			slotVersion: this.slotVersion,
 			courseBadges: this.courseBadges,
 			coursePaletteRevision: this.coursePaletteRevision
@@ -204,8 +209,9 @@ export class ReactiveChronosController implements ChronosUiController {
 		this.activeIconThemeId = this.engine.state.activeIconThemeId;
 		this.userPreferences = this.engine.state.userPreferences;
 		this.currentLocale = this.engine.locale;
-		this.clockNow = new Date();
-		this.clockTodayIso = todayIsoDate();
+		this.clockNow = this.engine.now();
+		this.clockTodayIso = todayIsoDate(this.clockNow);
+		this.clockFrozen = this.engine.state.clockFrozen;
 		this.courseBadges = this.engine.badges.getAll();
 		this.slotVersion++;
 		this.pushSnapshot();

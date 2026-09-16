@@ -22,6 +22,7 @@ export type ChronosUiSnapshot = {
 	currentLocale: string;
 	clockNow: Date;
 	clockTodayIso: string;
+	clockFrozen: boolean;
 	slotVersion: number;
 	courseBadges: Record<string, CourseBadge[]>;
 	coursePaletteRevision: number;

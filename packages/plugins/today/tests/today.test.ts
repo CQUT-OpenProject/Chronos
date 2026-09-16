@@ -70,7 +70,8 @@ describe('today plugin', () => {
 			todayIso: '2026-03-02',
 			now: new Date('2026-03-02T10:00:00'),
 			currentWeek: 1,
-			currentPeriod: 1
+			currentPeriod: 1,
+			frozen: false
 		});
 
 		expect(screen.courseEntries).toEqual([]);

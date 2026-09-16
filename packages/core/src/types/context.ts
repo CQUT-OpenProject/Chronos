@@ -75,6 +75,9 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 		readonly activeThemeId: string;
 		readonly activeIconThemeId: string;
 		readonly userPreferences: Readonly<UserPreferences>;
+		readonly now: Date;
+		readonly todayIso: string;
+		readonly clockFrozen: boolean;
 	};
 
 	/** Domain action dispatcher */
@@ -96,6 +99,7 @@ export interface ChronosContext<Config extends object = Record<string, unknown>>
 		updatePreferences(patch: Partial<UserPreferences>): Promise<void>;
 		revertToDefaultThemes(): Promise<void>;
 		notify(message: string, type?: 'info' | 'warn' | 'error'): void;
+		setVirtualNow(now: Date | null): void;
 	};
 
 	/** Declarative hierarchical slot registration (auto-tracked and revoked on unload) */
@@ -134,6 +138,7 @@ export interface ChronosEvents {
 		currentPeriod: number | null;
 		now: Date;
 		todayIso: string;
+		frozen: boolean;
 	};
 	'theme:changed': { themeId: string };
 	'iconTheme:changed': { iconThemeId: string };

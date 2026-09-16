@@ -13,6 +13,7 @@ import type { EventPipeline } from '../event-pipeline';
 /** Manages academic calendar time ticks and day-boundary scheduling. */
 export class EngineTimeKeeper {
 	private dayClock: DayClockHandle | null = null;
+	private frozenNow: Date | null = null;
 	private readonly calendarService = new AcademicCalendarService();
 
 	constructor(
@@ -22,8 +23,29 @@ export class EngineTimeKeeper {
 		private readonly setCurrentPeriodIndex: (index: number | null) => void
 	) {}
 
+	now(): Date {
+		return this.frozenNow ? new Date(this.frozenNow.getTime()) : new Date();
+	}
+
+	isFrozen(): boolean {
+		return this.frozenNow !== null;
+	}
+
+	setVirtualNow(now: Date | null): void {
+		this.frozenNow = now ? new Date(now.getTime()) : null;
+		if (this.frozenNow) {
+			this.dayClock?.dispose();
+			this.dayClock = null;
+		} else {
+			this.start();
+		}
+		this.updateTime();
+	}
+
 	start(): void {
 		this.dayClock?.dispose();
+		this.dayClock = null;
+		if (this.frozenNow) return;
 		this.dayClock = createDayClock({
 			getPeriodTimes: () => this.getCurrentTimetable()?.academicConfig.periodTimes ?? [],
 			onMidnight: () => {
@@ -39,7 +61,7 @@ export class EngineTimeKeeper {
 		this.dayClock?.reschedule();
 	}
 
-	updateTime(now = new Date()): void {
+	updateTime(now = this.now()): void {
 		const todayIso = todayIsoDate(now);
 		const academicConfig = this.getCurrentTimetable()?.academicConfig;
 
@@ -63,7 +85,8 @@ export class EngineTimeKeeper {
 			currentWeek,
 			currentPeriod,
 			now,
-			todayIso
+			todayIso,
+			frozen: this.frozenNow !== null
 		});
 	}
 
