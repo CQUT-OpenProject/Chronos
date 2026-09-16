@@ -13,9 +13,7 @@
 		AcademicCalendarService,
 		COURSE_PALETTE_ENTRIES,
 		formatCompactDate,
-		IHostNavigation,
-		ICoursePresentationService,
-		lookupCoursePaint
+		IHostNavigation
 	} from '@chronos/core';
 	import { TODAY_MESSAGES } from './messages';
 	import { TODAY_PLUGIN_ID } from './constants';
@@ -44,19 +42,6 @@
 	const academicWeek = $derived(
 		timetable ? calendarService.calculateAcademicWeek(todayIso, timetable.academicConfig) : 1
 	);
-	const coursePalette = $derived.by(() => {
-		void ui.current.coursePaletteRevision;
-		try {
-			return (
-				controller
-					.getPluginContext(pluginId)
-					.tryService(ICoursePresentationService)
-					?.getCoursePalette() ?? COURSE_PALETTE_ENTRIES
-			);
-		} catch {
-			return COURSE_PALETTE_ENTRIES;
-		}
-	});
 	const scopeSegments = $derived([
 		{ value: 'active' as const, label: pt('screen.scope.active') },
 		{ value: 'all' as const, label: pt('screen.scope.all') }
@@ -77,9 +62,7 @@
 
 	function resolvePaint(hit: (typeof screen.courseEntries)[number]['hit']) {
 		const key = coursePaintKey(hit.timetableId, hit.course.name);
-		const assigned = screen.paintByCourseKey.get(key);
-		if (assigned) return assigned;
-		return lookupCoursePaint(screen.paintByCourseKey, hit.course, coursePalette);
+		return screen.paintByCourseKey.get(key) ?? COURSE_PALETTE_ENTRIES[0]!;
 	}
 
 	const courseEditorNavigation = $derived.by(() => {
