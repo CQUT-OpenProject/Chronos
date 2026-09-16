@@ -16,12 +16,11 @@
 		validatePeriodTimes,
 		type PeriodProblem
 	} from '@chronos/core';
-	import { formatTimeValue, parseTimeValue, type TimeValue } from '@chronos/ui-kit';
+	import { formatTimeValue, parseTimeValue, TimeWheel, type TimeValue } from '@chronos/ui-kit';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
-	import TimeWheel from '$lib/components/ui/TimeWheel.svelte';
 	import { Refresh } from '$lib/icons';
 
 	let {

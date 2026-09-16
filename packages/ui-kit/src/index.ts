@@ -19,6 +19,7 @@ export {
 } from './form/time-wheel-utils';
 export { findInvalidSchemaFields } from './schema-form/validate-schema';
 export { default as DateField } from './form/DateField.svelte';
+export { default as TimeWheel } from './form/TimeWheel.svelte';
 export { default as Radio } from './form/Radio.svelte';
 export { default as SelectableOption } from './form/SelectableOption.svelte';
 export { default as RadioGroupField } from './form/RadioGroupField.svelte';
