@@ -8,6 +8,7 @@
 		overlayOpacityFromDrag,
 		shouldDismissSheet
 	} from './bottom-sheet-drag';
+	import { createHistoryOverlaySync, type HistoryOverlaySync } from './history-overlay';
 
 	let {
 		open = $bindable(false),
@@ -15,6 +16,7 @@
 		description = '',
 		showHandle = true,
 		dragDismissAria = 'Drag down to close',
+		manageHistory = true,
 		actions,
 		children,
 		footer,
@@ -26,12 +28,15 @@
 		description?: string;
 		showHandle?: boolean;
 		dragDismissAria?: string;
+		manageHistory?: boolean;
 		actions?: Snippet;
 		children?: Snippet;
 		footer?: Snippet;
 		onOpenChange?: (open: boolean) => void;
 		onOpenChangeComplete?: (open: boolean) => void;
 	} = $props();
+
+	let historySync: HistoryOverlaySync | null = null;
 
 	let titleRef = $state<HTMLElement | null>(null);
 	let contentRef = $state<HTMLElement | null>(null);
@@ -190,6 +195,37 @@
 			(titleRef ?? contentRef)?.focus();
 		});
 	}
+
+	export function skipNextHistoryBack() {
+		historySync?.skipNextHistoryBack();
+	}
+
+	$effect(() => {
+		if (!manageHistory) {
+			historySync?.dispose();
+			historySync = null;
+			return;
+		}
+
+		const sync = createHistoryOverlaySync({
+			isOpen: () => sheetOpen,
+			setOpen: (nextOpen) => {
+				open = nextOpen;
+				sheetOpen = nextOpen;
+			}
+		});
+		historySync = sync;
+		return () => {
+			sync.dispose();
+			historySync = null;
+		};
+	});
+
+	$effect(() => {
+		if (!manageHistory || !historySync) return;
+		void sheetOpen;
+		historySync.syncOpenState(sheetOpen);
+	});
 
 	function handleDialogOpenChange(next: boolean) {
 		if (next) {

@@ -31,6 +31,7 @@ export {
 	overlayOpacityFromDrag,
 	shouldDismissSheet
 } from './overlay/bottom-sheet-drag';
+export { createHistoryOverlaySync, type HistoryOverlaySync } from './overlay/history-overlay';
 export { default as Radio } from './form/Radio.svelte';
 export { default as SelectableOption } from './form/SelectableOption.svelte';
 export { default as RadioGroupField } from './form/RadioGroupField.svelte';
