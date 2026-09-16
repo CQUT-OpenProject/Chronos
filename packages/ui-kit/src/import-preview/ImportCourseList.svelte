@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Course, CoursePaletteEntry } from '@chronos/core';
 	import {
-		buildCoursePaintLookup,
+		assignCourseDisplayColors,
 		COURSE_PALETTE_ENTRIES,
 		listDistinctCourses,
 		lookupCoursePaint
@@ -17,7 +17,7 @@
 	} = $props();
 
 	const distinctCourses = $derived(listDistinctCourses(courses));
-	const paintsByName = $derived(buildCoursePaintLookup(courses, coursePalette));
+	const paintsByName = $derived(assignCourseDisplayColors(courses, coursePalette));
 </script>
 
 <ul class="flex flex-col gap-1.5" role="list">

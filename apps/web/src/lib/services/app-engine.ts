@@ -16,8 +16,7 @@ import { HOST_MESSAGES, HOST_UI_PLUGIN_ID } from '$lib/i18n/host-messages';
 import {
 	createCoursePaletteRef,
 	createWebCoursePresentationPort,
-	type CoursePaletteRef,
-	type WebCoursePresentationPort
+	type CoursePaletteRef
 } from '$lib/services/course-presentation-port';
 
 let sharedEngine: ChronosEngine | null = null;
@@ -28,7 +27,6 @@ let enginePhase2Promise: Promise<void> | null = null;
 let profileManager: ProfileManager | null = null;
 let resolvedProfilePlugins: ChronosPlugin[] = [];
 let sharedCoursePaletteRef: CoursePaletteRef | null = null;
-let sharedCoursePresentationPort: WebCoursePresentationPort | null = null;
 
 function getSharedCoursePaletteRef(): CoursePaletteRef {
 	if (!sharedCoursePaletteRef) {
@@ -38,7 +36,6 @@ function getSharedCoursePaletteRef(): CoursePaletteRef {
 }
 
 function notifyCoursePaletteChanged(): void {
-	sharedCoursePresentationPort?.invalidatePaintCache();
 	sharedEngine?.events.emit('coursePalette:changed', undefined);
 }
 
@@ -51,7 +48,6 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 		}
 		return engineRef.current;
 	});
-	sharedCoursePresentationPort = coursePresentation;
 
 	const env = createWebChronosEnv({
 		...options,
@@ -239,7 +235,6 @@ export function disposeAppEngine(): void {
 	sharedEngine?.dispose();
 	sharedEngine = null;
 	sharedCoursePaletteRef = null;
-	sharedCoursePresentationPort = null;
 	enginePhase1Promise = null;
 	enginePhase2Promise = null;
 }

@@ -5,7 +5,7 @@ import {
 	createTimetable,
 	type CourseQueryHit,
 	IStorageService,
-	buildCoursePaintLookup,
+	assignCourseDisplayColors,
 	COURSE_PALETTE_ENTRIES
 } from '@chronos/core';
 import { createMockEnv } from '@chronos/core/test-utils';
@@ -112,7 +112,7 @@ describe('today plugin', () => {
 			endPeriod: 2
 		});
 		const timetable = createTimetable({ id: 'main', name: 'Main', courses: [courseA, courseB] });
-		const lookup = buildCoursePaintLookup(timetable.courses, COURSE_PALETTE_ENTRIES);
+		const lookup = assignCourseDisplayColors(timetable.courses, COURSE_PALETTE_ENTRIES);
 
 		const { env, timetables } = createMockEnv({
 			coursePresentation: {

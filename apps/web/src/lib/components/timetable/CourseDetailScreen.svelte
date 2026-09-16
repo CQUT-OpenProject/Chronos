@@ -3,7 +3,11 @@
 	import { slide } from 'svelte/transition';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { CoursePaletteEntry } from '@chronos/core';
-	import { buildCoursePaintLookup, lookupCoursePaint, resolveLocalizedText } from '@chronos/core';
+	import {
+		assignCourseDisplayColors,
+		lookupCoursePaint,
+		resolveLocalizedText
+	} from '@chronos/core';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import { formatPeriodRange } from '$lib/timetable/course-a11y';
@@ -45,7 +49,7 @@
 		const presentation = getAppEngine().coursePresentation;
 		if (!presentation) {
 			const palette = shell.appearance.coursePalette;
-			const lookup = buildCoursePaintLookup(timetable.courses, palette);
+			const lookup = assignCourseDisplayColors(timetable.courses, palette);
 			paint = lookupCoursePaint(lookup, currentCourse, palette);
 			return;
 		}
@@ -55,6 +59,15 @@
 			.resolveCoursePaint({ timetableId: timetable.id, course: currentCourse })
 			.then((resolved) => {
 				if (!cancelled) paint = resolved;
+			})
+			.catch(() => {
+				if (cancelled) return;
+				const palette = shell.appearance.coursePalette;
+				paint = lookupCoursePaint(
+					assignCourseDisplayColors(timetable.courses, palette),
+					currentCourse,
+					palette
+				);
 			});
 		return () => {
 			cancelled = true;

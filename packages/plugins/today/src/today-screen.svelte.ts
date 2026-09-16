@@ -1,4 +1,4 @@
-import type { ChronosUiController } from '@chronos/ui-kit';
+import type { ChronosUiController, ChronosUiSnapshot } from '@chronos/ui-kit';
 import { haptic } from '@chronos/ui-kit';
 import {
 	currentTimeMinutes,
@@ -10,16 +10,14 @@ import {
 	parsePeriodRanges,
 	todayIsoDate,
 	type CoursePaletteEntry,
-	type PeriodTime
+	type CourseQueryHit
 } from '@chronos/core';
-import { get } from 'svelte/store';
 import { DEFAULT_PREPARE_REMINDER_MINUTES, type TodayScope } from './constants';
 import { attachCourseStatuses, queryTodayCourses, type TodayCourseEntry } from './today-courses';
 
 export function coursePaintKey(timetableId: string, courseName: string): string {
 	return `${timetableId}\0${normalizedCourseName(courseName)}`;
 }
-
 export interface TodayScreenController {
 	readonly today: string;
 	readonly now: Date;
@@ -31,227 +29,191 @@ export interface TodayScreenController {
 	init(controller: ChronosUiController, pluginId: string): Promise<void>;
 	dispose(): void;
 	persistScope(nextScope: TodayScope): Promise<void>;
-	refreshCourses(): Promise<void>;
 }
-
 export function createTodayScreenController(): TodayScreenController {
-	let chronosController = $state<ChronosUiController | null>(null);
+	let controller: ChronosUiController | undefined;
 	let pluginId = '';
+	let snapshot = $state.raw<ChronosUiSnapshot | null>(null);
 	let scope = $state<TodayScope>('active');
 	let prepareReminderMinutes = $state(DEFAULT_PREPARE_REMINDER_MINUTES);
 	let courseEntries = $state.raw<TodayCourseEntry[]>([]);
 	let paintByCourseKey = $state.raw<Map<string, CoursePaletteEntry>>(new Map());
-	let isDisposed = false;
-
-	let unsubscribeConfigChanged: (() => void) | undefined;
-	let unsubscribeTimetableSwitch: (() => void) | undefined;
-
-	function readSnapshot() {
-		if (!chronosController) return null;
-		return get(chronosController.snapshot);
+	let hits: CourseQueryHit[] = [];
+	let disposed = false;
+	let unsubscribeSnapshot: (() => void) | undefined;
+	let unsubscribeConfig: (() => void) | undefined;
+	let courseRequest = 0;
+	let paintRequest = 0;
+	let queryKey = '';
+	let paletteRevision: number | undefined;
+	let queryDirty = false;
+	let paintsDirty = false;
+	let queued: Promise<void> | undefined;
+	function now() {
+		return snapshot?.clockNow ?? new Date();
 	}
-
-	function getTimetable() {
-		return readSnapshot()?.currentTimetable ?? null;
+	function today() {
+		return snapshot?.clockTodayIso || todayIsoDate();
 	}
-
-	function getPeriodTimes(): PeriodTime[] {
-		return getTimetable()?.academicConfig.periodTimes ?? [];
+	function periods() {
+		return snapshot?.currentTimetable?.academicConfig.periodTimes ?? [];
 	}
-
-	function getTodayIso(): string {
-		return readSnapshot()?.clockTodayIso || todayIsoDate();
+	function currentPeriod() {
+		const parsed = parsePeriodRanges(periods());
+		return parsed.length
+			? findCurrentPeriodIndex(parsed, currentTimeMinutes(now()))
+			: (snapshot?.currentPeriodIndex ?? null);
 	}
-
-	function getNow(): Date {
-		return readSnapshot()?.clockNow ?? new Date();
+	function updateStatuses() {
+		courseEntries = attachCourseStatuses(
+			hits.filter((hit) => isCoursePeriodVisible(hit.course, periods().length)),
+			periods(),
+			currentTimeMinutes(now()),
+			currentPeriod(),
+			prepareReminderMinutes
+		);
 	}
-
-	function getCurrentPeriodIndex(): number | null {
-		const snapshot = readSnapshot();
-		if (!snapshot) return null;
-		const periodTimes = getPeriodTimes();
-		const parsed = parsePeriodRanges(periodTimes);
-		if (parsed.length === 0) {
-			return snapshot.currentPeriodIndex ?? null;
-		}
-		return findCurrentPeriodIndex(parsed, currentTimeMinutes(snapshot.clockNow));
-	}
-
-	async function resolveCoursePaints(
-		controller: ChronosUiController,
-		entries: TodayCourseEntry[]
-	): Promise<Map<string, CoursePaletteEntry>> {
+	async function refreshPaints() {
+		const request = ++paintRequest;
+		const ctx = controller?.getPluginContext(pluginId);
+		const presentation = ctx?.tryService(ICoursePresentationService);
+		const entries = courseEntries;
 		try {
-			const ctx = controller.getPluginContext(pluginId);
-			const presentation = ctx.tryService(ICoursePresentationService);
-			if (!presentation) return new Map();
-
-			const timetableIds = [...new Set(entries.map((entry) => entry.hit.timetableId))];
 			const paints = new Map<string, CoursePaletteEntry>();
-			await Promise.all(
-				timetableIds.map(async (timetableId) => {
-					const lookup = await presentation.resolveCoursePaintsForTimetable(timetableId);
-					for (const [name, paint] of lookup) {
-						paints.set(coursePaintKey(timetableId, name), paint);
-					}
-				})
-			);
-			return paints;
+			if (presentation)
+				await Promise.all(
+					[...new Set(entries.map((entry) => entry.hit.timetableId))].map(async (id) => {
+						const lookup = await presentation.resolveCoursePaintsForTimetable(id);
+						for (const [name, paint] of lookup) paints.set(coursePaintKey(id, name), paint);
+					})
+				);
+			if (!disposed && request === paintRequest) paintByCourseKey = paints;
 		} catch {
-			return new Map();
+			if (!disposed && request === paintRequest) paintByCourseKey = new Map();
 		}
 	}
-
-	async function refreshCourses() {
-		if (isDisposed) return;
-		const controller = chronosController;
-		const timetable = getTimetable();
+	async function queryCourses() {
+		const request = ++courseRequest;
+		const timetable = snapshot?.currentTimetable;
 		if (!controller || !timetable) {
-			courseEntries = [];
-			paintByCourseKey = new Map();
+			hits = [];
+			updateStatuses();
+			await refreshPaints();
 			return;
 		}
-
 		try {
-			const ctx = controller.getPluginContext(pluginId);
-			const currentToday = getTodayIso();
-			const currentNow = getNow();
-			const hits = await queryTodayCourses(ctx.service(IStorageService), {
-				todayIso: currentToday,
-				scope,
-				timetable
-			});
-			if (isDisposed || chronosController !== controller) return;
-
-			const periodTimes = getPeriodTimes();
-			const visibleHits = hits.filter((hit) =>
-				isCoursePeriodVisible(hit.course, periodTimes.length)
+			const result = await queryTodayCourses(
+				controller.getPluginContext(pluginId).service(IStorageService),
+				{ todayIso: today(), scope, timetable }
 			);
-			const nextEntries = attachCourseStatuses(
-				visibleHits,
-				periodTimes,
-				currentTimeMinutes(currentNow),
-				getCurrentPeriodIndex(),
-				prepareReminderMinutes
-			);
-			const nextPaints = await resolveCoursePaints(controller, nextEntries);
-			if (isDisposed || chronosController !== controller) return;
-			courseEntries = nextEntries;
-			paintByCourseKey = nextPaints;
+			if (disposed || request !== courseRequest) return;
+			hits = result;
+			updateStatuses();
+			await refreshPaints();
 		} catch {
-			if (!isDisposed) {
-				courseEntries = [];
-				paintByCourseKey = new Map();
+			if (disposed || request !== courseRequest) return;
+			hits = [];
+			courseEntries = [];
+			paintByCourseKey = new Map();
+			++paintRequest;
+		}
+	}
+	function schedule(): Promise<void> {
+		if (disposed || !snapshot) return Promise.resolve();
+		const timetable = snapshot.currentTimetable;
+		// Value comparison ignores unrelated snapshot notifications and tolerates mutable host entities.
+		const key = JSON.stringify([
+			today(),
+			scope,
+			timetable?.id,
+			timetable?.academicConfig,
+			timetable?.courses,
+			scope === 'all' ? snapshot.timetables?.map((t) => [t.id, t.updatedAt]) : null
+		]);
+		if (key !== queryKey) {
+			queryKey = key;
+			queryDirty = true;
+			++courseRequest;
+			++paintRequest;
+		}
+		if (paletteRevision !== snapshot.coursePaletteRevision) {
+			paletteRevision = snapshot.coursePaletteRevision;
+			paintsDirty = true;
+			++paintRequest;
+		}
+		queued ??= Promise.resolve().then(async () => {
+			queued = undefined;
+			if (disposed) return;
+			const query = queryDirty;
+			const paint = paintsDirty;
+			queryDirty = false;
+			paintsDirty = false;
+			if (query) await queryCourses();
+			else {
+				updateStatuses();
+				if (paint) await refreshPaints();
 			}
-		}
+		});
+		return queued;
 	}
-
-	function readPrepareReminderMinutes(config: Record<string, unknown>): number {
+	function readConfig(config: Record<string, unknown>) {
+		scope = config.scope === 'all' ? 'all' : 'active';
 		const value = config.prepareReminderMinutes;
-		return typeof value === 'number' && value >= 0 ? value : DEFAULT_PREPARE_REMINDER_MINUTES;
+		prepareReminderMinutes =
+			typeof value === 'number' && value >= 0 ? value : DEFAULT_PREPARE_REMINDER_MINUTES;
 	}
-
-	async function loadConfigFromPlugin() {
-		const controller = chronosController;
-		if (!controller) return;
+	async function init(next: ChronosUiController, id: string) {
+		if (disposed || controller) return;
+		controller = next;
+		pluginId = id;
+		const ctx = next.getPluginContext(id);
+		readConfig(ctx.config);
+		// Let immediate teardown win before creating subscriptions.
+		await Promise.resolve();
+		if (disposed) return;
+		const subscription = ctx.on('config:changed', (event) => {
+			if (disposed || event.pluginId !== pluginId) return;
+			readConfig(event.config);
+			void schedule();
+		});
+		unsubscribeConfig = () => subscription.dispose();
+		unsubscribeSnapshot = next.snapshot.subscribe((value) => {
+			snapshot = value;
+			void schedule();
+		});
+		await queued;
+	}
+	async function persistScope(next: TodayScope) {
+		if (disposed || !controller) return;
+		if (scope !== next) haptic.medium();
+		scope = next;
+		const refresh = schedule();
 		try {
-			const ctx = controller.getPluginContext(pluginId);
-			scope = (ctx.config.scope as TodayScope) ?? 'active';
-			prepareReminderMinutes = readPrepareReminderMinutes(ctx.config);
+			await controller.getPluginContext(pluginId).updateConfig({ scope: next });
 		} catch {
-			scope = 'active';
-			prepareReminderMinutes = DEFAULT_PREPARE_REMINDER_MINUTES;
+			/* Preserve local selection. */
 		}
+		await refresh;
 	}
-
-	async function init(controller: ChronosUiController, nextPluginId: string) {
-		if (isDisposed) return;
-		if (chronosController) return;
-		chronosController = controller;
-		pluginId = nextPluginId;
-
-		await loadConfigFromPlugin();
-		if (isDisposed || chronosController !== controller) return;
-
-		try {
-			const ctx = controller.getPluginContext(pluginId);
-			const configChangedDisposable = ctx.on(
-				'config:changed',
-				({ pluginId: changedId, config }) => {
-					if (isDisposed || changedId !== pluginId) return;
-					scope = (config.scope as TodayScope) ?? scope;
-					prepareReminderMinutes = readPrepareReminderMinutes(config);
-					void refreshCourses();
-				}
-			);
-			unsubscribeConfigChanged = () => configChangedDisposable.dispose();
-
-			const timetableSwitchDisposable = ctx.on('timetable:switched', () => {
-				if (isDisposed) return;
-				void refreshCourses();
-			});
-			unsubscribeTimetableSwitch = () => timetableSwitchDisposable.dispose();
-		} catch {
-			// Plugin context unavailable during teardown.
-		}
-
-		if (isDisposed || chronosController !== controller) return;
-		await refreshCourses();
-	}
-
-	async function persistScope(nextScope: TodayScope) {
-		if (isDisposed) return;
-		if (nextScope !== scope) {
-			haptic.medium();
-		}
-		scope = nextScope;
-		const controller = chronosController;
-		if (!controller) return;
-		try {
-			const ctx = controller.getPluginContext(pluginId);
-			await ctx.updateConfig({ scope: nextScope });
-		} catch {
-			// Keep local state if persistence fails.
-		}
-		if (isDisposed) return;
-		await refreshCourses();
-	}
-
 	function dispose() {
-		isDisposed = true;
-		unsubscribeConfigChanged?.();
-		unsubscribeConfigChanged = undefined;
-		unsubscribeTimetableSwitch?.();
-		unsubscribeTimetableSwitch = undefined;
-		chronosController = null;
-		pluginId = '';
+		if (disposed) return;
+		disposed = true;
+		++courseRequest;
+		++paintRequest;
+		unsubscribeSnapshot?.();
+		unsubscribeConfig?.();
+		controller = undefined;
+		snapshot = null;
+		hits = [];
 		courseEntries = [];
 		paintByCourseKey = new Map();
 	}
-
-	$effect(() => {
-		if (isDisposed) return;
-		const controller = chronosController;
-		if (!controller) return;
-		return controller.snapshot.subscribe((snapshot) => {
-			void snapshot.clockNow;
-			void snapshot.clockTodayIso;
-			void snapshot.coursePaletteRevision;
-			void scope;
-			void prepareReminderMinutes;
-			void snapshot.currentTimetable?.id;
-			void snapshot.currentTimetable?.academicConfig.periodTimes;
-			void refreshCourses();
-		});
-	});
-
 	return {
 		get today() {
-			return getTodayIso();
+			return today();
 		},
 		get now() {
-			return getNow();
+			return now();
 		},
 		get scope() {
 			return scope;
@@ -266,11 +228,10 @@ export function createTodayScreenController(): TodayScreenController {
 			return paintByCourseKey;
 		},
 		get currentPeriodIndex() {
-			return getCurrentPeriodIndex();
+			return currentPeriod();
 		},
 		init,
 		dispose,
-		persistScope,
-		refreshCourses
+		persistScope
 	};
 }

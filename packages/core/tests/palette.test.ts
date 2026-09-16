@@ -3,7 +3,6 @@ import {
 	normalizedCourseName,
 	coursePalette,
 	assignCourseDisplayColors,
-	buildCoursePaintLookup,
 	lookupCoursePaint
 } from '../src/index';
 
@@ -36,7 +35,7 @@ describe('Palette Algorithm in @chronos/core', () => {
 	});
 
 	it('lookupCoursePaint falls back when name is missing from lookup', () => {
-		const lookup = buildCoursePaintLookup([{ name: '高等数学' }]);
+		const lookup = assignCourseDisplayColors([{ name: '高等数学' }]);
 		const paint = lookupCoursePaint(lookup, { name: '线性代数' });
 		expect(paint.background).toBeTruthy();
 	});

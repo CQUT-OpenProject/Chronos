@@ -11,7 +11,7 @@
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { createShellTabController } from '$lib/shell/shell-tab.svelte';
-	import { getAppController } from '$lib/services/app-engine';
+	import { getAppController, getAppEngine } from '$lib/services/app-engine';
 	import { onboardingController } from '$lib/client/onboarding.svelte';
 	import {
 		updateTransitionDirection,
@@ -133,6 +133,12 @@
 		return disposePlatform;
 	});
 </script>
+
+<svelte:document
+	onvisibilitychange={() => {
+		if (document.visibilityState === 'visible') getAppEngine().refreshSystemTime();
+	}}
+/>
 
 <svelte:head>
 	{@html webManifestLink}

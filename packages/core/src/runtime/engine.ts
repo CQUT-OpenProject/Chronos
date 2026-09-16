@@ -272,6 +272,10 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 		this.timeKeeper.setVirtualNow(now);
 	}
 
+	refreshSystemTime(): void {
+		this.timeKeeper.refreshSystemTime();
+	}
+
 	updateTime(now?: Date): void {
 		this.timeKeeper.updateTime(now);
 	}

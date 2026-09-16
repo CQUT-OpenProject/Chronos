@@ -1,5 +1,5 @@
 import {
-	buildCoursePaintLookup,
+	assignCourseDisplayColors,
 	COURSE_PALETTE_ENTRIES,
 	lookupCoursePaint,
 	type ChronosEngine,
@@ -11,17 +11,14 @@ export type CoursePaletteRef = { current: readonly CoursePaletteEntry[] };
 
 type PaintCacheEntry = {
 	updatedAt: number;
+	palette: readonly CoursePaletteEntry[];
 	lookup: ReadonlyMap<string, CoursePaletteEntry>;
-};
-
-export type WebCoursePresentationPort = ICoursePresentationService & {
-	invalidatePaintCache(): void;
 };
 
 export function createWebCoursePresentationPort(
 	paletteRef: CoursePaletteRef,
 	getEngine: () => ChronosEngine
-): WebCoursePresentationPort {
+): ICoursePresentationService {
 	const paintCache = new Map<string, PaintCacheEntry>();
 
 	return {
@@ -31,7 +28,6 @@ export function createWebCoursePresentationPort(
 
 		async resolveCoursePaintsForTimetable(timetableId: string) {
 			const engine = getEngine();
-			const palette = paletteRef.current;
 
 			let timetable =
 				engine.state.currentTimetable?.id === timetableId ? engine.state.currentTimetable : null;
@@ -42,23 +38,20 @@ export function createWebCoursePresentationPort(
 				return new Map<string, CoursePaletteEntry>();
 			}
 
+			const palette = paletteRef.current;
 			const cached = paintCache.get(timetableId);
-			if (cached && cached.updatedAt === timetable.updatedAt) {
+			if (cached && cached.updatedAt === timetable.updatedAt && cached.palette === palette) {
 				return cached.lookup;
 			}
 
-			const lookup = buildCoursePaintLookup(timetable.courses, palette);
-			paintCache.set(timetableId, { updatedAt: timetable.updatedAt, lookup });
+			const lookup = assignCourseDisplayColors(timetable.courses, palette);
+			paintCache.set(timetableId, { updatedAt: timetable.updatedAt, palette, lookup });
 			return lookup;
 		},
 
 		async resolveCoursePaint(input) {
 			const lookup = await this.resolveCoursePaintsForTimetable(input.timetableId);
 			return lookupCoursePaint(lookup, input.course, paletteRef.current);
-		},
-
-		invalidatePaintCache() {
-			paintCache.clear();
 		}
 	};
 }

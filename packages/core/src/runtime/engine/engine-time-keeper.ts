@@ -46,17 +46,14 @@ export class EngineTimeKeeper {
 		this.dayClock?.dispose();
 		this.dayClock = null;
 		if (this.frozenNow) return;
-		this.dayClock = createDayClock({
-			getPeriodTimes: () => this.getCurrentTimetable()?.academicConfig.periodTimes ?? [],
-			onMidnight: () => {
-				this.updateTime();
-			},
-			onPeriodBoundary: () => {
-				this.updateTime();
-			}
-		});
+		this.dayClock = createDayClock({ onTick: (now) => this.updateTime(now) });
 	}
 
+	refreshSystemTime(): void {
+		if (this.frozenNow) return;
+		this.updateTime();
+		this.reschedule();
+	}
 	reschedule(): void {
 		this.dayClock?.reschedule();
 	}

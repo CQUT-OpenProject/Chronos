@@ -34,9 +34,9 @@ One lookup module (`packages/core/src/algorithms/period-clock.ts`), two fallback
 - `'none'` — Engine `updateTime` / `currentPeriodIndex` (period only while in progress).
 - `'upcomingOrLast'` — grid highlight (host/plugin screens derive from `clockNow`).
 
-**Scheduler (single):** `ChronosEngine` owns the only `createDayClock` instance (midnight + period-boundary timers with `reschedule`/`dispose`). `time:tick` emits `{ currentWeek, currentPeriod, now, todayIso }`; `ReactiveChronosController` mirrors `clockNow` / `clockTodayIso`. Host timetable screen and `tool-today` must not instantiate their own clocks.
+**Scheduler (single):** `ChronosEngine` owns the only `createDayClock` instance (one minute-aligned self-scheduling timer with `onTick(now)`, `reschedule`/`dispose`). `time:tick` emits `{ currentWeek, currentPeriod, now, todayIso }`; `ReactiveChronosController` mirrors `clockNow` / `clockTodayIso`. Host timetable screen and `tool-today` must not instantiate their own clocks.
 
-Also exports period parsing helpers and delay utilities. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/algorithms/date.ts`.
+The host calls `engine.refreshSystemTime()` on visibility restoration; this is a no-op while frozen. Static preview grids only highlight an explicitly supplied current period. Also exports period parsing helpers. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/algorithms/date.ts`.
 
 CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live only in `@chronos/plugin-source-cqut`.
 
@@ -131,3 +131,5 @@ Canonical implementation: `@chronos/plugin-codec-share/share-link`. Slots: `impo
 `ChronosUiController.overlayHistoryPort` is optional. `openOverlay(id, onDismiss)` returns an instance handle with idempotent `close()` / `dispose()`. All overlays use `createHistoryOverlaySync`; no port means no browser-history effects. Host wrappers inject the shared coordinator port; plugin BottomSheet/TimePicker/DateField and SchemaForm receive the controller port. System dismissal cancels drafts only. Never call confirmation callbacks from `onDismiss`.
 
 This replaces pushOverlay/closeOverlay/onPopOverlay/bindCloser and skipNextHistoryBack without deprecated aliases. Route actions inside an overlay use host navigation (plugins: `IHostNavigation`), which replaces the overlay entry on successful navigation. Closed overlays are skipped during browser forward.
+
+Course presentation caches by timetable updatedAt plus immutable palette array identity. Replace palette arrays, never mutate them; palette events request consumer refresh only. Use `assignCourseDisplayColors` as the sole assignment algorithm and `ICoursePresentationService` from plugins.

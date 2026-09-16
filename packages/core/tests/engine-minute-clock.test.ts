@@ -1,0 +1,31 @@
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
+import { ChronosEngine } from '../src';
+import { createMockEnv } from '../src/test-utils';
+afterEach(() => vi.useRealTimers());
+describe('engine minute clock', () => {
+	it('ticks at 07:50 even without a timetable, once at midnight, and respects freeze', async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2026-03-02T07:49:40'));
+		const engine = new ChronosEngine({ env: createMockEnv().env });
+		await engine.init();
+		const tick = vi.fn();
+		engine.events.on('time:tick', tick);
+		vi.advanceTimersByTime(20_000);
+		expect(tick).toHaveBeenCalledOnce();
+		expect(tick.mock.calls[0][0].now.getMinutes()).toBe(50);
+		engine.setVirtualNow(new Date('2026-03-02T08:00:00'));
+		tick.mockClear();
+		vi.advanceTimersByTime(120_000);
+		engine.refreshSystemTime();
+		expect(tick).not.toHaveBeenCalled();
+		engine.setVirtualNow(null);
+		expect(tick).toHaveBeenCalledOnce();
+		vi.setSystemTime(new Date('2026-03-02T23:59:40'));
+		engine.setVirtualNow(null);
+		tick.mockClear();
+		vi.advanceTimersByTime(20_000);
+		expect(tick).toHaveBeenCalledOnce();
+		expect(tick.mock.calls[0][0].todayIso).toBe('2026-03-03');
+		engine.dispose();
+	});
+});
