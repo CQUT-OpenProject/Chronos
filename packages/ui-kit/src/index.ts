@@ -6,6 +6,7 @@ export { default as SchemaForm } from './schema-form/SchemaForm.svelte';
 export { default as SegmentedControl } from './components/SegmentedControl.svelte';
 export type { Segment as SegmentedControlSegment } from './components/segmented-control';
 export {
+	buildTimeFieldTriggerLabel,
 	DEFAULT_TIME_PICKER_LABELS,
 	formatTimeValue,
 	hourItems,

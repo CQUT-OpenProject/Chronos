@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
+	buildTimeFieldTriggerLabel,
 	formatTimeValue,
 	isValidTimeValue,
 	parseTimeValue,
@@ -21,6 +22,11 @@ describe('time-wheel-utils', () => {
 	it('formats zero-padded clock times', () => {
 		expect(formatTimeValue({ hour: 8, minute: 5 })).toBe('08:05');
 		expect(formatTimeValue({ hour: 0, minute: 0 })).toBe('00:00');
+	});
+
+	it('builds trigger labels for empty and filled values', () => {
+		expect(buildTimeFieldTriggerLabel('上课时间', { hour: 8, minute: 5 })).toBe('上课时间：08:05');
+		expect(buildTimeFieldTriggerLabel('上课时间', { hour: 24, minute: 0 })).toBe('选择上课时间');
 	});
 
 	it('snaps scroll offset to wheel index', () => {
