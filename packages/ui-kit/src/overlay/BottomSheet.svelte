@@ -209,6 +209,13 @@
 	}
 
 	$effect(() => {
+		if (!manageHistory || !historyPort?.bindCloser) return;
+		return historyPort.bindCloser(overlayId, () => {
+			open = false;
+		});
+	});
+
+	$effect(() => {
 		if (!manageHistory) {
 			historySync?.dispose();
 			historySync = null;

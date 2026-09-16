@@ -1,4 +1,5 @@
 import type { OverlayHistoryPort } from '@chronos/ui-kit';
+import { bindOverlayCloser } from './nav-coordinator';
 import {
 	closeOverlayHistory,
 	dismissOverlayWithoutHistoryPop,
@@ -6,7 +7,21 @@ import {
 	openOverlayHistory
 } from './nav-coordinator';
 
-export function createOverlayHistoryPort(): OverlayHistoryPort {
+const popHandlers = new Set<() => void>();
+let popListenerRegistered = false;
+
+function ensurePopListener(): void {
+	if (popListenerRegistered || typeof window === 'undefined') return;
+	popListenerRegistered = true;
+	window.addEventListener('popstate', () => {
+		handleOverlayPopstate();
+		for (const handler of popHandlers) {
+			handler();
+		}
+	});
+}
+
+function createOverlayHistoryPortImpl(): OverlayHistoryPort {
 	return {
 		pushOverlay(id: string) {
 			openOverlayHistory(id);
@@ -18,12 +33,26 @@ export function createOverlayHistoryPort(): OverlayHistoryPort {
 			dismissOverlayWithoutHistoryPop(id);
 		},
 		onPopOverlay(handler: () => void) {
-			const listener = () => {
-				handleOverlayPopstate();
-				handler();
+			ensurePopListener();
+			popHandlers.add(handler);
+			return () => {
+				popHandlers.delete(handler);
 			};
-			window.addEventListener('popstate', listener);
-			return () => window.removeEventListener('popstate', listener);
+		},
+		bindCloser(id: string, close: () => void) {
+			return bindOverlayCloser(id, close);
 		}
 	};
+}
+
+let sharedPort: OverlayHistoryPort | null = null;
+
+export function getOverlayHistoryPort(): OverlayHistoryPort {
+	sharedPort ??= createOverlayHistoryPortImpl();
+	return sharedPort;
+}
+
+/** @deprecated Prefer {@link getOverlayHistoryPort}. */
+export function createOverlayHistoryPort(): OverlayHistoryPort {
+	return getOverlayHistoryPort();
 }

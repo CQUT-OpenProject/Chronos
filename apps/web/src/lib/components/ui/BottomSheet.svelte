@@ -2,10 +2,9 @@
 	import { BottomSheet as UiBottomSheet } from '@chronos/ui-kit';
 	import type { Snippet } from 'svelte';
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
-	import { bindOverlayCloser } from '$lib/navigation/nav-coordinator';
-	import { createOverlayHistoryPort } from '$lib/navigation/overlay-history-port';
+	import { getOverlayHistoryPort } from '$lib/navigation/overlay-history-port';
 
-	const historyPort = createOverlayHistoryPort();
+	const historyPort = getOverlayHistoryPort();
 	const instanceId = $props.id();
 
 	let {
@@ -46,13 +45,6 @@
 		dragDismissAria ?? hostT('ui.bottomSheet.dragDismissAria')
 	);
 	const resolvedOverlayId = $derived(overlayId ?? `bottom-sheet-${instanceId}`);
-
-	$effect(() => {
-		if (!manageHistory) return;
-		return bindOverlayCloser(resolvedOverlayId, () => {
-			open = false;
-		});
-	});
 </script>
 
 <UiBottomSheet

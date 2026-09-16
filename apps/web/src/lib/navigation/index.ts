@@ -17,4 +17,4 @@ export {
 	stampShellTabOnHistory,
 	syncDeepLinkEntryState
 } from './nav-coordinator';
-export { createOverlayHistoryPort } from './overlay-history-port';
+export { createOverlayHistoryPort, getOverlayHistoryPort } from './overlay-history-port';

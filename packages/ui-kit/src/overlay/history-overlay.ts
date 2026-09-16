@@ -3,6 +3,7 @@ export interface OverlayHistoryPort {
 	closeOverlay(id: string): void;
 	dismissWithoutPop(id: string): void;
 	onPopOverlay(handler: () => void): () => void;
+	bindCloser?(id: string, close: () => void): () => void;
 }
 
 export interface HistoryOverlaySync {
