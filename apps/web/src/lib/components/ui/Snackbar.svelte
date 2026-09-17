@@ -50,7 +50,7 @@
 
 {#if snackbarStore.open}
 	<div
-		class="pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-bar-height)+0.75rem)] z-[var(--z-toast)] flex justify-center"
+		class="shell-snackbar pointer-events-none fixed inset-x-4 bottom-[calc(var(--bottom-bar-height)+0.75rem)] z-[var(--z-toast)] flex justify-center"
 		in:fly={enterFly}
 		out:fly={exitFly}
 		role="status"

@@ -6,6 +6,7 @@
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import { PluginScreenContainer, resolvePluginScreenSlot } from '@chronos/ui-kit';
+	import { resolveLocalizedText } from '@chronos/core';
 
 	const controller = getAppController();
 	const pluginId = $derived(page.params.pluginId ?? '');
@@ -14,7 +15,12 @@
 
 	const screenSlot = $derived(
 		ready
-			? resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
+			? resolvePluginScreenSlot(
+					controller.getSlots('shell.route.screen'),
+					pluginId,
+					viewId,
+					(slotId) => controller.resolveSlotOwner('shell.route.screen', slotId)
+				)
 			: undefined
 	);
 
@@ -24,20 +30,18 @@
 	});
 
 	const pageTitle = $derived(
-		screenSlot
-			? typeof screenSlot.title === 'function'
-				? screenSlot.title()
-				: screenSlot.title
-			: hostT('route.pluginPage')
+		resolveLocalizedText(screenSlot?.title, hostT('route.pluginPage'), controller.currentLocale)
 	);
-	const isRich = $derived(Boolean(screenSlot?.component));
 </script>
 
 {#if ready}
 	<SecondaryPageShell
 		title={pageTitle}
 		backFallback={{ kind: 'shell', tab: 'mine' }}
-		flush={isRich}
+		flush
+		landscapeRail={screenSlot?.landscapeRail}
+		railPluginId={pluginId}
+		railViewId={viewId}
 	>
 		<PluginScreenContainer {controller} {pluginId} {viewId} />
 	</SecondaryPageShell>
@@ -45,6 +49,7 @@
 	<SecondaryPageShell
 		title={hostT('route.pluginPage')}
 		backFallback={{ kind: 'shell', tab: 'mine' }}
+		flush
 	>
 		<div class="flex min-h-[40vh] items-center justify-center">
 			<LoadingIndicator />
