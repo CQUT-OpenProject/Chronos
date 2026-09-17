@@ -1,64 +1,34 @@
-import type { Disposable, PluginManifest } from '@chronos/core';
+import type { Disposable } from '@chronos/core';
+import type { PluginManifest } from '@chronos/core';
+import { isInFlightInstallStatus } from './install-queue-task-state';
+import type {
+	InstallQueueChangeKind,
+	OfficialPluginInstallQueueDeps,
+	PluginInstallProgress,
+	PluginInstallRunner,
+	PluginInstallStage,
+	PluginInstallTask
+} from './install-queue-types';
+import {
+	createQueuedTask,
+	markTaskCanceled,
+	markTaskCompleted,
+	markTaskDownloading,
+	markTaskFailed,
+	pickNextQueuedTask,
+	requeueTask,
+	resolveTaskErrorOutcome,
+	updateTaskProgress
+} from './install-queue-task-state';
 
-export type PluginInstallStage =
-	| 'queued'
-	| 'downloading'
-	| 'verifying'
-	| 'installing'
-	| 'completed'
-	| 'failed'
-	| 'canceled';
-
-export type InstallQueueChangeKind = 'progress' | 'state';
-
-export interface PluginInstallProgress {
-	readonly stage: PluginInstallStage;
-	readonly percent: number;
-	readonly message?: string;
-}
-
-export interface PluginInstallTask {
-	readonly pluginId: string;
-	readonly manifest: PluginManifest;
-	readonly manifestUrl?: string;
-	readonly status: PluginInstallStage;
-	readonly progress: PluginInstallProgress;
-	readonly error?: string;
-	readonly enqueuedAt: number;
-	readonly startedAt?: number;
-	readonly completedAt?: number;
-}
-
-export type PluginInstallRunner = (
-	manifest: PluginManifest,
-	manifestUrl?: string,
-	options?: {
-		signal?: AbortSignal;
-		onProgress?: (progress: {
-			stage: PluginInstallStage;
-			percent: number;
-			message?: string;
-		}) => void;
-	}
-) => Promise<void>;
-
-export interface OfficialPluginInstallQueueDeps {
-	runner: PluginInstallRunner;
-	onTaskFailed?: (task: PluginInstallTask) => void;
-	onTaskCompleted?: (task: PluginInstallTask) => void;
-	onTaskCanceled?: (task: PluginInstallTask) => void;
-}
-
-function isAbortError(err: unknown): boolean {
-	if (!err) return false;
-	if (typeof err === 'object' && 'name' in err && (err as { name: string }).name === 'AbortError') {
-		return true;
-	}
-	if (err instanceof Error && (err.message === 'Aborted' || err.name === 'AbortError')) {
-		return true;
-	}
-	return false;
-}
+export type {
+	InstallQueueChangeKind,
+	OfficialPluginInstallQueueDeps,
+	PluginInstallProgress,
+	PluginInstallRunner,
+	PluginInstallStage,
+	PluginInstallTask
+};
 
 /**
  * OfficialPluginInstallQueue manages sequential (FIFO, concurrency = 1)
@@ -85,41 +55,16 @@ export class OfficialPluginInstallQueue implements Disposable {
 		const existing = this.tasks.get(manifest.id);
 
 		if (existing) {
-			if (
-				existing.status === 'queued' ||
-				existing.status === 'downloading' ||
-				existing.status === 'verifying' ||
-				existing.status === 'installing'
-			) {
+			if (isInFlightInstallStatus(existing.status)) {
 				return;
 			}
-			const updated: PluginInstallTask = {
-				...existing,
-				manifest,
-				manifestUrl: manifestUrl ?? existing.manifestUrl,
-				status: 'queued',
-				progress: { stage: 'queued', percent: 0 },
-				error: undefined,
-				enqueuedAt: Date.now(),
-				startedAt: undefined,
-				completedAt: undefined
-			};
-			this.tasks.set(manifest.id, updated);
+			this.tasks.set(manifest.id, requeueTask(existing, manifest, manifestUrl));
 			this.notifyState();
 			void this.processNext();
 			return;
 		}
 
-		const task: PluginInstallTask = {
-			pluginId: manifest.id,
-			manifest,
-			manifestUrl,
-			status: 'queued',
-			progress: { stage: 'queued', percent: 0 },
-			enqueuedAt: Date.now()
-		};
-
-		this.tasks.set(manifest.id, task);
+		this.tasks.set(manifest.id, createQueuedTask(manifest, manifestUrl));
 		this.notifyState();
 		void this.processNext();
 	}
@@ -132,11 +77,7 @@ export class OfficialPluginInstallQueue implements Disposable {
 		if (!task) return;
 
 		if (task.status === 'queued') {
-			const canceled: PluginInstallTask = {
-				...task,
-				status: 'canceled',
-				progress: { stage: 'canceled', percent: 0 }
-			};
+			const canceled = markTaskCanceled(task);
 			this.tasks.set(pluginId, canceled);
 			this.notifyState();
 			this.deps.onTaskCanceled?.(canceled);
@@ -144,19 +85,11 @@ export class OfficialPluginInstallQueue implements Disposable {
 			return;
 		}
 
-		if (
-			task.status === 'downloading' ||
-			task.status === 'verifying' ||
-			task.status === 'installing'
-		) {
+		if (isInFlightInstallStatus(task.status)) {
 			if (this.activeTaskId === pluginId && this.activeController) {
 				this.activeController.abort();
 			}
-			this.tasks.set(pluginId, {
-				...task,
-				status: 'canceled',
-				progress: { stage: 'canceled', percent: 0 }
-			});
+			this.tasks.set(pluginId, markTaskCanceled(task));
 			this.notifyState();
 		}
 	}
@@ -169,16 +102,7 @@ export class OfficialPluginInstallQueue implements Disposable {
 		if (!task) return;
 		if (task.status !== 'failed' && task.status !== 'canceled') return;
 
-		this.tasks.set(pluginId, {
-			...task,
-			status: 'queued',
-			progress: { stage: 'queued', percent: 0 },
-			error: undefined,
-			enqueuedAt: Date.now(),
-			startedAt: undefined,
-			completedAt: undefined
-		});
-
+		this.tasks.set(pluginId, requeueTask(task, task.manifest, task.manifestUrl));
 		this.notifyState();
 		void this.processNext();
 	}
@@ -190,11 +114,7 @@ export class OfficialPluginInstallQueue implements Disposable {
 		let changed = false;
 		for (const [id, task] of this.tasks.entries()) {
 			if (task.status === 'queued') {
-				const canceled: PluginInstallTask = {
-					...task,
-					status: 'canceled',
-					progress: { stage: 'canceled', percent: 0 }
-				};
+				const canceled = markTaskCanceled(task);
 				this.tasks.set(id, canceled);
 				this.deps.onTaskCanceled?.(canceled);
 				this.clearFinished(id);
@@ -209,11 +129,7 @@ export class OfficialPluginInstallQueue implements Disposable {
 		if (this.activeTaskId) {
 			const activeTask = this.tasks.get(this.activeTaskId);
 			if (activeTask && activeTask.status !== 'canceled') {
-				this.tasks.set(this.activeTaskId, {
-					...activeTask,
-					status: 'canceled',
-					progress: { stage: 'canceled', percent: 0 }
-				});
+				this.tasks.set(this.activeTaskId, markTaskCanceled(activeTask));
 				changed = true;
 			}
 		}
@@ -268,12 +184,7 @@ export class OfficialPluginInstallQueue implements Disposable {
 	isBusy(pluginId: string): boolean {
 		const task = this.tasks.get(pluginId);
 		if (!task) return false;
-		return (
-			task.status === 'queued' ||
-			task.status === 'downloading' ||
-			task.status === 'verifying' ||
-			task.status === 'installing'
-		);
+		return isInFlightInstallStatus(task.status);
 	}
 
 	onChanged(listener: (change: { kind: InstallQueueChangeKind }) => void): Disposable {
@@ -306,16 +217,8 @@ export class OfficialPluginInstallQueue implements Disposable {
 	private async processNext(): Promise<void> {
 		if (this.disposed || this.isProcessing) return;
 
-		// Pick the oldest queued task (FIFO)
-		let nextTask: PluginInstallTask | null = null;
-		for (const task of this.tasks.values()) {
-			if (task.status === 'queued') {
-				if (!nextTask || task.enqueuedAt < nextTask.enqueuedAt) {
-					nextTask = task;
-				}
-			}
-		}
-
+		// FIFO with concurrency=1: only one active runner at a time.
+		const nextTask = pickNextQueuedTask(this.tasks.values());
 		if (!nextTask) {
 			return;
 		}
@@ -326,41 +229,24 @@ export class OfficialPluginInstallQueue implements Disposable {
 		const controller = this.activeController;
 		const activeId = nextTask.pluginId;
 
-		this.tasks.set(activeId, {
-			...nextTask,
-			status: 'downloading',
-			startedAt: Date.now(),
-			progress: { stage: 'downloading', percent: 0 }
-		});
+		this.tasks.set(activeId, markTaskDownloading(nextTask));
 		this.notifyState();
 
 		try {
+			// Runner errors are classified below; queue does not rethrow.
 			await this.deps.runner(nextTask.manifest, nextTask.manifestUrl, {
 				signal: controller.signal,
 				onProgress: (prog) => {
 					const current = this.tasks.get(activeId);
 					if (!current || current.status === 'canceled' || controller.signal.aborted) return;
-					this.tasks.set(activeId, {
-						...current,
-						status: prog.stage,
-						progress: {
-							stage: prog.stage,
-							percent: Math.min(100, Math.max(0, prog.percent)),
-							message: prog.message
-						}
-					});
+					this.tasks.set(activeId, updateTaskProgress(current, prog));
 					this.notifyProgress();
 				}
 			});
 
 			const current = this.tasks.get(activeId);
-			if (current && (current.status as string) !== 'canceled' && !controller.signal.aborted) {
-				const completed: PluginInstallTask = {
-					...current,
-					status: 'completed',
-					completedAt: Date.now(),
-					progress: { stage: 'completed', percent: 100 }
-				};
+			if (current && current.status !== 'canceled' && !controller.signal.aborted) {
+				const completed = markTaskCompleted(current);
 				this.tasks.set(activeId, completed);
 				this.notifyState();
 				this.deps.onTaskCompleted?.(completed);
@@ -368,28 +254,19 @@ export class OfficialPluginInstallQueue implements Disposable {
 			}
 		} catch (err: unknown) {
 			const current = this.tasks.get(activeId) ?? nextTask;
-			if (
-				controller.signal.aborted ||
-				(current.status as string) === 'canceled' ||
-				isAbortError(err)
-			) {
-				const canceled: PluginInstallTask = {
-					...current,
-					status: 'canceled',
-					progress: { stage: 'canceled', percent: 0 }
-				};
+			const outcome = resolveTaskErrorOutcome(err, {
+				signalAborted: controller.signal.aborted,
+				currentStatus: current.status
+			});
+
+			if (outcome === 'canceled') {
+				const canceled = markTaskCanceled(current);
 				this.tasks.set(activeId, canceled);
 				this.notifyState();
 				this.deps.onTaskCanceled?.(canceled);
 				this.clearFinished(activeId);
 			} else {
-				const msg = err instanceof Error ? err.message : String(err);
-				const failed: PluginInstallTask = {
-					...current,
-					status: 'failed',
-					error: msg,
-					progress: { stage: 'failed', percent: 0, message: msg }
-				};
+				const failed = markTaskFailed(current, err instanceof Error ? err.message : String(err));
 				this.tasks.set(activeId, failed);
 				this.notifyState();
 				this.deps.onTaskFailed?.(failed);

@@ -426,8 +426,8 @@ describe('OfficialPluginService', () => {
 
 		const syncSpy = vi
 			.spyOn(
-				Object.getPrototypeOf(service) as { syncInstalledWithHost(): Promise<void> },
-				'syncInstalledWithHost'
+				Object.getPrototypeOf(service) as { syncWithHostCatalog(): Promise<void> },
+				'syncWithHostCatalog'
 			)
 			.mockImplementation(() => new Promise(() => {}));
 

@@ -1,5 +1,6 @@
 import type { OfficialPluginCatalog, PluginManifest } from '@chronos/core';
 import type { InstalledOfficialPluginRecord } from './official-plugin-types';
+import type { OfficialPluginCatalogClient } from './catalog-client';
 
 export const DEFAULT_OFFICIAL_CATALOG_URL = '/official-plugins/catalog.json';
 
@@ -60,4 +61,53 @@ export async function buildCatalogManifestMap(
 		if (entry) map.set(entry.manifest.id, entry);
 	}
 	return map;
+}
+
+export interface SyncInstalledPluginsOptions {
+	hostVersion: string;
+	catalogUrl?: string;
+	catalogClient: OfficialPluginCatalogClient;
+	getInstalledRecords: () => ReadonlyArray<InstalledOfficialPluginRecord>;
+	install: (
+		manifest: PluginManifest,
+		manifestUrl: string,
+		options?: { silent?: boolean }
+	) => Promise<void>;
+}
+
+/**
+ * Refreshes stale official installs from the catalog.
+ * Catalog fetch failures and per-plugin sync errors are logged and skipped (non-fatal boot path).
+ */
+export async function syncInstalledPluginsWithHost(
+	options: SyncInstalledPluginsOptions
+): Promise<void> {
+	const catalogUrl = options.catalogUrl ?? DEFAULT_OFFICIAL_CATALOG_URL;
+	const stale = options
+		.getInstalledRecords()
+		.filter((record) => shouldSyncInstalledPlugin(record, options.hostVersion));
+	if (stale.length === 0) return;
+
+	let catalogMap: Map<string, CatalogManifestEntry>;
+	try {
+		const catalog = await options.catalogClient.fetchCatalog(catalogUrl);
+		catalogMap = await buildCatalogManifestMap(catalog, (url) =>
+			options.catalogClient.fetchManifest(url)
+		);
+	} catch (err) {
+		console.error('[sync-installed-plugins] Failed to sync installed plugins:', err);
+		return;
+	}
+
+	for (const record of stale) {
+		const entry = catalogMap.get(record.manifest.id);
+		if (!entry) continue;
+		if (record.manifestUrl && !isOfficialCatalogManifestUrl(record.manifestUrl)) continue;
+
+		try {
+			await options.install(entry.manifest, entry.manifestUrl, { silent: true });
+		} catch (err) {
+			console.error(`[sync-installed-plugins] Failed to sync plugin ${record.manifest.id}:`, err);
+		}
+	}
 }
