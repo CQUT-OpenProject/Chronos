@@ -4,9 +4,12 @@ import type { PluginScreenSlotContribution } from '@chronos/core';
 export function resolvePluginScreenSlot(
 	slots: PluginScreenSlotContribution[],
 	pluginId: string,
-	viewId: string
+	viewId: string,
+	resolveOwner?: (slotId: string) => string | undefined
 ): PluginScreenSlotContribution | undefined {
 	return slots.find(
-		(s) => s.id === viewId || s.id === pluginId || s.id === `${pluginId}/${viewId}`
+		(s) =>
+			(!resolveOwner || resolveOwner(s.id) === pluginId) &&
+			(s.id === viewId || s.id === pluginId || s.id === `${pluginId}/${viewId}`)
 	);
 }

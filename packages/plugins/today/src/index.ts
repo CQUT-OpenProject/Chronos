@@ -32,8 +32,8 @@ export function createTodayPlugin(options: CreateTodayPluginOptions = {}) {
 				id: 'today',
 				label: () => t('tab.label'),
 				order: 15,
-				icon: 'today',
-				iconFill: 'calendar-today',
+				icon: 'calendar-clock',
+				iconFill: 'calendar-clock-fill',
 				defaultLaunch: true
 			});
 

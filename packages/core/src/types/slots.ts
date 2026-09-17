@@ -122,6 +122,8 @@ export interface PluginScreenSlotContribution {
 	title: LocalizedText;
 	/** Svelte component for rich UI via the single CHRONOS_MOUNTABLE protocol; falls back to schema if absent */
 	component?: import('./mountable').ChronosMountable;
+	/** Optional compact-landscape rail content for this screen. */
+	landscapeRail?: import('./mountable').ChronosMountable;
 	schema?: ConfigSchema<Record<string, unknown>>;
 }
 

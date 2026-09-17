@@ -54,6 +54,13 @@ export {
 export { default as PluginScreenContainer } from './plugin-screen/PluginScreenContainer.svelte';
 export { default as MountableSlotOutlet } from './plugin-screen/MountableSlotOutlet.svelte';
 export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-slot';
+export {
+	createEdgeBarActions,
+	getEdgeBarActions,
+	setEdgeBarActions,
+	type EdgeBarAction,
+	type EdgeBarActionsController
+} from './plugin-screen/edge-bar-actions.svelte';
 export { mountableSvelteComponent } from './plugin-screen/mountable-svelte';
 export { pluginText } from './i18n/plugin-text';
 export { appScroll, appShellScroll } from './actions/app-scroll';

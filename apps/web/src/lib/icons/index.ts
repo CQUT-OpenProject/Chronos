@@ -27,6 +27,11 @@ export { ScheduleFill } from '@material-symbols-svg/svelte/icons/schedule';
 export { EventFill } from '@material-symbols-svg/svelte/icons/event';
 export { Today } from '@material-symbols-svg/svelte/icons/today';
 export { CalendarToday as CalendarTodayFill } from '@material-symbols-svg/svelte/icons/calendar-today';
+export {
+	CalendarClock,
+	CalendarClockFill
+} from '@material-symbols-svg/svelte/icons/calendar-clock';
+export { TableChart, TableChartFill } from '@material-symbols-svg/svelte/icons/table-chart';
 export { Visibility } from '@material-symbols-svg/svelte/icons/visibility';
 export { VisibilityOff } from '@material-symbols-svg/svelte/icons/visibility-off';
 export { AddHomeFill } from '@material-symbols-svg/svelte/icons/add-home';
@@ -44,3 +49,4 @@ export { AnimationFill } from '@material-symbols-svg/svelte/icons/animation';
 export { TuneFill } from '@material-symbols-svg/svelte/icons/tune';
 export { Add } from '@material-symbols-svg/svelte/icons/add';
 export { Remove } from '@material-symbols-svg/svelte/icons/remove';
+export { ContentCopy } from '@material-symbols-svg/svelte/icons/content-copy';

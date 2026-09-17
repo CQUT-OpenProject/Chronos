@@ -539,9 +539,12 @@ interface PluginScreenSlotContribution {
 	id: string; // 路由映射至 /plugins/[pluginId]/[id]
 	title: LocalizedText;
 	component?: ChronosMountable; // 缺省时自动回退为 schema 声明式渲染
+	landscapeRail?: ChronosMountable; // 可选：紧凑横屏的右侧栏内容
 	schema?: ConfigSchema;
 }
 ```
+
+`landscapeRail` 沿用 `CHRONOS_MOUNTABLE` 协议，在对应插件标签或独立页面激活时挂载；宿主传入 `controller`、`pluginId`、`viewId`、`active`。内容区域位于约 4.5rem 宽的侧栏内，宿主保留导航或返回按钮的位置。竖屏不挂载该内容，切换页面或卸载插件时会清理挂载实例。
 
 ### shell.bottom-bar.tab
 

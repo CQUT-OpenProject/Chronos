@@ -2,6 +2,8 @@ import {
 	AddHomeFill,
 	CalendarMonth,
 	CalendarMonthFill,
+	CalendarClock,
+	CalendarClockFill,
 	CalendarTodayFill,
 	DownloadFill,
 	EventFill,
@@ -15,8 +17,15 @@ import {
 	Today,
 	WallpaperFill,
 	CodeFill,
+	Check,
+	Close,
+	ContentCopy,
+	DeleteFill,
 	History,
-	ScheduleFill
+	Refresh,
+	ScheduleFill,
+	TableChart,
+	TableChartFill
 } from '$lib/icons';
 import type { Component } from 'svelte';
 
@@ -24,6 +33,10 @@ import type { Component } from 'svelte';
 export const SHELL_ICON_MAP = {
 	'calendar-month': CalendarMonth,
 	'calendar-month-fill': CalendarMonthFill,
+	'calendar-clock': CalendarClock,
+	'calendar-clock-fill': CalendarClockFill,
+	'table-chart': TableChart,
+	'table-chart-fill': TableChartFill,
 	person: Person,
 	'person-fill': PersonFill,
 	'list-alt': ListAltFill,
@@ -39,5 +52,10 @@ export const SHELL_ICON_MAP = {
 	'calendar-today': CalendarTodayFill,
 	event: EventFill,
 	history: History,
+	check: Check,
+	close: Close,
+	'content-copy': ContentCopy,
+	delete: DeleteFill,
+	refresh: Refresh,
 	schedule: ScheduleFill
 } as const satisfies Record<string, Component<{ class?: string }>>;
