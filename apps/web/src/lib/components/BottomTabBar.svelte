@@ -86,7 +86,7 @@
 				aria-hidden={isDragOverDeleteZone}
 			>
 				<Button
-					variant="outlined"
+					variant={compactLandscape.current ? 'text' : 'outlined'}
 					class="edit-bottom-bar-action min-w-0"
 					aria-label={hostT('timetable.edit.aria')}
 					title={hostT('timetable.edit.aria')}
@@ -95,12 +95,14 @@
 						goto(resolve('/timetable/details'));
 					}}
 				>
-					<EditNote class="edit-action-icon size-5" aria-hidden="true" />
-					<span class="edit-action-portrait">{hostT('timetable.edit.aria')}</span>
-					<span class="edit-action-landscape">{hostT('timetable.edit.short')}</span>
+					{#if compactLandscape.current}
+						<EditNote class="size-6" aria-hidden="true" />
+					{:else}
+						{hostT('timetable.edit.aria')}
+					{/if}
 				</Button>
 				<Button
-					variant="outlined"
+					variant={compactLandscape.current ? 'text' : 'outlined'}
 					class="edit-bottom-bar-action min-w-0"
 					aria-label={hostT('timetable.details.section.display')}
 					title={hostT('timetable.details.section.display')}
@@ -109,9 +111,11 @@
 						layoutOptionsSheet = true;
 					}}
 				>
-					<TuneFill class="edit-action-icon size-5" aria-hidden="true" />
-					<span class="edit-action-portrait">{hostT('timetable.details.section.display')}</span>
-					<span class="edit-action-landscape">{hostT('timetable.display.short')}</span>
+					{#if compactLandscape.current}
+						<TuneFill class="size-6" aria-hidden="true" />
+					{:else}
+						{hostT('timetable.details.section.display')}
+					{/if}
 				</Button>
 				<div class="edit-bottom-bar-trash-slot" aria-hidden={!isDragging}>
 					<div
@@ -189,11 +193,6 @@
 <LayoutOptionsSheet bind:open={layoutOptionsSheet} />
 
 <style>
-	.edit-action-icon,
-	.edit-action-landscape {
-		display: none;
-	}
-
 	.edit-bottom-bar {
 		display: grid;
 	}
@@ -344,15 +343,6 @@
 	}
 
 	@media (orientation: landscape) and (max-height: 500px) {
-		.edit-action-icon,
-		.edit-action-landscape {
-			display: block;
-		}
-
-		.edit-action-portrait {
-			display: none;
-		}
-
 		.tab-icon-shell {
 			width: 2.25rem;
 			height: 2.25rem;
@@ -368,12 +358,10 @@
 
 		.edit-bottom-bar-action {
 			width: 3.5rem;
-			min-height: 3.25rem;
-			flex-direction: column;
-			gap: 0;
-			font-size: 0.625rem;
-			line-height: 1rem;
-			padding-inline: 0.25rem;
+			min-height: 3rem;
+			border: 0;
+			padding-inline: 0;
+			color: var(--color-on-surface-variant);
 		}
 
 		.edit-bottom-bar-trash-slot {
@@ -401,11 +389,7 @@
 		}
 
 		.edit-bottom-bar-delete-text {
-			white-space: normal;
-			display: -webkit-box;
-			-webkit-line-clamp: 3;
-			-webkit-box-orient: vertical;
-			overflow: hidden;
+			display: none;
 		}
 	}
 </style>
