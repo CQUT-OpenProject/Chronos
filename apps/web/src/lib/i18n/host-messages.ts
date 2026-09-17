@@ -75,6 +75,7 @@ const zhCn = {
 	'display.layout.fixed.desc': '上下滚动查看完整课表，字体更大',
 	'display.layout.compact.label': '一屏显示',
 	'display.layout.compact.desc': '一屏展示全天课程，无需滚动',
+	'display.layout.compact.landscapeUnavailable': '紧凑横屏不可用，竖屏恢复原设置',
 	'display.capsule.pill.label': '合并圆角',
 	'display.capsule.pill.desc': '相邻接触的课程边缘合并去圆角',
 	'display.capsule.sharp.label': '移除圆角',
@@ -341,6 +342,7 @@ const zhCn = {
 	'onboarding.layout.fixed.desc': '上下滚动查看全天课程，字体更大',
 	'onboarding.layout.compact.label': '一屏显示',
 	'onboarding.layout.compact.desc': '一屏展示全天课程，无需滚动',
+	'onboarding.layout.compact.landscapeUnavailable': '紧凑横屏不可用，竖屏后可选择',
 	'onboarding.install.title': '安装到主屏幕',
 	'onboarding.install.subtitle': '添加到主屏幕后可快捷打开，并支持离线使用。',
 	'onboarding.done.title': '开始使用 Chronos',
@@ -644,6 +646,8 @@ const en = {
 	'display.layout.fixed.desc': 'Scroll through the full timetable with larger text',
 	'display.layout.compact.label': 'Fit on screen',
 	'display.layout.compact.desc': 'Show the full day on one screen without scrolling',
+	'display.layout.compact.landscapeUnavailable':
+		'Compact landscape: unavailable; restores in portrait',
 	'display.capsule.pill.label': 'Merged corners',
 	'display.capsule.pill.desc': 'Merge corners where adjacent courses touch',
 	'display.capsule.sharp.label': 'Square corners',
@@ -917,6 +921,8 @@ const en = {
 	'onboarding.layout.fixed.desc': 'Scroll through the full day with larger text',
 	'onboarding.layout.compact.label': 'Fit on screen',
 	'onboarding.layout.compact.desc': 'Show the full day on one screen without scrolling',
+	'onboarding.layout.compact.landscapeUnavailable':
+		'Compact landscape: unavailable; choose in portrait',
 	'onboarding.install.title': 'Add to home screen',
 	'onboarding.install.subtitle': 'Open quickly from your home screen and use offline.',
 	'onboarding.done.title': 'Start using Chronos',

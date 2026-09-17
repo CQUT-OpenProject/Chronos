@@ -36,7 +36,8 @@
 	const stepIndices = [0, 1, 2, 3, 4, 5] as const;
 	const isLastStep = $derived(step === onboardingController.totalSteps - 1);
 	const stepTitleId = 'onboarding-step-title';
-	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'compact');
+	const layoutMode = $derived(shell.state.effectiveTimetableLayoutMode);
+	const compactLandscape = $derived(shell.state.compactLandscape);
 
 	const layoutOptions = $derived.by(() => {
 		return [
@@ -131,6 +132,7 @@
 	}
 
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
+		if (layoutMode === mode || (compactLandscape && mode === 'compact')) return;
 		trackEvent('onboarding_layout_selected', { mode });
 		haptic.light();
 		await shell.setTimetableLayoutMode(mode);
@@ -275,7 +277,12 @@
 								<div class="flex flex-col gap-3">
 									{#each layoutOptions as option (option.mode)}
 										{@const selected = layoutMode === option.mode}
-										<label class="block w-full cursor-pointer">
+										<label
+											class="block w-full {compactLandscape && option.mode === 'compact'
+												? 'cursor-not-allowed'
+												: 'cursor-pointer'}"
+											aria-disabled={compactLandscape && option.mode === 'compact'}
+										>
 											<Card
 												variant="outlined"
 												class="flex items-start gap-3.5 {selected
@@ -285,13 +292,16 @@
 												<div class="flex min-w-0 flex-1 flex-col justify-center">
 													<p class="text-body-large text-on-surface">{option.label}</p>
 													<p class="text-body-small text-on-surface-variant">
-														{option.description}
+														{compactLandscape && option.mode === 'compact'
+															? hostT('onboarding.layout.compact.landscapeUnavailable')
+															: option.description}
 													</p>
 												</div>
 												<div class="flex shrink-0 items-center self-center">
 													<Radio
 														name="onboarding-layout-mode"
 														checked={selected}
+														disabled={compactLandscape && option.mode === 'compact'}
 														onchange={() => selectLayoutMode(option.mode)}
 													/>
 												</div>
