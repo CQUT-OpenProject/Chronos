@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { readBundledPluginVersion, trackPluginAnalytics } from '@chronos/core';
 	import type { ChronosUiController } from '@chronos/ui-kit';
-	import { appScroll, pluginText } from '@chronos/ui-kit';
+	import {
+		appShellScroll,
+		pluginText,
+		type EdgeBarAction,
+		type EdgeBarActionsController
+	} from '@chronos/ui-kit';
 	import { ERROR_LOG_ANALYTICS } from './analytics';
 	import { copyTextWithFallback } from './copy-text';
 	import { formatErrorLogClipboard, type ErrorLogEntry } from './error-log';
@@ -12,9 +17,10 @@
 	interface Props {
 		controller: ChronosUiController;
 		pluginId: string;
+		edgeActions?: EdgeBarActionsController;
 	}
 
-	let { controller, pluginId }: Props = $props();
+	let { controller, pluginId, edgeActions }: Props = $props();
 
 	const runtime = $derived(getErrorLogRuntime(pluginId));
 	const entries = $derived.by(() => {
@@ -62,10 +68,30 @@
 		trackPluginAnalytics(pluginContext, ERROR_LOG_PLUGIN_ID, ERROR_LOG_ANALYTICS.clear);
 		pluginContext.actions.notify(pt('screen.notify.cleared'), 'info');
 	}
+
+	const actions = $derived<EdgeBarAction[]>([
+		{
+			id: 'copy-all',
+			label: pt('screen.action.copyAll'),
+			icon: 'content-copy',
+			variant: 'outlined',
+			disabled: entries.length === 0,
+			onClick: onCopyAll
+		},
+		{
+			id: 'clear',
+			label: pt('screen.action.clear'),
+			icon: 'delete',
+			variant: 'outlined',
+			disabled: entries.length === 0,
+			onClick: onClear
+		}
+	]);
+	$effect(() => edgeActions?.register(pluginId, actions));
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<div use:appScroll class="secondary-scroll min-h-0 flex-1 overflow-y-auto">
+	<div use:appShellScroll class="secondary-scroll min-h-0 flex-1 overflow-y-auto">
 		<div class="p-4">
 			<div class="ui-section-surface divide-y divide-outline/10 overflow-hidden">
 				{#if entries.length === 0}
@@ -102,7 +128,7 @@
 		</div>
 	</div>
 
-	<div class="bottom-bar">
+	<div class="bottom-bar plugin-bottom-actions">
 		<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
 			<button
 				type="button"

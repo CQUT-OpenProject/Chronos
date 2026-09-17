@@ -21,7 +21,8 @@
 
 	let { shell }: { shell: AppShellController } = $props();
 	const themeMode = $derived(shell.controller.userPreferences?.themeMode ?? 'auto');
-	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'compact');
+	const layoutMode = $derived(shell.state.effectiveTimetableLayoutMode);
+	const compactLandscape = $derived(shell.state.compactLandscape);
 	const paletteMode = $derived(shell.controller.userPreferences?.paletteMode ?? 'vibrant');
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
@@ -136,6 +137,7 @@
 	}
 
 	async function selectLayoutMode(mode: TimetableLayoutMode) {
+		if (layoutMode === mode || (compactLandscape && mode === 'compact')) return;
 		haptic.light();
 		trackEvent('settings_layout_change', { mode });
 		await shell.setTimetableLayoutMode(mode);
@@ -148,7 +150,6 @@
 	}
 
 	async function toggleCurrentPeriodHighlight(checked: boolean) {
-		haptic.light();
 		trackEvent('settings_period_highlight_change', { enabled: checked });
 		await shell.setCurrentPeriodHighlightEnabled(checked);
 	}
@@ -197,13 +198,17 @@
 			<MineRow
 				label={true}
 				title={option.label}
-				supporting={option.description}
+				supporting={compactLandscape && option.mode === 'compact'
+					? hostT('display.layout.compact.landscapeUnavailable')
+					: option.description}
+				aria-disabled={compactLandscape && option.mode === 'compact'}
 				onclick={() => selectLayoutMode(option.mode)}
 			>
 				{#snippet trailing()}
 					<Radio
 						name="timetable-layout-mode"
 						checked={selected}
+						disabled={compactLandscape && option.mode === 'compact'}
 						onchange={() => selectLayoutMode(option.mode)}
 					/>
 				{/snippet}

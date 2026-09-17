@@ -31,7 +31,8 @@ export const WALLPAPER_MESSAGES = {
 		'screen.action.pick': '选择壁纸',
 		'screen.action.cancel': '取消',
 		'screen.action.confirmCrop': '确认裁剪',
-		'screen.crop.hint': '拖动调整位置，双指或滚轮缩放'
+		'screen.crop.hint': '拖动调整位置，双指或滚轮缩放',
+		'screen.crop.viewportAria': '画布裁剪手势'
 	},
 	en: {
 		'plugin.name': 'Custom Wallpaper',
@@ -52,6 +53,7 @@ export const WALLPAPER_MESSAGES = {
 		'screen.action.pick': 'Choose wallpaper',
 		'screen.action.cancel': 'Cancel',
 		'screen.action.confirmCrop': 'Apply crop',
-		'screen.crop.hint': 'Drag to reposition, pinch or scroll to zoom'
+		'screen.crop.hint': 'Drag to reposition, pinch or scroll to zoom',
+		'screen.crop.viewportAria': 'Crop canvas gestures'
 	}
 } as const;

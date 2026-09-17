@@ -5,7 +5,6 @@ import {
 	brotliDecompressShare,
 	decompressShareAdaptive,
 	ensureShareLinkBrotliReady,
-	SHARE_BROTLI_QUALITY,
 	SHARE_LINK_VERSION_DEFLATE
 } from '../src/share-link/share-link-brotli';
 
@@ -19,10 +18,6 @@ describe('share-link-brotli', () => {
 		const compressed = brotliCompressShare(input);
 		expect(compressed.length).toBeGreaterThan(0);
 		expect(brotliDecompressShare(compressed)).toEqual(input);
-	});
-
-	it('uses quality 11', () => {
-		expect(SHARE_BROTLI_QUALITY).toBe(11);
 	});
 
 	it('rejects decompressed output beyond the safety cap', async () => {

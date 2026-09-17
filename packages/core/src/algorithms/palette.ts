@@ -1,14 +1,15 @@
 export type CoursePaletteEntry = { background: string; foreground: string };
 
+// MD3 HCT containers: chroma up to 28, tones 82–87; foregrounds use tone 10.
 const COURSE_PALETTE: [string, string][] = [
-	['#EADDFF', '#21005D'],
-	['#FFDBC9', '#311100'],
-	['#C4EED0', '#072711'],
-	['#D3E3FD', '#041E49'],
-	['#FFD8E4', '#31111D'],
-	['#F6E1B0', '#241A00'],
-	['#A9F0E4', '#00201C'],
-	['#DCE9A1', '#181E00']
+	['#CCC7F7', '#1A1836'],
+	['#FFCB98', '#2C1600'],
+	['#B2DFBA', '#01210D'],
+	['#BBDEFF', '#001E31'],
+	['#FFBBB8', '#331111'],
+	['#DAD895', '#1D1D00'],
+	['#A4DFE1', '#002021'],
+	['#F7C6EC', '#2C1229']
 ];
 
 export const COURSE_PALETTE_ENTRIES: CoursePaletteEntry[] = COURSE_PALETTE.map(
@@ -123,4 +124,12 @@ export function assignCourseDisplayColors(
 	}
 
 	return assigned;
+}
+
+export function lookupCoursePaint(
+	lookup: ReadonlyMap<string, CoursePaletteEntry>,
+	course: { name: string },
+	palette: readonly CoursePaletteEntry[] = COURSE_PALETTE_ENTRIES
+): CoursePaletteEntry {
+	return lookup.get(normalizedCourseName(course.name)) ?? resolveCoursePaint(course, palette);
 }

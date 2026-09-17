@@ -2,6 +2,7 @@ import { vi } from 'vite-plus/test';
 import { DEFAULT_USER_PREFERENCES } from '../domain/preferences';
 import type { Timetable } from '../domain/timetable';
 import type { ChronosEnv, StorageChangeEvent } from '../types/env';
+import type { ICoursePresentationService } from '../types/services';
 import { createMockErrorCapture, type MockErrorCapture } from './create-mock-error-capture';
 
 export interface MockEnvOptions {
@@ -11,6 +12,7 @@ export interface MockEnvOptions {
 	runtime?: Partial<ChronosEnv['runtime']>;
 	errorCapture?: MockErrorCapture;
 	platform?: ChronosEnv['platform'];
+	coursePresentation?: ICoursePresentationService;
 }
 
 export function createMockEnv(options: MockEnvOptions = {}) {
@@ -77,6 +79,10 @@ export function createMockEnv(options: MockEnvOptions = {}) {
 		},
 		errorCapture
 	};
+
+	if (options.coursePresentation) {
+		env.coursePresentation = options.coursePresentation;
+	}
 
 	return {
 		env,

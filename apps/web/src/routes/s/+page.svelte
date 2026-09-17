@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
+	import { navigateForward } from '$lib/navigation/nav-coordinator';
 	import { resolve } from '$app/paths';
 	import { browser } from '$app/environment';
 	import { trackEvent } from '$lib/client/analytics';
@@ -31,7 +31,7 @@
 				}
 
 				trackEvent('share_link_decode_success');
-				goto(resolve('/transfer/import/confirm'), { replaceState: true });
+				navigateForward(resolve('/transfer/import/confirm'), { replace: true });
 			} catch {
 				trackEvent('share_link_decode_fail');
 				status = 'error';

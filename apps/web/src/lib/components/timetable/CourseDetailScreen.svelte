@@ -2,17 +2,16 @@
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import { slide } from 'svelte/transition';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
-	import type { Course } from '@chronos/core';
+	import type { CoursePaletteEntry } from '@chronos/core';
 	import {
 		assignCourseDisplayColors,
-		normalizedCourseName,
-		resolveCoursePaint,
+		lookupCoursePaint,
 		resolveLocalizedText
 	} from '@chronos/core';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import { timetableDayLabel } from '$lib/timetable/day-labels';
 	import { formatPeriodRange } from '$lib/timetable/course-a11y';
-	import { getAppController } from '$lib/services/app-engine';
+	import { getAppController, getAppEngine } from '$lib/services/app-engine';
 	import Button from '$lib/components/ui/Button.svelte';
 
 	const HEADLINE_SMALL_FONT_PX = 24;
@@ -35,14 +34,44 @@
 			? (shell.controller.currentTimetable?.courses.find((entry) => entry.id === courseId) ?? null)
 			: null
 	);
-	const paint = $derived.by(() => {
-		if (!course) return null;
-		const palette = shell.appearance.coursePalette;
-		const assigned = assignCourseDisplayColors(
-			shell.controller.currentTimetable?.courses ?? [],
-			palette
-		);
-		return assigned.get(normalizedCourseName(course.name)) ?? resolveCoursePaint(course, palette);
+	let paint = $state<CoursePaletteEntry | null>(null);
+
+	$effect(() => {
+		const currentCourse = course;
+		const timetable = shell.controller.currentTimetable;
+		void controller.coursePaletteRevision;
+
+		if (!currentCourse || !timetable) {
+			paint = null;
+			return;
+		}
+
+		const presentation = getAppEngine().coursePresentation;
+		if (!presentation) {
+			const palette = shell.appearance.coursePalette;
+			const lookup = assignCourseDisplayColors(timetable.courses, palette);
+			paint = lookupCoursePaint(lookup, currentCourse, palette);
+			return;
+		}
+
+		let cancelled = false;
+		void presentation
+			.resolveCoursePaint({ timetableId: timetable.id, course: currentCourse })
+			.then((resolved) => {
+				if (!cancelled) paint = resolved;
+			})
+			.catch(() => {
+				if (cancelled) return;
+				const palette = shell.appearance.coursePalette;
+				paint = lookupCoursePaint(
+					assignCourseDisplayColors(timetable.courses, palette),
+					currentCourse,
+					palette
+				);
+			});
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	function formatWeeks(weeks: number[]) {

@@ -4,7 +4,6 @@ import {
 	CHRONOS_PROFILES,
 	SERVER_PLUGIN_MODULES,
 	CLIENT_BUILTIN_PLUGIN_MODULES,
-	enabledBuiltinPluginIds,
 	enabledServerPluginIds,
 	resolveActiveBuiltinPluginIds,
 	resolveActiveServerPluginIds,
@@ -52,13 +51,5 @@ describe('profile definitions single source', () => {
 			resolveProfileId({ CHRONOS_PROFILE: 'chronos-cqut-offline', CHRONOS_DEPLOY_TARGET: 'pages' })
 		).toBe('chronos-cqut-offline');
 		expect(resolveProfileId({ CHRONOS_PROFILE: 'chronos-default' })).toBe('chronos-default');
-	});
-
-	it('lists only enabled ids as builtins', () => {
-		for (const profile of registeredProfiles) {
-			expect(enabledBuiltinPluginIds(profile)).toEqual(
-				profile.plugins.filter((entry) => entry.enabled !== false).map((entry) => entry.id)
-			);
-		}
 	});
 });

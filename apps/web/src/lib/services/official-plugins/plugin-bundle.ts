@@ -96,4 +96,7 @@ export function validatePluginManifest(
 			throw new Error('Invalid plugin manifest: missing cssSha256 for cssUrl');
 		}
 	}
+	if (m.type === 'tool' && m.toolGroup !== 'utility' && m.toolGroup !== 'dev') {
+		throw new Error('Invalid plugin manifest: tool plugins require toolGroup (utility or dev)');
+	}
 }

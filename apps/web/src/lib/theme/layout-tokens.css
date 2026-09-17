@@ -5,8 +5,6 @@
 		background-color: var(--period-active-bg, var(--color-brand));
 		background-image: var(--period-active-bg-image, none);
 		color: var(--color-on-primary);
-		margin-inline: -0.25rem;
-		width: calc(100% + 0.5rem);
 	}
 
 	/* Light: raw course paint. Dark: 42%/18% course mix (was layout blendColors 0.58/0.18). */
@@ -140,11 +138,14 @@
 
 	:root {
 		--topbar-safe: env(safe-area-inset-top, 0px);
-		--tabbar-safe: env(safe-area-inset-bottom, 0px);
+		--tabbar-block-safe: env(safe-area-inset-bottom, 0px);
+		--tabbar-inline-safe: 0px;
 		--spacing-topbar: 4.5rem;
 		--spacing-tabbar: 4.25rem;
 		--top-bar-height: calc(var(--spacing-topbar) + var(--topbar-safe));
-		--bottom-bar-height: calc(var(--spacing-tabbar) + var(--tabbar-safe));
+		--shell-tab-bar-block-size: calc(var(--spacing-tabbar) + var(--tabbar-block-safe));
+		--shell-tab-bar-inline-size: 0px;
+		--bottom-bar-height: var(--shell-tab-bar-block-size);
 		--z-shell: 15;
 		--z-secondary-page: 60;
 		--z-overlay: 70;
@@ -163,6 +164,15 @@
 		:root {
 			--spacing-topbar: 3.25rem;
 			--spacing-tabbar: 3.125rem;
+		}
+	}
+
+	@media (orientation: landscape) and (max-height: 500px) {
+		:root {
+			--tabbar-block-safe: 0px;
+			--tabbar-inline-safe: env(safe-area-inset-right, 0px);
+			--shell-tab-bar-block-size: 0px;
+			--shell-tab-bar-inline-size: calc(4.5rem + var(--tabbar-inline-safe));
 		}
 	}
 

@@ -139,7 +139,7 @@ export function placeCapsules(input: PlaceCapsulesInput): PlacedItem[] {
 		visibleDays,
 		columnWidthPx,
 		expandedSlotKeys,
-		layoutMode = 'fixed',
+		layoutMode = DEFAULT_USER_PREFERENCES.timetableLayoutMode,
 		coursePalette = COURSE_PALETTE_ENTRIES,
 		paletteCourses,
 		capsuleCornerStyle = DEFAULT_USER_PREFERENCES.capsuleCornerStyle
@@ -495,7 +495,7 @@ export function locationDisplayLines(
 
 function parseColor(hex: string): string {
 	const normalized = hex.trim();
-	return /^#[0-9A-Fa-f]{6}$/.test(normalized) ? normalized : '#EADDFF';
+	return /^#[0-9A-Fa-f]{6}$/.test(normalized) ? normalized : COURSE_PALETTE_ENTRIES[0]!.background;
 }
 
 function courseColors(

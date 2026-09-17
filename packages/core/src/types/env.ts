@@ -2,6 +2,7 @@ import type {
 	HttpRequestOptions,
 	HttpResponse,
 	IAnalyticsService,
+	ICoursePresentationService,
 	IErrorCaptureService,
 	IStorageService,
 	VaultSecretOptions
@@ -71,4 +72,10 @@ export interface ChronosEnv {
 	navigation?: {
 		openCourseEditor(courseId: string): void;
 	};
+
+	/** Optional host course palette and per-timetable paint assignment */
+	coursePresentation?: Pick<
+		ICoursePresentationService,
+		'getCoursePalette' | 'resolveCoursePaintsForTimetable' | 'resolveCoursePaint'
+	>;
 }

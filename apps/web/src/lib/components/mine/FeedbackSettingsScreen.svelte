@@ -39,7 +39,11 @@
 			iconTone="primary"
 		>
 			{#snippet trailing()}
-				<Switch checked={hapticFeedbackEnabled} onCheckedChange={toggleHapticFeedback} />
+				<Switch
+					checked={hapticFeedbackEnabled}
+					hapticOnChange={false}
+					onCheckedChange={toggleHapticFeedback}
+				/>
 			{/snippet}
 		</MineRow>
 	</MineSection>

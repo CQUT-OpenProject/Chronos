@@ -5,6 +5,8 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
 	import TimetableDetailsEditor from '$lib/components/timetable/TimetableDetailsEditor.svelte';
+	import type { EdgeBarAction } from '@chronos/ui-kit';
+	import { Check, Refresh } from '$lib/icons';
 	import { validatePeriodTimes } from '@chronos/core';
 	import { getAppController } from '$lib/services/app-engine';
 
@@ -21,6 +23,22 @@
 	);
 
 	let resetDialogOpen = $state(false);
+	const actions = $derived<EdgeBarAction[]>([
+		{
+			id: 'reset',
+			label: hostT('timetable.details.reset'),
+			icon: Refresh,
+			variant: 'outlined',
+			onClick: () => (resetDialogOpen = true)
+		},
+		{
+			id: 'save',
+			label: hostT('timetable.details.save'),
+			icon: Check,
+			disabled: !editor.canSave,
+			onClick: editor.save
+		}
+	]);
 
 	function confirmReset() {
 		editor.resetToDefaultSettings();
@@ -29,30 +47,12 @@
 </script>
 
 {#if editor.draft}
-	{#snippet footer()}
-		<div class="flex w-full flex-col gap-2">
-			{#if periodsBlocked}
-				<p class="text-body-small px-1 text-error">
-					{hostT('timetable.details.periods.saveBlocked')}
-				</p>
-			{/if}
-			<div class="flex w-full gap-3">
-				<Button variant="outlined" class="w-full flex-1" onclick={() => (resetDialogOpen = true)}>
-					{hostT('timetable.details.reset')}
-				</Button>
-				<Button
-					variant="filled"
-					class="w-full flex-1"
-					disabled={!editor.canSave}
-					onclick={editor.save}
-				>
-					{hostT('timetable.details.save')}
-				</Button>
-			</div>
-		</div>
-	{/snippet}
-
-	<FormScreenLayout {footer}>
+	<FormScreenLayout {actions}>
+		{#if periodsBlocked}
+			<p class="text-body-small px-1 text-error">
+				{hostT('timetable.details.periods.saveBlocked')}
+			</p>
+		{/if}
 		<TimetableDetailsEditor {editor} />
 	</FormScreenLayout>
 

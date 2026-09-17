@@ -29,7 +29,7 @@
 	const coursePalette = $derived(shell.appearance.coursePalette);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
 	const dynamicColorUri = $derived(shell.state.dynamicColorUri);
-	const layoutMode = $derived(shell.controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const layoutMode = $derived(shell.state.effectiveTimetableLayoutMode);
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
 	);
@@ -78,7 +78,7 @@
 <svelte:window onkeydown={active ? onWindowKeydown : undefined} />
 
 <div class="relative flex h-[calc(100dvh-var(--bottom-bar-height))] flex-col">
-	<TopAppBar class="shrink-0">
+	<TopAppBar class="timetable-week-top-bar shrink-0">
 		{#snippet titleSnippet()}
 			<div class="flex min-h-0 flex-1 items-center py-0.5 text-left sm:py-1" aria-label={weekLabel}>
 				<p class="text-title-large truncate leading-tight">
@@ -91,7 +91,7 @@
 	<TimetableWallpaperLayer
 		wallpaperUri={hasDynamicColorBackground ? dynamicColorUri : null}
 		blurred={screenState.isEditing}
-		fit="fill"
+		fit="cover"
 	>
 		{#key screenState.currentTimetable?.id}
 			<TimetableWeekSwiper

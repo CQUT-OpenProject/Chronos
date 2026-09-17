@@ -1,4 +1,5 @@
 import { onNavigate } from '$app/navigation';
+import { getPendingTraversal } from './nav-coordinator';
 import type { OnNavigate } from '@sveltejs/kit';
 import { flushSync } from 'svelte';
 import { isSecondaryRoute, toAppPathname } from './routes';
@@ -245,7 +246,7 @@ export function setupSecondaryPageViewTransition(
 ): void {
 	onNavigate((navigation) => {
 		const toPath = navigation.to?.url.pathname ?? '';
-		const fromPath = navigation.from?.url.pathname ?? '';
+		const fromPath = getPendingTraversal()?.from ?? navigation.from?.url.pathname ?? '';
 		const direction = getTransitionDirection();
 		const toSecondary = isSecondaryRoute(toPath);
 		const crossShell = isSecondaryRoute(fromPath) !== toSecondary;

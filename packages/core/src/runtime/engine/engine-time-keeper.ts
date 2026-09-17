@@ -13,6 +13,7 @@ import type { EventPipeline } from '../event-pipeline';
 /** Manages academic calendar time ticks and day-boundary scheduling. */
 export class EngineTimeKeeper {
 	private dayClock: DayClockHandle | null = null;
+	private frozenNow: Date | null = null;
 	private readonly calendarService = new AcademicCalendarService();
 
 	constructor(
@@ -22,24 +23,42 @@ export class EngineTimeKeeper {
 		private readonly setCurrentPeriodIndex: (index: number | null) => void
 	) {}
 
-	start(): void {
-		this.dayClock?.dispose();
-		this.dayClock = createDayClock({
-			getPeriodTimes: () => this.getCurrentTimetable()?.academicConfig.periodTimes ?? [],
-			onMidnight: () => {
-				this.updateTime();
-			},
-			onPeriodBoundary: () => {
-				this.updateTime();
-			}
-		});
+	now(): Date {
+		return this.frozenNow ? new Date(this.frozenNow.getTime()) : new Date();
 	}
 
+	isFrozen(): boolean {
+		return this.frozenNow !== null;
+	}
+
+	setVirtualNow(now: Date | null): void {
+		this.frozenNow = now ? new Date(now.getTime()) : null;
+		if (this.frozenNow) {
+			this.dayClock?.dispose();
+			this.dayClock = null;
+		} else {
+			this.start();
+		}
+		this.updateTime();
+	}
+
+	start(): void {
+		this.dayClock?.dispose();
+		this.dayClock = null;
+		if (this.frozenNow) return;
+		this.dayClock = createDayClock({ onTick: (now) => this.updateTime(now) });
+	}
+
+	refreshSystemTime(): void {
+		if (this.frozenNow) return;
+		this.updateTime();
+		this.reschedule();
+	}
 	reschedule(): void {
 		this.dayClock?.reschedule();
 	}
 
-	updateTime(now = new Date()): void {
+	updateTime(now = this.now()): void {
 		const todayIso = todayIsoDate(now);
 		const academicConfig = this.getCurrentTimetable()?.academicConfig;
 
@@ -63,7 +82,8 @@ export class EngineTimeKeeper {
 			currentWeek,
 			currentPeriod,
 			now,
-			todayIso
+			todayIso,
+			frozen: this.frozenNow !== null
 		});
 	}
 

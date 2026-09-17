@@ -6,7 +6,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
+	import type { EdgeBarAction } from '@chronos/ui-kit';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
+	import { DeleteFill } from '$lib/icons';
 
 	let {
 		shell
@@ -21,6 +23,20 @@
 	);
 
 	let deleteDialogOpen = $state(false);
+	const actions = $derived.by((): EdgeBarAction[] =>
+		timetables.length > 0
+			? [
+					{
+						id: 'delete',
+						label: hostT('timetable.manage.delete'),
+						icon: DeleteFill,
+						variant: 'danger',
+						disabled: !currentTimetableId,
+						onClick: () => (deleteDialogOpen = true)
+					}
+				]
+			: []
+	);
 
 	async function handleSwitch(id: string) {
 		trackEvent('timetable_switch');
@@ -39,18 +55,7 @@
 	}
 </script>
 
-{#snippet deleteFooter()}
-	<Button
-		variant="danger"
-		class="w-full"
-		disabled={!currentTimetableId}
-		onclick={() => (deleteDialogOpen = true)}
-	>
-		{hostT('timetable.manage.delete')}
-	</Button>
-{/snippet}
-
-<FormScreenLayout footer={timetables.length > 0 ? deleteFooter : undefined}>
+<FormScreenLayout {actions}>
 	<div class="flex flex-col gap-3">
 		<h3 class="text-title-medium px-1 text-on-surface">
 			{hostT('timetable.manage.heading')}

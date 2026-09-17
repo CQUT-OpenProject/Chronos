@@ -17,18 +17,22 @@
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
+	import type { EdgeBarAction } from '@chronos/ui-kit';
 	import PluginConfigModal from './PluginConfigModal.svelte';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
 	import { groupCatalogManifestsByCategory } from '$lib/services/official-plugins/catalog-sort';
-	import { getPluginCategoryMeta } from '$lib/services/official-plugins/plugin-tags';
+	import {
+		getPluginCategoryMeta,
+		resolvePluginCatalogCategory
+	} from '$lib/services/official-plugins/plugin-tags';
 	import {
 		assertValidManifestInstallUrl,
 		describeInstallSource
 	} from '$lib/services/official-plugins/manifest-url';
 	import type { PluginInstallTask } from '$lib/services/official-plugins/install-queue';
 	import PluginInstallAction from './PluginInstallAction.svelte';
-	import { CheckCircleFill, TuneFill } from '$lib/icons';
+	import { CheckCircleFill, DownloadFill, TuneFill } from '$lib/icons';
 
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
 
@@ -40,6 +44,19 @@
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
 
 	let activeTab = $state<'installed' | 'official'>('installed');
+	const edgeActions = $derived.by((): EdgeBarAction[] =>
+		activeTab === 'official'
+			? [
+					{
+						id: 'install-link',
+						label: hostT('plugins.link.open'),
+						icon: DownloadFill,
+						variant: 'outlined',
+						onClick: promptLinkInstall
+					}
+				]
+			: []
+	);
 
 	let installedRecords = $state.raw<InstalledOfficialPluginRecord[]>([]);
 	let catalogManifests = $state.raw<Array<{ url: string; manifest: PluginManifest }>>([]);
@@ -277,24 +294,16 @@
 </script>
 
 {#snippet tabHeader()}
-	<SegmentedControl
-		segments={tabSegments}
-		value={activeTab}
-		onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
-	/>
+	<div class="mx-auto w-full max-w-lg">
+		<SegmentedControl
+			segments={tabSegments}
+			value={activeTab}
+			onValueChange={(val) => (activeTab = val as 'installed' | 'official')}
+		/>
+	</div>
 {/snippet}
 
-{#snippet linkImportFooter()}
-	<Button variant="outlined" class="w-full" onclick={promptLinkInstall}>
-		{hostT('plugins.link.open')}
-	</Button>
-{/snippet}
-
-<FormScreenLayout
-	class="text-on-surface"
-	header={tabHeader}
-	footer={activeTab === 'official' ? linkImportFooter : undefined}
->
+<FormScreenLayout class="text-on-surface" header={tabHeader} actions={edgeActions}>
 	{#if activeTab === 'installed'}
 		<section class="ui-section">
 			<div class="flex items-center justify-between px-1">
@@ -312,7 +321,12 @@
 				{#each profileBuiltinPlugins as plugin (plugin.id)}
 					{@const name = resolveManifestText(plugin.name)}
 					{@const desc = resolveManifestText(plugin.description)}
-					{@const meta = getPluginCategoryMeta(plugin.category)}
+					{@const meta = getPluginCategoryMeta(
+						resolvePluginCatalogCategory({
+							category: plugin.category,
+							toolGroup: plugin.toolGroup
+						})
+					)}
 					<div
 						class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-surface-variant/30"
 					>
@@ -427,7 +441,7 @@
 					{#each installedRecords as record (record.manifest.id)}
 						{@const name = resolveManifestText(record.manifest.name)}
 						{@const desc = resolveManifestText(record.manifest.description)}
-						{@const meta = getPluginCategoryMeta(record.manifest.type)}
+						{@const meta = getPluginCategoryMeta(resolvePluginCatalogCategory(record.manifest))}
 						{@const isBusy = operatingPluginId === record.manifest.id}
 						<div
 							class={[

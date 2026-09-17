@@ -2,6 +2,9 @@ import type { ConfigSchema } from '../schema/schema';
 
 export type BundleFormat = 'esm';
 
+/** Catalog subgroup for tool plugins in the plugin center. */
+export type ToolGroup = 'utility' | 'dev';
+
 export interface PluginManifest {
 	id: string;
 	name: Record<string, string>;
@@ -9,6 +12,8 @@ export interface PluginManifest {
 	description: Record<string, string>;
 	author: string;
 	type: 'theme' | 'source' | 'tool' | 'exporter';
+	/** Required when type is tool — utility vs developer tools in plugin center. */
+	toolGroup?: ToolGroup;
 	bundleFormat: BundleFormat;
 	/** ESM plugin bundle (optional when colorsUrl is provided for theme plugins). */
 	bundleUrl?: string;

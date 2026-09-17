@@ -76,7 +76,10 @@ function createMockHost() {
 			currentPeriodIndex: null,
 			activeThemeId: 'default',
 			activeIconThemeId: 'host-default',
-			userPreferences: DEFAULT_USER_PREFERENCES
+			userPreferences: DEFAULT_USER_PREFERENCES,
+			now: new Date(),
+			todayIso: '2026-03-02',
+			clockFrozen: false
 		},
 		actions: {
 			createTimetable: vi.fn(),
@@ -90,7 +93,8 @@ function createMockHost() {
 			setTheme: vi.fn(),
 			updatePreferences: vi.fn(),
 			revertToDefaultThemes: vi.fn(),
-			notify: vi.fn()
+			notify: vi.fn(),
+			setVirtualNow: vi.fn()
 		}
 	};
 }

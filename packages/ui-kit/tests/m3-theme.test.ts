@@ -11,11 +11,6 @@ import {
 } from '../src/theme/m3-theme';
 
 describe('M3DefaultTheme', () => {
-	it('has valid theme id and flags', () => {
-		expect(m3DefaultTheme.id).toBe('m3-default');
-		expect(m3DefaultTheme.supportsDynamicColor).toBe(true);
-	});
-
 	it('generates light and dark workbench colors', () => {
 		const light = m3DefaultTheme.workbenchColors.light;
 		expect(light['color.surface']).toBeDefined();

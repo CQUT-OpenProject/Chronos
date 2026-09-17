@@ -5,7 +5,12 @@
 		computeTimetableWeekLayout,
 		COURSE_PALETTE_ENTRIES
 	} from '@chronos/core';
-	import { TimetablePreviewGrid, pluginText } from '@chronos/ui-kit';
+	import {
+		TimetablePreviewGrid,
+		pluginText,
+		type EdgeBarAction,
+		type EdgeBarActionsController
+	} from '@chronos/ui-kit';
 	import {
 		clampTransform,
 		computeCoverScale,
@@ -21,18 +26,21 @@
 
 	interface Props {
 		controller: ChronosUiController;
+		pluginId: string;
+		edgeActions?: EdgeBarActionsController;
 		source: Blob | File;
 		onConfirm: (blob: Blob) => void | Promise<void>;
 		onCancel: () => void;
 	}
 
-	let { controller, source, onConfirm, onCancel }: Props = $props();
+	let { controller, pluginId, edgeActions, source, onConfirm, onCancel }: Props = $props();
 
 	function pt(key: keyof (typeof WALLPAPER_MESSAGES)['zh-cn']) {
 		return pluginText(controller, WALLPAPER_PLUGIN_ID, WALLPAPER_MESSAGES, key);
 	}
 
 	const hint = $derived(pt('screen.crop.hint'));
+	const viewportAria = $derived(pt('screen.crop.viewportAria'));
 	const cancelLabel = $derived(pt('screen.action.cancel'));
 	const confirmLabel = $derived(pt('screen.action.confirmCrop'));
 
@@ -47,7 +55,7 @@
 	const displayedWeek = $derived(controller.activeWeek ?? academicWeek ?? 1);
 	const isCurrentWeek = $derived(displayedWeek === (academicWeek ?? controller.activeWeek ?? 1));
 	const currentPeriodIndex = $derived(controller.currentPeriodIndex);
-	const layoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'fixed');
+	const layoutMode = $derived(controller.userPreferences?.timetableLayoutMode ?? 'compact');
 	const capsuleCornerStyle = $derived(controller.userPreferences?.capsuleCornerStyle ?? 'sharp');
 	const paletteCourses = $derived(timetable?.courses ?? []);
 	const courseBadges = $derived(controller.courseBadges ?? {});
@@ -78,6 +86,24 @@
 	let naturalHeight = $state(0);
 	let transform = $state<CropTransform>({ scale: 1, offsetX: 0, offsetY: 0 });
 	let confirming = $state(false);
+	const actions = $derived<EdgeBarAction[]>([
+		{
+			id: 'cancel',
+			label: cancelLabel,
+			icon: 'close',
+			variant: 'outlined',
+			disabled: confirming,
+			onClick: onCancel
+		},
+		{
+			id: 'confirm',
+			label: confirmLabel,
+			icon: 'check',
+			disabled: confirming || !imageEl || frameWidth <= 0,
+			onClick: confirmCrop
+		}
+	]);
+	$effect(() => edgeActions?.register(pluginId, actions));
 
 	const minScale = $derived(
 		naturalWidth > 0 && naturalHeight > 0 && frameWidth > 0 && frameHeight > 0
@@ -298,8 +324,10 @@
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col">
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		bind:this={viewportEl}
+		aria-label={viewportAria}
 		class="relative min-h-0 flex-1 touch-none overflow-hidden bg-black select-none"
 		onpointerdown={onPointerDown}
 		onpointermove={onPointerMove}
@@ -347,7 +375,7 @@
 		</div>
 	</div>
 
-	<div class="bottom-bar">
+	<div class="bottom-bar plugin-bottom-actions">
 		<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
 			<button
 				type="button"

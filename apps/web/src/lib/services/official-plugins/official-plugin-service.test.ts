@@ -184,6 +184,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -204,6 +205,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: 'deadbeef'
@@ -224,6 +226,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -245,6 +248,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -265,6 +269,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -293,6 +298,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -334,6 +340,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -360,6 +367,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Link plugin' },
 			author: 'Community',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: 'bundle.js',
 			sha256: hash
@@ -399,6 +407,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -447,6 +456,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -504,6 +514,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Link plugin' },
 			author: 'Community',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: 'bundle.js',
 			sha256: hash
@@ -535,6 +546,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -567,6 +579,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash,
@@ -628,6 +641,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -693,7 +707,8 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-cn': 'Queued description', en: 'Queued description' },
 			author: 'Test Author',
 			sha256: hash,
-			type: 'tool'
+			type: 'tool',
+			toolGroup: 'utility'
 		};
 
 		httpRequest.mockImplementation(async () => {
@@ -723,6 +738,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -756,6 +772,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash
@@ -764,6 +781,10 @@ describe('OfficialPluginService', () => {
 		httpRequest.mockResolvedValueOnce(httpResponse({ text: async () => SAMPLE_BUNDLE }));
 		await service.install(manifest);
 		await service.disable('test-plugin');
+		await engine.storage.setPluginData('test-plugin', PLUGIN_CONFIG_STORAGE_KEY, {
+			choice: 'kept'
+		});
+		await engine.storage.setPluginData('test-plugin', 'private', { draft: 'kept' });
 
 		const updatedBundle = SAMPLE_BUNDLE.replace('Test', 'Updated');
 		const updated = await service.applyHotUpdate({
@@ -775,6 +796,11 @@ describe('OfficialPluginService', () => {
 		});
 
 		expect(updated.code).toBe(updatedBundle);
+		expect(updated.enabled).toBe(false);
+		expect(await engine.storage.getPluginData('test-plugin', PLUGIN_CONFIG_STORAGE_KEY)).toEqual({
+			choice: 'kept'
+		});
+		expect(await engine.storage.getPluginData('test-plugin', 'private')).toEqual({ draft: 'kept' });
 		expect(service.isPluginActive('test-plugin')).toBe(false);
 	});
 
@@ -787,6 +813,7 @@ describe('OfficialPluginService', () => {
 			description: { 'zh-CN': 'Test plugin' },
 			author: 'Chronos',
 			type: 'tool',
+			toolGroup: 'utility',
 			bundleFormat: 'esm',
 			bundleUrl: '/test.bundle.js',
 			sha256: hash

@@ -67,6 +67,11 @@ function createOfficialPluginServiceDeps(engine: ChronosEngine): OfficialPluginS
 
 export class OfficialPluginService implements Disposable {
 	private initialized = false;
+	private disposed = false;
+	private readonly hotUpdates = new Map<
+		string,
+		{ controller: AbortController; settled: Promise<InstalledOfficialPluginRecord> }
+	>();
 	private readonly catalogClient: OfficialPluginCatalogClient;
 	private readonly assetPipeline: OfficialPluginAssetPipeline;
 	private readonly installedStore: OfficialPluginInstalledStore;
@@ -99,7 +104,7 @@ export class OfficialPluginService implements Disposable {
 	}
 
 	async init(): Promise<void> {
-		if (this.initialized) return;
+		if (this.initialized || this.disposed) return;
 		await this.installedStore.load();
 		await this.installedStore.dedupeBuiltinOverlap();
 
@@ -117,6 +122,7 @@ export class OfficialPluginService implements Disposable {
 		this.installedStore.notify();
 		if (import.meta.env.DEV) {
 			void import('./official-plugin-hmr').then(({ setupPluginHmr }) => {
+				if (this.disposed) return;
 				this.hmrDisposable?.dispose();
 				this.hmrDisposable = setupPluginHmr(this, this.engine);
 			});
@@ -157,15 +163,18 @@ export class OfficialPluginService implements Disposable {
 		await this.install(manifest, manifestUrl);
 	}
 
-	async applyHotUpdate(data: {
-		id: string;
-		type?: 'theme' | 'tool';
-		manifest?: Record<string, unknown>;
-		code: string | null;
-		cssCode: string | null;
-		colorsJson: string | null;
-		iconThemeJson: string | null;
-	}): Promise<InstalledOfficialPluginRecord> {
+	async applyHotUpdate(
+		data: {
+			id: string;
+			type?: 'theme' | 'tool';
+			manifest?: Record<string, unknown>;
+			code: string | null;
+			cssCode: string | null;
+			colorsJson: string | null;
+			iconThemeJson: string | null;
+		},
+		options?: { signal?: AbortSignal }
+	): Promise<InstalledOfficialPluginRecord> {
 		const existing = this.installedStore.find(data.id);
 		if (!existing) {
 			throw new Error(`Plugin not installed: ${data.id}`);
@@ -185,10 +194,23 @@ export class OfficialPluginService implements Disposable {
 			iconThemeJson: isTheme ? data.iconThemeJson : null
 		};
 
-		return this.replacePluginAssets(candidate, {
+		if (this.disposed) throw new DOMException('Aborted', 'AbortError');
+		const controller = new AbortController();
+		const signal = options?.signal
+			? AbortSignal.any([options.signal, controller.signal])
+			: controller.signal;
+		const settled = this.replacePluginAssets(candidate, {
 			preserveInstalledAt: true,
+			signal,
 			revertThemesOnDeactivate: false
 		});
+		const update = { controller, settled };
+		this.hotUpdates.set(data.id, update);
+		try {
+			return await settled;
+		} finally {
+			if (this.hotUpdates.get(data.id) === update) this.hotUpdates.delete(data.id);
+		}
 	}
 
 	private async replacePluginAssets(
@@ -222,7 +244,7 @@ export class OfficialPluginService implements Disposable {
 					await this.runtimeActivator.deactivate(pluginId, {
 						revertThemes: options?.revertThemesOnDeactivate ?? true
 					});
-					if (existing && hadActiveRuntime) {
+					if (existing && hadActiveRuntime && !this.disposed) {
 						await this.runtimeActivator.activate(existing);
 					}
 				} catch (rollbackErr) {
@@ -331,7 +353,14 @@ export class OfficialPluginService implements Disposable {
 		}
 	}
 
+	private async cancelHotUpdate(pluginId: string): Promise<void> {
+		const update = this.hotUpdates.get(pluginId);
+		if (!update) return;
+		update.controller.abort();
+		await update.settled.catch(() => {});
+	}
 	async uninstall(pluginId: string): Promise<void> {
+		await this.cancelHotUpdate(pluginId);
 		await this.runtimeActivator.deactivate(pluginId, { revertThemes: true });
 		await this.installedStore.remove(pluginId);
 		await this.engine.storage.clearPluginData?.(pluginId);
@@ -340,6 +369,7 @@ export class OfficialPluginService implements Disposable {
 	}
 
 	async enable(pluginId: string): Promise<void> {
+		await this.cancelHotUpdate(pluginId);
 		const record = this.installedStore.find(pluginId);
 		if (!record) {
 			throw new Error(`Plugin not installed: ${pluginId}`);
@@ -355,6 +385,7 @@ export class OfficialPluginService implements Disposable {
 	}
 
 	async disable(pluginId: string): Promise<void> {
+		await this.cancelHotUpdate(pluginId);
 		const record = this.installedStore.find(pluginId);
 		if (!record) {
 			throw new Error(`Plugin not installed: ${pluginId}`);
@@ -417,6 +448,8 @@ export class OfficialPluginService implements Disposable {
 	}
 
 	dispose(): void {
+		this.disposed = true;
+		for (const update of this.hotUpdates.values()) update.controller.abort();
 		this.hmrDisposable?.dispose();
 		this.installQueue.dispose();
 		this.runtimeActivator.disposeAll();

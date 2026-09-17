@@ -9,6 +9,7 @@ const BASE_MANIFEST: PluginManifest = {
 	description: { 'zh-CN': 'Test' },
 	author: 'Chronos',
 	type: 'tool',
+	toolGroup: 'utility',
 	bundleFormat: 'esm',
 	bundleUrl: '/test.bundle.js',
 	sha256: 'abc'
@@ -33,6 +34,11 @@ describe('validatePluginManifest', () => {
 		expect(() => validatePluginManifest({ ...BASE_MANIFEST, cssUrl: '/test.bundle.css' })).toThrow(
 			/missing cssSha256/
 		);
+	});
+
+	it('rejects tool plugins without toolGroup', () => {
+		const { toolGroup: _toolGroup, ...manifest } = BASE_MANIFEST;
+		expect(() => validatePluginManifest(manifest)).toThrow(/require toolGroup/);
 	});
 
 	it('accepts cssUrl with cssSha256', () => {

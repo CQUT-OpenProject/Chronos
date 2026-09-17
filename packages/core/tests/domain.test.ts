@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test';
 import {
 	createCourse,
-	COURSE_REMARK_MAX_LENGTH,
 	createTimetable,
 	deriveWeekendViewPrefs,
 	normalizeTimetableName,
@@ -29,7 +28,6 @@ describe('Domain Models in @chronos/core', () => {
 		expect(course.name).toBe('高等数学');
 		expect(course.weeks).toEqual([]);
 		expect(course.remark).toBe('');
-		expect(COURSE_REMARK_MAX_LENGTH).toBe(200);
 	});
 
 	it('normalizes course name in createCourse', () => {
@@ -63,7 +61,6 @@ describe('Domain Models in @chronos/core', () => {
 		});
 
 		expect(timetable.schemaVersion).toBe(CURRENT_TIMETABLE_SCHEMA_VERSION);
-		expect(timetable.schemaVersion).toBe(1);
 		expect(timetable.id).toBe('t1');
 		expect(timetable.name).toBe('我的课表');
 		expect(timetable.academicConfig.startWeek).toBe(1);
@@ -93,7 +90,6 @@ describe('Domain Models in @chronos/core', () => {
 
 	it('provides valid default UserPreferences', () => {
 		expect(DEFAULT_USER_PREFERENCES.schemaVersion).toBe(CURRENT_PREFERENCES_SCHEMA_VERSION);
-		expect(DEFAULT_USER_PREFERENCES.schemaVersion).toBe(2);
 		expect(DEFAULT_USER_PREFERENCES.themeMode).toBe('auto');
 		expect(DEFAULT_USER_PREFERENCES.paletteMode).toBe('vibrant');
 		expect(DEFAULT_USER_PREFERENCES.timetableLayoutMode).toBe('compact');

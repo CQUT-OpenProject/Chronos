@@ -17,8 +17,8 @@ function registerCoreShellSlots(ctx: ChronosContext, t: PluginTranslate): void {
 		id: 'timetable',
 		label: () => t('tab.timetable'),
 		order: 10,
-		icon: 'calendar-month',
-		iconFill: 'calendar-month-fill',
+		icon: 'table-chart',
+		iconFill: 'table-chart-fill',
 		hostPanel: 'timetable'
 	});
 

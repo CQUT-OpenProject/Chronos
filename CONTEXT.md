@@ -6,14 +6,15 @@ Canonical vocabulary for runtime modules. Prefer these names over file names.
 
 Registered on `ChronosEnv` at engine construction. Runtime code reads `engine.storage` / `engine.http` / `ctx.service(...)`, not ad-hoc platform globals.
 
-| Port                | Role                                                                                                                                                                                                                                      |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `IHttpService`      | Network + optional session                                                                                                                                                                                                                |
-| `IStorageService`   | Timetables, preferences, wallpaper, plugin KV                                                                                                                                                                                             |
-| `IVaultService`     | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                                                                                                             |
-| `IRuntimeService`   | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                                                                                                               |
-| `IAnalyticsService` | Optional product analytics (`track(event: string)`). **Host**: `trackEvent(HostAnalyticsEvent)` in `apps/web`. **Plugins**: `trackPluginAnalytics(ctx, pluginId, action)` → `plugin.{id}.{action}`; never import `$lib/client/analytics`. |
-| `IHostNavigation`   | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                                                                                                                      |
+| Port                         | Role                                                                                                                                                                                                                                      |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IHttpService`               | Network + optional session                                                                                                                                                                                                                |
+| `IStorageService`            | Timetables, preferences, wallpaper, plugin KV                                                                                                                                                                                             |
+| `IVaultService`              | Encrypted secret store (native hosts: Keychain / Keystore). Not a general KV.                                                                                                                                                             |
+| `IRuntimeService`            | Platform id + SHA-256 (`sha256` only; timers/UTF-8 helpers removed Round 6)                                                                                                                                                               |
+| `IAnalyticsService`          | Optional product analytics (`track(event: string)`). **Host**: `trackEvent(HostAnalyticsEvent)` in `apps/web`. **Plugins**: `trackPluginAnalytics(ctx, pluginId, action)` → `plugin.{id}.{action}`; never import `$lib/client/analytics`. |
+| `IHostNavigation`            | Optional host routes (`openCourseEditor`); plugins use `ctx.tryService(IHostNavigation)` — never hardcode host paths                                                                                                                      |
+| `ICoursePresentationService` | Optional course palette + per-timetable paint assignment (`getCoursePalette`, `resolveCoursePaintsForTimetable`, `resolveCoursePaint`); scope is each timetable's full `courses` list — plugins must not reassign from visible subsets    |
 
 `ChronosEnv` is the host bootstrap adapter (web + native). All hosts must pass a complete `env` at `ChronosEngine` construction; `ScopedContext.service()` resolves standard ports from `env` directly.
 
@@ -33,9 +34,9 @@ One lookup module (`packages/core/src/algorithms/period-clock.ts`), two fallback
 - `'none'` — Engine `updateTime` / `currentPeriodIndex` (period only while in progress).
 - `'upcomingOrLast'` — grid highlight (host/plugin screens derive from `clockNow`).
 
-**Scheduler (single):** `ChronosEngine` owns the only `createDayClock` instance (midnight + period-boundary timers with `reschedule`/`dispose`). `time:tick` emits `{ currentWeek, currentPeriod, now, todayIso }`; `ReactiveChronosController` mirrors `clockNow` / `clockTodayIso`. Host timetable screen and `tool-today` must not instantiate their own clocks.
+**Scheduler (single):** `ChronosEngine` owns the only `createDayClock` instance (one minute-aligned self-scheduling timer with `onTick(now)`, `reschedule`/`dispose`). `time:tick` emits `{ currentWeek, currentPeriod, now, todayIso }`; `ReactiveChronosController` mirrors `clockNow` / `clockTodayIso`. Host timetable screen and `tool-today` must not instantiate their own clocks.
 
-Also exports period parsing helpers and delay utilities. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/algorithms/date.ts`.
+The host calls `engine.refreshSystemTime()` on visibility restoration; this is a no-op while frozen. Static preview grids only highlight an explicitly supplied current period. Also exports period parsing helpers. ISO local weekday (`dayOfWeekFromIso`, 1 = Monday … 7 = Sunday) lives in `packages/core/src/algorithms/date.ts`.
 
 CQUT campus tables (花溪 1 节 `08:20`, 两江下午 `14:20`, 10 节) live only in `@chronos/plugin-source-cqut`.
 
@@ -124,3 +125,11 @@ Kernel events: `dynamicColor:set`, `dynamicColor:changed`, `dynamicColor:hydrate
 ## Share-link codec
 
 Canonical implementation: `@chronos/plugin-codec-share/share-link`. Slots: `import.source.tab` (`share-link`), `export.action` (`share-link`).
+
+## UI overlay port
+
+`ChronosUiController.overlayHistoryPort` is optional. `openOverlay(id, onDismiss)` returns an instance handle with idempotent `close()` / `dispose()`. All overlays use `createHistoryOverlaySync`; no port means no browser-history effects. Host wrappers inject the shared coordinator port; plugin BottomSheet/TimePicker/DateField and SchemaForm receive the controller port. System dismissal cancels drafts only. Never call confirmation callbacks from `onDismiss`.
+
+This replaces pushOverlay/closeOverlay/onPopOverlay/bindCloser and skipNextHistoryBack without deprecated aliases. Route actions inside an overlay use host navigation (plugins: `IHostNavigation`), which replaces the overlay entry on successful navigation. Closed overlays are skipped during browser forward.
+
+Course presentation caches by timetable updatedAt plus immutable palette array identity. Replace palette arrays, never mutate them; palette events request consumer refresh only. Use `assignCourseDisplayColors` as the sole assignment algorithm and `ICoursePresentationService` from plugins.

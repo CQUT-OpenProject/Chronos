@@ -1,5 +1,12 @@
 <script lang="ts">
 	import { Dialog } from 'bits-ui';
+	import {
+		createHistoryOverlaySync,
+		OVERLAY_LIFECYCLE_CONTEXT,
+		type HistoryOverlaySync
+	} from '@chronos/ui-kit';
+	import { getOverlayHistoryPort } from '$lib/navigation';
+	import { onDestroy, getContext, setContext } from 'svelte';
 	import type { Snippet } from 'svelte';
 
 	let {
@@ -17,6 +24,20 @@
 		footer?: Snippet;
 		onOpenChange?: (open: boolean) => void;
 	} = $props();
+
+	const instanceId = $props.id();
+	const historySync = createHistoryOverlaySync({
+		overlayId: `dialog-${instanceId}`,
+		port: getOverlayHistoryPort(),
+		parent: getContext<HistoryOverlaySync | undefined>(OVERLAY_LIFECYCLE_CONTEXT),
+		setOpen: (next) => {
+			open = next;
+			onOpenChange?.(next);
+		}
+	});
+	setContext(OVERLAY_LIFECYCLE_CONTEXT, historySync);
+	$effect(() => historySync.syncOpenState(open));
+	onDestroy(() => historySync.dispose());
 </script>
 
 <Dialog.Root bind:open {onOpenChange}>

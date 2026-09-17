@@ -10,6 +10,7 @@ const releaseVersion = '0.0.0-test';
 const pluginDef = {
 	id: 'tool-test',
 	type: 'tool' as const,
+	toolGroup: 'utility' as const,
 	sourceDir: 'test',
 	name: { 'zh-CN': '测试', en: 'Test' },
 	description: { 'zh-CN': 'd', en: 'd' }

@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const mocks = vi.hoisted(() => ({
-	initNavJournal: vi.fn(),
-	getNavJournalDepth: vi.fn(() => 1),
-	markDeepLinkEntry: vi.fn(),
 	connectivityInit: vi.fn(),
 	connectivityDestroy: vi.fn(),
 	pwaInstallInit: vi.fn().mockResolvedValue(undefined),
@@ -11,13 +8,6 @@ const mocks = vi.hoisted(() => ({
 	tryScheduleInstallDialog: vi.fn(),
 	initAnalytics: vi.fn(),
 	attachOfflineUx: vi.fn(() => vi.fn())
-}));
-
-vi.mock('$lib/navigation', () => ({
-	initNavJournal: mocks.initNavJournal,
-	getNavJournalDepth: mocks.getNavJournalDepth,
-	isSecondaryRoute: (pathname: string) => pathname !== '/' && pathname !== '',
-	markDeepLinkEntry: mocks.markDeepLinkEntry
 }));
 
 vi.mock('$lib/platform/connectivity.svelte', () => ({
@@ -98,13 +88,12 @@ describe('createPlatformBootstrap', () => {
 
 	it('runs startup sequence in order', async () => {
 		const platform = createPlatformBootstrap(deps);
-		const teardown = platform.init('/');
+		const teardown = platform.init();
 
 		await vi.waitFor(() => {
 			expect(shell.init).toHaveBeenCalled();
 		});
 
-		expect(mocks.initNavJournal).toHaveBeenCalledWith('/');
 		expect(mocks.connectivityInit).toHaveBeenCalled();
 		expect(timetableScreen.init).toHaveBeenCalledWith(shell);
 		expect(mocks.pwaInstallInit).toHaveBeenCalled();
@@ -120,9 +109,9 @@ describe('createPlatformBootstrap', () => {
 
 	it('is idempotent on repeated init', () => {
 		const platform = createPlatformBootstrap(deps);
-		platform.init('/');
-		platform.init('/mine');
+		platform.init();
+		platform.init();
 
-		expect(mocks.initNavJournal).toHaveBeenCalledTimes(1);
+		expect(mocks.connectivityInit).toHaveBeenCalledTimes(1);
 	});
 });

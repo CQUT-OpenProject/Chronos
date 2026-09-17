@@ -1,9 +1,11 @@
 import { COURSE_PALETTE_ENTRIES, type DynamicColorAdapter } from '@chronos/core';
+import type { CoursePaletteRef } from '$lib/services/course-presentation-port';
+
 import { getAppEngine } from '$lib/services/app-engine';
 import { applyAppearance, type ApplyAppearanceInput } from './apply-appearance';
 import { isDynamicColorPaletteMode } from './color-scheme';
 
-export function createAppearance() {
+export function createAppearance(paletteRef: CoursePaletteRef, onPaletteChanged?: () => void) {
 	let coursePalette =
 		$state.raw<readonly import('@chronos/core').CoursePaletteEntry[]>(COURSE_PALETTE_ENTRIES);
 
@@ -36,6 +38,8 @@ export function createAppearance() {
 			});
 			if (signal?.aborted) return;
 			coursePalette = result.coursePalette;
+			paletteRef.current = result.coursePalette;
+			onPaletteChanged?.();
 		} catch (error) {
 			if (signal?.aborted) return;
 			throw error;

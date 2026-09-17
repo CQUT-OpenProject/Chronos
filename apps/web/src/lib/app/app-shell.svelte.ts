@@ -2,7 +2,13 @@ import { createAppearance } from '$lib/appearance/appearance.svelte';
 import { applyActiveTheme } from '$lib/appearance/apply-active-theme';
 import { buildColorSchemePatch } from '$lib/appearance/color-scheme';
 import { pwaInstallController } from '$lib/client/pwa-install.svelte';
-import { getAppController, getAppEngine, resetAppToInitialState } from '$lib/services/app-engine';
+import {
+	getAppController,
+	getAppEngine,
+	getSharedCoursePaletteRef,
+	notifyCoursePaletteChanged,
+	resetAppToInitialState
+} from '$lib/services/app-engine';
 import type {
 	CapsuleCornerStyle,
 	PaletteMode,
@@ -20,16 +26,21 @@ function resolveDark(themeMode: ThemeMode, systemPrefersDark: boolean): boolean 
 
 export function createAppShell() {
 	let systemPrefersDark = $state(false);
+	let compactLandscape = $state(false);
 	let mediaQueryCleanup: (() => void) | null = null;
+	let landscapeQueryCleanup: (() => void) | null = null;
 	let dynamicColorCleanup: (() => void) | null = null;
 	let disposeAppearanceEffects: (() => void) | null = null;
 	let dynamicColorUri = $state<string | null>(null);
-	const appearance = createAppearance();
+	const appearance = createAppearance(getSharedCoursePaletteRef(), notifyCoursePaletteChanged);
 	const controller = getAppController();
 	const engine = getAppEngine();
 
 	const themeMode = $derived(controller.userPreferences?.themeMode ?? 'auto');
 	const isDark = $derived(resolveDark(themeMode, systemPrefersDark));
+	const effectiveTimetableLayoutMode = $derived<TimetableLayoutMode>(
+		compactLandscape ? 'fixed' : (controller.userPreferences?.timetableLayoutMode ?? 'compact')
+	);
 
 	const initialized = $derived(
 		Boolean(
@@ -49,6 +60,15 @@ export function createAppShell() {
 			};
 			mediaQuery.addEventListener('change', onChange);
 			mediaQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
+		}
+		if (typeof window !== 'undefined' && !landscapeQueryCleanup) {
+			const mediaQuery = window.matchMedia('(orientation: landscape) and (max-height: 500px)');
+			compactLandscape = mediaQuery.matches;
+			const onChange = (event: MediaQueryListEvent) => {
+				compactLandscape = event.matches;
+			};
+			mediaQuery.addEventListener('change', onChange);
+			landscapeQueryCleanup = () => mediaQuery.removeEventListener('change', onChange);
 		}
 
 		dynamicColorCleanup?.();
@@ -102,6 +122,8 @@ export function createAppShell() {
 	function destroy() {
 		mediaQueryCleanup?.();
 		mediaQueryCleanup = null;
+		landscapeQueryCleanup?.();
+		landscapeQueryCleanup = null;
 		dynamicColorCleanup?.();
 		dynamicColorCleanup = null;
 		disposeAppearanceEffects?.();
@@ -131,6 +153,7 @@ export function createAppShell() {
 	}
 
 	async function setTimetableLayoutMode(mode: TimetableLayoutMode) {
+		if (compactLandscape && mode === 'compact') return;
 		await updatePreferences({ timetableLayoutMode: mode });
 	}
 
@@ -175,6 +198,8 @@ export function createAppShell() {
 			return {
 				initialized,
 				isDark,
+				compactLandscape,
+				effectiveTimetableLayoutMode,
 				hasDynamicColorBackground,
 				dynamicColorUri
 			};

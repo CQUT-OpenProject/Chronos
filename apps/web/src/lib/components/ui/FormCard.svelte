@@ -20,7 +20,8 @@
 {:else}
 	<Card
 		variant="outlined"
-		class="!divide-y divide-outline-variant/40 overflow-hidden !p-0 {className}"
+		flush
+		class="divide-y divide-outline-variant/40 overflow-hidden {className}"
 	>
 		{@render children?.()}
 	</Card>

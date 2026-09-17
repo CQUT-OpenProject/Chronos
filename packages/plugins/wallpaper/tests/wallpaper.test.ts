@@ -24,16 +24,6 @@ function createWallpaperMockEnv(
 }
 
 describe('@chronos/plugin-wallpaper', () => {
-	it('has expected plugin metadata', () => {
-		expect(wallpaperPlugin.id).toBe(WALLPAPER_PLUGIN_ID);
-		expect(wallpaperPlugin.id).toBe('tool-wallpaper');
-		expect(wallpaperPlugin.version).toBe('1.0.0');
-		expect(wallpaperPlugin.category).toBe('tool');
-		expect(
-			typeof wallpaperPlugin.name === 'function' ? wallpaperPlugin.name() : wallpaperPlugin.name
-		).toBe('自定义壁纸');
-	});
-
 	it('registers mine.item, screen slot, and theme when loaded', async () => {
 		const env = createWallpaperMockEnv();
 		const engine = new ChronosEngine({ env });

@@ -25,12 +25,7 @@
 	} from './timetable-grid-chrome';
 	import type { CapsuleCornerStyle, TimetableLayoutMode } from '@chronos/core';
 	import type { Course, CourseBadge } from '@chronos/core';
-	import {
-		computeDelayUntilNextCurrentTimeRefreshMillis,
-		currentTimeMinutes,
-		findCurrentPeriodIndex,
-		parsePeriodRanges
-	} from '@chronos/core';
+
 	import { getContext } from 'svelte';
 	import { fromStore } from 'svelte/store';
 	import { PREVIEW_PAINT_READY_CONTEXT, type PreviewPaintReadySource } from './preview-paint-ready';
@@ -99,12 +94,10 @@
 	let gridBodyWidth = $state(0);
 	let bodyViewportHeight = $state(0);
 	let internalExpandedSlots = $state(new Set<string>());
-	let now = $state(new Date());
 
 	const effectiveExpandedSlots = $derived(propExpandedSlots ?? internalExpandedSlots);
 	const visibleDayCount = $derived(gridModel.visibleDays.length);
 	const columnWidthPx = $derived(visibleDayCount > 0 ? gridBodyWidth / visibleDayCount : 0);
-	const parsedPeriods = $derived(parsePeriodRanges(gridModel.periods));
 
 	const placements = $derived(
 		paintReady
@@ -123,31 +116,12 @@
 
 	const solidBgClass = $derived(timetableSolidBgClass(hasDynamicBackground));
 	const isFitLayout = $derived(layoutMode === 'compact');
-	const currentPeriodIndex = $derived(
-		propCurrentPeriodIndex !== undefined
-			? propCurrentPeriodIndex
-			: findCurrentPeriodIndex(parsedPeriods, currentTimeMinutes(now))
-	);
+	const currentPeriodIndex = $derived(propCurrentPeriodIndex ?? null);
 	const rowHeightCss = $derived.by(() => {
 		if (!isFitLayout || bodyViewportHeight <= 0 || gridModel.displayedPeriodCount <= 0) {
 			return ROW_HEIGHT;
 		}
 		return `${bodyViewportHeight / gridModel.displayedPeriodCount}px`;
-	});
-
-	$effect(() => {
-		if (!paintReady) return;
-		if (propCurrentPeriodIndex !== undefined) return;
-		let timeoutId: ReturnType<typeof setTimeout>;
-		const schedule = () => {
-			const delay = computeDelayUntilNextCurrentTimeRefreshMillis(new Date(), parsedPeriods);
-			timeoutId = setTimeout(() => {
-				now = new Date();
-				schedule();
-			}, delay);
-		};
-		schedule();
-		return () => clearTimeout(timeoutId);
 	});
 
 	function expandSlot(key: string) {
@@ -228,24 +202,20 @@
 				>
 					{#each gridModel.periods as period (period.index)}
 						<div
-							class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 py-[3px] text-center"
+							class="flex h-[var(--row-height)] flex-col items-center justify-center px-1 text-center {period.index ===
+							currentPeriodIndex
+								? 'period-active'
+								: ''}"
 						>
-							<div
-								class="flex h-full w-full flex-col items-center justify-center {period.index ===
+							<span class={timetablePeriodIndexClass()}>{period.index}</span>
+							<span
+								class="text-caption mt-1 font-mono leading-tight {period.index ===
 								currentPeriodIndex
-									? 'period-active'
-									: ''}"
+									? ''
+									: 'text-on-surface-variant'}"
 							>
-								<span class={timetablePeriodIndexClass()}>{period.index}</span>
-								<span
-									class="text-caption mt-1 font-mono leading-tight {period.index ===
-									currentPeriodIndex
-										? ''
-										: 'text-on-surface-variant'}"
-								>
-									{period.startTime}<br />{period.endTime}
-								</span>
-							</div>
+								{period.startTime}<br />{period.endTime}
+							</span>
 						</div>
 					{/each}
 				</aside>
@@ -303,7 +273,8 @@
 								{@const badgeText = item.badgeLabel || courseBadgesForThis[0]?.text}
 								{@const innerWidthPx = courseCapsuleInnerWidthPx(
 									columnWidthPx,
-									item.geometry.widthPercent
+									item.geometry.widthPercent,
+									visibleDayCount
 								)}
 								{#if interactive}
 									<button

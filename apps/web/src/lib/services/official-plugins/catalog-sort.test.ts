@@ -12,15 +12,33 @@ const officialPluginNames = {
 	'tool-wallpaper': {
 		'zh-CN': '自定义壁纸',
 		en: 'Custom Wallpaper',
-		type: 'tool' as const
+		type: 'tool' as const,
+		toolGroup: 'utility' as const
 	},
-	'tool-qrcode': { 'zh-CN': '二维码', en: 'QR Code', type: 'tool' as const },
+	'tool-qrcode': {
+		'zh-CN': '二维码',
+		en: 'QR Code',
+		type: 'tool' as const,
+		toolGroup: 'utility' as const
+	},
 	'tool-calendar-holidays': {
 		'zh-CN': '法定节假日',
 		en: 'Public Holidays',
-		type: 'tool' as const
+		type: 'tool' as const,
+		toolGroup: 'utility' as const
 	},
-	'tool-today': { 'zh-CN': '今日', en: 'Today', type: 'tool' as const }
+	'tool-today': {
+		'zh-CN': '今日',
+		en: 'Today',
+		type: 'tool' as const,
+		toolGroup: 'utility' as const
+	},
+	'tool-error-log': {
+		'zh-CN': '错误日志',
+		en: 'Error Log',
+		type: 'tool' as const,
+		toolGroup: 'dev' as const
+	}
 } as const;
 
 function toCatalogEntries(): Array<{ url: string; manifest: PluginManifest }> {
@@ -33,6 +51,7 @@ function toCatalogEntries(): Array<{ url: string; manifest: PluginManifest }> {
 			description: { 'zh-CN': plugin['zh-CN'], en: plugin.en },
 			author: 'Chronos',
 			type: plugin.type,
+			toolGroup: 'toolGroup' in plugin ? plugin.toolGroup : undefined,
 			bundleFormat: 'esm'
 		}
 	}));
@@ -51,9 +70,16 @@ function groupByLocale(locale: string): string[][] {
 }
 
 describe('catalog-sort', () => {
-	it('orders categories theme before tool before unknown', () => {
-		expect(getPluginCategorySortIndex('theme')).toBeLessThan(getPluginCategorySortIndex('tool'));
-		expect(getPluginCategorySortIndex('tool')).toBeLessThan(getPluginCategorySortIndex('codec'));
+	it('orders categories theme before utility tools before dev tools', () => {
+		expect(getPluginCategorySortIndex('theme')).toBeLessThan(
+			getPluginCategorySortIndex('tool-utility')
+		);
+		expect(getPluginCategorySortIndex('tool-utility')).toBeLessThan(
+			getPluginCategorySortIndex('tool-dev')
+		);
+		expect(getPluginCategorySortIndex('tool-dev')).toBeLessThan(
+			getPluginCategorySortIndex('codec')
+		);
 		expect(getPluginCategorySortIndex('unknown')).toBeGreaterThan(
 			getPluginCategorySortIndex('codec')
 		);
@@ -65,7 +91,8 @@ describe('catalog-sort', () => {
 			'tool-qrcode',
 			'tool-calendar-holidays',
 			'tool-today',
-			'tool-wallpaper'
+			'tool-wallpaper',
+			'tool-error-log'
 		]);
 	});
 
@@ -75,18 +102,21 @@ describe('catalog-sort', () => {
 			'tool-wallpaper',
 			'tool-calendar-holidays',
 			'tool-qrcode',
-			'tool-today'
+			'tool-today',
+			'tool-error-log'
 		]);
 	});
 
 	it('groups official plugins by category with sorted entries inside each group', () => {
 		expect(groupByLocale('zh-CN')).toEqual([
 			['theme-yumemita'],
-			['tool-qrcode', 'tool-calendar-holidays', 'tool-today', 'tool-wallpaper']
+			['tool-qrcode', 'tool-calendar-holidays', 'tool-today', 'tool-wallpaper'],
+			['tool-error-log']
 		]);
 		expect(groupByLocale('en')).toEqual([
 			['theme-yumemita'],
-			['tool-wallpaper', 'tool-calendar-holidays', 'tool-qrcode', 'tool-today']
+			['tool-wallpaper', 'tool-calendar-holidays', 'tool-qrcode', 'tool-today'],
+			['tool-error-log']
 		]);
 	});
 

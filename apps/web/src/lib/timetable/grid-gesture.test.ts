@@ -38,10 +38,8 @@ function mockMouseEvent(init: Partial<MouseEvent> = {}): MouseEvent {
 }
 
 function createHarness() {
-	const onLongPressFeedback = vi.fn();
 	const interaction = createTimetableInteraction({
-		longPressDelayMs: 400,
-		onLongPressFeedback
+		longPressDelayMs: 400
 	});
 	const onClickEmpty = vi.fn(() => {
 		interaction.exitEdit();
@@ -49,23 +47,21 @@ function createHarness() {
 	const handlers = interaction.createGridHandlers({
 		onClickEmpty
 	});
-	return { interaction, handlers, onLongPressFeedback, onClickEmpty };
+	return { interaction, handlers, onClickEmpty };
 }
 
 describe('createGridHandlers', () => {
 	it('triggers enterEditFromLongPress after delay and suppresses subsequent click', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback, onClickEmpty, interaction } = createHarness();
+			const { handlers, onClickEmpty, interaction } = createHarness();
 
 			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
 			handlers.onpointerdown(downEvt);
 
-			expect(onLongPressFeedback).not.toHaveBeenCalled();
 			expect(interaction.isEditing).toBe(false);
 
 			vi.advanceTimersByTime(400);
-			expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
 			expect(interaction.isEditing).toBe(true);
 
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
@@ -82,12 +78,12 @@ describe('createGridHandlers', () => {
 	it('exits edit mode on the very first click after long press when no click was fired on pointerup (touch/mobile)', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback, onClickEmpty } = createHarness();
+			const { handlers, onClickEmpty, interaction } = createHarness();
 
 			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
 			handlers.onpointerdown(downEvt);
 			vi.advanceTimersByTime(400);
-			expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
+			expect(interaction.isEditing).toBe(true);
 
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
 
@@ -104,12 +100,12 @@ describe('createGridHandlers', () => {
 	it('clears longPressFired after release timer even if next click has no pointerdown', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback, onClickEmpty } = createHarness();
+			const { handlers, onClickEmpty, interaction } = createHarness();
 
 			const downEvt = mockPointerEvent({ clientX: 50, clientY: 50 });
 			handlers.onpointerdown(downEvt);
 			vi.advanceTimersByTime(400);
-			expect(onLongPressFeedback).toHaveBeenCalledTimes(1);
+			expect(interaction.isEditing).toBe(true);
 
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(60);
@@ -124,7 +120,7 @@ describe('createGridHandlers', () => {
 	it('cancels long press when pointer moves beyond drag threshold', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback } = createHarness();
+			const { handlers, interaction } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(200);
@@ -137,7 +133,7 @@ describe('createGridHandlers', () => {
 			);
 			vi.advanceTimersByTime(300);
 
-			expect(onLongPressFeedback).not.toHaveBeenCalled();
+			expect(interaction.isEditing).toBe(false);
 		} finally {
 			vi.useRealTimers();
 		}
@@ -146,14 +142,14 @@ describe('createGridHandlers', () => {
 	it('cancels long press on pointerup before delay', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback } = createHarness();
+			const { handlers, interaction } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(200);
 			handlers.onpointerup(mockPointerEvent({ clientX: 50, clientY: 50 }));
 
 			vi.advanceTimersByTime(300);
-			expect(onLongPressFeedback).not.toHaveBeenCalled();
+			expect(interaction.isEditing).toBe(false);
 		} finally {
 			vi.useRealTimers();
 		}
@@ -162,14 +158,14 @@ describe('createGridHandlers', () => {
 	it('cancels long press on pointercancel or pointerleave', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback } = createHarness();
+			const { handlers, interaction } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(200);
 			handlers.onpointercancel(mockPointerEvent({ clientX: 50, clientY: 50 }));
 
 			vi.advanceTimersByTime(300);
-			expect(onLongPressFeedback).not.toHaveBeenCalled();
+			expect(interaction.isEditing).toBe(false);
 		} finally {
 			vi.useRealTimers();
 		}
@@ -178,7 +174,7 @@ describe('createGridHandlers', () => {
 	it('ignores target that is inside a course-capsule', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback } = createHarness();
+			const { handlers, interaction } = createHarness();
 
 			const capsuleTarget = createMockElement('.course-capsule');
 			handlers.onpointerdown(
@@ -190,7 +186,7 @@ describe('createGridHandlers', () => {
 			);
 			vi.advanceTimersByTime(500);
 
-			expect(onLongPressFeedback).not.toHaveBeenCalled();
+			expect(interaction.isEditing).toBe(false);
 		} finally {
 			vi.useRealTimers();
 		}
@@ -199,13 +195,13 @@ describe('createGridHandlers', () => {
 	it('does not start long press timer when already in editing mode', () => {
 		vi.useFakeTimers();
 		try {
-			const { interaction, handlers, onLongPressFeedback } = createHarness();
+			const { interaction, handlers } = createHarness();
 			interaction.enterEdit();
 
 			handlers.onpointerdown(mockPointerEvent({ clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(500);
 
-			expect(onLongPressFeedback).not.toHaveBeenCalled();
+			expect(interaction.isEditing).toBe(true);
 		} finally {
 			vi.useRealTimers();
 		}
@@ -227,12 +223,12 @@ describe('createGridHandlers', () => {
 	it('ignores non-primary pointer button', () => {
 		vi.useFakeTimers();
 		try {
-			const { handlers, onLongPressFeedback } = createHarness();
+			const { handlers, interaction } = createHarness();
 
 			handlers.onpointerdown(mockPointerEvent({ button: 2, clientX: 50, clientY: 50 }));
 			vi.advanceTimersByTime(500);
 
-			expect(onLongPressFeedback).not.toHaveBeenCalled();
+			expect(interaction.isEditing).toBe(false);
 		} finally {
 			vi.useRealTimers();
 		}

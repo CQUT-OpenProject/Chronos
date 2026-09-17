@@ -17,6 +17,7 @@ export function createErrorLogPlugin(options: CreateErrorLogPluginOptions = {}) 
 		nameKey: 'plugin.name',
 		descriptionKey: 'plugin.description',
 		category: 'tool',
+		toolGroup: 'dev',
 		order: 50,
 		author: 'Chronos',
 		homepage: 'https://github.com/CQUT-OpenProject/Chronos',

@@ -2,16 +2,62 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import type { ShellTabController } from '$lib/shell/shell-tab.svelte';
+	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import ShellTabPanels from '$lib/components/shell/ShellTabPanels.svelte';
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
-	import { ensureEngineFullyReady } from '$lib/services/app-engine';
+	import AdaptiveEdgeBar from '$lib/components/ui/AdaptiveEdgeBar.svelte';
+	import TimetableWeekBadge from '$lib/components/timetable/TimetableWeekBadge.svelte';
+	import {
+		MountableSlotOutlet,
+		resolvePluginScreenSlot,
+		createEdgeBarActions,
+		setEdgeBarActions
+	} from '@chronos/ui-kit';
+	import { resolveLocalizedText } from '@chronos/core';
+	import EdgeBarActionButtons from '$lib/components/ui/EdgeBarActionButtons.svelte';
+	import { ensureEngineFullyReady, getAppController } from '$lib/services/app-engine';
 	import { isShellRoute } from '$lib/navigation/routes';
 	import { secondaryTransitionGate } from '$lib/navigation';
 
 	const shellTab = getContext<ShellTabController>('shellTab');
+	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
+	const controller = getAppController();
+	const edgeActions = createEdgeBarActions();
+	setEdgeBarActions(edgeActions);
 	const gate = secondaryTransitionGate;
+	const compactLandscape = new MediaQuery('(orientation: landscape) and (max-height: 500px)');
+	const activeTab = $derived(
+		controller.getSlots('shell.bottom-bar.tab').find((tab) => tab.id === shellTab.activeTabId)
+	);
+	const activePluginId = $derived(
+		activeTab && !activeTab.hostPanel
+			? controller.resolveSlotOwner('shell.bottom-bar.tab', activeTab.id)
+			: null
+	);
+	const pluginScreenSlot = $derived(
+		activePluginId
+			? resolvePluginScreenSlot(
+					controller.getSlots('shell.route.screen'),
+					activePluginId,
+					'index',
+					(slotId) => controller.resolveSlotOwner('shell.route.screen', slotId)
+				)
+			: undefined
+	);
+	const pluginRail = $derived(pluginScreenSlot?.landscapeRail);
+	const pluginTitle = $derived(
+		resolveLocalizedText(pluginScreenSlot?.title, '', controller.currentLocale)
+	);
+	const dropActive = $derived(
+		Boolean(
+			activeTab?.hostPanel === 'timetable' &&
+			timetableScreen.state.isEditing &&
+			timetableScreen.interaction.drag?.overDeleteZone
+		)
+	);
 
 	let ready = $state(false);
 	let markedVisible = false;
@@ -58,11 +104,45 @@
 
 {#if browser && gate.shellHostEnabled}
 	<div class="shell-page min-h-dvh bg-canvas text-ink">
-		<div class="pb-[var(--bottom-bar-height)]">
-			<ShellTabPanels {ready} frozen={gate.frozen} />
-		</div>
+		<ShellTabPanels {ready} frozen={gate.frozen} />
 		<div class="shell-tab-bar" class:hidden={gate.skipPaint} inert={gate.frozen}>
-			<BottomTabBar />
+			<AdaptiveEdgeBar kind="shell" alert={dropActive}>
+				{#snippet top()}
+					{#if activeTab?.hostPanel === 'timetable' && timetableScreen.state.currentTimetable}
+						<TimetableWeekBadge screen={timetableScreen} />
+					{/if}
+					{#if compactLandscape.current && activePluginId && pluginTitle}
+						<h1 class="edge-bar-title" title={pluginTitle} aria-label={pluginTitle}>
+							{pluginTitle}
+						</h1>
+					{/if}
+				{/snippet}
+				{#snippet content()}
+					{#if compactLandscape.current && activePluginId && pluginRail}
+						{#key activePluginId}
+							<MountableSlotOutlet
+								component={pluginRail}
+								props={{
+									controller,
+									pluginId: activePluginId,
+									viewId: 'index',
+									active: !gate.frozen
+								}}
+								class="w-full"
+							/>
+						{/key}
+					{/if}
+				{/snippet}
+				{#snippet bottom()}
+					{#if compactLandscape.current && activePluginId && edgeActions.get(activePluginId).length}
+						<EdgeBarActionButtons
+							actions={edgeActions.get(activePluginId)}
+							orientation="vertical"
+						/>
+					{/if}
+					<BottomTabBar />
+				{/snippet}
+			</AdaptiveEdgeBar>
 		</div>
 	</div>
 {/if}

@@ -61,7 +61,6 @@ export interface TimetableInteractionOptions {
 	longPressDelayMs?: number;
 	thresholdPx?: number;
 	clickGuardMs?: number;
-	onLongPressFeedback?: () => void;
 }
 
 interface DragMoveLock {
@@ -89,7 +88,6 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	const longPressDelayMs = options.longPressDelayMs ?? TIMETABLE_LONG_PRESS_DELAY_MS;
 	const thresholdPx = options.thresholdPx ?? TIMETABLE_POINTER_THRESHOLD_PX;
 	const clickGuardMs = options.clickGuardMs ?? TIMETABLE_CLICK_GUARD_MS;
-	const onLongPressFeedback = options.onLongPressFeedback;
 
 	let mode = $state<TimetableInteractionMode>('view');
 	let drag = $state<TimetableDragSession | null>(null);
@@ -130,7 +128,6 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 
 	function enterEditFromLongPress(_event: PointerEvent) {
 		enterEdit();
-		onLongPressFeedback?.();
 	}
 
 	function tryReleaseDragMoveLock(event: PointerEvent): boolean {

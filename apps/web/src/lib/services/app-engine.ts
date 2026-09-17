@@ -2,12 +2,22 @@ import { ChronosEngine, ProfileManager, DEFAULT_VISUAL_THEME_ID } from '@chronos
 import type { ChronosPlugin, ChronosProfile } from '@chronos/core';
 import { createWebChronosEnv, type WebProviderOptions } from '$lib/providers';
 import { ReactiveChronosController, m3DefaultTheme } from '@chronos/ui-kit';
+import { getOverlayHistoryPort } from '$lib/navigation/overlay-history-port';
 import { resolveActiveProfile } from '$lib/boot/profile-registry';
 import { resolveBuiltinPlugin, resolveProfileBuiltinPlugins } from '$lib/boot/profile-bootstrap';
 import { EAGER_BUILTIN_PLUGIN_IDS } from '$lib/profile-codegen/profile-definitions';
 
 import { OfficialPluginService } from '$lib/services/official-plugins/official-plugin-service';
 import { snackbar } from '$lib/components/ui/snackbar-state.svelte';
+import { bindAnalyticsPort } from '$lib/client/analytics';
+import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
+import { detectSystemAppLocale, syncAppLocaleOnStartup } from '$lib/i18n/locale-sync';
+import { HOST_MESSAGES, HOST_UI_PLUGIN_ID } from '$lib/i18n/host-messages';
+import {
+	createCoursePaletteRef,
+	createWebCoursePresentationPort,
+	type CoursePaletteRef
+} from '$lib/services/course-presentation-port';
 
 let sharedEngine: ChronosEngine | null = null;
 let sharedController: ReactiveChronosController | null = null;
@@ -16,26 +26,43 @@ let enginePhase1Promise: Promise<ChronosEngine> | null = null;
 let enginePhase2Promise: Promise<void> | null = null;
 let profileManager: ProfileManager | null = null;
 let resolvedProfilePlugins: ChronosPlugin[] = [];
+let sharedCoursePaletteRef: CoursePaletteRef | null = null;
 
-import { bindAnalyticsPort } from '$lib/client/analytics';
-import { profileHasServerPlugins } from '$lib/boot/plugin-proxy-meta.generated';
-import { detectSystemAppLocale, syncAppLocaleOnStartup } from '$lib/i18n/locale-sync';
-import { HOST_MESSAGES, HOST_UI_PLUGIN_ID } from '$lib/i18n/host-messages';
+function getSharedCoursePaletteRef(): CoursePaletteRef {
+	if (!sharedCoursePaletteRef) {
+		sharedCoursePaletteRef = createCoursePaletteRef();
+	}
+	return sharedCoursePaletteRef;
+}
+
+function notifyCoursePaletteChanged(): void {
+	sharedEngine?.events.emit('coursePalette:changed', undefined);
+}
 
 function createEngine(options?: WebProviderOptions): ChronosEngine {
+	const paletteRef = getSharedCoursePaletteRef();
+	const engineRef: { current: ChronosEngine | null } = { current: null };
+	const coursePresentation = createWebCoursePresentationPort(paletteRef, () => {
+		if (!engineRef.current) {
+			throw new Error('[app-engine] ChronosEngine not initialized');
+		}
+		return engineRef.current;
+	});
+
 	const env = createWebChronosEnv({
 		...options,
 		enablePluginProxy: profileHasServerPlugins(),
+		coursePresentation,
 		navigation: {
 			openCourseEditor(courseId: string) {
-				void import('$app/navigation').then(({ goto }) => {
-					void goto(`/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`);
+				void import('$lib/navigation/nav-coordinator').then(({ navigateForward }) => {
+					void navigateForward(`/timetable/course-editor?courseId=${encodeURIComponent(courseId)}`);
 				});
 			}
 		}
 	});
 	bindAnalyticsPort(env.analytics);
-	return new ChronosEngine({
+	const engine = new ChronosEngine({
 		env,
 		initialLocale: typeof navigator !== 'undefined' ? detectSystemAppLocale() : 'zh-cn',
 		presetThemes: [m3DefaultTheme],
@@ -46,6 +73,9 @@ function createEngine(options?: WebProviderOptions): ChronosEngine {
 			}
 		}
 	});
+	sharedEngine = engine;
+	engineRef.current = engine;
+	return engine;
 }
 
 async function applyThemeFromPreferences(engine: ChronosEngine): Promise<void> {
@@ -151,10 +181,14 @@ export function getAppEngine(options?: WebProviderOptions): ChronosEngine {
 	return sharedEngine;
 }
 
+export { getSharedCoursePaletteRef, notifyCoursePaletteChanged };
+
 export function getAppController(options?: WebProviderOptions): ReactiveChronosController {
 	if (!sharedController) {
 		const engine = getAppEngine(options);
-		sharedController = new ReactiveChronosController(engine);
+		sharedController = new ReactiveChronosController(engine, {
+			overlayHistoryPort: getOverlayHistoryPort()
+		});
 	}
 	return sharedController;
 }
@@ -200,6 +234,7 @@ export function disposeAppEngine(): void {
 	sharedController = null;
 	sharedEngine?.dispose();
 	sharedEngine = null;
+	sharedCoursePaletteRef = null;
 	enginePhase1Promise = null;
 	enginePhase2Promise = null;
 }

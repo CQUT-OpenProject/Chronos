@@ -1,19 +1,30 @@
 <script lang="ts">
 	import { Switch } from 'bits-ui';
+	import { haptic } from '$lib/haptic/haptic';
 
 	let {
 		checked = $bindable(false),
 		disabled = false,
 		size = 'default',
+		hapticOnChange = true,
 		onCheckedChange,
 		class: className = ''
 	}: {
 		checked?: boolean;
 		disabled?: boolean;
 		size?: 'default' | 'sm';
+		/** Fire light haptic when toggled. Disable for switches that manage haptic themselves. */
+		hapticOnChange?: boolean;
 		onCheckedChange?: (checked: boolean) => void;
 		class?: string;
 	} = $props();
+
+	function handleCheckedChange(checked: boolean) {
+		if (hapticOnChange) {
+			haptic.light();
+		}
+		onCheckedChange?.(checked);
+	}
 
 	const rootSizeClass = $derived(
 		size === 'sm'
@@ -30,7 +41,7 @@
 <Switch.Root
 	bind:checked
 	{disabled}
-	{onCheckedChange}
+	onCheckedChange={handleCheckedChange}
 	class="peer rounded-pill inline-flex shrink-0 cursor-pointer items-center border-2 border-transparent bg-outline transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-40 data-[state=checked]:bg-brand {rootSizeClass} {className}"
 >
 	<Switch.Thumb

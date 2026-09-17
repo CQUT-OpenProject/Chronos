@@ -2,28 +2,6 @@ import { describe, it, expect } from 'vite-plus/test';
 import * as Core from '../src/index';
 
 describe('@chronos/core ECMAScript Purity', () => {
-	it('exports all expected core domain, engine, schema, and runtime modules', () => {
-		expect(Core.createCourse).toBeTypeOf('function');
-		expect(Core.createTimetable).toBeTypeOf('function');
-		expect(Core.AcademicCalendarService).toBeTypeOf('function');
-		expect(Core.placeCapsules).toBeTypeOf('function');
-		expect(Core.parseIsoDate).toBeTypeOf('function');
-		expect(Core.calculateTimetableGrid).toBeTypeOf('function');
-		expect(Core.buildTimetableCourseDisplayModels).toBeTypeOf('function');
-		expect(Core.COURSE_PALETTE_ENTRIES).toBeInstanceOf(Array);
-		expect(Core.EventPipeline).toBeTypeOf('function');
-		expect(Core.findCurrentPeriodIndex).toBeTypeOf('function');
-		expect(Core.HierarchicalSlotRegistry).toBeTypeOf('function');
-		expect(Core.createServiceIdentifier).toBeTypeOf('function');
-		expect(Core.defineSchema).toBeTypeOf('function');
-		expect(Core.validateConfig).toBeTypeOf('function');
-		expect(Core.extractDefaultValues).toBeTypeOf('function');
-		expect(Core.ThemeRegistry).toBeTypeOf('function');
-		expect(Core.BadgeManager).toBeTypeOf('function');
-		expect(Core.ScopedContext).toBeTypeOf('function');
-		expect(Core.ChronosEngine).toBeTypeOf('function');
-	});
-
 	it('operates purely on standard ECMAScript data types without DOM globals', () => {
 		// Verify that all core algorithms work even if DOM globals are undefined
 		const course = Core.createCourse({

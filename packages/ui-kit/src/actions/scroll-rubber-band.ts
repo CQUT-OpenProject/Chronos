@@ -147,7 +147,11 @@ function attachRubberBand(node: HTMLElement) {
 	};
 }
 
-/** Adds touch overscroll rubber-band feedback on a vertical scroll container. */
+/**
+ * Touch overscroll rubber-band for primary page scroll surfaces only
+ * (shell tab panels, plugin screen bodies, secondary pages).
+ * Do not attach to overlays, sheets, dialogs, or nested pickers.
+ */
 export function scrollRubberBand(node: HTMLElement, enabled: boolean = true) {
 	let active: ReturnType<typeof attachRubberBand> | null = null;
 

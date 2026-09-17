@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { trackPluginAnalytics } from '@chronos/core';
 	import type { ChronosUiController } from '@chronos/ui-kit';
-	import { TimetableLivePreview, pluginText } from '@chronos/ui-kit';
+	import {
+		TimetableLivePreview,
+		pluginText,
+		type EdgeBarAction,
+		type EdgeBarActionsController
+	} from '@chronos/ui-kit';
 	import { WALLPAPER_ANALYTICS } from './analytics';
 	import WallpaperCropEditor from './WallpaperCropEditor.svelte';
 	import { getWallpaperRuntime } from './runtime.svelte';
@@ -11,9 +16,10 @@
 	interface Props {
 		controller: ChronosUiController;
 		pluginId: string;
+		edgeActions?: EdgeBarActionsController;
 	}
 
-	let { controller, pluginId }: Props = $props();
+	let { controller, pluginId, edgeActions }: Props = $props();
 
 	const runtime = $derived(getWallpaperRuntime(pluginId));
 	const wallpaperUri = $derived(runtime.uri);
@@ -32,6 +38,29 @@
 
 	let fileInput: HTMLInputElement | undefined = $state();
 	let cropSource = $state<File | null>(null);
+	const actions = $derived<EdgeBarAction[]>([
+		...(hasWallpaper
+			? [
+					{
+						id: 'clear',
+						label: clearLabel,
+						icon: 'delete',
+						variant: 'outlined' as const,
+						onClick: clearWallpaper
+					}
+				]
+			: []),
+		{
+			id: 'pick',
+			label: pickLabel,
+			icon: 'wallpaper',
+			onClick: onPickWallpaper
+		}
+	]);
+	$effect(() => {
+		if (cropSource) return;
+		return edgeActions?.register(pluginId, actions);
+	});
 
 	function onPickWallpaper() {
 		fileInput?.click();
@@ -83,6 +112,8 @@
 	{#if cropSource}
 		<WallpaperCropEditor
 			{controller}
+			{pluginId}
+			{edgeActions}
 			source={cropSource}
 			onConfirm={onCropConfirm}
 			onCancel={onCropCancel}
@@ -93,7 +124,7 @@
 				{controller}
 				hasDynamicBackground={true}
 				dynamicColorUri={wallpaperUri}
-				fit="fill"
+				fit="cover"
 				interactive={false}
 			/>
 		</div>
@@ -104,7 +135,7 @@
 	{/if}
 
 	{#if !cropSource}
-		<div class="bottom-bar">
+		<div class="bottom-bar plugin-bottom-actions">
 			<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
 				{#if hasWallpaper}
 					<button type="button" class="ui-btn ui-btn-outlined flex-1" onclick={clearWallpaper}>

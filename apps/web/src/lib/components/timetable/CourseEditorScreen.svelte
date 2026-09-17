@@ -5,12 +5,34 @@
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import CourseEditorForm from '$lib/components/timetable/CourseEditorForm.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
+	import type { EdgeBarAction } from '@chronos/ui-kit';
+	import { Check, DeleteFill } from '$lib/icons';
 
 	let { editor }: { editor: CourseEditorController } = $props();
 
 	const draft = $derived(editor.draft);
 
 	let deleteDialogOpen = $state(false);
+	const actions = $derived.by((): EdgeBarAction[] => [
+		...(draft?.id
+			? [
+					{
+						id: 'delete',
+						label: hostT('course.editor.delete'),
+						icon: DeleteFill,
+						variant: 'danger' as const,
+						onClick: () => (deleteDialogOpen = true)
+					}
+				]
+			: []),
+		{
+			id: 'save',
+			label: hostT('course.editor.save'),
+			icon: Check,
+			disabled: !editor.canSave,
+			onClick: editor.save
+		}
+	]);
 
 	async function confirmDelete() {
 		await editor.deleteCourse();
@@ -19,25 +41,7 @@
 </script>
 
 {#if draft}
-	{#snippet footer()}
-		<div class="flex w-full gap-3">
-			{#if draft.id}
-				<Button variant="danger" class="w-full flex-1" onclick={() => (deleteDialogOpen = true)}>
-					{hostT('course.editor.delete')}
-				</Button>
-			{/if}
-			<Button
-				variant="filled"
-				class="w-full flex-1"
-				disabled={!editor.canSave}
-				onclick={editor.save}
-			>
-				{hostT('course.editor.save')}
-			</Button>
-		</div>
-	{/snippet}
-
-	<FormScreenLayout {footer}>
+	<FormScreenLayout {actions}>
 		<CourseEditorForm {editor} />
 	</FormScreenLayout>
 

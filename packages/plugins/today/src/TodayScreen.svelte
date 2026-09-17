@@ -1,29 +1,25 @@
 <script lang="ts">
-	import { getContext, onMount } from 'svelte';
+	import { onMount } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import {
 		appLocaleToBcp47,
 		pluginText,
-		appScroll,
+		appShellScroll,
 		SegmentedControl,
-		TIMETABLE_PRESENTATION_CONTEXT,
-		resolveCoursePalette,
-		type ChronosUiController,
-		type TimetablePresentationSource
+		type ChronosUiController
 	} from '@chronos/ui-kit';
 	import { fromStore } from 'svelte/store';
 	import { createFitWidthFontAttachment } from '@chronos/ui-kit/utils/fit-width-font.svelte';
 	import {
 		AcademicCalendarService,
-		assignCourseDisplayColors,
+		COURSE_PALETTE_ENTRIES,
 		formatCompactDate,
-		IHostNavigation,
-		normalizedCourseName,
-		resolveCoursePaint
+		IHostNavigation
 	} from '@chronos/core';
 	import { TODAY_MESSAGES } from './messages';
 	import { TODAY_PLUGIN_ID } from './constants';
 	import { resolvePeriodTimeRange } from './today-courses';
-	import { createTodayScreenController } from './today-screen.svelte';
+	import { coursePaintKey, createTodayScreenController } from './today-screen.svelte';
 
 	interface Props {
 		controller: ChronosUiController;
@@ -33,13 +29,8 @@
 
 	let { controller, pluginId, active = true }: Props = $props();
 
-	const presentationSource = getContext<TimetablePresentationSource | undefined>(
-		TIMETABLE_PRESENTATION_CONTEXT
-	);
 	const ui = $derived(fromStore(controller.snapshot));
-	const presentationView = $derived(presentationSource ? fromStore(presentationSource) : null);
-	const presentation = $derived(presentationView?.current ?? {});
-	const coursePalette = $derived(resolveCoursePalette(presentation));
+	const compactLandscape = new MediaQuery('(orientation: landscape) and (max-height: 500px)');
 
 	const HEADLINE_SMALL_FONT_PX = 24;
 	const PERIOD_LABEL_MIN_FONT_PX = 6;
@@ -53,16 +44,13 @@
 	const academicWeek = $derived(
 		timetable ? calendarService.calculateAcademicWeek(todayIso, timetable.academicConfig) : 1
 	);
-	const coursePaintByName = $derived.by(() => {
-		const courses = screen.courseEntries.map((entry) => entry.hit.course);
-		return assignCourseDisplayColors(courses, coursePalette);
-	});
 	const scopeSegments = $derived([
 		{ value: 'active' as const, label: pt('screen.scope.active') },
 		{ value: 'all' as const, label: pt('screen.scope.all') }
 	]);
 	function pt(key: keyof (typeof TODAY_MESSAGES)['zh-cn'], params?: Record<string, unknown>) {
 		void ui.current.slotVersion;
+		void ui.current.coursePaletteRevision;
 		return pluginText(controller, TODAY_PLUGIN_ID, TODAY_MESSAGES, key, params);
 	}
 
@@ -75,10 +63,8 @@
 	}
 
 	function resolvePaint(hit: (typeof screen.courseEntries)[number]['hit']) {
-		const assigned =
-			coursePaintByName.get(normalizedCourseName(hit.course.name)) ??
-			resolveCoursePaint(hit.course, coursePalette);
-		return assigned;
+		const key = coursePaintKey(hit.timetableId, hit.course.name);
+		return screen.paintByCourseKey.get(key) ?? COURSE_PALETTE_ENTRIES[0]!;
 	}
 
 	const courseEditorNavigation = $derived.by(() => {
@@ -99,35 +85,46 @@
 	});
 </script>
 
-<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<header
-		class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-6 pb-4 backdrop-blur-sm"
-	>
-		<p class="text-headline-small text-on-surface">{formatHeaderDate(todayIso)}</p>
-		{#if timetable}
-			<div class="mt-1 flex items-center justify-between gap-3">
-				<p class="text-body-medium text-on-surface-variant">
-					{pt('screen.week', { week: academicWeek })}
+{#snippet headerContent()}
+	<p class="text-headline-small text-on-surface">{formatHeaderDate(todayIso)}</p>
+	{#if timetable}
+		<div class="mt-1 flex items-center justify-between gap-3">
+			<p class="text-body-medium text-on-surface-variant">
+				{pt('screen.week', { week: academicWeek })}
+			</p>
+			{#if screen.courseEntries.length > 0}
+				<p class="text-label-large shrink-0 text-on-surface-variant">
+					{pt('screen.summary.count', { count: screen.courseEntries.length })}
 				</p>
-				{#if screen.courseEntries.length > 0}
-					<p class="text-label-large shrink-0 text-on-surface-variant">
-						{pt('screen.summary.count', { count: screen.courseEntries.length })}
-					</p>
-				{/if}
-			</div>
-		{/if}
+			{/if}
+		</div>
+	{/if}
 
-		<SegmentedControl
-			class="mt-4"
-			segments={scopeSegments}
-			value={screen.scope}
-			animateThumb={active}
-			onValueChange={(scope) => void screen.persistScope(scope as 'active' | 'all')}
-		/>
-	</header>
+	<SegmentedControl
+		class="mt-4"
+		segments={scopeSegments}
+		value={screen.scope}
+		animateThumb={active}
+		onValueChange={(scope) => void screen.persistScope(scope as 'active' | 'all')}
+	/>
+{/snippet}
 
-	<div use:appScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
+<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+	{#if !compactLandscape.current}
+		<header
+			class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-6 pb-4 backdrop-blur-sm"
+		>
+			{@render headerContent()}
+		</header>
+	{/if}
+
+	<div use:appShellScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
 		<div class="flex flex-col gap-4 p-4">
+			{#if compactLandscape.current}
+				<section class="ui-section-surface ui-section-surface--comfortable">
+					{@render headerContent()}
+				</section>
+			{/if}
 			{#if !timetable}
 				<section
 					class="ui-section-surface ui-section-surface--comfortable flex flex-1 flex-col items-center justify-center py-16 text-center"
@@ -226,6 +223,12 @@
 													class="text-label-small shrink-0 rounded-full bg-primary px-2 py-0.5 text-on-primary"
 												>
 													{pt('screen.status.current')}
+												</span>
+											{:else if entry.status === 'preparing'}
+												<span
+													class="text-label-small shrink-0 rounded-full bg-secondary-container px-2 py-0.5 text-on-secondary-container"
+												>
+													{pt('screen.status.preparing')}
 												</span>
 											{/if}
 										</div>

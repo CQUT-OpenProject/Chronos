@@ -2,7 +2,7 @@
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"framework": "sveltekit-1",
 	"regions": ["sin1"],
-	"installCommand": "corepack enable && corepack prepare pnpm@11.20.0 --activate && pnpm -C ../.. install --frozen-lockfile",
+	"installCommand": "corepack enable && corepack install && pnpm -C ../.. install --frozen-lockfile",
 	"buildCommand": "cd ../.. && vp -C apps/web build",
 	"devCommand": "cd ../.. && vp -C apps/web dev -- --port $PORT",
 	"headers": [

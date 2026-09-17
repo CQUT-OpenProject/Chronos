@@ -68,7 +68,8 @@ export class ScopedContext<Config extends object = Record<string, unknown>>
 		}
 		if (key === 'analytics') return env.analytics as T | undefined;
 		if (key === 'errorCapture') return env.errorCapture as T | undefined;
-		if (key === 'navigation') return env.navigation as T | undefined;
+		if (key === 'hostNavigation') return env.navigation as T | undefined;
+		if (key === 'coursePresentation') return env.coursePresentation as T | undefined;
 		return undefined;
 	}
 

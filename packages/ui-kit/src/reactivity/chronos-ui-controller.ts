@@ -10,6 +10,7 @@ import type {
 	UserPreferences
 } from '@chronos/core';
 import type { Readable } from 'svelte/store';
+import type { OverlayHistoryPort } from '../overlay/history-overlay';
 
 export type ChronosUiSnapshot = {
 	currentTimetable: Timetable | null;
@@ -22,12 +23,15 @@ export type ChronosUiSnapshot = {
 	currentLocale: string;
 	clockNow: Date;
 	clockTodayIso: string;
+	clockFrozen: boolean;
 	slotVersion: number;
 	courseBadges: Record<string, CourseBadge[]>;
+	coursePaletteRevision: number;
 };
 
 export interface ChronosUiController extends Disposable {
 	readonly snapshot: Readable<ChronosUiSnapshot>;
+	readonly overlayHistoryPort?: OverlayHistoryPort;
 	getPluginContext(pluginId: string): ChronosContext;
 	getPluginContextForSlot<K extends keyof StandardSlotMap>(
 		slotName: K,

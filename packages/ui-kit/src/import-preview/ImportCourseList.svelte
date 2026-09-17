@@ -3,7 +3,8 @@
 	import {
 		assignCourseDisplayColors,
 		COURSE_PALETTE_ENTRIES,
-		listDistinctCourses
+		listDistinctCourses,
+		lookupCoursePaint
 	} from '@chronos/core';
 	import MiddleTruncateText from '../timetable-preview/MiddleTruncateText.svelte';
 
@@ -21,7 +22,7 @@
 
 <ul class="flex flex-col gap-1.5" role="list">
 	{#each distinctCourses as course (course.name)}
-		{@const paint = paintsByName.get(course.name) ?? coursePalette[0]!}
+		{@const paint = lookupCoursePaint(paintsByName, { name: course.name }, coursePalette)}
 		<li class="flex min-h-8 items-center gap-2.5 py-0.5">
 			<span
 				class="size-2 shrink-0 rounded-full"

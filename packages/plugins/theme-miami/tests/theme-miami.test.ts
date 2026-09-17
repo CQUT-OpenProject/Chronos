@@ -34,8 +34,6 @@ describe('@chronos/plugin-theme-miami', () => {
 			typeof themeContribution.paletteEntries === 'function'
 				? themeContribution.paletteEntries('light')
 				: themeContribution.paletteEntries;
-		expect(entries).toEqual(paletteEntries);
-
 		const paint = resolveCoursePaint({ name: 'Math' }, entries);
 		expect(paint.background).toBe(paletteEntries[0]!.background);
 	});

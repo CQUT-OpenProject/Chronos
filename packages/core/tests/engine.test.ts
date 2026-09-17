@@ -462,6 +462,9 @@ describe('ChronosEngine in @chronos/core', () => {
 	});
 
 	it('emits time:tick with now and todayIso on init and when updateTime is called', async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date(2026, 2, 2, 0, 30, 0));
+
 		const { env, timetables } = createMockEnv();
 		const tt = createTimetable({
 			id: 't1',
@@ -491,7 +494,8 @@ describe('ChronosEngine in @chronos/core', () => {
 			currentWeek: expect.any(Number),
 			currentPeriod: null,
 			now: expect.any(Date),
-			todayIso: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)
+			todayIso: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+			frozen: false
 		});
 
 		const forcedNow = new Date(2026, 2, 2, 9, 15, 0);
@@ -514,6 +518,125 @@ describe('ChronosEngine in @chronos/core', () => {
 		);
 
 		engine.dispose();
+		vi.useRealTimers();
+	});
+
+	it('setVirtualNow freezes now across unparameterized updateTime and timetable switch', async () => {
+		const { env, timetables } = createMockEnv();
+		const first = createTimetable({
+			id: 't1',
+			name: '课表一',
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [
+					{ index: 1, startTime: '08:00', endTime: '08:45' },
+					{ index: 2, startTime: '09:00', endTime: '09:45' }
+				]
+			}
+		});
+		const second = createTimetable({
+			id: 't2',
+			name: '课表二',
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [
+					{ index: 1, startTime: '08:00', endTime: '08:45' },
+					{ index: 2, startTime: '09:00', endTime: '09:45' }
+				]
+			}
+		});
+		timetables.set('t1', first);
+		timetables.set('t2', second);
+		await env.storage.setActiveTimetableId('t1');
+
+		const engine = new ChronosEngine({ env });
+		const onTick = vi.fn();
+		engine.on('time:tick', onTick);
+		await engine.init();
+
+		const frozenNow = new Date(2026, 2, 2, 9, 15, 0);
+		engine.setVirtualNow(frozenNow);
+
+		expect(engine.state.clockFrozen).toBe(true);
+		expect(engine.state.todayIso).toBe('2026-03-02');
+		expect(engine.now().getTime()).toBe(frozenNow.getTime());
+		expect(onTick).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				currentPeriod: 2,
+				todayIso: '2026-03-02',
+				frozen: true
+			})
+		);
+		expect(onTick.mock.calls.at(-1)![0].now.getTime()).toBe(frozenNow.getTime());
+
+		onTick.mockClear();
+		engine.updateTime();
+		expect(onTick).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				todayIso: '2026-03-02',
+				frozen: true,
+				currentPeriod: 2
+			})
+		);
+		expect(onTick.mock.calls.at(-1)![0].now.getTime()).toBe(frozenNow.getTime());
+
+		await engine.switchTimetable('t2');
+		expect(engine.state.clockFrozen).toBe(true);
+		expect(engine.state.todayIso).toBe('2026-03-02');
+		expect(onTick).toHaveBeenLastCalledWith(expect.objectContaining({ frozen: true }));
+		expect(onTick.mock.calls.at(-1)![0].now.getTime()).toBe(frozenNow.getTime());
+
+		engine.actions.setVirtualNow(null);
+		expect(engine.state.clockFrozen).toBe(false);
+		expect(onTick).toHaveBeenLastCalledWith(expect.objectContaining({ frozen: false }));
+
+		engine.dispose();
+	});
+
+	it('frozen clock does not tick when wall time crosses period or midnight', async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date(2026, 2, 2, 8, 30, 0));
+
+		const { env, timetables } = createMockEnv();
+		const tt = createTimetable({
+			id: 't1',
+			name: '课表',
+			academicConfig: {
+				termStartDate: '2026-03-02',
+				startWeek: 1,
+				endWeek: 20,
+				periodTimes: [
+					{ index: 1, startTime: '08:00', endTime: '08:45' },
+					{ index: 2, startTime: '09:00', endTime: '09:45' }
+				]
+			}
+		});
+		timetables.set('t1', tt);
+		await env.storage.setActiveTimetableId('t1');
+
+		const engine = new ChronosEngine({ env });
+		const onTick = vi.fn();
+		engine.on('time:tick', onTick);
+		await engine.init();
+
+		engine.setVirtualNow(new Date(2026, 2, 2, 8, 30, 0));
+		onTick.mockClear();
+
+		vi.advanceTimersByTime(20 * 60 * 1000);
+		expect(onTick).not.toHaveBeenCalled();
+		expect(engine.state.currentPeriodIndex).toBe(1);
+
+		engine.setVirtualNow(null);
+		onTick.mockClear();
+		vi.advanceTimersByTime(16 * 60 * 1000);
+		expect(onTick).toHaveBeenCalled();
+
+		engine.dispose();
+		vi.useRealTimers();
 	});
 
 	it('disposes DayClock so timers do not fire after engine.dispose()', async () => {

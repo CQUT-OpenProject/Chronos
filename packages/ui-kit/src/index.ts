@@ -6,6 +6,7 @@ export { default as SchemaForm } from './schema-form/SchemaForm.svelte';
 export { default as SegmentedControl } from './components/SegmentedControl.svelte';
 export type { Segment as SegmentedControlSegment } from './components/segmented-control';
 export {
+	buildTimeFieldTriggerLabel,
 	DEFAULT_TIME_PICKER_LABELS,
 	formatTimeValue,
 	hourItems,
@@ -19,6 +20,23 @@ export {
 } from './form/time-wheel-utils';
 export { findInvalidSchemaFields } from './schema-form/validate-schema';
 export { default as DateField } from './form/DateField.svelte';
+export { default as TimePicker } from './form/TimePicker.svelte';
+export { default as TimeWheel } from './form/TimeWheel.svelte';
+export { default as BottomSheet } from './overlay/BottomSheet.svelte';
+export {
+	clampDragOffset,
+	DISMISS_FALLBACK_THRESHOLD_PX,
+	DISMISS_THRESHOLD_RATIO,
+	needsSnapBackAnimation,
+	overlayOpacityFromDrag,
+	shouldDismissSheet
+} from './overlay/bottom-sheet-drag';
+export {
+	createHistoryOverlaySync,
+	OVERLAY_LIFECYCLE_CONTEXT,
+	type HistoryOverlaySync,
+	type OverlayHistoryPort
+} from './overlay/history-overlay';
 export { default as Radio } from './form/Radio.svelte';
 export { default as SelectableOption } from './form/SelectableOption.svelte';
 export { default as RadioGroupField } from './form/RadioGroupField.svelte';
@@ -36,9 +54,16 @@ export {
 export { default as PluginScreenContainer } from './plugin-screen/PluginScreenContainer.svelte';
 export { default as MountableSlotOutlet } from './plugin-screen/MountableSlotOutlet.svelte';
 export { resolvePluginScreenSlot } from './plugin-screen/resolve-plugin-screen-slot';
+export {
+	createEdgeBarActions,
+	getEdgeBarActions,
+	setEdgeBarActions,
+	type EdgeBarAction,
+	type EdgeBarActionsController
+} from './plugin-screen/edge-bar-actions.svelte';
 export { mountableSvelteComponent } from './plugin-screen/mountable-svelte';
 export { pluginText } from './i18n/plugin-text';
-export { appScroll } from './actions/app-scroll';
+export { appScroll, appShellScroll } from './actions/app-scroll';
 export {
 	computeScrollThumbMetrics,
 	scrollRevealScrollbar,

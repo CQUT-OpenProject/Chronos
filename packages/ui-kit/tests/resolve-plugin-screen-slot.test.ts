@@ -27,4 +27,13 @@ describe('resolvePluginScreenSlot', () => {
 	it('returns undefined when no slot matches', () => {
 		expect(resolvePluginScreenSlot([screen], 'other-plugin', 'index')).toBeUndefined();
 	});
+
+	it('ignores a matching view owned by a different plugin', () => {
+		const otherIndex: PluginScreenSlotContribution = { id: 'index', title: 'Other' };
+		const ownScreen: PluginScreenSlotContribution = { id: 'tool-wallpaper', title: 'Mine' };
+		const ownerOf = (id: string) => (id === 'index' ? 'other-plugin' : 'tool-wallpaper');
+		expect(
+			resolvePluginScreenSlot([otherIndex, ownScreen], 'tool-wallpaper', 'index', ownerOf)
+		).toBe(ownScreen);
+	});
 });

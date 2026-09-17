@@ -2,7 +2,7 @@
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { SchemaForm, findInvalidSchemaFields, scrollRubberBand } from '@chronos/ui-kit';
+	import { SchemaForm, findInvalidSchemaFields } from '@chronos/ui-kit';
 	import type { ConfigSchema } from '@chronos/core';
 	import {
 		getAppEngine,
@@ -70,7 +70,7 @@
 </script>
 
 <Dialog bind:open title={hostT('plugins.config.title', { name: pluginName || pluginId })}>
-	<div use:scrollRubberBand class="app-scroll-y max-h-[60vh] overflow-y-auto py-2">
+	<div class="app-scroll-y max-h-[60vh] overflow-y-auto py-2">
 		{#if Object.keys(schema).length > 0}
 			<SchemaForm {schema} bind:value={formValues} controller={appController} disabled={saving} />
 		{:else}

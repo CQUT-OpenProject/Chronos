@@ -3,6 +3,7 @@
 	import SchemaForm from '../schema-form/SchemaForm.svelte';
 	import { resolvePluginScreenSlot } from './resolve-plugin-screen-slot';
 	import MountableSlotOutlet from './MountableSlotOutlet.svelte';
+	import { getEdgeBarActions } from './edge-bar-actions.svelte';
 
 	interface Props {
 		controller: ChronosUiController;
@@ -12,12 +13,15 @@
 	}
 
 	let { controller, pluginId, viewId = 'index', active = true }: Props = $props();
+	const edgeActions = getEdgeBarActions();
 
 	const hostT = (key: string, params?: Record<string, unknown>) =>
 		controller.translatePlugin('host-ui', key, params);
 
 	const screenSlot = $derived(
-		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId)
+		resolvePluginScreenSlot(controller.getSlots('shell.route.screen'), pluginId, viewId, (slotId) =>
+			controller.resolveSlotOwner('shell.route.screen', slotId)
+		)
 	);
 
 	let formValues = $state<Record<string, unknown>>({});
@@ -55,7 +59,7 @@
 {#if screenSlot?.component}
 	<MountableSlotOutlet
 		component={screenSlot.component}
-		props={{ controller, pluginId, active }}
+		props={{ controller, pluginId, active, edgeActions }}
 		class="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
 	/>
 {:else if screenSlot?.schema}

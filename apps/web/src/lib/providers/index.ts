@@ -23,6 +23,7 @@ export interface WebProviderOptions {
 	navigation?: {
 		openCourseEditor(courseId: string): void;
 	};
+	coursePresentation?: import('@chronos/core').ICoursePresentationService;
 }
 
 /**
@@ -54,6 +55,7 @@ export function createWebChronosEnv(options?: WebProviderOptions) {
 		runtime: providers.runtime,
 		analytics: providers.analytics,
 		errorCapture: providers.errorCapture,
-		...(options?.navigation ? { navigation: options.navigation } : {})
+		...(options?.navigation ? { navigation: options.navigation } : {}),
+		...(options?.coursePresentation ? { coursePresentation: options.coursePresentation } : {})
 	};
 }

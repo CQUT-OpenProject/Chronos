@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getOverlayHistoryPort } from '$lib/navigation';
 	import { getAppController } from '$lib/services/app-engine';
 	import { createHostDateFieldLabels } from '$lib/components/ui/host-form-labels';
 	import {
@@ -35,6 +36,7 @@
 </script>
 
 <UiDateField
+	historyPort={getOverlayHistoryPort()}
 	{label}
 	bind:value
 	{id}

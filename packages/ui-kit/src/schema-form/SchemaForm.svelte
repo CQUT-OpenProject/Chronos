@@ -138,6 +138,7 @@
 				/>
 			{:else if field.type === 'date'}
 				<DateField
+					historyPort={controller?.overlayHistoryPort}
 					id="field-{key}"
 					label={resolveLocalizedText(field.title)}
 					description={resolveLocalizedText(field.description)}

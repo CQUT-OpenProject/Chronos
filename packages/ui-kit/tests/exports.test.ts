@@ -1,21 +1,8 @@
 import { describe, it, expect } from 'vite-plus/test';
-import {
-	SchemaForm,
-	PluginScreenContainer,
-	MountableSlotOutlet,
-	ReactiveChronosController,
-	m3DefaultTheme,
-	PREVIEW_PAINT_READY_CONTEXT,
-	TIMETABLE_PRESENTATION_CONTEXT
-} from '../src/index';
+import { PREVIEW_PAINT_READY_CONTEXT, TIMETABLE_PRESENTATION_CONTEXT } from '../src/index';
 
-describe('ui-kit exports', () => {
-	it('exports Svelte components and utilities', () => {
-		expect(SchemaForm).toBeDefined();
-		expect(PluginScreenContainer).toBeDefined();
-		expect(MountableSlotOutlet).toBeDefined();
-		expect(ReactiveChronosController).toBeDefined();
-		expect(m3DefaultTheme).toBeDefined();
+describe('ui-kit context keys', () => {
+	it('keeps preview and presentation context ids stable', () => {
 		expect(PREVIEW_PAINT_READY_CONTEXT).toBe('chronos.previewPaintReady');
 		expect(TIMETABLE_PRESENTATION_CONTEXT).toBe('chronos.timetablePresentation');
 	});

@@ -28,7 +28,8 @@ const CSS_FINGERPRINTS: Record<string, readonly string[]> = {
 	'tool-wallpaper': ['bg-canvas'],
 	'tool-calendar-holidays': ['text-error'],
 	'tool-qrcode': ['border-dashed'],
-	'tool-error-log': ['font-mono', 'divide-outline']
+	'tool-error-log': ['font-mono', 'divide-outline'],
+	'tool-clock': ['divide-outline']
 };
 
 const PREFLIGHT_MARKERS = ['border: 0 solid', 'border:0 solid'] as const;

@@ -1,5 +1,5 @@
 import { resolveLocaleMapText, type PluginManifest } from '@chronos/core';
-import { PLUGIN_CATEGORY_TAG_IDS } from './plugin-tags';
+import { PLUGIN_CATEGORY_TAG_IDS, resolveManifestCatalogCategory } from './plugin-tags';
 
 /** Category display order for official plugin catalog grouping. */
 const PLUGIN_CATEGORY_SORT_ORDER = PLUGIN_CATEGORY_TAG_IDS;
@@ -22,12 +22,13 @@ export function comparePluginDisplayNames(
 }
 
 export function compareCatalogManifests(
-	left: Pick<PluginManifest, 'name' | 'type'>,
-	right: Pick<PluginManifest, 'name' | 'type'>,
+	left: Pick<PluginManifest, 'id' | 'name' | 'type' | 'toolGroup'>,
+	right: Pick<PluginManifest, 'id' | 'name' | 'type' | 'toolGroup'>,
 	locale: string
 ): number {
 	const categoryDelta =
-		getPluginCategorySortIndex(left.type) - getPluginCategorySortIndex(right.type);
+		getPluginCategorySortIndex(resolveManifestCatalogCategory(left)) -
+		getPluginCategorySortIndex(resolveManifestCatalogCategory(right));
 	if (categoryDelta !== 0) return categoryDelta;
 	return comparePluginDisplayNames(left.name, right.name, locale);
 }
@@ -42,7 +43,7 @@ export function groupCatalogManifestsByCategory<T extends { manifest: PluginMani
 
 	const groups: Array<{ category: string; entries: T[] }> = [];
 	for (const entry of sorted) {
-		const category = entry.manifest.type;
+		const category = resolveManifestCatalogCategory(entry.manifest);
 		const last = groups.at(-1);
 		if (last?.category === category) {
 			last.entries.push(entry);

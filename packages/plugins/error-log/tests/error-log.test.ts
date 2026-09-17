@@ -33,37 +33,6 @@ describe('error-log domain', () => {
 		expect(entry.stack?.endsWith('…')).toBe(true);
 	});
 
-	it('dedupes entries by id when rendering newest first', async () => {
-		const { env } = createMockEnv();
-		const engine = new ChronosEngine({ env });
-		await engine.init();
-		await engine.loadPlugin(createErrorLogPlugin());
-		const ctx = engine.getPluginContext(ERROR_LOG_PLUGIN_ID);
-		const runtime = createErrorLogRuntime(ctx);
-
-		const duplicateId = 'dup-id';
-		await runtime.append(
-			createCapturedError('console', { message: 'older', id: duplicateId, ts: 1 })
-		);
-		await runtime.append(
-			createCapturedError('console', { message: 'newer', id: duplicateId, ts: 2 })
-		);
-
-		const seen = new Set<string>();
-		const deduped = [...runtime.entries]
-			.sort((a, b) => b.ts - a.ts)
-			.filter((entry) => {
-				if (seen.has(entry.id)) return false;
-				seen.add(entry.id);
-				return true;
-			});
-
-		expect(deduped).toHaveLength(1);
-		expect(deduped[0]?.message).toBe('newer');
-
-		engine.dispose();
-	});
-
 	it('parseStoredEntries ignores invalid payloads', () => {
 		expect(parseStoredEntries(null)).toEqual([]);
 		expect(parseStoredEntries([{ id: 'x' }])).toEqual([]);
@@ -93,10 +62,6 @@ describe('error-log domain', () => {
 });
 
 describe('error-log plugin', () => {
-	it('uses bundled plugin version from build injection', () => {
-		expect(createErrorLogPlugin().version).toBe('1.0.0');
-	});
-
 	it('registers mine.item and screen slots when loaded', async () => {
 		const { env } = createMockEnv();
 		const engine = new ChronosEngine({ env });

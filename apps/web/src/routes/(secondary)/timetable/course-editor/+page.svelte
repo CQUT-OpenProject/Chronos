@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { hostT } from '$lib/i18n/host-i18n.svelte';
-	import { goto } from '$app/navigation';
+	import { navigateForward } from '$lib/navigation';
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
 	import { getContext } from 'svelte';
 	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import SecondaryPageShell from '$lib/components/SecondaryPageShell.svelte';
@@ -17,7 +16,7 @@
 	const editor = createCourseEditor(
 		shell,
 		() => courseId,
-		() => goto(resolve('/'))
+		() => navigateForward('/')
 	);
 
 	$effect(() => {

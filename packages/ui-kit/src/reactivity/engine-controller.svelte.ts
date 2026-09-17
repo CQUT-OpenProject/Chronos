@@ -13,12 +13,18 @@ import type {
 import { todayIsoDate } from '@chronos/core';
 import { writable, type Readable, type Writable } from 'svelte/store';
 import type { ChronosUiController, ChronosUiSnapshot } from './chronos-ui-controller';
+import type { OverlayHistoryPort } from '../overlay/history-overlay';
+
+export type ReactiveChronosControllerOptions = {
+	overlayHistoryPort?: OverlayHistoryPort;
+};
 
 /**
  * ReactiveChronosController serves as the Svelte 5 Runes reactive bridge
  * connecting the headless ChronosEngine to UI components.
  */
 export class ReactiveChronosController implements ChronosUiController {
+	readonly overlayHistoryPort?: OverlayHistoryPort;
 	readonly snapshot: Readable<ChronosUiSnapshot>;
 	private readonly snapshotStore: Writable<ChronosUiSnapshot>;
 	private engine: ChronosEngine;
@@ -37,12 +43,15 @@ export class ReactiveChronosController implements ChronosUiController {
 	currentLocale = $state<string>('zh-cn');
 	clockNow = $state<Date>(new Date());
 	clockTodayIso = $state<string>(todayIsoDate());
+	clockFrozen = $state(false);
 
 	// Slot reactivity version signal (increments on slot changes or locale switches)
 	slotVersion = $state<number>(0);
 	courseBadges = $state<Record<string, CourseBadge[]>>({});
+	coursePaletteRevision = $state<number>(0);
 
-	constructor(engine: ChronosEngine) {
+	constructor(engine: ChronosEngine, options: ReactiveChronosControllerOptions = {}) {
+		this.overlayHistoryPort = options.overlayHistoryPort;
 		this.engine = engine;
 		this.snapshotStore = writable(this.readSnapshot());
 		this.snapshot = this.snapshotStore;
@@ -83,17 +92,20 @@ export class ReactiveChronosController implements ChronosUiController {
 					currentWeek,
 					currentPeriod,
 					now,
-					todayIso
+					todayIso,
+					frozen
 				}: {
 					currentWeek: number;
 					currentPeriod: number | null;
 					now: Date;
 					todayIso: string;
+					frozen: boolean;
 				}) => {
 					this.activeWeek = currentWeek;
 					this.currentPeriodIndex = currentPeriod;
 					this.clockNow = now;
 					this.clockTodayIso = todayIso;
+					this.clockFrozen = frozen;
 					this.pushSnapshot();
 				}
 			),
@@ -124,6 +136,10 @@ export class ReactiveChronosController implements ChronosUiController {
 			}),
 			this.engine.on('plugin:unloaded', () => {
 				this.slotVersion++;
+				this.pushSnapshot();
+			}),
+			this.engine.on('coursePalette:changed', () => {
+				this.coursePaletteRevision++;
 				this.pushSnapshot();
 			})
 		);
@@ -184,8 +200,10 @@ export class ReactiveChronosController implements ChronosUiController {
 			currentLocale: this.currentLocale,
 			clockNow: this.clockNow,
 			clockTodayIso: this.clockTodayIso,
+			clockFrozen: this.clockFrozen,
 			slotVersion: this.slotVersion,
-			courseBadges: this.courseBadges
+			courseBadges: this.courseBadges,
+			coursePaletteRevision: this.coursePaletteRevision
 		};
 	}
 
@@ -198,8 +216,9 @@ export class ReactiveChronosController implements ChronosUiController {
 		this.activeIconThemeId = this.engine.state.activeIconThemeId;
 		this.userPreferences = this.engine.state.userPreferences;
 		this.currentLocale = this.engine.locale;
-		this.clockNow = new Date();
-		this.clockTodayIso = todayIsoDate();
+		this.clockNow = this.engine.now();
+		this.clockTodayIso = todayIsoDate(this.clockNow);
+		this.clockFrozen = this.engine.state.clockFrozen;
 		this.courseBadges = this.engine.badges.getAll();
 		this.slotVersion++;
 		this.pushSnapshot();

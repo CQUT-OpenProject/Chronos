@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { haptic } from '$lib/haptic/haptic';
+	import { haptic } from '../haptic/haptic';
 	import {
 		hourItems,
 		minuteItems,
@@ -7,7 +7,7 @@
 		TIME_WHEEL_ROW_HEIGHT,
 		type TimePickerLabels,
 		type TimeValue
-	} from '@chronos/ui-kit';
+	} from './time-wheel-utils';
 
 	const ROW_HEIGHT = TIME_WHEEL_ROW_HEIGHT;
 
@@ -160,9 +160,11 @@
 					}}
 					onkeydown={(event) => handleWheelKeydown(column.kind, event)}
 				>
-					{#each column.items as n}
+					{#each column.items as n (n)}
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<div
 							role="option"
+							tabindex="-1"
 							id="{idPrefix}-{column.kind}-{n}"
 							aria-selected={n === column.current}
 							class="time-wheel-row text-body-large flex cursor-pointer items-center justify-center tabular-nums transition-colors {n ===

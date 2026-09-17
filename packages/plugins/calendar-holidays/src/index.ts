@@ -18,6 +18,7 @@ export function createHolidayPlugin(options: CreateHolidayPluginOptions = {}) {
 		nameKey: 'plugin.name',
 		descriptionKey: 'plugin.description',
 		category: 'tool',
+		toolGroup: 'utility',
 		order: 45,
 		author: 'Chronos',
 		homepage: 'https://github.com/NateScarlet/holiday-cn',
