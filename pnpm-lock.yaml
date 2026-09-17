@@ -224,9 +224,6 @@ importers:
       '@chronos/ui-kit':
         specifier: workspace:*
         version: link:../../packages/ui-kit
-      '@internationalized/date':
-        specifier: ^3.12.4
-        version: 3.12.4
       '@material-symbols-svg/svelte':
         specifier: ^0.14.0
         version: 0.14.0(svelte@5.57.0(@typescript-eslint/types@8.66.0))
