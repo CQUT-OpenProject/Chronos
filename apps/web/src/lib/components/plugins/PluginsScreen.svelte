@@ -32,7 +32,7 @@
 	} from '$lib/services/official-plugins/manifest-url';
 	import type { PluginInstallTask } from '$lib/services/official-plugins/install-queue';
 	import PluginInstallAction from './PluginInstallAction.svelte';
-	import { Add, CheckCircleFill, TuneFill } from '$lib/icons';
+	import { CheckCircleFill, DownloadFill, TuneFill } from '$lib/icons';
 
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
 
@@ -50,7 +50,7 @@
 					{
 						id: 'install-link',
 						label: hostT('plugins.link.open'),
-						icon: Add,
+						icon: DownloadFill,
 						variant: 'outlined',
 						onClick: promptLinkInstall
 					}
