@@ -1,22 +1,29 @@
+---
+name: diagnosing-bugs
+description: Diagnose and fix reported Chronos logic, parser, storage, or controller bugs with regression risk.
+---
+
 # Diagnosing Bugs
 
-For logic / parser / storage / controller bugs with regression risk, do not fix without a reproducible feedback loop. Obvious typo / null-guard / config one-liners may use the existing suite + repro steps instead.
+For bugs with regression risk, prefer a reproducible feedback loop. Obvious typo / null-guard / config one-liners may use existing tests and repro steps instead.
 
-## 1. Build a Deterministic Red Loop (Mandatory for regression-risk bugs)
+## 1. Establish Evidence
 
-Before fixing such bugs, construct and run one specific command that deterministically fails on this bug:
+Prefer a focused regression test that fails before the fix; reuse an existing failing test when available.
 
-- Seam Test: Write a failing test in `src/lib/**/*.test.ts` (Domain, Parser/Codec, Storage, Clock).
-- Harness/CLI: For complex Dexie timings or Brotli streams, run a standalone script under `scripts/`.
-- Stabilize: Freeze time (`time-provider`), mock erratic network, or loop microtasks to eliminate flakes.
+- Seam Test: Follow the affected module's test convention in `apps/web/src/` or `packages/`.
+- Harness/CLI: Use a focused script when an existing test runner cannot exercise the behavior effectively.
+- Stabilize: Control the relevant clock, network, or asynchronous scheduling when needed for reliable reproduction.
+
+If the current environment cannot reproduce the issue reliably, record the evidence and validation limitation and use the closest meaningful check. Continue with a minimal fix only when root-cause evidence and risk justify it; otherwise identify the missing evidence. Do not build unrelated infrastructure merely to force deterministic reproduction.
 
 ## 2. Root Cause Isolation & Minimal Fix
 
-- Trace to the origin schema or invariant in `domain/interfaces` rather than adding caller-side patches.
-- Fix at the shared root cause and verify all upstream dependents (`AppShellController`, `TimetableScreenState`, Dexie).
+- Trace the violated contract or invariant in the owning module rather than adding caller-side patches.
+- Fix at the shared root cause and verify affected callers; expand investigation only when evidence supports it.
 
 ## 3. Verify & Guard
 
-- Confirm the Phase 1 test turns green.
-- Run `vp run test` and `vp run check` (full suite once at the end; scoped single-file run during iteration).
-- Retain the test as a permanent regression guard for regression-risk bugs; trivial one-liners need no new permanent test.
+- Confirm the reproduction test turns green, or report the outcome and limits of the alternative check.
+- Follow validation in [AGENTS.md](../../../AGENTS.md), reusing results for the same final code state.
+- Retain meaningful regression tests when feasible; trivial one-liners need no new permanent test.

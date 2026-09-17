@@ -1,6 +1,11 @@
+---
+name: code-review
+description: Review Chronos diffs for requirement fidelity and design issues when review is requested or changes are complex or high risk.
+---
+
 # Code Review & Pre-Commit Audit
 
-Before committing completed features, bug fixes, or major refactors, perform a two-axis review of the diff:
+Review the requested diff for requirement fidelity and relevant standards. Check only areas touched by the change or supported by evidence of impact; simple edits need only a direct diff check.
 
 ---
 
@@ -9,7 +14,7 @@ Before committing completed features, bug fixes, or major refactors, perform a t
 Verify that changes align strictly with the original requirement and edge-case contracts:
 
 - [ ] Scope Focus: Implements only requested capabilities without extraneous side-effects or unverified refactoring.
-- [ ] Edge Cases & Resilience: Handles offline states, Dexie errors, corrupt share payloads, and upstream CAS failures gracefully (`AppResult` / user notices).
+- [ ] Edge Cases & Resilience: Check relevant failure modes, such as offline states, Dexie errors, corrupt share payloads, or upstream CAS failures (`AppResult` / user notices), only when affected.
 - [ ] Breaking Changes: Clearly documents any schema or protocol format adjustments.
 
 ---
@@ -17,6 +22,8 @@ Verify that changes align strictly with the original requirement and edge-case c
 ## Axis 2: Standards & Code Smells
 
 Ensure compliance with Chronos coding standards and clean design practices:
+
+Consult the following references only when the diff involves that concern and the guidance is not already available in the task.
 
 ### 1. Framework & Architecture Standards
 
@@ -34,4 +41,4 @@ Ensure compliance with Chronos coding standards and clean design practices:
 
 ## Post-Review Delivery
 
-Once the two-axis review passes, complete validation per the checklist in [AGENTS.md](file:///Users/uednd/code/Chronos/AGENTS.md) (`vp run check` & `vp run test`) and format the commit message using the Gitmoji convention.
+For implementation tasks, follow validation in [AGENTS.md](../../../AGENTS.md), reusing results for the same final code state. For review-only tasks, run checks only when needed to investigate a concrete concern. Format a commit message using the Gitmoji convention only when the user requests a commit or a draft message.
