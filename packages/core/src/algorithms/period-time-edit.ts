@@ -16,11 +16,6 @@ export function parseTimeMinutesStrict(value: unknown): number | undefined {
 	return hour * 60 + minute;
 }
 
-export function minutesToTimeString(total: number): string {
-	const wrapped = ((Math.trunc(total) % 1440) + 1440) % 1440;
-	return `${String(Math.floor(wrapped / 60)).padStart(2, '0')}:${String(wrapped % 60).padStart(2, '0')}`;
-}
-
 /**
  * Same-day clock formatting without midnight wrapping, so overflow stays
  * visible (e.g. '24:10') instead of silently becoming a morning time.

@@ -7,7 +7,7 @@ import {
 	TonalPalette,
 	Variant
 } from '@ktibow/material-color-utilities-nightly';
-import type { CoursePaint, CoursePaletteEntry } from '@chronos/core';
+import type { CoursePaletteEntry } from '@chronos/core';
 
 export const BRAND_SOURCE_ARGB = 0xff0068b7;
 
@@ -365,8 +365,4 @@ export function buildM3Tokens(mode: 'light' | 'dark', seedColor?: string): Recor
 		outline: tokens['outline'] ?? (isDark ? '#938f99' : '#79747e'),
 		...tokens
 	};
-}
-
-export function buildM3CoursePalette(sourceArgb: number = BRAND_SOURCE_ARGB): CoursePaint[] {
-	return coursePaletteFromSource(sourceArgb);
 }
