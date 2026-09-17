@@ -462,6 +462,9 @@ describe('ChronosEngine in @chronos/core', () => {
 	});
 
 	it('emits time:tick with now and todayIso on init and when updateTime is called', async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date(2026, 2, 2, 0, 30, 0));
+
 		const { env, timetables } = createMockEnv();
 		const tt = createTimetable({
 			id: 't1',
@@ -515,6 +518,7 @@ describe('ChronosEngine in @chronos/core', () => {
 		);
 
 		engine.dispose();
+		vi.useRealTimers();
 	});
 
 	it('setVirtualNow freezes now across unparameterized updateTime and timetable switch', async () => {
