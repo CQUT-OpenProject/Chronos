@@ -359,6 +359,13 @@
 </Dialog.Root>
 
 <style>
+	@media (orientation: landscape) and (max-height: 500px) {
+		:global(.bottom-sheet-content[data-dialog-content]) {
+			max-width: 32rem;
+			margin-inline: auto;
+		}
+	}
+
 	:global(.bottom-sheet-overlay[data-dialog-overlay]) {
 		transition: opacity 300ms cubic-bezier(0.05, 0.7, 0.1, 1);
 		opacity: 1;
