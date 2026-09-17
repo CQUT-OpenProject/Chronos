@@ -1,9 +1,5 @@
 import { isAbortError } from './abort-utils';
-import type {
-	PluginInstallProgress,
-	PluginInstallStage,
-	PluginInstallTask
-} from './install-queue-types';
+import type { PluginInstallStage, PluginInstallTask } from './install-queue-types';
 
 /** Queued or actively running install stages (concurrency=1 invariant). */
 export function isInFlightInstallStatus(status: PluginInstallStage): boolean {

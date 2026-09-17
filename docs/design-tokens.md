@@ -13,8 +13,8 @@
 | ------------------------------------------ | ------------------------------------------------------------------ |
 | Host canvas/surface/outline/success colors | `CHRONOS_HOST_COLORS` in `packages/ui-kit/src/theme/m3-theme.ts`   |
 | Material brand seed / algorithm            | `BRAND_SOURCE_ARGB`, `m3-theme.ts`                                 |
-| Typography scale                           | `typography-tokens.ts` + `apps/web/src/lib/theme/typography.css`   |
-| Radius                                     | `radius-tokens.ts` + `packages/ui-kit/src/theme/radius.css`        |
+| Typography scale                           | `apps/web/src/lib/theme/typography.css`                            |
+| Radius                                     | `packages/ui-kit/src/theme/radius.css`                             |
 | Elevation / shadow scale                   | `apps/web/src/lib/theme/elevation-tokens.css`                      |
 | Form fields, section surfaces              | `apps/web/src/lib/theme/ui-patterns.css`                           |
 | Shell bar height / safe area               | `apps/web/src/lib/theme/layout-tokens.css`                         |
