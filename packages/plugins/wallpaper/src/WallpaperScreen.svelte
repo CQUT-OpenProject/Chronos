@@ -124,7 +124,7 @@
 				{controller}
 				hasDynamicBackground={true}
 				dynamicColorUri={wallpaperUri}
-				fit="fill"
+				fit="cover"
 				interactive={false}
 			/>
 		</div>

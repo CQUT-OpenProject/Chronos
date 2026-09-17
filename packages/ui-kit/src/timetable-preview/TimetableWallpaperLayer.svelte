@@ -9,7 +9,7 @@
 	interface Props {
 		wallpaperUri?: string | null;
 		blurred?: boolean;
-		/** `cover` for uncropped previews; `fill` for viewport-cropped wallpaper assets. */
+		/** `cover` preserves image proportions across viewport sizes; `fill` stretches to exact bounds. */
 		fit?: TimetableWallpaperFit;
 		children?: Snippet;
 	}
