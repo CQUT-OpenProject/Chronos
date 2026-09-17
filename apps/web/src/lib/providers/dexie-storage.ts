@@ -54,6 +54,21 @@ export class DexieStorageProvider implements IStorageService {
 		}
 	}
 
+	private async withStorageNotify<T>(
+		event: StorageChangeEvent,
+		action: string,
+		fn: () => Promise<T>
+	): Promise<T> {
+		try {
+			const result = await fn();
+			this.notifyChange(event);
+			return result;
+		} catch (err) {
+			console.warn(`[DexieStorageProvider] Failed to ${action}:`, err);
+			throw err;
+		}
+	}
+
 	onChanged(listener: (event: StorageChangeEvent) => void): Disposable {
 		this.listeners.add(listener);
 		return {
@@ -78,23 +93,15 @@ export class DexieStorageProvider implements IStorageService {
 	}
 
 	async saveTimetable(timetable: Timetable): Promise<void> {
-		try {
-			await this.timetables.saveTimetable(timetable);
-			this.notifyChange({ type: 'timetable', key: timetable.id });
-		} catch (err) {
-			console.warn('[DexieStorageProvider] Failed to save timetable:', err);
-			throw err;
-		}
+		await this.withStorageNotify({ type: 'timetable', key: timetable.id }, 'save timetable', () =>
+			this.timetables.saveTimetable(timetable)
+		);
 	}
 
 	async deleteTimetable(id: string): Promise<void> {
-		try {
-			await this.timetables.deleteTimetable(id);
-			this.notifyChange({ type: 'timetable', key: id });
-		} catch (err) {
-			console.warn('[DexieStorageProvider] Failed to delete timetable:', err);
-			throw err;
-		}
+		await this.withStorageNotify({ type: 'timetable', key: id }, 'delete timetable', () =>
+			this.timetables.deleteTimetable(id)
+		);
 	}
 
 	async getActiveTimetableId(): Promise<string | null> {
@@ -121,34 +128,26 @@ export class DexieStorageProvider implements IStorageService {
 
 	async setPluginData<T>(pluginId: string, key: string, value: T): Promise<void> {
 		const id = `${pluginId}:${key}`;
-		try {
-			await this.pluginKv.set(pluginId, key, value);
-			this.notifyChange({ type: 'pluginData', key: id });
-		} catch (err) {
-			console.warn(`[DexieStorageProvider] Failed to set plugin data for ${id}:`, err);
-			throw err;
-		}
+		await this.withStorageNotify({ type: 'pluginData', key: id }, `set plugin data for ${id}`, () =>
+			this.pluginKv.set(pluginId, key, value)
+		);
 	}
 
 	async deletePluginData(pluginId: string, key: string): Promise<void> {
 		const id = `${pluginId}:${key}`;
-		try {
-			await this.pluginKv.delete(pluginId, key);
-			this.notifyChange({ type: 'pluginData', key: id });
-		} catch (err) {
-			console.warn(`[DexieStorageProvider] Failed to delete plugin data for ${id}:`, err);
-			throw err;
-		}
+		await this.withStorageNotify(
+			{ type: 'pluginData', key: id },
+			`delete plugin data for ${id}`,
+			() => this.pluginKv.delete(pluginId, key)
+		);
 	}
 
 	async clearPluginData(pluginId: string): Promise<void> {
-		try {
-			await this.pluginKv.clear(pluginId);
-			this.notifyChange({ type: 'pluginData', key: pluginId });
-		} catch (err) {
-			console.warn(`[DexieStorageProvider] Failed to clear plugin data for ${pluginId}:`, err);
-			throw err;
-		}
+		await this.withStorageNotify(
+			{ type: 'pluginData', key: pluginId },
+			`clear plugin data for ${pluginId}`,
+			() => this.pluginKv.clear(pluginId)
+		);
 	}
 
 	async clearAllData(): Promise<void> {
@@ -181,6 +180,7 @@ export class DexieStorageProvider implements IStorageService {
 	dispose(): void {
 		if (typeof window !== 'undefined' && this.storageListener) {
 			window.removeEventListener('storage', this.storageListener);
+			this.storageListener = undefined;
 		}
 		this.listeners.clear();
 	}

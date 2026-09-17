@@ -3,6 +3,22 @@ import { countDistinctCourseNames, matchesCourseQuery } from '@chronos/core';
 import type { ChronosDB } from '$lib/storage/db';
 import { courseFromRow, courseToRow, timetableFromRow, timetableToRow } from '$lib/storage/mappers';
 
+function groupCoursesByTimetable(
+	courseRows: Array<{ timetableId: string } & Parameters<typeof courseFromRow>[0]>
+): Map<string, Course[]> {
+	const coursesByTimetable = new Map<string, Course[]>();
+	for (const row of courseRows) {
+		const course = courseFromRow(row);
+		const bucket = coursesByTimetable.get(row.timetableId);
+		if (bucket) {
+			bucket.push(course);
+		} else {
+			coursesByTimetable.set(row.timetableId, [course]);
+		}
+	}
+	return coursesByTimetable;
+}
+
 /** Dexie-backed timetable and course persistence. */
 export class TimetableRepository {
 	constructor(private database: ChronosDB) {}
@@ -14,6 +30,7 @@ export class TimetableRepository {
 			const courses = await this.database.courses.where('timetableId').equals(id).toArray();
 			return timetableFromRow(row, courses);
 		} catch {
+			// intentional: offline-first read fallback
 			return null;
 		}
 	}
@@ -26,16 +43,7 @@ export class TimetableRepository {
 				this.database.timetables.orderBy('updatedAt').reverse().toArray(),
 				this.database.courses.toArray()
 			]);
-			const coursesByTimetable = new Map<string, Course[]>();
-			for (const row of courseRows) {
-				const course = courseFromRow(row);
-				const bucket = coursesByTimetable.get(row.timetableId);
-				if (bucket) {
-					bucket.push(course);
-				} else {
-					coursesByTimetable.set(row.timetableId, [course]);
-				}
-			}
+			const coursesByTimetable = groupCoursesByTimetable(courseRows);
 			return rows.map((r) => ({
 				id: r.id,
 				name: r.name,
@@ -43,6 +51,7 @@ export class TimetableRepository {
 				updatedAt: r.updatedAt
 			}));
 		} catch {
+			// intentional: offline-first read fallback
 			return [];
 		}
 	}
@@ -79,6 +88,7 @@ export class TimetableRepository {
 			}
 			return hits;
 		} catch {
+			// intentional: offline-first read fallback
 			return [];
 		}
 	}
@@ -151,6 +161,7 @@ export class TimetableRepository {
 			}
 			return total;
 		} catch {
+			// intentional: offline-first read fallback
 			return 0;
 		}
 	}
