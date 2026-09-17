@@ -69,11 +69,8 @@
 			{@render children?.()}
 		</main>
 	{:else}
-		<main
-			use:appShellScroll
-			class="secondary-scroll mx-auto min-h-0 w-full max-w-lg flex-1 overflow-y-auto p-4"
-		>
-			{@render children?.()}
+		<main use:appShellScroll class="secondary-scroll min-h-0 w-full flex-1 overflow-y-auto">
+			<div class="mx-auto w-full max-w-lg p-4">{@render children?.()}</div>
 		</main>
 	{/if}
 	<AdaptiveEdgeBar kind="secondary">
