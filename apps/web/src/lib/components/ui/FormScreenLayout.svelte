@@ -5,19 +5,26 @@
 	 */
 	import type { Snippet } from 'svelte';
 	import ActionBottomBar from '$lib/components/ui/ActionBottomBar.svelte';
+	import EdgeBarActionButtons from '$lib/components/ui/EdgeBarActionButtons.svelte';
+	import { getEdgeBarActions, type EdgeBarAction } from '@chronos/ui-kit';
 	import { appShellScroll } from '@chronos/ui-kit';
 
 	let {
 		children,
 		header,
 		footer,
+		actions,
 		class: className = ''
 	}: {
 		children?: Snippet;
 		header?: Snippet;
 		footer?: Snippet;
+		actions?: readonly EdgeBarAction[];
 		class?: string;
 	} = $props();
+
+	const edgeActions = getEdgeBarActions();
+	$effect(() => edgeActions?.register('page', actions ?? []));
 </script>
 
 <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden {className}">
@@ -35,9 +42,17 @@
 		</div>
 	</div>
 
-	{#if footer}
-		<ActionBottomBar>
-			{@render footer()}
-		</ActionBottomBar>
+	{#if actions?.length}
+		<div class="form-bottom-actions">
+			<ActionBottomBar>
+				<EdgeBarActionButtons {actions} orientation="horizontal" />
+			</ActionBottomBar>
+		</div>
+	{:else if footer}
+		<div class="form-bottom-actions">
+			<ActionBottomBar>
+				{@render footer()}
+			</ActionBottomBar>
+		</div>
 	{/if}
 </div>

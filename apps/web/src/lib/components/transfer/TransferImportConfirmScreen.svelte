@@ -7,9 +7,9 @@
 		resolveSlotTitle,
 		type TransferStateController
 	} from '$lib/transfer/transfer-state.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
+	import type { EdgeBarAction } from '@chronos/ui-kit';
 	import SelectableOption from '$lib/components/ui/SelectableOption.svelte';
 	import { snackbar, snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 	import { getAppController } from '$lib/services/app-engine';
@@ -66,6 +66,24 @@
 	const canOverwrite = $derived(Boolean(currentTimetableName));
 	const displayedCourseCount = $derived(preview ? listDistinctCourses(preview.courses).length : 0);
 	let loading = $state(false);
+	const actions = $derived<EdgeBarAction[]>([
+		{
+			id: 'confirm-import',
+			label: loading
+				? hostT('transfer.confirm.importing')
+				: transferState.importMode === ImportMode.AS_NEW
+					? hostT('transfer.confirm.asNew')
+					: hostT('transfer.confirm.overwrite'),
+			icon: DownloadFill,
+			showIconInPortrait: true,
+			disabled:
+				loading ||
+				hasInvalidConfirmInputs ||
+				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
+				Boolean(confirmValidationError),
+			onClick: handleConfirm
+		}
+	]);
 
 	const dateFieldLabels = $derived(createHostDateFieldLabels());
 
@@ -106,30 +124,7 @@
 </script>
 
 {#if preview}
-	{#snippet footer()}
-		<Button
-			variant="filled"
-			disabled={loading ||
-				hasInvalidConfirmInputs ||
-				(!canOverwrite && transferState.importMode === ImportMode.OVERWRITE_CURRENT) ||
-				Boolean(confirmValidationError)}
-			class="text-body-large h-12 w-full"
-			onclick={handleConfirm}
-		>
-			{#if loading}
-				<span>{hostT('transfer.confirm.importing')}</span>
-			{:else}
-				<DownloadFill class="size-5" />
-				<span>
-					{transferState.importMode === ImportMode.AS_NEW
-						? hostT('transfer.confirm.asNew')
-						: hostT('transfer.confirm.overwrite')}
-				</span>
-			{/if}
-		</Button>
-	{/snippet}
-
-	<FormScreenLayout {footer}>
+	<FormScreenLayout {actions}>
 		<div class="flex flex-col gap-6 py-1">
 			<Card variant="filled" class="border border-outline-variant/50 !bg-surface-variant/30 p-4.5">
 				<div class="flex flex-col gap-3.5">

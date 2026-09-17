@@ -17,6 +17,7 @@
 	import BottomSheet from '$lib/components/ui/BottomSheet.svelte';
 	import LoadingIndicator from '$lib/components/ui/LoadingIndicator.svelte';
 	import FormScreenLayout from '$lib/components/ui/FormScreenLayout.svelte';
+	import type { EdgeBarAction } from '@chronos/ui-kit';
 	import PluginConfigModal from './PluginConfigModal.svelte';
 	import { snackbarKey } from '$lib/components/ui/snackbar-state.svelte';
 	import { resolveColorSchemeId } from '$lib/appearance/color-scheme';
@@ -31,7 +32,7 @@
 	} from '$lib/services/official-plugins/manifest-url';
 	import type { PluginInstallTask } from '$lib/services/official-plugins/install-queue';
 	import PluginInstallAction from './PluginInstallAction.svelte';
-	import { CheckCircleFill, TuneFill } from '$lib/icons';
+	import { Add, CheckCircleFill, TuneFill } from '$lib/icons';
 
 	const BUILTIN_CATALOG_URL = '/official-plugins/catalog.json';
 
@@ -43,6 +44,19 @@
 	const activeColorSchemeId = $derived(resolveColorSchemeId(paletteMode, visualThemeId));
 
 	let activeTab = $state<'installed' | 'official'>('installed');
+	const edgeActions = $derived.by((): EdgeBarAction[] =>
+		activeTab === 'official'
+			? [
+					{
+						id: 'install-link',
+						label: hostT('plugins.link.open'),
+						icon: Add,
+						variant: 'outlined',
+						onClick: promptLinkInstall
+					}
+				]
+			: []
+	);
 
 	let installedRecords = $state.raw<InstalledOfficialPluginRecord[]>([]);
 	let catalogManifests = $state.raw<Array<{ url: string; manifest: PluginManifest }>>([]);
@@ -289,17 +303,7 @@
 	</div>
 {/snippet}
 
-{#snippet linkImportFooter()}
-	<Button variant="outlined" class="w-full" onclick={promptLinkInstall}>
-		{hostT('plugins.link.open')}
-	</Button>
-{/snippet}
-
-<FormScreenLayout
-	class="text-on-surface"
-	header={tabHeader}
-	footer={activeTab === 'official' ? linkImportFooter : undefined}
->
+<FormScreenLayout class="text-on-surface" header={tabHeader} actions={edgeActions}>
 	{#if activeTab === 'installed'}
 		<section class="ui-section">
 			<div class="flex items-center justify-between px-1">
