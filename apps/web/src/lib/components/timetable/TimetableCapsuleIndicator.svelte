@@ -416,54 +416,36 @@
 
 	.capsule-indicator {
 		--dot-pitch: 11.5px;
-		position: relative;
-		isolation: isolate;
 		overflow: hidden;
 		width: calc(4 * var(--dot-pitch) - 6px + 1.25rem + 2px);
 		max-width: min(320px, calc(100vw - 2.5rem));
 		padding-inline: 0.625rem;
 		background-color: transparent;
-		border: 1px solid transparent;
-		transition:
-			width var(--indicator-transition-duration) var(--indicator-easing),
-			padding var(--indicator-transition-duration) var(--indicator-easing);
-	}
-
-	.capsule-indicator::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: 0;
-		border-radius: inherit;
-		pointer-events: none;
-		background-color: color-mix(
-			in srgb,
-			var(--color-surface-container-high, #e5e8f0) 28%,
-			transparent
-		);
 		backdrop-filter: blur(0px) saturate(1);
 		-webkit-backdrop-filter: blur(0px) saturate(1);
 		border: 1px solid transparent;
-		opacity: 0;
 		transition:
-			opacity var(--indicator-glass-fade-duration) var(--indicator-easing),
+			width var(--indicator-transition-duration) var(--indicator-easing),
+			padding var(--indicator-transition-duration) var(--indicator-easing),
+			background-color var(--indicator-glass-fade-duration) var(--indicator-easing),
 			border-color var(--indicator-glass-fade-duration) var(--indicator-easing),
 			backdrop-filter var(--indicator-glass-fade-duration) var(--indicator-easing),
 			-webkit-backdrop-filter var(--indicator-glass-fade-duration) var(--indicator-easing);
 	}
 
-	.capsule-indicator > * {
-		position: relative;
-		z-index: 1;
-	}
-
-	.capsule-indicator--glass::before {
-		opacity: 1;
+	.capsule-indicator--glass {
+		background-color: color-mix(
+			in srgb,
+			var(--color-surface-container-high, #e5e8f0) 28%,
+			transparent
+		);
 		backdrop-filter: blur(16px) saturate(1.3);
 		-webkit-backdrop-filter: blur(16px) saturate(1.3);
 		border-color: color-mix(in srgb, var(--color-outline-variant, #aeb2bb) 26%, transparent);
 		transition:
-			opacity var(--indicator-transition-duration) var(--indicator-easing),
+			width var(--indicator-transition-duration) var(--indicator-easing),
+			padding var(--indicator-transition-duration) var(--indicator-easing),
+			background-color var(--indicator-transition-duration) var(--indicator-easing),
 			border-color var(--indicator-transition-duration) var(--indicator-easing),
 			backdrop-filter var(--indicator-transition-duration) var(--indicator-easing),
 			-webkit-backdrop-filter var(--indicator-transition-duration) var(--indicator-easing);
@@ -593,7 +575,7 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.capsule-indicator,
-		.capsule-indicator::before,
+		.capsule-indicator--glass,
 		.dots-track,
 		.indicator-dot,
 		.floating-tooltip,
@@ -605,7 +587,7 @@
 	}
 
 	:root.reduce-motion .capsule-indicator,
-	:root.reduce-motion .capsule-indicator::before,
+	:root.reduce-motion .capsule-indicator--glass,
 	:root.reduce-motion .dots-track,
 	:root.reduce-motion .indicator-dot,
 	:root.reduce-motion .floating-tooltip,
