@@ -5,7 +5,12 @@
 		computeTimetableWeekLayout,
 		COURSE_PALETTE_ENTRIES
 	} from '@chronos/core';
-	import { TimetablePreviewGrid, pluginText } from '@chronos/ui-kit';
+	import {
+		TimetablePreviewGrid,
+		pluginText,
+		type EdgeBarAction,
+		type EdgeBarActionsController
+	} from '@chronos/ui-kit';
 	import {
 		clampTransform,
 		computeCoverScale,
@@ -21,12 +26,14 @@
 
 	interface Props {
 		controller: ChronosUiController;
+		pluginId: string;
+		edgeActions?: EdgeBarActionsController;
 		source: Blob | File;
 		onConfirm: (blob: Blob) => void | Promise<void>;
 		onCancel: () => void;
 	}
 
-	let { controller, source, onConfirm, onCancel }: Props = $props();
+	let { controller, pluginId, edgeActions, source, onConfirm, onCancel }: Props = $props();
 
 	function pt(key: keyof (typeof WALLPAPER_MESSAGES)['zh-cn']) {
 		return pluginText(controller, WALLPAPER_PLUGIN_ID, WALLPAPER_MESSAGES, key);
@@ -79,6 +86,24 @@
 	let naturalHeight = $state(0);
 	let transform = $state<CropTransform>({ scale: 1, offsetX: 0, offsetY: 0 });
 	let confirming = $state(false);
+	const actions = $derived<EdgeBarAction[]>([
+		{
+			id: 'cancel',
+			label: cancelLabel,
+			icon: 'close',
+			variant: 'outlined',
+			disabled: confirming,
+			onClick: onCancel
+		},
+		{
+			id: 'confirm',
+			label: confirmLabel,
+			icon: 'check',
+			disabled: confirming || !imageEl || frameWidth <= 0,
+			onClick: confirmCrop
+		}
+	]);
+	$effect(() => edgeActions?.register(pluginId, actions));
 
 	const minScale = $derived(
 		naturalWidth > 0 && naturalHeight > 0 && frameWidth > 0 && frameHeight > 0
@@ -350,7 +375,7 @@
 		</div>
 	</div>
 
-	<div class="bottom-bar">
+	<div class="bottom-bar plugin-bottom-actions">
 		<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
 			<button
 				type="button"

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import {
 		appLocaleToBcp47,
 		pluginText,
@@ -29,6 +30,7 @@
 	let { controller, pluginId, active = true }: Props = $props();
 
 	const ui = $derived(fromStore(controller.snapshot));
+	const compactLandscape = new MediaQuery('(orientation: landscape) and (max-height: 500px)');
 
 	const HEADLINE_SMALL_FONT_PX = 24;
 	const PERIOD_LABEL_MIN_FONT_PX = 6;
@@ -83,35 +85,46 @@
 	});
 </script>
 
-<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<header
-		class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-6 pb-4 backdrop-blur-sm"
-	>
-		<p class="text-headline-small text-on-surface">{formatHeaderDate(todayIso)}</p>
-		{#if timetable}
-			<div class="mt-1 flex items-center justify-between gap-3">
-				<p class="text-body-medium text-on-surface-variant">
-					{pt('screen.week', { week: academicWeek })}
+{#snippet headerContent()}
+	<p class="text-headline-small text-on-surface">{formatHeaderDate(todayIso)}</p>
+	{#if timetable}
+		<div class="mt-1 flex items-center justify-between gap-3">
+			<p class="text-body-medium text-on-surface-variant">
+				{pt('screen.week', { week: academicWeek })}
+			</p>
+			{#if screen.courseEntries.length > 0}
+				<p class="text-label-large shrink-0 text-on-surface-variant">
+					{pt('screen.summary.count', { count: screen.courseEntries.length })}
 				</p>
-				{#if screen.courseEntries.length > 0}
-					<p class="text-label-large shrink-0 text-on-surface-variant">
-						{pt('screen.summary.count', { count: screen.courseEntries.length })}
-					</p>
-				{/if}
-			</div>
-		{/if}
+			{/if}
+		</div>
+	{/if}
 
-		<SegmentedControl
-			class="mt-4"
-			segments={scopeSegments}
-			value={screen.scope}
-			animateThumb={active}
-			onValueChange={(scope) => void screen.persistScope(scope as 'active' | 'all')}
-		/>
-	</header>
+	<SegmentedControl
+		class="mt-4"
+		segments={scopeSegments}
+		value={screen.scope}
+		animateThumb={active}
+		onValueChange={(scope) => void screen.persistScope(scope as 'active' | 'all')}
+	/>
+{/snippet}
+
+<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+	{#if !compactLandscape.current}
+		<header
+			class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-6 pb-4 backdrop-blur-sm"
+		>
+			{@render headerContent()}
+		</header>
+	{/if}
 
 	<div use:appShellScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
 		<div class="flex flex-col gap-4 p-4">
+			{#if compactLandscape.current}
+				<section class="ui-section-surface ui-section-surface--comfortable">
+					{@render headerContent()}
+				</section>
+			{/if}
 			{#if !timetable}
 				<section
 					class="ui-section-surface ui-section-surface--comfortable flex flex-1 flex-col items-center justify-center py-16 text-center"

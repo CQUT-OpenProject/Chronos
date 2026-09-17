@@ -6,6 +6,8 @@
 		DateField,
 		pluginText,
 		TimePicker,
+		type EdgeBarAction,
+		type EdgeBarActionsController,
 		type ChronosUiController,
 		type DateFieldLabels,
 		type TimePickerLabels,
@@ -13,6 +15,7 @@
 	} from '@chronos/ui-kit';
 	import { fromStore } from 'svelte/store';
 	import { onMount } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import { CLOCK_ANALYTICS } from './analytics';
 	import { combineLocalDateTime, partsFromDate } from './clock';
 	import { CLOCK_PLUGIN_ID, CLOCK_STORAGE_KEY } from './constants';
@@ -21,9 +24,11 @@
 	interface Props {
 		controller: ChronosUiController;
 		pluginId: string;
+		edgeActions?: EdgeBarActionsController;
 	}
 
-	let { controller, pluginId }: Props = $props();
+	let { controller, pluginId, edgeActions }: Props = $props();
+	const compactLandscape = new MediaQuery('(orientation: landscape) and (max-height: 500px)');
 
 	const ui = $derived(fromStore(controller.snapshot));
 	const pluginContext = $derived(controller.getPluginContext(pluginId));
@@ -82,6 +87,24 @@
 	const canApply = $derived(
 		draftInstant != null && draftInstant.getTime() !== effectiveNow.getTime()
 	);
+	const actions = $derived<EdgeBarAction[]>([
+		{
+			id: 'reset',
+			label: pt('screen.action.reset'),
+			icon: 'refresh',
+			variant: 'outlined',
+			disabled: !frozen,
+			onClick: onReset
+		},
+		{
+			id: 'apply',
+			label: pt('screen.action.apply'),
+			icon: 'check',
+			disabled: !canApply,
+			onClick: onApply
+		}
+	]);
+	$effect(() => edgeActions?.register(pluginId, actions));
 
 	async function onApply() {
 		const next = combineLocalDateTime(draftIso, draftTime);
@@ -106,33 +129,44 @@
 	}
 </script>
 
-<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-	<header
-		class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-6 pb-4 backdrop-blur-sm"
-	>
-		<div class="flex items-start justify-between gap-3">
-			<div class="min-w-0">
-				<p class="text-headline-small text-on-surface tabular-nums">
-					{headerDate}
-					<span class="text-on-surface-variant">·</span>
-					{headerTime}
-				</p>
-				<p class="text-body-medium mt-1 text-on-surface-variant">{statusSubtitle}</p>
-			</div>
-			<span
-				class="text-label-small shrink-0 rounded-full px-2.5 py-1 {frozen
-					? 'bg-secondary-container text-on-secondary-container'
-					: 'bg-surface-container-high text-on-surface-variant'}"
-			>
-				{statusBadge}
-			</span>
+{#snippet statusContent()}
+	<div class="flex items-start justify-between gap-3">
+		<div class="min-w-0">
+			<p class="text-headline-small text-on-surface tabular-nums">
+				{headerDate}
+				<span class="text-on-surface-variant">·</span>
+				{headerTime}
+			</p>
+			<p class="text-body-medium mt-1 text-on-surface-variant">{statusSubtitle}</p>
 		</div>
-	</header>
+		<span
+			class="text-label-small shrink-0 rounded-full px-2.5 py-1 {frozen
+				? 'bg-secondary-container text-on-secondary-container'
+				: 'bg-surface-container-high text-on-surface-variant'}"
+		>
+			{statusBadge}
+		</span>
+	</div>
+{/snippet}
+
+<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+	{#if !compactLandscape.current}
+		<header
+			class="relative z-10 shrink-0 border-b border-outline/10 bg-surface/90 px-4 pt-6 pb-4 backdrop-blur-sm"
+		>
+			{@render statusContent()}
+		</header>
+	{/if}
 
 	<div use:appShellScroll class="secondary-scroll relative z-0 min-h-0 flex-1 overflow-y-auto">
 		<div
 			class="mx-auto flex w-full max-w-lg flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
 		>
+			{#if compactLandscape.current}
+				<section class="ui-section-surface ui-section-surface--comfortable">
+					{@render statusContent()}
+				</section>
+			{/if}
 			<section class="ui-section-surface ui-section-surface--comfortable">
 				<div class="ui-section-stack divide-y divide-outline/10">
 					<DateField
@@ -159,7 +193,7 @@
 		</div>
 	</div>
 
-	<div class="bottom-bar">
+	<div class="bottom-bar plugin-bottom-actions">
 		<div class="mx-auto flex h-full w-full max-w-lg items-center gap-3">
 			<button
 				type="button"
