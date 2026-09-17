@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
 	getPluginCategoryMeta,
-	isPluginCategoryTagId,
+	PLUGIN_CATEGORY_TAG_IDS,
 	resolvePluginCatalogCategory
 } from './plugin-tags';
 
@@ -13,11 +13,12 @@ describe('plugin-tags', () => {
 		expect(getPluginCategoryMeta('source').label).toBe('数据源');
 	});
 
-	it('validates preset category ids', () => {
-		expect(isPluginCategoryTagId('theme')).toBe(true);
-		expect(isPluginCategoryTagId('tool-utility')).toBe(true);
-		expect(isPluginCategoryTagId('tool')).toBe(false);
-		expect(isPluginCategoryTagId('community')).toBe(false);
+	it('defines preset category ids', () => {
+		const ids = PLUGIN_CATEGORY_TAG_IDS as readonly string[];
+		expect(ids).toContain('theme');
+		expect(ids).toContain('tool-utility');
+		expect(ids).not.toContain('tool');
+		expect(ids).not.toContain('community');
 	});
 
 	it('resolves tool plugins into utility or dev catalog categories', () => {

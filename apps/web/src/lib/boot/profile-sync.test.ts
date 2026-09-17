@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { registeredProfiles } from './profile-registry';
 import {
 	CHRONOS_PROFILES,
 	SERVER_PLUGIN_MODULES,
@@ -12,7 +11,9 @@ import {
 
 describe('profile definitions single source', () => {
 	it('exposes the same profile ids at runtime and in codegen input', () => {
-		const registryIds = registeredProfiles.map((p) => p.profileId).sort();
+		const registryIds = Object.values(CHRONOS_PROFILES)
+			.map((p) => p.profileId)
+			.sort();
 		const definitionIds = Object.keys(CHRONOS_PROFILES).sort();
 		expect(registryIds).toEqual(definitionIds);
 	});
@@ -24,7 +25,9 @@ describe('profile definitions single source', () => {
 	});
 
 	it('references only plugin ids known to the profiles', () => {
-		const known = new Set(registeredProfiles.flatMap((p) => p.plugins.map((e) => e.id)));
+		const known = new Set(
+			Object.values(CHRONOS_PROFILES).flatMap((p) => p.plugins.map((e) => e.id))
+		);
 		for (const serverPluginId of Object.keys(SERVER_PLUGIN_MODULES)) {
 			expect(known.has(serverPluginId)).toBe(true);
 		}

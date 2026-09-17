@@ -114,7 +114,3 @@ export const OFFICIAL_PLUGINS: OfficialPluginDef[] = [
 		entry: resolve(root, 'packages/plugins/clock/bundle/entry.ts')
 	}
 ];
-
-export const OFFICIAL_PLUGIN_SOURCE_DIRS = Object.fromEntries(
-	OFFICIAL_PLUGINS.map((plugin) => [plugin.id, plugin.sourceDir])
-) as Record<string, string>;
