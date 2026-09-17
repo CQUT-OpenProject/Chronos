@@ -294,34 +294,36 @@
 		</div>
 	</div>
 
-	<div class="flex items-center justify-between gap-2 px-4 pb-2">
-		<button
-			type="button"
-			class="text-label-large h-11 rounded-full px-5 text-error hover:bg-error/10 active:bg-error/20"
-			onclick={deleteFromSheet}
-		>
-			{hostT('timetable.details.periods.deleteConfirm')}
-		</button>
-		<div class="flex items-center gap-2">
+	{#snippet footer()}
+		<div class="flex w-full items-center justify-between gap-2">
 			<button
 				type="button"
-				class="text-label-large h-11 rounded-full px-5 text-on-surface-variant hover:bg-on-surface/5 active:bg-on-surface/10"
-				onclick={() => {
-					editOpen = false;
-					editPos = null;
-				}}
+				class="text-label-large h-11 rounded-full px-5 text-error hover:bg-error/10 active:bg-error/20"
+				onclick={deleteFromSheet}
 			>
-				{hostT('common.cancel')}
+				{hostT('timetable.details.periods.deleteConfirm')}
 			</button>
-			<button
-				type="button"
-				class="text-label-large h-11 rounded-full bg-brand px-6 text-on-primary active:opacity-90"
-				onclick={confirmEdit}
-			>
-				{hostT('common.confirm')}
-			</button>
+			<div class="flex items-center gap-2">
+				<button
+					type="button"
+					class="text-label-large h-11 rounded-full px-5 text-on-surface-variant hover:bg-on-surface/5 active:bg-on-surface/10"
+					onclick={() => {
+						editOpen = false;
+						editPos = null;
+					}}
+				>
+					{hostT('common.cancel')}
+				</button>
+				<button
+					type="button"
+					class="text-label-large h-11 rounded-full bg-brand px-6 text-on-primary active:opacity-90"
+					onclick={confirmEdit}
+				>
+					{hostT('common.confirm')}
+				</button>
+			</div>
 		</div>
-	</div>
+	{/snippet}
 </BottomSheet>
 
 <Dialog
