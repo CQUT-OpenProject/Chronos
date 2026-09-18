@@ -75,13 +75,14 @@ export function createFitWidthFontAttachment(
 		};
 
 		let observed: Element | null = null;
-		const observer = new ResizeObserver(apply);
+		let observer: ResizeObserver | null = null;
 
 		$effect(() => {
 			const { fromParent = false, availableWidthPx } = getParams();
 			if (availableWidthPx != null) {
 				if (observed) {
-					observer.disconnect();
+					observer?.disconnect();
+					observer = null;
 					observed = null;
 				}
 				apply();
@@ -89,6 +90,7 @@ export function createFitWidthFontAttachment(
 			}
 			const target = fromParent ? (node.parentElement ?? node) : node;
 			if (observed !== target) {
+				observer ??= new ResizeObserver(apply);
 				observer.disconnect();
 				observer.observe(target);
 				observed = target;
@@ -96,6 +98,6 @@ export function createFitWidthFontAttachment(
 			apply();
 		});
 
-		return () => observer.disconnect();
+		return () => observer?.disconnect();
 	};
 }

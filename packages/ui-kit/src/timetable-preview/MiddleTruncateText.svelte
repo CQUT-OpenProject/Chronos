@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
 	import { truncateMiddleByFit } from '../utils/middle-truncate';
+	import {
+		getMiddleTruncateResult,
+		setMiddleTruncateResult,
+		subscribeMiddleTruncateFontChanges
+	} from '../utils/middle-truncate-result-cache';
 
 	interface Props {
 		text: string;
@@ -31,7 +36,31 @@
 		boxWidth = width;
 		boxHeight = height;
 		const content = text;
-		const key = `${content}\0${style ?? ''}\0${width}\0${height}`;
+		const computed = getComputedStyle(el);
+		const key = JSON.stringify([
+			content,
+			style,
+			className,
+			width,
+			height,
+			computed.fontFamily,
+			computed.fontSize,
+			computed.fontWeight,
+			computed.fontStyle,
+			computed.fontStretch,
+			computed.lineHeight,
+			computed.fontVariationSettings,
+			computed.fontFeatureSettings,
+			computed.letterSpacing,
+			computed.wordSpacing,
+			computed.fontKerning,
+			computed.textIndent,
+			computed.wordBreak,
+			computed.whiteSpace,
+			computed.textTransform,
+			computed.writingMode,
+			window.devicePixelRatio
+		]);
 		if (key === lastKey) return;
 		lastKey = key;
 
@@ -41,10 +70,14 @@
 			return;
 		}
 
-		const display = truncateMiddleByFit(content, (candidate) => {
+		const fits = (candidate: string) => {
 			el.textContent = candidate;
 			return el.scrollHeight <= el.clientHeight + 0.5;
-		});
+		};
+		const cached = getMiddleTruncateResult(key);
+		const display =
+			cached !== undefined && fits(cached) ? cached : truncateMiddleByFit(content, fits);
+		if (display !== cached) setMiddleTruncateResult(key, display);
 		el.textContent = display;
 		if (display !== content) {
 			el.title = content;
@@ -64,6 +97,11 @@
 				apply(el, size.width, size.height);
 			});
 		});
+		const unsubscribeFonts = subscribeMiddleTruncateFontChanges(() => {
+			lastKey = '';
+			const size = boxSize(el);
+			apply(el, size.width, size.height);
+		});
 		observer.observe(el);
 		const size = boxSize(el);
 		if (size.width > 0 && size.height > 0) {
@@ -72,6 +110,7 @@
 		return () => {
 			cancelAnimationFrame(rafId);
 			observer.disconnect();
+			unsubscribeFonts();
 			if (node === el) node = null;
 			lastKey = '';
 			boxWidth = 0;
@@ -82,6 +121,7 @@
 	$effect(() => {
 		void text;
 		void style;
+		void className;
 		if (!node) return;
 		if (boxWidth > 0 && boxHeight > 0) {
 			apply(node, boxWidth, boxHeight);
