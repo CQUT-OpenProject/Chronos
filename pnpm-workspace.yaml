@@ -10,7 +10,7 @@ allowBuilds:
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.3.1
   vitest: 4.1.10
-  vite-plus: 0.3.1
+  vite-plus: 0.3.2
 minimumReleaseAgeExclude:
   - pnpm@12.4.2
   - '@pnpm/exe.android-arm64@12.4.2'
