@@ -15,11 +15,12 @@ export function chronosLicensePlugin(webRoot: string): Plugin {
 				build: {
 					rolldownOptions: {
 						plugins: [
+							// Vite+ bundles Rolldown types separately from this plugin's peer dependency.
 							licensePlugin({
 								done(deps) {
 									writeGeneratedThirdPartyLicenses(outputPath, deps);
 								}
-							})
+							}) as unknown as Plugin
 						]
 					}
 				}
