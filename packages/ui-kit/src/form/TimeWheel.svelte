@@ -144,13 +144,12 @@
 <div class="flex justify-center gap-3">
 	{#each [{ kind: 'hour', items: hours, current: value.hour, name: labels.hour } as const, { kind: 'minute', items: minutes, current: value.minute, name: labels.minute } as const] as column (column.kind)}
 		<div class="flex min-w-0 flex-1 flex-col items-center">
-			<div class="relative w-full">
+			<div class="time-wheel-column relative w-full">
 				<div
 					role="listbox"
 					aria-label={labels.columnAria(label, column.name)}
 					tabindex={disabled ? -1 : 0}
-					class="time-wheel h-[200px] overflow-y-auto rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand"
-					style:padding-block="80px"
+					class="time-wheel overflow-y-auto rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand"
 					{@attach (node) => wheelAttach(node, column.kind)}
 					onscroll={(event) => handleWheelScroll(column.kind, event.currentTarget)}
 					onscrollend={() => {
@@ -180,11 +179,11 @@
 				</div>
 				<div
 					aria-hidden="true"
-					class="pointer-events-none absolute inset-x-0 top-0 h-[80px] bg-gradient-to-b from-surface-container-high to-transparent"
+					class="time-wheel-fade-top pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-surface-container-high to-transparent"
 				></div>
 				<div
 					aria-hidden="true"
-					class="pointer-events-none absolute inset-x-0 bottom-0 h-[80px] bg-gradient-to-t from-surface-container-high to-transparent"
+					class="time-wheel-fade-bottom pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-container-high to-transparent"
 				></div>
 				<div
 					aria-hidden="true"
@@ -196,17 +195,33 @@
 </div>
 
 <style>
+	.time-wheel-column {
+		--time-wheel-height: 200px;
+		--time-wheel-fade: 80px;
+	}
 	.time-wheel {
+		height: var(--time-wheel-height);
+		padding-block: var(--time-wheel-fade);
 		scroll-snap-type: y mandatory;
 		scrollbar-width: none;
 		touch-action: pan-y;
 		overscroll-behavior-y: contain;
 		-webkit-overflow-scrolling: touch;
 	}
+	.time-wheel-fade-top,
+	.time-wheel-fade-bottom {
+		height: var(--time-wheel-fade);
+	}
 	.time-wheel::-webkit-scrollbar {
 		display: none;
 	}
 	.time-wheel-row {
 		scroll-snap-align: center;
+	}
+	@media (orientation: landscape) and (max-height: 500px) {
+		.time-wheel-column {
+			--time-wheel-height: 140px;
+			--time-wheel-fade: 50px;
+		}
 	}
 </style>

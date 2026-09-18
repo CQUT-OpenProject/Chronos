@@ -266,8 +266,8 @@
 	title={editTitle}
 	onOpenChangeComplete={handleEditOpenChangeComplete}
 >
-	<div class="flex flex-col gap-3 px-4 pt-1 pb-2">
-		<div class="flex flex-col gap-1">
+	<div class="time-range-wheels flex flex-col gap-3 px-4 pt-1 pb-2">
+		<div class="time-range-wheel flex min-w-0 flex-col gap-1">
 			<span class="text-label-small px-1 text-on-surface-variant">
 				{hostT('timetable.details.period.start')}
 			</span>
@@ -279,8 +279,8 @@
 				idPrefix="period-edit-start"
 			/>
 		</div>
-		<div class="border-t border-outline" aria-hidden="true"></div>
-		<div class="flex flex-col gap-1">
+		<div class="time-range-divider border-t border-outline" aria-hidden="true"></div>
+		<div class="time-range-wheel flex min-w-0 flex-col gap-1">
 			<span class="text-label-small px-1 text-on-surface-variant">
 				{hostT('timetable.details.period.end')}
 			</span>
@@ -373,3 +373,18 @@
 		{/snippet}
 	</BottomSheet>
 {/if}
+
+<style>
+	@media (orientation: landscape) and (max-height: 500px) {
+		.time-range-wheels {
+			flex-direction: row;
+		}
+		.time-range-wheel {
+			flex: 1 1 0;
+		}
+		.time-range-divider {
+			border-top: 0;
+			border-left-width: 1px;
+		}
+	}
+</style>
