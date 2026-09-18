@@ -84,6 +84,7 @@
 		onCourseClick?: (course: Course) => void;
 		onRequestWeekDelete?: (course: Course, week: number) => void;
 		interaction: TimetableInteraction;
+		active?: boolean;
 	}
 
 	let {
@@ -102,7 +103,8 @@
 		capsuleCornerStyle = 'sharp',
 		onCourseClick,
 		onRequestWeekDelete,
-		interaction
+		interaction,
+		active = true
 	}: Props = $props();
 
 	const effectivePeriodIndex = $derived(periodHighlightEnabled ? currentPeriodIndex : null);
@@ -271,11 +273,18 @@
 	const bodyScrollAttach: Attachment = (node) => {
 		const element = node as HTMLDivElement;
 		scrollContainer = element;
-		bodyViewportHeight = element.clientHeight;
 		const observer = new ResizeObserver(() => {
 			bodyViewportHeight = element.clientHeight;
 		});
-		observer.observe(element);
+		$effect(() => {
+			if (!active) {
+				observer.disconnect();
+				return;
+			}
+			bodyViewportHeight = element.clientHeight;
+			observer.observe(element);
+			return () => observer.disconnect();
+		});
 		return () => {
 			observer.disconnect();
 			if (scrollContainer === element) scrollContainer = undefined;
@@ -286,9 +295,16 @@
 		const update = () => {
 			gridBodyWidth = node.clientWidth;
 		};
-		update();
 		const observer = new ResizeObserver(update);
-		observer.observe(node);
+		$effect(() => {
+			if (!active) {
+				observer.disconnect();
+				return;
+			}
+			update();
+			observer.observe(node);
+			return () => observer.disconnect();
+		});
 		return () => observer.disconnect();
 	};
 
