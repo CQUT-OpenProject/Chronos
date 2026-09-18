@@ -29,9 +29,7 @@ export function buildManifestForPlugin(
 		manifest.toolGroup = plugin.toolGroup;
 	}
 
-	applyAssetManifestFields(manifest, plugin.id, assets, (fileName) =>
-		pluginAssetUrl(plugin.id, fileName)
-	);
+	applyAssetManifestFields(manifest, assets, (fileName) => pluginAssetUrl(plugin.id, fileName));
 
 	return manifest;
 }
@@ -50,7 +48,6 @@ export function writePluginManifest(
 
 function applyAssetManifestFields(
 	manifest: Record<string, unknown>,
-	pluginId: string,
 	assets: OfficialPluginAssetPayload,
 	urlFor: (fileName: string) => string
 ): void {
@@ -99,7 +96,7 @@ export function buildDevManifestForPlugin(
 		manifest.toolGroup = plugin.toolGroup;
 	}
 
-	applyAssetManifestFields(manifest, plugin.id, assets, (fileName) =>
+	applyAssetManifestFields(manifest, assets, (fileName) =>
 		pluginDevAssetUrl(plugin.id, rev, fileName)
 	);
 

@@ -1,3 +1,8 @@
+---
+name: svelte-code-writer
+description: Use the Svelte documentation and autofixer CLI when Svelte assistance is needed and MCP tools are unavailable.
+---
+
 ## CLI tools
 
 You have access to `@sveltejs/mcp` CLI for Svelte-specific assistance. Use these commands via `vpx` (never `npx`; `vpx` is the only allowed runner):
@@ -16,7 +21,7 @@ Lists all available Svelte 5 and SvelteKit documentation sections with titles an
 vpx @sveltejs/mcp get-documentation "<section1>,<section2>,..."
 ```
 
-Retrieves full documentation for specified sections. Use after `list-sections` to fetch relevant docs.
+Retrieves full documentation for specified sections. Use `list-sections` first only when the relevant section is not already known.
 
 **Example:**
 
@@ -54,6 +59,8 @@ vpx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 4
 
 ## Workflow
 
-1. **Uncertain about syntax?** Run `list-sections` then `get-documentation` for relevant topics
-2. **Reviewing/debugging?** Run `svelte-autofixer` on the code to detect issues
-3. **Validate logic changes** - Run `svelte-autofixer` before finalizing any Svelte logic change (typo/format-only skips; if tool unavailable twice, note and proceed)
+1. **Uncertain about syntax, APIs, or version behavior?** Fetch relevant topics with `get-documentation`; use `list-sections` only when the section is unknown.
+2. **Reviewing/debugging?** Use `svelte-autofixer` when it can help investigate a concrete Svelte concern.
+3. **Validate logic changes** - Run `svelte-autofixer` before finalizing Svelte logic changes; typo/format-only edits may skip. Reuse the result for unchanged code. Retry a plausibly transient failure once; if clearly unavailable, note the limitation and continue other validation. Fix clear true-positives relevant to the change and re-validate at most twice; do not loop on disputed style hints.
+
+Final project validation follows [AGENTS.md](../../../AGENTS.md).

@@ -3,8 +3,7 @@ import { type AcademicConfig, type Timetable } from '../domain/timetable';
 import {
 	type UserPreferences,
 	DEFAULT_USER_PREFERENCES,
-	CURRENT_PREFERENCES_SCHEMA_VERSION,
-	PALETTE_MODE_VIBRANT
+	CURRENT_PREFERENCES_SCHEMA_VERSION
 } from '../domain/preferences';
 import { DEFAULT_VISUAL_THEME_ID, HOST_DEFAULT_ICON_THEME_ID } from '../theme/theme-defaults';
 import { todayIsoDate } from '../algorithms/date';
@@ -23,6 +22,8 @@ import type { EngineContextHost } from './engine-context-host';
 import { I18nCatalog, interpolateMessage } from '../i18n/i18n-catalog';
 import type { ThemeContribution } from '../types/contributions';
 import type { EngineActionHost, TimetableListEntry } from './engine/engine-action-host';
+import { createEngineActionHost } from './engine/create-action-host';
+import { planRevertToDefaultThemes } from './engine/revert-default-themes';
 import { EngineTimeKeeper } from './engine/engine-time-keeper';
 import { TimetableActions } from './engine/timetable-actions';
 import { CourseActions } from './engine/course-actions';
@@ -100,30 +101,7 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			this.i18nCatalog.register(pluginId, messages);
 		}
 
-		this.actionHost = this.createActionHost();
-		this.timeKeeper = new EngineTimeKeeper(
-			this.events,
-			() => this._currentTimetable,
-			(week) => {
-				this._activeWeek = week;
-			},
-			(index) => {
-				this._currentPeriodIndex = index;
-			}
-		);
-		this.timetableActions = new TimetableActions(this.actionHost);
-		this.courseActions = new CourseActions(this.actionHost, this.timetableActions);
-		this.storageSync = new StorageSyncHandler(this.actionHost, this.timeKeeper);
-		this.pluginLifecycle = new PluginLifecycleManager(
-			this,
-			this.storage,
-			this.events,
-			this.i18nCatalog
-		);
-	}
-
-	private createActionHost(): EngineActionHost {
-		return {
+		this.actionHost = createEngineActionHost({
 			storage: this.storage,
 			events: this.events,
 			badges: this.badges,
@@ -159,7 +137,26 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 			emit: (event, payload) => {
 				this.events.emit(event, payload);
 			}
-		};
+		});
+		this.timeKeeper = new EngineTimeKeeper(
+			this.events,
+			() => this._currentTimetable,
+			(week) => {
+				this._activeWeek = week;
+			},
+			(index) => {
+				this._currentPeriodIndex = index;
+			}
+		);
+		this.timetableActions = new TimetableActions(this.actionHost);
+		this.courseActions = new CourseActions(this.actionHost, this.timetableActions);
+		this.storageSync = new StorageSyncHandler(this.actionHost, this.timeKeeper);
+		this.pluginLifecycle = new PluginLifecycleManager(
+			this,
+			this.storage,
+			this.events,
+			this.i18nCatalog
+		);
 	}
 
 	get storage(): import('../types/services').IStorageService {
@@ -334,29 +331,17 @@ export class ChronosEngine implements EngineContextHost, Disposable {
 	}
 
 	async revertToDefaultThemes(): Promise<void> {
-		const prefs = this._userPreferences;
-		const activeThemeId = this._activeThemeId;
-		const patch: Partial<UserPreferences> = {};
-		let reverted = false;
+		const plan = planRevertToDefaultThemes({
+			activeThemeId: this._activeThemeId,
+			preferences: this._userPreferences,
+			themes: this.themes
+		});
+		if (!plan) return;
 
-		if (activeThemeId !== DEFAULT_VISUAL_THEME_ID && !this.themes.getTheme(activeThemeId)) {
-			this.setTheme(DEFAULT_VISUAL_THEME_ID);
-			patch.paletteMode = PALETTE_MODE_VIBRANT;
-			patch.visualThemeId = DEFAULT_VISUAL_THEME_ID;
-			reverted = true;
+		if (plan.nextThemeId) {
+			this.setTheme(plan.nextThemeId);
 		}
-
-		if (prefs.paletteMode !== PALETTE_MODE_VIBRANT && !this.themes.getTheme(prefs.paletteMode)) {
-			if (!reverted) {
-				this.setTheme(DEFAULT_VISUAL_THEME_ID);
-			}
-			patch.paletteMode = PALETTE_MODE_VIBRANT;
-			patch.visualThemeId = DEFAULT_VISUAL_THEME_ID;
-		}
-
-		if (Object.keys(patch).length > 0) {
-			await this.updatePreferences(patch);
-		}
+		await this.updatePreferences(plan.preferencesPatch);
 	}
 
 	async updatePreferences(patch: Partial<UserPreferences>): Promise<void> {

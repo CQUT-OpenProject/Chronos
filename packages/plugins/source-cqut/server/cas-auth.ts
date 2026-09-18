@@ -6,7 +6,7 @@ import {
 	type HttpRequest,
 	type HttpResponse
 } from '@cqut-openproject/cas-sdk';
-import { fetch as undiciFetch, type RequestInit as UndiciRequestInit } from 'undici';
+import { fetch as undiciFetch } from 'undici';
 import {
 	CAS_APPLICATION_CODE,
 	TIMETABLE_BASE_URL,
@@ -27,39 +27,17 @@ export interface CasLoginOverrides {
 }
 
 function createUndiciFetcher(): Fetcher {
-	return async (req: HttpRequest): Promise<HttpResponse> => {
-		const res = await withNetworkRetry(req.signal, async () => {
-			const undiciInit: UndiciRequestInit = {
+	return async (req: HttpRequest): Promise<HttpResponse> =>
+		withNetworkRetry(req.signal, () =>
+			undiciFetch(req.url, {
 				method: req.method ?? 'GET',
 				headers: req.headers,
 				body: req.body,
-				redirect: req.redirect ?? 'follow',
+				redirect: 'manual',
 				signal: req.signal,
 				dispatcher: getCqutDispatcher()
-			};
-			return undiciFetch(req.url, undiciInit);
-		});
-
-		const headers: Record<string, string | string[]> = {};
-		res.headers.forEach((value, key) => {
-			headers[key] = value;
-		});
-		const rawSetCookies = (
-			res.headers as unknown as { getSetCookie?: () => string[] }
-		).getSetCookie?.();
-		if (rawSetCookies && rawSetCookies.length > 0) {
-			headers['set-cookie'] = rawSetCookies;
-		}
-
-		return {
-			status: res.status,
-			statusText: res.statusText,
-			headers,
-			url: res.url,
-			text: async () => res.text(),
-			json: async <T = unknown>(): Promise<T> => (await res.json()) as T
-		};
-	};
+			})
+		) as unknown as Promise<HttpResponse>;
 }
 
 function resolveEndpoints(overrides?: CasLoginOverrides) {
@@ -85,7 +63,7 @@ export async function loginCas(
 	const client = createCasClient({
 		uisBaseUrl: endpoints.uisBaseUrl,
 		applicationCode: endpoints.casApplicationCode,
-		cookieJar: jar,
+		cookieJarFactory: () => jar,
 		fetcher: createUndiciFetcher()
 	});
 
@@ -111,7 +89,13 @@ export async function loginCas(
 		return failure(toUpstreamNetworkError(err, '统一身份认证登录', signal));
 	}
 
-	const ticket = loginResult.data.ticket;
+	const session = loginResult.data;
+	if (session.kind !== 'ticket') {
+		return failure(AppError.auth('登录失败，请重新输入账号或密码'));
+	}
+	// Do not call session.dispose() — jar is shared with downstream timetable requests.
+
+	const ticket = session.ticket;
 	const casLoginUrl = `${endpoints.casServiceUrl}?ticket=${encodeURIComponent(ticket)}`;
 	const sessionResponseResult = await requestStep(
 		jar,

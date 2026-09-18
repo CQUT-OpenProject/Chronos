@@ -140,7 +140,7 @@
 	overlayId={resolvedOverlayId}
 	{historyPort}
 >
-	<div class="flex flex-col gap-3 px-4 pt-1 pb-2">
+	<div class="px-4 pt-1 pb-2">
 		<TimeWheel
 			bind:this={timeWheel}
 			bind:value={draftTime}
@@ -150,7 +150,7 @@
 		/>
 	</div>
 
-	<div class="flex items-center justify-end gap-2 px-4 pb-2">
+	{#snippet footer()}
 		<button
 			type="button"
 			class="text-label-large h-11 rounded-full px-5 text-on-surface-variant hover:bg-on-surface/5 active:bg-on-surface/10"
@@ -165,5 +165,5 @@
 		>
 			{labels.confirm}
 		</button>
-	</div>
+	{/snippet}
 </BottomSheet>

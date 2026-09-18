@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
 	timetableWallpaperBackdropClass,
-	timetableWallpaperBackgroundSize
+	timetableWallpaperBackgroundSize,
+	timetableWallpaperClearClass,
+	timetableWallpaperPreblurredClass
 } from '../src/timetable-preview/timetable-wallpaper-layer';
 
 describe('timetable-wallpaper-layer', () => {
@@ -30,5 +32,24 @@ describe('timetable-wallpaper-layer', () => {
 		const classes = timetableWallpaperBackdropClass(false, 'fill');
 		expect(classes).toContain('inset-0');
 		expect(timetableWallpaperBackgroundSize('fill')).toBe('100% 100%');
+	});
+
+	it('prewarms a fixed blur and only transitions its opacity', () => {
+		const clear = timetableWallpaperClearClass();
+		const beforeEdit = timetableWallpaperPreblurredClass(false);
+		const duringEdit = timetableWallpaperPreblurredClass(true);
+
+		expect(clear).toContain('pointer-events-none');
+		expect(clear).toContain('inset-[-24px]');
+		expect(clear).not.toContain('blur-lg');
+		expect(beforeEdit).toContain('blur-lg');
+		expect(beforeEdit).toContain('opacity-[0.001]');
+		expect(beforeEdit).toContain('duration-[240ms]');
+		expect(duringEdit).toContain('opacity-100');
+		expect(duringEdit).toContain('duration-[120ms]');
+		expect(duringEdit).toContain('motion-reduce:transition-none');
+		expect(duringEdit).toContain('transition-opacity');
+		expect(duringEdit).not.toContain('transition-[filter]');
+		expect(timetableWallpaperPreblurredClass(false, 'fill')).toContain('inset-0');
 	});
 });

@@ -6,11 +6,16 @@ import {
 	parseIconThemeJson
 } from '@chronos/core';
 import { loadEsmPluginFromCode } from './plugin-bundle';
+import { PluginCssInjector } from './plugin-css-injector';
 import type { InstalledOfficialPluginRecord } from './official-plugin-types';
 
+/**
+ * Loads/unloads official plugin runtime in the engine.
+ * Activation failures clean up partial state and rethrow for upper-layer rollback.
+ */
 export class OfficialPluginRuntimeActivator {
 	private activeHandles = new Map<string, Disposable>();
-	private styleElements = new Map<string, HTMLStyleElement>();
+	private readonly cssInjector = new PluginCssInjector();
 
 	constructor(
 		private readonly engine: ChronosEngine,
@@ -25,7 +30,7 @@ export class OfficialPluginRuntimeActivator {
 		const manifest = record.manifest;
 		await this.deactivate(manifest.id);
 
-		if (record.cssCode) this.injectCss(manifest.id, record.cssCode);
+		if (record.cssCode) this.cssInjector.inject(manifest.id, record.cssCode);
 
 		const disposables: Disposable[] = [];
 		try {
@@ -43,7 +48,7 @@ export class OfficialPluginRuntimeActivator {
 			for (const disposable of disposables) {
 				disposable.dispose();
 			}
-			this.removeCss(manifest.id);
+			this.cssInjector.remove(manifest.id);
 			throw error;
 		}
 	}
@@ -98,7 +103,7 @@ export class OfficialPluginRuntimeActivator {
 			handle.dispose();
 			this.activeHandles.delete(pluginId);
 		}
-		this.removeCss(pluginId);
+		this.cssInjector.remove(pluginId);
 		if (options?.revertThemes && this.isInstalled(pluginId)) {
 			void this.engine.revertToDefaultThemes();
 		}
@@ -109,30 +114,6 @@ export class OfficialPluginRuntimeActivator {
 			handle.dispose();
 		}
 		this.activeHandles.clear();
-		for (const [, el] of this.styleElements) {
-			el.remove();
-		}
-		this.styleElements.clear();
-	}
-
-	private injectCss(pluginId: string, css: string): void {
-		if (typeof document === 'undefined') return;
-		this.removeCss(pluginId);
-		const el = document.createElement('style');
-		el.setAttribute('data-plugin-id', pluginId);
-		el.textContent = css;
-		document.head.appendChild(el);
-		this.styleElements.set(pluginId, el);
-	}
-
-	private removeCss(pluginId: string): void {
-		const el = this.styleElements.get(pluginId);
-		if (el) {
-			el.remove();
-			this.styleElements.delete(pluginId);
-		} else if (typeof document !== 'undefined') {
-			const fallback = document.querySelector(`style[data-plugin-id="${pluginId}"]`);
-			fallback?.remove();
-		}
+		this.cssInjector.disposeAll();
 	}
 }

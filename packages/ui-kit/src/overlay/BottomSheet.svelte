@@ -271,7 +271,7 @@
 		/>
 		<Dialog.Content
 			bind:ref={contentRef}
-			class="bottom-sheet-content rounded-t-sheet fixed inset-x-0 bottom-0 z-[var(--z-overlay)] flex max-h-[85dvh] flex-col bg-surface-container-high text-on-surface shadow-overlay outline-none"
+			class="bottom-sheet-content rounded-t-sheet fixed inset-x-0 bottom-0 z-[var(--z-overlay)] flex max-h-[85dvh] min-h-0 flex-col overflow-hidden bg-surface-container-high text-on-surface shadow-overlay outline-none"
 			style={contentTransformStyle}
 			data-dragging={isDragging ? '' : undefined}
 			data-snapping-back={isSnappingBack ? '' : undefined}
@@ -321,7 +321,7 @@
 						showHandle
 							? [
 									'app-scroll-y min-h-0 flex-1 overflow-y-auto',
-									!footer && 'pb-[var(--tabbar-safe)]'
+									!footer && 'pb-[var(--tabbar-block-safe,0px)]'
 								]
 							: 'shrink-0 px-6 pb-5'
 					]}
@@ -347,8 +347,8 @@
 					class={[
 						'flex shrink-0 items-center gap-2',
 						showHandle
-							? 'mt-2 justify-end px-4 pb-[var(--tabbar-safe)]'
-							: 'w-full justify-stretch gap-3 border-t border-outline-variant/40 px-6 pt-4 pb-[calc(var(--tabbar-safe)+0.75rem)] [&>button]:flex-1'
+							? 'mt-2 justify-end ps-4 pe-[calc(1rem+var(--tabbar-inline-safe,0px))] pb-[var(--tabbar-block-safe,0px)]'
+							: 'w-full justify-stretch gap-3 border-t border-outline-variant/40 ps-6 pe-[calc(1.5rem+var(--tabbar-inline-safe,0px))] pt-4 pb-[calc(var(--tabbar-block-safe,0px)+0.75rem)] [&>button]:flex-1'
 					]}
 				>
 					{@render footer()}
@@ -361,7 +361,9 @@
 <style>
 	@media (orientation: landscape) and (max-height: 500px) {
 		:global(.bottom-sheet-content[data-dialog-content]) {
-			max-width: 32rem;
+			inset-inline-end: var(--shell-tab-bar-inline-size, 0px);
+			max-width: min(32rem, calc(100vw - var(--shell-tab-bar-inline-size, 0px)));
+			max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 0.5rem);
 			margin-inline: auto;
 		}
 	}

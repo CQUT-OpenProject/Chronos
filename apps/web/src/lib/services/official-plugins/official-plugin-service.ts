@@ -2,10 +2,12 @@ import { hostT } from '$lib/i18n/host-i18n.svelte';
 import type { ChronosEngine, Disposable, PluginManifest } from '@chronos/core';
 import { PLUGIN_CONFIG_STORAGE_KEY } from '@chronos/core';
 import { APP_VERSION } from '$lib/config/app-meta';
+import { isAbortError, swallowAbortRejection } from './abort-utils';
 import { OfficialPluginAssetPipeline } from './asset-pipeline';
 import { OfficialPluginCatalogClient } from './catalog-client';
 import { OfficialPluginInstalledStore } from './installed-store';
 import type { InstalledOfficialPluginRecord } from './official-plugin-types';
+import { replacePluginAssets } from './plugin-asset-replacer';
 import { OfficialPluginRuntimeActivator } from './runtime-activator';
 import { assertValidManifestInstallUrl } from './manifest-url';
 import { validatePluginManifest } from './plugin-bundle';
@@ -16,12 +18,7 @@ import {
 	type PluginInstallTask,
 	type PluginInstallProgress
 } from './install-queue';
-import {
-	buildCatalogManifestMap,
-	DEFAULT_OFFICIAL_CATALOG_URL,
-	isOfficialCatalogManifestUrl,
-	shouldSyncInstalledPlugin
-} from './sync-installed-plugins';
+import { shouldSyncInstalledPlugin, syncInstalledPluginsWithHost } from './sync-installed-plugins';
 
 export type { InstalledOfficialPluginRecord } from './official-plugin-types';
 export type {
@@ -31,17 +28,6 @@ export type {
 	PluginInstallProgress
 };
 export { OfficialPluginInstallQueue };
-
-function isAbortError(err: unknown): boolean {
-	if (!err) return false;
-	if (typeof err === 'object' && 'name' in err && (err as { name: string }).name === 'AbortError') {
-		return true;
-	}
-	if (err instanceof Error && (err.message === 'Aborted' || err.name === 'AbortError')) {
-		return true;
-	}
-	return false;
-}
 
 export interface OfficialPluginServiceDeps {
 	catalogClient: OfficialPluginCatalogClient;
@@ -105,28 +91,46 @@ export class OfficialPluginService implements Disposable {
 
 	async init(): Promise<void> {
 		if (this.initialized || this.disposed) return;
+		await this.loadInstalledStore();
+		await this.activateCachedPlugins();
+		this.initialized = true;
+		this.installedStore.notify();
+		await this.syncWithHostCatalog();
+		this.installedStore.notify();
+		this.setupDevHmr();
+	}
+
+	private async loadInstalledStore(): Promise<void> {
 		await this.installedStore.load();
 		await this.installedStore.dedupeBuiltinOverlap();
+	}
 
+	private async activateCachedPlugins(): Promise<void> {
 		const pendingSyncIds = new Set(
 			this.installedStore
 				.getCache()
 				.filter((record) => shouldSyncInstalledPlugin(record, this.hostVersion))
 				.map((record) => record.manifest.id)
 		);
-
 		await this.activateInstalledFromCache({ skipIds: pendingSyncIds });
-		this.initialized = true;
-		this.installedStore.notify();
-		await this.syncInstalledWithHost();
-		this.installedStore.notify();
-		if (import.meta.env.DEV) {
-			void import('./official-plugin-hmr').then(({ setupPluginHmr }) => {
-				if (this.disposed) return;
-				this.hmrDisposable?.dispose();
-				this.hmrDisposable = setupPluginHmr(this, this.engine);
-			});
-		}
+	}
+
+	private async syncWithHostCatalog(): Promise<void> {
+		await syncInstalledPluginsWithHost({
+			hostVersion: this.hostVersion,
+			catalogClient: this.catalogClient,
+			getInstalledRecords: () => this.installedStore.getCache(),
+			install: (manifest, manifestUrl, options) => this.install(manifest, manifestUrl, options)
+		});
+	}
+
+	private setupDevHmr(): void {
+		if (!import.meta.env.DEV) return;
+		void import('./official-plugin-hmr').then(({ setupPluginHmr }) => {
+			if (this.disposed) return;
+			this.hmrDisposable?.dispose();
+			this.hmrDisposable = setupPluginHmr(this, this.engine);
+		});
 	}
 
 	private async activateInstalledFromCache(options?: { skipIds?: Set<string> }): Promise<void> {
@@ -213,7 +217,7 @@ export class OfficialPluginService implements Disposable {
 		}
 	}
 
-	private async replacePluginAssets(
+	private replacePluginAssets(
 		candidate: InstalledOfficialPluginRecord,
 		options?: {
 			preserveInstalledAt?: boolean;
@@ -221,71 +225,15 @@ export class OfficialPluginService implements Disposable {
 			signal?: AbortSignal;
 		}
 	): Promise<InstalledOfficialPluginRecord> {
-		const pluginId = candidate.manifest.id;
-		const existing = this.installedStore.find(pluginId);
-		const hadActiveRuntime = Boolean(existing?.enabled && this.runtimeActivator.isActive(pluginId));
-
-		const record: InstalledOfficialPluginRecord = {
-			...candidate,
-			enabled: existing?.enabled ?? candidate.enabled,
-			installedAt:
-				options?.preserveInstalledAt && existing
-					? existing.installedAt
-					: (candidate.installedAt ?? existing?.installedAt ?? Date.now()),
-			manifestUrl: candidate.manifestUrl ?? existing?.manifestUrl
-		};
-
-		let runtimeTouched = false;
-		const rollbackErrors: unknown[] = [];
-
-		const rollbackRuntime = async (cause: unknown): Promise<InstalledOfficialPluginRecord> => {
-			if (runtimeTouched) {
-				try {
-					await this.runtimeActivator.deactivate(pluginId, {
-						revertThemes: options?.revertThemesOnDeactivate ?? true
-					});
-					if (existing && hadActiveRuntime && !this.disposed) {
-						await this.runtimeActivator.activate(existing);
-					}
-				} catch (rollbackErr) {
-					rollbackErrors.push(rollbackErr);
-				}
-			}
-
-			if (rollbackErrors.length > 0) {
-				throw new AggregateError(
-					[cause, ...rollbackErrors],
-					`Failed to replace plugin ${pluginId} and rollback previous runtime`
-				);
-			}
-			throw cause;
-		};
-
-		try {
-			options?.signal?.throwIfAborted?.();
-
-			if (existing?.enabled) {
-				await this.runtimeActivator.deactivate(pluginId, {
-					revertThemes: options?.revertThemesOnDeactivate ?? false
-				});
-				runtimeTouched = true;
-			}
-
-			options?.signal?.throwIfAborted?.();
-
-			if (record.enabled) {
-				await this.runtimeActivator.activate(record);
-				runtimeTouched = true;
-			}
-
-			options?.signal?.throwIfAborted?.();
-
-			await this.installedStore.upsert(record);
-			runtimeTouched = false;
-			return record;
-		} catch (err: unknown) {
-			return rollbackRuntime(err);
-		}
+		return replacePluginAssets(
+			{
+				installedStore: this.installedStore,
+				runtimeActivator: this.runtimeActivator,
+				isDisposed: () => this.disposed
+			},
+			candidate,
+			options
+		);
 	}
 
 	async install(
@@ -357,8 +305,9 @@ export class OfficialPluginService implements Disposable {
 		const update = this.hotUpdates.get(pluginId);
 		if (!update) return;
 		update.controller.abort();
-		await update.settled.catch(() => {});
+		await swallowAbortRejection(update.settled);
 	}
+
 	async uninstall(pluginId: string): Promise<void> {
 		await this.cancelHotUpdate(pluginId);
 		await this.runtimeActivator.deactivate(pluginId, { revertThemes: true });
@@ -409,36 +358,6 @@ export class OfficialPluginService implements Disposable {
 
 	isPluginActive(pluginId: string): boolean {
 		return this.runtimeActivator.isActive(pluginId);
-	}
-
-	private async syncInstalledWithHost(catalogUrl = DEFAULT_OFFICIAL_CATALOG_URL): Promise<void> {
-		const stale = this.installedStore
-			.getCache()
-			.filter((record) => shouldSyncInstalledPlugin(record, this.hostVersion));
-		if (stale.length === 0) return;
-
-		let catalogMap: Awaited<ReturnType<typeof buildCatalogManifestMap>>;
-		try {
-			const catalog = await this.catalogClient.fetchCatalog(catalogUrl);
-			catalogMap = await buildCatalogManifestMap(catalog, (url) =>
-				this.catalogClient.fetchManifest(url)
-			);
-		} catch (err) {
-			console.error('[OfficialPluginService] Failed to sync installed plugins:', err);
-			return;
-		}
-
-		for (const record of stale) {
-			const entry = catalogMap.get(record.manifest.id);
-			if (!entry) continue;
-			if (record.manifestUrl && !isOfficialCatalogManifestUrl(record.manifestUrl)) continue;
-
-			try {
-				await this.install(entry.manifest, entry.manifestUrl, { silent: true });
-			} catch (err) {
-				console.error(`[OfficialPluginService] Failed to sync plugin ${record.manifest.id}:`, err);
-			}
-		}
 	}
 
 	async resetAfterFactoryClear(): Promise<void> {

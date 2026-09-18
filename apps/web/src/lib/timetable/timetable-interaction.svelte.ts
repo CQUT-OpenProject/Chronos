@@ -1,87 +1,36 @@
-import type { Course, PlacedCourseCapsule } from '@chronos/core';
+import { createCourseCardHandlers } from './course-card-gesture';
+import { createDragSessionController } from './timetable-drag-session.svelte';
+import { createGridHandlers } from './grid-gesture';
+import { createLongPressTracker } from './timetable-long-press.svelte';
+import {
+	TIMETABLE_CLICK_GUARD_MS,
+	TIMETABLE_LONG_PRESS_DELAY_MS,
+	TIMETABLE_POINTER_THRESHOLD_PX
+} from './timetable-interaction-types';
+import type {
+	CourseCardHandlerOptions,
+	GridHandlerOptions,
+	TimetableDragSession,
+	TimetableInteractionMode,
+	TimetableInteractionOptions
+} from './timetable-interaction-types';
 
-export const TIMETABLE_POINTER_THRESHOLD_PX = 5;
-export const TIMETABLE_LONG_PRESS_DELAY_MS = 450;
-export const TIMETABLE_CLICK_GUARD_MS = 120;
-export const TIMETABLE_LONG_PRESS_CLICK_SUPPRESS_MS = 50;
-
-export type TimetableInteractionMode = 'view' | 'edit' | 'dragging';
-
-export interface TimetableDragSession {
-	course: Course;
-	placed: PlacedCourseCapsule;
-	pointerId: number;
-	week: number;
-	targetColIndex: number;
-	targetDayOfWeek: number;
-	targetStartPeriod: number;
-	persistAfterDrop: boolean;
-	overDeleteZone: boolean;
-}
-
-export interface BeginDragInput {
-	course: Course;
-	placed: PlacedCourseCapsule;
-	pointerId: number;
-	week: number;
-	targetColIndex: number;
-	targetDayOfWeek: number;
-	targetStartPeriod: number;
-	persistAfterDrop: boolean;
-	waitForMove?: boolean;
-	originX?: number;
-	originY?: number;
-}
-
-export interface DragTargetPatch {
-	targetColIndex: number;
-	targetDayOfWeek: number;
-	targetStartPeriod: number;
-}
-
-export interface DragGridGeometry {
-	gridRect: { left: number; top: number; width: number; height: number };
-	visibleDays: readonly { dayOfWeek: number }[];
-	displayedPeriodCount: number;
-}
-
-export interface GridHandlerOptions {
-	onEmptyLongPress?: (event: PointerEvent) => void;
-	onClickEmpty?: (event: MouseEvent) => void;
-}
-
-export interface CourseCardHandlerOptions {
-	onCourseClick?: (course: Course) => void;
-	onLongPress?: (course: Course, event: PointerEvent) => void;
-	onDragStart?: (course: Course, event: PointerEvent) => void;
-}
-
-export interface TimetableInteractionOptions {
-	now?: () => number;
-	longPressDelayMs?: number;
-	thresholdPx?: number;
-	clickGuardMs?: number;
-}
-
-interface DragMoveLock {
-	pointerId: number;
-	startX: number;
-	startY: number;
-}
-
-function hasClosest(target: unknown): target is { closest: (selector: string) => unknown } {
-	return (
-		typeof target === 'object' &&
-		target !== null &&
-		'closest' in target &&
-		typeof (target as { closest?: unknown }).closest === 'function'
-	);
-}
-
-function isCourseCapsuleTarget(target: EventTarget | null): boolean {
-	if (!hasClosest(target)) return false;
-	return Boolean(target.closest('.course-capsule'));
-}
+export {
+	TIMETABLE_CLICK_GUARD_MS,
+	TIMETABLE_LONG_PRESS_CLICK_SUPPRESS_MS,
+	TIMETABLE_LONG_PRESS_DELAY_MS,
+	TIMETABLE_POINTER_THRESHOLD_PX
+} from './timetable-interaction-types';
+export type {
+	BeginDragInput,
+	CourseCardHandlerOptions,
+	DragGridGeometry,
+	DragTargetPatch,
+	GridHandlerOptions,
+	TimetableDragSession,
+	TimetableInteractionMode,
+	TimetableInteractionOptions
+} from './timetable-interaction-types';
 
 export function createTimetableInteraction(options: TimetableInteractionOptions = {}) {
 	const now = options.now ?? Date.now;
@@ -93,72 +42,41 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 	let drag = $state<TimetableDragSession | null>(null);
 	let clickGuardUntil = $state(0);
 
-	let pendingPointerId: number | null = null;
-	let startX = 0;
-	let startY = 0;
-	let hasMoved = false;
-	let longPressFired = false;
-	let timer: ReturnType<typeof setTimeout> | null = null;
-	let releaseTimer: ReturnType<typeof setTimeout> | null = null;
-	let longPressCallback: ((event: PointerEvent) => void) | null = null;
-	let longPressEvent: PointerEvent | null = null;
-	let dragMoveLock: DragMoveLock | null = null;
-
-	function clearTimer() {
-		if (timer !== null) {
-			clearTimeout(timer);
-			timer = null;
-		}
-	}
-
-	function clearReleaseTimer() {
-		if (releaseTimer !== null) {
-			clearTimeout(releaseTimer);
-			releaseTimer = null;
-		}
-	}
-
 	function armClickGuard() {
 		clickGuardUntil = now() + clickGuardMs;
 	}
 
-	function clearDragMoveLock() {
-		dragMoveLock = null;
-	}
+	const dragSession = createDragSessionController({
+		thresholdPx,
+		getDrag: () => drag,
+		setDrag: (value) => {
+			drag = value;
+		},
+		getMode: () => mode,
+		setMode: (value) => {
+			mode = value;
+		},
+		armClickGuard
+	});
 
-	function enterEditFromLongPress(_event: PointerEvent) {
-		enterEdit();
-	}
-
-	function tryReleaseDragMoveLock(event: PointerEvent): boolean {
-		if (!dragMoveLock || event.pointerId !== dragMoveLock.pointerId) return false;
-		const dx = Math.abs(event.clientX - dragMoveLock.startX);
-		const dy = Math.abs(event.clientY - dragMoveLock.startY);
-		if (dx <= thresholdPx && dy <= thresholdPx) return false;
-		clearDragMoveLock();
-		return true;
-	}
-
-	function discardLockedDrag(): boolean {
-		if (!drag || !dragMoveLock) return false;
-		clearDragMoveLock();
-		drag = null;
-		mode = 'edit';
-		return true;
-	}
+	const longPress = createLongPressTracker({
+		longPressDelayMs,
+		thresholdPx,
+		getMode: () => mode
+	});
 
 	function enterEdit() {
 		if (mode === 'dragging') return;
 		mode = 'edit';
 	}
 
+	function enterEditFromLongPress(_event: PointerEvent) {
+		enterEdit();
+	}
+
 	function exitEdit() {
-		clearTimer();
-		clearReleaseTimer();
-		clearDragMoveLock();
-		pendingPointerId = null;
-		longPressCallback = null;
-		longPressEvent = null;
+		longPress.clear();
+		dragSession.clearDragMoveLock();
 		if (drag) {
 			drag = null;
 			armClickGuard();
@@ -171,283 +89,29 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		else exitEdit();
 	}
 
-	function beginDrag(input: BeginDragInput): boolean {
-		if (mode === 'dragging') return false;
-		const { waitForMove = false, originX = 0, originY = 0, ...session } = input;
-		drag = { ...session, overDeleteZone: false };
-		dragMoveLock = waitForMove
-			? { pointerId: session.pointerId, startX: originX, startY: originY }
-			: null;
-		mode = 'dragging';
-		return true;
-	}
-
-	function updateDragTarget(patch: DragTargetPatch): boolean {
-		if (!drag || dragMoveLock) return false;
-		if (
-			drag.targetColIndex === patch.targetColIndex &&
-			drag.targetDayOfWeek === patch.targetDayOfWeek &&
-			drag.targetStartPeriod === patch.targetStartPeriod
-		) {
-			return false;
-		}
-		drag.targetColIndex = patch.targetColIndex;
-		drag.targetDayOfWeek = patch.targetDayOfWeek;
-		drag.targetStartPeriod = patch.targetStartPeriod;
-		return true;
-	}
-
-	function updateDragFromPointer(event: PointerEvent, geometry: DragGridGeometry): boolean {
-		if (!drag || event.pointerId !== drag.pointerId || dragMoveLock) return false;
-		const visibleDayCount = geometry.visibleDays.length;
-		if (visibleDayCount <= 0 || geometry.displayedPeriodCount <= 0) return false;
-
-		const relX = event.clientX - geometry.gridRect.left;
-		const relY = event.clientY - geometry.gridRect.top;
-		const colWidth = geometry.gridRect.width / visibleDayCount;
-		let colIdx = Math.floor(relX / colWidth);
-		colIdx = Math.max(0, Math.min(colIdx, visibleDayCount - 1));
-		const targetDay = geometry.visibleDays[colIdx]?.dayOfWeek ?? drag.targetDayOfWeek;
-
-		const rowHeight = geometry.gridRect.height / geometry.displayedPeriodCount;
-		const span = drag.course.endPeriod - drag.course.startPeriod + 1;
-		let periodIdx = Math.floor(relY / rowHeight) + 1;
-		periodIdx = Math.max(1, Math.min(periodIdx, geometry.displayedPeriodCount - span + 1));
-
-		return updateDragTarget({
-			targetColIndex: colIdx,
-			targetDayOfWeek: targetDay,
-			targetStartPeriod: periodIdx
-		});
-	}
-
-	function setDragOverDeleteZone(over: boolean): boolean {
-		if (!drag || dragMoveLock) return false;
-		if (drag.overDeleteZone === over) return false;
-		drag.overDeleteZone = over;
-		return true;
-	}
-
-	function endDrag(): TimetableDragSession | null {
-		if (discardLockedDrag()) return null;
-		if (mode !== 'dragging' || !drag) return null;
-		const current = drag;
-		drag = null;
-		mode = current.persistAfterDrop ? 'edit' : 'view';
-		armClickGuard();
-		return current;
-	}
-
-	function cancelDrag(): TimetableDragSession | null {
-		if (discardLockedDrag()) return null;
-		if (mode !== 'dragging' || !drag) return null;
-		const current = drag;
-		drag = null;
-		mode = current.persistAfterDrop ? 'edit' : 'view';
-		armClickGuard();
-		return current;
-	}
-
-	function resetClickFlags() {
-		clearReleaseTimer();
-		longPressFired = false;
-		hasMoved = false;
-	}
-
-	function watchLongPress(event: PointerEvent, onFire: (event: PointerEvent) => void): boolean {
-		if (event.button !== 0) return false;
-		if (mode !== 'view') return false;
-
-		pendingPointerId = event.pointerId;
-		startX = event.clientX;
-		startY = event.clientY;
-		hasMoved = false;
-		longPressFired = false;
-		longPressCallback = onFire;
-		longPressEvent = event;
-
-		clearTimer();
-		timer = setTimeout(() => {
-			longPressFired = true;
-			timer = null;
-			const callback = longPressCallback;
-			const sourceEvent = longPressEvent;
-			longPressCallback = null;
-			longPressEvent = null;
-			if (callback && sourceEvent) callback(sourceEvent);
-		}, longPressDelayMs);
-
-		return true;
-	}
-
-	function notePointerMove(event: PointerEvent) {
-		tryReleaseDragMoveLock(event);
-
-		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
-		if (pendingPointerId === null || hasMoved) return;
-
-		const dx = Math.abs(event.clientX - startX);
-		const dy = Math.abs(event.clientY - startY);
-		if (dx > thresholdPx || dy > thresholdPx) {
-			hasMoved = true;
-			clearTimer();
-		}
-	}
-
-	function notePagerFirstMove() {
-		hasMoved = true;
-		clearTimer();
-		longPressCallback = null;
-		longPressEvent = null;
-	}
-
-	function notePointerUp(event: PointerEvent) {
-		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
-		clearTimer();
-		pendingPointerId = null;
-		longPressCallback = null;
-		longPressEvent = null;
-		if (longPressFired) {
-			clearReleaseTimer();
-			releaseTimer = setTimeout(() => {
-				longPressFired = false;
-				releaseTimer = null;
-			}, TIMETABLE_LONG_PRESS_CLICK_SUPPRESS_MS);
-		}
-	}
-
-	function notePointerLost(event: PointerEvent) {
-		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
-		clearTimer();
-		pendingPointerId = null;
-		longPressCallback = null;
-		longPressEvent = null;
-	}
-
-	function notePointerCancel(event: PointerEvent) {
-		if (pendingPointerId !== null && event.pointerId !== pendingPointerId) return;
-		clearTimer();
-		clearReleaseTimer();
-		pendingPointerId = null;
-		hasMoved = false;
-		longPressFired = false;
-		longPressCallback = null;
-		longPressEvent = null;
-	}
-
-	function consumeClickSuppression(): boolean {
-		clearTimer();
-		clearReleaseTimer();
-		if (longPressFired) {
-			longPressFired = false;
-			return true;
-		}
-		if (hasMoved) {
-			hasMoved = false;
-			return true;
-		}
-		return false;
-	}
-
-	function isClickGuarded(): boolean {
-		return now() < clickGuardUntil;
-	}
-
-	function createGridHandlers(options: GridHandlerOptions = {}) {
-		const { onEmptyLongPress, onClickEmpty } = options;
-		return {
-			onpointerdown: (event: PointerEvent) => {
-				if (event.button !== 0) return;
-				resetClickFlags();
-				if (mode !== 'view' || isClickGuarded()) return;
-				if (isCourseCapsuleTarget(event.target)) return;
-
-				watchLongPress(event, (pressEvent) => {
-					if (onEmptyLongPress) {
-						onEmptyLongPress(pressEvent);
-					} else {
-						enterEditFromLongPress(pressEvent);
-					}
-				});
-			},
-			onpointermove: (event: PointerEvent) => {
-				notePointerMove(event);
-			},
-			onpointerup: (event: PointerEvent) => {
-				notePointerUp(event);
-			},
-			onpointerleave: (event: PointerEvent) => {
-				notePointerLost(event);
-			},
-			onpointercancel: (event: PointerEvent) => {
-				notePointerCancel(event);
-			},
-			onclick: (event: MouseEvent) => {
-				if (consumeClickSuppression()) {
-					event.preventDefault();
-					event.stopPropagation();
-					return;
-				}
-				if (mode === 'dragging' || isClickGuarded()) {
-					event.preventDefault();
-					event.stopPropagation();
-					return;
-				}
-				if (mode === 'view') return;
-				if (hasClosest(event.target)) {
-					if (event.target.closest('.course-capsule') || event.target.closest('button')) {
-						return;
-					}
-				}
-				onClickEmpty?.(event);
-			}
-		};
-	}
-
-	function createCourseCardHandlers(course: Course, options: CourseCardHandlerOptions = {}) {
-		const { onCourseClick, onLongPress, onDragStart } = options;
-		return {
-			onpointerdown: (event: PointerEvent) => {
-				if (event.button !== 0) return;
-				resetClickFlags();
-				if (mode === 'dragging' || isClickGuarded()) return;
-				if (mode !== 'view') {
-					onDragStart?.(course, event);
-					return;
-				}
-				watchLongPress(event, (pressEvent) => {
-					onLongPress?.(course, pressEvent);
-				});
-			},
-			onpointermove: (event: PointerEvent) => {
-				notePointerMove(event);
-			},
-			onpointerup: (event: PointerEvent) => {
-				notePointerUp(event);
-			},
-			onpointerleave: (event: PointerEvent) => {
-				notePointerLost(event);
-			},
-			onpointercancel: (event: PointerEvent) => {
-				notePointerCancel(event);
-			},
-			onclick: (event: MouseEvent) => {
-				if (consumeClickSuppression() || mode !== 'view' || isClickGuarded()) {
-					event.preventDefault();
-					return;
-				}
-				onCourseClick?.(course);
-			}
-		};
-	}
+	const interactionCore = {
+		get mode() {
+			return mode;
+		},
+		isClickGuarded: () => now() < clickGuardUntil,
+		resetClickFlags: () => longPress.resetClickFlags(),
+		enterEdit,
+		enterEditFromLongPress,
+		watchLongPress: (event: PointerEvent, onFire: (event: PointerEvent) => void) =>
+			longPress.watchLongPress(event, onFire),
+		notePointerMove(event: PointerEvent) {
+			dragSession.tryReleaseDragMoveLock(event);
+			longPress.notePointerMove(event);
+		},
+		notePointerUp: (event: PointerEvent) => longPress.notePointerUp(event),
+		notePointerLost: (event: PointerEvent) => longPress.notePointerLost(event),
+		notePointerCancel: (event: PointerEvent) => longPress.notePointerCancel(event),
+		consumeClickSuppression: () => longPress.consumeClickSuppression()
+	};
 
 	function destroy() {
-		clearTimer();
-		clearReleaseTimer();
-		clearDragMoveLock();
-		pendingPointerId = null;
-		longPressCallback = null;
-		longPressEvent = null;
+		longPress.clear();
+		dragSession.clearDragMoveLock();
 		drag = null;
 		mode = 'view';
 		clickGuardUntil = 0;
@@ -473,21 +137,30 @@ export function createTimetableInteraction(options: TimetableInteractionOptions 
 		enterEditFromLongPress,
 		exitEdit,
 		toggleEditing,
-		beginDrag,
-		updateDragTarget,
-		updateDragFromPointer,
-		setDragOverDeleteZone,
-		endDrag,
-		cancelDrag,
-		watchLongPress,
-		notePointerMove,
-		notePagerFirstMove,
-		notePointerUp,
-		notePointerLost,
-		notePointerCancel,
-		createGridHandlers,
-		createCourseCardHandlers,
-		isClickGuarded,
+		beginDrag: (...args: Parameters<typeof dragSession.beginDrag>) =>
+			dragSession.beginDrag(...args),
+		updateDragTarget: (...args: Parameters<typeof dragSession.updateDragTarget>) =>
+			dragSession.updateDragTarget(...args),
+		updateDragFromPointer: (...args: Parameters<typeof dragSession.updateDragFromPointer>) =>
+			dragSession.updateDragFromPointer(...args),
+		setDragOverDeleteZone: (...args: Parameters<typeof dragSession.setDragOverDeleteZone>) =>
+			dragSession.setDragOverDeleteZone(...args),
+		endDrag: () => dragSession.endDrag(),
+		cancelDrag: () => dragSession.cancelDrag(),
+		watchLongPress: (event: PointerEvent, onFire: (event: PointerEvent) => void) =>
+			longPress.watchLongPress(event, onFire),
+		notePointerMove: (event: PointerEvent) => interactionCore.notePointerMove(event),
+		notePagerFirstMove: () => longPress.notePagerFirstMove(),
+		notePointerUp: (event: PointerEvent) => longPress.notePointerUp(event),
+		notePointerLost: (event: PointerEvent) => longPress.notePointerLost(event),
+		notePointerCancel: (event: PointerEvent) => longPress.notePointerCancel(event),
+		createGridHandlers: (handlerOptions?: GridHandlerOptions) =>
+			createGridHandlers(interactionCore, handlerOptions),
+		createCourseCardHandlers: (
+			course: import('@chronos/core').Course,
+			handlerOptions?: CourseCardHandlerOptions
+		) => createCourseCardHandlers(interactionCore, course, handlerOptions),
+		isClickGuarded: () => interactionCore.isClickGuarded(),
 		destroy
 	};
 }

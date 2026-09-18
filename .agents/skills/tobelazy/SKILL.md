@@ -1,32 +1,34 @@
+---
+name: tobelazy
+description: Route Chronos behavior, framework, or architecture changes to relevant implementation guidance. Simple edits need no routing.
+---
+
 # Pragmatic Senior Developer ("Lazy" = Minimal & Strict)
 
-I already have a plan/approach. Next, write the code with minimal diffs and strict engineering rigor.
+Implement the requested change with minimal diffs and strict engineering rigor.
 
-## Sub-SKILL Routing Gates (Mandatory)
+## Task-Specific Guidance
 
-Evaluate the task and read a sub-SKILL only if you will edit matching code and the change is non-trivial (>10 lines or logic/layout change). Typo / format / comment-only edits skip Pre-Code Gates.
+Read only guidance relevant to the actual behavior, framework, or architecture being changed. Typo / format / comment-only edits need no sub-SKILL. Reuse guidance already read in this task.
 
-### 1. Pre-Code Gates (Read before editing code)
-
-- Svelte Files: When editing or creating `.svelte` or `.svelte.ts` files:
+- Svelte: For reactivity, component behavior, or layout changes in `.svelte` or `.svelte.ts` files:
   - `.agents/skills/svelte-core-bestpractices/SKILL.md`
   - `.agents/agents/svelte-file-editor.md`
-- Architecture & Layering: When adding new modules, stores, services, or cross-layer interfaces:
+- Architecture & Layering: When changing module responsibilities or cross-layer interfaces:
   - `.agents/skills/codebase-design/SKILL.md`
 - Bug Fixing: When diagnosing and fixing reported bugs or regressions:
   - `.agents/skills/diagnosing-bugs/SKILL.md`
-- Complex Logic: When developing domain use cases, binary codecs, parsers, or layout algorithms:
+- Complex Logic: When developing complex domain logic, binary codecs, parsers, layout algorithms, or state transitions:
   - `.agents/skills/tdd/SKILL.md`
 
-### 2. Pre-Commit Audit Gate (Mandatory for ALL code changes)
+### Review
 
-- Audit & Review: Before finalizing code changes for commit/PR report (Q&A or progress updates excluded):
-  - `.agents/skills/code-review/SKILL.md`
+Review the diff before finalizing. Use `.agents/skills/code-review/SKILL.md` for complex or high-risk changes, or an explicit review request; simple edits need only a direct diff check. Validation and approval boundaries follow [AGENTS.md](../../../AGENTS.md).
 
 ## Core Principles
 
-1. YAGNI & Scope Check: Solve only the immediate problem. Reasonably-implied subtasks needed to keep the build green (imports, types, i18n keys, dead-code removal touched by the diff) are allowed without asking. New features / abstractions / speculative ideas: describe, don't code.
-2. Reuse First: Prioritize existing utils/types in codebase > stdlib/installed deps > native platform features. Ask before adding new dependencies, unless the user explicitly requested that dependency or the task inherently requires it (then proceed and declare in summary).
+1. YAGNI & Scope Check: Solve only the immediate problem. Reasonably-implied subtasks needed to keep the build green (imports, types, i18n keys, dead-code removal touched by the diff) are allowed without asking. Do not implement features or abstractions that are neither requested nor necessary to complete the task.
+2. Reuse First: Prioritize existing utils/types in codebase > stdlib/installed deps > native platform features. Follow AGENTS.md for dependency approval.
 3. Minimal Code: Implement with the least code necessary. Clean up obsolete/dead code when refactoring.
 4. Engineering Rigor: Keep high standards for type safety, edge cases, a11y, security, readability, and clean call flows.
 
@@ -35,7 +37,3 @@ Evaluate the task and read a sub-SKILL only if you will edit matching code and t
 - Premature abstractions: single-impl interfaces, single-product factories, paper-thin wrappers, or "future-proofing" scaffolding.
 - Hardcoded config options for static values.
 - Low-value tests: avoid trivial/shallow assertions.
-
-## Compromises & Problem Solving
-
-- Breaking changes are allowed if necessary for minimal/clean implementation, but must be clearly declared in the response.

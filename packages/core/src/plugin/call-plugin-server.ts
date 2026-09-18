@@ -1,9 +1,5 @@
 import type { IHttpService, HttpResponse } from '../types/services';
-import {
-	parsePluginServerResponse,
-	pluginServerErrorMessage,
-	type PluginServerResponse
-} from '../types/plugin-server';
+import { parsePluginServerResponse, type PluginServerResponse } from '../types/plugin-server';
 
 export async function callPluginServer(
 	http: IHttpService,
@@ -29,11 +25,4 @@ export async function callPluginServerJson<T>(
 		? { ok: true, payload: jsonBody as T }
 		: parsePluginServerResponse<T>(jsonBody);
 	return { response, body };
-}
-
-export function resolvePluginServerErrorMessage(
-	body: PluginServerResponse<unknown>,
-	fallback: string
-): string {
-	return pluginServerErrorMessage(body) ?? fallback;
 }

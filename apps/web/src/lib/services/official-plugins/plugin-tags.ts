@@ -13,12 +13,6 @@ export const PLUGIN_CATEGORY_TAG_IDS = [
 
 export type PluginCategoryTagId = (typeof PLUGIN_CATEGORY_TAG_IDS)[number];
 
-const PLUGIN_CATEGORY_TAG_SET = new Set<string>(PLUGIN_CATEGORY_TAG_IDS);
-
-export function isPluginCategoryTagId(value: string): value is PluginCategoryTagId {
-	return PLUGIN_CATEGORY_TAG_SET.has(value);
-}
-
 export function resolvePluginCatalogCategory(input: {
 	type?: string;
 	category?: string;

@@ -266,8 +266,8 @@
 	title={editTitle}
 	onOpenChangeComplete={handleEditOpenChangeComplete}
 >
-	<div class="flex flex-col gap-3 px-4 pt-1 pb-2">
-		<div class="flex flex-col gap-1">
+	<div class="time-range-wheels flex flex-col gap-3 px-4 pt-1 pb-2">
+		<div class="time-range-wheel flex min-w-0 flex-col gap-1">
 			<span class="text-label-small px-1 text-on-surface-variant">
 				{hostT('timetable.details.period.start')}
 			</span>
@@ -279,8 +279,8 @@
 				idPrefix="period-edit-start"
 			/>
 		</div>
-		<div class="border-t border-outline" aria-hidden="true"></div>
-		<div class="flex flex-col gap-1">
+		<div class="time-range-divider border-t border-outline" aria-hidden="true"></div>
+		<div class="time-range-wheel flex min-w-0 flex-col gap-1">
 			<span class="text-label-small px-1 text-on-surface-variant">
 				{hostT('timetable.details.period.end')}
 			</span>
@@ -294,34 +294,36 @@
 		</div>
 	</div>
 
-	<div class="flex items-center justify-between gap-2 px-4 pb-2">
-		<button
-			type="button"
-			class="text-label-large h-11 rounded-full px-5 text-error hover:bg-error/10 active:bg-error/20"
-			onclick={deleteFromSheet}
-		>
-			{hostT('timetable.details.periods.deleteConfirm')}
-		</button>
-		<div class="flex items-center gap-2">
+	{#snippet footer()}
+		<div class="flex w-full items-center justify-between gap-2">
 			<button
 				type="button"
-				class="text-label-large h-11 rounded-full px-5 text-on-surface-variant hover:bg-on-surface/5 active:bg-on-surface/10"
-				onclick={() => {
-					editOpen = false;
-					editPos = null;
-				}}
+				class="text-label-large h-11 rounded-full px-5 text-error hover:bg-error/10 active:bg-error/20"
+				onclick={deleteFromSheet}
 			>
-				{hostT('common.cancel')}
+				{hostT('timetable.details.periods.deleteConfirm')}
 			</button>
-			<button
-				type="button"
-				class="text-label-large h-11 rounded-full bg-brand px-6 text-on-primary active:opacity-90"
-				onclick={confirmEdit}
-			>
-				{hostT('common.confirm')}
-			</button>
+			<div class="flex items-center gap-2">
+				<button
+					type="button"
+					class="text-label-large h-11 rounded-full px-5 text-on-surface-variant hover:bg-on-surface/5 active:bg-on-surface/10"
+					onclick={() => {
+						editOpen = false;
+						editPos = null;
+					}}
+				>
+					{hostT('common.cancel')}
+				</button>
+				<button
+					type="button"
+					class="text-label-large h-11 rounded-full bg-brand px-6 text-on-primary active:opacity-90"
+					onclick={confirmEdit}
+				>
+					{hostT('common.confirm')}
+				</button>
+			</div>
 		</div>
-	</div>
+	{/snippet}
 </BottomSheet>
 
 <Dialog
@@ -371,3 +373,18 @@
 		{/snippet}
 	</BottomSheet>
 {/if}
+
+<style>
+	@media (orientation: landscape) and (max-height: 500px) {
+		.time-range-wheels {
+			flex-direction: row;
+		}
+		.time-range-wheel {
+			flex: 1 1 0;
+		}
+		.time-range-divider {
+			border-top: 0;
+			border-left-width: 1px;
+		}
+	}
+</style>

@@ -1,0 +1,65 @@
+name: Quality
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Quality checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: voidzero-dev/setup-vp@8a7496fd44e8a1b0a88a7459e36213b2fefc1d15 # v1
+        with:
+          node-version: '24'
+          cache: true
+
+      - run: vp install --frozen-lockfile
+      - run: vp run check
+      - run: vp run test
+
+  build:
+    name: Build (${{ matrix.name }})
+    needs: checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: CQUT
+            command: vp run build:cqut
+          - name: CQUT offline
+            command: vp run build:cqut-offline
+          - name: Default
+            command: vp run build:default
+          - name: GitHub Pages
+            command: vp run build:pages
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: voidzero-dev/setup-vp@8a7496fd44e8a1b0a88a7459e36213b2fefc1d15 # v1
+        with:
+          node-version: '24'
+          cache: true
+
+      - run: vp install --frozen-lockfile
+      - run: ${{ matrix.command }}
+      - run: vp run verify:official-plugins
+
+  complete:
+    name: CI complete
+    needs: [checks, build]
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'true'

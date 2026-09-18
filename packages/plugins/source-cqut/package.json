@@ -45,7 +45,7 @@
 	"dependencies": {
 		"@chronos/core": "workspace:*",
 		"@chronos/ui-kit": "workspace:*",
-		"@cqut-openproject/cas-sdk": "github:CQUT-OpenProject/CAS-SDK#1.0.0",
+		"@cqut-openproject/cas-sdk": "github:CQUT-OpenProject/CAS-SDK#v2.0.0",
 		"undici": "^8.10.2",
 		"zod": "^4.5.4"
 	},

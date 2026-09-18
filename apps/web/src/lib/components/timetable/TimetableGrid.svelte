@@ -84,6 +84,7 @@
 		onCourseClick?: (course: Course) => void;
 		onRequestWeekDelete?: (course: Course, week: number) => void;
 		interaction: TimetableInteraction;
+		active?: boolean;
 	}
 
 	let {
@@ -102,7 +103,8 @@
 		capsuleCornerStyle = 'sharp',
 		onCourseClick,
 		onRequestWeekDelete,
-		interaction
+		interaction,
+		active = true
 	}: Props = $props();
 
 	const effectivePeriodIndex = $derived(periodHighlightEnabled ? currentPeriodIndex : null);
@@ -271,11 +273,18 @@
 	const bodyScrollAttach: Attachment = (node) => {
 		const element = node as HTMLDivElement;
 		scrollContainer = element;
-		bodyViewportHeight = element.clientHeight;
 		const observer = new ResizeObserver(() => {
 			bodyViewportHeight = element.clientHeight;
 		});
-		observer.observe(element);
+		$effect(() => {
+			if (!active) {
+				observer.disconnect();
+				return;
+			}
+			bodyViewportHeight = element.clientHeight;
+			observer.observe(element);
+			return () => observer.disconnect();
+		});
 		return () => {
 			observer.disconnect();
 			if (scrollContainer === element) scrollContainer = undefined;
@@ -286,9 +295,16 @@
 		const update = () => {
 			gridBodyWidth = node.clientWidth;
 		};
-		update();
 		const observer = new ResizeObserver(update);
-		observer.observe(node);
+		$effect(() => {
+			if (!active) {
+				observer.disconnect();
+				return;
+			}
+			update();
+			observer.observe(node);
+			return () => observer.disconnect();
+		});
 		return () => observer.disconnect();
 	};
 
@@ -344,9 +360,27 @@
 		return target?.closest('.timetable-delete-zone') != null;
 	}
 
-	function handleWindowPointerMove(event: PointerEvent) {
-		if (!dragState || event.pointerId !== dragState.pointerId) return;
+	let pendingDragEvent: PointerEvent | null = null;
+	let dragFrame = 0;
+
+	function cancelDragFrame() {
+		if (dragFrame) cancelAnimationFrame(dragFrame);
+		dragFrame = 0;
+		pendingDragEvent = null;
+	}
+
+	function processDragPointer(event: PointerEvent, allowAutoScroll = true): boolean {
+		if (!dragState || event.pointerId !== dragState.pointerId) return false;
 		interaction.notePointerMove(event);
+		let didScroll = false;
+		const containerRect =
+			scrollContainer && !isFitLayout ? scrollContainer.getBoundingClientRect() : null;
+		const scrollBy = (amount: number) => {
+			if (!allowAutoScroll || !scrollContainer || !amount) return;
+			const previous = scrollContainer.scrollTop;
+			scrollContainer.scrollTop += amount;
+			didScroll ||= scrollContainer.scrollTop !== previous;
+		};
 
 		const overDeleteZone = isPointerOverDeleteZone(event.clientX, event.clientY);
 		if (interaction.setDragOverDeleteZone(overDeleteZone)) {
@@ -354,15 +388,14 @@
 		}
 
 		if (overDeleteZone) {
-			if (scrollContainer && !isFitLayout) {
-				const containerRect = scrollContainer.getBoundingClientRect();
+			if (containerRect) {
 				const bottomThreshold = containerRect.bottom - 48;
 				if (event.clientY > bottomThreshold) {
 					const intensity = Math.min(1, (event.clientY - bottomThreshold) / 48);
-					scrollContainer.scrollTop += Math.round(intensity * 12);
+					scrollBy(Math.round(intensity * 12));
 				}
 			}
-			return;
+			return didScroll;
 		}
 
 		if (gridBodyEl) {
@@ -373,19 +406,36 @@
 			});
 		}
 
-		if (scrollContainer && !isFitLayout) {
-			const containerRect = scrollContainer.getBoundingClientRect();
+		if (containerRect) {
 			const topThreshold = containerRect.top + 48;
 			const bottomThreshold = containerRect.bottom - 48;
 
 			if (event.clientY < topThreshold) {
 				const intensity = Math.min(1, (topThreshold - event.clientY) / 48);
-				scrollContainer.scrollTop -= Math.round(intensity * 12);
+				scrollBy(-Math.round(intensity * 12));
 			} else if (event.clientY > bottomThreshold) {
 				const intensity = Math.min(1, (event.clientY - bottomThreshold) / 48);
-				scrollContainer.scrollTop += Math.round(intensity * 12);
+				scrollBy(Math.round(intensity * 12));
 			}
 		}
+		return didScroll;
+	}
+
+	function flushDragFrame() {
+		dragFrame = 0;
+		const event = pendingDragEvent;
+		pendingDragEvent = null;
+		if (!event) return;
+		if (processDragPointer(event)) {
+			pendingDragEvent = event;
+			dragFrame = requestAnimationFrame(flushDragFrame);
+		}
+	}
+
+	function handleWindowPointerMove(event: PointerEvent) {
+		if (!dragState || event.pointerId !== dragState.pointerId) return;
+		pendingDragEvent = event;
+		if (!dragFrame) dragFrame = requestAnimationFrame(flushDragFrame);
 	}
 
 	function buildDragUpdate(current: TimetableDragSession): {
@@ -464,6 +514,8 @@
 
 	function handleWindowPointerUp(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
+		cancelDragFrame();
+		processDragPointer(event, false);
 		const session = dragState;
 		if (session.overDeleteZone) {
 			const current = interaction.endDrag();
@@ -484,6 +536,7 @@
 
 	function handleWindowPointerCancel(event: PointerEvent) {
 		if (!dragState || event.pointerId !== dragState.pointerId) return;
+		cancelDragFrame();
 		interaction.cancelDrag();
 	}
 
@@ -530,6 +583,7 @@
 
 		window.addEventListener('touchmove', preventTouchScroll, { passive: false });
 		return () => {
+			cancelDragFrame();
 			window.removeEventListener('touchmove', preventTouchScroll);
 		};
 	});

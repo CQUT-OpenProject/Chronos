@@ -19,6 +19,7 @@
 
 	const PAGER_SETTLE_MS = 90;
 	const PAGER_SUPPRESS_MS = 150;
+	const PAINT_COLLAPSE_MS = 120;
 
 	let {
 		screen,
@@ -51,8 +52,14 @@
 	let pagerEl = $state<HTMLDivElement | undefined>();
 	let pagerReady = $state(false);
 	let paintAdjacent = $state(false);
+	let paintGestureNeighbors = $state(false);
+	const paintRadius = $derived(
+		!active ? 0 : paintGestureNeighbors ? WEEK_PAGER_NEIGHBOR_RADIUS : 1
+	);
 
 	let pagerGesture = false;
+	let pointerHeld = $state(false);
+	let paintCollapseTimer = 0;
 	let gestureStartWeek: number | null = null;
 	let suppressScrollUntil = 0;
 	let settleTimer = 0;
@@ -66,6 +73,25 @@
 
 	function clearPagerPreview() {
 		pagerPreview?.clearPreview();
+	}
+
+	function expandPaintWindow() {
+		window.clearTimeout(paintCollapseTimer);
+		paintGestureNeighbors = true;
+	}
+
+	function schedulePaintCollapse() {
+		window.clearTimeout(paintCollapseTimer);
+		if (pointerHeld || pagerGesture) return;
+		paintCollapseTimer = window.setTimeout(() => {
+			paintCollapseTimer = 0;
+			paintGestureNeighbors = false;
+		}, PAINT_COLLAPSE_MS);
+	}
+
+	function releasePagerPointer() {
+		pointerHeld = false;
+		schedulePaintCollapse();
 	}
 
 	function syncPagerScroll(node: HTMLDivElement): boolean {
@@ -96,6 +122,7 @@
 		// scrollend 后再统一收尾。
 		if (source === 'scrollend') {
 			pagerGesture = false;
+			schedulePaintCollapse();
 		}
 		// 勿在 !wasGesture 时 clearPagerPreview：多余的 scrollend 会在滑动中误清 preview。
 		if (!wasGesture) {
@@ -127,6 +154,7 @@
 	}
 
 	function onPagerScrollEnd() {
+		if (!active) return;
 		if (pagerSnap?.isAnimating) return;
 		window.clearTimeout(settleTimer);
 		settleTimer = 0;
@@ -134,6 +162,7 @@
 	}
 
 	function onPagerScroll(event: Event) {
+		if (!active) return;
 		const node = event.currentTarget as HTMLDivElement;
 		if (Date.now() < suppressScrollUntil) return;
 
@@ -145,6 +174,7 @@
 			endWeek
 		);
 		if (preview == null) return;
+		expandPaintWindow();
 
 		if (!pagerGesture) {
 			pagerGesture = true;
@@ -161,6 +191,14 @@
 
 	const pagerAttach: Attachment<HTMLDivElement> = (node) => {
 		pagerEl = node;
+		return () => {
+			if (pagerEl === node) pagerEl = undefined;
+		};
+	};
+
+	$effect(() => {
+		const node = pagerEl;
+		if (!node || !active) return;
 		untrack(() => {
 			paintWeek = screen.state.displayedWeek;
 			if (syncPagerScroll(node)) pagerReady = true;
@@ -179,13 +217,16 @@
 			snap.destroy();
 			if (pagerSnap === snap) pagerSnap = undefined;
 			window.clearTimeout(settleTimer);
+			window.clearTimeout(paintCollapseTimer);
 			settleTimer = 0;
+			paintCollapseTimer = 0;
+			pointerHeld = false;
+			paintGestureNeighbors = false;
 			gestureStartWeek = null;
 			pagerGesture = false;
 			clearPagerPreview();
-			if (pagerEl === node) pagerEl = undefined;
 		};
-	};
+	});
 
 	$effect(() => {
 		const week = screenState.displayedWeek;
@@ -195,7 +236,12 @@
 		void startWeek;
 		const node = pagerEl;
 		// Writing scrollLeft during a fling aborts iOS momentum scrolling.
-		if (!node || pagerGesture) return;
+		if (!node) return;
+		if (!active) {
+			paintWeek = week;
+			return;
+		}
+		if (pagerGesture) return;
 		paintWeek = week;
 		syncPagerScroll(node);
 	});
@@ -204,6 +250,10 @@
 		if (!active) {
 			pagerSnap?.cancel();
 			paintAdjacent = false;
+			pointerHeld = false;
+			window.clearTimeout(paintCollapseTimer);
+			paintCollapseTimer = 0;
+			paintGestureNeighbors = false;
 			return;
 		}
 		const frame = requestAnimationFrame(() => {
@@ -213,17 +263,36 @@
 	});
 </script>
 
+<svelte:window
+	onpointerup={pointerHeld ? releasePagerPointer : undefined}
+	onpointercancel={pointerHeld ? releasePagerPointer : undefined}
+/>
+
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="timetable-week-pager"
 	class:timetable-week-pager-locked={!allowPagerTouch}
 	class:timetable-week-pager-pending={!pagerReady}
 	{@attach pagerAttach}
+	onpointerdown={() => {
+		pointerHeld = true;
+		expandPaintWindow();
+	}}
+	ontouchstart={expandPaintWindow}
+	onwheel={() => {
+		expandPaintWindow();
+		schedulePaintCollapse();
+	}}
+	onkeydown={() => {
+		expandPaintWindow();
+		schedulePaintCollapse();
+	}}
 	onscroll={onPagerScroll}
 	onscrollend={onPagerScrollEnd}
 >
 	{#each weeks as week (week)}
 		<div class="timetable-week-page">
-			{#if shouldPaintPagerWeek(week, paintWeek || screenState.displayedWeek, paintAdjacent, WEEK_PAGER_NEIGHBOR_RADIUS)}
+			{#if shouldPaintPagerWeek(week, paintWeek || screenState.displayedWeek, paintAdjacent, paintRadius)}
 				{@const gridModel = screenState.weekGridModels.get(week)}
 				{@const courseModels = screenState.weekCourseDisplayModels.get(week) ?? []}
 				{#if gridModel}
@@ -235,6 +304,7 @@
 						expandedSlots={screenState.expandedSlots}
 						onExpandSlot={(slotKey) => screen.expandSlot(slotKey)}
 						interaction={screen.interaction}
+						{active}
 						{gridModel}
 						courseDisplayModels={courseModels}
 						{hasDynamicBackground}

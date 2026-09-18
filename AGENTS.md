@@ -37,7 +37,9 @@ Chronos is a PWA timetable app.
 
 ## Write Code
 
-Plan internally first; do NOT rush to code. Before planning, read `.agents/skills/tobelazy/SKILL.md`. Proceed to implement without waiting for plan approval. Only pause for plan confirmation on ambiguous / high-risk tasks (data loss, breaking protocol, new dependency).
+For behavior, framework, or architecture changes, use `.agents/skills/tobelazy/SKILL.md` to select relevant guidance. Simple edits need only the local context and a diff review.
+
+Proceed through implementation and applicable validation without waiting for plan approval. Decide reversible implementation details independently and do not reconfirm actions already authorized. Ask only about ambiguities that materially affect acceptance or unauthorized decisions involving data loss, breaking external protocols, or adding dependencies. Continue independent work while awaiting an answer. Declare authorized breaking changes in the final response.
 
 ## Response Format
 
@@ -51,3 +53,5 @@ Do not commit / push unless explicitly requested; reporting completion ≠ commi
 ## Validation
 
 Canonical commands are `vp run check` and `vp run test` (see `CONTRIBUTING.md`; `vite.config.ts` tasks wrap `vp check` / `vp test` with `svelte-kit sync` / cwd). Run scoped single-file tests during iteration, full suite once at the end; docs-only changes may skip tests with a note. Run `vp install` only when deps / manifest changed or install is stale. On env issues run `vp env doctor`, attempt the obvious fix first, and only ask for help if still blocked.
+
+Skills share these validation results for the same final code state. Rerun affected checks only after further changes, failures, or new evidence. Fix failures caused by the requested change; report unrelated failures without expanding scope. Work is complete when the requested behavior is implemented, applicable validation is complete, and any remaining limitations are reported.

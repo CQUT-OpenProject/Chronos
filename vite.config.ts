@@ -110,11 +110,6 @@ export default defineConfig({
 					'CHRONOS_PROFILE=chronos-default node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && CHRONOS_PROFILE=chronos-default vp -C apps/web build',
 				env: ['CHRONOS_PROFILE']
 			},
-			'licenses:generate': {
-				command:
-					'CHRONOS_PROFILE=chronos-default node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && CHRONOS_PROFILE=chronos-default vp -C apps/web build',
-				env: ['CHRONOS_PROFILE']
-			},
 			'build:pages': {
 				command:
 					'CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-default node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && CHRONOS_DEPLOY_TARGET=pages CHRONOS_PROFILE=chronos-default vp -C apps/web build && cp apps/web/build/404.html apps/web/build/index.html',
@@ -122,7 +117,8 @@ export default defineConfig({
 			},
 			'bundle:analyze':
 				'CHRONOS_PROFILE=chronos-default node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && ANALYZE=true CHRONOS_PROFILE=chronos-default vp -C apps/web build',
-			check: '(cd apps/web && svelte-kit sync) && vp check',
+			check:
+				'node --experimental-strip-types apps/web/scripts/emit-profile-artifacts.ts && vp check',
 			'check:watch': {
 				command:
 					'(cd apps/web && svelte-kit sync) && svelte-check --tsconfig ./apps/web/tsconfig.json --watch',

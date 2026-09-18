@@ -485,4 +485,22 @@ describe('Web Providers', () => {
 		expect(deleted.sort()).toEqual(['official-plugins', 'pages-cache']);
 		expect([...remaining]).toEqual(['other-cache']);
 	});
+
+	it('dispose removes cross-tab storage listener', () => {
+		const removeListener = vi.fn();
+		const addListener = vi.fn();
+		const fakeWindow = {
+			addEventListener: addListener,
+			removeEventListener: removeListener
+		};
+		vi.stubGlobal('window', fakeWindow);
+
+		const storage = new DexieStorageProvider(db, localStorage);
+		expect(addListener).toHaveBeenCalledWith('storage', expect.any(Function));
+
+		storage.dispose();
+		expect(removeListener).toHaveBeenCalledWith('storage', expect.any(Function));
+
+		vi.unstubAllGlobals();
+	});
 });

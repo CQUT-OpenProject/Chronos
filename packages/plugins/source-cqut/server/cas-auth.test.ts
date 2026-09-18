@@ -144,9 +144,24 @@ describe('loginCas', () => {
 	});
 
 	it('returns captcha-specific error when UIS asks for verification code', async () => {
-		server = createServer((_req, res) => {
-			res.setHeader('Content-Type', 'application/json;charset=utf-8');
-			res.end(JSON.stringify({ code: 400, msg: '请输入验证码', verifyCode: 'required' }));
+		server = createServer((req, res) => {
+			const host = req.headers.host ?? '127.0.0.1';
+			const url = new URL(req.url ?? '/', `http://${host}`);
+			if (
+				url.pathname === `/center-auth-server/${CAS_APPLICATION_CODE}/cas/login` &&
+				req.method === 'GET'
+			) {
+				res.setHeader('Content-Type', 'text/html;charset=utf-8');
+				res.end('<html><form id="casLoginForm"></form></html>');
+				return;
+			}
+			if (url.pathname === '/center-auth-server/sso/doLogin' && req.method === 'POST') {
+				res.setHeader('Content-Type', 'application/json;charset=utf-8');
+				res.end(JSON.stringify({ code: 400, msg: '请输入验证码', verifyCode: 'required' }));
+				return;
+			}
+			res.statusCode = 404;
+			res.end();
 		});
 		await new Promise<void>((resolve) => server!.listen(0, '127.0.0.1', resolve));
 		const address = server.address();

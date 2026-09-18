@@ -26,6 +26,8 @@
 
 	let { shell }: { shell: AppShellController } = $props();
 
+	const DEVELOPER_PAGE_TAP_COUNT = 5;
+
 	let clickCount = $state(0);
 	let clearDialogOpen = $state(false);
 	let clearing = $state(false);
@@ -66,13 +68,13 @@
 
 	function handleBuildTimeClick() {
 		clickCount += 1;
-		if (clickCount >= 10) {
+		if (clickCount >= DEVELOPER_PAGE_TAP_COUNT) {
 			clickCount = 0;
 			trackEvent('developer_easter_egg_open');
 			dismissSnackbar();
 			void goto(resolve('/about/easter-egg'));
-		} else if (clickCount >= 5) {
-			const remaining = 10 - clickCount;
+		} else if (clickCount >= Math.ceil(DEVELOPER_PAGE_TAP_COUNT / 2)) {
+			const remaining = DEVELOPER_PAGE_TAP_COUNT - clickCount;
 			snackbarKey('about.easterEgg.hint', { remaining }, undefined, 1500);
 		}
 	}

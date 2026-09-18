@@ -3,7 +3,6 @@ import type { Course } from '../src/domain/course';
 import { countDistinctCoursesAffectedByPeriodDelete } from '../src/domain/course';
 import {
 	hasRoomForNextPeriod,
-	minutesToTimeString,
 	parseTimeMinutesStrict,
 	periodDurationMinutes,
 	suggestNextPeriodTime,
@@ -19,7 +18,6 @@ describe('period-time-edit', () => {
 		expect(parseTimeMinutesStrict('24:00')).toBeUndefined();
 		expect(parseTimeMinutesStrict('nope')).toBeUndefined();
 		expect(parseTimeMinutesStrict(undefined)).toBeUndefined();
-		expect(minutesToTimeString(525)).toBe('08:45');
 	});
 
 	it('measures durations only for sane ranges', () => {
