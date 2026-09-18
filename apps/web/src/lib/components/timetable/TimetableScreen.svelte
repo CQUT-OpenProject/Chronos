@@ -91,6 +91,7 @@
 	<TimetableWallpaperLayer
 		wallpaperUri={hasDynamicColorBackground ? dynamicColorUri : null}
 		blurred={screenState.isEditing}
+		prewarmBlur={active}
 		fit="cover"
 	>
 		{#key screenState.currentTimetable?.id}
