@@ -26,6 +26,7 @@
 	const offlineMessage = $derived(pt('import.online.offline'));
 	const title = $derived(pt('import.online.tab.title'));
 	const intro = $derived(pt('import.online.intro'));
+	const attribution = $derived(pt('import.online.attribution'));
 	const accountLabel = $derived(pt('import.online.accountLabel'));
 	const passwordTitle = $derived(pt('import.online.field.password.title'));
 	const passwordToggleLabel = $derived(
@@ -68,6 +69,7 @@
 		<div>
 			<h2 class="text-title-medium text-on-surface">{title}</h2>
 			<p class="text-body-small mt-0.5 text-on-surface-variant">{intro}</p>
+			<p class="text-body-small mt-1 text-on-surface-variant/80">{attribution}</p>
 		</div>
 
 		<div class="flex flex-col gap-3">
