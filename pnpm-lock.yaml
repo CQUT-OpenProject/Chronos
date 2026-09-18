@@ -394,8 +394,8 @@ importers:
         specifier: workspace:*
         version: link:../../ui-kit
       '@cqut-openproject/cas-sdk':
-        specifier: github:CQUT-OpenProject/CAS-SDK#v2.0.0
-        version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/165182d73c8421b5b38c9c5ded2df4916ba7bc4d
+        specifier: github:CQUT-OpenProject/CAS-SDK#1.0.0
+        version: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f
       undici:
         specifier: ^8.10.2
         version: 8.10.2
@@ -976,10 +976,10 @@ packages:
   '@blazediff/core@1.9.1':
     resolution: {integrity: sha512-ehg3jIkYKulZh+8om/O25vkvSsXXwC+skXmyA87FFx6A/45eqOkZsBltMw/TVteb0mloiGT8oGRTcjRAz66zaA==}
 
-  '@cqut-openproject/cas-sdk@https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/165182d73c8421b5b38c9c5ded2df4916ba7bc4d':
-    resolution: {gitHosted: true, integrity: sha512-7xbWlIU/8VHQid4biMEjSje4FygeWNvBWUKRvCKSawWRusM7Kh3RfFQohxK3/TQj82qVbL1yYT18x9AZcAb8vA==, tarball: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/165182d73c8421b5b38c9c5ded2df4916ba7bc4d}
-    version: 2.0.0
-    engines: {node: '>=22.0.0'}
+  '@cqut-openproject/cas-sdk@https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f':
+    resolution: {gitHosted: true, integrity: sha512-0zGJ11YWn/hRFV/9Ld3WSq5jDvgnRT9lolDGUFXQWH/JbesgQNFlrfRREIVZcKQ8PP5KImtONdGraCXD943/HQ==, tarball: https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f}
+    version: 1.0.0
+    engines: {node: '>=18.0.0'}
 
   '@esbuild/aix-ppc64@0.28.2':
     resolution: {integrity: sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==}
@@ -4903,7 +4903,7 @@ snapshots:
 
   '@blazediff/core@1.9.1': {}
 
-  '@cqut-openproject/cas-sdk@https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/165182d73c8421b5b38c9c5ded2df4916ba7bc4d': {}
+  '@cqut-openproject/cas-sdk@https://codeload.github.com/CQUT-OpenProject/CAS-SDK/tar.gz/43588415d8add8a9b7398de38123b78487e9473f': {}
 
   '@esbuild/aix-ppc64@0.28.2':
     optional: true
