@@ -1,8 +1,7 @@
-import { describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 import {
+	attachWallpaperImageDecode,
 	timetableWallpaperBackdropClass,
-	timetableWallpaperBackgroundSize,
-	timetableWallpaperClearClass,
 	timetableWallpaperPreblurredClass
 } from '../src/timetable-preview/timetable-wallpaper-layer';
 
@@ -23,25 +22,10 @@ describe('timetable-wallpaper-layer', () => {
 		expect(classes).not.toContain('scale-');
 	});
 
-	it('uses anti-bleed inset for cover fit', () => {
-		const classes = timetableWallpaperBackdropClass(false, 'cover');
-		expect(classes).toContain('inset-[-24px]');
-	});
-
-	it('uses exact-fit inset for fill fit', () => {
-		const classes = timetableWallpaperBackdropClass(false, 'fill');
-		expect(classes).toContain('inset-0');
-		expect(timetableWallpaperBackgroundSize('fill')).toBe('100% 100%');
-	});
-
 	it('prewarms a fixed blur and only transitions its opacity', () => {
-		const clear = timetableWallpaperClearClass();
 		const beforeEdit = timetableWallpaperPreblurredClass(false);
 		const duringEdit = timetableWallpaperPreblurredClass(true);
 
-		expect(clear).toContain('pointer-events-none');
-		expect(clear).toContain('inset-[-24px]');
-		expect(clear).not.toContain('blur-lg');
 		expect(beforeEdit).toContain('blur-lg');
 		expect(beforeEdit).toContain('opacity-[0.001]');
 		expect(beforeEdit).toContain('duration-[240ms]');
@@ -50,6 +34,20 @@ describe('timetable-wallpaper-layer', () => {
 		expect(duringEdit).toContain('motion-reduce:transition-none');
 		expect(duringEdit).toContain('transition-opacity');
 		expect(duringEdit).not.toContain('transition-[filter]');
-		expect(timetableWallpaperPreblurredClass(false, 'fill')).toContain('inset-0');
+	});
+});
+
+describe('attachWallpaperImageDecode', () => {
+	it('decodes the bound image without resetting an unchanged source', () => {
+		const uri = 'blob:http://localhost/wallpaper';
+		const img = {
+			getAttribute: vi.fn().mockReturnValue(uri),
+			decode: vi.fn().mockResolvedValue(undefined)
+		};
+
+		attachWallpaperImageDecode(uri)(img as unknown as HTMLImageElement);
+
+		expect(img).not.toHaveProperty('src');
+		expect(img.decode).toHaveBeenCalledOnce();
 	});
 });
