@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: '24'
           cache: true
+          run-install: false
 
       - run: vp install --frozen-lockfile
       - run: vp run check
@@ -52,6 +53,7 @@ jobs:
         with:
           node-version: '24'
           cache: true
+          run-install: false
 
       - run: vp install --frozen-lockfile
       - run: ${{ matrix.command }}
