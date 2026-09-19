@@ -642,7 +642,7 @@
 		<div class="flex" style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})">
 			<aside
 				aria-label={hostT('timetable.grid.periodsAria')}
-				class="shrink-0"
+				class="shrink-0 {isFitLayout ? 'fit-layout' : ''}"
 				style:width="var(--sidebar-width)"
 				style:height="calc(var(--row-height) * {gridModel.displayedPeriodCount})"
 			>
@@ -657,7 +657,7 @@
 							{period.index}
 						</span>
 						<span
-							class="text-caption mt-1 font-mono leading-tight {period.index ===
+							class="period-time text-caption mt-1 font-mono leading-tight {period.index ===
 							effectivePeriodIndex
 								? ''
 								: 'text-on-surface-variant'}"
@@ -885,3 +885,11 @@
 		{/if}
 	</button>
 {/snippet}
+
+<style>
+	@media (max-height: 600px) {
+		.fit-layout .period-time {
+			display: none;
+		}
+	}
+</style>

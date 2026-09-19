@@ -184,6 +184,8 @@ export const en = {
 	'timetable.empty.import': 'Import timetable',
 	'timetable.empty.guide': 'See import options',
 	'timetable.week.indicatorAria': 'Week pagination indicator, swipe or drag to navigate weeks',
+	'timetable.week.indicatorGlassAria':
+		'Week pagination indicator, tap to return to the current week, or long press to navigate weeks',
 	'timetable.week.label': 'Week {week}{today}',
 	'timetable.week.compactLead': 'W',
 	'timetable.week.compactTail': '',

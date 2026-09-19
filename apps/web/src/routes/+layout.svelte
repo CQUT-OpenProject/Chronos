@@ -151,7 +151,6 @@
 	<div
 		class={[
 			'shell-root col-start-1 row-start-1 h-dvh w-full bg-canvas text-ink',
-			gate.skipPaint && 'is-frozen',
 			gate.receded && gate.skipPaint && 'is-receded'
 		]}
 		class:invisible={blockShell}

@@ -25,7 +25,7 @@
 	view-transition-name: none;
 }
 
-.shell-root.is-frozen {
+.shell-content.is-frozen {
 	content-visibility: hidden;
 	pointer-events: none;
 }
@@ -231,6 +231,21 @@
 		padding-inline-end: var(--shell-tab-bar-inline-size);
 	}
 
+	.shell-wallpaper {
+		pointer-events: none;
+		position: absolute;
+		z-index: 0;
+		inset-inline: 0;
+		bottom: 0;
+		top: var(--top-bar-height);
+		overflow: hidden;
+	}
+
+	.shell-content {
+		position: relative;
+		z-index: 1;
+	}
+
 	.shell-tab-bar {
 		position: fixed;
 		inset-inline: 0;
@@ -292,6 +307,10 @@
 	@media (orientation: landscape) and (max-height: 500px) {
 		.shell-page {
 			padding-inline-start: env(safe-area-inset-left, 0px);
+		}
+
+		.shell-wallpaper {
+			top: 0;
 		}
 
 		.shell-tab-bar {
@@ -419,8 +438,7 @@
 			display: none;
 		}
 
-		:root:has(.shell-root:not(.is-frozen):not(.invisible) .shell-tab-bar:not(.hidden))
-			.shell-snackbar,
+		:root:has(.shell-root:not(.invisible) .shell-tab-bar:not(.hidden)) .shell-snackbar,
 		:root:has(.secondary-root:not(.is-blocked):not(.invisible) .secondary-page) .shell-snackbar {
 			right: calc(var(--shell-tab-bar-inline-size) + 1rem);
 			bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);

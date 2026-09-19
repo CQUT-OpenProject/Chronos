@@ -63,11 +63,13 @@ describe('createCapsuleIndicatorGesture', () => {
 	it('does not change week on quick tap', () => {
 		vi.useFakeTimers();
 		const onWeekChange = vi.fn();
+		const onTap = vi.fn();
 		const gesture = createCapsuleIndicatorGesture({
 			getStartWeek: () => 1,
 			getEndWeek: () => 20,
 			getDisplayedWeek: () => 1,
-			onWeekChange
+			onWeekChange,
+			onTap
 		});
 
 		gesture.onPointerDown({
@@ -85,6 +87,7 @@ describe('createCapsuleIndicatorGesture', () => {
 
 		expect(gesture.isScrubbing).toBe(false);
 		expect(onWeekChange).not.toHaveBeenCalled();
+		expect(onTap).toHaveBeenCalledOnce();
 
 		vi.useRealTimers();
 	});
@@ -92,12 +95,14 @@ describe('createCapsuleIndicatorGesture', () => {
 	it('cancels long-press when pointer moves before timer expires', () => {
 		vi.useFakeTimers();
 		const onScrubStartFeedback = vi.fn();
+		const onTap = vi.fn();
 		const gesture = createCapsuleIndicatorGesture({
 			getStartWeek: () => 1,
 			getEndWeek: () => 20,
 			getDisplayedWeek: () => 1,
 			onWeekChange: vi.fn(),
-			onScrubStartFeedback
+			onScrubStartFeedback,
+			onTap
 		});
 
 		gesture.onPointerDown({
@@ -117,6 +122,7 @@ describe('createCapsuleIndicatorGesture', () => {
 		vi.advanceTimersByTime(250);
 		expect(gesture.isScrubbing).toBe(false);
 		expect(onScrubStartFeedback).not.toHaveBeenCalled();
+		expect(onTap).not.toHaveBeenCalled();
 
 		vi.useRealTimers();
 	});
@@ -229,12 +235,14 @@ describe('createCapsuleIndicatorGesture', () => {
 	it('does not fire onScrubCommit when scrubbing ends on the same week', () => {
 		vi.useFakeTimers();
 		const onScrubCommit = vi.fn();
+		const onTap = vi.fn();
 		const gesture = createCapsuleIndicatorGesture({
 			getStartWeek: () => 1,
 			getEndWeek: () => 20,
 			getDisplayedWeek: () => 5,
 			onWeekChange: vi.fn(),
-			onScrubCommit
+			onScrubCommit,
+			onTap
 		});
 
 		gesture.containerEl = {
@@ -264,6 +272,7 @@ describe('createCapsuleIndicatorGesture', () => {
 		} as unknown as PointerEvent);
 
 		expect(onScrubCommit).not.toHaveBeenCalled();
+		expect(onTap).not.toHaveBeenCalled();
 
 		vi.useRealTimers();
 	});

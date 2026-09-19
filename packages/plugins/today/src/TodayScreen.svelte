@@ -86,7 +86,7 @@
 </script>
 
 {#snippet headerContent()}
-	<p class="text-headline-small text-on-surface">{formatHeaderDate(todayIso)}</p>
+	<p class="text-title-large leading-tight text-on-surface">{formatHeaderDate(todayIso)}</p>
 	{#if timetable}
 		<div class="mt-1 flex items-center justify-between gap-3">
 			<p class="text-body-medium text-on-surface-variant">

@@ -77,6 +77,12 @@ export {
 	type ImportTabTransferController
 } from './plugin-screen/import-tab-props';
 export { default as TimetableWallpaperLayer } from './timetable-preview/TimetableWallpaperLayer.svelte';
+export { default as TimetableWallpaperImage } from './timetable-preview/TimetableWallpaperImage.svelte';
+export {
+	timetableWallpaperBackdropClass,
+	timetableWallpaperPreblurredClass,
+	type TimetableWallpaperFit
+} from './timetable-preview/timetable-wallpaper-layer';
 export { default as TimetablePreviewGrid } from './timetable-preview/TimetablePreviewGrid.svelte';
 export { default as TimetableLivePreview } from './timetable-preview/TimetableLivePreview.svelte';
 export { default as ImportCourseList } from './import-preview/ImportCourseList.svelte';

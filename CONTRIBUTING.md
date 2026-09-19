@@ -182,7 +182,7 @@ import.source.tab 插槽（每个数据源提供一个扩展贡献）
 Chronos 采用「一级外壳常驻保活 + 二级页面按需加载」的路由与视图架构（[ADR 0033](.agents/docs/adr/0033-persistent-shell-freeze-and-secondary-view-transition.md)）：
 
 - **常驻外壳 (`ShellRouteHost`)**：根 Layout 中常驻保活一级外壳（包含底部导航栏与 `ShellTabPanels`），底栏 Tab 切换由 `AppShellController.activeTabId` 内部响应式状态驱动，实现无白屏的瞬时切换（[ADR 0029](.agents/docs/adr/0029-shell-internal-tab-navigation.md)）；
-- **离屏冻结 (`secondary-transition-gate`)**：当用户进入二级独立页面时，主外壳通过 `content-visibility: hidden` 与 `inert` 属性在后台完全冻结，避免无关的后台视图计算与重绘损耗；
+- **离屏冻结 (`secondary-transition-gate`)**：当用户进入二级独立页面时，外壳内容区（`.shell-content`）通过 `content-visibility: hidden` 离屏冻结；壁纸合成层留在 `.shell-root` 内、冻结范围外，避免解码帧丢失（[ADR 0033](.agents/docs/adr/0033-persistent-shell-freeze-and-secondary-view-transition.md) / [ADR 0039](.agents/docs/adr/0039-shell-wallpaper-compositor.md)）；
 - **视图过渡隔离 (View Transition)**：`view-transition-name: page-root` 仅挂载在二级页面的根容器（`SecondaryPageShell`）上。禁止将主外壳与二级页面置于同一个带有过渡名称的父容器中，以确保动画流畅稳定。
 
 ### 深读路径
@@ -607,7 +607,7 @@ Chronos 的主题体系由「配色主题 + 派生图标主题」组成。类型
 
 ### 动态配色事件
 
-内核层定义了统一的动态取色事件规范：`dynamicColor:set`（携带图片 Blob 数据）、`dynamicColor:changed`（携带图片 URI 地址）、`dynamicColor:hydrate`（请求重放当前取色状态）。宿主 `AppShell` 仅维护最新的 `dynamicColorUri`（新事件覆盖旧值），并将 URI 传递给当前主题的取色适配器以完成界面渲染。偏好设置中的 `palette: 'wallpaper'` 用于指示启用动态取色通道。
+内核层定义了统一的动态取色事件规范：`dynamicColor:set`（携带图片 Blob 数据）、`dynamicColor:changed`（携带图片 URI 地址）、`dynamicColor:hydrate`（请求重放当前取色状态）。宿主 `AppShell` 仅维护最新的 `dynamicColorUri`（新事件覆盖旧值），交给主题 `dynamicColorAdapter` 取色，并由外壳 `ShellWallpaper` 绘制课表壁纸（[ADR 0039](.agents/docs/adr/0039-shell-wallpaper-compositor.md)）。偏好设置中的 `palette: 'wallpaper'` 用于指示启用动态取色通道。
 
 ### 用户偏好相关项
 
