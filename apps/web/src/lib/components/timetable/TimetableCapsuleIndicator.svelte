@@ -360,7 +360,7 @@
 {#if hasMultipleWeeks}
 	<div
 		class={[
-			'capsule-indicator-wrapper pointer-events-none absolute inset-x-0 bottom-2.5 z-20 flex flex-col items-center select-none sm:bottom-3',
+			'capsule-indicator-wrapper pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center select-none',
 			className
 		]}
 		style:--indicator-transition-duration={`${STATE_TRANSITION_MS}ms`}
