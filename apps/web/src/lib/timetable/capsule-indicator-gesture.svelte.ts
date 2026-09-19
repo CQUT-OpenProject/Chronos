@@ -8,6 +8,7 @@ export interface CapsuleIndicatorGestureOptions {
 	getDisplayedWeek: () => number;
 	onWeekChange: (week: number) => void;
 	onScrubCommit?: (week: number, fromWeek: number) => void;
+	onTap?: () => void;
 	onScrubStartFeedback?: () => void;
 	onWeekStepFeedback?: () => void;
 }
@@ -38,6 +39,7 @@ export function createCapsuleIndicatorGesture({
 	getDisplayedWeek,
 	onWeekChange,
 	onScrubCommit,
+	onTap,
 	onScrubStartFeedback = () => haptic.medium(),
 	onWeekStepFeedback = () => haptic.light()
 }: CapsuleIndicatorGestureOptions) {
@@ -138,6 +140,7 @@ export function createCapsuleIndicatorGesture({
 		if (longPressTimer) {
 			clearTimeout(longPressTimer);
 			longPressTimer = null;
+			if (commit) onTap?.();
 		} else if (isScrubbing) {
 			const fromWeek = scrubStartWeek;
 			const toWeek = scrubWeek;

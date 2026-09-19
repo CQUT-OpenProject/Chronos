@@ -41,6 +41,7 @@
 		getEndWeek: () => endWeek,
 		getDisplayedWeek: () => displayedWeek,
 		onWeekChange: (week) => screen.setDisplayedWeek(week),
+		onTap: jumpToCurrentWeekIfGlass,
 		onScrubCommit: (week) => trackEvent('timetable_week_scrub', { week, trigger: 'scrub' })
 	});
 
@@ -269,8 +270,17 @@
 		trackEvent('timetable_week_scrub', { week, trigger: 'keyboard' });
 	}
 
+	function jumpToCurrentWeekIfGlass() {
+		if (!hasGlass || isExpanded) return;
+		haptic.light();
+		screen.jumpToCurrentWeek();
+	}
+
 	function onKeydown(e: KeyboardEvent) {
-		if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+		if ((e.key === 'Enter' || e.key === ' ') && hasGlass && !isExpanded) {
+			e.preventDefault();
+			jumpToCurrentWeekIfGlass();
+		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
 			e.preventDefault();
 			if (displayedWeek > startWeek) {
 				changeWeekByKeyboard(displayedWeek - 1, () => haptic.light());
@@ -377,7 +387,11 @@
 			bind:this={gesture.containerEl}
 			role="slider"
 			tabindex="0"
-			aria-label={hostT('timetable.week.indicatorAria')}
+			aria-label={hostT(
+				hasGlass && !isExpanded
+					? 'timetable.week.indicatorGlassAria'
+					: 'timetable.week.indicatorAria'
+			)}
 			aria-valuemin={startWeek}
 			aria-valuemax={endWeek}
 			aria-valuenow={ariaWeek}
