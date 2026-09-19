@@ -4,9 +4,12 @@
 	import { getContext } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { page } from '$app/state';
+	import type { AppShellController } from '$lib/app/app-shell.svelte';
 	import type { ShellTabController } from '$lib/shell/shell-tab.svelte';
 	import type { TimetableScreenController } from '$lib/timetable/timetable-screen.svelte';
 	import ShellTabPanels from '$lib/components/shell/ShellTabPanels.svelte';
+	import ShellWallpaper from '$lib/components/shell/ShellWallpaper.svelte';
+	import { isShellWallpaperRevealed } from '$lib/components/shell/shell-wallpaper';
 	import BottomTabBar from '$lib/components/BottomTabBar.svelte';
 	import AdaptiveEdgeBar from '$lib/components/ui/AdaptiveEdgeBar.svelte';
 	import TimetableWeekBadge from '$lib/components/timetable/TimetableWeekBadge.svelte';
@@ -22,6 +25,7 @@
 	import { isShellRoute } from '$lib/navigation/routes';
 	import { secondaryTransitionGate } from '$lib/navigation';
 
+	const shell = getContext<AppShellController>('appShell');
 	const shellTab = getContext<ShellTabController>('shellTab');
 	const timetableScreen = getContext<TimetableScreenController>('timetableScreen');
 	const controller = getAppController();
@@ -57,6 +61,14 @@
 			timetableScreen.state.isEditing &&
 			timetableScreen.interaction.drag?.overDeleteZone
 		)
+	);
+	const wallpaperUri = $derived(shell.state.dynamicColorUri);
+	const wallpaperRevealed = $derived(
+		isShellWallpaperRevealed({
+			wallpaperUri,
+			timetableSelected: activeTab?.hostPanel === 'timetable',
+			hasTimetable: Boolean(timetableScreen.state.currentTimetable)
+		})
 	);
 
 	let ready = $state(false);
@@ -104,7 +116,18 @@
 
 {#if browser && gate.shellHostEnabled}
 	<div class="shell-page min-h-dvh bg-canvas text-ink">
-		<ShellTabPanels {ready} frozen={gate.frozen} />
+		<div class="relative h-[calc(100dvh-var(--bottom-bar-height))]">
+			{#if wallpaperUri}
+				<ShellWallpaper
+					uri={wallpaperUri}
+					revealed={wallpaperRevealed}
+					blurred={timetableScreen.state.isEditing}
+				/>
+			{/if}
+			<div class={['shell-content h-full', gate.skipPaint && 'is-frozen']}>
+				<ShellTabPanels {ready} frozen={gate.frozen} />
+			</div>
+		</div>
 		<div class="shell-tab-bar" class:hidden={gate.skipPaint} inert={gate.frozen}>
 			<AdaptiveEdgeBar kind="shell" alert={dropActive}>
 				{#snippet top()}

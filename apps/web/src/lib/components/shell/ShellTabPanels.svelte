@@ -125,7 +125,7 @@
 {#if !browser || !ready}
 	{@render loading()}
 {:else}
-	<div class="relative h-[calc(100dvh-var(--bottom-bar-height))] overflow-hidden">
+	<div class="relative h-full overflow-hidden">
 		{#if timetableMounted}
 			<div
 				class={[

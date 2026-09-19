@@ -6,7 +6,6 @@
 	import { dayOfWeekFromIso } from '@chronos/core';
 	import { getContext } from 'svelte';
 	import TopAppBar from '$lib/components/TopAppBar.svelte';
-	import { TimetableWallpaperLayer } from '@chronos/ui-kit';
 	import { createCapsulePagerPreview } from '$lib/timetable/capsule-pager-preview';
 	import TimetableWeekSwiper from './TimetableWeekSwiper.svelte';
 	import TimetableCapsuleIndicator from './TimetableCapsuleIndicator.svelte';
@@ -28,7 +27,6 @@
 
 	const coursePalette = $derived(shell.appearance.coursePalette);
 	const hasDynamicColorBackground = $derived(shell.state.hasDynamicColorBackground);
-	const dynamicColorUri = $derived(shell.state.dynamicColorUri);
 	const layoutMode = $derived(shell.state.effectiveTimetableLayoutMode);
 	const capsuleCornerStyle = $derived(
 		shell.controller.userPreferences?.capsuleCornerStyle ?? 'sharp'
@@ -88,12 +86,7 @@
 		{/snippet}
 	</TopAppBar>
 
-	<TimetableWallpaperLayer
-		wallpaperUri={hasDynamicColorBackground ? dynamicColorUri : null}
-		blurred={screenState.isEditing}
-		prewarmBlur={active}
-		fit="cover"
-	>
+	<div class="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
 		{#key screenState.currentTimetable?.id}
 			<TimetableWeekSwiper
 				{screen}
@@ -106,7 +99,7 @@
 				{pagerPreview}
 			/>
 		{/key}
-	</TimetableWallpaperLayer>
+	</div>
 
 	{#if !screenState.isEditing && screenState.currentTimetable}
 		<TimetableCapsuleIndicator {screen} {pagerPreview} />

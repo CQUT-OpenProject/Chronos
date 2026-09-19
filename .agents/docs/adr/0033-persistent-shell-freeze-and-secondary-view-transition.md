@@ -3,7 +3,7 @@
 - **状态**: Accepted
 - **日期**: 2026-09-03
 - **关联提交**: `b07458a`
-- **关联**: 延续 [ADR 0029](./0029-shell-internal-tab-navigation.md) 壳内 Tab 机制；保持二级页面 URL 与导航历史栈行为不变
+- **关联**: 延续 [ADR 0029](./0029-shell-internal-tab-navigation.md) 壳内 Tab 机制；保持二级页面 URL 与导航历史栈行为不变；冻结范围由 [ADR 0039](./0039-shell-wallpaper-compositor.md) 修订
 - **范围**: `apps/web`, `packages/ui-kit`
 
 ---
@@ -25,7 +25,8 @@ flowchart TD
     RootLayout[根 Layout 布局] --> ShellHost["ShellRouteHost (常驻外壳保活容器)"]
     RootLayout --> PageOutlet["SvelteKit 二级页面 Outlet"]
 
-    ShellHost --> Frozen["进入二级页时: content-visibility: hidden (离屏冻结)"]
+    ShellHost --> Compositor["ShellWallpaper 始终绘制"]
+    ShellHost --> Frozen["进入二级页时: .shell-content content-visibility: hidden"]
     PageOutlet --> VT["View Transition 仅挂载于 SecondaryPageShell (二级页单层过渡)"]
 ```
 
@@ -36,7 +37,9 @@ flowchart TD
 
 ### 2. 离屏高效冻结 (`secondary-transition-gate`)
 
-- 当用户处于二级页面时，主外壳通过 CSS `content-visibility: hidden` 与 `inert` 属性进入完全冻结状态，浏览器跳过该区域的布局与渲染计算；
+- 当用户处于二级页面时，外壳**内容区**（`.shell-content`，课表网格与其它 Tab）通过 CSS `content-visibility: hidden` 进入离屏冻结，浏览器跳过该区域的布局与渲染计算；
+- `.shell-root` 本身保持可绘制，以便退后动画与壁纸合成层（见 [ADR 0039](./0039-shell-wallpaper-compositor.md)）不丢解码帧；
+- 根 Layout 在冻结期间仍对 `.shell-root` 设置 `inert`，阻断交互；
 - 返回主外壳时瞬间解冻，无需重新挂载任何组件，瞬时呈现原有课表状态。
 
 ### 3. View Transition 过渡仅作用于二级层
@@ -67,4 +70,10 @@ flowchart TD
 ## 验证
 
 - `vp check` / `vp test` 全量通过；
-- 课表 ↔ 壁纸设置推入返回动画跟手流畅；二级页期间主外壳正确处于 `content-visibility: hidden` 状态。
+- 课表 ↔ 壁纸设置推入返回动画跟手流畅；二级页期间 `.shell-content` 处于 `content-visibility: hidden`，壁纸合成层仍保持绘制。
+
+---
+
+## 修订
+
+- 2026-09-19 · [ADR 0039](./0039-shell-wallpaper-compositor.md)：冻结从整棵 `.shell-root` 收窄为 `.shell-content`；退后动画仍挂在 `.shell-root`。
